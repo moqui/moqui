@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="common-types-1.0.xsd"/>
+    <xs:include schemaLocation="xml-actions-1.0.xsd"/>
+
+    <!-- root element -->
+    <xs:element name="services">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="service"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="service">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="description"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="implements"/>
+                <xs:element minOccurs="0" ref="in-parameters"/>
+                <xs:element minOccurs="0" ref="out-parameters"/>
+                <xs:element minOccurs="0" ref="actions"/>
+            </xs:sequence>
+            <xs:attribute name="verb" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        This can be any verb, and will generally be one of: create, update, delete, or find.
+                        The full name of the service will be: ${verb}${noun}
+                        The very is required and the noun is optional so if there is no noun the service name will be just the verb.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="noun" type="xs:string" use="optional">
+                <xs:annotation>
+                    <xs:documentation>
+                        For entity-auto services this should be a valid entity name.
+                        In many other cases an entity name is the best way to describe what is being acted on, but this can really be anything.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" default="inline">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="inline"/>
+                        <xs:enumeration value="entity-auto"/>
+                        <xs:enumeration value="script"/>
+                        <xs:enumeration value="java"/>
+                        <xs:enumeration value="interface"/>
+                        <xs:enumeration value="proxy-http"/>
+                        <xs:enumeration value="proxy-jms"/>
+                        <xs:enumeration value="proxy-rmi"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="location" type="xs:string" use="optional"/>
+            <xs:attribute name="invoke" type="xs:string" use="optional"/>
+            <xs:attribute name="authentication" default="true" type="boolean"/>
+            <xs:attribute name="export" default="false" type="boolean"/>
+            <xs:attribute name="validate" default="true" type="boolean"/>
+            <xs:attribute name="use-transaction" default="true" type="boolean">
+                <xs:annotation>
+                    <xs:documentation>
+                        If set to true and there is no transaction already in place the Service Engine will begin one.
+                        If set to false or there is a transaction already in place the Service Engine will do nothing (this also means that if set to false and a transaction is already in place it will do nothing).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="transaction" default="use-or-begin">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="ignore"><xs:annotation><xs:documentation>Don't do anything with transactions (if one is in place use it, if no transaction in place don't begin one)</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="use-or-begin"><xs:annotation><xs:documentation>Use active transaciton or if no active transaction begin one</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="force-new"><xs:annotation><xs:documentation>Always being a new transaction, pausing the active transaction if there is one</xs:documentation></xs:annotation></xs:enumeration>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="transaction-timeout" type="xs:int" default="0">
+                <xs:annotation>
+                    <xs:documentation>
+                        Defines the timeout for the transaction, in seconds.
+                        This value is only used if this service begins a transaction (either require-new, or use-or-begin and there is no other transaction already in place).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="max-retry" type="xs:int" default="-1"/>
+            <xs:attribute name="debug" default="false" type="boolean"/>
+            <xs:attribute name="semaphore" default="none">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="fail"/>
+                        <xs:enumeration value="wait"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="semaphore-wait-seconds" type="xs:int" default="300"/>
+            <xs:attribute name="semaphore-sleep" type="xs:int" default="500"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="in-parameters">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-parameters"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="out-parameters">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-parameters"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="implements">
+        <xs:complexType>
+            <xs:attribute name="service" type="xs:string" use="required"/>
+            <xs:attribute name="required" type="boolean" use="optional">
+                <xs:annotation><xs:documentation>If set to true or false all parameters inherited have that required value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="auto-parameters">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="exclude"/>
+            </xs:sequence>
+            <xs:attribute name="entity-name" type="xs:string"/>
+            <xs:attribute name="include" default="all">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="pk"/>
+                        <xs:enumeration value="nonpk"/>
+                        <xs:enumeration value="all"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attributeGroup ref="attlist.parameter-general"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="exclude">
+        <xs:complexType>
+            <xs:attribute name="field-name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="parameter">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="description"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="type" type="xs:string"/>
+            <xs:attribute name="default-value" type="xs:string">
+                <xs:annotation><xs:documentation>The value specified will be used for the parameter if no value is passed in (only used if required=false).</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="string-map-prefix" type="xs:string"/>
+            <xs:attribute name="string-list-suffix" type="xs:string"/>
+            <xs:attributeGroup ref="attlist.parameter-general"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.parameter-general">
+        <xs:attribute name="required" default="false" type="boolean">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="true"/>
+                    <xs:enumeration value="false"/>
+                    <xs:enumeration value="disabled">
+                        <xs:annotation><xs:documentation>Behave the same as if the parameter did not exist. Useful when overriding a previously defined parameter.</xs:documentation></xs:annotation>
+                    </xs:enumeration>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="allow-html" use="optional" default="none">
+            <xs:annotation><xs:documentation>
+                Applies only to String fields.
+                Only checked for incoming parameters/attributes (could change in the future, but this is meant for validating input from users, other systems, etc).
+                Defualts to "none" meaning no HTML is allowed (will result in an error message).
+                If some HTML is desired then use "safe" which will follow the rules in the antisamy-esapi.xml file. This should be safe for both internal and public users.
+                In rare cases when users are trusted or it is not a sensitive field the "any" option may be used to not check the HTML content at all.
+            </xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="any"/>
+                    <xs:enumeration value="safe"/>
+                    <xs:enumeration value="none"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+</xs:schema>

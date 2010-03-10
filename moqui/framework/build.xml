@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<project name="Moqui Framework Build" default="build" basedir=".">
+    <property environment="env"/>
+
+    <property name="version" value="1.0"/>
+
+    <target name="init">
+        <!-- just a place holder for now -->
+    </target>
+
+    <!-- ========== clean targets ========== -->
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <!-- ========== build targets ========== -->
+
+    <target name="build" depends="init">
+        <!-- make the API classes -->
+        <mkdir dir="build/classes-api"/>
+        <javac destdir="build/classes-api" srcdir="src-api"
+                debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
+            <include name="**/*.java"/>
+            <classpath>
+                <fileset dir="lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+
+        <!-- make the API lib -->
+        <mkdir dir="build/lib"/>
+        <jar jarfile="build/lib/moqui-framework-api-${version}.jar">
+            <fileset dir="build/classes-api"/>
+            <!-- include XSDs, default-conf, etc in the API file for easy runtime reference -->
+            <fileset dir="xsd">
+                <include name="*.xsd"/>
+            </fileset>
+            <fileset dir="conf-default">
+                <include name="*.xml,*.properties"/>
+            </fileset>
+        </jar>
+
+        <!-- make the framework impl classes -->
+        <mkdir dir="build/classes"/>
+        <javac destdir="build/classes" srcdir="src"
+                debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
+            <include name="**/*.java"/>
+            <classpath>
+                <fileset dir="lib" includes="*.jar"/>
+                <fileset dir="build/lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+
+        <!-- make the framework impl lib -->
+        <jar jarfile="build/lib/moqui-framework-${version}.jar">
+            <fileset dir="build/classes"/>
+            <fileset dir="src">
+                <include name="META-INF/**"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <!-- ========== javadoc targets ========== -->
+
+    <target name="docs" depends="init">
+        <mkdir dir="build/javadoc"/>
+        <javadoc packagenames="org.moqui.*"
+                destdir="build/javadoc"
+                maxmemory="256M"
+                windowtitle="Moqui Framework API and Implementation"
+                useexternalfile="yes">
+            <fileset dir="src">
+                <include name="**/*.java"/>
+            </fileset>
+            <fileset dir="src-api">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+
+        <mkdir dir="build/javadoc-api"/>
+        <javadoc packagenames="org.moqui.*"
+                destdir="build/javadoc-api"
+                maxmemory="256M"
+                windowtitle="Moqui Framework API"
+                useexternalfile="yes">
+            <fileset dir="src-api">
+                <include name="**/*.java"/>
+            </fileset>
+        </javadoc>
+    </target>
+</project>

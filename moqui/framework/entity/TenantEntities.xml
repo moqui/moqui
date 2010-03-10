@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.entity.tenant -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="Tenant" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="tenantName" type="text-medium"/>
+        <field name="isEnabled" type="text-indicator"/>
+
+        <!-- Localization Defaults -->
+        <field name="defaultCurrencyUomId" type="id"/>
+        <field name="defaultLocale" type="text-short"/>
+        <field name="defaultTimeZone" type="text-medium"/>
+        <field name="defaultCountryGeoId" type="id"/>
+
+        <!-- Email Defaults -->
+        <field name="emailOutgoingEnabled" type="text-indicator"/>
+        <field name="emailOutgoingFromAddress" type="text-long"/>
+        <field name="emailOutgoingRedirectAddr" type="text-long">
+            <description>For testing purposes. If an email address is specified here all outgoing email will go to this address only.</description>
+        </field>
+        <field name="emailSmtpRelayHost" type="text-long"/>
+        <field name="emailSmtpAuthUsername" type="text-medium"/>
+        <field name="emailSmtpAuthPassword" type="text-medium"/>
+        <field name="emailSmtpPort" type="text-short"/>
+        <field name="emailSmtpStartTls" type="text-indicator"/>
+        <field name="emailSmtpAllowNonSecure" type="text-indicator"/>
+    </entity>
+    <entity entity-name="TenantCurrency" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <description>Each record represents a Currency UOM to be available to the tenant.
+            If no records are present all system currencies will be available.</description>
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="currencyUomId" type="id" is-pk="true"/>
+        <relationship type="one" rel-entity-name="Tenant"/>
+    </entity>
+    <entity entity-name="TenantLocale" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <description>Each record represents a Locale to be available to the tenant.
+            If no records are present all system locales will be available.</description>
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="locale" type="id" is-pk="true"/>
+        <relationship type="one" rel-entity-name="Tenant"/>
+    </entity>
+    <entity entity-name="TenantTimeZone" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <description>Each record represents a Time Zone to be available to the tenant.
+            If no records are present all system time zones will be available.</description>
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="timeZone" type="id" is-pk="true"/>
+        <relationship type="one" rel-entity-name="Tenant"/>
+    </entity>
+    <entity entity-name="TenantCountry" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <description>Each record represents a Country (Geo) to be available to the tenant.
+            If no records are present all system countries will be available.</description>
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="countryGeoId" type="id" is-pk="true"/>
+        <relationship type="one" rel-entity-name="Tenant"/>
+    </entity>
+    <entity entity-name="TenantDataSource" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <description>
+            There should be one record for each tenant and each group-map for the active EntityProxy.
+            The jdbc fields will override the datasource -> inline-jdbc values for the per-tenant EntityProxy.
+        </description>
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="entityGroupName" type="text-medium" is-pk="true"/>
+        <field name="jndiName" type="text-long"/>
+        <field name="jdbcUri" type="text-long"/>
+        <field name="jdbcUsername" type="text-long"/>
+        <field name="jdbcPassword" type="text-long"/>
+        <relationship type="one" rel-entity-name="Tenant"/>
+    </entity>
+</entities>

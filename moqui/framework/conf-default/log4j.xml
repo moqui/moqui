@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="false">
+
+    <!-- async appender -->
+    <appender name="async" class="org.apache.log4j.AsyncAppender">
+        <param name="locationInfo" value="true"/>
+        <param name="blocking" value="false"/>
+        <param name="bufferSize" value="256"/>
+        <appender-ref ref="stdout"/>
+        <appender-ref ref="rolling-file"/>
+        <appender-ref ref="error"/>
+        <!-- <appender-ref ref="socket"/> -->
+        <!-- <appender-ref ref="email"/> -->
+    </appender>
+
+    <!-- stdout appender -->
+    <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
+        <param name="threshold" value="info"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
+        </layout>
+    </appender>
+
+    <!-- rolling file appender -->
+    <appender name="rolling-file" class="org.apache.log4j.RollingFileAppender">
+        <param name="maxFileSize" value="1000KB"/>
+        <param name="maxBackupIndex" value="10"/>
+        <param name="File" value="runtime/log/moqui.log"/>
+        <param name="threshold" value="info"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
+        </layout>
+    </appender>
+
+    <!-- error log -->
+    <appender name="error" class="org.apache.log4j.RollingFileAppender">
+        <param name="maxFileSize" value="10000KB"/>
+        <param name="maxBackupIndex" value="10"/>
+        <param name="File" value="runtime/log/error.log"/>
+        <param name="Append" value="false"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMax" value="fatal"/>
+            <param name="LevelMin" value="error"/>
+            <param name="AcceptOnMatch" value="true"/>
+        </filter>
+    </appender>
+
+    <!-- chainsaw remote socket log monitor -->
+    <!-- NOTE: uncomment here and in the async appender
+    <appender name="socket" class="org.apache.log4j.net.SocketHubAppender">
+        <param name="port" value="4445"/>
+    </appender>
+    -->
+
+    <!-- fatal error SMTP notification -->
+    <!-- NOTE: uncomment here and in the async appender
+    <appender name="email"  class="org.apache.log4j.net.SMTPAppender">
+        <param name="threshold" value="fatal"/>
+        <param name="BufferSize" value="512"/>
+        <param name="SMTPHost" value="localhost"/>
+        <param name="From" value="moqui-fatal@localhost"/>
+        <param name="To" value="neo@foobar.com"/>  <!- - at least change this field! - ->
+        <param name="Subject" value="[Moqui-Fatal] Application Error"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
+        </layout>
+    </appender>
+    -->
+
+    <!-- org.apache tool log settings -->
+    <category name="org.apache.catalina">
+        <priority value="warn"/>
+    </category>
+    <category name="org.apache.log4j">
+        <priority value="warn"/>
+    </category>
+    <category name="org.apache.geronimo.transaction">
+        <priority value="warn"/>
+        <appender-ref ref="minerva-log"/>
+    </category>
+    <category name="org.apache.fop">
+        <priority value="info"/>
+        <appender-ref ref="fop-log"/>
+    </category>
+
+    <!-- root logger -->
+    <root>
+        <priority value="all"></priority>
+        <appender-ref ref="async"/>
+    </root>
+</log4j:configuration>

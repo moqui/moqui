@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entity-facade-xml type="seed">
+    <LocalizedMessage original="Add" locale="es" localized="Añadir"/>
+    <LocalizedMessage original="Add" locale="fr" localized="Ajouter"/>
+    <LocalizedMessage original="Add" locale="it" localized="Aggiungi"/>
+    <LocalizedMessage original="Add" locale="zh" localized="新建"/>
+
+    <LocalizedMessage original="Create" locale="es" localized="Crear"/>
+    <LocalizedMessage original="Create" locale="fr" localized="Créer"/>
+    <LocalizedMessage original="Create" locale="it" localized="Creare"/>
+    <LocalizedMessage original="Create" locale="zh" localized="新建"/>
+
+    <LocalizedMessage original="Delete" locale="es" localized="Eliminar"/>
+    <LocalizedMessage original="Delete" locale="fr" localized="Supprimer"/>
+    <LocalizedMessage original="Delete" locale="it" localized="Cancella"/>
+    <LocalizedMessage original="Delete" locale="zh" localized="删除"/>
+
+    <LocalizedMessage original="Description" locale="es" localized="Descripción"/>
+    <LocalizedMessage original="Description" locale="fr" localized="Description"/>
+    <LocalizedMessage original="Description" locale="it" localized="Descrizione"/>
+    <LocalizedMessage original="Description" locale="zh" localized="描述"/>
+
+    <LocalizedMessage original="Find" locale="es" localized="Buscar"/>
+    <LocalizedMessage original="Find" locale="fr" localized="Rechercher"/>
+    <LocalizedMessage original="Find" locale="it" localized="Ricerca"/>
+    <LocalizedMessage original="Find" locale="zh" localized="查找"/>
+
+    <LocalizedMessage original="Name" locale="es" localized="Nombre"/>
+    <LocalizedMessage original="Name" locale="fr" localized="Nom"/>
+    <LocalizedMessage original="Name" locale="it" localized="Nome"/>
+    <LocalizedMessage original="Name" locale="zh" localized="名称"/>
+
+    <LocalizedMessage original="Status" locale="es" localized="Estado"/>
+    <LocalizedMessage original="Status" locale="fr" localized="Statut"/>
+    <LocalizedMessage original="Status" locale="it" localized="Stato"/>
+    <LocalizedMessage original="Status" locale="zh" localized="状态"/>
+
+    <LocalizedMessage original="Type" locale="es" localized="Tipo"/>
+    <LocalizedMessage original="Type" locale="fr" localized="Type"/>
+    <LocalizedMessage original="Type" locale="it" localized="Tipo"/>
+    <LocalizedMessage original="Type" locale="zh" localized="类型"/>
+
+    <LocalizedMessage original="Update" locale="es" localized="Actualizar"/>
+    <LocalizedMessage original="Update" locale="fr" localized="Màj"/>
+    <LocalizedMessage original="Update" locale="it" localized="Aggiorna"/>
+    <LocalizedMessage original="Update" locale="zh" localized="更新"/>
+</entity-facade-xml>

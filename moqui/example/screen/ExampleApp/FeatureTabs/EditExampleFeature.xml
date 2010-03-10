@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Feature" default-menu-index="1">
+
+    <parameter name="exampleFeatureId"/>
+
+    <transition name="createExampleFeature">
+        <actions><call-service service-name="createExampleFeature" auto-in-map="true"/></actions>
+        <transition-response url="EditExampleFeature"/>
+    </transition>
+    <transition name="updateExampleFeature">
+        <actions><call-service service-name="updateExampleFeature" auto-in-map="true"/></actions>
+        <transition-response url="EditExampleFeature"/>
+    </transition>
+
+    <section>
+        <actions>
+            <entity-find-one entity-name="ExampleFeature" value-field="exampleFeature"/>
+        </actions>
+        <widgets>
+            <section name="create">
+                <condition><compare field="exampleFeature" operator="empty"/></condition>
+                <widgets>
+                    <form name="CreateExampleFeature" type="single" transition="createExampleFeature"
+                          default-map-name="exampleFeature">
+                        <auto-fields-service service-name="createExampleFeature"/>
+                        <field name="exampleFeatureId" title="Example Feature ID">
+                            <conditional>
+                                <condition><compare field="exampleFeatureId" operator="not-empty"/></condition>
+                                <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>
+                            </conditional>
+                        </field>
+                        <field name="description" title="Description"/>
+                        <field name="featureSourceEnumId" title="Feature Source">
+                            <drop-down allow-empty="false">
+                                <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
+                                    <condition-expr field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+                                    <order-by field-name="sequenceId"/>
+                                </entity-options>
+                            </drop-down>
+                        </field>
+                        <field name="submitButton" title="Create"><submit button-type="button"/></field>
+                    </form>
+                </widgets>
+            </section>
+            <section name="update">
+                <condition><compare field="exampleFeature" operator="not-empty"/></condition>
+                <widgets>
+                    <form name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
+                        <field name="exampleId" title="Example Feature ID"><display/></field>
+                        <field name="submitButton" title="Update"><submit button-type="button"/></field>
+                    </form>
+                </widgets>
+            </section>
+        </widgets>
+    </section>
+</screen>

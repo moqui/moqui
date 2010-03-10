@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.entity.misc -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="EntityAuditLog" package-name="org.moqui.entity.misc">
+        <field name="auditHistorySeqId" type="id" is-pk="true"/>
+        <field name="changedEntityName" type="text-medium"/>
+        <field name="changedFieldName" type="text-long"/>
+        <field name="pkCombinedValueText" type="text-long"/>
+        <field name="oldValueText" type="text-long"/>
+        <field name="newValueText" type="text-long"/>
+        <field name="changedDate" type="date-time"/>
+        <field name="changedByUserId" type="text-long"/>
+        <field name="changedInVisitId" type="text-long"/>
+    </entity>
+    <entity entity-name="EntityKeyStore" package-name="org.moqui.entity.misc">
+        <field name="keyName" type="id-vlong" is-pk="true"/>
+        <field name="keyText" type="text-long"/>
+    </entity>
+    <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc">
+        <field name="seqName" type="id-long" is-pk="true"/>
+        <field name="seqId" type="number-integer"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.entity.group -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="EntityGroup" package-name="org.moqui.entity.group">
+        <field name="entityGroupId" type="id" is-pk="true"/>
+        <field name="entityGroupName" type="text-medium"/>
+    </entity>
+    <entity entity-name="EntityGroupEntry" package-name="org.moqui.entity.group">
+        <field name="entityGroupId" type="id" is-pk="true"/>
+        <field name="entityOrPackage" type="text-long" is-pk="true"/>
+        <field name="applEnumId" type="id"/>
+        <relationship type="one" rel-entity-name="EntityGroup"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.entity.synchronization -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="EntitySync" package-name="org.moqui.entity.synchronization">
+        <field name="entitySyncId" type="id" is-pk="true"/>
+        <field name="runStatusId" type="id"/>
+        <field name="lastSuccessfulSyncTime" type="date-time"/>
+        <field name="syncSplitMillis" type="number-integer"/>
+        <field name="targetServerUrl" type="text-long"/>
+        <field name="targetUsername" type="text-long"/>
+        <field name="targetPassword" type="text-long" encrypt="true"/>
+        <field name="targetTenantId" type="text-long"/>
+        <field name="keepRemoveInfoHours" type="number-float"/>
+        <field name="forPullOnly" type="text-indicator"/>
+        <field name="forPushOnly" type="text-indicator"/>
+        <relationship type="one-nofk" title="Last" rel-entity-name="EntitySyncHistory">
+            <key-map field-name="entitySyncId"/>
+            <key-map field-name="lastHistoryStartDate" rel-field-name="startDate"/>
+        </relationship>
+    </entity>
+    <entity entity-name="EntitySyncHistory" package-name="org.moqui.entity.synchronization">
+        <field name="entitySyncId" type="id" is-pk="true"/>
+        <field name="startDate" type="date-time" is-pk="true"/>
+        <field name="runStatusId" type="id"/>
+        <field name="beginningSyncTime" type="date-time"/>
+        <field name="lastSuccessfulSyncTime" type="date-time"/>
+        <field name="lastSplitStartTime" type="number-integer"/>
+        <field name="toStoreInserted" type="number-integer"/>
+        <field name="toStoreUpdated" type="number-integer"/>
+        <field name="toStoreNotUpdated" type="number-integer"/>
+        <field name="toRemoveDeleted" type="number-integer"/>
+        <field name="toRemoveAlreadyDeleted" type="number-integer"/>
+        <field name="totalRowsExported" type="number-integer"/>
+        <field name="totalRowsToStore" type="number-integer"/>
+        <field name="totalRowsToRemove" type="number-integer"/>
+        <field name="totalSplits" type="number-integer"/>
+        <field name="totalStoreCalls" type="number-integer"/>
+        <field name="runningTimeMillis" type="number-integer"/>
+        <field name="perSplitMinMillis" type="number-integer"/>
+        <field name="perSplitMaxMillis" type="number-integer"/>
+        <field name="perSplitMinItems" type="number-integer"/>
+        <field name="perSplitMaxItems" type="number-integer"/>
+        <relationship type="one" rel-entity-name="EntitySync"/>
+    </entity>
+    <entity entity-name="EntitySyncIncludeGroup" package-name="org.moqui.entity.synchronization">
+        <field name="entitySyncId" type="id" is-pk="true"/>
+        <field name="entityGroupId" type="id" is-pk="true"/>
+        <relationship type="one" rel-entity-name="EntityGroup"/>
+        <relationship type="one" rel-entity-name="EntitySync"/>
+    </entity>
+    <entity entity-name="EntitySyncRemove" package-name="org.moqui.entity.synchronization">
+        <field name="entitySyncRemoveId" type="id" is-pk="true"/>
+        <field name="primaryKeyRemoved" type="text-very-long"/>
+    </entity>
+
+    <!--
+    TODO: define these, in EntityEntities
+    -Could use these to make view-entity configurations on the fly (this may be WAY too technical for most users, so considering this a pretty low priority)
+
+    DynamicViewEntity
+    dynamicViewEntityId*
+
+    DynamicViewEntityMember
+    dynamicViewEntityId*
+    entityAlias*
+    entityName
+
+    DynamicViewEntityAlias
+    dynamicViewEntityId*
+    entityAlias*
+    fieldAlias*
+    fieldName
+    functionEnumId
+
+    DynamicViewEntityJoin
+    entityAlias
+    relEntityAlias
+    keyName
+    relKeyName
+    relOptional
+    -->
+</entities>

@@ -1,0 +1,1171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="common-types-1.0.xsd"/>
+
+    <xs:element name="CallOperations" abstract="true"/>
+    <xs:element name="EnvOperations" abstract="true"/>
+    <xs:element name="EntityMiscOperations" abstract="true"/>
+    <xs:element name="EntityFindOperations" abstract="true"/>
+    <xs:element name="EntityValueOperations" abstract="true"/>
+    <xs:element name="EntityListOperations" abstract="true"/>
+    <xs:element name="ControlOperations" abstract="true"/>
+    <xs:element name="IfBasicOperations" abstract="true"/>
+    <xs:element name="IfOtherOperations" abstract="true"/>
+    <xs:element name="OtherOperations" abstract="true"/>
+    <xs:group name="AllOperations">
+        <xs:choice>
+            <xs:element ref="CallOperations"/>
+            <xs:element ref="EnvOperations"/>
+            <xs:element ref="EntityMiscOperations"/>
+            <xs:element ref="EntityFindOperations"/>
+            <xs:element ref="EntityValueOperations"/>
+            <xs:element ref="EntityListOperations"/>
+            <xs:element ref="ControlOperations"/>
+            <xs:element ref="IfBasicOperations"/>
+            <xs:element ref="IfOtherOperations"/>
+            <xs:element ref="OtherOperations"/>
+        </xs:choice>
+    </xs:group>
+
+    <!-- ============================================== -->
+    <!-- Root Level Elements (for files, to be included elsewhere, etc) -->
+    <xs:element name="actions">
+        <xs:annotation>
+            <xs:documentation>
+                XML Actions can be embedded in various files, or put in a file of their own and run like a script.
+                Like a script the parameters passed into the XML Actions will already be defined in the context.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="condition">
+        <xs:annotation>
+            <xs:documentation>
+                Contains a single condition of any sort and evaluates to a boolean value.
+                To combine the other if operations the and, or, and xor elements can be used.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group ref="IfConditions"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Call Operations -->
+    <xs:element name="call-service" substitutionGroup="CallOperations">
+        <xs:annotation><xs:documentation>Calls a service.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="service-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the service to call.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="in-map" type="xs:string">
+                <xs:annotation><xs:documentation>Map in the context to use as the service input parameters.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="auto-in-map" default="false" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    Creates an in-map with variables matching the names of service in-parameters, doing types
+                    conversions as needed.
+
+                    If false (default) does nothing. If true constructs an in-map from the context.
+                    If the name of a Map in the context uses it as the source Map for the service context.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="out-map" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Optional name in the method environment to use for the output (results) map.
+                        If empty then the output map will be ignored.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="async" default="false" type="boolean">
+                <xs:annotation><xs:documentation>If true runs the service asynchronously.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="include-user-login" default="true" type="boolean">
+                <xs:annotation>
+                    <xs:documentation>
+                        Include-user-login by default will include the user login
+                        so if there is a user login for the current xml-action
+                        it will pass that in to the service. If you don't want it to
+                        pass that in you can just set this to false.
+                        Defaults to "true".
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="force-new-transaction" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Begin a new transaction even if one is already in place. Defaults to "false".</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="transaction-timeout" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        Defines the timeout for the transaction, in seconds.
+                        Defaults to the value set in the service definition which in turn defaults to the setting
+                        in the TransactionFactory being used (typically 60 seconds).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ignore-error" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="call-service-group" substitutionGroup="CallOperations">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="service-invoke"/>
+            </xs:sequence>
+            <xs:attribute name="send-mode" default="all">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="first-available"/>
+                        <xs:enumeration value="random"/>
+                        <xs:enumeration value="round-robin"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="service-invoke">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="async" default="false" type="boolean">
+                <xs:annotation><xs:documentation>If true runs the service asynchronously.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="result-to-context" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="call-script" substitutionGroup="CallOperations" type="xs:string">
+        <xs:annotation><xs:documentation>Runs the script at the specified location. You can also put a script inline under this element.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="call-xml-actions" substitutionGroup="CallOperations">
+        <xs:annotation><xs:documentation>Calls an xml-actions script inline (in the same context as the current one).</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string">
+                <xs:annotation><xs:documentation>The full location of the XML file which contains XML Actions to execute.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!-- Environment specific operations -->
+    <xs:element name="set" substitutionGroup="EnvOperations">
+        <xs:annotation><xs:documentation>Set a field from another field (from-field) or an inline value, or a default-value.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the field to set a value in.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="from-field" type="xs:string">
+                <xs:annotation><xs:documentation>Name of a field to copy from. Can also be an expression that evaluates to something to put into the field.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="value" type="xs:string">
+                <xs:annotation><xs:documentation>Inline value to copy in field. May include variables using the ${} syntax.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="default-value" type="xs:string">
+                <xs:annotation><xs:documentation>Default value to set in field if an empty String or null value is found.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" type="object-type-new">
+                <xs:annotation><xs:documentation>Type to convert to. NewList will create a new List, NewMap will create a new Map.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="set-if-empty" default="true" type="boolean">
+                <xs:annotation><xs:documentation>
+                        If an empty String or null value is found, set that in the field. Defaults to true, set to false to do nothing to the field.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="order-map-list" substitutionGroup="EnvOperations">
+        <xs:annotation><xs:documentation>Sort a List of Maps by field names given in order-by sub-element.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="1" maxOccurs="unbounded" ref="order-by"/></xs:sequence>
+            <xs:attribute type="xs:string" name="list" use="required">
+                <xs:annotation><xs:documentation>Name of the list to be sorted.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="to-list">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of the field the ordered list will be put into.
+                        Defaults to the value of the list-name attribute (ie goes to the same place it came from, replacing the old list).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="filter-map-list" substitutionGroup="EnvOperations">
+        <xs:annotation><xs:documentation>Filters the given List of Maps by the field-maps specified.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="field-map"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="date-filter"/>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="list" use="required">
+                <xs:annotation><xs:documentation>The name of the field that contains a List of Map objects.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="to-list">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of the field the filtered list will be put into.
+                        Defaults to the value of the list-name attribute (ie goes to the same place it came from, replacing the old list).
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="date-filter">
+        <xs:annotation><xs:documentation>Adds a constraint to find to filter by the from and thru dates in each record, comparing them to the valid-date value.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="valid-date">
+                <xs:annotation><xs:documentation>The name of a field in the context to compare each value to. Defaults to now.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="from-field-name" default="fromDate">
+                <xs:annotation><xs:documentation>The name of the entity field to use as the from/beginning effective date. Defaults to fromDate.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="thru-field-name" default="thruDate">
+                <xs:annotation><xs:documentation>The name of the entity field to use as the thru/ending effective date.Defaults to thruDate.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- Entity Misc Operations -->
+    <xs:element name="entity-sequenced-id-primary" substitutionGroup="EntityMiscOperations">
+        <xs:annotation><xs:documentation>Generates a sequenced ID to uniquely identify a database record, or for other purposes.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="sequence-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The unique name of the sequence, usually an entity-name.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the field the sequenced ID will be put in. Generally use the dot syntax to refer to a field on a EntityValue object.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="stagger-max" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    To make sequenced IDs more difficult to guess the ID returned will be the last ID plus a number from 1 to this value.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-sequenced-id-secondary" substitutionGroup="EntityMiscOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Given an entity value object with all primary key fields except one already set will generate an ID for
+                the remaining primary key field by looking at all records with the partial primary key and then adding
+                increment-by to the highest value.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="value-field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The EntityValue object to work on.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="seq-field-name" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Field to receive the sequenced ID. Usually the second primary key field after a primary sequenced ID.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="numeric-padding" type="xs:string" default="3">
+                <xs:annotation>
+                    <xs:documentation>
+                        To consistently sort on the String value, pad the beginning with zeroes until the number
+                        has this number of digits. Defaults to 3 digits total.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="increment-by" type="xs:string" default="1">
+                <xs:annotation><xs:documentation>Increment by more than 1 to stagger sequenced IDs. Defaults to 1.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="entity-data" substitutionGroup="EntityMiscOperations">
+        <xs:annotation><xs:documentation>Load or assert each record in an entity-facade-xml file.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Location of an XML file to load in database or verify in assert mode.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="timeout" type="xs:integer" default="-1">
+                <xs:annotation><xs:documentation>Start a new transaction and load the data with a longer timeout.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="mode" default="load">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="load">
+                            <xs:annotation><xs:documentation>Load the file into the datasource.</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="assert">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    Compare each record in the file to the corresponding record in the datasource
+                                    and add an error for each difference, or if no record is found in the datasource.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:enumeration>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="entity-find-one" substitutionGroup="EntityFindOperations">
+        <xs:annotation><xs:documentation>Does a find by primary key. If no value is found does nothing to the value-field.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-map"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="select-field"/>
+            </xs:sequence>
+            <xs:attribute name="entity-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the entity to find an instance of.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="value-field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Field to put result resulting EntityValue object in.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="use-cache" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="auto-field-map" type="boolean">
+                <xs:annotation><xs:documentation>
+                    Looks for all primary key fields by name in the context, and in the parameters map if not found in the context.
+                    Defaults to true. If a field-map sub-element is found this will default to false instead.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-find" substitutionGroup="EntityFindOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Like entity-and returns a list of Generic values if any are found, otherwise returns an empty list.
+                Uses any of condition-expression, condition-list and condition-object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="1" ref="date-filter"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="search-form-inputs"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="condition-expr"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="condition-list"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="condition-object"/>
+                <xs:element minOccurs="0" ref="having-condition-list"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="select-field"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="order-by"/>
+                <xs:choice minOccurs="0">
+                    <xs:element ref="limit-range"/>
+                    <xs:element ref="limit-view"/>
+                    <xs:element ref="use-iterator"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="entity-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of entity to find instances of.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="use-cache" default="false" type="boolean">
+                <xs:annotation>
+                    <xs:documentation>
+                        Specifies whether or not the cache should be searched before going to the database.
+                        Defaults to false.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="distinct" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Get only distinct results, based on the combination of all fields selected. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="list" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the list to put results in.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="result-set-type" default="scroll">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="forward"/>
+                        <xs:enumeration value="scroll"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="search-form-inputs">
+        <xs:annotation>
+            <xs:documentation>
+                Adds conditions for the fields found in the input-fields-map.
+
+                The fields and special fields with suffixes supported are the same as the *-find fields in the XML
+                Forms. This means that you can use this to process the data from the various inputs generated by XML
+                Forms. The suffixes include things like *_op for operators and *_ic for ignore case.  
+
+                For historical reference, this does basically what the Apache OFBiz prepareFind service does.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="input-fields-map" type="xs:string">
+                <xs:annotation><xs:documentation>The map to get form fields from. If empty will look in the current context.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="condition-list">
+        <xs:annotation>
+            <xs:documentation>
+                A condition-list is a list of conditions that are combined with either and or or.
+                The default is and.
+
+                You can have condition-lists under condition-list, for building fairly complex condition trees,
+                and you can also drop in condition-objects at any point.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="condition-expr"/>
+                <xs:element ref="condition-list"/>
+                <xs:element ref="condition-object"/>
+            </xs:choice>
+            <xs:attribute name="combine" default="and">
+                <xs:annotation><xs:documentation>Operator to use to combine conditions in the list.</xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="and"/>
+                        <xs:enumeration value="or"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="having-condition-list">
+        <xs:annotation><xs:documentation>Similar to condition-list but runs after the grouping and functions are done.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="condition-expr"/>
+                <xs:element ref="condition-list"/>
+                <xs:element ref="condition-object"/>
+            </xs:choice>
+            <xs:attribute name="combine" default="and">
+                <xs:annotation><xs:documentation>Operator to use to combine conditions in the list.</xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="and"/>
+                        <xs:enumeration value="or"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="condition-expr">
+        <xs:annotation>
+            <xs:documentation>
+                Adds a condition to the query to compare the field-name field to a context field, a String value, or
+                another field on the entity.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field-name" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        The field on the entity to constrain on. If from-field, value and to-field-name are all empty
+                        this is also used as the name of the context field to compare to.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="operator" default="equals" type="operator-entity">
+                <xs:annotation>
+                    <xs:documentation>
+                        Operator to apply to field-name on one side, and from-field, value, or to-field-name on the other side.
+
+                        For the between operator the from-field should be a Collection with exactly 2 values in it.
+
+                        For the in operator the from-field should be a Collection with 1 to many values in it.
+
+                        For the like operator use the standard SQL wildcards, including "%" for any number of
+                        characters (like *) and "_" for a single character (like ?), and escape them with a "!" in
+                        from of each character to escape).
+
+                        Defaults to equals.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="from-field" type="xs:string">
+                <xs:annotation><xs:documentation>Field expression in the context to compare the entity field to.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="value" type="xs:string">
+                <xs:annotation><xs:documentation>Comparison value, use ${} syntax to expand variables.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="to-field-name" type="xs:string">
+                <xs:annotation><xs:documentation>Compare the field-name field to another field on the entity.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ignore-if-empty" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Leave out the condition if the comparison value is empty or null. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ignore-case" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Ignore case when doing the compare. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ignore" default="false">
+                <xs:annotation><xs:documentation>Ignore the condition (leave out of the find) if set to true. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="condition-object">
+        <xs:annotation><xs:documentation>Add a condition that has been defined elsewhere and is available in the current context.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Field in the current context that implements the EntityCondition interface.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="select-field">
+        <xs:annotation><xs:documentation>Used to specify fields to select. If there are none of these elements all fields will be selected.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of a field to select.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="order-by">
+        <xs:annotation><xs:documentation>Defines a field to order the results by.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of field to order list by.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="limit-range">
+        <xs:annotation><xs:documentation>Limit the results by a start index and a size.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="start" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The start/beginning index of results to include.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="size" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The number of results to include beyond the start.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="limit-view">
+        <xs:annotation><xs:documentation>Limit the results using parameters like those used to paginate results in a user interface.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="view-index" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Index of records to view, depends on view-size.</xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="view-size" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Number of records to view, like the number of results per-screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="use-iterator">
+        <xs:annotation>
+            <xs:documentation>
+                Specifies whether or not to use the EntityListIterator when doing the query.
+                This is much more efficient for large data sets because the results are read incrementaly instead of all at once.
+                Note that when using this the use-cache setting will be ignored.
+                Also note that an EntityListIterator must be closed when you are finished, but this is done automatically by the iterate operation.
+                Must be "true" or "false", defaults to "false".
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType/>
+    </xs:element>
+    <xs:element name="field-map">
+        <xs:annotation><xs:documentation>A name/value pair.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the entity field.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="from-field" type="xs:string">
+                <xs:annotation><xs:documentation>Name of the field (variable) in the context.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="value" type="xs:string">
+                <xs:annotation><xs:documentation>Literal string or use ${} syntax to expand variables.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-find-count" substitutionGroup="EntityFindOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The entity-find-count is very similar to entity-find-condition.
+
+                Specify the entity-name, optionally the delgator-name if you want to override that,
+                and then the name of the variable to put the count in.
+
+                You can do the same condition-expr (condition expression) or condition-list which can have condition-expr
+                and other condition-lists underneath it for a tree of conditions that can be arbitrarily complex.
+                You can also use the have-in-condition-list, this is the same as on the entity-condition.
+                What this will do basically is, rather than doing a query and getting the results back,
+                it will just count the results and put that number in the context in the variable named by the count-name.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element ref="condition-expr"/>
+                    <xs:element ref="condition-list"/>
+                    <xs:element ref="condition-object"/>
+                </xs:choice>
+                <xs:element minOccurs="0" ref="having-condition-list"/>
+            </xs:sequence>
+            <xs:attribute name="entity-name" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of entity to search in.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="count-field" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of the field (variable) to put result of the count in.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-find-related-one" substitutionGroup="EntityFindOperations">
+        <xs:annotation>
+            <xs:documentation>
+                If you have a generic value object sitting in the context and you want to get a related entity
+                following one of the type one relationships in the data model, then you can specify the name of the value
+                here, the relation-name, the name of the relationship between the two entities, and the to-value where it
+                should put the result, and you can tell it to use-cache or not, by default it doesn't.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="value-field" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a generic value sitting in the context from where you want to get a related-one generic value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="relation-name" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of the one-relation to use to relate generic value in value-field to generic value in to-value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="use-cache" type="xs:string" default="false">
+                <xs:annotation>
+                    <xs:documentation>
+                        Specifies whether or not the delegator's cache should be searched before going to the database.
+                        This results in much faster retrieval times, but can return stale data that is not the most current in the database.
+                        Must be "true" or "false", defaults to "false".
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="to-value-field" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a generic value where to put the result.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-find-related" substitutionGroup="EntityFindOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Get-related is just like get-related-one,
+                except that instead of getting a single value back to put in the to-value,
+                it gets a full list back.
+
+                You start with the the value object, specify the name of the relationship.
+                You can specify the name of a map that will restrain the query further,
+                beyond the field mappings and their relationship.
+
+                You can also specify how you want to order it.
+
+                Use-cache true or false, list-name for the output.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a generic value sitting in the context from where you want to get a related generic value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="relation-name" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of the relation to use to relate generic value in value-field to generic value in to-value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="map">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a map that will restrain the query further,
+                        beyond the field mappings and their relationship.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="order-by-list">
+                <xs:annotation>
+                    <xs:documentation>
+                        This will be a list sitting in the context that has string entries in it for each field that you want it to order by/
+                        Each field in the list, or each entry in the list, will just be a string with a field name.
+                        It can be preceded by a plus or a minus to specify an ascending or descending sort for that.
+                        The default is ascending sort, so you just put a minus in front of the field-name if you want it to be descending.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="use-cache" default="false">
+                <xs:annotation>
+                    <xs:documentation>
+                        Specifies whether or not the delegator's cache should be searched before going to the database.
+                        This results in much faster retrieval times, but can return stale data that is not the most current in the database.
+                        Must be "true" or "false", defaults to "false".
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="list" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a list where to put the result in.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="entity-make-value" substitutionGroup="EntityValueOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The make-value tag uses the delegator to construct an entity value.
+                The resulting value will not necessarily exist in the database, but will simply be assembled using the entity-name and fields map.
+                The resulting EntityValue object will be placed in the method environment using the specified value-field.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="entity-name" use="required">
+                <xs:annotation><xs:documentation>The name of the entity to construct an instance of.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="map">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of a map in the method environment that will be used for the entity fields.
+                        If the map is an EntityValue object then this will clone the value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation><xs:documentation>The name of the field where the EntityValue object will be put.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-create" substitutionGroup="EntityValueOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The create-value tag persists the specified EntityValue object by creating a new instance of the entity in the datasource.
+                An error will result if an instance of the entity exists in the datasource with the same primary key.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation><xs:documentation>The name of the field that contains the EntityValue object.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="or-update" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Update value if already exists instead of returning an error, defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-update" substitutionGroup="EntityValueOperations">
+        <xs:annotation><xs:documentation>Updates the specified EntityValue object in the datasource. An error will result if the record is not found in the datasource.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation><xs:documentation>The name of the field that contains the EntityValue object.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-delete" substitutionGroup="EntityValueOperations">
+        <xs:annotation><xs:documentation>Deletes the specified EntityValue object from the datasource. An error will result if the record is not found in the datasource.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation><xs:documentation>The name of the field that contains the EntityValue object.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-delete-related" substitutionGroup="EntityValueOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Given a value-field and a relationship-name, follows the relationship and deletes all related records.
+
+                For a type one relationship it will remove a single record if it exists, and for a type many
+                relationship it will remove all the records that are related to it.
+
+                Instead of using cascading deletes you should have your code delete all related data with foreign keys
+                pointing the the value-field record, and then delete the value-field.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation><xs:documentation>Field that contains an EntityValue object to delete related records from.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="relationship-name" use="required">
+                <xs:annotation><xs:documentation>Name of a relationship to use to delete related records.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-delete-by-condition" substitutionGroup="EntityValueOperations">
+        <xs:annotation><xs:documentation>Deletes entity values that match the conditions.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="condition-expr"/>
+                <xs:element ref="condition-list"/>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="entity-name" use="required">
+                <xs:annotation><xs:documentation>The name of the entity to remove instances of.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-set" substitutionGroup="EntityValueOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Looks for each field (pk, nonpk, or all) in the named map and if it exists there it will copy it into the named value object.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="value-field" use="required">
+                <xs:annotation><xs:documentation>Field that contains an EntityValue object.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="map" default="context">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of a map in the method environment that will be used for the entity fields.
+                        Defaults to the context root, which is where incoming parameters go by default.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="include" default="all">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="pk"/>
+                        <xs:enumeration value="nonpk"/>
+                        <xs:enumeration value="all"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="set-if-empty" default="true" type="boolean">
+                <xs:annotation><xs:documentation>Specifies whether or not to set fields that are null or empty. Defaults to true.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- =================== CONTROL OPERATIONS =================== -->
+    <xs:element name="iterate" substitutionGroup="ControlOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The operations contained by the iterate tag will be executed for each of the entries in the list,
+                and will make the current entry available in the method environment by the entry-name specified.
+                This tag can contain any of the xml-action operations, including the conditional/if operations.
+
+                Any xml-action operation can be nested under the iterate tag.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+            <xs:attribute name="list" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the field that contains the list to iterate over.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="entry" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the field that will contain each entry as we iterate through the list.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="key" type="xs:string">
+                <xs:annotation><xs:documentation>If list points to a Map or List of MapEntry the key will be put where this refers to, the value where the entry attribute refers to.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="check-errors" substitutionGroup="ControlOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The message lists from invoking are not checked until the check-errors tag is used.
+                The named list is checked and if it contains any messages they are put in the servlet
+                request object and the specified error code is returned to the control servlet.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="error-code" default="error">
+                 <xs:annotation><xs:documentation>Defaults to "error".</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="return" substitutionGroup="ControlOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Returns immediately from the xml-action with the given response code string.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="response-code" default="success">
+                <xs:annotation>
+                    <xs:documentation>
+                        The string to return as a response code. Defaults to "success".
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="assert" substitutionGroup="IfOtherOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Each condition under the assert element will be checked and if it fails an error will be added to the given error list.
+                Note that while the definitions for the if-* operations are used, the tags should be empty because of the differing semantics.
+
+                This is mainly used for testing, and for writing xml-actions that are meant to be used as part of a test suite.
+
+                This is mostly useful for testing because the messages are targeted at a programmer, and not really at an end user.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group maxOccurs="unbounded" ref="IfConditions"/>
+            <xs:attribute type="xs:string" name="title">
+                <xs:annotation>
+                    <xs:documentation>
+                        Each assert operation have a title that can be used in the report for the testing.
+                        These can be used in the normal code.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:group name="IfConditions">
+        <xs:choice>
+            <xs:element ref="IfCombineConditions"/>
+            <xs:element ref="IfBasicOperations"/>
+        </xs:choice>
+    </xs:group>
+    <xs:element name="IfCombineConditions" abstract="true"/>
+    <xs:element name="if" substitutionGroup="IfOtherOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The if operation offers a flexible way of specifying combinations of conditions, alternate conditions,
+                and operations to run on true evaluation of the conditions or to run otherwise.
+
+                The other if operations are meant for a specific, simple condition when used outside of the condition sub-element of this operation.
+                The attributes of the other if operations are the same when used inside this operation.
+
+                Note that while the definitions for the if-* operations are used, the tags should be empty because of the differing semantics.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="condition"/>
+                <xs:element ref="then"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="else-if"/>
+                <xs:element minOccurs="0" ref="else"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="while" substitutionGroup="IfOtherOperations">
+        <xs:annotation>
+            <xs:documentation>
+                While loop operation, uses the same condition element as the if operation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="condition"/>
+                <xs:element ref="then"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="then">
+        <xs:annotation>
+            <xs:documentation>
+                Contain operations that will run if the corresponding condition evaluate to true.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="else-if">
+        <xs:annotation>
+            <xs:documentation>
+                The else-if element can be used to specify alternate conditional execution blocks.
+                Each else-if element must contain two sub-elements: condition and then.
+                If the condition of the parent is evaluated to false, each condition of the else-if sub-elements will be evaluated,
+                and the operations under the element corresponding to the first condition that evaluates to true will be run.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="condition"/>
+                <xs:element ref="then"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="else">
+        <xs:annotation>
+            <xs:documentation>
+                The else element can be used to contain operations that will run if the condition evaluates to false,
+                and when under an if element when no else-if sub-conditions evaluate to true.
+                It can contain any xml-actions operation.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="or" substitutionGroup="IfCombineConditions">
+        <xs:annotation>
+            <xs:documentation>
+                To be true just one of the conditions underneath needs to be true.
+                Will return true as soon as a condition is true, not evaluating remaining conditions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group maxOccurs="unbounded" ref="IfConditions"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="xor" substitutionGroup="IfCombineConditions">
+        <xs:annotation>
+            <xs:documentation>
+                To be true only one of the conditions underneath can be true.
+                Will return false as soon as 2 conditions are true, not evaluating remaining conditions.
+                If no conditions evaluate to true will return false.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group maxOccurs="unbounded" ref="IfConditions"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="and" substitutionGroup="IfCombineConditions">
+        <xs:annotation>
+            <xs:documentation>
+                To be true all of the conditions underneath need to be true.
+                Will return false as soon as a condition evaluates to false, not evaluating remaining conditions.
+                If no conditions evaluate to false will return true.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group maxOccurs="unbounded" ref="IfConditions"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="not" substitutionGroup="IfCombineConditions">
+        <xs:annotation>
+            <xs:documentation>
+                Can only have one condition underneath and simply reverse the boolean value of this condition.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:group ref="IfConditions"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="compare" substitutionGroup="IfBasicOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The operations contained by the if-compare tag will only be executed if the comparison returns true.
+                This tag can contain any of the xml-action operations, including the conditional/if operations.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+                <xs:element minOccurs="0" ref="else"/>
+            </xs:sequence>
+            <xs:attribute name="field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the field in the context (environment) that will be compared.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="operator" type="operator" default="equals"/>
+            <xs:attribute name="value" type="xs:string">
+                <xs:annotation><xs:documentation>The value that the field will compared to. Will evaluate to a String but can be converted to other types.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="to-field" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        The name of the context field that the main field will be compared to.
+                        If left empty will default to the field attribute's value.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="format" type="xs:string">
+                <xs:annotation><xs:documentation>Format string based on the type of the object (date, number, etc).</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" default="String" type="object-type"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="expression" substitutionGroup="IfBasicOperations" type="xs:string">
+        <xs:annotation><xs:documentation>
+            A boolean expression should be inline under this element (to avoid problems with character encoding, etc).
+            When not under a condition element any xml-action operation can be nested under this tag, and will only be run if it evaluates to true.
+        </xs:documentation></xs:annotation>
+    </xs:element>
+    <xs:element name="check-id" substitutionGroup="IfOtherOperations">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[The check-id tag checks to see if the ID value in the given field is a valid ID string.
+                Valid IDs can be any sequence of characters or digits but must not containt the following characters:
+                space [ ], doublequote ["], single quote ['], ampersand [&], question mark [?], less-than sign [<], greater-than sign [>].]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the field with the ID value to check.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!-- the "Other" Operations -->
+    <xs:element name="log" substitutionGroup="OtherOperations">
+        <xs:annotation><xs:documentation>Logs a message using Log4J.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="level" use="required">
+                <xs:annotation><xs:documentation>The logging/debug level to use.</xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="verbose"/>
+                        <xs:enumeration value="timing"/>
+                        <xs:enumeration value="info"/>
+                        <xs:enumeration value="important"/>
+                        <xs:enumeration value="warning"/>
+                        <xs:enumeration value="error"/>
+                        <xs:enumeration value="fatal"/>
+                        <xs:enumeration value="always"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="message" type="xs:string">
+                <xs:annotation><xs:documentation>The message to log. Can insert variables using the ${} syntax.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="property-map" substitutionGroup="OtherOperations">
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+            <xs:attribute name="map-name" type="xs:string" use="required"/>
+            <xs:attribute name="global" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="property-to-field" substitutionGroup="OtherOperations">
+        <xs:annotation>
+            <xs:documentation>
+                The property-to-field looks up the given property in the given resource.
+                The String value looked up will be expanded using the current context of the actions.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field" type="xs:string" use="required"/>
+            <xs:attribute name="location" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Location of a properties file.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="property" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The property whose value will be put in the field.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="default-value" type="xs:string">
+                <xs:annotation><xs:documentation>The default value to use if the specified property is empty.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="no-locale" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Get the property without a locale. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

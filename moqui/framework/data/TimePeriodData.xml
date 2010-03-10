@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entity-facade-xml type="seed">
+    <TimePeriodType description="Fiscal Year" timePeriodTypeId="FISCAL_YEAR" periodLength="1" lengthUomId="TF_yr"/>
+    <TimePeriodType description="Fiscal Quarter" timePeriodTypeId="FISCAL_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
+    <TimePeriodType description="Fiscal Month" timePeriodTypeId="FISCAL_MONTH" periodLength="1" lengthUomId="TF_mon"/>
+    <TimePeriodType description="Fiscal Week" timePeriodTypeId="FISCAL_WEEK" periodLength="1" lengthUomId="TF_wk"/>
+    <TimePeriodType description="Fiscal Bi-Week" timePeriodTypeId="FISCAL_BIWEEK" periodLength="2" lengthUomId="TF_wk"/>
+
+    <TimePeriodType description="Sales Quarter" timePeriodTypeId="SALES_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
+    <TimePeriodType description="Sales Month" timePeriodTypeId="SALES_MONTH" periodLength="1" lengthUomId="TF_mon"/>
+</entity-facade-xml>

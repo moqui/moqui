@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Features" default-menu-index="3">
+    <parameter name="exampleId"/>
+
+    <transition name="editExampleFeature"><transition-response url="/ExampleApp/FeatureTabs/EditExampleFeature"/></transition>
+    <transition name="createExampleFeatureAppl">
+        <actions><call-service service-name="createExampleFeatureAppl" auto-in-map="true"/></actions>
+        <transition-response url="EditExampleFeatureAppl"/>
+    </transition>
+    <transition name="updateExampleFeatureAppl">
+        <actions><call-service service-name="updateExampleFeatureAppl" auto-in-map="true"/></actions>
+        <transition-response url="EditExampleFeatureAppl"/>
+    </transition>
+    <transition name="deleteExampleFeatureAppl">
+        <actions><call-service service-name="deleteExampleFeatureAppl" auto-in-map="true"/></actions>
+        <transition-response url="EditExampleFeatureAppl"/>
+    </transition>
+
+    <section>
+        <actions>
+            <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
+                <condition-expr field-name="exampleId" from-field="exampleId"/>
+                <order-by field-name="sequenceNum"/>
+            </entity-find>
+        </actions>
+        <widgets>
+            <form name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" type="list" list="exampleFeatureApplList">
+                <auto-fields-service service-name="updateExampleFeatureAppl"/>
+                <field name="exampleId"><hidden/></field>
+                <field name="exampleFeatureId" title="Feature">
+                    <display-entity entity-name="ExampleFeature" text="${description}"/>
+                    <!-- no need for explicit parameter sub-element because the target screen has it declared as a parameter -->
+                    <link url="editExampleFeature" text="[${exampleFeatureId}]"/>
+                </field>
+                <field name="fromDate"><display/></field>
+                <field name="exampleFeatureApplTypeId" title="Type">
+                    <drop-down allow-empty="false">
+                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
+                            <order-by field-name="description"/>
+                        </entity-options>
+                    </drop-down>
+                </field>
+                <field name="submitButton" title="Update"><submit button-type="button"/></field>
+                <field name="deleteLink">
+                    <!-- no need to specify parameters for this link since the local env names match the parameter
+                    names and will be auto-mapped (exampleId, exampleFeatureId, fromDate) -->
+                    <link url="deleteExampleFeatureAppl" text="Delete"/>
+                </field>
+            </form>
+
+            <form name="AddExampleFeatureAppl" type="single" transition="createExampleFeatureAppl">
+                <auto-fields-service service-name="createExampleFeatureAppl"/>
+                <field name="exampleId"><hidden/></field>
+
+                <field name="exampleFeatureId" title="Feature">
+                    <lookup target-screen="/ExampleApp/LookupExampleFeature"/>
+                </field>
+                <!-- auto-complete: partial text entry searches the full string; this is only an example since
+                usability is low as you can't see the full list, you HAVE to know part of the ID or description in
+                order to see options -->
+                <!-- uncomment to try it out:
+                <field name="exampleFeatureId">
+                    <drop-down auto-complete="true">
+                        <entity-options entity-name="ExampleFeature" text="${exampleFeatureId}: ${description}">
+                            <order-by field-name="exampleFeatureId"/>
+                        </entity-options>
+                    </drop-down>
+                </field>
+                -->
+
+                <field name="exampleFeatureApplTypeId" title="Type">
+                    <drop-down allow-empty="false">
+                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
+                            <order-by field-name="description"/>
+                        </entity-options>
+                    </drop-down>
+                </field>
+                <field name="submitButton" title="Add"><submit button-type="button"/></field>
+            </form>
+        </widgets>
+    </section>
+</screen>

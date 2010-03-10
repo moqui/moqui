@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="common-types-1.0.xsd"/>
+    <xs:include schemaLocation="xml-actions-1.0.xsd"/>
+
+    <xs:element name="AllWidgets" abstract="true"/>
+    <xs:element name="StandaloneFields" abstract="true"/>
+    
+    <!-- ================== form ==================== -->
+    <xs:element name="form" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="row-actions"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-service"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-entity"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
+                <xs:element minOccurs="0" ref="field-layout"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="extends" type="xs:string"/>
+            <xs:attribute name="type">
+                <xs:annotation><xs:documentation>The form type is always required unless you are extending another form.</xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="single">
+                            <xs:annotation><xs:documentation>a single form is a simple single form with values from a single set of values</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="list">
+                            <xs:annotation><xs:documentation>a list form is a list of individual forms in a table (could be called a tabular form), it has a list of sets of values and creates one form for each list element</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="multi">
+                            <xs:annotation><xs:documentation>a multi form is like a list/tabular form, but it creates a single form to submit all list item forms at once; the field names in the resulting form have an appendage attached to make them unique according to the pattern used for the multi-service event handler that will call one service for each list element</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="transition" type="xs:string"/>
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="focus-field-name" type="xs:string"/>
+            <xs:attribute name="list" type="xs:string">
+                <xs:annotation><xs:documentation>for list type and other multiple data/form types this is the name of the list in the context to iterate over</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="list-entry" type="xs:string">
+                <xs:annotation><xs:documentation>if specified each list entry will be put in the context with this name; otherwise the list entry must be a Map and the entries in the Map will be put into the context by name</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="default-map-name" type="xs:string"/>
+            <xs:attribute name="paginate" type="xs:string" default="${paginate}">
+                <xs:annotation><xs:documentation>Indicate if this form should paginate or not. Defaults to true.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="paginate-size" type="xs:integer">
+                <xs:annotation><xs:documentation>The number of items to display per page</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="use-row-submit" default="false" type="boolean"/>
+            <xs:attribute name="skip-start" default="false" type="boolean"/>
+            <xs:attribute name="skip-end" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="row-actions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="auto-fields-service">
+        <xs:complexType>
+            <xs:attribute name="service-name" type="xs:string" use="required"/>
+            <xs:attribute name="map-name" type="xs:string"/>
+            <xs:attribute name="field-type" default="edit">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="edit"/>
+                        <xs:enumeration value="find"/>
+                        <xs:enumeration value="display"/>
+                        <xs:enumeration value="hidden"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="auto-fields-entity">
+        <xs:complexType>
+            <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="map-name" type="xs:string"/>
+            <xs:attribute name="field-type" default="edit">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="edit"/>
+                        <xs:enumeration value="find"/>
+                        <xs:enumeration value="display"/>
+                        <xs:enumeration value="hidden"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="field-layout">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="field-group"/>
+                <xs:element ref="field-align-set"/>
+                <xs:element ref="field-ref"/>
+                <xs:element ref="display-container"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="field-group">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="field-align-set"/>
+                <xs:element ref="field-ref"/>
+                <xs:element ref="display-container"/>
+            </xs:choice>
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="title" type="xs:string"/>
+            <xs:attribute name="collapsible" type="boolean"/>
+            <xs:attribute name="initially-collapsed" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="field-align-set">
+        <xs:annotation><xs:documentation>Fields in this set will be side-by-side for vertical/single forms and up-and-down for horizontal/list forms.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-ref"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="field-ref">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="display-container">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ================== Standalone Fields ==================== -->
+    <xs:element name="link" substitutionGroup="StandaloneFields">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+                <xs:element minOccurs="0" ref="image"/>
+            </xs:sequence>
+
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="link-type" default="auto">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="auto"><xs:annotation><xs:documentation>If selected the hidden-form type will be used if the url-mode is transition and the transition has an event, otherwise the anchor type will be used.</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="anchor"/>
+                        <xs:enumeration value="hidden-form"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="url" type="xs:string" use="required"/>
+            <xs:attribute name="url-type" default="transition" type="url-type"/>
+            <xs:attribute name="text" type="xs:string"/>
+            <xs:attribute name="target-window" type="xs:string"/>
+            <xs:attribute name="confirmation-message" type="xs:string"><xs:annotation><xs:documentation>If there is a message here it will show in a confirmation box when the link is clicked on.</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="image" substitutionGroup="StandaloneFields">
+        <xs:complexType mixed="true">
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="url" type="xs:string"/>
+            <xs:attribute name="url-type" default="content" type="url-type"/>
+            <xs:attribute name="width" type="xs:string"/>
+            <xs:attribute name="height" type="xs:string"/>
+            <xs:attribute name="alt" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="label" substitutionGroup="StandaloneFields">
+        <xs:complexType mixed="true">
+            <xs:attribute name="text" type="xs:string"/>
+            <xs:attribute name="id" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="parameter">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="from-field" type="xs:string"/>
+            <xs:attribute name="value" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+  <!-- ================== Input Fields ==================== -->
+    <xs:element name="SubFields" abstract="true"/>
+    <xs:element name="field">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element minOccurs="0" ref="SubFields"/>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="conditional"/>
+                </xs:choice>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>A unique name for this field. Used for the parameter name, referencing the field in other places, etc.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="map-name" type="xs:string">
+                <xs:annotation><xs:documentation>The name (or location) of the map that contains the data for this field in the form context.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="entry-name" type="xs:string">
+                <xs:annotation><xs:documentation>The name of the entry in the map that contains the value to use for this field. Defaults to the value of the name attribute.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="title" type="xs:string">
+                <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="tooltip" type="xs:string">
+                <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="red-when" default="by-name">
+                <xs:annotation><xs:documentation>The widget/interaction part will be red if the date value is before-now (for thruDate), after-now (for fromDate), or by-name (if the field's name or entry-name or fromDate or thruDate the corresponding action will be done); only applicable when the field is a timestamp.</xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="never"/>
+                        <xs:enumeration value="before-now"/>
+                        <xs:enumeration value="after-now"/>
+                        <xs:enumeration value="by-name"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="encode-output" default="true" type="boolean">
+                <xs:annotation><xs:documentation>
+                    This is for textual output only. If true data shown in fields will be encoded so that it does not interfere with markup of the target output.
+                    For example, if output is HTML then data presented will be HTML encoded so that all HTML-specific characters are escaped.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="sort-by-field" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="conditional">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="condition"/>
+                <xs:element ref="SubFields"/>
+            </xs:sequence>
+            <xs:attribute name="title" type="xs:string">
+                <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="tooltip" type="xs:string">
+                <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+  <!-- ================== Field Sub-Elements ==================== -->
+    <xs:element name="check" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="entity-options"/>
+                <xs:element ref="list-options"/>
+                <xs:element ref="option"/>
+            </xs:choice>
+            <xs:attribute name="all-checked" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="date-find" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="type" default="timestamp">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="timestamp"/>
+                        <xs:enumeration value="date"/>
+                        <xs:enumeration value="time"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="default-option-from" default="equals">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="equals"/>
+                        <xs:enumeration value="same-day"/>
+                        <xs:enumeration value="greater-day-start"/>
+                        <xs:enumeration value="greater"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-option-thru" default="lessThan">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="less"/>
+                        <xs:enumeration value="up-to-day-start"/>
+                        <xs:enumeration value="up-to-day-end"/>
+                        <xs:enumeration value="empty"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="date-time" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="type" default="timestamp">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="timestamp"/>
+                        <xs:enumeration value="date"/>
+                        <xs:enumeration value="time"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="input-method" default="popup">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="popup"/>
+                        <xs:enumeration value="time-dropdown"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="clock" default="24">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="12"/>
+                        <xs:enumeration value="24"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="display" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="also-hidden" default="true" type="boolean">
+                <xs:annotation><xs:documentation>If set to true, a hidden form field is also rendered, with the name of the field and its value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="text" type="xs:string">
+                <xs:annotation><xs:documentation>Specifies the string to display, can use the ${} syntax to insert context values; if empty the value of the field will be printed for a default.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" default="text">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="text"/>
+                        <xs:enumeration value="currency"/>
+                        <xs:enumeration value="date">
+                            <xs:annotation><xs:documentation>Display only the date part of a timestamp field</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="date-time">
+                            <xs:annotation><xs:documentation>Display only the date and hours:minutes part of a timestamp field</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="currency-uom" type="xs:string">
+                <xs:annotation><xs:documentation>Specifies the currencyUomId used to format context value, should generally use the ${} syntax to retrieve value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="display-entity" substitutionGroup="SubFields">
+        <xs:annotation><xs:documentation>This is just like display but looks up a description using the Entity Engine; note that if also-hidden is true then it uses the key as the value, not the shown description.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="key-field-name" type="xs:string"/>
+            <xs:attribute name="text" type="xs:string" default="${description}"/>
+            <xs:attribute name="use-cache" default="true" type="boolean"/>
+            <xs:attribute name="also-hidden" default="true" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="drop-down" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="entity-options"/>
+                    <xs:element ref="list-options"/>
+                    <xs:element ref="option"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="allow-empty" default="false" type="boolean"/>
+            <xs:attribute name="allow-multiple" default="false" type="boolean"/>
+            <xs:attribute name="auto-complete" default="false" type="boolean"/>
+            <xs:attribute name="current" default="first-in-list">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="first-in-list"/>
+                        <xs:enumeration value="selected"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="no-current-selected-key">
+                <xs:annotation><xs:documentation>The key to mark as selected when there is no current entry value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute type="xs:integer" name="size" default="1"/>
+            <xs:attribute type="xs:string" name="current-description"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="file" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="hidden" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="value" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="ignored" substitutionGroup="SubFields">
+        <xs:complexType/>
+    </xs:element>
+    <xs:element name="lookup" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="target-screen" type="xs:string" use="required"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="description-field-name" type="xs:string"/>
+            <xs:attribute name="disabled" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="password" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="radio" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="entity-options"/>
+                <xs:element ref="list-options"/>
+                <xs:element ref="option"/>
+            </xs:choice>
+            <xs:attribute name="no-current-selected-key" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="range-find" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="default-option-from" default="greaterThanEqualTo">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="equals"/>
+                        <xs:enumeration value="greater"/>
+                        <xs:enumeration value="greater-equals"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-option-thru" default="lessThanEqualTo">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="less"/>
+                        <xs:enumeration value="less-equals"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="reset" substitutionGroup="SubFields">
+        <xs:complexType/>
+    </xs:element>
+    <xs:element name="submit" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="image"/>
+            </xs:sequence>
+            <xs:attribute name="button-type" default="button">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="button"/>
+                        <xs:enumeration value="text-link"/>
+                        <xs:enumeration value="image"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="confirmation-message" type="xs:string">
+                <xs:annotation><xs:documentation>Message here will be displayed in a popup box before the submit is processed.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="text" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="disabled" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="textarea" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="cols" type="xs:positiveInteger" default="60"/>
+            <xs:attribute name="rows" type="xs:positiveInteger" default="3"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="read-only" default="false" type="boolean"/>
+            <xs:attribute name="visual-html-editor" default="false" type="boolean">
+                <xs:annotation><xs:documentation>This will enable the visual html editor on this text area.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="text-find" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="ignore-case" default="true" type="boolean"/>
+            <xs:attribute name="default-option">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="equals"/>
+                        <xs:enumeration value="not-equals"/>
+                        <xs:enumeration value="like"/>
+                        <xs:enumeration value="contains"/>
+                        <xs:enumeration value="empty"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="hide-options" default="false">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                        <xs:enumeration value="ignore-case"/>
+                        <xs:enumeration value="options"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ================== Field Sub-Sub-Elements ==================== -->
+    <xs:element name="auto-complete">
+        <xs:complexType>
+            <xs:attribute name="auto-select" default="false" type="boolean"/>
+            <xs:attribute name="frequency" type="xs:double" default="0.4"/>
+            <xs:attribute name="min-chars" type="xs:positiveInteger" default="1"/>
+            <xs:attribute name="choices" type="xs:positiveInteger" default="10"/>
+            <xs:attribute name="partial-search" default="true" type="boolean"/>
+            <xs:attribute name="partial-chars" type="xs:positiveInteger" default="1"/>
+            <xs:attribute name="ignore-case" default="true" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-options">
+        <xs:annotation>
+            <xs:documentation>entity-options will look up options for the field in the given entity</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="condition-expr"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="condition-list"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="order-by"/>
+            </xs:sequence>
+            <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="key-field" type="xs:string">
+                <xs:annotation><xs:documentation>The name of the field in the looked up entity that will be used for the key value; if empty defaults to the name of the field this is in.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="text" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert variables.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="cache" default="true" type="boolean"/>
+            <xs:attribute name="filter-by-date" default="by-name">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                        <xs:enumeration value="by-name"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="list-options">
+        <xs:annotation>
+            <xs:documentation>Create options based on data in a list, usually a List of Maps.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="list" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the list to iterate through to get values.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="entry" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>
+                        If specified each list entry will be placed in the local context, otherwise each list entry 
+                        must be a Map that will be expanded into the local context.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="key-field" type="xs:string" use="required">
+                <xs:annotation>
+                    <xs:documentation>
+                        The value of the key-field will be the value passed to the server; this should be the full
+                        name of the location of the key value in the context, given the entry name or expanded
+                        list-entry Map as the options you would most likely use.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="text" type="xs:string">
+                <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert variables.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="option">
+        <xs:complexType>
+            <xs:attribute name="key" type="xs:string" use="required"/>
+            <xs:attribute name="text" type="xs:string">
+                <xs:annotation><xs:documentation>What the user will see in the widget; defaults to the value of the key attribute.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

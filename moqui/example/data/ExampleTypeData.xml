@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entity-facade-xml type="seed">
+    <ExampleType exampleTypeId="REAL_WORLD" description="Real World"/>
+    <ExampleType exampleTypeId="MADE_UP" description="Made Up"/>
+    <ExampleType exampleTypeId="CONTRIVED" description="Contrived" parentTypeId="MADE_UP"/>
+    <ExampleType exampleTypeId="INSPIRED" description="Inspired" parentTypeId="MADE_UP"/>
+
+    <ExampleFeatureApplType exampleFeatureApplTypeId="REQUIRED" description="Required"/>
+    <ExampleFeatureApplType exampleFeatureApplTypeId="DESIRED" description="Desired"/>
+    <ExampleFeatureApplType exampleFeatureApplTypeId="NOT_ALLOWED" description="Not Allowed"/>
+
+    <StatusType description="Example" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="In Design" sequenceNum="1" statusCode="IN_DESIGN" statusId="EXST_IN_DESIGN" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="Defined" sequenceNum="2" statusCode="DEFINED" statusId="EXST_DEFINED" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="Approved" sequenceNum="3" statusCode="APPROVED" statusId="EXST_APPROVED" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="Implemented" sequenceNum="4" statusCode="IMPLEMENTED" statusId="EXST_IMPLEMENTED" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="Tested" sequenceNum="5" statusCode="TESTED" statusId="EXST_TESTED" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="Complete" sequenceNum="6" statusCode="COMPLETE" statusId="EXST_COMPLETE" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusItem description="Cancelled" sequenceNum="99" statusCode="CANCELLED" statusId="EXST_CANCELLED" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusValidChange statusId="EXST_IN_DESIGN" statusIdTo="EXST_DEFINED" transitionName="Definition Complete"/>
+    <StatusValidChange statusId="EXST_DEFINED" statusIdTo="EXST_APPROVED" transitionName="Approve"/>
+    <StatusValidChange statusId="EXST_APPROVED" statusIdTo="EXST_IMPLEMENTED" transitionName="Implementation Complete"/>
+    <StatusValidChange statusId="EXST_IMPLEMENTED" statusIdTo="EXST_TESTED" transitionName="Testing Complete"/>
+    <StatusValidChange statusId="EXST_TESTED" statusIdTo="EXST_COMPLETE" transitionName="Example Completed"/>
+    <StatusValidChange statusId="EXST_IN_DESIGN" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <StatusValidChange statusId="EXST_DEFINED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <StatusValidChange statusId="EXST_APPROVED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <StatusValidChange statusId="EXST_IMPLEMENTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <StatusValidChange statusId="EXST_TESTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
+
+    <EnumerationType description="Example Feature Source" enumTypeId="EXMPL_FEAT_SOURCE"/>
+    <Enumeration description="Customer" enumId="EXFTSRC_CUSTOMER" sequenceNum="1" enumTypeId="EXMPL_FEAT_SOURCE"/>
+    <Enumeration description="Partner" enumId="EXFTSRC_PARTNER" sequenceNum="2" enumTypeId="EXMPL_FEAT_SOURCE"/>
+    <Enumeration description="Employee" enumId="EXFTSRC_EMPLOYEE" sequenceNum="3" enumTypeId="EXMPL_FEAT_SOURCE"/>
+</entity-facade-xml>

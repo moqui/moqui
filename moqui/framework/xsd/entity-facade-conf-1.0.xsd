@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="common-types-1.0.xsd"/>
+    
+    <!-- Root Element -->
+    <xs:element name="entity-facade-conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="general-settings"/>
+                <xs:element minOccurs="0" ref="app-server-jndi"/>
+                <xs:element ref="transaction-factory"/>
+                <xs:element maxOccurs="unbounded" ref="datasource"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="general-settings">
+        <xs:complexType>
+            <xs:attribute name="entity-eca-enabled" default="true" type="boolean"/>
+            <xs:attribute name="distributed-cache-clear-enabled" default="false" type="boolean"/>
+            <xs:attribute name="sequenced-id-prefix" type="xs:string"/>
+            <xs:attribute name="default-group-name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="app-server-jndi">
+        <xs:complexType>
+            <xs:attribute name="context-provider-url" type="xs:string"/>
+            <xs:attribute name="initial-context-factory" type="xs:string"/>
+            <xs:attribute name="url-pkg-prefixes" type="xs:string"/>
+            <xs:attribute name="security-principal" type="xs:string"><xs:annotation><xs:documentation>The username</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="security-credentials" type="xs:string"><xs:annotation><xs:documentation>The password</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="transaction-factory">
+        <xs:complexType>
+            <xs:attribute name="factory-type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="internal"/>
+                        <xs:enumeration value="jndi"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="user-transaction-jndi-name" type="xs:string"/>
+            <xs:attribute name="transaction-manager-jndi-name" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="datasource">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="1" maxOccurs="1">
+                    <xs:element minOccurs="0" maxOccurs="1" ref="jndi-jdbc"/>
+                    <xs:element minOccurs="0" maxOccurs="1" ref="inline-jdbc"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="group-name" type="xs:string" use="required"/>
+            <xs:attribute name="database-config-name" type="xs:string" use="required"/>
+            <xs:attribute name="schema-name" type="xs:string"/>
+            <xs:attribute name="check-on-start" default="true" type="boolean"/>
+            <xs:attribute name="add-missing-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-pks-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-fks-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-fk-indices-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-indices-on-start" default="true" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="inline-jdbc">
+        <xs:complexType>
+            <xs:attribute name="jdbc-driver" type="xs:string" use="optional"/>
+            <xs:attribute name="jdbc-uri" type="xs:string" use="required"/>
+            <xs:attribute name="jdbc-username" type="xs:string" use="required"/>
+            <xs:attribute name="jdbc-password" type="xs:string" use="required"/>
+            <xs:attribute name="isolation-level" type="isolation-level"/>
+            <xs:attribute name="pool-maxsize" type="xs:nonNegativeInteger" default="50"/>
+            <xs:attribute name="pool-minsize" type="xs:nonNegativeInteger" default="2"/>
+            <xs:attribute name="time-between-eviction-runs-millis" type="xs:nonNegativeInteger" default="600000"/>
+            <xs:attribute name="pool-sleeptime" type="xs:nonNegativeInteger" default="300000"/>
+            <xs:attribute name="pool-lifetime" type="xs:nonNegativeInteger" default="600000"/>
+            <xs:attribute name="pool-deadlock-maxwait" type="xs:nonNegativeInteger" default="300000"/>
+            <xs:attribute name="pool-deadlock-retrywait" type="xs:nonNegativeInteger" default="10000"/>
+            <xs:attribute name="pool-jdbc-test-stmt" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="jndi-jdbc">
+        <xs:complexType>
+            <xs:attribute name="jndi-name" type="xs:string" use="required"/>
+            <xs:attribute name="isolation-level" type="isolation-level"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/service-definition-1.0.xsd">
+
+    <service verb="purge" noun="ServiceSchedule" type="script" use-transaction="false" semaphore="wait">
+        <description>Cleans out old schedules which have been around longer then what is defined in ServiceProxyConfig.xml</description>
+    </service>
+    <service verb="cancel" noun="ServiceSchedule" type="script">
+        <description>Cancels a schedule job</description>
+        <in-parameters><auto-parameters include="pk" required="true"/></in-parameters>
+        <out-parameters><parameter name="cancelDateTime" type="Timestamp" required="true"/></out-parameters>
+    </service>
+    <service verb="reset" noun="ServiceSchedule" type="script">
+        <description>Resets a stale job so it can be re-run</description>
+        <in-parameters><auto-parameters include="pk" required="true"/></in-parameters>
+    </service>
+
+    <!-- ServiceFacade Engine Interfaces -->
+    <service verb="authenticate" noun="User" type="interface">
+        <in-parameters>
+            <parameter name="userId" type="String" required="true"/>
+            <parameter name="password" type="String" required="true"/>
+            <parameter name="visitId" type="String"/>
+            <parameter name="isServiceAuth" type="Boolean"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="userAccount" type="EntityValue"/>
+        </out-parameters>
+    </service>
+
+    <service verb="check" noun="ServiceEcaCondition" type="interface">
+        <description>Interface to describe services which are used as SECA conditions</description>
+        <in-parameters>
+            <parameter name="context" type="Map" required="true"/>
+            <parameter name="serviceName" type="String" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="conditionReply" type="Boolean" required="true"/>
+        </out-parameters>
+    </service>
+    <service verb="check" noun="EffectiveDateEcaCondition" type="script">
+        <implements service="checkServiceEcaCondition"/>
+        <in-parameters>
+            <parameter name="fromDate" type="Timestamp"/>
+            <parameter name="thruDate" type="Timestamp"/>
+        </in-parameters>
+    </service>
+
+    <service verb="check" noun="ServiceMcaCondition" type="interface">
+        <description>Interface to describe services which are used as SMCA conditions</description>
+        <in-parameters><parameter name="messageWrapper" type="TODO.MimeMessageWrapper" required="true"/></in-parameters>
+        <out-parameters><parameter name="conditionReply" type="Boolean" required="true"/></out-parameters>
+    </service>
+    <service verb="process" noun="EmailMessage" type="interface">
+        <description>Interface to describe services used to process incoming email</description>
+        <in-parameters><parameter name="messageWrapper" type="TODO.MimeMessageWrapper" required="true"/></in-parameters>
+    </service>
+</services>

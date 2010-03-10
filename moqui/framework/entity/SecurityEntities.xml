@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.security.artifact -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="ArtifactGroup" package-name="org.moqui.security.artifact">
+        <field name="artifactGroupId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
+    </entity>
+    <entity entity-name="ArtifactGroupMember" package-name="org.moqui.security.artifact">
+        <field name="artifactGroupId" type="id" is-pk="true"/>
+        <field name="artifactName" type="text-long" is-pk="true">
+            <description>can be securityArtifactGroupId; includes location#name when applicable</description>
+        </field>
+        <field name="artifactTypeId" type="id" is-pk="true"/>
+        <field name="inheritAuthz" type="text-indicator">
+            <description>If Y then the user will have authorization for anything called by the artifact.
+                If N user will need to have authorization for anything else called by the artifact.
+
+                Note that in some cases (like in screen-sets) inheritance in the other direction is on by default, or
+                in other words permission to access an artifact implies permission to access everything needed to get
+                to that artifact.
+
+                Defaults to Y. 
+            </description>
+        </field>
+        <relationship type="one" rel-entity-name="ArtifactGroup"/>
+        <relationship type="one" rel-entity-name="ArtifactType"/>
+    </entity>
+    <entity entity-name="ArtifactType" package-name="org.moqui.security.artifact">
+        <field name="artifactTypeId" type="id" is-pk="true"/>
+        <field name="description" type="text-medium"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.security.authz -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="ArtifactAuthz" package-name="org.moqui.security.authz">
+        <description>If an artifact in the group specified is accessed by any user in the AuthzGroup maxHitsCount
+            times in maxHitsDuration seconds then the user/artifact will be blocked fir tarputDuration seconds.
+        </description>
+        <field name="artifactAuthzId" type="id" is-pk="true"/>
+        <field name="userGroupId" type="id"/>
+        <field name="artifactGroupId" type="id"/>
+        <field name="authzTypeEnumId" type="id"/>
+        <field name="authzActionEnumId" type="id"/>
+        <relationship type="one" rel-entity-name="UserGroup"/>
+        <relationship type="one" rel-entity-name="ArtifactGroup"/>
+        <relationship type="one" title="AuthzType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = AUTHZ_TYPE)</description>
+            <key-map field-name="authzTypeEnumId"/>
+        </relationship>
+        <relationship type="one" title="AuthzAction" rel-entity-name="Enumeration">
+            <description>(enumTypeId = AUTHZ_ACTION)</description>
+            <key-map field-name="authzActionEnumId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="ArtifactAuthzRecord" package-name="org.moqui.security.authz">
+        <field name="artifactAuthzId" type="id" is-pk="true"/>
+        <field name="viewEntityName" type="text-medium"/>
+        <field name="filterByDate" type="text-indicator"/>
+        <field name="filterByDateFromField" type="text-medium"/>
+        <field name="filterByDateThruField" type="text-medium"/>
+        <field name="userIdField" type="text-medium">
+            <description>Will lookup in recordViewEntityName view-entity for the currently logged in userId, and
+                if this field is set it will use this field name to match against, otherwise it will automatically
+                use the userId field in the view-entity.
+            </description>
+        </field>
+    </entity>
+    <entity entity-name="ArtifactAuthzRecordCond" package-name="org.moqui.security.authz">
+        <field name="artifactAuthzId" type="id" is-pk="true"/>
+        <field name="artifactAuthzCondSeqId" type="id" is-pk="true"/>
+        <field name="fieldName" type="text-medium"/>
+        <field name="operatorEnumId" type="id"/>
+        <field name="condValue" type="text-long">
+            <description>Use ${} syntax to expand from variable in artifact's context.</description>
+        </field>
+        <relationship type="one" title="Operator" rel-entity-name="Enumeration">
+            <description>(enumTypeId = ENTITY_COND_OP)</description>
+            <key-map field-name="operatorEnumId" rel-field-name="enumId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="ArtifactAuthzService" package-name="org.moqui.security.authz">
+        <field name="artifactAuthzId" type="id" is-pk="true"/>
+        <field name="authServiceName" type="text-medium">
+            <description>This service will be called according to the pattern of current auth services and must return
+                true/approved in addition to anything else passing that is associated with this ArtifactAuthz record.
+            </description>
+        </field>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.security.tarpit -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="ArtifactTarpit" package-name="org.moqui.security.tarpit">
+        <description>If an artifact in the group specified is accessed by any user in the UserGroup maxHitsCount
+            times in maxHitsDuration seconds then the user/artifact will be blocked fir tarpitDuration seconds.
+        </description>
+        <field name="userGroupId" type="id" is-pk="true"/>
+        <field name="artifactGroupId" type="id" is-pk="true"/>
+        <field name="maxHitsCount" type="number-integer"/>
+        <field name="maxHitsDuration" type="number-integer"/>
+        <field name="tarpitDuration" type="number-integer"/>
+        <relationship type="one" rel-entity-name="UserGroup"/>
+        <relationship type="one" rel-entity-name="ArtifactGroup"/>
+    </entity>
+    <entity entity-name="ArtifactTarpitted" package-name="org.moqui.security.tarpit">
+        <description>Deny access to the artifact for the user until releaseDateTime is reached.</description>
+        <field name="userId" type="id" is-pk="true"/>
+        <field name="artifactName" type="text-long" is-pk="true"/>
+        <field name="artifactTypeId" type="id" is-pk="true"/>
+        <field name="releaseDateTime" type="date-time"/>
+        <relationship type="one-nofk" rel-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+        <relationship type="one" rel-entity-name="ArtifactType"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.security.user -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="UserAccount" package-name="org.moqui.security.user">
+        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
+        <field name="currentPassword" type="text-medium">
+            <description>This is not two-way encrypted by the Entity Proxy, and should one one-way encrypted with the
+                algorithm type before the value in curly braces.</description>
+        </field>
+        <field name="passwordHint" type="text-long"/>
+        <field name="hasLoggedOut" type="text-indicator"/>
+        <field name="disabled" type="text-indicator"/>
+        <field name="disabledDateTime" type="date-time"/>
+        <field name="successiveFailedLogins" type="number-integer"/>
+        <field name="requirePasswordChange" type="text-indicator"/>
+        <field name="currencyUomId" type="id"/>
+        <field name="locale" type="text-short"/>
+        <field name="timeZone" type="id-long"/>
+        <field name="externalUserId" type="id-vlong"/>
+        <relationship type="one" title="Currency" rel-entity-name="Uom">
+            <key-map field-name="currencyUomId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="UserGroup" package-name="org.moqui.security.user">
+        <field name="userGroupId" type="id" is-pk="true"/>
+        <field name="description" type="text-long"/>
+    </entity>
+    <entity entity-name="UserGroupMember" package-name="org.moqui.security.user">
+        <field name="userGroupId" type="id" is-pk="true"/>
+        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="fromDate" type="date-time" is-pk="true"/>
+        <field name="thruDate" type="date-time"/>
+        <relationship type="one" rel-entity-name="UserGroup"/>
+        <relationship type="one-nofk" rel-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+    </entity>
+    <entity entity-name="UserLoginHistory" package-name="org.moqui.security.user" never-cache="true">
+        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="fromDate" type="date-time" is-pk="true"/>
+        <field name="thruDate" type="date-time"/>
+        <field name="visitId" type="id"/>
+        <field name="passwordUsed" type="text-medium" encrypt="true"/>
+        <field name="successfulLogin" type="text-indicator"/>
+        <relationship type="one-nofk" rel-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+    </entity>
+    <entity entity-name="UserPreference" package-name="org.moqui.security.user">
+        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userPreferenceTypeId" type="id" is-pk="true"/>
+        <field name="userPrefValue" type="text-long"/>
+    </entity>
+    <entity entity-name="UserPreferenceType" package-name="org.moqui.security.user">
+        <field name="userPreferenceTypeId" type="id" is-pk="true"/>
+        <field name="parentTypeId" type="id" is-pk="true"/>
+        <field name="description" type="text-long"/>
+        <relationship type="one" title="Parent" rel-entity-name="UserPreferenceType">
+            <key-map field-name="parentTypeId"/>
+        </relationship>
+    </entity>
+</entities>

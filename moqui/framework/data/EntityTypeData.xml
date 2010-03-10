@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entity-facade-xml type="seed">
+    <EnumerationType description="Entity Group Entry Application Type" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <Enumeration description="Include" enumCode="INCLUDE" enumId="ESIA_INCLUDE" sequenceNum="1" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <Enumeration description="Exclude" enumCode="EXCLUDE" enumId="ESIA_EXCLUDE" sequenceNum="2" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <Enumeration description="Always Include" enumCode="ALWAYS" enumId="ESIA_ALWAYS" sequenceNum="3" enumTypeId="ENTGRP_ENTRY_APPL"/>
+
+    <StatusType description="Entity Sync Run Status" hasTable="N" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Not Started" sequenceId="01" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Running" sequenceId="02" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Offline Pending" sequenceId="03" statusCode="PENDING" statusId="ESR_PENDING" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Complete" sequenceId="04" statusCode="COMPLETE" statusId="ESR_COMPLETE" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Other Error" sequenceId="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Service Call Error" sequenceId="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Data Error" sequenceId="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
+
+    <EnumerationType description="Entity Condition Operator" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="less" enumCode="LESS" enumId="ENTCO_LESS" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="greater" enumCode="GREATER" enumId="ENTCO_GREATER" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="less-equals" enumCode="LESS_EQ" enumId="ENTCO_LESS_EQ" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="greater-equals" enumCode="GREATER_EQ" enumId="ENTCO_GREATER_EQ" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="equals" enumCode="EQUALS" enumId="ENTCO_EQUALS" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="not-equals" enumCode="NOT_EQUALS" enumId="ENTCO_NOT_EQUALS" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="in" enumCode="IN" enumId="ENTCO_IN" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="not-in" enumCode="NOT_IN" enumId="ENTCO_NOT_IN" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="between" enumCode="BETWEEN" enumId="ENTCO_BETWEEN" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="like" enumCode="LIKE" enumId="ENTCO_LIKE" enumTypeId="ENTITY_COND_OP"/>
+    <Enumeration description="not-like" enumCode="NOT_LIKE" enumId="ENTCO_NOT_LIKE" enumTypeId="ENTITY_COND_OP"/>
+</entity-facade-xml>

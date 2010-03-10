@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.service.schedule -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="ScheduledService" package-name="org.moqui.service.schedule" sequence-bank-size="100">
+        <field name="scheduledServiceId" type="id" is-pk="true"/>
+        <field name="parentScheduleId" type="id"/>
+        <field name="previousScheduleId" type="id"/>
+        <field name="serviceName" type="text-medium"/>
+        <field name="scheduledServiceDataId" type="id"/>
+        <field name="tempExprId" type="id"/>
+        <field name="description" type="text-medium"/>
+        <field name="runTime" type="date-time"/>
+        <field name="poolId" type="text-medium"/>
+        <!-- we shouldn't need a tenantId, will be different table in different db for each tenant <field name="tenantId" type="id"/> -->
+        <field name="statusId" type="id"/>
+        <field name="authUserId" type="id-vlong"/>
+        <field name="runAsUserId" type="id-vlong"/>
+        <field name="currentRecurrenceCount" type="number-integer"/>
+        <field name="maxRecurrenceCount" type="number-integer"/>
+        <field name="maxRetry" type="number-integer"/>
+        <field name="runByInstanceId" type="id"/>
+        <field name="startDateTime" type="date-time"/>
+        <field name="finishDateTime" type="date-time"/>
+        <field name="cancelDateTime" type="date-time"/>
+        <relationship type="one" rel-entity-name="TemporalExpression"/>
+        <relationship type="one" rel-entity-name="ScheduledServiceData"/>
+        <relationship type="one" title="Auth" rel-entity-name="UserAccount">
+            <key-map field-name="authUserId" rel-field-name="userId"/>
+        </relationship>
+        <relationship type="one" title="RunAs" rel-entity-name="UserAccount">
+            <key-map field-name="runAsUserId" rel-field-name="userId"/>
+        </relationship>
+        <relationship type="one" rel-entity-name="StatusItem"/>
+    </entity>
+    <entity entity-name="ScheduledServiceData" package-name="org.moqui.service.schedule" sequence-bank-size="100">
+        <field name="scheduledServiceDataId" type="id" is-pk="true"/>
+        <field name="serviceContext" type="text-very-long"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.service.semaphore -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="ServiceSemaphore" package-name="org.moqui.service.semaphore" sequence-bank-size="100">
+        <field name="serviceName" type="text-medium" is-pk="true"/>
+        <field name="lockThread" type="text-medium"/>
+        <field name="lockTime" type="date-time"/>
+    </entity>
+</entities>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Example" default-menu-index="1">
+
+    <transition name="newExample"><transition-response url="ExampleTabs/EditExample"/></transition>
+    <transition name="findExample"><transition-response url="FindExample"/></transition> 
+    <transition name="editExample"><transition-response url="ExampleTabs/EditExample"/></transition>
+
+    <section>
+        <actions>
+            <entity-find entity-name="Example" list="exampleList">
+                <search-form-inputs/>
+                <order-by field-name="${sortByField}"/>
+            </entity-find>
+        </actions>
+        <widgets>
+            <container id="button-bar"><link url="newExample" text="New Example"/></container>
+            <form name="FindExamples" type="single" transition="findExample">
+                <field name="exampleId" title="Example ID"><text-find/></field>
+                <field name="exampleName" title="Name"><text-find/></field>
+                <field name="exampleTypeId" title="Type">
+                    <drop-down allow-empty="true">
+                        <entity-options text="${description}" entity-name="ExampleType">
+                            <order-by field-name="description"/>
+                        </entity-options>
+                    </drop-down>
+                </field>
+                <field name="statusId" title="Status">
+                    <drop-down allow-empty="true">
+                        <entity-options text="${description}" entity-name="ExampleStatusItem"/>
+                    </drop-down>
+                </field>
+                <field name="searchButton" title="Find"><submit button-type="button"/></field>
+            </form>
+            <form name="ListExamples" type="list" list="exampleList">
+                <field name="exampleId" title="Example ID">
+                    <!-- this list will pass an exampleId param, as defined on the EditExample screen as an incoming parameter -->
+                    <link url="editExample" text="${exampleId}"/>
+                </field>
+                <field name="exampleName" title="Name" sort-by-field="true"><display/></field>
+                <field name="exampleTypeId" title="Type"><display-entity entity-name="ExampleType"/></field>
+                <field name="statusId" title="Status"><display-entity entity-name="StatusItem"/></field>
+                <field name="description" title="Description" sort-by-field="true"><display/></field>
+            </form>
+        </widgets>
+    </section>
+</screen>

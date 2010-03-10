@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.entity.tenant -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="DateDayDimension" package-name="org.moqui.olap.dimension">
+        <description>Date Day Dimension. The natural key is [dateValue]</description>
+        <field name="dimensionId" type="id" is-pk="true"/>
+        <field name="dateValue" type="date"/>
+        <field name="description" type="text-long"/>
+        <field name="dayName" type="text-medium"/>
+        <field name="dayOfMonth" type="number-integer"/>
+        <field name="dayOfYear" type="number-integer"/>
+        <field name="monthName" type="text-medium"/>
+        <field name="monthOfYear" type="number-integer"/>
+        <field name="yearName" type="number-integer"/>
+        <field name="weekOfMonth" type="number-integer"/>
+        <field name="weekOfYear" type="number-integer"/>
+        <field name="yearMonthDay" type="text-medium"><description>Format: YYYY-MM-DD</description></field>
+        <field name="yearAndMonth" type="text-medium"><description>Format: YYYY-MM</description></field>
+        <field name="isWeekEnd" type="text-indicator"/>
+    </entity>
+    <entity entity-name="CurrencyDimension" package-name="org.moqui.olap.dimension">
+        <description>Currency Dimension. The natural key is [currencyId]</description>
+        <field name="dimensionId" type="id" is-pk="true"/>
+        <field name="currencyId" type="id"/>
+        <field name="description" type="text-long"/>
+    </entity>
+</entities>
