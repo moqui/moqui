@@ -159,12 +159,20 @@ many other facades, and for more info see the API Structure section below.
 
 Entity definitions are more streamlined and don't have the less useful
 attributes and elements. Primary key fields are designated with an attribute
-on the field element instead of using a separate element.
+on the field element instead of using a separate element. The data type
+dictionary in Moqui is more simple and better organized than in OFBiz and
+the data types available are declared in the XSD for auto-completion help.
 
 The API for dealing with entity values and for queries and such is much more
 simple, streamlined, and in a few small cases has additional functionality.
 The methods have far more consistent names than in OFBiz, using
 create/update/delete everywhere instead of things like store or remove.
+
+Moqui does not have a concept of multiple delegators so the Entity Proxy 
+configuration file is much more simple. The datasource elements are also far
+more simple because all of the database-specific settings are now in the
+database configuration file along with the data type dictionary (combined in
+one file instead of a separate file for each database).
 
 -- API structure
 
