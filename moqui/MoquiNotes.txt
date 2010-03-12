@@ -9,6 +9,8 @@ TODO:
 
 - research usage ideas for JCR
 
+- example HTML files integrated with screens (implicit includes, etc)
+
 ================================================================
 General Design Notes
 
@@ -79,6 +81,8 @@ UI and Web Dev Notes
 
 - consider the web developers: don't use screens, all content driven but with easy interface with screens, mount point for content, etc; also need a way to attach actions to JCR content… through screens if there will be actions/etc?
 
+- allow a mix of HTML templates (perhaps extension .html, though will be treated as FTL files) and screen defs in the same directory structure
+
 X no style in screens or other widgets, just id; generate simple HTML and style externally
 
 - add theme data structure, simplified functionality (based more on CSS, not on replacing full templates)
@@ -111,7 +115,9 @@ X explicit screen transitions: have links/buttons/etc use generic IDs and not fu
 
 X consider multiple screens in a single flow with start/stop demarcation, just for the wizard style subscreens panel
 
-- instead of portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
+- instead of OFBiz portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
+
+- support rendering a screen in a JSR-168/286 portlet
 
 ================================================================
 Entity and Service Facades
@@ -130,14 +136,24 @@ X have service engine and simple-methods be more like screen widget with hierarc
 
 - email services, more inherent support for sending and receiving
 
+- email data model to save messages locally (both incoming and outgoing)
+
 - dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
 - Have general dynamic database-driven forms that extend XML forms instead of ofb surveys
 
 - content management functionality in various places
   - on all location attributes/etc support component:, content:, http:, etc
 
-- input validation that runs both client and server side (service definition) with single definition
-- service defs with hierarchical parameters (and use parameter, not attribute for tag name) to support sub-elements for lists, sets, and maps
+D input validation that runs both client and server side (service definition) with single definition
+X service defs with hierarchical parameters (and use parameter, not attribute for tag name) to support sub-elements for lists, sets, and maps
+
+- integration tools: support for remote services (in/out) like REST, XML/HTTP; perhaps use ServiceMix or something; connector stuff?; service orchestration?
+
+X XML transformation (read/write in XML Actions?) for service message brokering, XML/HTTP services, etc
+
+X data migration/transformation - read/write XML in XML Actions would help (especially XML -> db, db -> XML), maybe include or integrate with another tool
+
+- something like the OFBiz datafile tool?
 
 ================================================================
 Policies and Principles for Managing Moqui and Moqui-based Apps
@@ -148,9 +164,9 @@ Policies and Principles for Managing Moqui and Moqui-based Apps
 
 - start with a complete framework based on experience with OFBiz and having done development based on OFBiz over the 9 years of the project
 
-- for framework highly restricted contributions, very small committer group, one person commits to trunk others can use branches or patches to contribute
+- for framework highly restricted contributions, very small committer group, one person commits to trunk others can use branches or patches or git pulls to contribute
 
-- when development requirements are not met, design into the framework instead of working around it; all framework designs to be approved by single person (that person may change over time)
+- when development requirements are not met, design into the framework instead of working around it; all framework designs to be moderated by single person (that person may change over time)
 
 - applications will be in a separate project from the framework, with different groups working on framework and applications projects
 

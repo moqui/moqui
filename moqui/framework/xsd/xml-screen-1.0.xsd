@@ -95,12 +95,22 @@ limitations under the License.
                         transition is available (otherwise the button/link/etc is disabled).
                     </xs:documentation></xs:annotation>
                 </xs:element>
-                <xs:element ref="actions" minOccurs="0">
-                    <xs:annotation><xs:documentation>
-                        When this transition is followed these actions are run.
-                        After the actions are run it goes to the url (through client-side redirect, dynamic update of a screen area, etc).
-                    </xs:documentation></xs:annotation>
-                </xs:element>
+                <xs:choice minOccurs="0">
+                    <xs:element ref="call-service">
+                        <xs:annotation><xs:documentation>
+                            In most cases the best way to handle input for a transition is with a single service. To do
+                            that use this element instead of an actions element. If you want the automatic parameter
+                            mapping for the transition or the client-side input validation then you must use this
+                            call-service element.
+                        </xs:documentation></xs:annotation>
+                    </xs:element>
+                    <xs:element ref="actions">
+                        <xs:annotation><xs:documentation>
+                            When this transition is followed these actions are run.
+                            After the actions are run it goes to the url (through client-side redirect, dynamic update of a screen area, etc).
+                        </xs:documentation></xs:annotation>
+                    </xs:element>
+                </xs:choice>
                 <xs:element ref="transition-response" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
                         The transition response will be chosen based on the value of the "responseName" field in the context.
@@ -503,7 +513,7 @@ limitations under the License.
         </xs:complexType>
     </xs:element>
 
-    <!-- ============== Swing Specific Elements =============== -->
+    <!-- ============== GWT Specific Elements =============== -->
     <xs:element name="GwtWidgets" abstract="true"/>
     <xs:element name="gwt">
         <xs:complexType>

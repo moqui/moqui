@@ -37,21 +37,17 @@ limitations under the License.
                 <xs:element minOccurs="0" ref="actions"/>
             </xs:sequence>
             <xs:attribute name="verb" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        This can be any verb, and will generally be one of: create, update, delete, or find.
+                <xs:annotation><xs:documentation>
+                        This can be any verb, and will often be one of: create, update, delete, or find.
                         The full name of the service will be: ${verb}${noun}
                         The very is required and the noun is optional so if there is no noun the service name will be just the verb.
-                    </xs:documentation>
-                </xs:annotation>
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="noun" type="xs:string" use="optional">
-                <xs:annotation>
-                    <xs:documentation>
+                <xs:annotation><xs:documentation>
                         For entity-auto services this should be a valid entity name.
                         In many other cases an entity name is the best way to describe what is being acted on, but this can really be anything.
-                    </xs:documentation>
-                </xs:annotation>
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="type" default="inline">
                 <xs:simpleType>
@@ -73,12 +69,10 @@ limitations under the License.
             <xs:attribute name="export" default="false" type="boolean"/>
             <xs:attribute name="validate" default="true" type="boolean"/>
             <xs:attribute name="use-transaction" default="true" type="boolean">
-                <xs:annotation>
-                    <xs:documentation>
+                <xs:annotation><xs:documentation>
                         If set to true and there is no transaction already in place the Service Engine will begin one.
                         If set to false or there is a transaction already in place the Service Engine will do nothing (this also means that if set to false and a transaction is already in place it will do nothing).
-                    </xs:documentation>
-                </xs:annotation>
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="transaction" default="use-or-begin">
                 <xs:simpleType>
@@ -90,12 +84,10 @@ limitations under the License.
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="transaction-timeout" type="xs:int" default="0">
-                <xs:annotation>
-                    <xs:documentation>
+                <xs:annotation><xs:documentation>
                         Defines the timeout for the transaction, in seconds.
                         This value is only used if this service begins a transaction (either require-new, or use-or-begin and there is no other transaction already in place).
-                    </xs:documentation>
-                </xs:annotation>
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="max-retry" type="xs:int" default="-1"/>
             <xs:attribute name="debug" default="false" type="boolean"/>
@@ -160,10 +152,16 @@ limitations under the License.
             <xs:attribute name="field-name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
+
+    <xs:element name="ParameterValidations" abstract="true"/>
     <xs:element name="parameter">
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="description"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="subtype"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="ParameterValidations">
+                    <xs:annotation><xs:documentation>To override the default message for each just add the message inside the element.</xs:documentation></xs:annotation>
+                </xs:element>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="type" type="xs:string"/>
@@ -187,13 +185,17 @@ limitations under the License.
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="allow-html" use="optional" default="none">
+        <xs:attribute name="allow-html" default="none">
             <xs:annotation><xs:documentation>
                 Applies only to String fields.
-                Only checked for incoming parameters/attributes (could change in the future, but this is meant for validating input from users, other systems, etc).
-                Defualts to "none" meaning no HTML is allowed (will result in an error message).
-                If some HTML is desired then use "safe" which will follow the rules in the antisamy-esapi.xml file. This should be safe for both internal and public users.
-                In rare cases when users are trusted or it is not a sensitive field the "any" option may be used to not check the HTML content at all.
+                Only checked for incoming parameters (meant for validating input from users, other systems, etc).
+                Defaults to "none" meaning no HTML is allowed (will result in an error message).
+
+                If some HTML is desired then use "safe" which will follow the rules in the antisamy-esapi.xml file.
+                This should be safe for both internal and public users.
+
+                In rare cases when users are trusted or it is not a sensitive field the "any" option may be used to not
+                check the HTML content at all.
             </xs:documentation></xs:annotation>
             <xs:simpleType>
                 <xs:restriction base="xs:token">
@@ -204,4 +206,96 @@ limitations under the License.
             </xs:simpleType>
         </xs:attribute>
     </xs:attributeGroup>
+
+    <xs:element name="subtype">
+        <xs:annotation><xs:documentation>
+            Used to specify the valid type if the parameter.type or the parent subtype is a Map or any type of collection.
+
+            If the parent type is a Map then the key should be a String and the value should be the type of the subtype
+            where the key attribute matches the Map key, or for all other Map keys not specified the subtype with no
+            key specified.
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="subtype"/></xs:sequence>
+            <xs:attribute name="key" type="xs:string"/>
+            <xs:attribute name="type" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="val-or" substitutionGroup="ParameterValidations">
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="ParameterValidations"/></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="val-and" substitutionGroup="ParameterValidations">
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="ParameterValidations"/></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="val-not" substitutionGroup="ParameterValidations">
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="ParameterValidations"/></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="matches" substitutionGroup="ParameterValidations" type="xs:string">
+        <xs:annotation><xs:documentation>
+            Validate the current parameter against the regular expression specified in the expr attribute of the tag.
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="regexp" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="number-range" substitutionGroup="ParameterValidations" type="xs:string">
+        <xs:complexType>
+            <xs:attribute name="min" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="max" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="positive" type="boolean" default="false"/>
+            <xs:attribute name="non-positive" type="boolean" default="false"/>
+            <xs:attribute name="negative" type="boolean" default="false"/>
+            <xs:attribute name="non-negative" type="boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="number-integer" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="number-decimal" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="number-credit-card" substitutionGroup="ParameterValidations" type="xs:string"/>
+
+    <xs:element name="text-length" substitutionGroup="ParameterValidations" type="xs:string">
+        <xs:complexType>
+            <xs:attribute name="min" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="max" type="xs:nonNegativeInteger"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="text-email" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="text-url" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="text-letters" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="text-digits" substitutionGroup="ParameterValidations" type="xs:string"/>
+
+    <xs:element name="time-date" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="time-time" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="time-date-time" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="time-range" substitutionGroup="ParameterValidations" type="xs:string">
+        <xs:complexType>
+            <xs:attribute name="before" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="after" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="creditcard-any" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-visa" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-mastercard" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-amex" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-discover" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-enroute" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-jcb" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-solo" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-switch" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-dinersclub" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-visaelectron" substitutionGroup="ParameterValidations" type="xs:string"/>
+
+    <xs:element name="usa-zip-code" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="usa-po-box" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="usa-phone" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="usa-area-code" substitutionGroup="ParameterValidations" type="xs:string"/>
 </xs:schema>
