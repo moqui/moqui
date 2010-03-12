@@ -102,7 +102,7 @@
 
         <field-type-def type="date" sql-type="DATE"/>
         <field-type-def type="time" sql-type="TIME"/>
-        <field-type-def type="date-time" sql-type="DATETIME"/>
+        <field-type-def type="date-time" sql-type="TIMESTAMP"/>
 
         <field-type-def type="number-integer" sql-type="DECIMAL(20,0)"/>
         <field-type-def type="number-decimal" sql-type="DECIMAL(20,6)"/>
