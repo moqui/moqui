@@ -62,6 +62,14 @@ that the Moqui tools are designed to be used in a declarative way so most of
 what you need to do will be possible with XML configuration and little or no
 code is required, unless you want to of course.
 
+Moqui uses sourceforge.net for various tools. See the Moqui sourceforge site
+here:
+
+http://sourceforge.net/projects/moqui/
+
+To access to the source for Moqui through SVN use this URL:
+
+https://moqui.svn.sourceforge.net/svnroot/moqui/trunk/moqui
 
 =============================================================================
 The Moqui Framework versus the the Apache OFBiz Framework
@@ -87,43 +95,45 @@ represents a single screen to make it easier to see what an application looks
 like just by browsing the directory structure, kind of like it is for webapps
 with normal templates and such.
 
-Forms and trees are no longer kept in separate files and are simply in-lined
-in a screen. It is still possible to refer to forms externally using the
+Forms and trees are kept in separate files and are simply in-lined
+in a screen. It is possible to refer to forms externally using the
 screen's file location and the name of the form.
 
-The widgets no longer have any style attributes that will be used for HTML
+The widgets don't have any style attributes that will be used for HTML
 class attributes. There are id attributes in various places, but the intent
 is to use automatic id and class elements based on names and types of
-elements in the XML Screens.
+elements in the XML Screens and then keep all of the styling in an external
+CSS file.
 
-Many AJAX- and HTML-specific elements and attributes have been removed. This
-goes back to the original intent of the widgets and that is to be purely
+There aren't any AJAX- and HTML-specific elements and attributes. This
+goes back to the original intent of the OFBiz widgets and that is to be purely
 declarative and platform independent. Many XML Screens elements will be
 implemented using AJAX and DHTML, and options to control those or add to them
 will be available.
 
 -- MiniLang simple-methods, screen/form/etc actions
 
-All operations from these various places are now combined in one XSD file
+All operations from these various places are combined in one XSD file
 and are referred to as XML Actions. These are included in various places
 using the "actions" and "condition" elements. With this approach there is no
 inconsistency for similarly named and designed operations or conditions.
 
-Many operations have been removed because they are not frequently used or
-combined with other similar operations. There are new operations for a few
-things as well, like producing and comsuming XML.
+Moqui XML Actions don't have operations that are not frequently used and some
+operations are like a combination of various simple-method operations. There
+are operations for a few additional things as well, like producing and
+consuming XML.
 
-Some operations that were inconsistent in different places, like calling a
-service, now have all remaining features combined into one far more useful
-variation of the old operations.
+Some operations that are inconsistent in different places in OFBiz, like
+calling a service, have all similar features combined into one far more useful
+operation.
 
-There is no performFind service needed any more as the entity-find operation
+There is no performFind service needed in Moqui as the entity-find operation
 has an element that takes its place, and can be combined with various other
-elements to do things that were not easy to do when they were done with
-separate services for different parts of the find.
+elements of a find by condition for a great deal of flexibility that is
+easily usable.
 
 The actions are available in many more places including ECA rules, screen
-transitions (like the old controller request events), and others.
+transitions (like the OFBiz controller request events), and others.
 
 -- Service definitions and implementations
 
@@ -134,21 +144,21 @@ Service names are split into verb and noun parts, which together make up the
 service name (ie like: ${verb}${noun}). Services are called with the combined
 name and can separate the verb and noun parts of it using a hash mark ('#').
 
-Service attributes are called parameters in Moqui.
+Service parameters in Moqui are like the service attributes in OFBiz.
 
 Service parameters are split into two groups: "in-parameters" and
 "out-parameters" so that parameters with the same name can have different
 settings going into or coming out of the service.
 
-Parameters can now have hierarchical types for map and collection types.
+Parameters in Moqui have hierarchical sub-types for map and collection types.
 
-Parameters now have a fairly complete set of validation tags. Those
+Parameters have a fairly complete set of validation tags. Those
 validation tags will be used for server-side validation when the service is
 called, AND when the service is a target on a screen transition it will be
-used to generate client-side validation in JavaScript. With this validation
+used to generate client-side validation in JavaScript. This validation
 is defined once but run in both places.
 
-As mentioned above XML Actions are available in more places, and one of those
+As mentioned above XML Actions are available in many places, and one of those
 places is inside a service definition. With this a service implementation can
 be inline inside the service definition or external depending on preference.
 
