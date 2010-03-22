@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	     version="2.5">
+    <display-name>Moqui Base (Root) Webapp</display-name>
+    <description></description>
+
+    <context-param>
+        <param-name>moqui-name</param-name>
+        <param-value>base</param-value>
+        <description>The name of the Moqui webapp used to lookup configuration in the moqui-conf -> webapp-conf.moqui-name attribute.</description>
+    </context-param>
+
+    <!-- TODO: can this be setup programmatically for easier configuration? -->
+    <listener>
+        <!-- Implements HttpSessionListener; used to finalize Visit and track certain stats -->
+        <listener-class>org.moqui.impl.webapp.WebappEventListener</listener-class>
+    </listener>
+
+    <servlet>
+        <servlet-name>MoquiServlet</servlet-name>
+        <display-name>MoquiServlet</display-name>
+        <description>Moqui Webapp Servlet</description>
+        <servlet-class>org.moqui.impl.webapp.MoquiServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MoquiServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <!-- in minutes -->
+        <session-timeout>60</session-timeout>
+    </session-config>
+
+<!-- HTTP Response Code definitions:
+| "400"   ; Bad Request
+| "401"   ; Unauthorized
+| "402"   ; Payment Required
+| "403"   ; Forbidden
+| "404"   ; Not Found
+| "405"   ; Method Not Allowed
+| "406"   ; Not Acceptable
+| "407"   ; Proxy Authentication Required
+| "408"   ; Request Time-out
+| "409"   ; Conflict
+| "410"   ; Gone
+| "411"   ; Length Required
+| "412"   ; Precondition Failed
+| "413"   ; Request Entity Too Large
+| "414"   ; Request-URI Too Large
+| "415"   ; Unsupported Media Type
+| "500"   ; Internal Server Error
+| "501"   ; Not Implemented
+| "502"   ; Bad Gateway
+| "503"   ; Service Unavailable
+| "504"   ; Gateway Time-out
+| "505"   ; HTTP Version not supported
+-->
+</web-app>

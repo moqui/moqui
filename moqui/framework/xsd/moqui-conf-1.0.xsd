@@ -1,0 +1,442 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright 2010 David E. Jones
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="common-types-1.0.xsd"/>
+    <xs:include schemaLocation="xml-actions-1.0.xsd"/>
+
+    <xs:element name="moqui-conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="cache-conf-list"/>
+                <xs:element minOccurs="0" ref="server-stats"/>
+                <xs:element minOccurs="0" ref="webapp-conf-list"/>
+                <xs:element minOccurs="0" ref="entity-facade-conf"/>
+                <xs:element minOccurs="0" ref="database-conf-list"/>
+                <xs:element minOccurs="0" ref="service-facade-conf"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ===================== Cache Conf Root ===================== -->
+    <xs:element name="cache-conf-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="cache-conf"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="cache-conf">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="expire-time" type="xs:nonNegativeInteger" default="0"/>
+            <xs:attribute name="soft-reference" type="boolean" default="false"/>
+            <xs:attribute name="max-size" type="xs:nonNegativeInteger" default="0"/>
+            <xs:attribute name="eviction-strategy" default="least-recently-used">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="least-recently-used"/>
+                        <xs:enumeration value="least-frequently-used"/>
+                        <xs:enumeration value="least-recently-added"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="server-stats">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="artifact-stats"/>
+            </xs:sequence>
+            <xs:attribute name="bin-length-seconds" type="xs:positiveInteger" default="900">
+                <xs:annotation><xs:documentation>The bin length should be less than or equal to one hour and evenly divisible into an hour, the default is 900 seconds (15 minutes)</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="visit-persist" type="boolean" default="true"/>
+            <xs:attribute name="visitor-persist" type="boolean" default="true"/>
+            <xs:attribute name="proxy-enabled" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Is there a proxy in front of this app server? Allows us collect the client's real IP address.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="artifact-stats">
+        <xs:complexType>
+            <xs:attribute name="type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="screen"/>
+                        <xs:enumeration value="transition"/>
+                        <xs:enumeration value="service"/>
+                        <xs:enumeration value="entity"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="persist-hit" type="boolean" default="false"/>
+            <xs:attribute name="track-bin" type="boolean" default="false"/>
+            <xs:attribute name="persist-bin" type="boolean" default="false"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ===================== Webapp Conf Root ===================== -->
+    <xs:element name="webapp-conf-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="webapp-conf"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="webapp-conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="first-hit-in-visit"/>
+                <xs:element minOccurs="0" ref="after-request"/>
+                <xs:element minOccurs="0" ref="before-request"/>
+                <xs:element minOccurs="0" ref="after-login"/>
+                <xs:element minOccurs="0" ref="before-logout"/>
+                <xs:element minOccurs="0" ref="root-screen"/>
+            </xs:sequence>
+            <xs:attribute name="moqui-name" type="xs:string">
+                <xs:annotation><xs:documentation>Matched against value of a context-param -> param-value element in the web.xml file where the param-name is "moqui-name"</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="https-enabled" default="true" type="boolean"/>
+            <xs:attribute name="https-port" type="xs:string" default="8443"/>
+            <xs:attribute name="https-force-host" type="xs:string"/>
+            <xs:attribute name="http-port" type="xs:string" default="8080"/>
+            <xs:attribute name="http-force-host" type="xs:string"/>
+            <!-- Content URL prefixes to make it easy to move the serving load for static content to other machines -->
+            <xs:attribute name="content-prefix-secure" type="xs:string"/>
+            <xs:attribute name="content-prefix-standard" type="xs:string"/>
+            <xs:attribute name="cookie-domain" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="first-hit-in-visit">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="actions"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="after-request">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="actions"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="before-request">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="actions"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="after-login">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="actions"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="before-logout">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="actions"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="root-screen">
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ===================== Entity Facade Conf Root ===================== -->
+    <xs:element name="entity-facade-conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="app-server-jndi"/>
+                <xs:element ref="transaction-factory"/>
+                <xs:element maxOccurs="unbounded" ref="datasource"/>
+            </xs:sequence>
+            <xs:attribute name="entity-eca-enabled" default="true" type="boolean"/>
+            <xs:attribute name="distributed-cache-clear-enabled" default="false" type="boolean"/>
+            <xs:attribute name="sequenced-id-prefix" type="xs:string"/>
+            <xs:attribute name="default-group-name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="app-server-jndi">
+        <xs:complexType>
+            <xs:attribute name="context-provider-url" type="xs:string"/>
+            <xs:attribute name="initial-context-factory" type="xs:string"/>
+            <xs:attribute name="url-pkg-prefixes" type="xs:string"/>
+            <xs:attribute name="security-principal" type="xs:string"><xs:annotation><xs:documentation>The username</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="security-credentials" type="xs:string"><xs:annotation><xs:documentation>The password</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="transaction-factory">
+        <xs:complexType>
+            <xs:attribute name="factory-type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="internal"/>
+                        <xs:enumeration value="jndi"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="user-transaction-jndi-name" type="xs:string"/>
+            <xs:attribute name="transaction-manager-jndi-name" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="datasource">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice minOccurs="1" maxOccurs="1">
+                    <xs:element minOccurs="0" maxOccurs="1" ref="jndi-jdbc"/>
+                    <xs:element minOccurs="0" maxOccurs="1" ref="inline-jdbc"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="group-name" type="xs:string" use="required"/>
+            <xs:attribute name="database-config-name" type="xs:string" use="required"/>
+            <xs:attribute name="schema-name" type="xs:string"/>
+            <xs:attribute name="check-on-start" default="true" type="boolean"/>
+            <xs:attribute name="add-missing-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-pks-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-fks-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-fk-indices-on-start" default="true" type="boolean"/>
+            <xs:attribute name="check-indices-on-start" default="true" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="inline-jdbc">
+        <xs:complexType>
+            <xs:attribute name="jdbc-driver" type="xs:string" use="optional"/>
+            <xs:attribute name="jdbc-uri" type="xs:string" use="required"/>
+            <xs:attribute name="jdbc-username" type="xs:string" use="required"/>
+            <xs:attribute name="jdbc-password" type="xs:string" use="required"/>
+            <xs:attribute name="isolation-level" type="isolation-level"/>
+            <xs:attribute name="pool-maxsize" type="xs:nonNegativeInteger" default="50"/>
+            <xs:attribute name="pool-minsize" type="xs:nonNegativeInteger" default="2"/>
+            <xs:attribute name="time-between-eviction-runs-millis" type="xs:nonNegativeInteger" default="600000"/>
+            <xs:attribute name="pool-sleeptime" type="xs:nonNegativeInteger" default="300000"/>
+            <xs:attribute name="pool-lifetime" type="xs:nonNegativeInteger" default="600000"/>
+            <xs:attribute name="pool-deadlock-maxwait" type="xs:nonNegativeInteger" default="300000"/>
+            <xs:attribute name="pool-deadlock-retrywait" type="xs:nonNegativeInteger" default="10000"/>
+            <xs:attribute name="pool-jdbc-test-stmt" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="jndi-jdbc">
+        <xs:complexType>
+            <xs:attribute name="jndi-name" type="xs:string" use="required"/>
+            <xs:attribute name="isolation-level" type="isolation-level"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ====================== Database Conf Root ======================= -->
+    <xs:element name="database-conf-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="database-conf"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="database-conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-type-def"/>
+            </xs:sequence>
+
+            <xs:attribute name="name" type="xs:string" use="required"/>
+
+            <xs:attribute name="use-schemas" default="true" type="boolean"/>
+            <xs:attribute name="use-pk-constraint-names" default="true" type="boolean"/>
+            <xs:attribute name="constraint-name-clip-length" default="30" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="use-proxy-cursor" default="false" type="boolean"/>
+            <xs:attribute name="proxy-cursor-name" default="p_cursor" type="xs:string"/>
+            <xs:attribute name="result-fetch-size" default="-1" type="xs:integer"/>
+            <xs:attribute name="use-foreign-keys" default="true" type="boolean"/>
+            <xs:attribute name="use-foreign-key-indices" default="true" type="boolean"/>
+            <xs:attribute name="fk-style" default="name_constraint">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="name_constraint"/>
+                        <xs:enumeration value="name_fk"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="use-fk-initially-deferred" default="false" type="boolean"/>
+            <xs:attribute name="use-indices" default="true" type="boolean">
+                <xs:annotation><xs:documentation>Use manually declared indices (indexes)?</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="use-indices-unique" default="true" type="boolean">
+                <xs:annotation><xs:documentation>For manually declared indices (if used), use the unique constraint?</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="join-style" default="ansi">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="ansi"/>
+                        <xs:enumeration value="ansi-no-parenthesis"/>
+                        <xs:enumeration value="theta-oracle"/>
+                        <xs:enumeration value="theta-mssql"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="alias-view-columns" default="false" type="boolean"/>
+            <xs:attribute name="always-use-constraint-keyword" default="false" type="boolean"/>
+            <xs:attribute name="drop-fk-use-foreign-key-keyword" default="false" type="boolean"/>
+            <xs:attribute name="use-binary-type-for-blob" default="false" type="boolean"/>
+            <xs:attribute name="table-type" type="xs:string"/>
+            <xs:attribute name="character-set" type="xs:string"/>
+            <xs:attribute name="collate" type="xs:string"/>
+            <xs:attribute name="default-isolation-level">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="None"/>
+                        <xs:enumeration value="ReadCommitted"/>
+                        <xs:enumeration value="ReadUncommitted"/>
+                        <xs:enumeration value="RepeatableRead"/>
+                        <xs:enumeration value="Serializable"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-jdbc-driver" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="field-type-def">
+        <xs:complexType>
+            <xs:attribute type="xs:string" name="type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="id"/>
+                        <xs:enumeration value="id-long"/>
+                        <xs:enumeration value="id-vlong"/>
+                        <xs:enumeration value="date"/>
+                        <xs:enumeration value="time"/>
+                        <xs:enumeration value="date-time"/>
+                        <xs:enumeration value="number-integer"/>
+                        <xs:enumeration value="number-decimal"/>
+                        <xs:enumeration value="number-float"/>
+                        <xs:enumeration value="currency-amount"/>
+                        <xs:enumeration value="currency-precise"/>
+                        <xs:enumeration value="text-indicator"/>
+                        <xs:enumeration value="text-short"/>
+                        <xs:enumeration value="text-medium"/>
+                        <xs:enumeration value="text-long"/>
+                        <xs:enumeration value="text-very-long"/>
+                        <xs:enumeration value="binary-very-long"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute type="xs:string" name="sql-type" use="required"/>
+            <xs:attribute type="xs:string" name="sql-type-alias"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ====================== Service Facade Conf Root ======================= -->
+    <xs:element name="service-facade-conf">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="thread-pool"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="startup-service"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="thread-pool">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="run-from-pool"/>
+            </xs:sequence>
+            <xs:attribute name="send-to-pool" type="xs:string" use="required"/>
+            <xs:attribute name="purge-job-days" type="xs:nonNegativeInteger" default="3"/>
+            <xs:attribute name="failed-retry-min" type="xs:nonNegativeInteger" default="3"/>
+            <xs:attribute name="wait-millis" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="min-threads" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="max-threads" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="poll-enabled" default="true" type="boolean"/>
+            <xs:attribute name="poll-db-millis" type="xs:nonNegativeInteger" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="run-from-pool">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="startup-service">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="runtime-data-id" type="xs:string"/>
+            <xs:attribute name="runtime-delay" type="xs:nonNegativeInteger" default="0"/>
+            <xs:attribute name="run-in-pool" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="service-location">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="jms-service">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="server-jndi"/>
+                <xs:element maxOccurs="unbounded" ref="server-jms"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="send-mode" default="none">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="none"/>
+                        <xs:enumeration value="all"/>
+                        <xs:enumeration value="first-available"/>
+                        <xs:enumeration value="random"/>
+                        <xs:enumeration value="round-robin"/>
+                        <xs:enumeration value="least-load"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="server-jndi">
+        <xs:complexType>
+            <xs:attribute name="context-provider-url" type="xs:string"/>
+            <xs:attribute name="initial-context-factory" type="xs:string"/>
+            <xs:attribute name="url-pkg-prefixes" type="xs:string"/>
+            <xs:attribute name="security-principal" type="xs:string"><xs:annotation><xs:documentation>The username</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="security-credentials" type="xs:string"><xs:annotation><xs:documentation>The password</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="server-jms">
+        <xs:complexType>
+            <xs:attribute name="jndi-name" type="xs:string" use="required"/>
+            <xs:attribute name="topic-queue-name" type="xs:string" use="required"/>
+            <xs:attribute name="type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="topic"/>
+                        <xs:enumeration value="queue"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="username" type="xs:string"/>
+            <xs:attribute name="password" type="xs:string"/>
+            <xs:attribute name="client-id" type="xs:string"/>
+            <xs:attribute name="listen" default="false" type="boolean">
+            </xs:attribute>
+            <!-- need this? <xs:attribute name="listener-class" type="xs:string"/> -->
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

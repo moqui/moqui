@@ -4,9 +4,9 @@ The Moqui Framework
 =============================================================================
 
 The Moqui Framework is an integrated tool set with everything needed to start
-building web-based applications right away. Instead of starting with a set of
-tools and figuring out how to use them together and filling in gaps that are
-not handled by default Moqui is ready to go right away.
+building web-based and distributed enterprise applications right away. Rather
+than starting with a set of tools and figuring out how to use them together
+and filling in gaps that are not handled by default, Moqui is ready to go.
 
 The Moqui Framework includes:
 
@@ -25,7 +25,7 @@ The Moqui Framework includes:
     validation runs on server and in client with JavaScript library
   - Event-Condition-Action rules to orchestrate high level processes,
     externally change or augment behavior of existing services, and much more
-- Screen-base user interface tier
+- Screen-based user interface tier
   - Declarative multi-platform screens, text templates, or any combination
   - Generate HTML, XML, PDF (XSL-FO), or drive GWT or Swing screens
   - Screen files and included sets of subscreens in directories with the same

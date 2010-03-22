@@ -24,17 +24,14 @@ limitations under the License.
 <catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
   <!-- <public publicId="-//W3C//DTD SVG 1.0//EN" uri="svg10.dtd"/> -->
 
-    <system systemId="http://moqui.org/xsd/entity-database-config-1.0.xsd" uri="entity-database-config-1.0.xsd"/>
+    <system systemId="http://moqui.org/xsd/moqui-conf-1.0.xsd" uri="moqui-conf-1.0.xsd"/>
+
     <system systemId="http://moqui.org/xsd/entity-eca-1.0.xsd" uri="entity-eca-1.0.xsd"/>
     <system systemId="http://moqui.org/xsd/entity-model-1.0.xsd" uri="entity-model-1.0.xsd"/>
-    <system systemId="http://moqui.org/xsd/entity-facade-config-1.0.xsd" uri="entity-facade-config-1.0.xsd"/>
 
     <system systemId="http://moqui.org/xsd/service-definition-1.0.xsd" uri="service-definition-1.0.xsd"/>
     <system systemId="http://moqui.org/xsd/service-eca-1.0.xsd" uri="service-eca-1.0.xsd"/>
     <system systemId="http://moqui.org/xsd/service-mca-1.0.xsd" uri="service-mca-1.0.xsd"/>
-    <system systemId="http://moqui.org/xsd/service-facade-config-1.0.xsd" uri="service-facade-config-1.0.xsd"/>
-
-    <system systemId="http://moqui.org/xsd/webapp-conf-1.0.xsd" uri="webapp-conf-1.0.xsd"/>
 
     <system systemId="http://moqui.org/xsd/xml-screen-1.0.xsd" uri="xml-screen-1.0.xsd"/>
     <system systemId="http://moqui.org/xsd/xml-form-1.0.xsd" uri="xml-form-1.0.xsd"/>

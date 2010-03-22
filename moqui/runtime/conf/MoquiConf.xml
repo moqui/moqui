@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
+
+    <cache-conf-list>
+        <!-- Development Mode - comment these out to better cache artifacts for production, load testing, etc.
+             Cleared by default every 10000 milliseconds, which is ten seconds. -->
+        <cache-conf name="entity.namespace" expire-time="10000"/>
+        <cache-conf name="service.namespace" expire-time="10000"/>
+
+        <cache-conf name="screen.location" expire-time="10000"/>
+
+        <cache-conf name="script.xml-actions.location" expire-time="10000"/>
+        <cache-conf name="script.groovy.location" expire-time="10000"/>
+
+        <cache-conf name="template.ftl.location" expire-time="10000"/>
+    </cache-conf-list>
+</moqui-conf>
