@@ -24,15 +24,14 @@ public interface Cache<V> {
 
     String getName();
 
-    long getExpireTime();
-    void setExpireTime(long expireTime);
+    long getExpireTimeIdle();
+    void setExpireTimeIdle(long expireTime);
+    long getExpireTimeLive();
+    void setExpireTimeLive(long expireTime);
 
-    boolean getUseSoftReference();
-    void setUseSoftReference(boolean useSoftReference);
-
-    long getMaxSize();
+    long getMaxElements();
     EvictionStrategy getEvictionStrategy();
-    void setMaxSize(long maxSize, EvictionStrategy strategy);
+    void setMaxElements(long maxSize, EvictionStrategy strategy);
 
     V get(String key);
     V put(String key, V value);
@@ -51,7 +50,6 @@ public interface Cache<V> {
     long getHitCount();
     long getMissCountNotFound();
     long getMissCountExpired();
-    long getMissCountSoftRef();
     long getMissCountTotal();
     long getRemoveHitCount();
     long getRemoveMissCount();

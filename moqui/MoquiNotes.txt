@@ -115,7 +115,11 @@ X explicit screen transitions: have links/buttons/etc use generic IDs and not fu
 
 X consider multiple screens in a single flow with start/stop demarcation, just for the wizard style subscreens panel
 
+- more dynamic forms, including fields that show/hide or change depending on the value of other fields; can GWT forms do this?
+
 - instead of OFBiz portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
+
+- configurable menus per-user through db, ie add subscreens for a single user only or for all users as now 
 
 - support rendering a screen in a JSR-168/286 portlet
 

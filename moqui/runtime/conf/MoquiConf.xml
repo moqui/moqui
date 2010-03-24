@@ -3,17 +3,24 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
 
-    <cache-conf-list>
-        <!-- Development Mode - comment these out to better cache artifacts for production, load testing, etc.
-             Cleared by default every 10000 milliseconds, which is ten seconds. -->
-        <cache-conf name="entity.namespace" expire-time="10000"/>
-        <cache-conf name="service.namespace" expire-time="10000"/>
+    <cache-list>
+        <!-- Development Mode - don't use these for production, load testing, etc.
+             Cleared by default every 10000 milliseconds (10 seconds) from when loaded into cache. -->
+        <cache name="entity.namespace" expire-time-live="10000"/>
+        <cache name="service.namespace" expire-time-live="10000"/>
 
-        <cache-conf name="screen.location" expire-time="10000"/>
+        <cache name="screen.location" expire-time-live="10000"/>
 
-        <cache-conf name="script.xml-actions.location" expire-time="10000"/>
-        <cache-conf name="script.groovy.location" expire-time="10000"/>
+        <cache name="script.xml-actions.location" expire-time-live="10000"/>
+        <cache name="script.groovy.location" expire-time-live="10000"/>
 
-        <cache-conf name="template.ftl.location" expire-time="10000"/>
-    </cache-conf-list>
+        <cache name="template.ftl.location" expire-time-live="10000"/>
+    </cache-list>
+    <server-stats bin-length-seconds="900" proxy-enabled="false" visit-persist="true" visitor-persist="true">
+        <!-- For development, track everything! It'll run slow through... -->
+        <artifact-stats type="screen" track-bin="true" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="transition" track-bin="true" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="service" track-bin="true" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="entity" track-bin="true" persist-bin="true" persist-hit="true"/>
+    </server-stats>
 </moqui-conf>
