@@ -38,4 +38,6 @@ limitations under the License.
     <Enumeration description="Update" enumCode="UPDATE" enumId="AUTHZA_UPDATE" enumTypeId="AUTHZ_ACTION"/>
     <Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AUTHZ_ACTION"/>
     <Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AUTHZ_ACTION"/>
+
+    <UserAccount userId="_NA_" userName="Not Applicable" currentPassword="" disabled="Y"/>
 </entity-facade-xml>

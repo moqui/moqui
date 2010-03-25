@@ -3,7 +3,7 @@ TODO:
 
 - do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc, security, theme, etc), create designs for each activity
 
-- write up feature list, differences from OFBiz list, benefits/marketing list; post to web site and send to OFBiz after initial interfaces and examples are done
+- write up feature list (X), differences from OFBiz list (X), benefits/marketing list (_); post to web site and send to OFBiz after initial interfaces and examples are done (_)
 
 - create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the moqui site itself
 
@@ -119,7 +119,7 @@ X consider multiple screens in a single flow with start/stop demarcation, just f
 
 - instead of OFBiz portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
 
-- configurable menus per-user through db, ie add subscreens for a single user only or for all users as now 
+X configurable menus per-user through db, ie add subscreens for a single user only or for all users 
 
 - support rendering a screen in a JSR-168/286 portlet
 

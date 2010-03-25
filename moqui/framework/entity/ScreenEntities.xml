@@ -23,10 +23,24 @@ limitations under the License.
     <entity entity-name="SubscreensItem" package-name="org.moqui.screen">
         <field name="screenLocation" type="id" is-pk="true"/>
         <field name="subscreenName" type="id" is-pk="true"/>
-        <field name="menuTitle" type="text-medium"/>
-        <field name="screenLocation" type="text-long"/>
-        <field name="menuIndex" type="number-integer">
-            <description>If specified this item will be inserted in existing list of subscreens at this index (1-based).</description>
+        <field name="userId" type="id-vlong" is-pk="true">
+            <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
         </field>
+        <field name="screenLocation" type="text-long"/>
+        <field name="menuTitle" type="text-medium">
+            <description>The title to show for this subscreen in the menu. Can be used to override subscreen titles
+                in the screen.default-menu-title attribute and the subscreens-item.menu-title attribute.</description>
+        </field>
+        <field name="menuIndex" type="number-integer">
+            <description>Insert this item in subscreens menu at this index (1-based).</description>
+        </field>
+        <field name="menuInclude" type="text-indicator">
+            <description>Defaults to Y. Set to N to not include in the menu for the subscreens. This can be used to
+                hide subscreens from the directory structure or even explicitly declared in the Screen XML file.
+            </description>
+        </field>
+        <relationship type="one-nofk" rel-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
     </entity>
 </entities>

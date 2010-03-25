@@ -24,6 +24,7 @@ limitations under the License.
                 <xs:element minOccurs="0" ref="cache-list"/>
                 <xs:element minOccurs="0" ref="server-stats"/>
                 <xs:element minOccurs="0" ref="webapp-list"/>
+                <xs:element minOccurs="0" ref="screen-facade"/>
                 <xs:element minOccurs="0" ref="service-facade"/>
                 <xs:element minOccurs="0" ref="entity-facade"/>
                 <xs:element minOccurs="0" ref="database-list"/>
@@ -109,7 +110,10 @@ limitations under the License.
                 <xs:element minOccurs="0" ref="root-screen"/>
             </xs:sequence>
             <xs:attribute name="moqui-name" type="xs:string">
-                <xs:annotation><xs:documentation>Matched against value of a context-param -> param-value element in the web.xml file where the param-name is "moqui-name"</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>
+                    Matched against value of a context-param -> param-value element in the web.xml file where the
+                    param-name is "moqui-name".
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="https-enabled" default="true" type="boolean"/>
             <xs:attribute name="https-port" type="xs:string" default="8443"/>
@@ -160,6 +164,29 @@ limitations under the License.
     <xs:element name="root-screen">
         <xs:complexType>
             <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ====================== Screen Facade Conf Root ======================= -->
+    <xs:element name="screen-facade">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="screen-text-output"/>
+            </xs:sequence>
+            <xs:attribute name="boundary-comments" default="false" type="boolean"/>
+            <xs:attribute name="default-paginate-rows" type="xs:string" default="20"/>
+            <xs:attribute name="default-autocomplete-rows" type="xs:string" default="10"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="screen-text-output">
+        <xs:complexType>
+            <xs:attribute name="type" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Can be anything. Default supported values include: text, html, xsl-fo, xml, and csv.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="mime-type" type="xs:string" use="optional"/>
+            <xs:attribute name="macro-template-location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 

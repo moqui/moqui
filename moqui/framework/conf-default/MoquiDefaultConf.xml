@@ -28,10 +28,10 @@
     
     <webapp-list>
         <webapp moqui-name="base"
-                     http-port="8080" http-force-host=""
-                     https-port="8443" https-force-host="" https-enabled="true"
-                     content-prefix-secure="" content-prefix-standard=""
-                     cookie-domain="">
+                http-port="8080" http-force-host=""
+                https-port="8443" https-force-host="" https-enabled="true"
+                content-prefix-secure="" content-prefix-standard=""
+                cookie-domain="">
 
             <first-hit-in-visit>
                 <actions></actions>
@@ -53,12 +53,22 @@
         </webapp>
     </webapp-list>
 
+    <screen-facade boundary-comments="false" default-autocomplete-rows="20" default-paginate-rows="10">
+        <screen-text-output type="text" mime-type="text/plain"
+                            macro-template-location="component://framework/macro-templates/ScreenTextMacros.xml"/>
+        <screen-text-output type="html" mime-type="text/html"
+                            macro-template-location="component://framework/macro-templates/ScreenHtmlMacros.xml"/>
+        <screen-text-output type="xsl-fo" mime-type="text/xml"
+                            macro-template-location="component://framework/macro-templates/ScreenXslFoMacros.xml"/>
+        <screen-text-output type="xml" mime-type="text/xml"
+                            macro-template-location="component://framework/macro-templates/ScreenXmlMacros.xml"/>
+        <screen-text-output type="csv" mime-type="text/csv"
+                            macro-template-location="component://framework/macro-templates/ScreenCsvMacros.xml"/>
+    </screen-facade>
+
     <service-facade>
-        <!-- Thread pool configuration (max/min threads, uses to live and time to live) -->
-        <thread-pool send-to-pool="pool" purge-job-days="3"
-                     failed-retry-min="3" wait-millis="750"
-                     min-threads="5" max-threads="15"
-                     poll-enabled="true" poll-db-millis="20000">
+        <thread-pool send-to-pool="pool" purge-job-days="3" failed-retry-min="3" wait-millis="750"
+                     min-threads="5" max-threads="15" poll-enabled="true" poll-db-millis="20000">
             <run-from-pool name="pool"/>
         </thread-pool>
 
@@ -93,7 +103,7 @@
     </service-facade>
 
     <entity-facade default-group-name="transactional" distributed-cache-clear-enabled="false"
-                        entity-eca-enabled="true" sequenced-id-prefix="">
+                   entity-eca-enabled="true" sequenced-id-prefix="">
 
         <!-- this is used for both transaction and data source access -->
         <app-server-jndi context-provider-url="rmi://127.0.0.1:1099"
@@ -113,18 +123,18 @@
 
         <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc jdbc-uri="jdbc:derby:moqui_transactional;create=true"
-                    jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="50"/>
+                         jdbc-username="moqui" jdbc-password="moqui"
+                         pool-minsize="2" pool-maxsize="50"/>
         </datasource>
         <datasource group-name="analytical" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc jdbc-uri="jdbc:derby:moqui_analytical;create=true"
-                    jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="10"/>
+                         jdbc-username="moqui" jdbc-password="moqui"
+                         pool-minsize="2" pool-maxsize="10"/>
         </datasource>
         <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc jdbc-uri="jdbc:derby:moqui_tenantcommon;create=true"
-                    jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="10"/>
+                         jdbc-username="moqui" jdbc-password="moqui"
+                         pool-minsize="2" pool-maxsize="10"/>
         </datasource>
 
         <!-- some examples of how other databases would be configured -->
@@ -173,11 +183,11 @@
         -->
 
         <database name="derby"
-                         use-pk-constraint-names="false"
-                         use-indices-unique="false"
-                         alias-view-columns="false"
-                         default-isolation-level="ReadCommitted"
-                         default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver">
+                  use-pk-constraint-names="false"
+                  use-indices-unique="false"
+                  alias-view-columns="false"
+                  default-isolation-level="ReadCommitted"
+                  default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver">
             <field-type-def type="id" sql-type="VARCHAR(20)"/>
             <field-type-def type="id-long" sql-type="VARCHAR(60)"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR(255)"/>
@@ -202,13 +212,13 @@
             <field-type-def type="binary-very-long" sql-type="BLOB"/>
         </database>
         <database name="hsql"
-                         use-foreign-keys="true"
-                         use-foreign-key-indices="true"
-                         use-fk-initially-deferred="false"
-                         join-style="ansi-no-parenthesis"
-                         alias-view-columns="true"
-                         default-isolation-level="ReadUncommitted"
-                         default-jdbc-driver="org.hsqldb.jdbcDriver">
+                  use-foreign-keys="true"
+                  use-foreign-key-indices="true"
+                  use-fk-initially-deferred="false"
+                  join-style="ansi-no-parenthesis"
+                  alias-view-columns="true"
+                  default-isolation-level="ReadUncommitted"
+                  default-jdbc-driver="org.hsqldb.jdbcDriver">
             <field-type-def type="id" sql-type="VARCHAR"/>
             <field-type-def type="id-long" sql-type="VARCHAR"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR"/>
@@ -233,15 +243,15 @@
             <field-type-def type="binary-very-long" sql-type="OBJECT" sql-type-alias="OTHER"/>
         </database>
         <database name="mysql"
-                         use-foreign-keys="true"
-                         join-style="ansi-no-parenthesis"
-                         alias-view-columns="false"
-                         drop-fk-use-foreign-key-keyword="true"
-                         table-type="InnoDB"
-                         character-set="latin1"
-                         collate="latin1_general_cs"
-                         default-isolation-level="ReadCommitted"
-                         default-jdbc-driver="com.mysql.jdbc.Driver">
+                  use-foreign-keys="true"
+                  join-style="ansi-no-parenthesis"
+                  alias-view-columns="false"
+                  drop-fk-use-foreign-key-keyword="true"
+                  table-type="InnoDB"
+                  character-set="latin1"
+                  collate="latin1_general_cs"
+                  default-isolation-level="ReadCommitted"
+                  default-jdbc-driver="com.mysql.jdbc.Driver">
             <field-type-def type="id" sql-type="VARCHAR(20)"/>
             <field-type-def type="id-long" sql-type="VARCHAR(60)"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR(255)"/>
@@ -266,10 +276,10 @@
             <field-type-def type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
         <database name="oracle"
-                         alias-view-columns="false"
-                         join-style="ansi"
-                         default-isolation-level="ReadCommitted"
-                         default-jdbc-driver="oracle.jdbc.driver.OracleDriver">
+                  alias-view-columns="false"
+                  join-style="ansi"
+                  default-isolation-level="ReadCommitted"
+                  default-jdbc-driver="oracle.jdbc.driver.OracleDriver">
             <field-type-def type="id" sql-type="VARCHAR2(20)"/>
             <field-type-def type="id-long" sql-type="VARCHAR2(60)"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR2(255)"/>
@@ -294,13 +304,13 @@
             <field-type-def type="binary-very-long" sql-type="BLOB"/>
         </database>
         <database name="postgres"
-                         use-fk-initially-deferred="false"
-                         alias-view-columns="false"
-                         join-style="ansi"
-                         result-fetch-size="50"
-                         use-binary-type-for-blob="true"
-                         default-isolation-level="ReadCommitted"
-                         default-jdbc-driver="org.postgresql.Driver">
+                  use-fk-initially-deferred="false"
+                  alias-view-columns="false"
+                  join-style="ansi"
+                  result-fetch-size="50"
+                  use-binary-type-for-blob="true"
+                  default-isolation-level="ReadCommitted"
+                  default-jdbc-driver="org.postgresql.Driver">
             <field-type-def type="id" sql-type="TEXT"/>
             <field-type-def type="id-long" sql-type="TEXT"/>
             <field-type-def type="id-vlong" sql-type="TEXT"/>

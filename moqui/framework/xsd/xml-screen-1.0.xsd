@@ -19,7 +19,6 @@ limitations under the License.
     <xs:include schemaLocation="xml-form-1.0.xsd"/>
 
     <!-- ================ Shared Elements ================ -->
-
     <xs:group name="section-elements">
         <xs:sequence>
             <xs:element ref="condition" minOccurs="0"/>
@@ -36,7 +35,6 @@ limitations under the License.
     </xs:group>
 
     <!-- ================ Screen - root element ================ -->
-
     <xs:element name="screen">
         <xs:annotation><xs:documentation>
             The screen is the basic unit of a user interface defines how data, logic, and visual elements fit together.
@@ -46,6 +44,7 @@ limitations under the License.
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="web-settings" minOccurs="0"/>
                 <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
                         These are the parameters the screen expects or allows to be passed in, and where the calling
@@ -68,22 +67,25 @@ limitations under the License.
                     it is in. If true this screen will automatically be included in the parent's subscreens menu.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="mime-type" type="xs:string" default="text/html"/>
-            <xs:attribute name="encoding" type="xs:string" default="UTF-8"/>
+            <xs:attribute name="track-serverhit" default="true" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="web-settings">
+        <xs:complexType>
             <xs:attribute name="allow-web-request" default="true" type="boolean"/>
+            <xs:attribute name="mime-type" type="xs:string" default="text/html"/>
+            <xs:attribute name="character-encoding" type="xs:string" default="UTF-8"/>
             <xs:attribute name="require-encryption" default="true" type="boolean"/>
             <xs:attribute name="require-authentication" default="true" type="boolean"/>
             <xs:attribute name="require-certificate" default="false" type="boolean"/>
             <xs:attribute name="track-visit" default="true" type="boolean"/>
-            <xs:attribute name="track-serverhit" default="true" type="boolean"/>
             <xs:attribute name="http-no-cache" default="false" type="boolean">
-                <xs:annotation><xs:documentation>Send no-cache headers if set to true.</xs:documentation></xs:annotation>        
+                <xs:annotation><xs:documentation>Send no-cache headers if true.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
 
     <!-- ================ Transition ================ -->
-
     <xs:element name="transition">
         <xs:annotation><xs:documentation>
         </xs:documentation></xs:annotation>
@@ -107,13 +109,17 @@ limitations under the License.
                     <xs:element ref="actions">
                         <xs:annotation><xs:documentation>
                             When this transition is followed these actions are run.
-                            After the actions are run it goes to the url (through client-side redirect, dynamic update of a screen area, etc).
+
+                            After the actions are run it goes to the url (through client-side redirect, dynamic update
+                            of a screen area, etc).
                         </xs:documentation></xs:annotation>
                     </xs:element>
                 </xs:choice>
                 <xs:element ref="transition-response" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
-                        The transition response will be chosen based on the value of the "responseName" field in the context.
+                        The transition response will be chosen based on the value of the "responseName" field in the
+                        context.
+                        
                         The responseName defaults to "success".
                     </xs:documentation></xs:annotation>
                 </xs:element>
@@ -131,10 +137,12 @@ limitations under the License.
             <xs:sequence>
                 <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
-                        These parameters will be used when redirecting to the url or other activating of the target screen.
+                        These parameters will be used when redirecting to the url or other activating of the target
+                        screen.
 
                         Each screen has a list of expected parameters so this is only necessary when you need to 
-                        override where the parameter value comes from (as defined in the parameter tag under the screen).
+                        override where the parameter value comes from (as defined in the parameter tag under the
+                        screen).
                     </xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
@@ -160,7 +168,9 @@ limitations under the License.
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="screen-path">
-                            <xs:annotation><xs:documentation>URI to another screen, either relative or from server root.</xs:documentation></xs:annotation>
+                            <xs:annotation><xs:documentation>
+                                URI to another screen, either relative or from server root.
+                            </xs:documentation></xs:annotation>
                         </xs:enumeration>
                         <xs:enumeration value="content"/>
                         <xs:enumeration value="plain"/>
@@ -169,7 +179,8 @@ limitations under the License.
             </xs:attribute>
             <xs:attribute name="save-last-screen" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
-                    Saves the last (previous) request's view for future use, generally with the screen-last type of response.
+                    Saves the last (previous) request's view for future use, generally with the screen-last type of
+                    response.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="save-current-screen" default="false" type="boolean">
@@ -181,7 +192,6 @@ limitations under the License.
     </xs:element>
 
     <!-- ================ Subscreens ================ -->
-
     <xs:element name="subscreens">
         <xs:annotation><xs:documentation>
             Declare subscreens for this screen. One subscreen at a time is active, based on the "screen path" used to
@@ -200,7 +210,8 @@ limitations under the License.
                subscreen)
             2. for including screens that are part of another application, or shared and not in any application:
                subscreens-item elements below the screen -> subscreens element (this element)
-            3. for adding screens to an existing application: a record in the SubscreensItem entity
+            3. for adding screens, removing screens, or changing order and title of screens to an existing application:
+               a record in the SubscreensItem entity
 
             There are two visual elements (widgets) that come from the subscreens, a menu and the active subscreen.
             Those are included with the widgets using the "subscreens-menu" and "subscreens-active" elements, or the
@@ -284,28 +295,44 @@ limitations under the License.
     </xs:element>
 
     <!-- ================ Sections ================ -->
-
     <xs:element name="section" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:group ref="section-elements"/>
-            <xs:attribute name="name" type="xs:string"><xs:annotation><xs:documentation>A name for the section, used for external reference within the screen.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="name" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    A name for the section, used for external reference within the screen.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="section-iterate" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:group ref="section-elements"/>
-            <xs:attribute name="name" type="xs:string"><xs:annotation><xs:documentation>A name for the section, used for external reference within the screen.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="name" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    A name for the section, used for external reference within the screen.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="list" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The name of the field that contains the list to iterate over.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>
+                    The name of the field that contains the list to iterate over.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="entry" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The name of the field that will contain each entry as we iterate through the list.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>
+                    The name of the field that will contain each entry as we iterate through the list.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="key" type="xs:string">
-                <xs:annotation><xs:documentation>If list points to a Map or List of MapEntry the key will be put where this refers to, the value where the entry attribute refers to.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>
+                    If list points to a Map or List of MapEntry the key will be put where this refers to, the value
+                    where the entry attribute refers to.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate" type="xs:string" default="${paginate}">
-                <xs:annotation><xs:documentation>Indicate if this section is paginated or not, true by default.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>
+                    Indicate if this section is paginated or not, true by default.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate-size" type="xs:string"/>
         </xs:complexType>
@@ -323,7 +350,6 @@ limitations under the License.
     </xs:element>
 
     <!-- ================ Containers ================ -->
-
     <xs:element name="container" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
@@ -390,7 +416,6 @@ limitations under the License.
     </xs:element>
 
     <!-- ================ Includes ================ -->
-
     <xs:element name="include-content" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:attribute name="content-path" type="xs:string"/>
@@ -406,7 +431,6 @@ limitations under the License.
     </xs:element>
 
     <!-- ============== Tree ============== -->
-
     <xs:element name="tree" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:sequence>
@@ -455,59 +479,30 @@ limitations under the License.
     </xs:element>
 
     <!-- ============== Platform Specific Elements =============== -->
-
     <xs:element name="platform-specific" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:choice>
-                <xs:element ref="html"/>
-                <xs:element ref="xml"/>
-                <xs:element ref="xsl-fo"/>
+                <xs:element ref="text"/>
                 <xs:element ref="gwt"/>
                 <xs:element ref="swing"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>
     
-    <!-- ============== HTML Specific Elements =============== -->
-    <xs:element name="HtmlWidgets" abstract="true"/>
-    <xs:element name="html">
+    <!-- ============== Text Specific Elements =============== -->
+    <xs:element name="text">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="HtmlWidgets"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="template"/>
             </xs:sequence>
+            <xs:attribute name="type" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Can be anything. Default supported values include: text, html, xsl-fo, xml, and csv.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="html-template" substitutionGroup="HtmlWidgets">
-        <xs:complexType>
-            <xs:attribute type="xs:string" name="location" use="required"/>
-        </xs:complexType>
-    </xs:element>
-
-    <!-- ============== XSL-FO Specific Elements =============== -->
-    <xs:element name="XslFoWidgets" abstract="true"/>
-    <xs:element name="xsl-fo">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="XslFoWidgets"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="xsl-fo-template" substitutionGroup="XslFoWidgets">
-        <xs:complexType>
-            <xs:attribute type="xs:string" name="location" use="required"/>
-        </xs:complexType>
-    </xs:element>
-
-    <!-- ============== XML Specific Elements =============== -->
-    <xs:element name="XmlWidgets" abstract="true"/>
-    <xs:element name="xml">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="XmlWidgets"/>
-            </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="xml-template" substitutionGroup="XmlWidgets">
+    <xs:element name="template">
         <xs:complexType>
             <xs:attribute type="xs:string" name="location" use="required"/>
         </xs:complexType>

@@ -190,6 +190,10 @@ limitations under the License.
         <field name="userId" type="id-vlong" is-pk="true"/>
         <field name="userPreferenceTypeId" type="id" is-pk="true"/>
         <field name="userPrefValue" type="text-long"/>
+        <relationship type="one-nofk" rel-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+        <relationship type="one" rel-entity-name="UserPreferenceType"/>
     </entity>
     <entity entity-name="UserPreferenceType" package-name="org.moqui.security.user">
         <field name="userPreferenceTypeId" type="id" is-pk="true"/>
