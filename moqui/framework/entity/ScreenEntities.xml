@@ -17,12 +17,12 @@ limitations under the License.
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.screen -->
+    <!-- org.moqui.screen.subscreen -->
     <!-- ========================================================= -->
 
-    <entity entity-name="SubscreensItem" package-name="org.moqui.screen">
+    <entity entity-name="SubscreensItem" package-name="org.moqui.screen.subscreen">
         <field name="screenLocation" type="id" is-pk="true"/>
-        <field name="subscreenName" type="id" is-pk="true"/>
+        <field name="subscreenName" type="text-medium" is-pk="true"/>
         <field name="userId" type="id-vlong" is-pk="true">
             <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
         </field>
@@ -42,5 +42,60 @@ limitations under the License.
         <relationship type="one-nofk" rel-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.screen.dynscreen -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="DynamicScreen" package-name="org.moqui.screen.dynscreen">
+        <field name="screenId" type="id" is-pk="true"/>
+        <field name="screenName" type="text-medium"/>
+        <field name="screenSetId" type="id"/>
+        <field name="userId" type="id-vlong">
+            <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
+        </field>
+    </entity>
+    <entity entity-name="DynamicScreenInclude" package-name="org.moqui.screen.dynscreen">
+        <field name="screenId" type="id" is-pk="true"/>
+        <field name="includeSeqId" type="id" is-pk="true"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="panelSeqId" type="id"/>
+        <field name="areaEnumId" type="id"><description>Options include: header, left, center, right, and footer.</description></field>
+        <field name="screenLocation" type="text-long"/>
+    </entity>
+    <entity entity-name="DynamicScreenIncludeParam" package-name="org.moqui.screen.dynscreen">
+        <field name="screenId" type="id" is-pk="true"/>
+        <field name="includeSeqId" type="id" is-pk="true"/>
+        <field name="parameterName" type="text-medium" is-pk="true"/>
+        <field name="parameterValue" type="text-long"/>
+    </entity>
+    <entity entity-name="DynamicScreenPanel" package-name="org.moqui.screen.dynscreen">
+        <field name="screenId" type="id" is-pk="true"/>
+        <field name="panelSeqId" type="id" is-pk="true"/>
+        <field name="areaSizeUnit" type="id"><description>Options include: px, and em (defaults to px).</description></field>
+    </entity>
+    <entity entity-name="DynamicScreenPanelArea" package-name="org.moqui.screen.dynscreen">
+        <field name="screenId" type="id" is-pk="true"/>
+        <field name="panelSeqId" type="id" is-pk="true"/>
+        <field name="areaEnumId" type="id" is-pk="true"><description>Options include: header, left, center, right, and footer.</description></field>
+        <field name="areaSize" type="number-decimal"/>
+        <field name="draggable" type="text-indicator"><description>Options include: Y or N, defaults to N.</description></field>
+    </entity>
+    <entity entity-name="DynamicScreenSet" package-name="org.moqui.screen.dynscreen">
+        <field name="screenSetId" type="id" is-pk="true"/>
+        <field name="screenSetName" type="text-medium"/>
+    </entity>
+    <!--
+     TODO: support panels within panels?
+     TODO: how to use this along with subscreens and menus in subscreens versus screen sets? just use subscreens?
+    -->
+
+    <!-- ========================================================= -->
+    <!-- org.moqui.screen.dynform -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="DynamicForm" package-name="org.moqui.screen.dynform">
+        <field name="screenId" type="id" is-pk="true"/>
     </entity>
 </entities>

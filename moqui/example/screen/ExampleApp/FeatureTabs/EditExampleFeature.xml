@@ -22,11 +22,11 @@ limitations under the License.
 
     <transition name="createExampleFeature">
         <actions><call-service service-name="createExampleFeature" auto-in-map="true"/></actions>
-        <transition-response url="EditExampleFeature"/>
+        <default-response url="EditExampleFeature"/>
     </transition>
     <transition name="updateExampleFeature">
         <actions><call-service service-name="updateExampleFeature" auto-in-map="true"/></actions>
-        <transition-response url="EditExampleFeature"/>
+        <default-response url="EditExampleFeature"/>
     </transition>
 
     <section>

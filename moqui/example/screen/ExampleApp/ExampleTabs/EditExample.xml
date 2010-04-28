@@ -20,11 +20,11 @@ limitations under the License.
     <parameter name="exampleId"/>
     <transition name="createExample">
         <actions><call-service service-name="createExample" auto-in-map="true"/></actions>
-        <transition-response url="EditExample"/>
+        <default-response url="EditExample"/>
     </transition>
     <transition name="updateExample">
         <actions><call-service service-name="updateExample" auto-in-map="true"/></actions>
-        <transition-response url="EditExample"/>
+        <default-response url="EditExample"/>
     </transition>
 
     <section>

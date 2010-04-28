@@ -16,6 +16,7 @@
 package org.moqui.entity;
 
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -23,7 +24,7 @@ import java.util.ListIterator;
 /**
  * Entity Cursor List Iterator for Handling Cursored Database Results
  */
-public interface EntityListIterator extends ListIterator<EntityValue> {
+public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<EntityValue> {
 
     /** Sets the cursor position to just after the last result so that previous() will return the last result */
     public void afterLast() throws EntityException;
@@ -98,4 +99,7 @@ public interface EntityListIterator extends ListIterator<EntityValue> {
     public List<EntityValue> getPartialList(int start, int number) throws EntityException;
 
     public int getResultsSizeAfterPartialList() throws EntityException;
+
+    /** Method to implement the Iterable interface to allow an EntityListIterator to be used in a foreach loop. Just returns this. */
+    public Iterator<EntityValue> iterator();
 }

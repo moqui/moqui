@@ -18,7 +18,7 @@ limitations under the License.
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-include="false">
 
-    <transition name="lookupExampleFeature"><transition-response url="LookupExampleFeature"/></transition>
+    <transition name="lookupExampleFeature"><default-response url="LookupExampleFeature"/></transition>
 
     <section>
         <actions>

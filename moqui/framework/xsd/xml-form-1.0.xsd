@@ -177,6 +177,7 @@ limitations under the License.
             <xs:attribute name="text" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
             <xs:attribute name="confirmation-message" type="xs:string"><xs:annotation><xs:documentation>If there is a message here it will show in a confirmation box when the link is clicked on.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">

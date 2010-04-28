@@ -110,17 +110,31 @@ limitations under the License.
                         <xs:annotation><xs:documentation>
                             When this transition is followed these actions are run.
 
-                            After the actions are run it goes to the url (through client-side redirect, dynamic update
-                            of a screen area, etc).
+                            After the actions are run it goes to the url that this transition goes to (through
+                            client-side redirect, dynamic update of a screen area, etc).
                         </xs:documentation></xs:annotation>
                     </xs:element>
                 </xs:choice>
-                <xs:element ref="transition-response" maxOccurs="unbounded">
+                <xs:element ref="conditional-response" minOccurs="0" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
-                        The transition response will be chosen based on the value of the "responseName" field in the
-                        context.
-                        
-                        The responseName defaults to "success".
+                        If there are multiple transition-response sub-elements the first one whose condition evaluates
+                        to true will be the one used. If no conditional responses match, the default-response will be
+                        used.
+                    </xs:documentation></xs:annotation>
+                </xs:element>
+                <xs:element ref="default-response">
+                    <xs:annotation><xs:documentation>
+                        This response must always be defined and is the response that will be used if there is no error
+                        in the actions, and if none of the conditions in conditional responses evaluate to true.
+                    </xs:documentation></xs:annotation>
+                </xs:element>
+                <xs:element ref="error-response" minOccurs="0">
+                    <xs:annotation><xs:documentation>
+                        If there is an error in evaluating the actions on this transition then the error-response will
+                        be used and the transition-response element(s) will be ignored.
+
+                        If there are actions and there is no error-response defined then the default error response
+                        will be used.
                     </xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
@@ -128,11 +142,33 @@ limitations under the License.
                 <xs:annotation><xs:documentation>
                     Transition names should be camel-cased and start with an lower-case letter (whereas screen filenames
                     and subscreens-item names start with a upper-case letter).
+
+                    The transition name is used in link and other elements in place of URLs when going to another
+                    screen within this application. The transition name will appear briefly as the URL before the
+                    redirect is done for the transition response.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="transition-response">
+    <xs:element name="conditional-response">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="condition" minOccurs="0"/>
+                <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation><xs:documentation>
+                        These parameters will be used when redirecting to the url or other activating of the target
+                        screen.
+
+                        Each screen has a list of expected parameters so this is only necessary when you need to
+                        override where the parameter value comes from (default defined in the parameter tag under the
+                        screen).
+                    </xs:documentation></xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.response"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="default-response">
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
@@ -140,56 +176,75 @@ limitations under the License.
                         These parameters will be used when redirecting to the url or other activating of the target
                         screen.
 
-                        Each screen has a list of expected parameters so this is only necessary when you need to 
-                        override where the parameter value comes from (as defined in the parameter tag under the
+                        Each screen has a list of expected parameters so this is only necessary when you need to
+                        override where the parameter value comes from (default defined in the parameter tag under the
                         screen).
                     </xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" default="success"/>
-            <xs:attribute name="type" default="url">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="none"/>
-                        <xs:enumeration value="screen-last">
-                            <xs:annotation><xs:documentation>
-                                Will use the screen from the last request unless there is a saved from some previous
-                                request (using the save-last-screen attribute).
-                                If no last screen is found the value in the url will be used.
-                            </xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                        <xs:enumeration value="screen-last-noparam"/>
-                        <xs:enumeration value="url"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="url" type="xs:string"/>
-            <xs:attribute name="url-type" default="screen-path">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="screen-path">
-                            <xs:annotation><xs:documentation>
-                                URI to another screen, either relative or from server root.
-                            </xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                        <xs:enumeration value="content"/>
-                        <xs:enumeration value="plain"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="save-last-screen" default="false" type="boolean">
-                <xs:annotation><xs:documentation>
-                    Saves the last (previous) request's view for future use, generally with the screen-last type of
-                    response.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="save-current-screen" default="false" type="boolean">
-                <xs:annotation><xs:documentation>
-                    Saves the current screen for future use, generally with the screen-last type of response.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
+            <xs:attributeGroup ref="attlist.response"/>
         </xs:complexType>
     </xs:element>
+    <xs:element name="error-response">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation><xs:documentation>
+                        These parameters will be used when redirecting to the url or other activating of the target
+                        screen.
+
+                        Each screen has a list of expected parameters so this is only necessary when you need to
+                        override where the parameter value comes from (default defined in the parameter tag under the
+                        screen).
+                    </xs:documentation></xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.response"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.response">
+        <xs:attribute name="type" default="url">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="none"/>
+                    <xs:enumeration value="screen-last">
+                        <xs:annotation><xs:documentation>
+                            Will use the screen from the last request unless there is a saved from some previous
+                            request (using the save-last-screen attribute).
+                            If no last screen is found the value in the url will be used.
+                        </xs:documentation></xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="screen-last-noparam"/>
+                    <xs:enumeration value="url"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="url" type="xs:string"/>
+        <xs:attribute name="url-type" default="screen-path">
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="screen-path">
+                        <xs:annotation><xs:documentation>
+                            URI to another screen, either relative or from server root.
+                        </xs:documentation></xs:annotation>
+                    </xs:enumeration>
+                    <xs:enumeration value="content"/>
+                    <xs:enumeration value="plain"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="save-last-screen" default="false" type="boolean">
+            <xs:annotation><xs:documentation>
+                Saves the last (previous) request's view for future use, generally with the screen-last type of
+                response.
+            </xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="save-current-screen" default="false" type="boolean">
+            <xs:annotation><xs:documentation>
+                Saves the current screen for future use, generally with the screen-last type of response.
+            </xs:documentation></xs:annotation>
+        </xs:attribute>
+    </xs:attributeGroup>
 
     <!-- ================ Subscreens ================ -->
     <xs:element name="subscreens">
@@ -374,7 +429,7 @@ limitations under the License.
                 <xs:element ref="panel-footer" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="unit" default="px">
+            <xs:attribute name="area-size-unit" default="px">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="px"/>
@@ -387,13 +442,13 @@ limitations under the License.
     <xs:element name="panel-header">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="height" type="xs:positiveInteger"/>
+            <xs:attribute name="height" type="xs:float"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-left">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="width" type="xs:positiveInteger"/>
+            <xs:attribute name="width" type="xs:float"/>
             <xs:attribute name="draggable" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
@@ -405,13 +460,13 @@ limitations under the License.
     <xs:element name="panel-right">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="width" type="xs:positiveInteger"/>
+            <xs:attribute name="width" type="xs:float"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-footer">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="height" type="xs:positiveInteger"/>
+            <xs:attribute name="height" type="xs:float"/>
         </xs:complexType>
     </xs:element>
 

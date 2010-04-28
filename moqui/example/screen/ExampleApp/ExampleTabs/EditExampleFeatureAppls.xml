@@ -19,18 +19,18 @@ limitations under the License.
         default-menu-title="Features" default-menu-index="3">
     <parameter name="exampleId"/>
 
-    <transition name="editExampleFeature"><transition-response url="/ExampleApp/FeatureTabs/EditExampleFeature"/></transition>
+    <transition name="editExampleFeature"><default-response url="/ExampleApp/FeatureTabs/EditExampleFeature"/></transition>
     <transition name="createExampleFeatureAppl">
         <actions><call-service service-name="createExampleFeatureAppl" auto-in-map="true"/></actions>
-        <transition-response url="EditExampleFeatureAppl"/>
+        <default-response url="EditExampleFeatureAppl"/>
     </transition>
     <transition name="updateExampleFeatureAppl">
         <actions><call-service service-name="updateExampleFeatureAppl" auto-in-map="true"/></actions>
-        <transition-response url="EditExampleFeatureAppl"/>
+        <default-response url="EditExampleFeatureAppl"/>
     </transition>
     <transition name="deleteExampleFeatureAppl">
         <actions><call-service service-name="deleteExampleFeatureAppl" auto-in-map="true"/></actions>
-        <transition-response url="EditExampleFeatureAppl"/>
+        <default-response url="EditExampleFeatureAppl"/>
     </transition>
 
     <section>

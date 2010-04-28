@@ -11,6 +11,8 @@ TODO:
 
 - example HTML files integrated with screens (implicit includes, etc)
 
+- figure out something for decorating lookup screens
+
 ================================================================
 General Design Notes
 
@@ -39,11 +41,13 @@ X Inherent external-referenced security
 
 X basic user info like name, but no more in the framework (beyond that should be in apps)
 
+X Continue using owasp-esapi for security
+
+- start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the {type}value format?)
+
 - Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens, mount points in controller, etc
 
 - Allow effective date (X) and content revision (_) settings at runtime to simulate a future or past production environment that is not yet active
-
-X Continue using owasp-esapi for security
 
 - consider state management in services for things like shopping cart? allow passing in a session context separate from the calling context
 
@@ -135,6 +139,8 @@ X All services with nouns and predicates, with implicit CrUD services that don't
 X Consistently use terms create, update, delete; never use store, remove, etc; get rid of GenericHelper concept, make entity stuff more database specific
 
 X have service engine and simple-methods be more like screen widget with hierarchical context, and context passed in is not a parameters map it is simply the variable space of the service, and sub-service calls by default have variables pulled from the calling context
+
+- more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev ML 20100418)
 
 - dynamic view-entity entities
 
