@@ -73,11 +73,11 @@ D Generic start/stop (init/destroy) routines callable by webapp or osgi
 
 X Combine all tools in single jar for easy plugin and wider variety of deployment options
 
+X Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens (X), mount points in controller (N/A), etc
+
+X Allow effective date (X) and content revision (no explicit content revision needed, just refer to a different workspace with deployment settings) settings at runtime to simulate a future or past production environment that is not yet active
+
 *** Priority 1
-
-- Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens, mount points in controller, etc
-
-- Allow effective date (X) and content revision (_) settings at runtime to simulate a future or past production environment that is not yet active
 
 *** Priority 2
 
@@ -158,6 +158,8 @@ X XML transformation (read/write in XML Actions?) for service message brokering,
 
 X data migration/transformation - read/write XML in XML Actions would help (especially XML -> db, db -> XML), maybe include or integrate with another tool
 
+D content management functionality in various places: on all location attributes/etc support component:, content:, http:, etc
+
 *** Priority 1
 
 - dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
@@ -168,9 +170,6 @@ X data migration/transformation - read/write XML in XML Actions would help (espe
 - everything, even entity and service definitions runtime changeable and reloadable
 
 - more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev ML 20100418)
-
-- content management functionality in various places
-  - on all location attributes/etc support component:, content:, http:, etc
 
 *** Priority 2
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
+
+    <server-stats bin-length-seconds="900" proxy-enabled="false" visit-persist="true" visitor-persist="true">
+        <!-- For staging, track most user things. -->
+        <artifact-stats type="screen" track-bin="true" persist-bin="true" persist-hit="false"/>
+        <artifact-stats type="transition" track-bin="true" persist-bin="true" persist-hit="false"/>
+        <artifact-stats type="service" track-bin="true" persist-bin="true" persist-hit="false"/>
+        <artifact-stats type="entity" track-bin="false" persist-bin="false" persist-hit="false"/>
+    </server-stats>
+
+    <screen-facade boundary-comments="true"/>
+
+    <repository-list>
+        <repository name="default" location="http://localhost:8081/rmi" type="rmi" workspace="staging"/>
+    </repository-list>
+</moqui-conf>

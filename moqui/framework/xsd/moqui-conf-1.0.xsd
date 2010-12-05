@@ -24,6 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="service-facade"/>
                 <xs:element minOccurs="0" ref="entity-facade"/>
                 <xs:element minOccurs="0" ref="database-list"/>
+                <xs:element minOccurs="0" ref="repository-list"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -203,13 +204,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="run-from-pool"/>
             </xs:sequence>
             <xs:attribute name="send-to-pool" type="xs:string" use="required"/>
-            <xs:attribute name="purge-job-days" type="xs:nonNegativeInteger" default="3"/>
-            <xs:attribute name="failed-retry-min" type="xs:nonNegativeInteger" default="3"/>
-            <xs:attribute name="wait-millis" type="xs:nonNegativeInteger" use="required"/>
-            <xs:attribute name="min-threads" type="xs:nonNegativeInteger" use="required"/>
-            <xs:attribute name="max-threads" type="xs:nonNegativeInteger" use="required"/>
-            <xs:attribute name="poll-enabled" default="true" type="boolean"/>
-            <xs:attribute name="poll-db-millis" type="xs:nonNegativeInteger" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="run-from-pool">
@@ -460,6 +454,38 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute type="xs:string" name="sql-type" use="required"/>
             <xs:attribute type="xs:string" name="sql-type-alias"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ====================== Repository (JCR) Conf Root ======================= -->
+    <xs:element name="repository-list">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="repository"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="repository">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+
+            <xs:attribute name="location" type="xs:string" use="required"/>
+            <xs:attribute name="conf-location" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>Defaults to: [${location}/repository.xml]</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="local"/>
+                        <xs:enumeration value="jndi"/>
+                        <xs:enumeration value="rmi"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+
+            <xs:attribute name="workspace" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>Defaults to the repository's default workspace.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>

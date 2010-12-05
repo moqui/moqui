@@ -12,45 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
 
-    <!-- ========================================================= -->
-    <!-- org.moqui.service.schedule -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="ScheduledService" package-name="org.moqui.service.schedule" sequence-bank-size="100">
-        <field name="scheduledServiceId" type="id" is-pk="true"/>
-        <field name="parentScheduleId" type="id"/>
-        <field name="previousScheduleId" type="id"/>
-        <field name="serviceName" type="text-medium"/>
-        <field name="scheduledServiceDataId" type="id"/>
-        <field name="tempExprId" type="id"/>
-        <field name="description" type="text-medium"/>
-        <field name="runTime" type="date-time"/>
-        <field name="poolId" type="text-medium"/>
-        <!-- we shouldn't need a tenantId, will be different table in different db for each tenant <field name="tenantId" type="id"/> -->
-        <field name="statusId" type="id"/>
-        <field name="authUserId" type="id-vlong"/>
-        <field name="runAsUserId" type="id-vlong"/>
-        <field name="currentRecurrenceCount" type="number-integer"/>
-        <field name="maxRecurrenceCount" type="number-integer"/>
-        <field name="maxRetry" type="number-integer"/>
-        <field name="runByInstanceId" type="id"/>
-        <field name="startDateTime" type="date-time"/>
-        <field name="finishDateTime" type="date-time"/>
-        <field name="cancelDateTime" type="date-time"/>
-        <relationship type="one" rel-entity-name="TemporalExpression"/>
-        <relationship type="one" rel-entity-name="ScheduledServiceData"/>
-        <relationship type="one" title="Auth" rel-entity-name="UserAccount">
-            <key-map field-name="authUserId" rel-field-name="userId"/>
-        </relationship>
-        <relationship type="one" title="RunAs" rel-entity-name="UserAccount">
-            <key-map field-name="runAsUserId" rel-field-name="userId"/>
-        </relationship>
-        <relationship type="one" rel-entity-name="StatusItem"/>
-    </entity>
-    <entity entity-name="ScheduledServiceData" package-name="org.moqui.service.schedule" sequence-bank-size="100">
-        <field name="scheduledServiceDataId" type="id" is-pk="true"/>
-        <field name="serviceContext" type="text-very-long"/>
-    </entity>
+    <!-- NOTE: there is no ScheduledService or ScheduledServiceData entity any more because Quartz Scheduler will be used and it has its own data model, etc -->
 
     <!-- ========================================================= -->
     <!-- org.moqui.service.semaphore -->

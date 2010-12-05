@@ -26,4 +26,8 @@
     </server-stats>
 
     <screen-facade boundary-comments="true"/>
+
+    <repository-list>
+        <repository name="default" location="http://localhost:8081/rmi" type="rmi" workspace="development"/>
+    </repository-list>
 </moqui-conf>

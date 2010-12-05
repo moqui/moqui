@@ -309,7 +309,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     filenames start with a upper-case letter).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="screen-location" type="xs:string" use="required"/>
+            <xs:attribute name="location" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Subscreen location can include various prefixes to support including from a file, http, component,
+                    or a content repository.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="menu-title" type="xs:string"/>
             <xs:attribute name="menu-index" type="xs:positiveInteger">
                 <xs:annotation><xs:documentation>
@@ -556,7 +561,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="template">
         <xs:complexType>
-            <xs:attribute type="xs:string" name="location" use="required"/>
+            <xs:attribute type="xs:string" name="location" use="required">
+                <xs:annotation><xs:documentation>
+                    Template location can include various prefixes to support including from a file, http, component,
+                    or a content repository.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

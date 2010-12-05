@@ -101,11 +101,12 @@ public interface EntityFacade {
     /** Find an Entity by its Primary Key
      * @param entityName The Name of the Entity as defined in the entity XML file
      * @param fields The fields of the named entity to query by with their corresponding values
-     * @param useCache Look in the cache before finding in the datasource.
-     * @param lockForUpdate Lock the selected record so only this transaction can change it until it is ended.
+     * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
+     * @param forUpdate Lock the selected record so only this transaction can change it until it is ended.
+     *     Also never cache regardless of other settings.
      * @return The EntityValue corresponding to the primaryKey
      */
-    EntityValue findOne(String entityName, Map<String, ?> fields, boolean useCache, boolean lockForUpdate)
+    EntityValue findOne(String entityName, Map<String, ?> fields, Boolean useCache, boolean forUpdate)
             throws EntityException;
 
     /** Finds EntityValues by the conditions specified in the EntityCondition object, the the EntityCondition javadoc
@@ -142,10 +143,11 @@ public interface EntityFacade {
      *     to the beginning for ascending, or " DESC" to the end of "-" to the beginning for descending
      * @param findOptions An instance of EntityFindOptions that specifies advanced query options. See the
      *     EntityFindOptions JavaDoc for more details.
+     * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
      * @return List of EntityValue objects representing the result
      */
     List<EntityValue> findList(String entityName, EntityCondition entityCondition,
-            Set<String> fieldsToSelect, List<String> orderBy, EntityFindOptions findOptions, boolean useCache)
+            Set<String> fieldsToSelect, List<String> orderBy, EntityFindOptions findOptions, Boolean useCache)
             throws EntityException;
 
     /** Finds EntityValues by the conditions specified in the EntityCondition object, the the EntityCondition javadoc
@@ -215,6 +217,11 @@ public interface EntityFacade {
     void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy);
 
     /** Use this to get a Connection if you want to do JDBC operations directly. This Connection will be enlisted in
-     * the active Transaction. */
-    Connection getConnection() throws EntityException;
+     * the active Transaction.
+     *
+     * @param groupName The name of entity group to get a connection for.
+     *     Corresponds to the entity.group-name attribute and the datasource.group-name attribute.
+     * @return JDBC Connection object for the associated database
+     */
+    Connection getConnection(String groupName) throws EntityException;
 }

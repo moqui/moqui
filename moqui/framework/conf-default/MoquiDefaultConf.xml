@@ -53,7 +53,7 @@
         </webapp>
     </webapp-list>
 
-    <screen-facade boundary-comments="false" default-autocomplete-rows="20" default-paginate-rows="10">
+    <screen-facade boundary-comments="true" default-autocomplete-rows="20" default-paginate-rows="20">
         <screen-text-output type="text" mime-type="text/plain"
                             macro-template-location="component://framework/macro-templates/ScreenTextMacros.xml"/>
         <screen-text-output type="html" mime-type="text/html"
@@ -67,9 +67,9 @@
     </screen-facade>
 
     <service-facade>
-        <thread-pool send-to-pool="pool" purge-job-days="3" failed-retry-min="3" wait-millis="750"
-                     min-threads="5" max-threads="15" poll-enabled="true" poll-db-millis="20000">
-            <run-from-pool name="pool"/>
+        <!-- NOTE: service jobs are managed using Quartz Scheduler, see quartz configuration for more details -->
+        <thread-pool send-to-pool="default">
+            <run-from-pool name="default"/>
         </thread-pool>
 
         <service-location name="main-rmi" location="rmi://localhost:1099/RMIDispatcher"/>
@@ -335,4 +335,11 @@
             <field-type-def type="binary-very-long" sql-type="BYTEA"/>
         </database>
     </database-list>
+    <repository-list>
+        <!-- this path is relative to the active Moqui runtime directory; start with a forward-slash for an absolute path -->
+        <repository name="default" location="rep/jackrabbit" type="local" workspace="default"/>
+
+        <!-- <repository name="default" location="http://localhost:8081/rmi" type="rmi" workspace="default"/> -->
+        <!-- <repository name="default" location="java:comp/env/jcr/repository" type="jndi" workspace="default"/> -->
+    </repository-list>
 </moqui-conf>
