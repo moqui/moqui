@@ -16,6 +16,26 @@ TODO:
 ================================================================
 General Design Notes
 
+*** Implementation Plans
+
+- Use XML binding for parsing: Apache XMLBeans
+
+- Integrated Artifact Definition Info, not separate classes?
+
+- start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the {type}value format?)
+
+- default style sheet very general and context sensitive
+
+- Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and if there is a standard Tomcat OSGi bundle; look at Apache Sling for examples
+
+- Support single/simple war file for deployment in any app server, point to things without using classpath; make so all can be in a war file, and can point to directory structure outside the war file
+
+- lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA rules, preload those without preloading services using String/key reference only)
+
+- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in the file
+
+*** Done
+
 X ExecutionContext should have structured variables for all framework things instead of putting them in the context Map like is done in the OFBiz screen widget; it should also have a MapStack built in for the local variable space (context)
 
 X All tool access to be done through the ExecutionContext, no other factories; always available in a ThreadLocal variable, created through ExecutionContextFactory implementation
@@ -33,69 +53,44 @@ X ExecutionContext to have methods to render screens with the current context
 X Start with execution context, multiple tenant, external decl security, always know user, locale, etc
 X Start with simplified API, interfaces-only
 
-- Use XML binding for parsing: Apache XMLBeans
-
-- Integrated Artifact Definition Info, not separate classes?
-
 X Inherent external-referenced security
 
 X basic user info like name, but no more in the framework (beyond that should be in apps)
 
 X Continue using owasp-esapi for security
 
-- start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the {type}value format?)
-
-- Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens, mount points in controller, etc
-
-- Allow effective date (X) and content revision (_) settings at runtime to simulate a future or past production environment that is not yet active
-
-- consider state management in services for things like shopping cart? allow passing in a session context separate from the calling context
-
-- incorporate GWT from the beginning for subscreens, form widget, etc
-
 X uniform actions/operations across all tools, sharing XSD and backing code
 
 X No explicit Css in forms, etc use auto and sometimes explicit id only
-
-- default style sheet very general and context sensitive
 
 D support multiple auth sources and both running and permissions without UserAccount record; also consider using LDAP for permission configuration instead of or in addition to a database; include an embedded LDAP server with the system, maybe for auth and for tenant configuration
 
 D use groovy everywhere (no bsh, no EL), even for EL things: just surround expression with double-quotes (or triple double-quotes to support multi-line) and evaluate it to a String, then convert to another type if needed
 
-================================================================
-Container/Modules
-
 X Externalize all config files, runtime files
 
-- Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and if there is a standard Tomcat OSGi bundle; look at Apache Sling for examples
-
-- Support single/simple war file for deployment in any app server, point to things without using classpath; make so all can be in a war file, and can point to directory structure outside the war file
-
-X Generic start/stop (init/destroy) routines callable by webapp or osgi
-
-- lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA rules, preload those without preloading services using String/key reference only
-
-- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in the file
+D Generic start/stop (init/destroy) routines callable by webapp or osgi
 
 X Combine all tools in single jar for easy plugin and wider variety of deployment options
+
+*** Priority 1
+
+- Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens, mount points in controller, etc
+
+- Allow effective date (X) and content revision (_) settings at runtime to simulate a future or past production environment that is not yet active
+
+*** Priority 2
+
+- consider state management in services for things like shopping cart? allow passing in a session context separate from the calling context (maybe later, nice to have stateless services for now)
+
+- incorporate GWT from the beginning for subscreens, form widget, etc (or maybe not... use jQuery instead to avoid translation layer, etc)
 
 ================================================================
 UI and Web Dev Notes
 
-- consider the web developers: don't use screens, all content driven but with easy interface with screens, mount point for content, etc; also need a way to attach actions to JCR content… through screens if there will be actions/etc?
-
-- allow a mix of HTML templates (perhaps extension .html, though will be treated as FTL files) and screen defs in the same directory structure
+*** Done
 
 X no style in screens or other widgets, just id; generate simple HTML and style externally
-
-- add theme data structure, simplified functionality (based more on CSS, not on replacing full templates)
-
-- for managed content add facility to branch content sets and test/deploy/etc those branches from the app
-
-- implement ecommerce and public facing apps entirely in managed content (if/when done, and in separate project)
-
-- for simplified templating in managed content use the map tree concept (ie simple dot-syntax expressions for sub-content, etc) designed for OFBiz
 
 X UI l10n labels: instead of string expansion and explicit labels use the value of the hand coded label itself (ie the default label text) as the index/ID; when using IDs these tended to get long and match the "en" value of the label anyway, so might as well use the human readable text itself for implicit i18n
 
@@ -119,28 +114,65 @@ X explicit screen transitions: have links/buttons/etc use generic IDs and not fu
 
 X consider multiple screens in a single flow with start/stop demarcation, just for the wizard style subscreens panel
 
-- more dynamic forms, including fields that show/hide or change depending on the value of other fields; can GWT forms do this?
+X configurable menus per-user through db, ie add subscreens for a single user only or for all users
 
-- instead of OFBiz portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
+D instead of OFBiz portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
 
-X configurable menus per-user through db, ie add subscreens for a single user only or for all users 
+*** Priority 1
+
+- more dynamic forms, including fields that show/hide or change depending on the value of other fields?
+
+- support wiki-style templates (same library as Confluence?)
+
+- allow a mix of HTML templates (perhaps extension .html, though will be treated as FTL files) and screen defs in the same directory structure
+
+- add theme data structure, simplified functionality (based more on CSS, not on replacing full templates)
+
+- for simplified templating in managed content use the map tree concept (ie simple dot-syntax expressions for sub-content, etc) designed for OFBiz
+
+- consider the web developers: don't use screens, all content driven but with easy interface with screens, mount point for content, etc; also need a way to attach actions to JCR content… through screens if there will be actions/etc?
+
+- for managed content add facility to branch content sets and test/deploy/etc those branches from the app
+
+*** Priority 2
+
+- implement ecommerce and public facing apps entirely in managed content (if/when done, and in separate project)
 
 - support rendering a screen in a JSR-168/286 portlet
 
 ================================================================
 Entity and Service Facades
 
+*** Done
+
 X All services with nouns and predicates, with implicit CrUD services that don't even need to be defined (just CrUD verb and entity-name noun in service name)
-
-- Refer to services by namespace to facilitate reloading files more granulalry (somehow move toward lazy loading)
-
-- everything, even entity and service definitions runtime changeable and reloadable
 
 X Consistently use terms create, update, delete; never use store, remove, etc; get rid of GenericHelper concept, make entity stuff more database specific
 
 X have service engine and simple-methods be more like screen widget with hierarchical context, and context passed in is not a parameters map it is simply the variable space of the service, and sub-service calls by default have variables pulled from the calling context
 
+D input validation that runs both client and server side (service definition) with single definition
+X service defs with hierarchical parameters (and use parameter, not attribute for tag name) to support sub-elements for lists, sets, and maps
+
+X XML transformation (read/write in XML Actions?) for service message brokering, XML/HTTP services, etc
+
+X data migration/transformation - read/write XML in XML Actions would help (especially XML -> db, db -> XML), maybe include or integrate with another tool
+
+*** Priority 1
+
+- dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
+- Have general dynamic database-driven forms that extend XML forms instead of ofb surveys
+
+- Refer to services by namespace to facilitate reloading files more granulalry (somehow move toward lazy loading)
+
+- everything, even entity and service definitions runtime changeable and reloadable
+
 - more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev ML 20100418)
+
+- content management functionality in various places
+  - on all location attributes/etc support component:, content:, http:, etc
+
+*** Priority 2
 
 - dynamic view-entity entities
 
@@ -148,20 +180,7 @@ X have service engine and simple-methods be more like screen widget with hierarc
 
 - email data model to save messages locally (both incoming and outgoing)
 
-- dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
-- Have general dynamic database-driven forms that extend XML forms instead of ofb surveys
-
-- content management functionality in various places
-  - on all location attributes/etc support component:, content:, http:, etc
-
-D input validation that runs both client and server side (service definition) with single definition
-X service defs with hierarchical parameters (and use parameter, not attribute for tag name) to support sub-elements for lists, sets, and maps
-
 - integration tools: support for remote services (in/out) like REST, XML/HTTP; perhaps use ServiceMix or something; connector stuff?; service orchestration?
-
-X XML transformation (read/write in XML Actions?) for service message brokering, XML/HTTP services, etc
-
-X data migration/transformation - read/write XML in XML Actions would help (especially XML -> db, db -> XML), maybe include or integrate with another tool
 
 - something like the OFBiz datafile tool?
 
@@ -181,5 +200,3 @@ Policies and Principles for Managing Moqui and Moqui-based Apps
 - applications will be in a separate project from the framework, with different groups working on framework and applications projects
 
 - in applications project require collaboration on requirements, then designs, then implementations... for all new functionality and all changes... no exceptions!
-
-

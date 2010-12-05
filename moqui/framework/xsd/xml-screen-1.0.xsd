@@ -534,8 +534,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:choice>
                 <xs:element ref="text"/>
-                <xs:element ref="gwt"/>
-                <xs:element ref="swing"/>
+                <!-- the gwt and swing elements are just placeholders for now, won't be implemented in this rev -->
+                <xs:element ref="gwt" minOccurs="0" maxOccurs="0"/>
+                <xs:element ref="swing" minOccurs="0" maxOccurs="0"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>

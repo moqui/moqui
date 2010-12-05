@@ -349,20 +349,21 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="value-field" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Field to put result resulting EntityValue object in.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="use-cache" default="false" type="boolean">
-                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource.</xs:documentation></xs:annotation>
-            </xs:attribute>
             <xs:attribute name="auto-field-map" type="boolean">
                 <xs:annotation><xs:documentation>
                     Looks for all primary key fields by name in the context, and in the parameters map if not found in the context.
                     Defaults to true. If a field-map sub-element is found this will default to false instead.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="cache" type="boolean">
+                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for this comes from the cache attribute on the entity definition.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="lock-for-update" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
-                    Lock the selected record so only this transaction can change it until it is ended.
+                    Lock the selected record so only this transaction can change it until it is ended (committed or rolled back).
                     This does not have to be set to true in order to update the record, it just keeps other transactions
                     from updating it. In SQL this does a select for update.
+                    If this is true the cache will not be used, regardless of the cache attribute here and on the entity definition.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -397,19 +398,19 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="entity-name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Name of entity to find instances of.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="use-cache" default="false" type="boolean">
+            <xs:attribute name="list" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Name of the list to put results in.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="cache" type="boolean">
                 <xs:annotation>
                     <xs:documentation>
                         Specifies whether or not the cache should be searched before going to the database.
-                        Defaults to false.
+                        The default for this comes from the cache attribute on the entity definition.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="distinct" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Get only distinct results, based on the combination of all fields selected. Defaults to false.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="list" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>Name of the list to put results in.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="result-set-type" default="scroll">
                 <xs:simpleType>

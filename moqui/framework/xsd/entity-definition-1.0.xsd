@@ -51,7 +51,15 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="never-cache" default="false" type="boolean"/>
+            <xs:attribute name="cache" default="false">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"><xs:annotation><xs:documentation>Use cache during queries by default (code may override this).</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="false"><xs:annotation><xs:documentation>Do not use cache during queries by default (code may override this).</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="never"><xs:annotation><xs:documentation>Do not use cache during queries ever(code may NOT override this).</xs:documentation></xs:annotation></xs:enumeration>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <!-- ==================== field ===================== -->
