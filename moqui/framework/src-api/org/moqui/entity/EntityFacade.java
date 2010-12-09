@@ -26,9 +26,9 @@ import org.w3c.dom.Element;
  */
 public interface EntityFacade {
 
-    EntityConditionFactory getEntityConditionFactory();
+    EntityConditionFactory getConditionFactory();
     
-    EntityDefinition getEntityDefinition(String entityName);
+    EntityDefinition getDefinition(String entityName);
     
     /** Gets the group name for specified entityName
      * @param entityName The name of the entity to get the group name
@@ -39,9 +39,7 @@ public interface EntityFacade {
     /** Creates a Entity in the form of a EntityValue without persisting it */
     EntityValue makeValue(String entityName);
     
-    // ====== CrUD Methods
-
-   /** Store a group of values
+    /** Store a group of values
      * @param entityName The name of the Entity as defined in the entity XML file
      * @param fieldsToSet The fields of the named entity to set in the database
      * @param condition The condition that restricts the list of stored values
@@ -58,23 +56,12 @@ public interface EntityFacade {
      */
     int deleteByCondition(String entityName, EntityCondition condition) throws EntityException;
 
-    // ======= Find Methods
-
     /** Create an EntityFind object that can be used to specify additional options, and then to execute one or more
      * finds (queries).
      * @param entityName The Name of the Entity as defined in the entity XML file
      * @return An EntityFind object.
      */
     EntityFind find(String entityName);
-
-    // ======= XML Related Methods ========
-    List<EntityValue> readXmlDocument(URL url) throws EntityException;
-
-    List<EntityValue> readXmlDocument(Document document);
-
-    EntityValue makeValue(Element element);
-
-    // ======= Misc Methods ========
 
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;
      * if the named sequence doesn't exist, it will be created
@@ -97,4 +84,11 @@ public interface EntityFacade {
      * @return JDBC Connection object for the associated database
      */
     Connection getConnection(String groupName) throws EntityException;
+
+    // ======= XML Related Methods ========
+    List<EntityValue> readXmlDocument(URL url) throws EntityException;
+
+    List<EntityValue> readXmlDocument(Document document);
+
+    EntityValue makeValue(Element element);
 }

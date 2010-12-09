@@ -27,8 +27,6 @@ import java.util.Set;
  */
 public interface EntityFind extends java.io.Serializable {
 
-    // ======================== General/Common Options ========================
-
     /** The Name of the Entity to use, as defined in an entity XML file.
      * @return Returns this for chaining of method calls.
      */
@@ -40,6 +38,8 @@ public interface EntityFind extends java.io.Serializable {
      */
     EntityFind entityDynamicView(EntityDynamicView dynamicView);
     String getEntityDynamicView();
+
+    // ======================== Conditions (Where and Having) =================
 
     /** Add a field to the find (where clause). If any constraints are already in place this will be ANDed to them.
      * @return Returns this for chaining of method calls.
@@ -63,6 +63,14 @@ public interface EntityFind extends java.io.Serializable {
      * @return Returns this for chaining of method calls.
      */
     EntityFind havingCondition(EntityCondition condition);
+
+    /** Get the current where EntityCondition. */
+    EntityCondition getWhereEntityCondition();
+
+    /** Get the current having EntityCondition. */
+    EntityCondition getHavingEntityCondition();
+
+    // ======================== General/Common Options ========================
 
     /** The field of the named entity to get from the database.
      * If any select fields have already been specified this will be added to the set.
@@ -108,34 +116,6 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind forUpdate(boolean forUpdate);
     boolean getForUpdate();
 
-    /** Get the current where EntityCondition. */
-    EntityCondition getWhereEntityCondition();
-
-    /** Get the current having EntityCondition. */
-    EntityCondition getHavingEntityCondition();
-
-    // ======================== Run Find Methods ==============================
-
-    /** Runs a find with current options to get a single record by primary key.
-     * This method ignores the cache setting and always gets results from the database.
-     */
-    EntityValue one() throws EntityException;
-
-    /** Runs a find with current options to get a list of records.
-     * This method ignores the cache setting and always gets results from the database.
-     */
-    List<EntityValue> list() throws EntityException;
-
-    /** Runs a find with current options and returns an EntityListIterator object.
-     * This method ignores the cache setting and always gets results from the database.
-     */
-    EntityListIterator iterator() throws EntityException;
-
-    /** Runs a find with current options to get a count of matching records.
-     * This method ignores the cache setting and always gets results from the database.
-     */
-    long count() throws EntityException;
-
     // ======================== Advanced Options ==============================
 
     /** Specifies how the ResultSet will be traversed. Available values: ResultSet.TYPE_FORWARD_ONLY,
@@ -180,4 +160,27 @@ public interface EntityFind extends java.io.Serializable {
      */
     EntityFind setDistinct(boolean distinct);
     boolean getDistinct();
+
+
+    // ======================== Run Find Methods ==============================
+
+    /** Runs a find with current options to get a single record by primary key.
+     * This method ignores the cache setting and always gets results from the database.
+     */
+    EntityValue one() throws EntityException;
+
+    /** Runs a find with current options to get a list of records.
+     * This method ignores the cache setting and always gets results from the database.
+     */
+    List<EntityValue> list() throws EntityException;
+
+    /** Runs a find with current options and returns an EntityListIterator object.
+     * This method ignores the cache setting and always gets results from the database.
+     */
+    EntityListIterator iterator() throws EntityException;
+
+    /** Runs a find with current options to get a count of matching records.
+     * This method ignores the cache setting and always gets results from the database.
+     */
+    long count() throws EntityException;
 }
