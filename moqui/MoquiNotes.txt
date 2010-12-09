@@ -31,6 +31,7 @@ General Design Notes
 - Support single/simple war file for deployment in any app server, point to things without using classpath; make so all can be in a war file, and can point to directory structure outside the war file
 
 - lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA rules, preload those without preloading services using String/key reference only)
+- everything, even entity and service definitions runtime changeable and reloadable
 
 - Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in the file
 
@@ -160,16 +161,14 @@ X data migration/transformation - read/write XML in XML Actions would help (espe
 
 D content management functionality in various places: on all location attributes/etc support component:, content:, http:, etc
 
+X more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev ML 20100418)
+
 *** Priority 1
 
 - dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
 - Have general dynamic database-driven forms that extend XML forms instead of ofb surveys
 
 - Refer to services by namespace to facilitate reloading files more granulalry (somehow move toward lazy loading)
-
-- everything, even entity and service definitions runtime changeable and reloadable
-
-- more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev ML 20100418)
 
 *** Priority 2
 

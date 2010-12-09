@@ -117,13 +117,19 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     int compareTo(EntityValue that);
 
+    /** Creates a record for this entity value. */
+    void create() throws EntityException;
 
-    EntityValue create() throws EntityException;
+    /** Creates a record for this entity value, or updates the record if one exists that matches the primary key. */
+    void createOrUpdate() throws EntityException;
 
+    /** Updates the record that matches the primary key. */
     void update() throws EntityException;
 
+    /** Deletes the record that matches the primary key. */
     void delete() throws EntityException;
 
+    /** Refreshes this value based on the record that matches the primary key. */
     void refresh() throws EntityException;
 
     Object getOriginalDbValue(String name);

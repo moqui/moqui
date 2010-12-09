@@ -28,7 +28,7 @@ public interface EntityFacade {
 
     EntityConditionFactory getEntityConditionFactory();
     
-    EntityDefinition getModelEntity(String entityName);
+    EntityDefinition getEntityDefinition(String entityName);
     
     /** Gets the group name for specified entityName
      * @param entityName The name of the entity to get the group name
@@ -41,18 +41,6 @@ public interface EntityFacade {
     
     // ====== CrUD Methods
 
-    /** Creates a Entity in the form of a EntityValue and write it to the datasource
-     * @param value The EntityValue to create a value in the datasource from
-     * @return EntityValue instance containing the new instance
-     */
-    EntityValue create(EntityValue value) throws EntityException;
-
-    /** Creates or stores an Entity
-     * @param value The EntityValue instance containing the new or existing instance
-     * @return EntityValue instance containing the new or updated instance
-     */
-    EntityValue createOrUpdate(EntityValue value) throws EntityException;
-
    /** Store a group of values
      * @param entityName The name of the Entity as defined in the entity XML file
      * @param fieldsToSet The fields of the named entity to set in the database
@@ -63,18 +51,6 @@ public interface EntityFacade {
     int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition)
            throws EntityException;
 
-    /** Store the Entity from the EntityValue to the persistent store
-     * @param value EntityValue instance containing the entity
-     * @return int representing number of rows effected by this operation
-     */
-    int update(EntityValue value) throws EntityException;
-
-    /** Remove a Generic Value from the database
-     * @param value The EntityValue object of the entity to remove.
-     * @return int representing number of rows effected by this operation
-     */
-    int delete(EntityValue value) throws EntityException;
-
     /** Removes/deletes Generic Entity records found by the condition
      * @param entityName The Name of the Entity as defined in the entity XML file
      * @param condition The condition used to restrict the removing
@@ -82,117 +58,14 @@ public interface EntityFacade {
      */
     int deleteByCondition(String entityName, EntityCondition condition) throws EntityException;
 
-    /** Remove the named Related Entity for the EntityValue from the persistent store
-     * @param relationName String containing the relation name which is the
-     *      combination of relation.title and relation.rel-entity-name as
-     *      specified in the entity XML definition file
-     * @param value EntityValue instance containing the entity
-     * @return int representing number of rows effected by this operation
-     */
-    int deleteRelated(String relationName, EntityValue value) throws EntityException;
-
     // ======= Find Methods
 
-    /** Refresh the Entity for the EntityValue from the persistent store
-     * @param value EntityValue instance containing the entity to refresh
-     */
-    void refresh(EntityValue value) throws EntityException;
-
-    /** Find an Entity by its Primary Key
+    /** Create an EntityFind object that can be used to specify additional options, and then to execute one or more
+     * finds (queries).
      * @param entityName The Name of the Entity as defined in the entity XML file
-     * @param fields The fields of the named entity to query by with their corresponding values
-     * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
-     * @param forUpdate Lock the selected record so only this transaction can change it until it is ended.
-     *     Also never cache regardless of other settings.
-     * @return The EntityValue corresponding to the primaryKey
+     * @return An EntityFind object.
      */
-    EntityValue findOne(String entityName, Map<String, ?> fields, Boolean useCache, boolean forUpdate)
-            throws EntityException;
-
-    /** Finds EntityValues by the conditions specified in the EntityCondition object, the the EntityCondition javadoc
-     * for more details.
-     *
-     * @param entityName The name of the Entity as defined in the entity XML file
-     * @param whereEntityCondition The EntityCondition object that specifies how to constrain this query before any
-     *     groupings are done (if this is a view entity with group-by aliases)
-     * @param havingEntityCondition The EntityCondition object that specifies how to constrain this query after any
-     *     groupings are done (if this is a view entity with group-by aliases)
-     * @param fieldsToSelect The fields of the named entity to get from the database; if empty or null all fields will
-     *     be retrieved
-     * @param orderBy The fields of the named entity to order the query by; optionally add a " ASC" to the end or "+"
-     *     to the beginning for ascending, or " DESC" to the end of "-" to the beginning for descending
-     * @param findOptions An instance of EntityFindOptions that specifies advanced query options. See the
-     *     EntityFindOptions JavaDoc for more details.
-     * @return EntityListIterator representing the result of the query: NOTE THAT THIS MUST BE CLOSED (preferably in
-     *     a finally block) WHEN YOU ARE DONE WITH IT, AND DON'T LEAVE IT OPEN TOO LONG BECAUSE IT WILL MAINTAIN A 
-     *     DATABASE CONNECTION.
-     */
-    EntityListIterator find(String entityName, EntityCondition whereEntityCondition,
-            EntityCondition havingEntityCondition, Set<String> fieldsToSelect, List<String> orderBy,
-            EntityFindOptions findOptions) throws EntityException;
-
-    /** Finds EntityValues by the conditions specified in the EntityCondition object, the the EntityCondition javadoc
-     * for more details.
-     *
-     * @param entityName The name of the Entity as defined in the entity XML file
-     * @param entityCondition The EntityCondition object that specifies how to constrain this query before any
-     *     groupings are done (if this is a view entity with group-by aliases)
-     * @param fieldsToSelect The fields of the named entity to get from the database; if empty or null all fields will
-     *     be retrieved
-     * @param orderBy The fields of the named entity to order the query by; optionally add a " ASC" to the end or "+"
-     *     to the beginning for ascending, or " DESC" to the end of "-" to the beginning for descending
-     * @param findOptions An instance of EntityFindOptions that specifies advanced query options. See the
-     *     EntityFindOptions JavaDoc for more details.
-     * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
-     * @return List of EntityValue objects representing the result
-     */
-    List<EntityValue> findList(String entityName, EntityCondition entityCondition,
-            Set<String> fieldsToSelect, List<String> orderBy, EntityFindOptions findOptions, Boolean useCache)
-            throws EntityException;
-
-    /** Finds EntityValues by the conditions specified in the EntityCondition object, the the EntityCondition javadoc
-     * for more details.
-     * @param dynamicView The EntityDynamicView to use for the entity model for this query; generally created on the
-     *     fly for limited use
-     * @param whereEntityCondition The EntityCondition object that specifies how to constrain this query before any
-     *     groupings are done (if this is a view entity with group-by aliases)
-     * @param havingEntityCondition The EntityCondition object that specifies how to constrain this query after any
-     *     groupings are done (if this is a view entity with group-by aliases)
-     * @param fieldsToSelect The fields of the named entity to get from the database; if empty or null all fields will
-     *     be retreived
-     * @param orderBy The fields of the named entity to order the query by; optionally add a " ASC" to the end or "+"
-     *     to the beginning for ascending, or " DESC" to the end of "-" to the beginning for descending
-     * @param findOptions An instance of EntityFindOptions that specifies advanced query options. See the
-     *     EntityFindOptions JavaDoc for more details.
-     * @return EntityListIterator representing the result of the query: NOTE THAT THIS MUST BE CLOSED WHEN YOU ARE
-     *     DONE WITH IT, AND DON'T LEAVE IT OPEN TOO LONG BECAUSE IT WILL MAINTAIN AN OPEN DATABASE CONNECTION.
-     */
-    EntityListIterator find(EntityDynamicView dynamicView, EntityCondition whereEntityCondition,
-            EntityCondition havingEntityCondition, Collection<String> fieldsToSelect, List<String> orderBy,
-            EntityFindOptions findOptions) throws EntityException;
-
-    /** Finds a count of the records that match the given condition.
-     */
-    long findCount(String entityName, EntityCondition whereEntityCondition,
-            EntityCondition havingEntityCondition, EntityFindOptions findOptions) throws EntityException;
-
-    /** Get the named Related Entity for the EntityValue from the persistent store
-     * @param relationName String containing the relation name which is the
-     *      combination of relation.title and relation.rel-entity-name as
-     *      specified in the entity XML definition file
-     * @param byAndFields the fields that must equal in order to keep; may be null
-     * @param orderBy The fields of the named entity to order the query by; may be null;
-     *      optionally add a " ASC" for ascending or " DESC" for descending
-     * @param value EntityValue instance containing the entity
-     * @return List of EntityValue instances as specified in the relation definition
-     */
-    List<EntityValue> findRelated(String relationName, Map<String, ?> byAndFields, List<String> orderBy,
-            EntityValue value) throws EntityException;
-
-    /** Get related entity where relation is of type one, uses findByPrimaryKey
-     * @throws IllegalArgumentException if the list found has more than one item
-     */
-    EntityValue findRelatedOne(String relationName, EntityValue value, boolean useCache) throws EntityException;
+    EntityFind find(String entityName);
 
     // ======= XML Related Methods ========
     List<EntityValue> readXmlDocument(URL url) throws EntityException;
