@@ -418,8 +418,8 @@ This Work includes contributions authored by David E. Jones, not as a
             This can be re-used within the different areas as well, usually just the center area but could be used to
             split up even the header and footer.
 
-            There is an id for the outer container, and each area will have an automatic id as well (of: header, left,
-            center, right, footer).
+            There is an id for the outer container, and each area will have an automatic id as well (with a suffix of:
+            _header, _left, _center, _right, _footer).
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>

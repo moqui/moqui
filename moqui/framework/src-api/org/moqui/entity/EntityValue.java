@@ -98,19 +98,6 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks);
 
-    /** Makes an XML Element object with an attribute for each field of the entity
-     *@param document The XML Document that the new Element will be part of
-     *@param prefix A prefix to put in front of the entity name in the tag name
-     *@return org.w3c.dom.Element object representing this generic entity
-     */
-    Element makeXmlElement(Document document, String prefix);
-
-    /** Writes XML text with an attribute or CDATA element for each field of the entity
-     *@param writer A PrintWriter to write to
-     *@param prefix A prefix to put in front of the entity name in the tag name
-     */
-    void writeXmlText(PrintWriter writer, String prefix);
-
     /** Compares this GenericEntity to the passed object
      *@param that Object to compare this to
      *@return int representing the result of the comparison (-1,0, or 1)
@@ -163,4 +150,17 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @throws EntityException
      */
     boolean checkFks(boolean insertDummy) throws EntityException;
+
+    /** Makes an XML Element object with an attribute for each field of the entity
+     *@param document The XML Document that the new Element will be part of
+     *@param prefix A prefix to put in front of the entity name in the tag name
+     *@return org.w3c.dom.Element object representing this generic entity
+     */
+    Element makeXmlElement(Document document, String prefix);
+
+    /** Writes XML text with an attribute or CDATA element for each field of the entity
+     *@param writer A PrintWriter to write to
+     *@param prefix A prefix to put in front of the entity name in the tag name
+     */
+    void writeXmlText(PrintWriter writer, String prefix);
 }

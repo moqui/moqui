@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<entity-facade-xml type="seed">
+    <SurveyFieldType surveyFieldTypeId="BOOLEAN" description="Boolean (Yes/No)"/>
+    <SurveyFieldType surveyFieldTypeId="CONTENT" description="Content Record"/>
+    <SurveyFieldType surveyFieldTypeId="COUNTRY" description="Country"/>
+    <SurveyFieldType surveyFieldTypeId="CREDIT_CARD" description="Credit Card Number"/>
+    <SurveyFieldType surveyFieldTypeId="DATE" description="Date String (yyyy-MM-dd)"/>
+    <SurveyFieldType surveyFieldTypeId="DATE_TIME" description="Date String (yyyy-MM-dd hh:mm:ss)"/>
+    <SurveyFieldType surveyFieldTypeId="EMAIL" description="Email Address"/>
+    <SurveyFieldType surveyFieldTypeId="ENUMERATION" description="Enumeration"/>
+    <SurveyFieldType surveyFieldTypeId="NUMBER" description="Numeric"/>
+    <SurveyFieldType surveyFieldTypeId="OPTION" description="Selected Option"/>
+    <SurveyFieldType surveyFieldTypeId="PASSWORD" description="Password"/>
+    <SurveyFieldType surveyFieldTypeId="SEPERATOR_LINE" description="Seperator Line"/>
+    <SurveyFieldType surveyFieldTypeId="SEPERATOR_TEXT" description="Seperator Text"/>
+    <SurveyFieldType surveyFieldTypeId="STATE_PROVINCE" description="State/Province"/>
+    <SurveyFieldType surveyFieldTypeId="TEXT_SHORT" description="Short Text (single-line)"/>
+    <SurveyFieldType surveyFieldTypeId="TEXT_LONG" description="Long Text (single-line)"/>
+    <SurveyFieldType surveyFieldTypeId="TEXTAREA" description="Text (multi-line)"/>
+    <SurveyFieldType surveyFieldTypeId="TIME" description="Date String (hh:mm:ss)"/>
+    <SurveyFieldType surveyFieldTypeId="URL" description="URL"/>
+</entity-facade-xml>

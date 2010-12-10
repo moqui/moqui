@@ -28,7 +28,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="field-layout"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="extends" type="xs:string"/>
+            <xs:attribute name="extends" type="xs:string">
+                <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to extend.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="type">
                 <xs:annotation><xs:documentation>The form type is always required unless you are extending another form.</xs:documentation></xs:annotation>
                 <xs:simpleType>
@@ -47,14 +49,13 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="transition" type="xs:string"/>
             <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="focus-field-name" type="xs:string"/>
+            <xs:attribute name="focus-field" type="xs:string"/>
             <xs:attribute name="list" type="xs:string">
                 <xs:annotation><xs:documentation>for list type and other multiple data/form types this is the name of the list in the context to iterate over</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="list-entry" type="xs:string">
-                <xs:annotation><xs:documentation>if specified each list entry will be put in the context with this name; otherwise the list entry must be a Map and the entries in the Map will be put into the context by name</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>if specified each list entry will be put in the context with this name; otherwise the list entry must be a Map and the entries in the Map will be put into the context root directly.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="default-map-name" type="xs:string"/>
             <xs:attribute name="paginate" type="xs:string" default="${paginate}">
                 <xs:annotation><xs:documentation>Indicate if this form should paginate or not. Defaults to true.</xs:documentation></xs:annotation>
             </xs:attribute>
@@ -208,17 +209,15 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:choice>
                     <xs:element minOccurs="0" ref="SubFields"/>
                     <xs:element minOccurs="0" maxOccurs="unbounded" ref="conditional"/>
+                    <xs:element minOccurs="0" maxOccurs="unbounded" ref="visible-when"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>A unique name for this field. Used for the parameter name, referencing the field in other places, etc.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="map-name" type="xs:string">
-                <xs:annotation><xs:documentation>The name (or location) of the map that contains the data for this field in the form context.</xs:documentation></xs:annotation>
-            </xs:attribute>
             <xs:attribute name="entry-name" type="xs:string">
-                <xs:annotation><xs:documentation>The name of the entry in the map that contains the value to use for this field. Defaults to the value of the name attribute.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The name of the entry in the context that contains the value to use for this field. Defaults to the value of the name attribute.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="title" type="xs:string">
                 <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
@@ -253,10 +252,26 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="SubFields"/>
             </xs:sequence>
             <xs:attribute name="title" type="xs:string">
-                <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${} and foo.bar (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="tooltip" type="xs:string">
-                <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use the ${} and foo.bar (dot) syntax to insert values from the context for parameterization or internationalization.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use the ${} and foo.bar (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="visible-when">
+        <xs:annotation><xs:documentation>
+            Used to dynamically show or hide a field based on the value of another field (usually a drop-down).
+            If any of these elements are present the field is hidden unless one of the field/value pairs is a match.
+            For more complex conditions on visibility custom event handling should be used (ie JavaScript for HTML/Web
+                pages, Java/Groovy for Desktop UI, etc).
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the field (usually a drop-down) used to determine if this field should be visible or not.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="value" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The value the field should match in order for this to be visible.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

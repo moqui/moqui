@@ -1,11 +1,14 @@
 
 TODO:
 
-- do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc, security, theme, etc), create designs for each activity
+- do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc,
+  security, theme, etc), create designs for each activity
 
-- write up feature list (X), differences from OFBiz list (X), benefits/marketing list (_); post to web site and send to OFBiz after initial interfaces and examples are done (_)
+- write up feature list (X), differences from OFBiz list (X), benefits/marketing list (_); post to web site and send to
+  OFBiz after initial interfaces and examples are done (_)
 
-- create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the moqui site itself
+- create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the
+  moqui site itself
 
 - research usage ideas for JCR
 
@@ -14,40 +17,63 @@ TODO:
 - figure out something for decorating lookup screens
 
 ================================================================
-General Design Notes
-
-*** Implementation Plans
+Implementation Plans
 
 - Use XML binding for parsing: Apache XMLBeans
 
 - Integrated Artifact Definition Info, not separate classes?
 
-- start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the {type}value format?)
+- start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the
+  {type}value format?)
 
 - default style sheet very general and context sensitive
 
-- Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and if there is a standard Tomcat OSGi bundle; look at Apache Sling for examples
+- Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and
+  if there is a standard Tomcat OSGi bundle; look at Apache Sling for examples
 
-- Support single/simple war file for deployment in any app server, point to things without using classpath; make so all can be in a war file, and can point to directory structure outside the war file
+- Support single/simple war file for deployment in any app server, point to things without using classpath; make so all
+  can be in a war file, and can point to directory structure outside the war file
 
-- lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA rules, preload those without preloading services using String/key reference only)
+- lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently
+  used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load
+  services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA
+  rules, preload those without preloading services using String/key reference only)
 - everything, even entity and service definitions runtime changeable and reloadable
 
-- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in the file
+- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
+  the file
+
+- support wiki-style templates (same library as Confluence?)
+- for simplified templating in managed content use the map tree concept (ie simple dot-syntax expressions for
+  sub-content, etc) designed for OFBiz
+- consider the web developers: don't use screens, all content driven but with easy interface with screens, mount point
+  for content, etc; also need a way to attach actions to JCR content… through screens if there will be actions/etc?
+- allow a mix of HTML templates (perhaps extension .html or .ftl, though always treated as FTL files) and screen defs
+  in the same directory structure
+
+- integration tools: support for remote services (in/out) like REST, XML/HTTP; perhaps use ServiceMix or something;
+  connector stuff?; service orchestration?
+
+================================================================
+General Design Notes
 
 *** Done
 
-X ExecutionContext should have structured variables for all framework things instead of putting them in the context Map like is done in the OFBiz screen widget; it should also have a MapStack built in for the local variable space (context)
+X ExecutionContext should have structured variables for all framework things instead of putting them in the context Map
+  like is done in the OFBiz screen widget; it should also have a MapStack built in for the local variable space (context)
 
-X All tool access to be done through the ExecutionContext, no other factories; always available in a ThreadLocal variable, created through ExecutionContextFactory implementation
+X All tool access to be done through the ExecutionContext, no other factories; always available in a ThreadLocal
+  variable, created through ExecutionContextFactory implementation
 
-X ExecutionContext to have structure for error messages to build a list of errors that are Maps or objects and not just a string in order to track context with the error in a structured way (not just in text)
+X ExecutionContext to have structure for error messages to build a list of errors that are Maps or objects and not just
+  a string in order to track context with the error in a structured way (not just in text)
 
 X Add logging methods to ExecutionContext
 
 X Add location to URL and to Stream methods to ExecutionContext
 
-X Add caching interface/facade available through ExecutionContext - look into existing cache impls instead of creating a new one for this
+X Add caching interface/facade available through ExecutionContext - look into existing cache impls instead of creating
+  a new one for this
 
 X ExecutionContext to have methods to render screens with the current context
 
@@ -64,9 +90,12 @@ X uniform actions/operations across all tools, sharing XSD and backing code
 
 X No explicit Css in forms, etc use auto and sometimes explicit id only
 
-D support multiple auth sources and both running and permissions without UserAccount record; also consider using LDAP for permission configuration instead of or in addition to a database; include an embedded LDAP server with the system, maybe for auth and for tenant configuration
+D support multiple auth sources and both running and permissions without UserAccount record; also consider using LDAP
+  for permission configuration instead of or in addition to a database; include an embedded LDAP server with the system,
+  maybe for auth and for tenant configuration
 
-D use groovy everywhere (no bsh, no EL), even for EL things: just surround expression with double-quotes (or triple double-quotes to support multi-line) and evaluate it to a String, then convert to another type if needed
+D use groovy everywhere (no bsh, no EL), even for EL things: just surround expression with double-quotes (or triple
+  double-quotes to support multi-line) and evaluate it to a String, then convert to another type if needed
 
 X Externalize all config files, runtime files
 
@@ -74,17 +103,22 @@ D Generic start/stop (init/destroy) routines callable by webapp or osgi
 
 X Combine all tools in single jar for easy plugin and wider variety of deployment options
 
-X Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens (X), mount points in controller (N/A), etc
+X Content with content repo not like ofb entities, use JCR with Apache JackRabbit; have content tags in screens (X),
+  mount points in controller (N/A), etc
 
-X Allow effective date (X) and content revision (no explicit content revision needed, just refer to a different workspace with deployment settings) settings at runtime to simulate a future or past production environment that is not yet active
+X Allow effective date (X) and content revision (no explicit content revision needed, just refer to a different
+  workspace with deployment settings) settings at runtime to simulate a future or past production environment that is
+  not yet active
 
 *** Priority 1
 
 *** Priority 2
 
-- consider state management in services for things like shopping cart? allow passing in a session context separate from the calling context (maybe later, nice to have stateless services for now)
+- consider state management in services for things like shopping cart? allow passing in a session context separate from
+  the calling context (maybe later, nice to have stateless services for now)
 
-- incorporate GWT from the beginning for subscreens, form widget, etc (or maybe not... use jQuery instead to avoid translation layer, etc)
+- incorporate GWT from the beginning for subscreens, form widget, etc (or maybe not... use jQuery instead to avoid
+  translation layer, etc)
 
 ================================================================
 UI and Web Dev Notes
@@ -93,25 +127,42 @@ UI and Web Dev Notes
 
 X no style in screens or other widgets, just id; generate simple HTML and style externally
 
-X UI l10n labels: instead of string expansion and explicit labels use the value of the hand coded label itself (ie the default label text) as the index/ID; when using IDs these tended to get long and match the "en" value of the label anyway, so might as well use the human readable text itself for implicit i18n
+X UI l10n labels: instead of string expansion and explicit labels use the value of the hand coded label itself (ie the
+  default label text) as the index/ID; when using IDs these tended to get long and match the "en" value of the label
+  anyway, so might as well use the human readable text itself for implicit i18n
 
-X UI labels database driven instead of file driven (only cache when used, faster lazy loading inherent, better support for multi-tenant envs, easier to configure, etc)
+X UI labels database driven instead of file driven (only cache when used, faster lazy loading inherent, better support
+  for multi-tenant envs, easier to configure, etc)
 
-X In form widget define field once with multiple possible conditions and one field type sub-element per condition, i.e. instead of having the condition on the field itself (works fine even to ignore or hide, the title will be ignored, of course want to externalize titles anyway)
+X In form widget define field once with multiple possible conditions and one field type sub-element per condition, i.e.
+  instead of having the condition on the field itself (works fine even to ignore or hide, the title will be ignored, of
+  course want to externalize titles anyway)
 
-X Form definition should have no target, calling/including screen should be able to configure target; have transition-name instead
+X Form definition should have no target, calling/including screen should be able to configure target; have
+  transition-name instead
 
-X Combine controller and menu/navigation, implicit requests based on menus, etc; support series of screens like seam conversation; combine controller requests, views, and screen defs in a single file, and add concept of subscreens instead of decoration for tab sets, wizards, etc; subscreens refers to screen instead of screen referring to decorator, making screen defs more implicitly reusable, and making it easier to do dynamic subscreen loading for AJAX-based UIs
+X Combine controller and menu/navigation, implicit requests based on menus, etc; support series of screens like seam
+  conversation; combine controller requests, views, and screen defs in a single file, and add concept of subscreens
+  instead of decoration for tab sets, wizards, etc; subscreens refers to screen instead of screen referring to decorator,
+  making screen defs more implicitly reusable, and making it easier to do dynamic subscreen loading for AJAX-based UIs
 
-X For client redirect after form submit (make the default behavior to avoid reload issues, etc), have each screen define it's required or expected income parameters so framework can try to populate those when redirecting or linking to that screen; get a list by walking down the tree to the specified page
+X For client redirect after form submit (make the default behavior to avoid reload issues, etc), have each screen define
+  it's required or expected income parameters so framework can try to populate those when redirecting or linking to that
+  screen; get a list by walking down the tree to the specified page
 
-X need a way to externally add a screen to a screen set: perhaps use database driven configuration (easy to query, cache, etc; no path/file searching required so much faster, more reliable)
+X need a way to externally add a screen to a screen set: perhaps use database driven configuration (easy to query,
+  cache, etc; no path/file searching required so much faster, more reliable)
 
 X Combine form, menu, tree widgets into screen; can always define a screen that contains only a form, etc when desired
 
-X URL for screens will follow down the screen set path; if the URL ends in a screen that has a screen set the default screen in the set will be displayed; transtions for actions/etc for screens will be at the end of the URL, i.e. just after the screen they came from
+X URL for screens will follow down the screen set path; if the URL ends in a screen that has a screen set the default
+  screen in the set will be displayed; transtions for actions/etc for screens will be at the end of the URL, i.e. just
+  after the screen they came from
 
-X explicit screen transitions: have links/buttons/etc use generic IDs and not full URLs, and configure responses to those IDs on the source page, allowing the same form to be used in different screens and have a different actions for each screen (ie associate events with the source instead of the target of the link); also configure destination in the screen def instead of as part of the URL, allows for fully managed and mappable flow
+X explicit screen transitions: have links/buttons/etc use generic IDs and not full URLs, and configure responses to
+  those IDs on the source page, allowing the same form to be used in different screens and have a different actions for
+  each screen (ie associate events with the source instead of the target of the link); also configure destination in the
+  screen def instead of as part of the URL, allows for fully managed and mappable flow
 
 X consider multiple screens in a single flow with start/stop demarcation, just for the wizard style subscreens panel
 
@@ -119,66 +170,66 @@ X configurable menus per-user through db, ie add subscreens for a single user on
 
 D instead of OFBiz portal/portlet (data model in common/entitymodel.xml) create new configurable screen entities, etc
 
+X for managed content add facility to branch content sets and test/deploy/etc those branches from the app (done through
+  JCR/Jackrabbit workspaces)
+
+X dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
+X Have general dynamic database-driven forms instead of ofb surveys (that can also modify XML forms)
+
+X more dynamic forms, including fields that show/hide or change depending on the value of other fields?
+
 *** Priority 1
 
-- more dynamic forms, including fields that show/hide or change depending on the value of other fields?
-
-- support wiki-style templates (same library as Confluence?)
-
-- allow a mix of HTML templates (perhaps extension .html, though will be treated as FTL files) and screen defs in the same directory structure
-
 - add theme data structure, simplified functionality (based more on CSS, not on replacing full templates)
-
-- for simplified templating in managed content use the map tree concept (ie simple dot-syntax expressions for sub-content, etc) designed for OFBiz
-
-- consider the web developers: don't use screens, all content driven but with easy interface with screens, mount point for content, etc; also need a way to attach actions to JCR content… through screens if there will be actions/etc?
-
-- for managed content add facility to branch content sets and test/deploy/etc those branches from the app
 
 *** Priority 2
 
 - implement ecommerce and public facing apps entirely in managed content (if/when done, and in separate project)
 
-- support rendering a screen in a JSR-168/286 portlet
+- support rendering a screen in a JSR-168/286 portlet (will it really be useful?)
 
 ================================================================
 Entity and Service Facades
 
 *** Done
 
-X All services with nouns and predicates, with implicit CrUD services that don't even need to be defined (just CrUD verb and entity-name noun in service name)
+X All services with nouns and predicates, with implicit CrUD services that don't even need to be defined (just CrUD verb
+  and entity-name noun in service name)
 
-X Consistently use terms create, update, delete; never use store, remove, etc; get rid of GenericHelper concept, make entity stuff more database specific
+X Consistently use terms create, update, delete; never use store, remove, etc; get rid of GenericHelper concept, make
+  entity stuff more database specific
 
-X have service engine and simple-methods be more like screen widget with hierarchical context, and context passed in is not a parameters map it is simply the variable space of the service, and sub-service calls by default have variables pulled from the calling context
+X have service engine and simple-methods be more like screen widget with hierarchical context, and context passed in is
+  not a parameters map it is simply the variable space of the service, and sub-service calls by default have variables
+  pulled from the calling context
 
 D input validation that runs both client and server side (service definition) with single definition
-X service defs with hierarchical parameters (and use parameter, not attribute for tag name) to support sub-elements for lists, sets, and maps
+X service defs with hierarchical parameters (and use parameter, not attribute for tag name) to support sub-elements for
+  lists, sets, and maps
 
 X XML transformation (read/write in XML Actions?) for service message brokering, XML/HTTP services, etc
 
-X data migration/transformation - read/write XML in XML Actions would help (especially XML -> db, db -> XML), maybe include or integrate with another tool
+X data migration/transformation - read/write XML in XML Actions would help (especially XML -> db, db -> XML), maybe
+  include or integrate with another tool
 
-D content management functionality in various places: on all location attributes/etc support component:, content:, http:, etc
+D content management functionality in various places: on all location attributes/etc support component:, content:,
+  http:, etc
 
-X more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev ML 20100418)
+X more explicit API for entity operations that doesn't require annoying use of large number of parameters (use a class
+  with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev
+  ML 20100418)
 
 *** Priority 1
 
-- dynamic form entities (like ofb survey, but more like xml-form extension in entity form)
-- Have general dynamic database-driven forms that extend XML forms instead of ofb surveys
-
-- Refer to services by namespace to facilitate reloading files more granulalry (somehow move toward lazy loading)
-
-*** Priority 2
-
-- dynamic view-entity entities
+- Refer to entities and services by namespace to facilitate reloading files more granulalry (move toward lazy loading)
 
 - email services, more inherent support for sending and receiving
 
 - email data model to save messages locally (both incoming and outgoing)
 
-- integration tools: support for remote services (in/out) like REST, XML/HTTP; perhaps use ServiceMix or something; connector stuff?; service orchestration?
+*** Priority 2
+
+- dynamic view-entity entities
 
 - something like the OFBiz datafile tool?
 
@@ -187,14 +238,21 @@ Policies and Principles for Managing Moqui and Moqui-based Apps
 
 - clear separation of framework from applications, in fact in a separate project altogether
 
-- framework provides a specific interface (Java API, XML configuration files, XML entity/service/screen/etc files) to use for developing applications, and everything else is internal and not to be used when developing applications, and not planned to be backward compatible over time
+- framework provides a specific interface (Java API, XML configuration files, XML entity/service/screen/etc files) to
+  use for developing applications, and everything else is internal and not to be used when developing applications, and
+  not planned to be backward compatible over time
 
-- start with a complete framework based on experience with OFBiz and having done development based on OFBiz over the 9 years of the project
+- start with a complete framework based on experience with OFBiz and having done development based on OFBiz over the 9
+  years of the project
 
-- for framework highly restricted contributions, very small committer group, one person commits to trunk others can use branches or patches or git pulls to contribute
+- for framework highly restricted contributions, very small committer group, one person commits to trunk others can use
+  branches or patches or git pulls to contribute
 
-- when development requirements are not met, design into the framework instead of working around it; all framework designs to be moderated by single person (that person may change over time)
+- when development requirements are not met, design into the framework instead of working around it; all framework
+  designs to be moderated by single person (that person may change over time)
 
-- applications will be in a separate project from the framework, with different groups working on framework and applications projects
+- applications will be in a separate project from the framework, with different groups working on framework and
+  applications projects
 
-- in applications project require collaboration on requirements, then designs, then implementations... for all new functionality and all changes... no exceptions!
+- in applications project require collaboration on requirements, then designs, then implementations... for all new
+  functionality and all changes... no exceptions!

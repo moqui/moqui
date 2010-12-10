@@ -10,7 +10,8 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
     <!-- org.moqui.screen.subscreen -->
@@ -25,7 +26,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenLocation" type="text-long"/>
         <field name="menuTitle" type="text-medium">
             <description>The title to show for this subscreen in the menu. Can be used to override subscreen titles
-                in the screen.default-menu-title attribute and the subscreens-item.menu-title attribute.</description>
+                in the screen.default-menu-title attribute and the subscreens-item.menu-title attribute.
+            </description>
         </field>
         <field name="menuIndex" type="number-integer">
             <description>Insert this item in subscreens menu at this index (1-based).</description>
@@ -51,13 +53,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-vlong">
             <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
         </field>
+        <field name="modifyXmlScreen" type="text-long">
+            <description>The location and name (separated by a hash/pound sign) of an XML Screen to modify.</description>
+        </field>
     </entity>
     <entity entity-name="DynamicScreenInclude" package-name="org.moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="includeSeqId" type="id" is-pk="true"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="panelSeqId" type="id"/>
-        <field name="areaEnumId" type="id"><description>Options include: header, left, center, right, and footer.</description></field>
+        <field name="areaEnumId" type="id">
+            <description>Options include: header, left, center, right, and footer.</description>
+        </field>
         <field name="screenLocation" type="text-long"/>
     </entity>
     <entity entity-name="DynamicScreenIncludeParam" package-name="org.moqui.screen.dynscreen">
@@ -69,29 +76,138 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="DynamicScreenPanel" package-name="org.moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="panelSeqId" type="id" is-pk="true"/>
-        <field name="areaSizeUnit" type="id"><description>Options include: px, and em (defaults to px).</description></field>
+        <field name="areaSizeUnit" type="id">
+            <description>Options include: px, and em (defaults to px).</description>
+        </field>
     </entity>
     <entity entity-name="DynamicScreenPanelArea" package-name="org.moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="panelSeqId" type="id" is-pk="true"/>
-        <field name="areaEnumId" type="id" is-pk="true"><description>Options include: header, left, center, right, and footer.</description></field>
+        <field name="areaEnumId" type="id" is-pk="true">
+            <description>Options include: header, left, center, right, and footer.</description>
+        </field>
         <field name="areaSize" type="number-decimal"/>
-        <field name="draggable" type="text-indicator"><description>Options include: Y or N, defaults to N.</description></field>
+        <field name="draggable" type="text-indicator">
+            <description>Options include: Y or N, defaults to N.</description>
+        </field>
     </entity>
     <entity entity-name="DynamicScreenSet" package-name="org.moqui.screen.dynscreen">
         <field name="screenSetId" type="id" is-pk="true"/>
         <field name="screenSetName" type="text-medium"/>
     </entity>
-    <!--
-     TODO: support panels within panels?
-     TODO: how to use this along with subscreens and menus in subscreens versus screen sets? just use subscreens?
-    -->
 
     <!-- ========================================================= -->
     <!-- org.moqui.screen.dynform -->
     <!-- ========================================================= -->
 
-    <entity entity-name="DynamicForm" package-name="org.moqui.screen.dynform">
-        <field name="screenId" type="id" is-pk="true"/>
+    <entity entity-name="DynForm" package-name="org.moqui.screen.dynform">
+        <field name="dynFormId" type="id" is-pk="true"/>
+        <field name="dynFormName" type="text-medium"/>
+        <field name="description" type="text-long"/>
+        <field name="submitCaption" type="text-short"/>
+        <field name="submitService" type="text-long"/>
+        <field name="isAnonymous" type="text-indicator">
+            <description>Allow response to the dynForm without login?</description>
+        </field>
+        <field name="allowMultiple" type="text-indicator">
+            <description>Allow multiple responses to this dynForm (if Y), or just a single answer (if N)?</description>
+        </field>
+        <field name="allowUpdate" type="text-indicator">
+            <description>Allow change to responses?</description>
+        </field>
+        <field name="acroFormLocation" type="text-long">
+            <description>Points to PDF with AcroForm</description>
+        </field>
+        <field name="modifyXmlForm" type="text-long">
+            <description>The location and name (separated by a hash/pound sign) of an XML Form to modify.</description>
+        </field>
+        <field name="extendsDynFormId" type="id">
+            <description>If specified this Dynamic Form extends the identified one, or in other words the identified
+                form because a starting point for this Dynamic Form.
+            </description>
+        </field>
+    </entity>
+    <entity entity-name="DynFormPage" package-name="org.moqui.screen.dynform">
+        <field name="dynFormId" type="id" is-pk="true"/>
+        <field name="dynFormPageSeqId" type="id" is-pk="true"/>
+        <field name="pageName" type="text-medium"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <relationship type="one" rel-entity-name="DynForm"/>
+    </entity>
+    <entity entity-name="DynFormField" package-name="org.moqui.screen.dynform">
+        <field name="dynFormFieldId" type="id" is-pk="true"/>
+        <field name="dynFormId" type="id"/>
+        <field name="dynFormPageSeqId" type="id"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="fromDate" type="date-time"/>
+        <field name="thruDate" type="date-time"/>
+        <field name="dynFormFieldTypeId" type="id"/>
+        <field name="description" type="text-long"/>
+        <field name="question" type="text-very-long"/>
+        <field name="hint" type="text-very-long"/>
+        <field name="enumTypeId" type="id"><description>Get options from Enumeration entity.</description></field>
+        <field name="formatString" type="text-medium"/>
+        <field name="requiredField" type="text-indicator"/>
+        <field name="externalFieldRef" type="text-long">
+            <description>External field ID/reference; for AcroForms used to track the field ID</description>
+        </field>
+        <field name="whenDynFormFieldId" type="id">
+            <description>These two when* fields are used to specify that this question should only appear if the with
+                option has been selected for the when question.
+            </description>
+        </field>
+        <field name="whenDynFormOptionSeqId" type="id"/>
+        <relationship type="one" rel-entity-name="DynForm"/>
+        <relationship type="one" rel-entity-name="DynFormField"/>
+        <relationship type="one" rel-entity-name="DynFormFieldType"/>
+        <relationship type="one-nofk" rel-entity-name="DynFormPage">
+            <description>This does not have a foreign key because the dynFormId will never be null, and we want the
+                dynFormPageSeqId to be optional.
+            </description>
+        </relationship>
+        <relationship type="one" title="When" rel-entity-name="DynFormFieldOption">
+            <key-map field-name="whenDynFormFieldId" rel-field-name="dynFormFieldId"/>
+            <key-map field-name="whenDynFormOptionSeqId" rel-field-name="dynFormOptionSeqId"/>
+        </relationship>
+        <relationship type="many" rel-entity-name="Enumeration">
+            <key-map field-name="enumTypeId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="DynFormFieldOption" package-name="org.moqui.screen.dynform">
+        <field name="dynFormFieldId" type="id" is-pk="true"/>
+        <field name="dynFormOptionSeqId" type="id" is-pk="true"/>
+        <field name="description" type="text-long"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <relationship type="one" rel-entity-name="DynFormField"/>
+    </entity>
+    <entity entity-name="DynFormFieldType" package-name="org.moqui.screen.dynform">
+        <field name="dynFormFieldTypeId" type="id" is-pk="true"/>
+        <field name="description" type="text-long"/>
+    </entity>
+    <entity entity-name="DynFormResponse" package-name="org.moqui.screen.dynform">
+        <field name="dynFormResponseId" type="id" is-pk="true"/>
+        <field name="dynFormId" type="id"/>
+        <field name="userId" type="id"/>
+        <field name="responseDate" type="date-time"/>
+        <field name="lastModifiedDate" type="date-time"/>
+        <field name="referenceId" type="id-vlong"/>
+        <field name="generalFeedback" type="text-very-long"/>
+        <field name="statusId" type="id"/>
+        <relationship type="one" rel-entity-name="UserAccount"/>
+        <relationship type="one" rel-entity-name="DynForm"/>
+        <relationship type="one" rel-entity-name="StatusItem"/>
+    </entity>
+    <entity entity-name="DynFormResponseAnswer" package-name="org.moqui.screen.dynform">
+        <field name="dynFormResponseId" type="id" is-pk="true"/>
+        <field name="dynFormFieldId" type="id" is-pk="true"/>
+        <field name="booleanResponse" type="text-indicator"/>
+        <field name="numericResponse" type="number-decimal"/>
+        <field name="textResponse" type="text-very-long"/>
+        <field name="dynFormOptionSeqId" type="id"/>
+        <field name="contentLocation" type="id"/>
+        <field name="answeredDate" type="date-time"/>
+        <relationship type="one" rel-entity-name="DynFormResponse"/>
+        <relationship type="one" rel-entity-name="DynFormField"/>
+        <relationship type="one" rel-entity-name="DynFormFieldOption"/>
     </entity>
 </entities>

@@ -12,19 +12,6 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/service-definition-1.0.xsd">
 
-    <service verb="purge" noun="ServiceSchedule" type="script" use-transaction="false" semaphore="wait">
-        <description>Cleans out old schedules which have been around longer then what is defined in ServiceProxyConfig.xml</description>
-    </service>
-    <service verb="cancel" noun="ServiceSchedule" type="script">
-        <description>Cancels a schedule job</description>
-        <in-parameters><auto-parameters include="pk" required="true"/></in-parameters>
-        <out-parameters><parameter name="cancelDateTime" type="Timestamp" required="true"/></out-parameters>
-    </service>
-    <service verb="reset" noun="ServiceSchedule" type="script">
-        <description>Resets a stale job so it can be re-run</description>
-        <in-parameters><auto-parameters include="pk" required="true"/></in-parameters>
-    </service>
-
     <!-- ServiceFacade Engine Interfaces -->
     <service verb="authenticate" noun="User" type="interface">
         <in-parameters>
