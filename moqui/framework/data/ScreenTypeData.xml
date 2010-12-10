@@ -11,23 +11,36 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <SurveyFieldType surveyFieldTypeId="BOOLEAN" description="Boolean (Yes/No)"/>
-    <SurveyFieldType surveyFieldTypeId="CONTENT" description="Content Record"/>
-    <SurveyFieldType surveyFieldTypeId="COUNTRY" description="Country"/>
-    <SurveyFieldType surveyFieldTypeId="CREDIT_CARD" description="Credit Card Number"/>
-    <SurveyFieldType surveyFieldTypeId="DATE" description="Date String (yyyy-MM-dd)"/>
-    <SurveyFieldType surveyFieldTypeId="DATE_TIME" description="Date String (yyyy-MM-dd hh:mm:ss)"/>
-    <SurveyFieldType surveyFieldTypeId="EMAIL" description="Email Address"/>
-    <SurveyFieldType surveyFieldTypeId="ENUMERATION" description="Enumeration"/>
-    <SurveyFieldType surveyFieldTypeId="NUMBER" description="Numeric"/>
-    <SurveyFieldType surveyFieldTypeId="OPTION" description="Selected Option"/>
-    <SurveyFieldType surveyFieldTypeId="PASSWORD" description="Password"/>
-    <SurveyFieldType surveyFieldTypeId="SEPERATOR_LINE" description="Seperator Line"/>
-    <SurveyFieldType surveyFieldTypeId="SEPERATOR_TEXT" description="Seperator Text"/>
-    <SurveyFieldType surveyFieldTypeId="STATE_PROVINCE" description="State/Province"/>
-    <SurveyFieldType surveyFieldTypeId="TEXT_SHORT" description="Short Text (single-line)"/>
-    <SurveyFieldType surveyFieldTypeId="TEXT_LONG" description="Long Text (single-line)"/>
-    <SurveyFieldType surveyFieldTypeId="TEXTAREA" description="Text (multi-line)"/>
-    <SurveyFieldType surveyFieldTypeId="TIME" description="Date String (hh:mm:ss)"/>
-    <SurveyFieldType surveyFieldTypeId="URL" description="URL"/>
+    <!-- Dynamic Forms -->
+    <EnumerationType description="Dynamic Form Field Type" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Boolean (Yes/No)" enumId="DFFT_BOOLEAN" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Content Record" enumId="DFFT_CONTENT" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Country" enumId="DFFT_COUNTRY" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Credit Card Number" enumId="DFFT_CREDIT_CARD" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Date String (yyyy-MM-dd)" enumId="DFFT_DATE" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Date String (yyyy-MM-dd hh:mm:ss)" enumId="DFFT_DATE_TIME" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Email Address" enumId="DFFT_EMAIL" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Enumeration" enumId="DFFT_ENUMERATION" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Numeric" enumId="DFFT_NUMBER" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Selected Option" enumId="DFFT_OPTION" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Password" enumId="DFFT_PASSWORD" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Separator Line" enumId="DFFT_SEPARATOR_LINE" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Separator Text" enumId="DFFT_SEPARATOR_TEXT" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="State/Province" enumId="DFFT_STATE_PROVINCE" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Short Text (single-line)" enumId="DFFT_TEXT_SHORT" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Long Text (single-line)" enumId="DFFT_TEXT_LONG" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Text (multi-line)" enumId="DFFT_TEXTAREA" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="Time String (hh:mm:ss)" enumId="DFFT_TIME" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <Enumeration description="URL" enumId="DFFT_URL" enumTypeId="DYNFORM_FIELD_TYPE"/>
+
+    <!-- Screen Themes -->
+    <EnumerationType description="Screen Theme Type" enumTypeId="SCREEN_THEME_TYPE"/>
+    <Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL" enumTypeId="SCREEN_THEME_TYPE"/>
+    <Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC" enumTypeId="SCREEN_THEME_TYPE"/>
+
+    <EnumerationType description="Screen Theme Resource Type" enumTypeId="SCREEN_THEME_RESTP"/>
+    <Enumeration description="Style Sheet (CSS) URL" enumId="STRT_STYLESHEET" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="1"/>
+    <Enumeration description="Script URL" enumId="STRT_SCRIPT" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="2"/>
+    <Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="10"/>
+    <Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="11"/>
 </entity-facade-xml>

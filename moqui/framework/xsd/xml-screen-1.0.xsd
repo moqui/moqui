@@ -78,6 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="http-no-cache" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Send no-cache headers if true.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="screen-theme-type-enum-id" type="xs:string" default="STT_INTERNAL"/>
         </xs:complexType>
     </xs:element>
 

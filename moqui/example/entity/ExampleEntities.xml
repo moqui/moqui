@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="Example" package-name="org.moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
-        <field name="exampleTypeId" type="id"/>
+        <field name="exampleTypeEnumId" type="id"/>
         <field name="statusId" type="id"/>
         <field name="exampleName" type="text-medium"/>
         <field name="description" type="text-long"/>
@@ -30,9 +30,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="anotherDate" type="date-time"/>
         <field name="anotherText" type="text-long"/>
         -->
-        <relationship type="one" rel-entity-name="ExampleType"/>
+        <relationship type="one" title="ExampleType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = EXAMPLE_TYPE)</description>
+            <key-map field-name="exampleTypeEnumId"/>
+        </relationship>
         <relationship type="one" rel-entity-name="StatusItem">
-            <description>statusTypeId=EXAMPLE_STATUS</description>
+            <description>(statusTypeId = EXAMPLE_STATUS)</description>
         </relationship>
     </entity>
     <entity entity-name="ExampleItem" package-name="org.moqui.example.example">
@@ -53,15 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusId" type="id"/>
         <relationship type="one" rel-entity-name="Example"/>
         <relationship type="one" rel-entity-name="StatusItem">
-            <description>statusTypeId=EXAMPLE_STATUS</description>
-        </relationship>
-    </entity>
-    <entity entity-name="ExampleType" package-name="org.moqui.example.example">
-        <field name="exampleTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="ExampleType">
-            <key-map field-name="parentTypeId"/>
+            <description>(statusTypeId = EXAMPLE_STATUS)</description>
         </relationship>
     </entity>
 
@@ -74,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-long"/>
         <relationship type="one" title="FeatureSource" rel-entity-name="Enumeration">
-            <description>enumTypeId=EXMPL_FEAT_SOURCE</description>
+            <description>(enumTypeId = EXMPL_FEAT_SOURCE)</description>
             <key-map field-name="featureSourceEnumId"/>
         </relationship>
     </entity>
@@ -83,18 +78,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleFeatureId" type="id" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
-        <field name="exampleFeatureApplTypeId" type="id"/>
+        <field name="exampleFeatureApplEnumId" type="id"/>
         <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" rel-entity-name="Example"/>
         <relationship type="one" rel-entity-name="ExampleFeature"/>
-        <relationship type="one" rel-entity-name="ExampleFeatureApplType"/>
-    </entity>
-    <entity entity-name="ExampleFeatureApplType" package-name="org.moqui.example.feature">
-        <field name="exampleFeatureApplTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="ExampleFeatureApplType">
-            <key-map field-name="parentTypeId"/>
+        <relationship type="one" title="ExampleFeatureAppl" rel-entity-name="Enumeration">
+            <description>(enumTypeId = EXAMPLE_FEATURE_APPL)</description>
+            <key-map field-name="exampleFeatureApplEnumId"/>
         </relationship>
     </entity>
 </entities>

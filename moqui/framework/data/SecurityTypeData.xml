@@ -11,16 +11,17 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <ArtifactType artifactTypeId="COMPONENT" description="Component"/>
-    <ArtifactType artifactTypeId="WEB_APP" description="WebApp"/>
-    <ArtifactType artifactTypeId="XML_SCREEN" description="XML Screen"/>
-    <ArtifactType artifactTypeId="XML_FORM" description="XML Form"/>
-    <ArtifactType artifactTypeId="XML_FORM_FIELD" description="XML Form Field"/>
-    <ArtifactType artifactTypeId="TEMPLATE" description="Template"/>
-    <ArtifactType artifactTypeId="SERVICE" description="Service"/>
-    <ArtifactType artifactTypeId="SCRIPT" description="Script"/>
-    <ArtifactType artifactTypeId="ENTITY" description="Entity"/>
-    <ArtifactType artifactTypeId="ENTITY_FIELD" description="EntityField"/>
+    <EnumerationType description="Artifact Types" enumTypeId="ARTIFACT_TYPE" parentTypeId=""/>
+    <Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="XML Screen" enumId="AT_XML_SCREEN" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="XML Form" enumId="AT_XML_FORM" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="XML Form Field" enumId="AT_XML_FORM_FIELD" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="Script" enumId="AT_SCRIPT" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="EntityField" enumId="AT_ENTITY_FIELD" enumTypeId="ARTIFACT_TYPE"/>
 
     <EnumerationType description="Authorization Type" enumTypeId="AUTHZ_TYPE"/>
     <Enumeration sequenceNum="1" description="Allow" enumCode="ALLOW" enumId="AUTHZT_ALLOW" enumTypeId="AUTHZ_TYPE"/>
@@ -36,4 +37,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AUTHZ_ACTION"/>
 
     <UserAccount userId="_NA_" userName="Not Applicable" currentPassword="" disabled="Y"/>
+    
+    <UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
+
+    <EnumerationType description="User Preference Types" enumTypeId="USER_PREF_TYPE" parentTypeId=""/>
+    <Enumeration description="Screen Theme Preference" enumId="UPT_SCREEN_THEME" enumTypeId="USER_PREF_TYPE"/>
 </entity-facade-xml>

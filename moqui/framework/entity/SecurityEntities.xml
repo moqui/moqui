@@ -25,7 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="artifactName" type="text-long" is-pk="true">
             <description>can be securityArtifactGroupId; includes location#name when applicable</description>
         </field>
-        <field name="artifactTypeId" type="id" is-pk="true"/>
+        <field name="artifactTypeEnumId" type="id" is-pk="true"/>
         <field name="inheritAuthz" type="text-indicator">
             <description>If Y then the user will have authorization for anything called by the artifact.
                 If N user will need to have authorization for anything else called by the artifact.
@@ -38,11 +38,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </description>
         </field>
         <relationship type="one" rel-entity-name="ArtifactGroup"/>
-        <relationship type="one" rel-entity-name="ArtifactType"/>
-    </entity>
-    <entity entity-name="ArtifactType" package-name="org.moqui.security.artifact">
-        <field name="artifactTypeId" type="id" is-pk="true"/>
-        <field name="description" type="text-medium"/>
+        <relationship type="one" title="ArtifactType" rel-entity-name="Enumeration">
+            <key-map field-name="artifactTypeEnumId"/>
+        </relationship>
     </entity>
 
     <!-- ========================================================= -->
@@ -171,7 +169,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
-    <entity entity-name="UserLoginHistory" package-name="org.moqui.security.user" never-cache="true">
+    <entity entity-name="UserLoginHistory" package-name="org.moqui.security.user" cache="never">
         <field name="userId" type="id-vlong" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
@@ -184,19 +182,14 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="UserPreference" package-name="org.moqui.security.user">
         <field name="userId" type="id-vlong" is-pk="true"/>
-        <field name="userPreferenceTypeId" type="id" is-pk="true"/>
+        <field name="preferenceTypeEnumId" type="id" is-pk="true"/>
         <field name="userPrefValue" type="text-long"/>
         <relationship type="one-nofk" rel-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
-        <relationship type="one" rel-entity-name="UserPreferenceType"/>
-    </entity>
-    <entity entity-name="UserPreferenceType" package-name="org.moqui.security.user">
-        <field name="userPreferenceTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="UserPreferenceType">
-            <key-map field-name="parentTypeId"/>
+        <relationship type="one" title="PreferenceType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = USER_PREF_TYPE)</description>
+            <key-map field-name="preferenceTypeEnumId"/>
         </relationship>
     </entity>
 </entities>

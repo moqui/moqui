@@ -178,9 +178,9 @@ X Have general dynamic database-driven forms instead of ofb surveys (that can al
 
 X more dynamic forms, including fields that show/hide or change depending on the value of other fields?
 
-*** Priority 1
+X add theme data structure, simplified functionality (based more on CSS, not on replacing full templates)
 
-- add theme data structure, simplified functionality (based more on CSS, not on replacing full templates)
+*** Priority 1
 
 *** Priority 2
 

@@ -11,14 +11,16 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <ExampleType exampleTypeId="REAL_WORLD" description="Real World"/>
-    <ExampleType exampleTypeId="MADE_UP" description="Made Up"/>
-    <ExampleType exampleTypeId="CONTRIVED" description="Contrived" parentTypeId="MADE_UP"/>
-    <ExampleType exampleTypeId="INSPIRED" description="Inspired" parentTypeId="MADE_UP"/>
+    <EnumerationType description="Example Type" enumTypeId="EXAMPLE_TYPE"/>
+    <Enumeration description="Real World" enumId="EXT_REAL_WORLD" enumTypeId="EXAMPLE_TYPE"/>
+    <Enumeration description="Made Up" enumId="EXT_MADE_UP" enumTypeId="EXAMPLE_TYPE"/>
+    <Enumeration description="Contrived" enumId="EXT_CONTRIVED" parentEnumId="EXT_MADE_UP" enumTypeId="EXAMPLE_TYPE"/>
+    <Enumeration description="Inspired" enumId="EXT_INSPIRED" parentEnumId="EXT_MADE_UP" enumTypeId="EXAMPLE_TYPE"/>
 
-    <ExampleFeatureApplType exampleFeatureApplTypeId="REQUIRED" description="Required"/>
-    <ExampleFeatureApplType exampleFeatureApplTypeId="DESIRED" description="Desired"/>
-    <ExampleFeatureApplType exampleFeatureApplTypeId="NOT_ALLOWED" description="Not Allowed"/>
+    <EnumerationType description="Example Feature Application" enumTypeId="EXAMPLE_FEATURE_APPL"/>
+    <Enumeration description="Required" enumId="EFA_REQUIRED" enumTypeId="EXAMPLE_FEATURE_APPL"/>
+    <Enumeration description="Desired" enumId="EFA_DESIRED" enumTypeId="EXAMPLE_FEATURE_APPL"/>
+    <Enumeration description="Not Allowed" enumId="EFA_NOT_ALLOWED" enumTypeId="EXAMPLE_FEATURE_APPL"/>
 
     <StatusType description="Example" statusTypeId="EXAMPLE_STATUS"/>
     <StatusItem description="In Design" sequenceNum="1" statusCode="IN_DESIGN" statusId="EXST_IN_DESIGN" statusTypeId="EXAMPLE_STATUS"/>

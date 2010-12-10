@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<entity-facade-xml type="seed">
+    <EnumerationType description="Data Source Type" enumTypeId="DATA_SOURCE_TYPE"/>
+    <Enumeration description="Purchased Data" enumId="DST_PURCHASED_DATA" enumTypeId="DATA_SOURCE_TYPE"/>
+    <Enumeration description="Customer Data Entry" enumId="DST_CUSTOMER_ENTRY" enumTypeId="DATA_SOURCE_TYPE"/>
+    <Enumeration description="Internal Data Entry (employees, etc)" enumId="DST_INTERNAL_ENTRY" enumTypeId="DATA_SOURCE_TYPE"/>
+    <Enumeration description="Mailing List Signup" enumId="DST_MAILING_SIGNUP" enumTypeId="DATA_SOURCE_TYPE"/>
+
+    <StatusType statusTypeId="_NA_" description="Not Applicable"/>
+    <StatusItem statusId="_NA_" statusTypeId="_NA_" statusCode="NA" sequenceNum="0" description="Not Applicable"/>
+
+    <EnumerationType enumTypeId="_NA_" description="Not Applicable"/>
+    <Enumeration enumId="_NA_" enumTypeId="_NA_" enumCode="NA" sequenceNum="0" description="Not Applicable"/>
+
+    <!-- A placeholder for when there is no Geo -->
+    <Geo abbreviation="NA" geoCode="_NA_" geoId="_NA_" geoName="Not Applicable"/>
+
+    <EnumerationType description="Geo Type" enumTypeId="GEO_TYPE"/>
+
+    <!-- General Geographic Groupings -->
+    <Enumeration description="Group" enumId="GEOT_GROUP" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Region" enumId="GEOT_REGION" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Sales Region" enumId="GEOT_SALES_REGION" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Service Region" enumId="GEOT_SERVICE_REGION" enumTypeId="GEO_TYPE"/>
+
+    <!-- Legal/Governmental Geographic Groupings based on Juris-diction -->
+    <Enumeration description="City" enumId="GEOT_CITY" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="State" enumId="GEOT_STATE" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Postal Code" enumId="GEOT_POSTAL_CODE" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Country" enumId="GEOT_COUNTRY" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="County" enumId="GEOT_COUNTY" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="County-City" enumId="GEOT_COUNTY_CITY" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Municipality" enumId="GEOT_MUNICIPALITY" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Province" enumId="GEOT_PROVINCE" enumTypeId="GEO_TYPE"/>
+    <Enumeration description="Territory" enumId="GEOT_TERRITORY" enumTypeId="GEO_TYPE"/>
+
+    <EnumerationType description="Geo Assoc Type" enumTypeId="GEO_ASSOC_TYPE"/>
+    <Enumeration description="Geo Group Member" enumId="GAT_GROUP_MEMBER" enumTypeId="GEO_ASSOC_TYPE"/>
+    <Enumeration description="For a region of a larger Geo, i.e. states, counties, provinces..." enumId="GAT_REGIONS" enumTypeId="GEO_ASSOC_TYPE"/>
+    <Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GEO_ASSOC_TYPE"/>
+
+    <TimePeriodType description="Fiscal Year" timePeriodTypeId="FISCAL_YEAR" periodLength="1" lengthUomId="TF_yr"/>
+    <TimePeriodType description="Fiscal Quarter" timePeriodTypeId="FISCAL_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
+    <TimePeriodType description="Fiscal Month" timePeriodTypeId="FISCAL_MONTH" periodLength="1" lengthUomId="TF_mon"/>
+    <TimePeriodType description="Fiscal Week" timePeriodTypeId="FISCAL_WEEK" periodLength="1" lengthUomId="TF_wk"/>
+    <TimePeriodType description="Fiscal Bi-Week" timePeriodTypeId="FISCAL_BIWEEK" periodLength="2" lengthUomId="TF_wk"/>
+    <TimePeriodType description="Sales Quarter" timePeriodTypeId="SALES_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
+    <TimePeriodType description="Sales Month" timePeriodTypeId="SALES_MONTH" periodLength="1" lengthUomId="TF_mon"/>
+
+    <EnumerationType description="UOM Type" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Currency" enumId="UT_CURRENCY_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Data Size" enumId="UT_DATA_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Data Speed" enumId="UT_DATASPD_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Time/Frequency" enumId="UT_TIME_FREQ_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Length" enumId="UT_LENGTH_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Area" enumId="UT_AREA_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Liquid Volume" enumId="UT_VOLUME_LIQ_MEAS" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Dry Volume" enumId="UT_VOLUME_DRY_MEAS" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Weight" enumId="UT_WEIGHT_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Energy" enumId="UT_ENERGY_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Power" enumId="UT_POWER_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Temperature" enumId="UT_TEMP_MEASURE" enumTypeId="UOM_TYPE"/>
+    <Enumeration description="Other" enumId="UT_OTHER_MEASURE" enumTypeId="UOM_TYPE"/>
+</entity-facade-xml>

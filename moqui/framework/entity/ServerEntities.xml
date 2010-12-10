@@ -16,14 +16,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.server.stats -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ServerHit" package-name="org.moqui.server.stats" never-cache="true" sequence-bank-size="100">
+    <entity entity-name="ServerHit" package-name="org.moqui.server.stats" cache="never" sequence-bank-size="100">
         <field name="serverHitId" type="id" is-pk="true"/>
         <field name="visitId" type="id"/>
         <field name="targetResource" type="id-vlong">
             <description>The ID of the resource hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
         </field>
         <field name="hitStartDateTime" type="date-time"/>
-        <field name="serverHitTypeId" type="id"/>
+        <field name="serverHitTypeEnumId" type="id"/>
         <field name="numOfBytes" type="number-integer"/>
         <field name="runningTimeMillis" type="number-integer"/>
         <field name="userId" type="id-vlong"/>
@@ -32,12 +32,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="referrerUrl" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>
-        <relationship type="one" rel-entity-name="ServerHitType"/>
+        <relationship type="one" title="ServerHitType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = SERVER_HIT_TYPE)</description>
+            <key-map field-name="serverHitTypeEnumId"/>
+        </relationship>
         <relationship type="one" rel-entity-name="Visit"/>
         <relationship type="one" rel-entity-name="StatusItem"/>
         <relationship type="one" rel-entity-name="UserAccount"/>
     </entity>
-    <entity entity-name="ServerHitBin" package-name="org.moqui.server.stats" never-cache="true">
+    <entity entity-name="ServerHitBin" package-name="org.moqui.server.stats" cache="never">
         <field name="serverHitBinId" type="id" is-pk="true"/>
         <field name="contentId" type="id-vlong"/>
         <field name="hitTypeId" type="id"/>
@@ -51,16 +54,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="maxTimeMillis" type="number-integer"/>
         <relationship type="one" rel-entity-name="ServerHitType"/>
     </entity>
-    <entity entity-name="ServerHitType" package-name="org.moqui.server.stats">
-        <field name="serverHitTypeId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
-    </entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.server.visit -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Visit" package-name="org.moqui.server.visit" never-cache="true" sequence-bank-size="100">
+    <entity entity-name="Visit" package-name="org.moqui.server.visit" cache="never" sequence-bank-size="100">
         <field name="visitId" type="id" is-pk="true"/>
         <field name="visitorId" type="id"/>
         <field name="userId" type="id-vlong"/>

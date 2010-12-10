@@ -11,6 +11,12 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
+    <!-- password=moqui -->
+    <UserAccount userId="john.doe" userName="John Doe"
+                 currentPassword="{SHA}16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHint="framework name, lowercase"
+                 currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
+    <UserGroupMember userGroupId="ADMIN" userId="john.doe" fromDate="2010-02-03 00:00:00.000"/>
+
     <!-- an artifact group for all of the Example application via the ExampleApp screen (the root screen for the app) -->
     <ArtifactGroup artifactGroupId="EXAMPLE_APP_SCREEN" description="Example App (via root screen)"/>
     <ArtifactGroupMember artifactGroupId="EXAMPLE_APP_SCREEN" artifactName="ExampleApp" artifactTypeId="XML_SCREEN"

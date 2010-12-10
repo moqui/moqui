@@ -16,22 +16,21 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.datasource -->
     <!-- ========================================================= -->
 
-    <entity entity-name="DataSource" package-name="org.moqui.basic.datasource">
+    <entity entity-name="DataSource" package-name="org.moqui.basic.datasource" cache="true">
         <field name="dataSourceId" type="id" is-pk="true"/>
-        <field name="dataSourceTypeId" type="id"/>
+        <field name="dataSourceTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" rel-entity-name="DataSourceType"/>
-    </entity>
-    <entity entity-name="DataSourceType" package-name="org.moqui.basic.datasource">
-        <field name="dataSourceTypeId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
+        <relationship type="one" title="DataSourceType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = DATA_SOURCE_TYPE)</description>
+            <key-map field-name="dataSourceTypeEnumId"/>
+        </relationship>
     </entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.basic.email -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EmailTemplateSetting" package-name="org.moqui.basic.email">
+    <entity entity-name="EmailTemplateSetting" package-name="org.moqui.basic.email" cache="true">
         <field name="emailTemplateSettingId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="bodyScreenLocation" type="text-long"/>
@@ -49,21 +48,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.enum -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Enumeration" package-name="org.moqui.basic.enum">
+    <entity entity-name="Enumeration" package-name="org.moqui.basic.enum" cache="true">
         <field name="enumId" type="id" is-pk="true"/>
         <field name="enumTypeId" type="id"/>
+        <field name="parentEnumId" type="id"/>
         <field name="enumCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-long"/>
         <relationship type="one" rel-entity-name="EnumerationType"/>
-    </entity>
-    <entity entity-name="EnumerationType" package-name="org.moqui.basic.enum">
-        <field name="enumTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id"/>
-        <field name="hasTable" type="text-indicator"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="EnumerationType">
-            <key-map field-name="parentTypeId" rel-field-name="enumTypeId"/>
+        <relationship type="one" title="Parent" rel-entity-name="Enumeration">
+            <key-map field-name="parentEnumId"/>
         </relationship>
     </entity>
 
@@ -71,27 +65,31 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.geo -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Geo" package-name="org.moqui.basic.geo">
+    <entity entity-name="Geo" package-name="org.moqui.basic.geo" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
-        <field name="geoTypeId" type="id"/>
+        <field name="geoTypeEnumId" type="id"/>
         <field name="geoName" type="text-medium"/>
         <field name="geoCode" type="text-medium"/>
         <field name="geoSecCode" type="text-medium"/>
         <field name="abbreviation" type="text-medium"/>
         <field name="wellKnownText" type="text-very-long"/>
-        <relationship type="one" rel-entity-name="GeoType"/>
+        <relationship type="one" title="GeoType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = GEO_TYPE)</description>
+            <key-map field-name="geoTypeEnumId"/>
+        </relationship>
     </entity>
-    <entity entity-name="GeoAssoc" package-name="org.moqui.basic.geo">
+    <entity entity-name="GeoAssoc" package-name="org.moqui.basic.geo" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoIdTo" type="id" is-pk="true"/>
-        <field name="geoAssocTypeId" type="id"/>
+        <field name="geoAssocTypeEnumId" type="id"/>
         <relationship type="one" title="Main" rel-entity-name="Geo"/>
-        <relationship type="one" title="Assoc" rel-entity-name="Geo"/>
-        <relationship type="one" rel-entity-name="GeoAssocType"/>
-    </entity>
-    <entity entity-name="GeoAssocType" package-name="org.moqui.basic.geo">
-        <field name="geoAssocTypeId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
+        <relationship type="one" title="Assoc" rel-entity-name="Geo">
+            <key-map field-name="geoIdTo"/>
+        </relationship>
+        <relationship type="one" title="GeoAssocType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = GEO_ASSOC_TYPE)</description>
+            <key-map field-name="geoAssocTypeEnumId"/>
+        </relationship>
     </entity>
     <entity entity-name="GeoPoint" package-name="org.moqui.basic.geo">
         <field name="geoPointId" type="id" is-pk="true"/>
@@ -106,25 +104,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="elevationUomId" rel-field-name="uomId"/>
         </relationship>
     </entity>
-    <entity entity-name="GeoType" package-name="org.moqui.basic.geo">
-        <field name="geoTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="GeoType">
-            <key-map field-name="parentTypeId" rel-field-name="geoTypeId"/>
-        </relationship>
-    </entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.basic.l10n -->
     <!-- ========================================================= -->
 
-    <entity entity-name="LocalizedMessage" package-name="org.moqui.basic.l10n">
+    <entity entity-name="LocalizedMessage" package-name="org.moqui.basic.l10n" cache="true">
         <field name="original" type="text-long" is-pk="true"/>
         <field name="locale" type="text-short" is-pk="true"/>
         <field name="localized" type="text-very-long"/>
     </entity>
-    <entity entity-name="LocalizedEntityField" package-name="org.moqui.basic.l10n">
+    <entity entity-name="LocalizedEntityField" package-name="org.moqui.basic.l10n" cache="true">
         <field name="entityName" type="text-medium" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="locale" type="text-short" is-pk="true"/>
@@ -135,7 +125,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.status -->
     <!-- ========================================================= -->
 
-    <entity entity-name="StatusItem" package-name="org.moqui.basic.status">
+    <entity entity-name="StatusItem" package-name="org.moqui.basic.status" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
         <field name="statusTypeId" type="id"/>
         <field name="statusCode" type="text-medium"/>
@@ -151,7 +141,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="parentTypeId" rel-field-name="statusTypeId"/>
         </relationship>
     </entity>
-    <entity entity-name="StatusValidChange" package-name="org.moqui.basic.status">
+    <entity entity-name="StatusValidChange" package-name="org.moqui.basic.status" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
         <field name="statusIdTo" type="id" is-pk="true"/>
         <field name="conditionExpression" type="text-long"/>
@@ -209,7 +199,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="TimePeriod" package-name="org.moqui.basic.time">
-        <field name="customTimePeriodId" type="id" is-pk="true"/>
+        <field name="timePeriodId" type="id" is-pk="true"/>
         <field name="parentPeriodId" type="id"/>
         <field name="periodTypeId" type="id"/>
         <field name="periodNum" type="number-integer"/>
@@ -218,7 +208,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="thruDate" type="date"/>
         <field name="isClosed" type="text-indicator"/>
         <relationship type="one" title="Parent" rel-entity-name="TimePeriod">
-            <key-map field-name="parentPeriodId" rel-field-name="customTimePeriodId"/>
+            <key-map field-name="parentPeriodId"/>
         </relationship>
         <relationship type="one" rel-entity-name="PeriodType"/>
     </entity>
@@ -236,43 +226,41 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.uom -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Uom" package-name="org.moqui.basic.uom">
+    <entity entity-name="Uom" package-name="org.moqui.basic.uom" cache="true">
         <field name="uomId" type="id" is-pk="true"/>
-        <field name="uomTypeId" type="id"/>
+        <field name="uomTypeEnumId" type="id"/>
         <field name="abbreviation" type="text-medium"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" rel-entity-name="UomType"/>
+        <relationship type="one" title="UomType" rel-entity-name="Enumeration">
+            <description>(enumTypeId = UOM_TYPE)</description>
+            <key-map field-name="uomTypeEnumId"/>
+        </relationship>
     </entity>
-    <entity entity-name="UomConversion" package-name="org.moqui.basic.uom">
+    <entity entity-name="UomConversion" package-name="org.moqui.basic.uom" cache="true">
         <field name="uomConversionId" type="id" is-pk="true"/>
         <field name="uomId" type="id"/>
         <field name="uomIdTo" type="id"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
         <field name="conversionFactor" type="number-float"/>
-        <field name="decimalScale" type="number-integer"/>
-        <field name="roundingMode" type="id"/>
+        <field name="conversionOffset" type="number-float">
+            <description>The factor is multiplied first, then the offset is added. When converting in the reverse
+                direction the offset is subtracted first, then divided by the factor.
+            </description>
+        </field>
         <relationship type="one" rel-entity-name="Uom"/>
         <relationship type="one" title="To" rel-entity-name="Uom">
             <key-map field-name="uomIdTo" rel-field-name="uomId"/>
         </relationship>
     </entity>
-    <entity entity-name="UomGroup" package-name="org.moqui.basic.uom">
+    <entity entity-name="UomGroup" package-name="org.moqui.basic.uom" cache="true">
         <field name="uomGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
-    <entity entity-name="UomGroupMember" package-name="org.moqui.basic.uom">
+    <entity entity-name="UomGroupMember" package-name="org.moqui.basic.uom" cache="true">
         <field name="uomGroupId" type="id" is-pk="true"/>
         <field name="uomId" type="id" is-pk="true"/>
         <relationship type="one" rel-entity-name="UomGroup"/>
         <relationship type="one" rel-entity-name="Uom"/>
-    </entity>
-    <entity entity-name="UomType" package-name="org.moqui.basic.uom">
-        <field name="uomTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="UomType">
-            <key-map field-name="parentTypeId" rel-field-name="uomTypeId"/>
-        </relationship>
     </entity>
 </entities>
