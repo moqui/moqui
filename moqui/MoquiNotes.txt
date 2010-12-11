@@ -219,13 +219,13 @@ X more explicit API for entity operations that doesn't require annoying use of l
   with different methods to be more self-describing like XML)  (see Scott Gray's recent email about this on the OFB dev
   ML 20100418)
 
+D email services, more inherent support for sending and receiving
+
+X email data model to save messages locally (both incoming and outgoing)
+
 *** Priority 1
 
 - Refer to entities and services by namespace to facilitate reloading files more granulalry (move toward lazy loading)
-
-- email services, more inherent support for sending and receiving
-
-- email data model to save messages locally (both incoming and outgoing)
 
 *** Priority 2
 

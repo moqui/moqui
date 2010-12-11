@@ -27,10 +27,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="changedByUserId" type="text-long"/>
         <field name="changedInVisitId" type="text-long"/>
     </entity>
-    <entity entity-name="EntityKeyStore" package-name="org.moqui.entity.misc">
-        <field name="keyName" type="id-vlong" is-pk="true"/>
-        <field name="keyText" type="text-long"/>
-    </entity>
     <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc">
         <field name="seqName" type="id-long" is-pk="true"/>
         <field name="seqId" type="number-integer"/>

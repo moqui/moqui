@@ -151,6 +151,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="locale" type="text-short"/>
         <field name="timeZone" type="id-long"/>
         <field name="externalUserId" type="id-vlong"/>
+        <field name="emailAddress" type="text-long">
+            <description>The email address to use for forgot password emails and other system messages.</description>
+        </field>
         <relationship type="one" title="Currency" rel-entity-name="Uom">
             <key-map field-name="currencyUomId"/>
         </relationship>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/service-definition-1.0.xsd">
+
+    <service verb="send" noun="Email" type="interface">
+        <description>Send Email From Email Template Setting</description>
+        <implements service="sendMailInterface"/>
+        <in-parameters>
+            <parameter name="emailTemplateId" type="String" required="true"/>
+            <parameter name="toAddresses" type="String"/>
+            <parameter name="bodyParameters" type="Map"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="messageId" type="String"/>
+            <parameter name="body" type="String"/>
+            <parameter name="messageWrapper" type="TODO.MimeMessageWrapper"/>
+        </out-parameters>
+    </service>
+</services>

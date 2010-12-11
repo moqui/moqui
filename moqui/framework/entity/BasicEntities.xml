@@ -30,18 +30,96 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.email -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EmailTemplateSetting" package-name="org.moqui.basic.email" cache="true">
-        <field name="emailTemplateSettingId" type="id" is-pk="true"/>
+    <entity entity-name="EmailMessage" package-name="org.moqui.basic.email" cache="false">
+        <field name="emailMessageId" type="id" is-pk="true"/>
+        <field name="rootEmailMessageId" type="id">
+            <description>For threaded messages, this points to the message that started the thread.</description>
+        </field>
+        <field name="parentEmailMessageId" type="id">
+            <description>For threaded messages, this points to the previous message in the thread.</description>
+        </field>
+        <field name="statusId" type="id"/>
+        <field name="purposeEnumId" type="id"/>
+        <field name="sentDate" type="date-time"/>
+        <field name="receivedDate" type="date-time"/>
+        <field name="subject" type="text-long"/>
+        <field name="body" type="text-very-long"/>
+        <field name="note" type="text-long"/>
+        <field name="headersString" type="text-very-long"/>
+        <field name="fromAddress" type="text-long"/>
+        <field name="toAddresses" type="text-very-long"/>
+        <field name="ccAddresses" type="text-very-long"/>
+        <field name="bccAddresses" type="text-very-long"/>
+        <field name="contentType" type="text-medium"/>
+        <field name="messageId" type="text-long"/>
+        <field name="fromUserId" type="id"/>
+        <field name="toUserId" type="id"/>
+        <field name="emailTemplateId" type="id">
+            <description>For outgoing messages that came from an EmailTemplate.</description>
+        </field>
+
+        <relationship type="one" rel-entity-name="StatusItem">
+            <description>(statusTypeId = EMAIL_STATUS)</description>
+        </relationship>
+        <relationship type="one" title="Purpose" rel-entity-name="Enumeration">
+            <description>(enumTypeId = EMAIL_PURPOSE)</description>
+            <key-map field-name="purposeEnumId"/>
+        </relationship>
+        <relationship type="one" title="Root" rel-entity-name="EmailMessage">
+            <key-map field-name="rootEmailMessageId"/>
+        </relationship>
+        <relationship type="one" title="Parent" rel-entity-name="EmailMessage">
+            <key-map field-name="parentEmailMessageId"/>
+        </relationship>
+        <relationship type="many" title="Child" rel-entity-name="EmailMessage">
+            <key-map field-name="emailMessageId" rel-field-name="parentEmailMessageId"/>
+        </relationship>
+        <relationship type="one" title="From" rel-entity-name="UserAccount">
+            <key-map field-name="fromUserId"/>
+        </relationship>
+        <relationship type="one" title="To" rel-entity-name="UserAccount">
+            <key-map field-name="toUserId"/>
+        </relationship>
+        <relationship type="one" rel-entity-name="EmailTemplate"/>
+        <index name="EMAIL_MSG_ID" unique="true">
+            <index-field name="messageId"/>
+        </index>
+    </entity>
+    <entity entity-name="EmailServer" package-name="org.moqui.basic.email" cache="true">
+        <field name="emailServerId" type="id" is-pk="true"/>
+        <field name="smtpRelayHost" type="text-long"/>
+        <field name="smtpUsername" type="text-long"/>
+        <field name="smtpPassword" type="text-long" encrypt="true"/>
+        <field name="smtpPort" type="text-short"/>
+        <field name="smtpStartTls" type="text-indicator"/>
+        <field name="smtpSsl" type="text-indicator"/>
+    </entity>
+    <entity entity-name="EmailStatus" package-name="org.moqui.basic.email">
+        <field name="emailMessageId" type="id" is-pk="true"/>
+        <field name="statusDate" type="date-time" is-pk="true"/>
+        <field name="statusEndDate" type="date-time"/>
+        <field name="statusId" type="id"/>
+        <relationship type="one" rel-entity-name="EmailMessage"/>
+        <relationship type="one" rel-entity-name="StatusItem">
+            <description>(statusTypeId = EMAIL_STATUS)</description>
+        </relationship>
+    </entity>
+    <entity entity-name="EmailTemplate" package-name="org.moqui.basic.email" cache="true">
+        <field name="emailTemplateId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
+        <field name="emailServerId" type="id"/>
         <field name="bodyScreenLocation" type="text-long"/>
         <field name="xslfoAttachScreenLocation" type="text-long">
-            <description>Used to generate XSL:FO that is transformed to a PDF attached to the email</description>
+            <description>Used to generate XSL:FO that is transformed to a PDF and attached to the email.</description>
         </field>
         <field name="fromAddress" type="text-long"/>
-        <field name="ccAddress" type="text-long"/>
-        <field name="bccAddress" type="text-long"/>
+        <field name="ccAddresses" type="text-very-long"/>
+        <field name="bccAddresses" type="text-very-long"/>
         <field name="subject" type="text-long"/>
-        <field name="contentType" type="text-long"/>
+        <field name="contentType" type="text-short">
+            <description>Defaults to "text/html".</description>
+        </field>
+        <field name="sendPartial" type="text-indicator"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -170,34 +248,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.time -->
     <!-- ========================================================= -->
 
-    <entity entity-name="TemporalExpression" package-name="org.moqui.basic.time">
-        <description>Based on the temportal expression concepts from Martin Fowler and the library work done by Adrian Crum in Apache OFBiz</description>
-        <field name="tempExprId" type="id" is-pk="true"/>
-        <field name="tempExprTypeId" type="id"/>
-        <field name="date1" type="date-time"/>
-        <field name="date2" type="date-time"/>
-        <field name="integer1" type="number-integer"/>
-        <field name="integer2" type="number-integer"/>
-        <field name="string1" type="id"/>
-        <field name="string2" type="id"/>
-    </entity>
-    <entity entity-name="TemporalExpressionAssoc" package-name="org.moqui.basic.time">
-        <field name="parentTempExprId" type="id" is-pk="true"/>
-        <field name="childTempExprId" type="id" is-pk="true"/>
-        <field name="exprAssocType" type="id">
-            <description>
-                Expression association type.
-                When applied to DIFFERENCE expression types, valid values are INCLUDED or EXCLUDED.
-                When applied to SUBSTITUTION expression types, valid values are INCLUDED, EXCLUDED, or SUBSTITUTE.
-            </description>
-        </field>
-        <relationship type="one" title="Parent" rel-entity-name="TemporalExpression">
-            <key-map field-name="parentTempExprId" rel-field-name="tempExprId"/>
-        </relationship>
-        <relationship type="one" title="Child" rel-entity-name="TemporalExpression">
-            <key-map field-name="childTempExprId" rel-field-name="tempExprId"/>
-        </relationship>
-    </entity>
     <entity entity-name="TimePeriod" package-name="org.moqui.basic.time">
         <field name="timePeriodId" type="id" is-pk="true"/>
         <field name="parentPeriodId" type="id"/>

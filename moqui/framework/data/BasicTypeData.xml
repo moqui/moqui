@@ -11,18 +11,48 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
+    <!-- =========================== Data Source Type Data ==================== -->
     <EnumerationType description="Data Source Type" enumTypeId="DATA_SOURCE_TYPE"/>
     <Enumeration description="Purchased Data" enumId="DST_PURCHASED_DATA" enumTypeId="DATA_SOURCE_TYPE"/>
     <Enumeration description="Customer Data Entry" enumId="DST_CUSTOMER_ENTRY" enumTypeId="DATA_SOURCE_TYPE"/>
     <Enumeration description="Internal Data Entry (employees, etc)" enumId="DST_INTERNAL_ENTRY" enumTypeId="DATA_SOURCE_TYPE"/>
     <Enumeration description="Mailing List Signup" enumId="DST_MAILING_SIGNUP" enumTypeId="DATA_SOURCE_TYPE"/>
 
+    <!-- =========================== Email Type Data ========================== -->
+    <EmailServer emailServerId="SYSTEM" smtpRelayHost="" smtpUsername="" smtpPassword="" smtpPort="" smtpStartTls="" smtpSsl=""/>
+    <!--
+    <EmailTemplate emailTemplateId="PWD_RESET" description="" emailServerId="SYSTEM"
+                   bodyScreenLocation="" xslfoAttachScreenLocation=""
+                   fromAddresses="" ccAddresses="" bccAddresses=""
+                   subject="" contentType="" sendPartial="Y"/>
+    -->
+
+    <EnumerationType description="Email Purpose" enumTypeId="EMAIL_PURPOSE"/>
+    <Enumeration description="System" enumId="EMP_SYSTEM" enumTypeId="EMAIL_PURPOSE"/>
+    <Enumeration description="Password Reset" enumId="EMP_PWD_RESET" parentEnumId="EMP_SYSTEM" enumTypeId="EMAIL_PURPOSE"/>
+    <Enumeration description="Error Notice" enumId="EMP_ERROR_NOTICE" parentEnumId="EMP_SYSTEM" enumTypeId="EMAIL_PURPOSE"/>
+
+    <StatusType description="Email Message Status" statusTypeId="EMAIL_STATUS"/>
+    <StatusItem description="Draft" sequenceNum="1" statusId="ES_DRAFT" statusTypeId="EMAIL_STATUS"/>
+    <StatusItem description="Ready" sequenceNum="2" statusId="ES_READY" statusTypeId="EMAIL_STATUS"/>
+    <StatusItem description="Sent" sequenceNum="3" statusId="ES_SENT" statusTypeId="EMAIL_STATUS"/>
+    <StatusItem description="Received" sequenceNum="4" statusId="ES_RECEIVED" statusTypeId="EMAIL_STATUS"/>
+    <StatusItem description="Bounced" sequenceNum="8" statusId="ES_BOUNCED" statusTypeId="EMAIL_STATUS"/>
+    <StatusItem description="Cancelled" sequenceNum="9" statusId="ES_CANCELLED" statusTypeId="EMAIL_STATUS"/>
+    <StatusValidChange statusId="ES_DRAFT" statusIdTo="ES_READY" transitionName="Ready"/>
+    <StatusValidChange statusId="ES_READY" statusIdTo="ES_SENT" transitionName="Send"/>
+    <StatusValidChange statusId="ES_READY" statusIdTo="ES_CANCELLED" transitionName="Cancel"/>
+    <StatusValidChange statusId="ES_SENT" statusIdTo="ES_RECEIVED" transitionName="Received"/>
+    <StatusValidChange statusId="ES_SENT" statusIdTo="ES_BOUNCED" transitionName="Bounced"/>
+
+    <!-- =========================== Status and Enum Type Data ================ -->
     <StatusType statusTypeId="_NA_" description="Not Applicable"/>
     <StatusItem statusId="_NA_" statusTypeId="_NA_" statusCode="NA" sequenceNum="0" description="Not Applicable"/>
 
     <EnumerationType enumTypeId="_NA_" description="Not Applicable"/>
     <Enumeration enumId="_NA_" enumTypeId="_NA_" enumCode="NA" sequenceNum="0" description="Not Applicable"/>
 
+    <!-- =========================== Geo Type Data ============================ -->
     <!-- A placeholder for when there is no Geo -->
     <Geo abbreviation="NA" geoCode="_NA_" geoId="_NA_" geoName="Not Applicable"/>
 
@@ -50,6 +80,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="For a region of a larger Geo, i.e. states, counties, provinces..." enumId="GAT_REGIONS" enumTypeId="GEO_ASSOC_TYPE"/>
     <Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GEO_ASSOC_TYPE"/>
 
+    <!-- =========================== Time Type Data =========================== -->
     <TimePeriodType description="Fiscal Year" timePeriodTypeId="FISCAL_YEAR" periodLength="1" lengthUomId="TF_yr"/>
     <TimePeriodType description="Fiscal Quarter" timePeriodTypeId="FISCAL_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
     <TimePeriodType description="Fiscal Month" timePeriodTypeId="FISCAL_MONTH" periodLength="1" lengthUomId="TF_mon"/>
@@ -58,6 +89,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <TimePeriodType description="Sales Quarter" timePeriodTypeId="SALES_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
     <TimePeriodType description="Sales Month" timePeriodTypeId="SALES_MONTH" periodLength="1" lengthUomId="TF_mon"/>
 
+    <!-- =========================== UOM Type Data ============================ -->
     <EnumerationType description="UOM Type" enumTypeId="UOM_TYPE"/>
     <Enumeration description="Currency" enumId="UT_CURRENCY_MEASURE" enumTypeId="UOM_TYPE"/>
     <Enumeration description="Data Size" enumId="UT_DATA_MEASURE" enumTypeId="UOM_TYPE"/>
