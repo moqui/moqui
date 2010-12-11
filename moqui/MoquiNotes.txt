@@ -39,6 +39,9 @@ Implementation Plans
   services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA
   rules, preload those without preloading services using String/key reference only)
 - everything, even entity and service definitions runtime changeable and reloadable
+- Refer to entities as they are now, but when loaded system will remember the file the entity came from and get that
+  file through the cache to facilitate reloading by file; moving an entity to another file will still require a restart
+  (or maybe just use a second cache for that?...)
 
 - Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
   the file
@@ -115,7 +118,7 @@ X Allow effective date (X) and content revision (no explicit content revision ne
 *** Priority 2
 
 - consider state management in services for things like shopping cart? allow passing in a session context separate from
-  the calling context (maybe later, nice to have stateless services for now)
+  the calling context (maybe later, nice to have stateless services for now and maybe always...)
 
 - incorporate GWT from the beginning for subscreens, form widget, etc (or maybe not... use jQuery instead to avoid
   translation layer, etc)
@@ -182,6 +185,8 @@ X add theme data structure, simplified functionality (based more on CSS, not on 
 
 *** Priority 1
 
+- Dynamic Forms support reading from and saving to existing entities an not just the Response/Answer tables
+
 *** Priority 2
 
 - implement ecommerce and public facing apps entirely in managed content (if/when done, and in separate project)
@@ -225,7 +230,10 @@ X email data model to save messages locally (both incoming and outgoing)
 
 *** Priority 1
 
-- Refer to entities and services by namespace to facilitate reloading files more granulalry (move toward lazy loading)
+- Refer to services by namespace, kind of like a Java Class/Method to facilitate reloading files more granulalry (move
+  toward lazy loading)
+
+- Add an EntityList class that has options for filtering the list, etc
 
 *** Priority 2
 

@@ -13,6 +13,21 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
+    <!-- org.moqui.entity.group -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="EntityGroup" package-name="org.moqui.entity.group">
+        <field name="entityGroupId" type="id" is-pk="true"/>
+        <field name="entityGroupName" type="text-medium"/>
+    </entity>
+    <entity entity-name="EntityGroupEntry" package-name="org.moqui.entity.group">
+        <field name="entityGroupId" type="id" is-pk="true"/>
+        <field name="entityOrPackage" type="text-long" is-pk="true"/>
+        <field name="applEnumId" type="id"/>
+        <relationship type="one" rel-entity-name="EntityGroup"/>
+    </entity>
+
+    <!-- ========================================================= -->
     <!-- org.moqui.entity.misc -->
     <!-- ========================================================= -->
 
@@ -30,21 +45,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc">
         <field name="seqName" type="id-long" is-pk="true"/>
         <field name="seqId" type="number-integer"/>
-    </entity>
-
-    <!-- ========================================================= -->
-    <!-- org.moqui.entity.group -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="EntityGroup" package-name="org.moqui.entity.group">
-        <field name="entityGroupId" type="id" is-pk="true"/>
-        <field name="entityGroupName" type="text-medium"/>
-    </entity>
-    <entity entity-name="EntityGroupEntry" package-name="org.moqui.entity.group">
-        <field name="entityGroupId" type="id" is-pk="true"/>
-        <field name="entityOrPackage" type="text-long" is-pk="true"/>
-        <field name="applEnumId" type="id"/>
-        <relationship type="one" rel-entity-name="EntityGroup"/>
     </entity>
 
     <!-- ========================================================= -->

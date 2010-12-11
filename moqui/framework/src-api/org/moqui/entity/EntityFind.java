@@ -98,8 +98,8 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind orderBy(List<String> orderByFieldNames);
     List<String> getOrderBy();
 
-    /** Look in the cache before finding in the datasource. Defaults to setting on entity definition.
-     * Default is false.
+    /** Look in the cache before finding in the datasource.
+     * Defaults to setting on entity definition.
      *
      * @return Returns this for chaining of method calls.
      */
