@@ -20,6 +20,18 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="DynForm" package-name="org.moqui.screen.dynform">
         <field name="dynFormId" type="id" is-pk="true"/>
         <field name="dynFormName" type="text-medium"/>
+        <field name="entityName" type="text-medium">
+            <description>
+                The name of an Entity to save responses to instead of DynFormResponseAnswer records.
+
+                A DynFormResponse record will be created anyway to keep track of the key for the corresponding entity
+                value and the userId and other response details.
+
+                If any DynFormFields do not have an entityFieldName value they will be saved in DynFormResponseAnswer
+                records as normal. If they do have an entityFieldName value the answer for that field will be saved
+                there.
+            </description>
+        </field>
         <field name="description" type="text-long"/>
         <field name="submitCaption" type="text-short"/>
         <field name="submitService" type="text-long"/>
@@ -39,8 +51,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>The location and name (separated by a hash/pound sign) of an XML Form to modify.</description>
         </field>
         <field name="extendsDynFormId" type="id">
-            <description>If specified this Dynamic Form extends the identified one, or in other words the identified
-                form because a starting point for this Dynamic Form.
+            <description>
+                If specified this Dynamic Form extends the identified one, or in other words the identified form because
+                a starting point for this Dynamic Form.
             </description>
         </field>
     </entity>
@@ -58,6 +71,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
+        <field name="entityFieldName" type="text-medium">
+            <description>
+                The name of an Entity Field to save responses to instead of DynFormResponseAnswer records.
+                This is used along with the DynForm.entityName field.
+            </description>
+        </field>
         <field name="dynFormFieldTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
         <field name="question" type="text-very-long"/>
@@ -71,8 +90,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>External field ID/reference; for AcroForms used to track the field ID</description>
         </field>
         <field name="whenDynFormFieldId" type="id">
-            <description>These two when* fields are used to specify that this question should only appear if the with
-                option has been selected for the when question.
+            <description>
+                These two when* fields are used to specify that this question should only appear if the with option has
+                been selected for the when question.
             </description>
         </field>
         <field name="whenDynFormOptionSeqId" type="id"/>
@@ -108,9 +128,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id"/>
         <field name="responseDate" type="date-time"/>
         <field name="lastModifiedDate" type="date-time"/>
-        <field name="referenceId" type="id-vlong"/>
-        <field name="generalFeedback" type="text-very-long"/>
+        <field name="externalReferenceId" type="id-vlong"/>
         <field name="statusId" type="id"/>
+        <field name="entityPrimaryKeyValue" type="text-very-long">
+            <description>When the DynForm.entityName is used this is the primary key for the value.</description>
+        </field>
         <relationship type="one" related-entity-name="UserAccount"/>
         <relationship type="one" related-entity-name="DynForm"/>
         <relationship type="one" related-entity-name="StatusItem"/>
@@ -190,16 +212,18 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <field name="screenLocation" type="text-long"/>
         <field name="menuTitle" type="text-medium">
-            <description>The title to show for this subscreen in the menu. Can be used to override subscreen titles
-                in the screen.default-menu-title attribute and the subscreens-item.menu-title attribute.
+            <description>
+                The title to show for this subscreen in the menu. Can be used to override subscreen titles in the
+                screen.default-menu-title attribute and the subscreens-item.menu-title attribute.
             </description>
         </field>
         <field name="menuIndex" type="number-integer">
             <description>Insert this item in subscreens menu at this index (1-based).</description>
         </field>
         <field name="menuInclude" type="text-indicator">
-            <description>Defaults to Y. Set to N to not include in the menu for the subscreens. This can be used to
-                hide subscreens from the directory structure or even explicitly declared in the Screen XML file.
+            <description>
+                Defaults to Y. Set to N to not include in the menu for the subscreens. This can be used to hide
+                subscreens from the directory structure or even explicitly declared in the Screen XML file.
             </description>
         </field>
         <relationship type="one-nofk" related-entity-name="UserAccount">
