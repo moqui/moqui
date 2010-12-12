@@ -37,8 +37,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 Defaults to Y. 
             </description>
         </field>
-        <relationship type="one" rel-entity-name="ArtifactGroup"/>
-        <relationship type="one" title="ArtifactType" rel-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="ArtifactGroup"/>
+        <relationship type="one" title="ArtifactType" related-entity-name="Enumeration">
             <key-map field-name="artifactTypeEnumId"/>
         </relationship>
     </entity>
@@ -56,13 +56,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="artifactGroupId" type="id"/>
         <field name="authzTypeEnumId" type="id"/>
         <field name="authzActionEnumId" type="id"/>
-        <relationship type="one" rel-entity-name="UserGroup"/>
-        <relationship type="one" rel-entity-name="ArtifactGroup"/>
-        <relationship type="one" title="AuthzType" rel-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="UserGroup"/>
+        <relationship type="one" related-entity-name="ArtifactGroup"/>
+        <relationship type="one" title="AuthzType" related-entity-name="Enumeration">
             <description>(enumTypeId = AUTHZ_TYPE)</description>
             <key-map field-name="authzTypeEnumId"/>
         </relationship>
-        <relationship type="one" title="AuthzAction" rel-entity-name="Enumeration">
+        <relationship type="one" title="AuthzAction" related-entity-name="Enumeration">
             <description>(enumTypeId = AUTHZ_ACTION)</description>
             <key-map field-name="authzActionEnumId"/>
         </relationship>
@@ -88,9 +88,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="condValue" type="text-long">
             <description>Use ${} syntax to expand from variable in artifact's context.</description>
         </field>
-        <relationship type="one" title="Operator" rel-entity-name="Enumeration">
+        <relationship type="one" title="Operator" related-entity-name="Enumeration">
             <description>(enumTypeId = ENTITY_COND_OP)</description>
-            <key-map field-name="operatorEnumId" rel-field-name="enumId"/>
+            <key-map field-name="operatorEnumId" related-field-name="enumId"/>
         </relationship>
     </entity>
     <entity entity-name="ArtifactAuthzService" package-name="org.moqui.security.authz">
@@ -115,8 +115,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="maxHitsCount" type="number-integer"/>
         <field name="maxHitsDuration" type="number-integer"/>
         <field name="tarpitDuration" type="number-integer"/>
-        <relationship type="one" rel-entity-name="UserGroup"/>
-        <relationship type="one" rel-entity-name="ArtifactGroup"/>
+        <relationship type="one" related-entity-name="UserGroup"/>
+        <relationship type="one" related-entity-name="ArtifactGroup"/>
     </entity>
     <entity entity-name="ArtifactTarpitted" package-name="org.moqui.security.tarpit">
         <description>Deny access to the artifact for the user until releaseDateTime is reached.</description>
@@ -124,10 +124,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="artifactName" type="text-long" is-pk="true"/>
         <field name="artifactTypeId" type="id" is-pk="true"/>
         <field name="releaseDateTime" type="date-time"/>
-        <relationship type="one-nofk" rel-entity-name="UserAccount">
+        <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
-        <relationship type="one" rel-entity-name="ArtifactType"/>
+        <relationship type="one" related-entity-name="ArtifactType"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -154,7 +154,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="emailAddress" type="text-long">
             <description>The email address to use for forgot password emails and other system messages.</description>
         </field>
-        <relationship type="one" title="Currency" rel-entity-name="Uom">
+        <relationship type="one" title="Currency" related-entity-name="Uom">
             <key-map field-name="currencyUomId"/>
         </relationship>
     </entity>
@@ -167,8 +167,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-vlong" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
-        <relationship type="one" rel-entity-name="UserGroup"/>
-        <relationship type="one-nofk" rel-entity-name="UserAccount">
+        <relationship type="one" related-entity-name="UserGroup"/>
+        <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
@@ -179,7 +179,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="visitId" type="id"/>
         <field name="passwordUsed" type="text-medium" encrypt="true"/>
         <field name="successfulLogin" type="text-indicator"/>
-        <relationship type="one-nofk" rel-entity-name="UserAccount">
+        <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
@@ -187,10 +187,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-vlong" is-pk="true"/>
         <field name="preferenceTypeEnumId" type="id" is-pk="true"/>
         <field name="userPrefValue" type="text-long"/>
-        <relationship type="one-nofk" rel-entity-name="UserAccount">
+        <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
-        <relationship type="one" title="PreferenceType" rel-entity-name="Enumeration">
+        <relationship type="one" title="PreferenceType" related-entity-name="Enumeration">
             <description>(enumTypeId = USER_PREF_TYPE)</description>
             <key-map field-name="preferenceTypeEnumId"/>
         </relationship>

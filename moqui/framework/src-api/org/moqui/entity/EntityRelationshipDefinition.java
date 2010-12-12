@@ -14,6 +14,6 @@ package org.moqui.entity;
 public interface EntityRelationshipDefinition {
     // NOTE: this interface is pretty empty because most of it will be generated from the XSD using XMLBeans
 
-    /** Returns the full relationship name which is: ${title}${rel-entity-name} */
+    /** Returns the full relationship name which is: ${title}${related-entity-name} */
     String getRelationshipName();
 }

@@ -42,7 +42,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * then that will be returned instead.
      *
      * This method also supports getting related entities using their relationship name, formatted as
-     * "${title}${rel-entity-name}". When doing so it is like calling
+     * "${title}${related-entity-name}". When doing so it is like calling
      * <code>findRelated(relationshipName, null, null, null)</code> for type many relationships, or
      * <code>findRelatedOne(relationshipName, null)</code> for type one relationships.
      *
@@ -126,7 +126,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     /** Get the named Related Entity for the EntityValue from the persistent store
      * @param relationshipName String containing the relationship name which is the combination of relationship.title
-     *   and relationship.rel-entity-name as specified in the entity XML definition file
+     *   and relationship.related-entity-name as specified in the entity XML definition file
      * @param byAndFields the fields that must equal in order to keep; may be null
      * @param orderBy The fields of the named entity to order the query by; may be null;
      *      optionally add a " ASC" for ascending or " DESC" for descending
@@ -138,7 +138,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     /** Get the named Related Entity for the EntityValue from the persistent store
      * @param relationshipName String containing the relationship name which is the combination of relationship.title
-     *   and relationship.rel-entity-name as specified in the entity XML definition file
+     *   and relationship.related-entity-name as specified in the entity XML definition file
      * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
      * @return List of EntityValue instances as specified in the relation definition
      */
@@ -146,7 +146,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     /** Remove the named Related Entity for the EntityValue from the persistent store
      * @param relationshipName String containing the relationship name which is the combination of relationship.title
-     *   and relationship.rel-entity-name as specified in the entity XML definition file
+     *   and relationship.related-entity-name as specified in the entity XML definition file
      */
     void deleteRelated(String relationshipName) throws EntityException;
 

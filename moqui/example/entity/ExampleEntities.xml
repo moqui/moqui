@@ -30,11 +30,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="anotherDate" type="date-time"/>
         <field name="anotherText" type="text-long"/>
         -->
-        <relationship type="one" title="ExampleType" rel-entity-name="Enumeration">
+        <relationship type="one" title="ExampleType" related-entity-name="Enumeration">
             <description>(enumTypeId = EXAMPLE_TYPE)</description>
             <key-map field-name="exampleTypeEnumId"/>
         </relationship>
-        <relationship type="one" rel-entity-name="StatusItem">
+        <relationship type="one" related-entity-name="StatusItem">
             <description>(statusTypeId = EXAMPLE_STATUS)</description>
         </relationship>
     </entity>
@@ -44,18 +44,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="description" type="text-long"/>
         <field name="amount" type="number-float"/>
         <field name="amountUomId" type="id"/>
-        <relationship type="one" title="Amount" rel-entity-name="Uom">
+        <relationship type="one" title="Amount" related-entity-name="Uom">
             <key-map field-name="amountUomId"/>
         </relationship>
-        <relationship type="one" rel-entity-name="Example"/>
+        <relationship type="one" related-entity-name="Example"/>
     </entity>
     <entity entity-name="ExampleStatus" package-name="org.moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="statusDate" type="date-time" is-pk="true"/>
         <field name="statusEndDate" type="date-time"/>
         <field name="statusId" type="id"/>
-        <relationship type="one" rel-entity-name="Example"/>
-        <relationship type="one" rel-entity-name="StatusItem">
+        <relationship type="one" related-entity-name="Example"/>
+        <relationship type="one" related-entity-name="StatusItem">
             <description>(statusTypeId = EXAMPLE_STATUS)</description>
         </relationship>
     </entity>
@@ -68,7 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="FeatureSource" rel-entity-name="Enumeration">
+        <relationship type="one" title="FeatureSource" related-entity-name="Enumeration">
             <description>(enumTypeId = EXMPL_FEAT_SOURCE)</description>
             <key-map field-name="featureSourceEnumId"/>
         </relationship>
@@ -80,9 +80,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="thruDate" type="date-time"/>
         <field name="exampleFeatureApplEnumId" type="id"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" rel-entity-name="Example"/>
-        <relationship type="one" rel-entity-name="ExampleFeature"/>
-        <relationship type="one" title="ExampleFeatureAppl" rel-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="Example"/>
+        <relationship type="one" related-entity-name="ExampleFeature"/>
+        <relationship type="one" title="ExampleFeatureAppl" related-entity-name="Enumeration">
             <description>(enumTypeId = EXAMPLE_FEATURE_APPL)</description>
             <key-map field-name="exampleFeatureApplEnumId"/>
         </relationship>

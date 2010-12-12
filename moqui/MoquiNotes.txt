@@ -233,9 +233,9 @@ X Add EntityList class that has options for filtering the list, etc
 X Refer to services by namespace, kind of like a Java Class/Method to facilitate reloading files more granulalry (move
   toward lazy loading)
 
-*** Priority 1
+X dynamic view-entity entities
 
-- dynamic view-entity entities
+*** Priority 1
 
 *** Priority 2
 

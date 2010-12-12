@@ -32,13 +32,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="referrerUrl" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>
-        <relationship type="one" title="ServerHitType" rel-entity-name="Enumeration">
+        <relationship type="one" title="ServerHitType" related-entity-name="Enumeration">
             <description>(enumTypeId = SERVER_HIT_TYPE)</description>
             <key-map field-name="serverHitTypeEnumId"/>
         </relationship>
-        <relationship type="one" rel-entity-name="Visit"/>
-        <relationship type="one" rel-entity-name="StatusItem"/>
-        <relationship type="one" rel-entity-name="UserAccount"/>
+        <relationship type="one" related-entity-name="Visit"/>
+        <relationship type="one" related-entity-name="StatusItem"/>
+        <relationship type="one" related-entity-name="UserAccount"/>
     </entity>
     <entity entity-name="ServerHitBin" package-name="org.moqui.server.stats" cache="never">
         <field name="serverHitBinId" type="id" is-pk="true"/>
@@ -52,7 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="totalTimeMillis" type="number-integer"/>
         <field name="minTimeMillis" type="number-integer"/>
         <field name="maxTimeMillis" type="number-integer"/>
-        <relationship type="one" rel-entity-name="ServerHitType"/>
+        <relationship type="one" related-entity-name="ServerHitType"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -82,13 +82,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="cookie" type="text-medium"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
-        <relationship type="one" rel-entity-name="Visitor"/>
-        <relationship type="one" rel-entity-name="UserAccount"/>
-        <relationship type="one" title="ClientIpStateProv" rel-entity-name="Geo">
-            <key-map field-name="clientIpStateProvGeoId" rel-field-name="geoId"/>
+        <relationship type="one" related-entity-name="Visitor"/>
+        <relationship type="one" related-entity-name="UserAccount"/>
+        <relationship type="one" title="ClientIpStateProv" related-entity-name="Geo">
+            <key-map field-name="clientIpStateProvGeoId" related-field-name="geoId"/>
         </relationship>
-        <relationship type="one" title="ClientIpCountry" rel-entity-name="Geo">
-            <key-map field-name="clientIpCountryGeoId" rel-field-name="geoId"/>
+        <relationship type="one" title="ClientIpCountry" related-entity-name="Geo">
+            <key-map field-name="clientIpCountryGeoId" related-field-name="geoId"/>
         </relationship>
         <index name="VisitThruIndex" unique="false">
             <index-field name="thruDate"/>
@@ -97,6 +97,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="Visitor" package-name="org.moqui.server.visit" sequence-bank-size="100">
         <field name="visitorId" type="id" is-pk="true"/>
         <field name="userId" type="id-vlong"/>
-        <relationship type="one" rel-entity-name="UserAccount"/>
+        <relationship type="one" related-entity-name="UserAccount"/>
     </entity>
 </entities>

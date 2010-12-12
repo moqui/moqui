@@ -20,7 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dataSourceId" type="id" is-pk="true"/>
         <field name="dataSourceTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="DataSourceType" rel-entity-name="Enumeration">
+        <relationship type="one" title="DataSourceType" related-entity-name="Enumeration">
             <description>(enumTypeId = DATA_SOURCE_TYPE)</description>
             <key-map field-name="dataSourceTypeEnumId"/>
         </relationship>
@@ -58,29 +58,29 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>For outgoing messages that came from an EmailTemplate.</description>
         </field>
 
-        <relationship type="one" rel-entity-name="StatusItem">
+        <relationship type="one" related-entity-name="StatusItem">
             <description>(statusTypeId = EMAIL_STATUS)</description>
         </relationship>
-        <relationship type="one" title="Purpose" rel-entity-name="Enumeration">
+        <relationship type="one" title="Purpose" related-entity-name="Enumeration">
             <description>(enumTypeId = EMAIL_PURPOSE)</description>
             <key-map field-name="purposeEnumId"/>
         </relationship>
-        <relationship type="one" title="Root" rel-entity-name="EmailMessage">
+        <relationship type="one" title="Root" related-entity-name="EmailMessage">
             <key-map field-name="rootEmailMessageId"/>
         </relationship>
-        <relationship type="one" title="Parent" rel-entity-name="EmailMessage">
+        <relationship type="one" title="Parent" related-entity-name="EmailMessage">
             <key-map field-name="parentEmailMessageId"/>
         </relationship>
-        <relationship type="many" title="Child" rel-entity-name="EmailMessage">
-            <key-map field-name="emailMessageId" rel-field-name="parentEmailMessageId"/>
+        <relationship type="many" title="Child" related-entity-name="EmailMessage">
+            <key-map field-name="emailMessageId" related-field-name="parentEmailMessageId"/>
         </relationship>
-        <relationship type="one" title="From" rel-entity-name="UserAccount">
+        <relationship type="one" title="From" related-entity-name="UserAccount">
             <key-map field-name="fromUserId"/>
         </relationship>
-        <relationship type="one" title="To" rel-entity-name="UserAccount">
+        <relationship type="one" title="To" related-entity-name="UserAccount">
             <key-map field-name="toUserId"/>
         </relationship>
-        <relationship type="one" rel-entity-name="EmailTemplate"/>
+        <relationship type="one" related-entity-name="EmailTemplate"/>
         <index name="EMAIL_MSG_ID" unique="true">
             <index-field name="messageId"/>
         </index>
@@ -99,8 +99,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusDate" type="date-time" is-pk="true"/>
         <field name="statusEndDate" type="date-time"/>
         <field name="statusId" type="id"/>
-        <relationship type="one" rel-entity-name="EmailMessage"/>
-        <relationship type="one" rel-entity-name="StatusItem">
+        <relationship type="one" related-entity-name="EmailMessage"/>
+        <relationship type="one" related-entity-name="StatusItem">
             <description>(statusTypeId = EMAIL_STATUS)</description>
         </relationship>
     </entity>
@@ -133,8 +133,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="enumCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" rel-entity-name="EnumerationType"/>
-        <relationship type="one" title="Parent" rel-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="EnumerationType"/>
+        <relationship type="one" title="Parent" related-entity-name="Enumeration">
             <key-map field-name="parentEnumId"/>
         </relationship>
     </entity>
@@ -151,7 +151,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoSecCode" type="text-medium"/>
         <field name="abbreviation" type="text-medium"/>
         <field name="wellKnownText" type="text-very-long"/>
-        <relationship type="one" title="GeoType" rel-entity-name="Enumeration">
+        <relationship type="one" title="GeoType" related-entity-name="Enumeration">
             <description>(enumTypeId = GEO_TYPE)</description>
             <key-map field-name="geoTypeEnumId"/>
         </relationship>
@@ -160,11 +160,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoIdTo" type="id" is-pk="true"/>
         <field name="geoAssocTypeEnumId" type="id"/>
-        <relationship type="one" title="Main" rel-entity-name="Geo"/>
-        <relationship type="one" title="Assoc" rel-entity-name="Geo">
+        <relationship type="one" title="Main" related-entity-name="Geo"/>
+        <relationship type="one" title="Assoc" related-entity-name="Geo">
             <key-map field-name="geoIdTo"/>
         </relationship>
-        <relationship type="one" title="GeoAssocType" rel-entity-name="Enumeration">
+        <relationship type="one" title="GeoAssocType" related-entity-name="Enumeration">
             <description>(enumTypeId = GEO_ASSOC_TYPE)</description>
             <key-map field-name="geoAssocTypeEnumId"/>
         </relationship>
@@ -177,9 +177,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="elevation" type="number-float"/>
         <field name="elevationUomId" type="id"/>
         <field name="information" type="text-long"/>
-        <relationship type="one" rel-entity-name="DataSource"/>
-        <relationship type="one" title="Elevation" rel-entity-name="Uom">
-            <key-map field-name="elevationUomId" rel-field-name="uomId"/>
+        <relationship type="one" related-entity-name="DataSource"/>
+        <relationship type="one" title="Elevation" related-entity-name="Uom">
+            <key-map field-name="elevationUomId" related-field-name="uomId"/>
         </relationship>
     </entity>
 
@@ -209,14 +209,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" rel-entity-name="StatusType"/>
+        <relationship type="one" related-entity-name="StatusType"/>
     </entity>
     <entity entity-name="StatusType" package-name="org.moqui.basic.status">
         <field name="statusTypeId" type="id" is-pk="true"/>
         <field name="parentTypeId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" rel-entity-name="StatusType">
-            <key-map field-name="parentTypeId" rel-field-name="statusTypeId"/>
+        <relationship type="one" title="Parent" related-entity-name="StatusType">
+            <key-map field-name="parentTypeId" related-field-name="statusTypeId"/>
         </relationship>
     </entity>
     <entity entity-name="StatusValidChange" package-name="org.moqui.basic.status" cache="true">
@@ -224,9 +224,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusIdTo" type="id" is-pk="true"/>
         <field name="conditionExpression" type="text-long"/>
         <field name="transitionName" type="text-medium"/>
-        <relationship type="one" title="Main" rel-entity-name="StatusItem"/>
-        <relationship type="one" title="To" rel-entity-name="StatusItem">
-            <key-map field-name="statusIdTo" rel-field-name="statusId"/>
+        <relationship type="one" title="Main" related-entity-name="StatusItem"/>
+        <relationship type="one" title="To" related-entity-name="StatusItem">
+            <key-map field-name="statusIdTo" related-field-name="statusId"/>
         </relationship>
     </entity>
     <view-entity entity-name="StatusValidChangeToDetail" package-name="org.moqui.basic.status">
@@ -234,11 +234,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="SI" entity-name="StatusItem"/>
         <alias-all entity-alias="SVC"/>
         <alias-all entity-alias="SI"/>
-        <view-link entity-alias="SVC" rel-entity-alias="SI">
-            <key-map field-name="statusIdTo" rel-field-name="statusId"/>
+        <view-link entity-alias="SVC" related-entity-alias="SI">
+            <key-map field-name="statusIdTo" related-field-name="statusId"/>
         </view-link>
-        <relationship type="one" rel-entity-name="StatusValidChange"/>
-        <relationship type="one" rel-entity-name="StatusItem"/>
+        <relationship type="one" related-entity-name="StatusValidChange"/>
+        <relationship type="one" related-entity-name="StatusItem"/>
         <entity-condition>
             <order-by field-name="sequenceNum"/>
         </entity-condition>
@@ -257,18 +257,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="fromDate" type="date"/>
         <field name="thruDate" type="date"/>
         <field name="isClosed" type="text-indicator"/>
-        <relationship type="one" title="Parent" rel-entity-name="TimePeriod">
+        <relationship type="one" title="Parent" related-entity-name="TimePeriod">
             <key-map field-name="parentPeriodId"/>
         </relationship>
-        <relationship type="one" rel-entity-name="PeriodType"/>
+        <relationship type="one" related-entity-name="PeriodType"/>
     </entity>
     <entity entity-name="TimePeriodType" package-name="org.moqui.basic.time">
         <field name="timePeriodTypeId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="periodLength" type="number-integer"/>
         <field name="lengthUomId" type="id"/>
-        <relationship type="one" title="Length" rel-entity-name="Uom">
-            <key-map field-name="lengthUomId" rel-field-name="uomId"/>
+        <relationship type="one" title="Length" related-entity-name="Uom">
+            <key-map field-name="lengthUomId" related-field-name="uomId"/>
         </relationship>
     </entity>
 
@@ -281,7 +281,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="uomTypeEnumId" type="id"/>
         <field name="abbreviation" type="text-medium"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="UomType" rel-entity-name="Enumeration">
+        <relationship type="one" title="UomType" related-entity-name="Enumeration">
             <description>(enumTypeId = UOM_TYPE)</description>
             <key-map field-name="uomTypeEnumId"/>
         </relationship>
@@ -298,9 +298,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 direction the offset is subtracted first, then divided by the factor.
             </description>
         </field>
-        <relationship type="one" rel-entity-name="Uom"/>
-        <relationship type="one" title="To" rel-entity-name="Uom">
-            <key-map field-name="uomIdTo" rel-field-name="uomId"/>
+        <relationship type="one" related-entity-name="Uom"/>
+        <relationship type="one" title="To" related-entity-name="Uom">
+            <key-map field-name="uomIdTo" related-field-name="uomId"/>
         </relationship>
     </entity>
     <entity entity-name="UomGroup" package-name="org.moqui.basic.uom" cache="true">
@@ -310,7 +310,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="UomGroupMember" package-name="org.moqui.basic.uom" cache="true">
         <field name="uomGroupId" type="id" is-pk="true"/>
         <field name="uomId" type="id" is-pk="true"/>
-        <relationship type="one" rel-entity-name="UomGroup"/>
-        <relationship type="one" rel-entity-name="Uom"/>
+        <relationship type="one" related-entity-name="UomGroup"/>
+        <relationship type="one" related-entity-name="Uom"/>
     </entity>
 </entities>

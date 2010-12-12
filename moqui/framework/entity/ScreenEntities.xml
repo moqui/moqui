@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dynFormPageSeqId" type="id" is-pk="true"/>
         <field name="pageName" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" rel-entity-name="DynForm"/>
+        <relationship type="one" related-entity-name="DynForm"/>
     </entity>
     <entity entity-name="DynFormField" package-name="org.moqui.screen.dynform">
         <field name="dynFormFieldId" type="id" is-pk="true"/>
@@ -76,22 +76,22 @@ This Work includes contributions authored by David E. Jones, not as a
             </description>
         </field>
         <field name="whenDynFormOptionSeqId" type="id"/>
-        <relationship type="one" rel-entity-name="DynForm"/>
-        <relationship type="one" rel-entity-name="DynFormField"/>
-        <relationship type="one" title="DynFormFieldType" rel-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="DynForm"/>
+        <relationship type="one" related-entity-name="DynFormField"/>
+        <relationship type="one" title="DynFormFieldType" related-entity-name="Enumeration">
             <description>(enumTypeId = DYNFORM_FIELD_TYPE)</description>
             <key-map field-name="dynFormFieldTypeEnumId"/>
         </relationship>
-        <relationship type="one-nofk" rel-entity-name="DynFormPage">
+        <relationship type="one-nofk" related-entity-name="DynFormPage">
             <description>This does not have a foreign key because the dynFormId will never be null, and we want the
                 dynFormPageSeqId to be optional.
             </description>
         </relationship>
-        <relationship type="one" title="When" rel-entity-name="DynFormFieldOption">
-            <key-map field-name="whenDynFormFieldId" rel-field-name="dynFormFieldId"/>
-            <key-map field-name="whenDynFormOptionSeqId" rel-field-name="dynFormOptionSeqId"/>
+        <relationship type="one" title="When" related-entity-name="DynFormFieldOption">
+            <key-map field-name="whenDynFormFieldId" related-field-name="dynFormFieldId"/>
+            <key-map field-name="whenDynFormOptionSeqId" related-field-name="dynFormOptionSeqId"/>
         </relationship>
-        <relationship type="many" rel-entity-name="Enumeration">
+        <relationship type="many" related-entity-name="Enumeration">
             <key-map field-name="enumTypeId"/>
         </relationship>
     </entity>
@@ -100,7 +100,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dynFormOptionSeqId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" rel-entity-name="DynFormField"/>
+        <relationship type="one" related-entity-name="DynFormField"/>
     </entity>
     <entity entity-name="DynFormResponse" package-name="org.moqui.screen.dynform">
         <field name="dynFormResponseId" type="id" is-pk="true"/>
@@ -111,9 +111,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="referenceId" type="id-vlong"/>
         <field name="generalFeedback" type="text-very-long"/>
         <field name="statusId" type="id"/>
-        <relationship type="one" rel-entity-name="UserAccount"/>
-        <relationship type="one" rel-entity-name="DynForm"/>
-        <relationship type="one" rel-entity-name="StatusItem"/>
+        <relationship type="one" related-entity-name="UserAccount"/>
+        <relationship type="one" related-entity-name="DynForm"/>
+        <relationship type="one" related-entity-name="StatusItem"/>
     </entity>
     <entity entity-name="DynFormResponseAnswer" package-name="org.moqui.screen.dynform">
         <field name="dynFormResponseId" type="id" is-pk="true"/>
@@ -124,9 +124,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dynFormOptionSeqId" type="id"/>
         <field name="contentLocation" type="id"/>
         <field name="answeredDate" type="date-time"/>
-        <relationship type="one" rel-entity-name="DynFormResponse"/>
-        <relationship type="one" rel-entity-name="DynFormField"/>
-        <relationship type="one" rel-entity-name="DynFormFieldOption"/>
+        <relationship type="one" related-entity-name="DynFormResponse"/>
+        <relationship type="one" related-entity-name="DynFormField"/>
+        <relationship type="one" related-entity-name="DynFormFieldOption"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -202,7 +202,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 hide subscreens from the directory structure or even explicitly declared in the Screen XML file.
             </description>
         </field>
-        <relationship type="one-nofk" rel-entity-name="UserAccount">
+        <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
@@ -215,7 +215,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="ScreenThemeType" rel-entity-name="Enumeration">
+        <relationship type="one" title="ScreenThemeType" related-entity-name="Enumeration">
             <description>(enumTypeId = SCREEN_THEME_TYPE)</description>
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
@@ -227,10 +227,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="resourceValue" type="text-long">
             <description>The location, name or other value description the resource.</description>
         </field>
-        <relationship type="one" rel-entity-name="ScreenTheme"/>
-        <relationship type="one" title="ResourceType" rel-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="ScreenTheme"/>
+        <relationship type="one" title="ResourceType" related-entity-name="Enumeration">
             <description>(enumTypeId = SCREEN_THEME_RESTP)</description>
-            <key-map field-name="resourceTypeEnumId" rel-field-name="enumId"/>
+            <key-map field-name="resourceTypeEnumId" related-field-name="enumId"/>
         </relationship>
     </entity>
 </entities>

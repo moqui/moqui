@@ -31,10 +31,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <complex-alias-field entity-alias="EXPL" field="exampleDate"/>
             </complex-alias>
         </alias>
-        <view-link entity-alias="EXPL" rel-entity-alias="EXST">
+        <view-link entity-alias="EXPL" related-entity-alias="EXST">
             <key-map field-name="exampleId"/>
         </view-link>
-        <view-link entity-alias="EXST" rel-entity-alias="STIT">
+        <view-link entity-alias="EXST" related-entity-alias="STIT">
             <key-map field-name="statusId"/>
         </view-link>
     </view-entity>
@@ -54,7 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="EXFTAPTP" entity-name="ExampleFeatureApplType"/>
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="EXFTAPTP"/>
-        <view-link entity-alias="EXFTAP" rel-entity-alias="EXFTAPTP">
+        <view-link entity-alias="EXFTAP" related-entity-alias="EXFTAPTP">
             <key-map field-name="exampleFeatureApplTypeId"/>
         </view-link>
     </view-entity>
@@ -66,7 +66,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <exclude field="description"/>
         </alias-all>
         <alias name="typeDescription" entity-alias="EFAAT" field="description"/>
-        <view-link entity-alias="EXFT" rel-entity-alias="EFAAT">
+        <view-link entity-alias="EXFT" related-entity-alias="EFAAT">
             <key-map field-name="exampleFeatureId"/>
         </view-link>
     </view-entity>
@@ -78,7 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <exclude field="description"/>
         </alias-all>
         <alias name="featureDescription" entity-alias="EFAAAT" field="description"/>
-        <view-link entity-alias="EX" rel-entity-alias="EFAAAT">
+        <view-link entity-alias="EX" related-entity-alias="EFAAAT">
             <key-map field-name="exampleId"/>
         </view-link>
     </view-entity>
@@ -103,7 +103,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <exclude field="description"/>
         </alias-all>
         <alias name="typeDescription" entity-alias="EXFTAPTP" field="description"/>
-        <view-link entity-alias="EXFTAP" rel-entity-alias="EXFTAPTP">
+        <view-link entity-alias="EXFTAP" related-entity-alias="EXFTAPTP">
             <key-map field-name="exampleFeatureApplTypeId"/>
         </view-link>
         <entity-condition>
@@ -120,10 +120,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </alias-all>
         <alias-all entity-alias="EX"/>
         <alias name="featureDescription" entity-alias="EXFT" field="description"/>
-        <view-link entity-alias="EFAATD" rel-entity-alias="EXFT">
+        <view-link entity-alias="EFAATD" related-entity-alias="EXFT">
             <key-map field-name="exampleFeatureId"/>
         </view-link>
-        <view-link entity-alias="EFAATD" rel-entity-alias="EX">
+        <view-link entity-alias="EFAATD" related-entity-alias="EX">
             <key-map field-name="exampleId"/>
         </view-link>
         <entity-condition>

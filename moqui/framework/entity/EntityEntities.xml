@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="entityGroupId" type="id" is-pk="true"/>
         <field name="entityOrPackage" type="text-long" is-pk="true"/>
         <field name="applEnumId" type="id"/>
-        <relationship type="one" rel-entity-name="EntityGroup"/>
+        <relationship type="one" related-entity-name="EntityGroup"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -63,9 +63,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="keepRemoveInfoHours" type="number-float"/>
         <field name="forPullOnly" type="text-indicator"/>
         <field name="forPushOnly" type="text-indicator"/>
-        <relationship type="one-nofk" title="Last" rel-entity-name="EntitySyncHistory">
+        <relationship type="one-nofk" title="Last" related-entity-name="EntitySyncHistory">
             <key-map field-name="entitySyncId"/>
-            <key-map field-name="lastHistoryStartDate" rel-field-name="startDate"/>
+            <key-map field-name="lastHistoryStartDate" related-field-name="startDate"/>
         </relationship>
     </entity>
     <entity entity-name="EntitySyncHistory" package-name="org.moqui.entity.synchronization">
@@ -90,43 +90,56 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="perSplitMaxMillis" type="number-integer"/>
         <field name="perSplitMinItems" type="number-integer"/>
         <field name="perSplitMaxItems" type="number-integer"/>
-        <relationship type="one" rel-entity-name="EntitySync"/>
+        <relationship type="one" related-entity-name="EntitySync"/>
     </entity>
     <entity entity-name="EntitySyncIncludeGroup" package-name="org.moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="entityGroupId" type="id" is-pk="true"/>
-        <relationship type="one" rel-entity-name="EntityGroup"/>
-        <relationship type="one" rel-entity-name="EntitySync"/>
+        <relationship type="one" related-entity-name="EntityGroup"/>
+        <relationship type="one" related-entity-name="EntitySync"/>
     </entity>
     <entity entity-name="EntitySyncRemove" package-name="org.moqui.entity.synchronization">
         <field name="entitySyncRemoveId" type="id" is-pk="true"/>
         <field name="primaryKeyRemoved" type="text-very-long"/>
     </entity>
 
-    <!--
-    TODO: define these, in EntityEntities
-    -Could use these to make view-entity configurations on the fly (this may be WAY too technical for most users, so considering this a pretty low priority)
+    <!-- ========================================================= -->
+    <!-- org.moqui.entity.dynamic -->
+    <!-- ========================================================= -->
 
-    DynamicViewEntity
-    dynamicViewEntityId*
-
-    DynamicViewEntityMember
-    dynamicViewEntityId*
-    entityAlias*
-    entityName
-
-    DynamicViewEntityAlias
-    dynamicViewEntityId*
-    entityAlias*
-    fieldAlias*
-    fieldName
-    functionEnumId
-
-    DynamicViewEntityJoin
-    entityAlias
-    relEntityAlias
-    keyName
-    relKeyName
-    relOptional
-    -->
+    <entity entity-name="DynamicViewEntity" package-name="org.moqui.entity.dynamic">
+        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="packageName" type="text-long"/>
+        <field name="cache" type="text-indicator"/>
+    </entity>
+    <entity entity-name="DynamicViewEntityMember" package-name="org.moqui.entity.dynamic">
+        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short" is-pk="true"/>
+        <field name="entityName" type="text-medium"/>
+        <relationship type="one" related-entity-name="DynamicViewEntity"/>
+    </entity>
+    <entity entity-name="DynamicViewEntityAlias" package-name="org.moqui.entity.dynamic">
+        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short" is-pk="true"/>
+        <field name="fieldAlias" type="text-medium" is-pk="true"/>
+        <field name="fieldName" type="text-medium"/>
+        <field name="functionEnumId" type="id"/>
+        <field name="groupBy" type="text-indicator"/>
+        <relationship type="one" related-entity-name="DynamicViewEntityMember"/>
+    </entity>
+    <entity entity-name="DynamicViewEntityJoin" package-name="org.moqui.entity.dynamic">
+        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short" is-pk="true"/>
+        <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
+        <field name="relatedOptional" type="text-indicator"/>
+        <relationship type="one" related-entity-name="DynamicViewEntityMember"/>
+    </entity>
+    <entity entity-name="DynamicViewEntityKeyMap" package-name="org.moqui.entity.dynamic">
+        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short" is-pk="true"/>
+        <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
+        <field name="keyName" type="text-medium" is-pk="true"/>
+        <field name="relatedKeyName" type="text-medium"/>
+        <relationship type="one" related-entity-name="DynamicViewEntityJoin"/>
+    </entity>
 </entities>

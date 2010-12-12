@@ -45,28 +45,28 @@ This Work includes contributions authored by David E. Jones, not as a
             If no records are present all system currencies will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="currencyUomId" type="id" is-pk="true"/>
-        <relationship type="one" rel-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="Tenant"/>
     </entity>
     <entity entity-name="TenantLocale" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
         <description>Each record represents a Locale to be available to the tenant.
             If no records are present all system locales will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="locale" type="id" is-pk="true"/>
-        <relationship type="one" rel-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="Tenant"/>
     </entity>
     <entity entity-name="TenantTimeZone" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
         <description>Each record represents a Time Zone to be available to the tenant.
             If no records are present all system time zones will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="timeZone" type="id" is-pk="true"/>
-        <relationship type="one" rel-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="Tenant"/>
     </entity>
     <entity entity-name="TenantCountry" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
         <description>Each record represents a Country (Geo) to be available to the tenant.
             If no records are present all system countries will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="countryGeoId" type="id" is-pk="true"/>
-        <relationship type="one" rel-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="Tenant"/>
     </entity>
     <entity entity-name="TenantDataSource" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
         <description>
@@ -79,6 +79,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="jdbcUri" type="text-long"/>
         <field name="jdbcUsername" type="text-long"/>
         <field name="jdbcPassword" type="text-long"/>
-        <relationship type="one" rel-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="Tenant"/>
     </entity>
 </entities>
