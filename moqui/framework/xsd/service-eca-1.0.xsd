@@ -29,7 +29,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element ref="action"/>
                 </xs:choice>
             </xs:sequence>
-            <xs:attribute type="xs:string" name="service" use="required"/>
+            <xs:attribute name="service" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
+                    put a hash (#) between them, like: "${path}.${verb}#${noun}".
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="event" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
@@ -64,7 +69,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="action">
         <xs:complexType>
-            <xs:attribute name="service-name" type="xs:string" use="required"/>
+            <xs:attribute name="service" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
+                    put a hash (#) between them, like: "${path}.${verb}#${noun}".
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="mode" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">

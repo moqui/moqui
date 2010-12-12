@@ -68,8 +68,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="call-service" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>Calls a service.</xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute name="verb" type="xs:string" use="required"/>
-            <xs:attribute name="noun" type="xs:string" use="optional"/>
+            <xs:attribute name="service" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
+                    put a hash (#) between them, like: "${path}.${verb}#${noun}".
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="in-map" type="xs:string">
                 <xs:annotation><xs:documentation>Map in the context to use as the service input parameters.</xs:documentation></xs:annotation>
             </xs:attribute>
@@ -152,8 +156,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="service-invoke">
         <xs:complexType>
-            <xs:attribute name="verb" type="xs:string" use="required"/>
-            <xs:attribute name="noun" type="xs:string" use="optional"/>
+            <xs:attribute name="service" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
+                    put a hash (#) between them, like: "${path}.${verb}#${noun}".
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="async" default="false">
                 <xs:annotation><xs:documentation>If true runs the service asynchronously. Use persist to run async through a database record.</xs:documentation></xs:annotation>
                 <xs:simpleType>

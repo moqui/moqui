@@ -19,11 +19,13 @@ import java.util.Map;
 public interface ServiceFacade {
     /**
      * Run the service synchronously with a specified timeout and return the result.
-     * @param serviceName Name of the service to run. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context Map of name, value pairs composing the context.
      * @param persist True for store and run; False for run from memory.
      * @param requireNewTransaction if true we will suspend and create a new transaction so we are sure to start.
-     * @param transactionIsolation If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
+     * @param transactionIsolation If null defaults to configured value for service, or container. For possible values
+     *   see JavaDoc for javax.sql.Connection.
      * @return Map of name, value pairs composing the result.
      * @throws ServiceException
      */
@@ -31,21 +33,25 @@ public interface ServiceFacade {
 
     /**
      * Run the service asynchronously, passing an instance of GenericRequester that will receive the result.
-     * @param serviceName Name of the service to run. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context Map of name, value pairs composing the context.
      * @param requester Object implementing GenericRequester interface which will receive the result.
      * @param persist True for store/run; False for run.
-     * @param transactionIsolation If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
+     * @param transactionIsolation If null defaults to configured value for service, or container. For possible values
+     *   see JavaDoc for javax.sql.Connection.
      * @throws ServiceException
      */
     public void callAsync(String serviceName, Map<String, ?> context, ServiceRequester requester, boolean persist, Integer transactionIsolation) throws ServiceException;
 
     /**
      * Run the service asynchronously.
-     * @param serviceName Name of the service to run. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context Map of name, value pairs composing the context.
      * @param persist True for store/run; False for run.
-     * @param transactionIsolation If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
+     * @param transactionIsolation If null defaults to configured value for service, or container. For possible values
+     *   see JavaDoc for javax.sql.Connection.
      * @return A new GenericRequester object.
      * @throws ServiceException
      */
@@ -55,7 +61,8 @@ public interface ServiceFacade {
      * Schedule a service to run asynchronously at a specific start time.
      * @param jobName Name of the job
      * @param poolName Name of the service pool to send to.
-     * @param serviceName Name of the service to run. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context The name/value pairs composing the context.
      * @param startTime The time to run this service.
      * @param frequency The frequency of the recurrence (RecurrenceRule.DAILY, etc).
@@ -69,14 +76,16 @@ public interface ServiceFacade {
 
     /**
      * Register a callback listener on a specific service.
-     * @param serviceName Name of the service to link callback to. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param serviceCallback The callback implementation.
      */
     public void registerCallback(String serviceName, ServiceCallback serviceCallback);
 
     /**
      * Adds a rollback service to the current TX using the ServiceXaWrapper
-     * @param serviceName Name of the service to run. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context
      * @param persist
      * @throws ServiceException
@@ -85,7 +94,8 @@ public interface ServiceFacade {
 
     /**
      * Adds a commit service to the current TX using the ServiceXaWrapper
-     * @param serviceName Name of the service to run. To explicitly separate the service verb and noun put a hash mark (#) between them.
+     * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
+     *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context
      * @param persist
      * @throws ServiceException

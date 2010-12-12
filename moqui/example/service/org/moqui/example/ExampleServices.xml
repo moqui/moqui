@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <!-- find the most recent status record and set the statusEndDate -->
             <entity-find entity-name="ExampleStatus" list="oldExampleStatusList">
-                <condition-expr field-name="exampleId" from-field="parameters.exampleId"/>
+                <constraint field-name="exampleId" from-field="parameters.exampleId"/>
                 <order-by field-name="-statusDate"/>
             </entity-find>
             <set field="oldExampleStatus" from-field="oldExampleStatusList[0]"/>

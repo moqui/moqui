@@ -230,10 +230,10 @@ X email data model to save messages locally (both incoming and outgoing)
 
 X Add EntityList class that has options for filtering the list, etc
 
-*** Priority 1
-
-- Refer to services by namespace, kind of like a Java Class/Method to facilitate reloading files more granulalry (move
+X Refer to services by namespace, kind of like a Java Class/Method to facilitate reloading files more granulalry (move
   toward lazy loading)
+
+*** Priority 1
 
 - dynamic view-entity entities
 
