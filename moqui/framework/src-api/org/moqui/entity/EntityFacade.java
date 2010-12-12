@@ -86,9 +86,9 @@ public interface EntityFacade {
     Connection getConnection(String groupName) throws EntityException;
 
     // ======= XML Related Methods ========
-    List<EntityValue> readXmlDocument(URL url) throws EntityException;
+    EntityList readXmlDocument(URL url) throws EntityException;
 
-    List<EntityValue> readXmlDocument(Document document);
+    EntityList readXmlDocument(Document document);
 
     EntityValue makeValue(Element element);
 }

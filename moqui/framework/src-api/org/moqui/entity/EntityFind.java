@@ -172,7 +172,7 @@ public interface EntityFind extends java.io.Serializable {
     /** Runs a find with current options to get a list of records.
      * This method ignores the cache setting and always gets results from the database.
      */
-    List<EntityValue> list() throws EntityException;
+    EntityList list() throws EntityException;
 
     /** Runs a find with current options and returns an EntityListIterator object.
      * This method ignores the cache setting and always gets results from the database.

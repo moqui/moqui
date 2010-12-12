@@ -133,7 +133,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
      * @return List of EntityValue instances as specified in the relation definition
      */
-    List<EntityValue> findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy,
+    EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy,
                                   Boolean useCache) throws EntityException;
 
     /** Get the named Related Entity for the EntityValue from the persistent store

@@ -21,79 +21,91 @@ import java.util.ListIterator;
 public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<EntityValue> {
 
     /** Sets the cursor position to just after the last result so that previous() will return the last result */
-    public void afterLast() throws EntityException;
+    void afterLast() throws EntityException;
 
     /** Sets the cursor position to just before the first result so that next() will return the first result */
-    public void beforeFirst() throws EntityException;
+    void beforeFirst() throws EntityException;
 
     /** Sets the cursor position to last result; if result set is empty returns false */
-    public boolean last() throws EntityException;
+    boolean last() throws EntityException;
 
     /** Sets the cursor position to last result; if result set is empty returns false */
-    public boolean first() throws EntityException;
+    boolean first() throws EntityException;
 
-    public void close() throws EntityException;
+    void close() throws EntityException;
 
-    /** NOTE: Calling this method does return the current value, but so does calling next() or previous(), so calling one of those AND this method will cause the value to be created twice */
-    public EntityValue currentEntityValue() throws EntityException;
+    /** NOTE: Calling this method does return the current value, but so does calling next() or previous(), so calling
+     * one of those AND this method will cause the value to be created twice
+     */
+    EntityValue currentEntityValue() throws EntityException;
 
-    public int currentIndex() throws EntityException;
+    int currentIndex() throws EntityException;
 
     /** performs the same function as the ResultSet.absolute method;
      * if rowNum is positive, goes to that position relative to the beginning of the list;
      * if rowNum is negative, goes to that position relative to the end of the list;
      * a rowNum of 1 is the same as first(); a rowNum of -1 is the same as last()
      */
-    public boolean absolute(int rowNum) throws EntityException;
+    boolean absolute(int rowNum) throws EntityException;
 
     /** performs the same function as the ResultSet.relative method;
      * if rows is positive, goes forward relative to the current position;
      * if rows is negative, goes backward relative to the current position;
      */
-    public boolean relative(int rows) throws EntityException;
+    boolean relative(int rows) throws EntityException;
 
     /**
-     * PLEASE NOTE: Because of the nature of the JDBC ResultSet interface this method can be very inefficient; it is much better to just use next() until it returns null
+     * PLEASE NOTE: Because of the nature of the JDBC ResultSet interface this method can be very inefficient; it is
+     * much better to just use next() until it returns null.
+     *
      * For example, you could use the following to iterate through the results in an EntityListIterator:
      *
      *      EntityValue nextValue = null;
      *      while ((nextValue = (EntityValue) this.next()) != null) { ... }
      *
      */
-    public boolean hasNext();
+    boolean hasNext();
 
-    /** PLEASE NOTE: Because of the nature of the JDBC ResultSet interface this method can be very inefficient; it is much better to just use previous() until it returns null */
-    public boolean hasPrevious();
+    /** PLEASE NOTE: Because of the nature of the JDBC ResultSet interface this method can be very inefficient; it is
+     * much better to just use previous() until it returns null.
+     */
+    boolean hasPrevious();
 
-    /** Moves the cursor to the next position and returns the EntityValue object for that position; if there is no next, returns null
+    /** Moves the cursor to the next position and returns the EntityValue object for that position; if there is no next,
+     * returns null.
+     *
      * For example, you could use the following to iterate through the results in an EntityListIterator:
      *
      *      EntityValue nextValue = null;
      *      while ((nextValue = (EntityValue) this.next()) != null) { ... }
      *
      */
-    public EntityValue next();
+    EntityValue next();
 
     /** Returns the index of the next result, but does not guarantee that there will be a next result */
-    public int nextIndex();
+    int nextIndex();
 
-    /** Moves the cursor to the previous position and returns the EntityValue object for that position; if there is no previous, returns null */
-    public EntityValue previous();
+    /** Moves the cursor to the previous position and returns the EntityValue object for that position; if there is no
+     * previous, returns null.
+     */
+    EntityValue previous();
 
     /** Returns the index of the previous result, but does not guarantee that there will be a previous result */
-    public int previousIndex();
+    int previousIndex();
 
-    public void setFetchSize(int rows) throws EntityException;
+    void setFetchSize(int rows) throws EntityException;
 
-    public List<EntityValue> getCompleteList() throws EntityException;
+    EntityList getCompleteList() throws EntityException;
 
     /** Gets a partial list of results starting at start and containing at most number elements.
      * Start is a one based value, ie 1 is the first element.
      */
-    public List<EntityValue> getPartialList(int start, int number) throws EntityException;
+    EntityList getPartialList(int start, int number) throws EntityException;
 
-    public int getResultsSizeAfterPartialList() throws EntityException;
+    int getResultsSizeAfterPartialList() throws EntityException;
 
-    /** Method to implement the Iterable interface to allow an EntityListIterator to be used in a foreach loop. Just returns this. */
-    public Iterator<EntityValue> iterator();
+    /** Method to implement the Iterable interface to allow an EntityListIterator to be used in a foreach loop. Just
+     * returns this.
+     */
+    Iterator<EntityValue> iterator();
 }
