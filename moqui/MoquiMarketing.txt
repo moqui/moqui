@@ -143,6 +143,9 @@ many other facades, and for more info see the API Structure section below.
 Service names are split into verb and noun parts, which together make up the
 service name (ie like: ${verb}${noun}). Services are called with the combined
 name and can separate the verb and noun parts of it using a hash mark ('#').
+Services are also organized by path just like Java classes to facilitate lazy
+loading and to better organize code. The full name of a service will follow a
+pattern like: "${path}.${verb}${noun}".
 
 Service parameters in Moqui are like the service attributes in OFBiz.
 
@@ -253,4 +256,3 @@ reduces redundancy and effort. The localized labels are in a database table
 instead of an XML file to perform better (only lookup and cache labels that
 are used) and to support per-tenant localizations in a multi-tenant
 environment.
-

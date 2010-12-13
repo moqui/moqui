@@ -12,8 +12,6 @@ TODO:
 
 - example HTML files integrated with screens (implicit includes, etc)
 
-- figure out something for decorating lookup screens
-
 ================================================================
 Implementation Plans
 
@@ -110,6 +108,8 @@ X Content with content repo not like ofb entities, use JCR with Apache JackRabbi
 X Allow effective date (X) and content revision (no explicit content revision needed, just refer to a different
   workspace with deployment settings) settings at runtime to simulate a future or past production environment that is
   not yet active
+
+X figure out something for decorating lookup screens
 
 *** Priority 1
 
