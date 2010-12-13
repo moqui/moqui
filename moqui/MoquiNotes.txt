@@ -1,17 +1,4 @@
 
-TODO:
-
-- do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc,
-  security, theme, etc), create designs for each activity
-
-- write up feature list (X), differences from OFBiz list (X), benefits/marketing list (_); post to web site and send to
-  OFBiz after initial interfaces and examples are done (_)
-
-- create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the
-  moqui site itself
-
-- example HTML files integrated with screens (implicit includes, etc)
-
 ================================================================
 Implementation Plans
 
@@ -183,6 +170,8 @@ X add theme data structure, simplified functionality (based more on CSS, not on 
 
 X Dynamic Forms support reading from and saving to existing entities an not just the Response/Answer tables
 
+X example HTML files integrated with screens (implicit includes, etc)
+
 *** Priority 1
 
 *** Priority 2
@@ -255,10 +244,24 @@ Policies and Principles for Managing Moqui and Moqui-based Apps
   branches or patches or git pulls to contribute
 
 - when development requirements are not met, design into the framework instead of working around it; all framework
-  designs to be moderated by single person (that person may change over time)
+  designs to be moderated by single person (that person may change over time), or a very small group of people
 
 - applications will be in a separate project from the framework, with different groups working on framework and
   applications projects
 
 - in applications project require collaboration on requirements, then designs, then implementations... for all new
   functionality and all changes... no exceptions!
+
+================================================================
+Other TODO:
+
+- do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc,
+  security, theme, etc), refine designs based on each activity
+
+- write up feature list (X), differences from OFBiz list (X), benefits/marketing list (_); post to web site and send to
+  OFBiz after initial interfaces and examples are done (_)
+
+- create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the
+  moqui site itself
+
+================================================================

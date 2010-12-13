@@ -1,0 +1,22 @@
+
+h1. Example Wiki
+
+This is an example wiki page using the Confluence style of wiki markup (hence the extension cwiki).
+
+If you are reading this in your browser you are probably viewing this in an HTML form which was created by transforming
+the wiki text to HTML using the Mylyn WikiText library.
+
+* Bullet 1
+** Bullet 1.1
+** Bullet 1.2
+* Bullet 2
+*# Bullet 2 Number 1
+*# Bullet 2 Number 2
+
+h2. Sub-Heading 1
+
+This is the text under Sub-Heading 1.
+
+h2. Sub-Heading 2
+
+This is the text under Sub-Heading 2.
