@@ -27,7 +27,7 @@
     </server-stats>
     
     <webapp-list>
-        <webapp moqui-name="base"
+        <webapp moqui-name="webroot"
                 http-port="8080" http-force-host=""
                 https-port="8443" https-force-host="" https-enabled="true"
                 content-prefix-secure="" content-prefix-standard=""
@@ -49,7 +49,7 @@
                 <actions></actions>
             </before-logout>
 
-            <!-- TODO: <root-screen location=""/> -->
+            <root-screen location="runtime/webroot/MoquiRoot.xml"/>
         </webapp>
     </webapp-list>
 

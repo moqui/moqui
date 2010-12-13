@@ -13,6 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Features" default-menu-index="3">
+    
     <parameter name="exampleId"/>
 
     <transition name="editExampleFeature"><default-response url="/ExampleApp/FeatureTabs/EditExampleFeature"/></transition>

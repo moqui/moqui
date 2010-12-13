@@ -13,7 +13,9 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Example" default-menu-index="1">
+
     <parameter name="exampleId"/>
+    
     <transition name="createExample">
         <actions><call-service service-name="createExample" auto-in-map="true"/></actions>
         <default-response url="EditExample"/>

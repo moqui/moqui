@@ -11,6 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="common-types-1.0.xsd"/>
     <xs:include schemaLocation="xml-actions-1.0.xsd"/>
     <xs:include schemaLocation="xml-form-1.0.xsd"/>
 
@@ -294,7 +295,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="condition">
+                <xs:element ref="condition" minOccurs="0">
                     <xs:annotation><xs:documentation>
                         This condition is run the subscreens menu is rendered to seeif the item is available
                         (otherwise the button/link/etc is disabled).

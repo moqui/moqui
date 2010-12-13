@@ -12,17 +12,19 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
-    <subscreens default-item="FindExample"/>
+    <subscreens>
+        <!-- refer to the various app roots here -->
+        <subscreens-item name="example" location="component://example/screen" menu-title="Example" menu-index="9"/>
+    </subscreens>
     <section>
         <widgets>
-            <container-panel id="ExamplePanel">
-                <panel-header height="30">
-                    <label text="Moqui Example App" id="ExampleHeader"/>
-                </panel-header>
+            <container-panel id="WebrootPanel">
                 <panel-center>
-                    <subscreens-panel id="ExampleAppSubsPanel" type="tab"/>
+                    <subscreens-panel id="WebrootSubsPanel" type="tab"/>
                 </panel-center>
-                <!-- No footer, use the one from webroot -->
+                <panel-footer height="20">
+                    <label text="Public Domain - No Copyright Applies" id="WebrootFooter"/>
+                </panel-footer>
             </container-panel>
         </widgets>
     </section>
