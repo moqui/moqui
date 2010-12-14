@@ -9,8 +9,9 @@
 
     <cache-list>
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
-        <cache name="entity.namespace" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="service.namespace" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="entity.name" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="entity.file" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="service.path" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
@@ -55,19 +56,19 @@
 
     <screen-facade boundary-comments="true" default-autocomplete-rows="20" default-paginate-rows="20">
         <screen-text-output type="text" mime-type="text/plain"
-                            macro-template-location="component://framework/template/screen-macro/ScreenTextMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenTextMacros.ftl"/>
         <screen-text-output type="cwiki" mime-type="text/plain"
-                            macro-template-location="component://framework/template/screen-macro/ScreenCwikiMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenCwikiMacros.ftl"/>
         <screen-text-output type="html" mime-type="text/html"
-                            macro-template-location="component://framework/template/screen-macro/ScreenHtmlMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenHtmlMacros.ftl"/>
         <screen-text-output type="xhtml" mime-type="text/xhtml"
-                            macro-template-location="component://framework/template/screen-macro/ScreenHtmlMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenHtmlMacros.ftl"/>
         <screen-text-output type="xsl-fo" mime-type="text/xml"
-                            macro-template-location="component://framework/template/screen-macro/ScreenXslFoMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenXslFoMacros.ftl"/>
         <screen-text-output type="xml" mime-type="text/xml"
-                            macro-template-location="component://framework/template/screen-macro/ScreenXmlMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenXmlMacros.ftl"/>
         <screen-text-output type="csv" mime-type="text/csv"
-                            macro-template-location="component://framework/template/screen-macro/ScreenCsvMacros.xml"/>
+                            macro-template-location="component://framework/template/screen-macro/ScreenCsvMacros.ftl"/>
     </screen-facade>
 
     <service-facade>

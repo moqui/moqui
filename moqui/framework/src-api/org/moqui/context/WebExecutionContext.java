@@ -25,7 +25,6 @@ import freemarker.ext.servlet.ServletContextHashModel;
 /**
  * Interface definition for object used throughout the Moqui Framework to manage contextual execution information and tool interfaces.
  */
-
 public interface WebExecutionContext extends ExecutionContext {
     Map<String, Object> getParameters();
 
@@ -39,4 +38,5 @@ public interface WebExecutionContext extends ExecutionContext {
     HttpSessionHashModel getSessionAttributes();
 
     ServletContext getServletContext();
+    ServletContextHashModel getApplicationAttributes();
 }
