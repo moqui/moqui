@@ -176,14 +176,18 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="call-script" substitutionGroup="CallOperations" type="xs:string">
+    <xs:element name="call-script" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>
             Runs the script at the specified location. You can also put a Groovy script inline under this element.
             If a location is specified the file can be a Groovy script or an xml-actions script.
             The script will run in the same context as the current operation.
         </xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute name="location" type="xs:string" use="required"/>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="location" type="xs:string" use="required"/>
+                </xs:extension>
+            </xs:simpleContent>
         </xs:complexType>
     </xs:element>
 

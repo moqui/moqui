@@ -309,7 +309,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="default-option-thru" default="lessThan">
+            <xs:attribute name="default-option-thru" default="less">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="less"/>
@@ -461,7 +461,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="default-option-from" default="greaterThanEqualTo">
+            <xs:attribute name="default-option-from" default="greater-equals">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="equals"/>
@@ -470,7 +470,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="default-option-thru" default="lessThanEqualTo">
+            <xs:attribute name="default-option-thru" default="less-equals">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="less"/>

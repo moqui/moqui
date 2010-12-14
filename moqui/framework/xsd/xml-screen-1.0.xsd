@@ -540,30 +540,23 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="platform-specific" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:choice>
-                <xs:element ref="text"/>
+                <xs:element ref="template"/>
                 <!-- the gwt and swing elements are just placeholders for now, won't be implemented in this rev -->
-                <xs:element ref="gwt" minOccurs="0" maxOccurs="0"/>
-                <xs:element ref="swing" minOccurs="0" maxOccurs="0"/>
+                <!-- <xs:element ref="gwt"/> -->
+                <!-- <xs:element ref="swing"/> -->
             </xs:choice>
         </xs:complexType>
     </xs:element>
     
     <!-- ============== Text Specific Elements =============== -->
-    <xs:element name="text">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="template"/>
-            </xs:sequence>
-            <xs:attribute name="type" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    Can be anything. Default supported values include: text, html, xsl-fo, xml, and csv.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
     <xs:element name="template">
         <xs:complexType>
-            <xs:attribute type="xs:string" name="location" use="required">
+            <xs:attribute name="type" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Can be anything. Default supported values include: text, cwiki, html, xhtml, xsl-fo, xml, and csv.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="location" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     Template location can include various prefixes to support including from a file, http, component,
                     or a content repository.

@@ -170,7 +170,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:attributeGroup name="attlist.parameter-general">
-        <xs:attribute name="required" default="false" type="boolean">
+        <xs:attribute name="required" default="false">
             <xs:simpleType>
                 <xs:restriction base="xs:token">
                     <xs:enumeration value="true"/>
@@ -234,16 +234,20 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="matches" substitutionGroup="ParameterValidations" type="xs:string">
+    <xs:element name="matches" substitutionGroup="ParameterValidations">
         <xs:annotation><xs:documentation>
             Validate the current parameter against the regular expression specified in the expr attribute of the tag.
         </xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute name="regexp" type="xs:string" use="required"/>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="regexp" type="xs:string" use="required"/>
+                </xs:extension>
+            </xs:simpleContent>
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="number-range" substitutionGroup="ParameterValidations" type="xs:string">
+    <xs:element name="number-range" substitutionGroup="ParameterValidations">
         <xs:complexType>
             <xs:attribute name="min" type="xs:nonNegativeInteger"/>
             <xs:attribute name="max" type="xs:nonNegativeInteger"/>
@@ -253,45 +257,45 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="non-negative" type="boolean" default="false"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="number-integer" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="number-decimal" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="number-credit-card" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="number-integer" substitutionGroup="ParameterValidations"/>
+    <xs:element name="number-decimal" substitutionGroup="ParameterValidations"/>
+    <xs:element name="number-credit-card" substitutionGroup="ParameterValidations"/>
 
-    <xs:element name="text-length" substitutionGroup="ParameterValidations" type="xs:string">
+    <xs:element name="text-length" substitutionGroup="ParameterValidations">
         <xs:complexType>
             <xs:attribute name="min" type="xs:nonNegativeInteger"/>
             <xs:attribute name="max" type="xs:nonNegativeInteger"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="text-email" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="text-url" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="text-letters" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="text-digits" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="text-email" substitutionGroup="ParameterValidations"/>
+    <xs:element name="text-url" substitutionGroup="ParameterValidations"/>
+    <xs:element name="text-letters" substitutionGroup="ParameterValidations"/>
+    <xs:element name="text-digits" substitutionGroup="ParameterValidations"/>
 
-    <xs:element name="time-date" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="time-time" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="time-date-time" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="time-range" substitutionGroup="ParameterValidations" type="xs:string">
+    <xs:element name="time-date" substitutionGroup="ParameterValidations"/>
+    <xs:element name="time-time" substitutionGroup="ParameterValidations"/>
+    <xs:element name="time-date-time" substitutionGroup="ParameterValidations"/>
+    <xs:element name="time-range" substitutionGroup="ParameterValidations">
         <xs:complexType>
             <xs:attribute name="before" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="after" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="creditcard-any" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-visa" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-mastercard" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-amex" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-discover" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-enroute" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-jcb" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-solo" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-switch" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-dinersclub" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="creditcard-visaelectron" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="creditcard-any" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-visa" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-mastercard" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-amex" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-discover" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-enroute" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-jcb" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-solo" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-switch" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-dinersclub" substitutionGroup="ParameterValidations"/>
+    <xs:element name="creditcard-visaelectron" substitutionGroup="ParameterValidations"/>
 
-    <xs:element name="usa-zip-code" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="usa-po-box" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="usa-phone" substitutionGroup="ParameterValidations" type="xs:string"/>
-    <xs:element name="usa-area-code" substitutionGroup="ParameterValidations" type="xs:string"/>
+    <xs:element name="usa-zip-code" substitutionGroup="ParameterValidations"/>
+    <xs:element name="usa-po-box" substitutionGroup="ParameterValidations"/>
+    <xs:element name="usa-phone" substitutionGroup="ParameterValidations"/>
+    <xs:element name="usa-area-code" substitutionGroup="ParameterValidations"/>
 </xs:schema>

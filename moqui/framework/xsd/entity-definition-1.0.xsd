@@ -21,8 +21,6 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:restriction>
     </xs:simpleType>
 
-    <xs:element name="description" type="xs:string"/>
-    
     <!-- ====================== Root Element ======================= -->
     <xs:element name="entities">
         <xs:complexType>
