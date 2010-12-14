@@ -9,19 +9,15 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.context;
+package org.moqui.impl.context
 
-import java.net.URL;
-import java.util.Map;
+import org.moqui.context.L10nFacade
 
-/**
- * Information about execution of an artifact as the system is running
- */
-public interface ArtifactExecutionInfo {
-    String getLocation();
-    URL getLocationURL();
-    String getName();
-    
-    String getAuthorizedUserId();
-    boolean isAuthorizationInheritable();
+public class L10nFacadeImpl implements L10nFacade {
+
+    /** @see org.moqui.context.L10nFacade#getLocalizedMessage(String) */
+    public String getLocalizedMessage(String original) {
+        // TODO: implement this
+        return null;
+    }
 }

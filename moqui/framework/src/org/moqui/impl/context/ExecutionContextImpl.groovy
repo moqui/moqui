@@ -27,72 +27,72 @@ import org.moqui.context.ArtifactExecutionFacade
 public class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getContext() */
-    Map<String, Object> getContext() {
+    public Map<String, Object> getContext() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
-    Map<String, Object> getContextRoot() {
+    public Map<String, Object> getContextRoot() {
         return null;  // TODO: implement this
     }
     
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
-    String getTenantId() {
+    public String getTenantId() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getUser() */
-    UserFacade getUser() {
+    public UserFacade getUser() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getMessage() */
-    MessageFacade getMessage() {
+    public MessageFacade getMessage() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getL10n() */
-    L10nFacade getL10n() {
+    public L10nFacade getL10n() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getResource() */
-    ResourceFacade getResource() {
+    public ResourceFacade getResource() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getLogger() */
-    LoggerFacade getLogger() {
+    public LoggerFacade getLogger() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getCache() */
-    CacheFacade getCache() {
+    public CacheFacade getCache() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getTransaction() */
-    TransactionFacade getTransaction() {
+    public TransactionFacade getTransaction() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getEntity() */
-    EntityFacade getEntity() {
+    public EntityFacade getEntity() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getService() */
-    ServiceFacade getService() {
+    public ServiceFacade getService() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
-    ScreenFacade getScreen() {
+    public ScreenFacade getScreen() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
-    ArtifactExecutionFacade getArtifactExecution() {
+    public ArtifactExecutionFacade getArtifactExecution() {
         return null;  // TODO: implement this
     }
 }

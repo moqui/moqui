@@ -9,19 +9,21 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.context;
+package org.moqui.impl.context
 
-import java.net.URL;
-import java.util.Map;
+import org.moqui.context.ResourceFacade
 
-/**
- * Information about execution of an artifact as the system is running
- */
-public interface ArtifactExecutionInfo {
-    String getLocation();
-    URL getLocationURL();
-    String getName();
-    
-    String getAuthorizedUserId();
-    boolean isAuthorizationInheritable();
+public class ResourceFacadeImpl implements ResourceFacade {
+
+    /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
+    public URL getLocationUrl(String location) {
+        // TODO: implement this
+        return null;
+    }
+
+    /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */
+    public InputStream getLocationStream(String location) {
+        // TODO: implement this
+        return null;
+    }
 }

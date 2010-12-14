@@ -27,14 +27,3 @@ public interface ArtifactExecutionFacade {
      */
     List<ArtifactExecutionInfo> getArtifactExecutionInfoStack();
 }
-
-/* removing these from the interface because they will be used internally by the framework only, keeping here for future reference
-    void pushUserId(String userId);
-    String popUserId();
-
-    void pushSessionId(String sessionId);
-    String popSessionId();
-
-    void pushArtifactExecutionInfo(ArtifactExecutionInfo artifactExecutionInfo);
-    ArtifactExecutionInfo popArtifactExecutionInfo();
- */

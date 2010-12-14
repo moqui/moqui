@@ -9,19 +9,21 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.context;
+package org.moqui.impl.context
 
-import java.net.URL;
-import java.util.Map;
+import org.moqui.context.LoggerFacade
+import java.util.logging.Level
 
-/**
- * Information about execution of an artifact as the system is running
- */
-public interface ArtifactExecutionInfo {
-    String getLocation();
-    URL getLocationURL();
-    String getName();
-    
-    String getAuthorizedUserId();
-    boolean isAuthorizationInheritable();
+public class LoggerFacadeImpl implements LoggerFacade {
+
+    /** @see org.moqui.context.LoggerFacade#log(Level, String, Throwable) */
+    public void log(Level level, String message, Throwable thrown) {
+        // TODO: implement this
+    }
+
+    /** @see org.moqui.context.LoggerFacade#logEnabled(Level) */
+    public boolean logEnabled(Level level) {
+        // TODO: implement this
+        return false;
+    }
 }
