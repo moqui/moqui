@@ -30,6 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <target name="build" depends="init">
         <!-- make the API classes -->
+        <echo message="===== Building api classes"/>
         <mkdir dir="build/api/classes"/>
         <javac destdir="build/api/classes" srcdir="api/src"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
@@ -40,6 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </javac>
 
         <!-- make the API lib -->
+        <echo message="===== Making api jar"/>
         <mkdir dir="build/api/lib"/>
         <jar jarfile="build/api/lib/moqui-framework-api-${version}.jar">
             <fileset dir="build/api/classes"/>
@@ -53,6 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </jar>
 
         <!-- make the framework impl classes -->
+        <echo message="===== Building impl classes"/>
         <mkdir dir="build/impl/classes"/>
         <javac destdir="build/impl/classes" srcdir="impl/src"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
@@ -65,6 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </javac>
 
         <!-- make the framework impl lib -->
+        <echo message="===== Making impl jar"/>
         <jar jarfile="build/impl/lib/moqui-framework-impl-${version}.jar">
             <fileset dir="build/impl/classes"/>
             <fileset dir="impl/src">

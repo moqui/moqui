@@ -12,12 +12,14 @@
 package org.moqui.impl.context
 
 import org.moqui.context.WebExecutionContext
+
 import javax.servlet.http.HttpServletRequest
-import freemarker.ext.servlet.HttpRequestHashModel
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
-import freemarker.ext.servlet.HttpSessionHashModel
 import javax.servlet.ServletContext
+
+import freemarker.ext.servlet.HttpRequestHashModel
+import freemarker.ext.servlet.HttpSessionHashModel
 import freemarker.ext.servlet.ServletContextHashModel
 
 class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecutionContext {
@@ -33,12 +35,13 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
     }
 
     /** @see org.moqui.context.WebExecutionContext#getRequestAttributes() */
-    HttpRequestHashModel getRequestAttributes() {
+    Map<String, ?> getRequestAttributes() {
+        // HttpRequestHashModel
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.WebExecutionContext#getRequestParameters() */
-    Map<String, ?> getRequestParameters() {
+    Map<String, String> getRequestParameters() {
         return null;  // TODO: implement this
     }
 
@@ -53,7 +56,8 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
     }
 
     /** @see org.moqui.context.WebExecutionContext#getSessionAttributes() */
-    HttpSessionHashModel getSessionAttributes() {
+    Map<String, ?> getSessionAttributes() {
+        // HttpSessionHashModel
         return null;  // TODO: implement this
     }
 
@@ -63,7 +67,8 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
     }
 
     /** @see org.moqui.context.WebExecutionContext#getApplicationAttributes() */
-    ServletContextHashModel getApplicationAttributes() {
+    Map<String, ?> getApplicationAttributes() {
+        // ServletContextHashModel
         return null;  // TODO: implement this
     }
 }
