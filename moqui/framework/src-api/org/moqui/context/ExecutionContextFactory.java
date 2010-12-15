@@ -28,21 +28,6 @@ public interface ExecutionContextFactory {
     WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response);
 
     /**
-     * Initialize/Start the Moqui Framework. This should be called by the container, ie in a webapp or an OSGi component.
-     *
-     * In a webapp the HttpServlet implementation should call this in the init() method, and in the web.xml servlet
-     * entry there should be a load-on-startup set to 1.
-     */
-    void init() throws BaseException;
-
-    /**
-     * Destroy/Stop the Moqui Framework (does nothing if start has not been called).
-     *
-     * In a webapp the HttpServlet implementation should call this in the destroy() method.
-     */
-    void destroy() throws BaseException;
-
-    /**
      * Register a component with the framework.
      *
      * @param baseLocation A file system directory or a content repository location (the component base location).
@@ -55,9 +40,9 @@ public interface ExecutionContextFactory {
      * All initialized components will be destroyed when the framework is destroyed, but this can be used to destroy
      * a component while the framework is still running in order to re-initilize or simple disable it.
      *
-     * @param baseLocation A component base location.
+     * @param componentName A component name.
      */
-    void destroyComponent(String baseLocation) throws BaseException;
+    void destroyComponent(String componentName) throws BaseException;
 
     /** Get a Map where each key is a component name and each value is the component's base location. */
     Map<String, String> getComponentBaseLocations();

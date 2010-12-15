@@ -60,28 +60,18 @@ public class Moqui {
         return wec;
     }
 
-    /** @see org.moqui.context.ExecutionContextFactory#init() */
-    public static void init() throws BaseException {
-        activeExecutionContextFactory.init();
-    }
-
-    /** @see org.moqui.context.ExecutionContextFactory#destroy() */
-    public static void destroy() throws BaseException {
-        activeExecutionContextFactory.destroy();
-    }
-
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
     public static void initComponent(String baseLocation) throws BaseException {
         activeExecutionContextFactory.initComponent(baseLocation);
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
-    public static void destroyComponent(String baseLocation) throws BaseException {
-        activeExecutionContextFactory.destroyComponent(baseLocation);
+    public static void destroyComponent(String componentName) throws BaseException {
+        activeExecutionContextFactory.destroyComponent(componentName);
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
-    Map<String, String> getComponentBaseLocations() {
+    public static Map<String, String> getComponentBaseLocations() {
         return activeExecutionContextFactory.getComponentBaseLocations();
     }
 }
