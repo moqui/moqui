@@ -16,6 +16,12 @@ import java.util.logging.Level
 
 public class LoggerFacadeImpl implements LoggerFacade {
 
+    ExecutionContextFactoryImpl ecfi;
+
+    public LoggerFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi;
+    }
+
     /** @see org.moqui.context.LoggerFacade#log(Level, String, Throwable) */
     public void log(Level level, String message, Throwable thrown) {
         // TODO: implement this

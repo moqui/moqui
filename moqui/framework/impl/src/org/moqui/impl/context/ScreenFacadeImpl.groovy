@@ -15,6 +15,12 @@ import org.moqui.context.ScreenFacade
 
 public class ScreenFacadeImpl implements ScreenFacade {
 
+    ExecutionContextFactoryImpl ecfi;
+
+    public ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi;
+    }
+
     /** @see org.moqui.context.ScreenFacade#renderScreenText(String, Appendable, String, String, String) */
     public void renderScreenText(String screenLocation, Appendable appender, String outputType, String characterEncoding, String macroTemplateLocation) {
         // TODO: implement this

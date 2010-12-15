@@ -19,7 +19,7 @@ import java.util.Set;
 
 /** Interface for a basic cache implementation that supports maximum size, expire time, and soft references.
  */
-public interface Cache<V> {
+public interface Cache {
     enum EvictionStrategy { LEAST_RECENTLY_USED, LEAST_FREQUENTLY_USED, LEAST_RECENTLY_ADDED }
 
     String getName();
@@ -33,9 +33,9 @@ public interface Cache<V> {
     EvictionStrategy getEvictionStrategy();
     void setMaxElements(long maxSize, EvictionStrategy strategy);
 
-    V get(String key);
-    V put(String key, V value);
-    V remove(String key);
+    Object get(String key);
+    Object put(String key, Object value);
+    Object remove(String key);
 
     Set<String> keySet();
     boolean hasExpired(String key);

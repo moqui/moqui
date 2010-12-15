@@ -73,7 +73,9 @@ public interface EntityFacade {
      */
     String sequencedIdPrimary(String seqName, Long staggerMax);
 
-    /** Look at existing values for a sub-entity with a sequenced secondary ID, and get the highest plus 1 */
+    /** Look at existing values for a sub-entity with a sequenced secondary ID, and get the highest plus incrementBy
+     * (default 1). 
+     */
     void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy);
 
     /** Use this to get a Connection if you want to do JDBC operations directly. This Connection will be enlisted in

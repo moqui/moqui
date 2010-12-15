@@ -23,8 +23,20 @@ import java.net.URL;
 
 public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
-    protected File runtimeFile;
-    protected File confFile;
+    protected final File runtimeFile;
+    protected final File confFile;
+
+    protected final Map componentLocationMap = new HashMap();
+    // for future use if needed: protected final Map componentDetailMap;
+
+    // ======== Permanent Delegated Facades ========
+    protected final CacheFacadeImpl cacheFacade;
+    //protected final EntityFacadeImpl entityFacade;
+    protected final LoggerFacadeImpl loggerFacade;
+    protected final ResourceFacadeImpl resourceFacade;
+    protected final ScreenFacadeImpl screenFacade;
+    //protected final ServiceFacadeImpl serviceFacade;
+    protected final TransactionFacadeImpl transactionFacade;
 
     /**
      * This constructor gets runtime directory and conf file location from a properties file on the classpath so that
@@ -91,8 +103,34 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
     protected void init() {
-        // TODO: implement this
+        this.cacheFacade = new CacheFacadeImpl(this);
+        this.loggerFacade = new LoggerFacadeImpl(this);
+        this.resourceFacade = new ResourceFacadeImpl(this);
+        this.screenFacade = new ScreenFacadeImpl(this);
+        this.transactionFacade = new TransactionFacadeImpl(this);
     }
+
+    public CacheFacadeImpl getCacheFacade() {
+        return this.cacheFacade;
+    }
+
+    public LoggerFacadeImpl getLoggerFacade() {
+        return this.loggerFacade;
+    }
+
+    public ResourceFacadeImpl getResourceFacade() {
+        return this.resourceFacade;
+    }
+
+    public ScreenFacadeImpl getScreenFacade() {
+        return this.screenFacade;
+    }
+
+    public TransactionFacadeImpl getTransactionFacade() {
+        return this.transactionFacade;
+    }
+
+    // ========== Interface Implementations ==========
 
     /** @see org.moqui.context.ExecutionContextFactory#getExecutionContext() */
     public ExecutionContext getExecutionContext() {
@@ -106,16 +144,31 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
     public void initComponent(String baseLocation) throws BaseException {
-        // TODO: implement this
+        // TODO: how to get component name? for now use last directory name
+        if (baseLocation.endsWith('/')) baseLocation = baseLocation.substring(0, baseLocation.length()-1);
+        int lastSlashIndex = baseLocation.lastIndexOf('/');
+        String componentName;
+        if (lastSlashIndex < 0) {
+            // if this happens the component directory is directly under the runtime directory, so prefix loc with that
+            componentName = baseLocation;
+            baseLocation = this.runtimeFile.getAbsolutePath() + '/' + baseLocation;
+        } else {
+            componentName = baseLocation.substring(lastSlashIndex+1);
+        }
+
+        this.componentLocationMap.put(componentName, baseLocation);
+
+        // TODO: implement rest of this
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
     public void destroyComponent(String componentName) throws BaseException {
-        // TODO: implement this
+        this.componentLocationMap.remove(componentName);
+        // TODO: implement rest of this
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
     public Map<String, String> getComponentBaseLocations() {
-        return null;  // TODO: implement this
+        return Collections.unmodifiableMap(this.componentLocationMap);
     }
 }

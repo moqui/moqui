@@ -18,6 +18,12 @@ import javax.transaction.Synchronization
 
 class TransactionFacadeImpl implements TransactionFacade {
 
+    ExecutionContextFactoryImpl ecfi;
+
+    public TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi;
+    }
+
     /** @see org.moqui.context.TransactionFacade#getStatus() */
     int getStatus() {
         // TODO: implement this

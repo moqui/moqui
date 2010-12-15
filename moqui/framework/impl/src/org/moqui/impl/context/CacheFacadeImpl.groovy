@@ -16,6 +16,12 @@ import org.moqui.context.Cache
 
 public class CacheFacadeImpl implements CacheFacade {
 
+    ExecutionContextFactoryImpl ecfi;
+
+    public CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi;
+    }
+
     /** @see org.moqui.context.CacheFacade#clearAllCaches() */
     public void clearAllCaches() {
         // TODO: implement this

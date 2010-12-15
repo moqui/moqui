@@ -26,6 +26,12 @@ import org.moqui.context.ArtifactExecutionFacade
 
 public class ExecutionContextImpl implements ExecutionContext {
 
+    ExecutionContextFactoryImpl ecfi;
+
+    public ExecutionContextImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi;
+    }
+
     /** @see org.moqui.context.ExecutionContext#getContext() */
     public Map<String, Object> getContext() {
         return null;  // TODO: implement this
@@ -58,22 +64,22 @@ public class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getResource() */
     public ResourceFacade getResource() {
-        return null;  // TODO: implement this
+        return this.ecfi.getResourceFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getLogger() */
     public LoggerFacade getLogger() {
-        return null;  // TODO: implement this
+        return this.ecfi.getLoggerFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getCache() */
     public CacheFacade getCache() {
-        return null;  // TODO: implement this
+        return this.ecfi.getCacheFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getTransaction() */
     public TransactionFacade getTransaction() {
-        return null;  // TODO: implement this
+        return this.ecfi.getTransactionFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getEntity() */
@@ -88,7 +94,7 @@ public class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
     public ScreenFacade getScreen() {
-        return null;  // TODO: implement this
+        return this.ecfi.getScreenFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */

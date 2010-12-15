@@ -14,7 +14,7 @@ package org.moqui.impl.context
 import org.moqui.context.Cache;
 import org.moqui.context.Cache.EvictionStrategy;
 
-public class CacheImpl<V> implements Cache<V> {
+public class CacheImpl implements Cache {
 
     /** @see org.moqui.context.Cache#getName() */
     public String getName() {
@@ -62,13 +62,13 @@ public class CacheImpl<V> implements Cache<V> {
     }
 
     /** @see org.moqui.context.Cache#get(String) */
-    public V get(String key) {
+    public Object get(String key) {
         // TODO: implement this
         return null;
     }
 
-    /** @see org.moqui.context.Cache#put(String, V) */
-    public V put(String key, V value) {
+    /** @see org.moqui.context.Cache#put(String, Object) */
+    public Object put(String key, Object value) {
         // TODO: implement this
         return null;
     }
