@@ -13,8 +13,17 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <project name="Moqui Framework Build" default="build" basedir=".">
     <property environment="env"/>
-
     <property name="version" value="1.0"/>
+
+    <path id="groovy.class.path">
+        <pathelement location="impl/lib/commons-cli-1.2.jar"/>
+        <pathelement location="impl/lib/antlr-2.7.7.jar"/>
+        <pathelement location="impl/lib/asm-3.2.jar"/>
+        <pathelement location="impl/lib/groovy-all-1.7.5.jar"/>
+    </path>
+    <taskdef name="groovyc"
+             classname="org.codehaus.groovy.ant.Groovyc"
+             classpathref="groovy.class.path"/>
 
     <target name="init">
         <!-- just a place holder for now -->
@@ -45,27 +54,29 @@ This Work includes contributions authored by David E. Jones, not as a
         <mkdir dir="build/api/lib"/>
         <jar jarfile="build/api/lib/moqui-framework-api-${version}.jar">
             <fileset dir="build/api/classes"/>
-            <!-- include XSDs, default-conf, etc in the API file for easy runtime reference -->
-            <fileset dir="api/xsd">
-                <include name="*.xsd"/>
+            <!-- include XSDs, default-conf, etc in the API file for runtime reference -->
+            <fileset dir="api">
+                <include name="data/**"/>
+                <include name="entity/**"/>
+                <include name="service/**"/>
+                <include name="xsd/**"/>
             </fileset>
             <fileset dir="api/conf-default">
-                <include name="*.xml,*.properties"/>
+                <include name="*"/>
             </fileset>
         </jar>
 
         <!-- make the framework impl classes -->
         <echo message="===== Building impl classes"/>
         <mkdir dir="build/impl/classes"/>
-        <javac destdir="build/impl/classes" srcdir="impl/src"
-                debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
-            <include name="**/*.java"/>
+        <groovyc srcdir="impl/src" destdir="build/impl/classes">
             <classpath>
                 <fileset dir="api/lib" includes="*.jar"/>
                 <fileset dir="impl/lib" includes="*.jar"/>
                 <fileset dir="build/api/lib" includes="*.jar"/>
             </classpath>
-        </javac>
+            <javac source="1.6" target="1.6" deprecation="on" debug="on" encoding="UTF-8"/>
+        </groovyc>
 
         <!-- make the framework impl lib -->
         <echo message="===== Making impl jar"/>
@@ -73,6 +84,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <fileset dir="build/impl/classes"/>
             <fileset dir="impl/src">
                 <include name="META-INF/**"/>
+            </fileset>
+            <fileset dir="impl/conf-default">
+                <include name="*"/>
             </fileset>
         </jar>
     </target>

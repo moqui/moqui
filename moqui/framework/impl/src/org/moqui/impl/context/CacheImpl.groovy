@@ -11,7 +11,8 @@
  */
 package org.moqui.impl.context
 
-import org.moqui.context.Cache
+import org.moqui.context.Cache;
+import org.moqui.context.Cache.EvictionStrategy;
 
 public class CacheImpl<V> implements Cache<V> {
 
