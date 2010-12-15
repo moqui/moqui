@@ -18,10 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import freemarker.ext.servlet.HttpRequestHashModel;
-import freemarker.ext.servlet.HttpSessionHashModel;
-import freemarker.ext.servlet.ServletContextHashModel;
-
 /**
  * Interface definition for object used throughout the Moqui Framework to manage contextual execution information and tool interfaces.
  */
@@ -29,14 +25,14 @@ public interface WebExecutionContext extends ExecutionContext {
     Map<String, Object> getParameters();
 
     HttpServletRequest getRequest();
-    HttpRequestHashModel getRequestAttributes();
-    Map<String, ?> getRequestParameters();
+    Map<String, ?> getRequestAttributes();
+    Map<String, String> getRequestParameters();
 
     HttpServletResponse getResponse();
 
     HttpSession getSession();
-    HttpSessionHashModel getSessionAttributes();
+    Map<String, ?> getSessionAttributes();
 
     ServletContext getServletContext();
-    ServletContextHashModel getApplicationAttributes();
+    Map<String, ?> getApplicationAttributes();
 }
