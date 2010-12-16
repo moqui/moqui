@@ -18,7 +18,7 @@ import javax.transaction.Synchronization
 
 class TransactionFacadeImpl implements TransactionFacade {
 
-    ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi;
 
     public TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;

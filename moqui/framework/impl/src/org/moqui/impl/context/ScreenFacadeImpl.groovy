@@ -15,7 +15,7 @@ import org.moqui.context.ScreenFacade
 
 public class ScreenFacadeImpl implements ScreenFacade {
 
-    ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi;
 
     public ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;

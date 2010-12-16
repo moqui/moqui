@@ -12,9 +12,16 @@
 package org.moqui.impl.context
 
 import org.moqui.context.Cache;
-import org.moqui.context.Cache.EvictionStrategy;
+import org.moqui.context.Cache.EvictionStrategy
+import net.sf.ehcache.Ehcache;
 
 public class CacheImpl implements Cache {
+
+    protected final Ehcache ehcache;
+
+    public CacheImpl(Ehcache ehcache) {
+        this.ehcache = ehcache;
+    }
 
     /** @see org.moqui.context.Cache#getName() */
     public String getName() {

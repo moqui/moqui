@@ -15,7 +15,7 @@ import org.moqui.context.ResourceFacade
 
 public class ResourceFacadeImpl implements ResourceFacade {
 
-    ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi;
 
     public ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;

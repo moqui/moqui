@@ -19,12 +19,18 @@ import org.moqui.context.WebExecutionContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Properties;
-import java.net.URL;
+import java.net.URL
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
-    protected final File runtimeFile;
-    protected final File confFile;
+    protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class);
+    
+    protected boolean destroyed = false;
+    
+    protected final String runtimePath;
+    protected final String confPath;
 
     protected final Map componentLocationMap = new HashMap();
     // for future use if needed: protected final Map componentDetailMap;
@@ -46,37 +52,39 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // get the runtime directory path
         Properties moquiInitProperties = new Properties();
         moquiInitProperties.load(ClassLoader.getSystemResourceAsStream("MoquiInit.properties"));
-        String runtimePath = moquiInitProperties.getProperty("moqui.runtime");
-        if (!runtimePath) {
-            runtimePath = System.getProperty("moqui.runtime");
+        this.runtimePath = moquiInitProperties.getProperty("moqui.runtime");
+        if (!this.runtimePath) {
+            this.runtimePath = System.getProperty("moqui.runtime");
         }
-        if (!runtimePath) {
+        if (!this.runtimePath) {
             throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).");
         }
+        if (this.runtimePath.endsWith('/')) this.runtimePath = this.runtimePath.substring(0, this.runtimePath.length()-1);
 
         // setup the runtimeFile
-        runtimeFile = new File(runtimePath);
+        File runtimeFile = new File(this.runtimePath);
         if (!runtimeFile.exists()) {
-            throw new IllegalArgumentException("The moqui.runtime path [${runtimePath}] was not found.");
+            throw new IllegalArgumentException("The moqui.runtime path [${this.runtimePath}] was not found.");
         }
 
         // get the moqui configuration file path
-        String confPath = moquiInitProperties.getProperty("moqui.conf");
-        if (!confPath) {
-            confPath = System.getProperty("moqui.conf");
+        String confPartialPath = moquiInitProperties.getProperty("moqui.conf");
+        if (!confPartialPath) {
+            confPartialPath = System.getProperty("moqui.conf");
         }
-        if (!confPath) {
+        if (!confPartialPath) {
             throw new IllegalArgumentException("No moqui.conf property found in MoquiInit.properties or in a system property (with: -Dmoqui.conf=... on the command line).");
         }
 
         // setup the confFile
-        if (runtimePath.endsWith('/')) runtimePath = runtimePath.substring(0, runtimePath.length()-1);
-        if (confPath.beginsWith('/')) confPath = confPath.substring(1); 
-        String confFullPath = runtimePath + '/' + confPath;
-        confFile = new File(confFullPath);
+        if (confPartialPath.beginsWith('/')) confPartialPath = confPartialPath.substring(1);
+        String confFullPath = this.runtimePath + '/' + confPartialPath;
+        File confFile = new File(confFullPath);
         if (!confFile.exists()) {
             throw new IllegalArgumentException("The moqui.conf path [${confFullPath}] was not found.");
         }
+
+        this.confPath = confFullPath;
 
         this.init();
     }
@@ -84,7 +92,7 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     /** This constructor takes the runtime directory path and conf file path directly. */
     public ExecutionContextFactoryImpl(String runtimePath, String confPath) {
         // setup the runtimeFile
-        runtimeFile = new File(runtimePath);
+        File runtimeFile = new File(runtimePath);
         if (!runtimeFile.exists()) {
             throw new IllegalArgumentException("The moqui.runtime path [${runtimePath}] was not found.");
         }
@@ -93,10 +101,13 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (runtimePath.endsWith('/')) runtimePath = runtimePath.substring(0, runtimePath.length()-1);
         if (confPath.beginsWith('/')) confPath = confPath.substring(1);
         String confFullPath = runtimePath + '/' + confPath;
-        confFile = new File(confFullPath);
+        File confFile = new File(confFullPath);
         if (!confFile.exists()) {
             throw new IllegalArgumentException("The moqui.conf path [${confFullPath}] was not found.");
         }
+
+        this.runtimePath = runtimePath;
+        this.confPath = confFullPath;
 
         this.init();
     }
@@ -108,6 +119,14 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.resourceFacade = new ResourceFacadeImpl(this);
         this.screenFacade = new ScreenFacadeImpl(this);
         this.transactionFacade = new TransactionFacadeImpl(this);
+    }
+
+    public synchronized void destroy() {
+        if (!this.destroyed) {
+            this.cacheFacade.destroy();
+
+            this.destroyed = true;
+        }
     }
 
     public CacheFacadeImpl getCacheFacade() {
@@ -158,17 +177,31 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         this.componentLocationMap.put(componentName, baseLocation);
 
-        // TODO: implement rest of this
+        // TODO: implement rest of this as needed
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
     public void destroyComponent(String componentName) throws BaseException {
         this.componentLocationMap.remove(componentName);
-        // TODO: implement rest of this
+
+        // TODO: implement rest of this as needed
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
     public Map<String, String> getComponentBaseLocations() {
         return Collections.unmodifiableMap(this.componentLocationMap);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            if (!this.destroyed) {
+                this.destroy();
+                this.loggerFacade.log(null, "\n===========================================================\n ExecutionContextFactoryImpl not destroyed, caught in finalize\n===========================================================\n", null);
+            }
+        } catch (Exception e) {
+            this.loggerFacade.log(null, "Error in destroy, called in finalize of ExecutionContextFactoryImpl", e);
+        }
+        super.finalize();
     }
 }

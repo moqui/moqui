@@ -13,14 +13,26 @@ package org.moqui.impl.context
 
 import org.moqui.context.CacheFacade
 import org.moqui.context.Cache
+import net.sf.ehcache.CacheManager
 
 public class CacheFacadeImpl implements CacheFacade {
 
-    ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi;
+    
+    /** This is the Ehcache CacheManager singleton for use in Moqui.
+     * Gets config from the default location, ie the ehcache.xml file from the classpath.
+     */
+    protected final CacheManager cacheManager = new CacheManager();
 
     public CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;
     }
+
+    public void destroy() {
+        this.cacheManager.shutdown();
+    }
+
+    // ========== Interface Method Implementations ==========
 
     /** @see org.moqui.context.CacheFacade#clearAllCaches() */
     public void clearAllCaches() {
@@ -39,7 +51,16 @@ public class CacheFacadeImpl implements CacheFacade {
 
     /** @see org.moqui.context.CacheFacade#getCache(String) */
     public Cache getCache(String cacheName) {
-        // TODO: implement this
+        if (this.cacheManager.cacheExists(cacheName)) {
+            // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
+            return new CacheImpl(cacheManager.getCache(cacheName));
+        } else {
+            // TODO: if not, create a new cache using settings from the moqui conf file (if there are settings that match the cacheName)
+
+        }
+
+
+
         return null;
     }
 }

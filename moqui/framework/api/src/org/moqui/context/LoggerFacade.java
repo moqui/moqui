@@ -17,12 +17,33 @@ import java.util.logging.Level;
 public interface LoggerFacade {
     /** Log a message and/or Throwable error at the given level.
      *
-     * @param level
+     * This is meant to be used for scripts, xml-actions, etc.
+     *
+     * In Java or Groovy classes it is better to use SLF4J directly, with something like:
+     * <code>
+     * import org.slf4j.Logger;
+     * import org.slf4j.LoggerFactory;
+     *
+     * public class Wombat {
+     *   final static Logger logger = LoggerFactory.getLogger(Wombat.class);
+     *
+     *   public void setTemperature(Integer temperature) {
+     *     Integer oldT = t;
+     *     Integer t = temperature;
+     *     logger.debug("Temperature set to {}. Old temperature was {}.", t, oldT);
+     *     if(temperature.intValue() > 50) {
+     *       logger.info("Temperature has risen above 50 degrees.");
+     *     }
+     *   }
+     * }
+     * </code>
+     *
+     * @param level The logging level. Options should come from org.apache.log4j.Level.  
      * @param message The message text to log. If contains ${} syntax will be expanded from the current context.
      * @param thrown
      */
-    void log(Level level, String message, Throwable thrown);
+    void log(int level, String message, Throwable thrown);
 
-    /** Is the given LoggingLevel enabled? */
-    boolean logEnabled(Level level);
+    /** Is the given logging level enabled? */
+    boolean logEnabled(int level);
 }

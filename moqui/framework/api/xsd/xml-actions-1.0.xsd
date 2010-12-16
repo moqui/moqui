@@ -1251,14 +1251,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The logging/debug level to use.</xs:documentation></xs:annotation>
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
-                        <xs:enumeration value="verbose"/>
-                        <xs:enumeration value="timing"/>
+                        <xs:enumeration value="trace"/>
+                        <xs:enumeration value="debug"/>
                         <xs:enumeration value="info"/>
-                        <xs:enumeration value="important"/>
-                        <xs:enumeration value="warning"/>
+                        <xs:enumeration value="warn"/>
                         <xs:enumeration value="error"/>
-                        <xs:enumeration value="fatal"/>
-                        <xs:enumeration value="always"/>
+                        <xs:enumeration value="off"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
