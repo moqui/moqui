@@ -57,6 +57,7 @@ public class CacheFacadeImpl implements CacheFacade {
         } else {
             // TODO: if not, create a new cache using settings from the moqui conf file (if there are settings that match the cacheName)
 
+            // setSampledStatisticsEnabled(true);
         }
 
 

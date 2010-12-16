@@ -13,7 +13,9 @@ package org.moqui.impl.context
 
 import org.moqui.context.Cache;
 import org.moqui.context.Cache.EvictionStrategy
-import net.sf.ehcache.Ehcache;
+import net.sf.ehcache.Ehcache
+import net.sf.ehcache.store.MemoryStoreEvictionPolicy
+import net.sf.ehcache.Element;
 
 public class CacheImpl implements Cache {
 
@@ -25,145 +27,174 @@ public class CacheImpl implements Cache {
 
     /** @see org.moqui.context.Cache#getName() */
     public String getName() {
-        // TODO: implement this
-        return null;
+        return this.ehcache.getName();
     }
 
     /** @see org.moqui.context.Cache#getExpireTimeIdle() */
     public long getExpireTimeIdle() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getCacheConfiguration().getTimeToIdleSeconds();
     }
 
     /** @see org.moqui.context.Cache#setExpireTimeIdle(long) */
     public void setExpireTimeIdle(long expireTime) {
-        // TODO: implement this
+        this.ehcache.getCacheConfiguration().setTimeToIdleSeconds(expireTime);
     }
 
     /** @see org.moqui.context.Cache#getExpireTimeLive() */
     public long getExpireTimeLive() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getCacheConfiguration().getTimeToLiveSeconds();
     }
 
     /** @see org.moqui.context.Cache#setExpireTimeLive(long) */
     public void setExpireTimeLive(long expireTime) {
-        // TODO: implement this
+        this.ehcache.getCacheConfiguration().setTimeToLiveSeconds(expireTime);
     }
 
     /** @see org.moqui.context.Cache#getMaxElements() */
-    public long getMaxElements() {
-        // TODO: implement this
-        return 0;
+    public int getMaxElements() {
+        return this.ehcache.getCacheConfiguration().getMaxElementsInMemory();
     }
 
     /** @see org.moqui.context.Cache#getEvictionStrategy() */
     public EvictionStrategy getEvictionStrategy() {
-        // TODO: implement this
-        return null;
+        MemoryStoreEvictionPolicy policy = this.ehcache.getCacheConfiguration().getMemoryStoreEvictionPolicy();
+        if (MemoryStoreEvictionPolicy.LRU.equals(policy)) {
+            return EvictionStrategy.LEAST_RECENTLY_USED;
+        } else if (MemoryStoreEvictionPolicy.LFU.equals(policy)) {
+            return EvictionStrategy.LEAST_FREQUENTLY_USED;
+        } else if (MemoryStoreEvictionPolicy.FIFO.equals(policy)) {
+            return EvictionStrategy.LEAST_RECENTLY_ADDED;
+        } else {
+            return null;
+        }
     }
 
     /** @see org.moqui.context.Cache#setMaxElements(long, EvictionStrategy) */
-    public void setMaxElements(long maxSize, EvictionStrategy strategy) {
-        // TODO: implement this
+    public void setMaxElements(int maxSize, EvictionStrategy strategy) {
+        this.ehcache.getCacheConfiguration().setMaxElementsInMemory(maxSize);
+        
+        switch (strategy) {
+            case EvictionStrategy.LEAST_RECENTLY_USED:
+            this.ehcache.getCacheConfiguration().setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LRU);
+            break;
+
+            case EvictionStrategy.LEAST_FREQUENTLY_USED:
+            this.ehcache.getCacheConfiguration().setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LFU);
+            break;
+
+            case EvictionStrategy.LEAST_RECENTLY_ADDED:
+            this.ehcache.getCacheConfiguration().setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.FIFO);
+            break;
+        }
     }
 
-    /** @see org.moqui.context.Cache#get(String) */
-    public Object get(String key) {
-        // TODO: implement this
-        return null;
+    /** @see org.moqui.context.Cache#get(Object) */
+    public Serializable get(Serializable key) {
+        Element element = this.ehcache.get(key);
+        if (element.isExpired()) {
+            this.ehcache.removeElement(element);
+            return null;
+        } else {
+            return element.getValue();
+        }
     }
 
     /** @see org.moqui.context.Cache#put(String, Object) */
-    public Object put(String key, Object value) {
-        // TODO: implement this
-        return null;
+    public Serializable put(Serializable key, Serializable value) {
+        // use quiet get to not update stats as this isn't an explicit user get
+        Element originalElement = this.ehcache.getQuiet(key);
+        this.ehcache.put(new Element(key, value));
+        if (originalElement) {
+            return originalElement.getValue();
+        } else {
+            return null;
+        }
     }
 
     /** @see org.moqui.context.Cache#remove(String) */
-    public Object remove(String key) {
-        // TODO: implement this
-        return null;
+    public Serializable remove(Serializable key) {
+        // use quiet get to not update stats as this isn't an explicit user get
+        Element originalElement = this.ehcache.getQuiet(key);
+        this.ehcache.removeElement(originalElement);
+        if (originalElement) {
+            return originalElement.getValue();
+        } else {
+            return null;
+        }
     }
 
     /** @see org.moqui.context.Cache#keySet() */
-    public Set<String> keySet() {
-        // TODO: implement this
-        return null;
+    public Set<Serializable> keySet() {
+        List keyList = this.ehcache.getKeysWithExpiryCheck();
+        Set newKeySet = new HashSet();
+        newKeySet.addAll(keyList);
+        return newKeySet;
     }
 
     /** @see org.moqui.context.Cache#hasExpired(String) */
-    public boolean hasExpired(String key) {
-        // TODO: implement this
-        return false;
+    public boolean hasExpired(Serializable key) {
+        // use quiet get to not update stats as this isn't an explicit user get
+        Element originalElement = this.ehcache.getQuiet(key);
+        if (originalElement) {
+            // TODO: if we find an expired element in this case should we remove it?
+            return originalElement.isExpired();
+        } else {
+            return false;
+        }
     }
 
     /** @see org.moqui.context.Cache#containsKey(String) */
-    public boolean containsKey(String key) {
-        // TODO: implement this
-        return false;
+    public boolean containsKey(Serializable key) {
+        return this.ehcache.isKeyInCache(key);
     }
 
     /** @see org.moqui.context.Cache#isEmpty() */
     public boolean isEmpty() {
-        // TODO: implement this
-        return false;
+        return (this.ehcache.getSize() > 0);
     }
 
     /** @see org.moqui.context.Cache#size() */
     public int size() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getSize();
     }
 
     /** @see org.moqui.context.Cache#clear() */
     public void clear() {
-        // TODO: implement this
+        this.ehcache.removeAll();
     }
 
     /** @see org.moqui.context.Cache#clearExpired() */
     public void clearExpired() {
-        // TODO: implement this
+        this.ehcache.evictExpiredElements();
     }
 
     /** @see org.moqui.context.Cache#getHitCount() */
     public long getHitCount() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getStatistics().getCacheHits();
     }
 
     /** @see org.moqui.context.Cache#getMissCountNotFound() */
     public long getMissCountNotFound() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getSampledCacheStatistics().getCacheMissNotFoundMostRecentSample();
     }
 
     /** @see org.moqui.context.Cache#getMissCountExpired() */
     public long getMissCountExpired() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getSampledCacheStatistics().getCacheMissExpiredMostRecentSample();
     }
 
     /** @see org.moqui.context.Cache#getMissCountTotal() */
     public long getMissCountTotal() {
-        // TODO: implement this
-        return 0;
+        return this.ehcache.getStatistics().getCacheMisses();
     }
 
-    /** @see org.moqui.context.Cache#getRemoveHitCount() */
-    public long getRemoveHitCount() {
-        // TODO: implement this
-        return 0;
-    }
-
-    /** @see org.moqui.context.Cache#getRemoveMissCount() */
-    public long getRemoveMissCount() {
-        // TODO: implement this
-        return 0;
+    /** @see org.moqui.context.Cache#getRemoveCount() */
+    public long getRemoveCount() {
+        return this.ehcache.getSampledCacheStatistics().getCacheElementRemovedMostRecentSample();
     }
 
     /** @see org.moqui.context.Cache#clearCounters() */
     public void clearCounters() {
-        // TODO: implement this
+        this.ehcache.clearStatistics();
     }
 }

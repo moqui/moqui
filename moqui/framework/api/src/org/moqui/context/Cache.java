@@ -1,20 +1,17 @@
 /*
- * Copyright 2010 David E. Jones
+ * This Work is in the public domain and is provided on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+ * including, without limitation, any warranties or conditions of TITLE,
+ * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+ * You are solely responsible for determining the appropriateness of using
+ * this Work and assume any risks associated with your use of this Work.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This Work includes contributions authored by David E. Jones, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
  */
 package org.moqui.context;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /** Interface for a basic cache implementation that supports maximum size, expire time, and soft references.
@@ -29,17 +26,17 @@ public interface Cache {
     long getExpireTimeLive();
     void setExpireTimeLive(long expireTime);
 
-    long getMaxElements();
+    int getMaxElements();
     EvictionStrategy getEvictionStrategy();
-    void setMaxElements(long maxSize, EvictionStrategy strategy);
+    void setMaxElements(int maxSize, EvictionStrategy strategy);
 
-    Object get(String key);
-    Object put(String key, Object value);
-    Object remove(String key);
+    Serializable get(Serializable key);
+    Serializable put(Serializable key, Serializable value);
+    Serializable remove(Serializable key);
 
-    Set<String> keySet();
-    boolean hasExpired(String key);
-    boolean containsKey(String key);
+    Set<Serializable> keySet();
+    boolean hasExpired(Serializable key);
+    boolean containsKey(Serializable key);
 
     boolean isEmpty();
     int size();
@@ -51,7 +48,6 @@ public interface Cache {
     long getMissCountNotFound();
     long getMissCountExpired();
     long getMissCountTotal();
-    long getRemoveHitCount();
-    long getRemoveMissCount();
+    long getRemoveCount();
     void clearCounters();
 }
