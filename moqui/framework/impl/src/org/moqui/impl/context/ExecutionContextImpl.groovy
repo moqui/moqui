@@ -62,6 +62,11 @@ public class ExecutionContextImpl implements ExecutionContext {
         return null;  // TODO: implement this
     }
 
+    /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
+    public ArtifactExecutionFacade getArtifactExecution() {
+        return null;  // TODO: implement this
+    }
+
     /** @see org.moqui.context.ExecutionContext#getResource() */
     public ResourceFacade getResource() {
         return this.ecfi.getResourceFacade();
@@ -84,21 +89,16 @@ public class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getEntity() */
     public EntityFacade getEntity() {
-        return null;  // TODO: implement this
+        return this.ecfi.getEntityFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getService() */
     public ServiceFacade getService() {
-        return null;  // TODO: implement this
+        return this.ecfi.getServiceFacade();
     }
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
     public ScreenFacade getScreen() {
         return this.ecfi.getScreenFacade();
-    }
-
-    /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
-    public ArtifactExecutionFacade getArtifactExecution() {
-        return null;  // TODO: implement this
     }
 }

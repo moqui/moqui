@@ -126,7 +126,7 @@ public interface EntityFind extends java.io.Serializable {
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind setResultSetType(Integer resultSetType);
+    EntityFind resultSetType(Integer resultSetType);
     int getResultSetType();
 
     /** Specifies whether or not the ResultSet can be updated. Available values:
@@ -136,21 +136,21 @@ public interface EntityFind extends java.io.Serializable {
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind setResultSetConcurrency(int resultSetConcurrency);
+    EntityFind resultSetConcurrency(int resultSetConcurrency);
     int getResultSetConcurrency();
 
     /** Specifies the fetch size for this query. Default (null) will fall back to datasource settings.
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind setFetchSize(Integer fetchSize);
+    EntityFind fetchSize(Integer fetchSize);
     int getFetchSize();
 
     /** Specifies the max number of rows to return. Default (null) means all rows.
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind setMaxRows(Integer maxRows);
+    EntityFind maxRows(Integer maxRows);
     int getMaxRows();
 
     /** Specifies whether the values returned should be filtered to remove duplicate values.
@@ -158,7 +158,7 @@ public interface EntityFind extends java.io.Serializable {
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind setDistinct(boolean distinct);
+    EntityFind distinct(boolean distinct);
     boolean getDistinct();
 
 

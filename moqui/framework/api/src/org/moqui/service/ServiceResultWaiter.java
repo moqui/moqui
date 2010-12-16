@@ -11,6 +11,9 @@
  */
 package org.moqui.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
 /**
@@ -18,7 +21,7 @@ import java.util.Map;
  */
 public class ServiceResultWaiter implements ServiceRequester {
 
-    public static final String module = ServiceResultWaiter.class.getName();
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceResultWaiter.class);
 
     /** Status code for a running service */
     public static final int SERVICE_RUNNING = -1;
@@ -108,7 +111,7 @@ public class ServiceResultWaiter implements ServiceRequester {
             try {
                 this.wait(milliseconds);
             } catch (java.lang.InterruptedException e) {
-                // TODO: log something here, once we get the logging stuff in place
+                logger.error("Error while waiting for result of async call to service", e);
             }
         }
         return this.getResult();

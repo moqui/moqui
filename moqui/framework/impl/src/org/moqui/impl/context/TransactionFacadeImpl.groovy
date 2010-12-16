@@ -22,6 +22,12 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     public TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;
+
+        // TODO: init tx mgr, etc
+    }
+
+    public void destroy() {
+        // TODO: destroy tx mgr, etc
     }
 
     /** @see org.moqui.context.TransactionFacade#getStatus() */

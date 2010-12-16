@@ -22,14 +22,13 @@ public interface ServiceFacade {
      * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To
      *   explicitly separate the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}".
      * @param context Map of name, value pairs composing the context.
-     * @param persist True for store and run; False for run from memory.
      * @param requireNewTransaction if true we will suspend and create a new transaction so we are sure to start.
      * @param transactionIsolation If null defaults to configured value for service, or container. For possible values
      *   see JavaDoc for javax.sql.Connection.
      * @return Map of name, value pairs composing the result.
      * @throws ServiceException
      */
-    public Map<String, Object> callSync(String serviceName, Map<String, ?> context, boolean persist, boolean requireNewTransaction, Integer transactionIsolation) throws ServiceException;
+    public Map<String, Object> callSync(String serviceName, Map<String, ?> context, boolean requireNewTransaction, Integer transactionIsolation) throws ServiceException;
 
     /**
      * Run the service asynchronously, passing an instance of GenericRequester that will receive the result.
@@ -55,7 +54,7 @@ public interface ServiceFacade {
      * @return A new GenericRequester object.
      * @throws ServiceException
      */
-    public ServiceResultWaiter callAsync(String serviceName, Map<String, ?> context, boolean persist, boolean requireNewTransaction, Integer transactionIsolation) throws ServiceException;
+    public ServiceResultWaiter callAsync(String serviceName, Map<String, ?> context, boolean persist, Integer transactionIsolation) throws ServiceException;
 
     /**
      * Schedule a service to run asynchronously at a specific start time.

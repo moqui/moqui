@@ -23,6 +23,8 @@ import java.net.URL
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import groovy.util.slurpersupport.GPathResult
+import org.moqui.impl.entity.EntityFacadeImpl
+import org.moqui.impl.service.ServiceFacadeImpl
 
 public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
@@ -42,11 +44,11 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
-    //protected final EntityFacadeImpl entityFacade
+    protected final EntityFacadeImpl entityFacade
     protected final LoggerFacadeImpl loggerFacade
     protected final ResourceFacadeImpl resourceFacade
     protected final ScreenFacadeImpl screenFacade
-    //protected final ServiceFacadeImpl serviceFacade
+    protected final ServiceFacadeImpl serviceFacade
     protected final TransactionFacadeImpl transactionFacade
 
     /**
@@ -125,11 +127,14 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         URL defaultConfUrl = ClassLoader.getSystemResource("MoquiDefaultConf.xml")
         this.defaultConfXmlRoot = new XmlSlurper().parse(defaultConfUrl.newInputStream())
 
+        // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
         this.loggerFacade = new LoggerFacadeImpl(this)
         this.resourceFacade = new ResourceFacadeImpl(this)
-        this.screenFacade = new ScreenFacadeImpl(this)
         this.transactionFacade = new TransactionFacadeImpl(this)
+        this.entityFacade = new EntityFacadeImpl(this)
+        this.serviceFacade = new ServiceFacadeImpl(this)
+        this.screenFacade = new ScreenFacadeImpl(this)
     }
 
     public GPathResult getConfXmlRoot() {
@@ -142,6 +147,10 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     public synchronized void destroy() {
         if (!this.destroyed) {
+            // this destroy order is important as some use others so must be destroyed first
+            this.serviceFacade.destroy()
+            this.entityFacade.destroy()
+            this.transactionFacade.destroy()
             this.cacheFacade.destroy()
 
             this.destroyed = true
@@ -150,6 +159,10 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     public CacheFacadeImpl getCacheFacade() {
         return this.cacheFacade;
+    }
+
+    public EntityFacadeImpl getEntityFacade() {
+        return this.entityFacade;
     }
 
     public LoggerFacadeImpl getLoggerFacade() {
@@ -162,6 +175,10 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     public ScreenFacadeImpl getScreenFacade() {
         return this.screenFacade;
+    }
+
+    public ServiceFacadeImpl getServiceFacade() {
+        return this.serviceFacade;
     }
 
     public TransactionFacadeImpl getTransactionFacade() {
