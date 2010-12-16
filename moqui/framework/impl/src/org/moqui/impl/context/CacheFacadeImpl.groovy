@@ -68,12 +68,9 @@ public class CacheFacadeImpl implements CacheFacade {
 
             // set any applicable settings from the moqui conf xml file
             CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
-            newCacheConf.overflowToDisk(false)
-            newCacheConf.diskPersistent(false)
-            newCacheConf.setEternal(true)
 
             // start with the default conf file, get settings form there
-            def settings = [:]
+            Map settings = [:]
             def defaultConfXmlRoot = this.ecfi.getDefaultConfXmlRoot();
             def defaultCacheElement = defaultConfXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
             if (defaultCacheElement) {
@@ -113,9 +110,6 @@ public class CacheFacadeImpl implements CacheFacade {
                     newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.FIFO)
                 }
             }
-
-            // add the now setup cache to the manager
-            this.cacheManager.addCache(newCache)
 
             theCache = new CacheImpl(newCache)
         }
