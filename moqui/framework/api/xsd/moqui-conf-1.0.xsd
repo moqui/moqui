@@ -40,10 +40,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="cache">
         <xs:complexType>
             <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="expire-time-idle" type="xs:nonNegativeInteger" default="0"/>
-            <xs:attribute name="expire-time-live" type="xs:nonNegativeInteger" default="0"/>
-            <xs:attribute name="max-elements" type="xs:nonNegativeInteger" default="0"/>
-            <xs:attribute name="eviction-strategy" default="least-recently-used">
+            <xs:attribute name="expire-time-idle" type="xs:nonNegativeInteger" use="optional">
+                <xs:annotation><xs:documentation>Idle expire time in seconds.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="expire-time-live" type="xs:nonNegativeInteger" use="optional">
+                <xs:annotation><xs:documentation>Live expire time in seconds.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="max-elements" type="xs:nonNegativeInteger" use="optional"/>
+            <xs:attribute name="eviction-strategy" use="optional">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="least-recently-used"/>

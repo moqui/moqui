@@ -5,16 +5,16 @@
 
     <cache-list>
         <!-- Development Mode - don't use these for production, load testing, etc.
-             Cleared by default every 10000 milliseconds (10 seconds) from when loaded into cache. -->
-        <cache name="entity.namespace" expire-time-live="10000"/>
-        <cache name="service.namespace" expire-time-live="10000"/>
+             Cleared by default every 10 seconds from when loaded into cache. -->
+        <cache name="entity.namespace" expire-time-live="10"/>
+        <cache name="service.namespace" expire-time-live="10"/>
 
-        <cache name="screen.location" expire-time-live="10000"/>
+        <cache name="screen.location" expire-time-live="10"/>
 
-        <cache name="script.xml-actions.location" expire-time-live="10000"/>
-        <cache name="script.groovy.location" expire-time-live="10000"/>
+        <cache name="script.xml-actions.location" expire-time-live="10"/>
+        <cache name="script.groovy.location" expire-time-live="10"/>
 
-        <cache name="template.ftl.location" expire-time-live="10000"/>
+        <cache name="template.ftl.location" expire-time-live="10"/>
     </cache-list>
     
     <server-stats bin-length-seconds="900" proxy-enabled="false" visit-persist="true" visitor-persist="true">

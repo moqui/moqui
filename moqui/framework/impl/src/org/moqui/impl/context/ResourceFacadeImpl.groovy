@@ -24,7 +24,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
     /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
     public URL getLocationUrl(String location) {
         String strippedLocation = stripLocationPrefix(location);
-        URL locationUrl = null;
 
         if (location.startsWith("component://")) {
             // turn this into another URL using the component location
@@ -49,8 +48,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
             location = baseLocation.toString();
         }
 
+        URL locationUrl = null;
         if (location.startsWith("classpath://")) {
-            locationUrl = ClassLoader.getResource(strippedLocation);
+            // first try the ClassLoader that loaded this class
+            locationUrl = this.getClass().getClassLoader().getResource(strippedLocation);
+            // no luck? try the system ClassLoader
             if (!locationUrl) locationUrl = ClassLoader.getSystemResource(strippedLocation);
         } else if (location.startsWith("https://") || location.startsWith("http://") ||
                    location.startsWith("ftp://") || location.startsWith("file://") ||
@@ -59,7 +61,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         } else if (location.indexOf(":/") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
             if (location.charAt(0) != '/') {
-                location = this.runtimeFile.getAbsolutePath() + '/' + location;
+                location = this.ecfi.runtimePath + '/' + location;
             }
             locationUrl = new File(location).toURI().toURL();
         } else {

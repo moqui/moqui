@@ -14,54 +14,112 @@ package org.moqui.impl.context
 import org.moqui.context.CacheFacade
 import org.moqui.context.Cache
 import net.sf.ehcache.CacheManager
+import net.sf.ehcache.Ehcache
+import net.sf.ehcache.config.CacheConfiguration
+import net.sf.ehcache.store.MemoryStoreEvictionPolicy
 
 public class CacheFacadeImpl implements CacheFacade {
 
-    protected final ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi
     
     /** This is the Ehcache CacheManager singleton for use in Moqui.
      * Gets config from the default location, ie the ehcache.xml file from the classpath.
      */
-    protected final CacheManager cacheManager = new CacheManager();
+    protected final CacheManager cacheManager = new CacheManager()
 
     public CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
-        this.ecfi = ecfi;
+        this.ecfi = ecfi
     }
 
     public void destroy() {
-        this.cacheManager.shutdown();
+        this.cacheManager.shutdown()
     }
-
-    // ========== Interface Method Implementations ==========
 
     /** @see org.moqui.context.CacheFacade#clearAllCaches() */
     public void clearAllCaches() {
-        // TODO: implement this
+        this.cacheManager.clearAll()
     }
 
     /** @see org.moqui.context.CacheFacade#clearExpiredFromAllCaches() */
     public void clearExpiredFromAllCaches() {
-        // TODO: implement this
+        List<String> cacheNames = Arrays.asList(this.cacheManager.getCacheNames())
+        for (String cacheName in cacheNames) {
+            Ehcache ehcache = this.cacheManager.getEhcache(cacheName)
+            ehcache.evictExpiredElements()
+        }
     }
 
     /** @see org.moqui.context.CacheFacade#clearCachesByPrefix(String) */
     public void clearCachesByPrefix(String prefix) {
-        // TODO: implement this
+        this.cacheManager.clearAllStartingWith(prefix)
     }
 
     /** @see org.moqui.context.CacheFacade#getCache(String) */
     public Cache getCache(String cacheName) {
+        Cache theCache = null
         if (this.cacheManager.cacheExists(cacheName)) {
             // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
-            return new CacheImpl(cacheManager.getCache(cacheName));
+            theCache = new CacheImpl(cacheManager.getCache(cacheName))
         } else {
-            // TODO: if not, create a new cache using settings from the moqui conf file (if there are settings that match the cacheName)
+            // make a cache with the default seetings from ehcache.xml
+            this.cacheManager.addCacheIfAbsent(cacheName)
+            net.sf.ehcache.Cache newCache = this.cacheManager.getCache(cacheName)
+            newCache.setSampledStatisticsEnabled(true)
 
-            // setSampledStatisticsEnabled(true);
+            // set any applicable settings from the moqui conf xml file
+            CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
+            newCacheConf.overflowToDisk(false)
+            newCacheConf.diskPersistent(false)
+            newCacheConf.setEternal(true)
+
+            // start with the default conf file, get settings form there
+            def settings = [:]
+            def defaultConfXmlRoot = this.ecfi.getDefaultConfXmlRoot();
+            def defaultCacheElement = defaultConfXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
+            if (defaultCacheElement) {
+                settings.expireTimeIdle = defaultCacheElement."@expire-time-idle"
+                settings.expireTimeLive = defaultCacheElement."@expire-time-live"
+                settings.maxElements = defaultCacheElement."@max-elements"
+                settings.evictionStrategy = defaultCacheElement."@eviction-strategy"
+            }
+
+            // then get settings from the active conf file to override defaults
+            def confXmlRoot = this.ecfi.getConfXmlRoot()
+            def cacheElement = confXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
+            if (cacheElement) {
+                settings.expireTimeIdle = cacheElement."@expire-time-idle"
+                settings.expireTimeLive = cacheElement."@expire-time-live"
+                settings.maxElements = cacheElement."@max-elements"
+                settings.evictionStrategy = cacheElement."@eviction-strategy"
+            }
+
+            if (settings.expireTimeIdle) {
+                newCacheConf.setTimeToIdleSeconds(Long.valueOf(settings.expireTimeIdle))
+                newCacheConf.setEternal(false)
+            }
+            if (settings.expireTimeLive) {
+                newCacheConf.setTimeToLiveSeconds(Long.valueOf(settings.expireTimeLive))
+                newCacheConf.setEternal(false)
+            }
+            if (settings.maxElements) {
+                newCacheConf.setMaxElementsInMemory(Integer.valueOf(settings.maxElements))
+            }
+            if (settings.evictionStrategy) {
+                if ("least-recently-used" == settings.evictionStrategy) {
+                    newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LRU)
+                } else if ("least-frequently-used" == settings.evictionStrategy) {
+                    newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LFU)
+                } else if ("least-recently-added" == settings.evictionStrategy) {
+                    newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.FIFO)
+                }
+            }
+
+            // add the now setup cache to the manager
+            this.cacheManager.addCache(newCache)
+
+            theCache = new CacheImpl(newCache)
         }
 
-
-
-        return null;
+        return theCache
     }
 }

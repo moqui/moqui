@@ -11,38 +11,43 @@
  */
 package org.moqui.impl.context;
 
-import org.moqui.BaseException;
-import org.moqui.context.ExecutionContext;
-import org.moqui.context.ExecutionContextFactory;
-import org.moqui.context.WebExecutionContext;
+import org.moqui.BaseException
+import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
+import org.moqui.context.WebExecutionContext
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Properties;
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import java.util.Properties
 import java.net.URL
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import groovy.util.slurpersupport.GPathResult
 
 public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
-    protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class);
+    protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
     
-    protected boolean destroyed = false;
+    protected boolean destroyed = false
     
-    protected final String runtimePath;
-    protected final String confPath;
+    protected final String runtimePath
 
-    protected final Map componentLocationMap = new HashMap();
+    protected final String confPath
+    protected final GPathResult confXmlRoot
+    
+    protected final GPathResult defaultConfXmlRoot
+
+    protected final Map componentLocationMap = new HashMap()
     // for future use if needed: protected final Map componentDetailMap;
 
     // ======== Permanent Delegated Facades ========
-    protected final CacheFacadeImpl cacheFacade;
-    //protected final EntityFacadeImpl entityFacade;
-    protected final LoggerFacadeImpl loggerFacade;
-    protected final ResourceFacadeImpl resourceFacade;
-    protected final ScreenFacadeImpl screenFacade;
-    //protected final ServiceFacadeImpl serviceFacade;
-    protected final TransactionFacadeImpl transactionFacade;
+    protected final CacheFacadeImpl cacheFacade
+    //protected final EntityFacadeImpl entityFacade
+    protected final LoggerFacadeImpl loggerFacade
+    protected final ResourceFacadeImpl resourceFacade
+    protected final ScreenFacadeImpl screenFacade
+    //protected final ServiceFacadeImpl serviceFacade
+    protected final TransactionFacadeImpl transactionFacade
 
     /**
      * This constructor gets runtime directory and conf file location from a properties file on the classpath so that
@@ -114,18 +119,32 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
     protected void init() {
-        this.cacheFacade = new CacheFacadeImpl(this);
-        this.loggerFacade = new LoggerFacadeImpl(this);
-        this.resourceFacade = new ResourceFacadeImpl(this);
-        this.screenFacade = new ScreenFacadeImpl(this);
-        this.transactionFacade = new TransactionFacadeImpl(this);
+        File confFile = new File(this.confPath)
+        this.confXmlRoot = new XmlSlurper().parse(confFile)
+
+        URL defaultConfUrl = ClassLoader.getSystemResource("MoquiDefaultConf.xml")
+        this.defaultConfXmlRoot = new XmlSlurper().parse(defaultConfUrl.newInputStream())
+
+        this.cacheFacade = new CacheFacadeImpl(this)
+        this.loggerFacade = new LoggerFacadeImpl(this)
+        this.resourceFacade = new ResourceFacadeImpl(this)
+        this.screenFacade = new ScreenFacadeImpl(this)
+        this.transactionFacade = new TransactionFacadeImpl(this)
+    }
+
+    public GPathResult getConfXmlRoot() {
+        return this.confXmlRoot
+    }
+
+    public GPathResult getDefaultConfXmlRoot() {
+        return this.defaultConfXmlRoot
     }
 
     public synchronized void destroy() {
         if (!this.destroyed) {
-            this.cacheFacade.destroy();
+            this.cacheFacade.destroy()
 
-            this.destroyed = true;
+            this.destroyed = true
         }
     }
 
