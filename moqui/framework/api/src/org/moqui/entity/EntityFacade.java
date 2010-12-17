@@ -21,13 +21,21 @@ import java.util.Set;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-/**
- * Entity Facade Interface
- */
+/** The main interface for general database operations in Moqui. */
 public interface EntityFacade {
 
+    /** Get a EntityConditionFactory object that can be used to create and assemble conditions used for finds.
+     *
+     * @return The facade's active EntityConditionFactory object.
+     */
     EntityConditionFactory getConditionFactory();
-    
+
+    /** Get an object representing the definition of a given entity in order to get detailed information about that
+     * entity's fields, relationships, indexes, etc.
+     *
+     * @param entityName The name of the entity to get the definition for.
+     * @return EntityDefinition object for the named entity.
+     */
     EntityDefinition getDefinition(String entityName);
     
     /** Gets the group name for specified entityName
@@ -36,10 +44,15 @@ public interface EntityFacade {
      */
     String getEntityGroupName(String entityName);
 
-    /** Creates a Entity in the form of a EntityValue without persisting it */
+    /** Creates a Entity in the form of a EntityValue without persisting it
+     *
+     * @param entityName The name of the entity to make a value object for.
+     * @return EntityValue for the named entity. 
+     */
     EntityValue makeValue(String entityName);
     
-    /** Store a group of values
+    /** Update a set of values that match a condition.
+     *
      * @param entityName The name of the Entity as defined in the entity XML file
      * @param fieldsToSet The fields of the named entity to set in the database
      * @param condition The condition that restricts the list of stored values
@@ -49,15 +62,18 @@ public interface EntityFacade {
     int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition)
            throws EntityException;
 
-    /** Removes/deletes Generic Entity records found by the condition
+    /** Delete entity records that match a condition.
+     *
      * @param entityName The Name of the Entity as defined in the entity XML file
      * @param condition The condition used to restrict the removing
      * @return int representing number of rows effected by this operation
+     * @throws EntityException
      */
     int deleteByCondition(String entityName, EntityCondition condition) throws EntityException;
 
     /** Create an EntityFind object that can be used to specify additional options, and then to execute one or more
      * finds (queries).
+     * 
      * @param entityName The Name of the Entity as defined in the entity XML file
      * @return An EntityFind object.
      */
@@ -74,7 +90,12 @@ public interface EntityFacade {
     String sequencedIdPrimary(String seqName, Long staggerMax);
 
     /** Look at existing values for a sub-entity with a sequenced secondary ID, and get the highest plus incrementBy
-     * (default 1). 
+     * (default 1).
+     *
+     * @param value An existing value object with the primary sequenced field already populated.
+     * @param seqFieldName The field to set the secondary sequenced value on.
+     * @param numericPadding If specified front-pads the secondary sequenced value with zeroes until it is this length.
+     * @param incrementBy If specified adds this value instead of the default (1) to the highest existing value. 
      */
     void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy);
 
@@ -84,13 +105,35 @@ public interface EntityFacade {
      * @param groupName The name of entity group to get a connection for.
      *     Corresponds to the entity.group-name attribute and the datasource.group-name attribute.
      * @return JDBC Connection object for the associated database
+     * @throws EntityException
      */
     Connection getConnection(String groupName) throws EntityException;
 
     // ======= XML Related Methods ========
+
+    /** Read an XML document containing value/record data for entities.
+     *
+     * The document should have a root element like <code>&lt;entity-facade-xml type=&quot;seed&quot;&gt;</code>. The
+     * type attribute will be used to determine if the file should be loaded by whether or not it matches the values
+     * specified for file types when loading the files.
+     *
+     * @param url The location of the document to read.
+     * @return An EntityList object representing a List of EntityValue objects for the values in the XML document.
+     * @throws EntityException
+     */
     EntityList readXmlDocument(URL url) throws EntityException;
 
+    /** Convert an already read XML document to entity values.
+     *
+     * @param document A DOM document object representing the XML file.
+     * @return An EntityList object representing a List of EntityValue objects for the values in the XML document.
+     */
     EntityList readXmlDocument(Document document);
 
+    /** Make an EntityValue and populate it with the data (attributes and sub-elements) from the given XML element.
+     *
+     * @param element A XML DOM element representing a single value/record for an entity.
+     * @return EntityValue object populated with data from the element.
+     */
     EntityValue makeValue(Element element);
 }

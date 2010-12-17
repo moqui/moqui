@@ -17,15 +17,32 @@ import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
+import java.sql.ResultSet
 
 class EntityFindImpl implements EntityFind {
 
-    protected final EntityFacadeImpl efi;
+    protected final EntityFacadeImpl efi
 
-    protected String entityName;
-    protected EntityDynamicView dynamicView = null;
+    protected String entityName
+    protected EntityDynamicView dynamicView = null
 
-    public EntityFindImpl(EntityFacadeImpl efi, String entityName) {
+    protected Map<String, Object> simpleAndMap = null
+    protected EntityCondition whereEntityCondition = null
+    protected EntityCondition havingEntityCondition = null
+
+    protected Set<String> fieldsToSelect = null
+    protected List<String> orderByFields = null
+
+    protected boolean useCache = false
+    protected boolean forUpdate = false
+
+    protected int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE
+    protected int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY
+    protected Integer fetchSize = null
+    protected Integer maxRows = null
+    protected boolean distinct = false
+
+    EntityFindImpl(EntityFacadeImpl efi, String entityName) {
         this.efi = efi
         this.entityName = entityName
     }
@@ -56,162 +73,176 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#condition(String, Object) */
     EntityFind condition(String fieldName, Object value) {
-        // TODO: implement this
+        if (!this.simpleAndMap) this.simpleAndMap = new HashMap();
+        this.simpleAndMap.put(fieldName, value)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#condition(Map<String,?>) */
     EntityFind condition(Map<String, ?> fields) {
-        // TODO: implement this
+        if (!this.simpleAndMap) this.simpleAndMap = new HashMap();
+        this.simpleAndMap.putAll(fields)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#condition(EntityCondition) */
     EntityFind condition(EntityCondition condition) {
-        // TODO: implement this
+        if (this.whereEntityCondition) {
+            this.whereEntityCondition = this.efi.conditionFactory.makeCondition(
+                    this.whereEntityCondition, EntityCondition.JoinOperator.AND, condition)
+        } else {
+            this.whereEntityCondition = condition;
+        }
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#havingCondition(EntityCondition) */
     EntityFind havingCondition(EntityCondition condition) {
-        // TODO: implement this
+        if (this.havingEntityCondition) {
+            this.havingEntityCondition = this.efi.conditionFactory.makeCondition(
+                    this.havingEntityCondition, EntityCondition.JoinOperator.AND, condition)
+        } else {
+            this.havingEntityCondition = condition;
+        }
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getWhereEntityCondition() */
     EntityCondition getWhereEntityCondition() {
-        // TODO: implement this
-        return this
+        if (this.simpleAndMap) {
+            EntityCondition simpleAndMapCond = this.efi.conditionFactory.makeCondition(this.simpleAndMap)
+            if (this.whereEntityCondition) {
+                return this.efi.conditionFactory.makeCondition(simpleAndMapCond, EntityCondition.JoinOperator.AND, this.whereEntityCondition)
+            } else {
+                return simpleAndMapCond
+            }
+        } else {
+            return this.whereEntityCondition
+        }
     }
 
     /** @see org.moqui.entity.EntityFind#getHavingEntityCondition() */
     EntityCondition getHavingEntityCondition() {
-        // TODO: implement this
-        return this
+        return this.havingEntityCondition
     }
 
     // ======================== General/Common Options ========================
 
     /** @see org.moqui.entity.EntityFind#selectField(String) */
     EntityFind selectField(String fieldToSelect) {
-        // TODO: implement this
+        if (!this.fieldsToSelect) this.fieldsToSelect = new HashSet()
+        this.fieldsToSelect.add(fieldToSelect)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#selectFields(Collection<String>) */
     EntityFind selectFields(Collection<String> fieldsToSelect) {
-        // TODO: implement this
+        if (!this.fieldsToSelect) this.fieldsToSelect = new HashSet()
+        this.fieldsToSelect.addAll(fieldsToSelect)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getSelectFields() */
     Set<String> getSelectFields() {
-        // TODO: implement this
-        return null
+        return Collections.unmodifiableSet(this.fieldsToSelect)
     }
 
     /** @see org.moqui.entity.EntityFind#orderBy(String) */
     EntityFind orderBy(String orderByFieldName) {
-        // TODO: implement this
+        if (!this.orderByFields) this.orderByFields = new LinkedList()
+        this.orderByFields.add(orderByFieldName)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#orderBy(List<String>) */
     EntityFind orderBy(List<String> orderByFieldNames) {
-        // TODO: implement this
+        if (!this.orderByFields) this.orderByFields = new LinkedList()
+        this.orderByFields.addAll(orderByFieldNames)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getOrderBy() */
     List<String> getOrderBy() {
-        // TODO: implement this
-        return null
+        return Collections.unmodifiableList(this.orderByFields)
     }
 
     /** @see org.moqui.entity.EntityFind#useCache(boolean) */
     EntityFind useCache(boolean useCache) {
-        // TODO: implement this
+        this.useCache = useCache
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getUseCache() */
     boolean getUseCache() {
-        // TODO: implement this
-        return false
+        return this.useCache
     }
 
     /** @see org.moqui.entity.EntityFind#forUpdate(boolean) */
     EntityFind forUpdate(boolean forUpdate) {
-        // TODO: implement this
+        this.forUpdate = forUpdate
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getForUpdate() */
     boolean getForUpdate() {
-        // TODO: implement this
-        return false
+        return this.forUpdate
     }
 
     // ======================== Advanced Options ==============================
 
     /** @see org.moqui.entity.EntityFind#resultSetType(int) */
-    EntityFind resultSetType(Integer resultSetType) {
-        // TODO: implement this
+    EntityFind resultSetType(int resultSetType) {
+        this.resultSetType = resultSetType
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getResultSetType() */
     int getResultSetType() {
-        // TODO: implement this
-        return 0
+        return this.resultSetType
     }
 
     /** @see org.moqui.entity.EntityFind#resultSetConcurrency(int) */
     EntityFind resultSetConcurrency(int resultSetConcurrency) {
-        // TODO: implement this
+        this.resultSetConcurrency = resultSetConcurrency
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getResultSetConcurrency() */
     int getResultSetConcurrency() {
-        // TODO: implement this
-        return 0
+        return this.resultSetConcurrency
     }
 
     /** @see org.moqui.entity.EntityFind#fetchSize(int) */
     EntityFind fetchSize(Integer fetchSize) {
-        // TODO: implement this
+        this.fetchSize = fetchSize
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getFetchSize() */
-    int getFetchSize() {
-        // TODO: implement this
-        return 0
+    Integer getFetchSize() {
+        return this.fetchSize
     }
 
     /** @see org.moqui.entity.EntityFind#maxRows(int) */
     EntityFind maxRows(Integer maxRows) {
-        // TODO: implement this
+        this.maxRows = maxRows
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getMaxRows() */
-    int getMaxRows() {
-        // TODO: implement this
-        return 0
+    Integer getMaxRows() {
+        return this.maxRows
     }
 
     /** @see org.moqui.entity.EntityFind#distinct(boolean) */
     EntityFind distinct(boolean distinct) {
-        // TODO: implement this
+        this.distinct = distinct
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getDistinct() */
     boolean getDistinct() {
-        // TODO: implement this
-        return false
+        return this.distinct
     }
 
     // ======================== Run Find Methods ==============================

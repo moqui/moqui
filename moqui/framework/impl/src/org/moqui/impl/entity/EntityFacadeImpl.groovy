@@ -25,22 +25,24 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class EntityFacadeImpl implements EntityFacade {
 
-    protected final ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi
 
-    public EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
-        this.ecfi = ecfi;
+    protected final EntityConditionFactoryImpl entityConditionFactory
+
+    EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi
+        this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
         // TODO: init connection pool, etc
     }
 
-    public void destroy() {
+    void destroy() {
         // TODO: destroy connection pool, etc
     }
 
     /** @see org.moqui.entity.EntityFacade#getConditionFactory() */
     EntityConditionFactory getConditionFactory() {
-        // TODO: implement this
-        return null;
+        return this.entityConditionFactory
     }
 
     /** @see org.moqui.entity.EntityFacade#getDefinition(String) */
@@ -75,7 +77,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#find(String) */
     EntityFind find(String entityName) {
-        return new EntityFindImpl(this, entityName);
+        return new EntityFindImpl(this, entityName)
     }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, long) */

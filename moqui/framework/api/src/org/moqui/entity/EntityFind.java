@@ -41,25 +41,32 @@ public interface EntityFind extends java.io.Serializable {
 
     // ======================== Conditions (Where and Having) =================
 
-    /** Add a field to the find (where clause). If any constraints are already in place this will be ANDed to them.
+    /** Add a field to the find (where clause).
+     * If a field has been set with the same name, this will replace that field's value.
+     * If any other constraints are already in place this will be ANDed to them.
+     *
      * @return Returns this for chaining of method calls.
      */
     EntityFind condition(String fieldName, Object value);
 
-    /** Add a Map of fields to the find (where clause). If any constraints are already in place this will be ANDed to
-     *     them.
+    /** Add a Map of fields to the find (where clause).
+     * If a field has been set with the same name and any of the Map keys, this will replace that field's value.
+     * Fields set in this way will be combined with other conditions (if applicable) just before doing the query.
+     *
      * @return Returns this for chaining of method calls.
      */
     EntityFind condition(Map<String, ?> fields);
 
-    /** Add a EntityCondition to the find (where clause). If any constraints are already in place this will be ANDed to
-     *     them.
+    /** Add a EntityCondition to the find (where clause).
+     * Fields set in this way will be combined with other conditions (if applicable) just before doing the query.
+     *
      * @return Returns this for chaining of method calls.
      */
     EntityFind condition(EntityCondition condition);
 
-    /** Add a EntityCondition to the having clause of the find. If any having constraints are already in place this
-     *     will be ANDed to them.
+    /** Add a EntityCondition to the having clause of the find.
+     * If any having constraints are already in place this will be ANDed to them.
+     *
      * @return Returns this for chaining of method calls.
      */
     EntityFind havingCondition(EntityCondition condition);
@@ -122,11 +129,11 @@ public interface EntityFind extends java.io.Serializable {
      *      ResultSet.TYPE_SCROLL_INSENSITIVE or ResultSet.TYPE_SCROLL_SENSITIVE. See the java.sql.ResultSet JavaDoc for
      *      more information. If you want it to be fast, use the common option: ResultSet.TYPE_FORWARD_ONLY.
      *      For partial results where you want to jump to an index make sure to use TYPE_SCROLL_INSENSITIVE.
-     * Defaults to TYPE_FORWARD_ONLY.
+     * Defaults to ResultSet.TYPE_SCROLL_INSENSITIVE.
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind resultSetType(Integer resultSetType);
+    EntityFind resultSetType(int resultSetType);
     int getResultSetType();
 
     /** Specifies whether or not the ResultSet can be updated. Available values:
@@ -144,14 +151,14 @@ public interface EntityFind extends java.io.Serializable {
      * @return Returns this for chaining of method calls.
      */
     EntityFind fetchSize(Integer fetchSize);
-    int getFetchSize();
+    Integer getFetchSize();
 
     /** Specifies the max number of rows to return. Default (null) means all rows.
      *
      * @return Returns this for chaining of method calls.
      */
     EntityFind maxRows(Integer maxRows);
-    int getMaxRows();
+    Integer getMaxRows();
 
     /** Specifies whether the values returned should be filtered to remove duplicate values.
      * Default is false.

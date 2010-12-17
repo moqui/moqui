@@ -26,7 +26,7 @@ import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 
-public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
+class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
     
@@ -55,7 +55,7 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
      * This constructor gets runtime directory and conf file location from a properties file on the classpath so that
      * it can initialize on its own. This is the constructor to be used by the ServiceLoader in the Moqui.java file.
      */
-    public ExecutionContextFactoryImpl() {
+    ExecutionContextFactoryImpl() {
         // get the runtime directory path
         Properties moquiInitProperties = new Properties();
         moquiInitProperties.load(ClassLoader.getSystemResourceAsStream("MoquiInit.properties"));
@@ -97,7 +97,7 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     /** This constructor takes the runtime directory path and conf file path directly. */
-    public ExecutionContextFactoryImpl(String runtimePath, String confPath) {
+    ExecutionContextFactoryImpl(String runtimePath, String confPath) {
         // setup the runtimeFile
         File runtimeFile = new File(runtimePath);
         if (!runtimeFile.exists()) {
@@ -137,15 +137,15 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.screenFacade = new ScreenFacadeImpl(this)
     }
 
-    public GPathResult getConfXmlRoot() {
+    GPathResult getConfXmlRoot() {
         return this.confXmlRoot
     }
 
-    public GPathResult getDefaultConfXmlRoot() {
+    GPathResult getDefaultConfXmlRoot() {
         return this.defaultConfXmlRoot
     }
 
-    public synchronized void destroy() {
+    synchronized void destroy() {
         if (!this.destroyed) {
             // this destroy order is important as some use others so must be destroyed first
             this.serviceFacade.destroy()
@@ -157,48 +157,48 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    public CacheFacadeImpl getCacheFacade() {
+    CacheFacadeImpl getCacheFacade() {
         return this.cacheFacade;
     }
 
-    public EntityFacadeImpl getEntityFacade() {
+    EntityFacadeImpl getEntityFacade() {
         return this.entityFacade;
     }
 
-    public LoggerFacadeImpl getLoggerFacade() {
+    LoggerFacadeImpl getLoggerFacade() {
         return this.loggerFacade;
     }
 
-    public ResourceFacadeImpl getResourceFacade() {
+    ResourceFacadeImpl getResourceFacade() {
         return this.resourceFacade;
     }
 
-    public ScreenFacadeImpl getScreenFacade() {
+    ScreenFacadeImpl getScreenFacade() {
         return this.screenFacade;
     }
 
-    public ServiceFacadeImpl getServiceFacade() {
+    ServiceFacadeImpl getServiceFacade() {
         return this.serviceFacade;
     }
 
-    public TransactionFacadeImpl getTransactionFacade() {
+    TransactionFacadeImpl getTransactionFacade() {
         return this.transactionFacade;
     }
 
     // ========== Interface Implementations ==========
 
     /** @see org.moqui.context.ExecutionContextFactory#getExecutionContext() */
-    public ExecutionContext getExecutionContext() {
+    ExecutionContext getExecutionContext() {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getWebExecutionContext(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
-    public WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response) {
+    WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response) {
         return null;  // TODO: implement this
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
-    public void initComponent(String baseLocation) throws BaseException {
+    void initComponent(String baseLocation) throws BaseException {
         // TODO: how to get component name? for now use last directory name
         if (baseLocation.endsWith('/')) baseLocation = baseLocation.substring(0, baseLocation.length()-1);
         int lastSlashIndex = baseLocation.lastIndexOf('/');
@@ -217,14 +217,14 @@ public class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
-    public void destroyComponent(String componentName) throws BaseException {
+    void destroyComponent(String componentName) throws BaseException {
         this.componentLocationMap.remove(componentName);
 
         // TODO: implement rest of this as needed
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
-    public Map<String, String> getComponentBaseLocations() {
+    Map<String, String> getComponentBaseLocations() {
         return Collections.unmodifiableMap(this.componentLocationMap);
     }
 

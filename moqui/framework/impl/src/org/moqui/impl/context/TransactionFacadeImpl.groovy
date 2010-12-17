@@ -20,13 +20,13 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     protected final ExecutionContextFactoryImpl ecfi;
 
-    public TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+    TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;
 
         // TODO: init tx mgr, etc
     }
 
-    public void destroy() {
+    void destroy() {
         // TODO: destroy tx mgr, etc
     }
 
