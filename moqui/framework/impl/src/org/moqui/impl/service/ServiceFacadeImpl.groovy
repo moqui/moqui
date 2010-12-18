@@ -26,7 +26,8 @@ class ServiceFacadeImpl implements ServiceFacade {
     public ServiceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;
 
-        // TODO: init quartz scheduler, etc
+        // TODO: init quartz scheduler
+        // TODO: load SECA rule tables
     }
 
     public void destroy() {

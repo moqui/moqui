@@ -30,20 +30,6 @@ public interface EntityFacade {
      */
     EntityConditionFactory getConditionFactory();
 
-    /** Get an object representing the definition of a given entity in order to get detailed information about that
-     * entity's fields, relationships, indexes, etc.
-     *
-     * @param entityName The name of the entity to get the definition for.
-     * @return EntityDefinition object for the named entity.
-     */
-    EntityDefinition getDefinition(String entityName);
-    
-    /** Gets the group name for specified entityName
-     * @param entityName The name of the entity to get the group name
-     * @return String with the group name that corresponds to the entityName
-     */
-    String getEntityGroupName(String entityName);
-
     /** Creates a Entity in the form of a EntityValue without persisting it
      *
      * @param entityName The name of the entity to make a value object for.
@@ -98,6 +84,12 @@ public interface EntityFacade {
      * @param incrementBy If specified adds this value instead of the default (1) to the highest existing value. 
      */
     void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy);
+
+    /** Gets the group name for specified entityName
+     * @param entityName The name of the entity to get the group name
+     * @return String with the group name that corresponds to the entityName
+     */
+    String getEntityGroupName(String entityName);
 
     /** Use this to get a Connection if you want to do JDBC operations directly. This Connection will be enlisted in
      * the active Transaction.

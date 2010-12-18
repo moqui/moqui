@@ -12,6 +12,7 @@
 package org.moqui.entity;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class is used for declaring Dynamic View Entities, to be used and thrown away.
@@ -77,7 +78,7 @@ public interface EntityDynamicView {
     /** Add an alias, full detail. All parameters can be null except entityAlias and name. */
     public void addAlias(String entityAlias, String name, String field, String colAlias, Boolean primKey, Boolean groupBy, String function);
 
-    public void addViewLink(String entityAlias, String relEntityAlias, Boolean relOptional, List<EntityKeyMapDefinition> entityKeyMapDefinitions);
+    public void addViewLink(String entityAlias, String relEntityAlias, Boolean relOptional, Map<String, String> entityKeyMaps);
 
-    public void addRelation(String type, String title, String relEntityName, List<EntityKeyMapDefinition> entityKeyMapDefinitions);
+    public void addRelation(String type, String title, String relEntityName, Map<String, String> entityKeyMaps);
 }

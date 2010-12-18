@@ -30,8 +30,6 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     String getEntityName();
 
-    EntityDefinition getModelEntity();
-
     boolean isModified();
 
     boolean isMutable();

@@ -13,7 +13,6 @@ package org.moqui.impl.entity
 
 import org.moqui.entity.EntityFacade
 import org.moqui.entity.EntityConditionFactory
-import org.moqui.entity.EntityDefinition
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityFind
@@ -33,28 +32,24 @@ class EntityFacadeImpl implements EntityFacade {
         this.ecfi = ecfi
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
-        // TODO: init connection pool, etc
+        // TODO: init connection pool
+        // TODO: EECA rule tables
     }
 
     void destroy() {
         // TODO: destroy connection pool, etc
     }
 
+    EntityDefinition getDefinition(String entityName) {
+        // TODO: implement this?
+        return null;
+    }
+
+    // ========== Interface Implementations ==========
+
     /** @see org.moqui.entity.EntityFacade#getConditionFactory() */
     EntityConditionFactory getConditionFactory() {
         return this.entityConditionFactory
-    }
-
-    /** @see org.moqui.entity.EntityFacade#getDefinition(String) */
-    EntityDefinition getDefinition(String entityName) {
-        // TODO: implement this
-        return null;
-    }
-
-    /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */
-    String getEntityGroupName(String entityName) {
-        // TODO: implement this
-        return null;
     }
 
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
@@ -89,6 +84,12 @@ class EntityFacadeImpl implements EntityFacade {
     /** @see org.moqui.entity.EntityFacade#sequencedIdSecondary(EntityValue, String, int, int) */
     void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy) {
         // TODO: implement this
+    }
+
+    /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */
+    String getEntityGroupName(String entityName) {
+        // TODO: implement this
+        return null;
     }
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */

@@ -9,12 +9,31 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.service;
+package org.moqui.impl.entity
 
-import java.util.List;
-import java.util.Set;
+class EntityFindBuilder {
+    protected EntityFindImpl efi
 
-public interface ServiceDefinition {
-    // NOTE: this interface is pretty empty because most of it will be generated from the XSD using XMLBeans
+    protected StringBuilder sql
+    protected List<EntityConditionParam> params
 
+    EntityFindBuilder(EntityFindImpl efi) {
+        this.efi = efi
+    }
+
+    /** returns StringBuilder meant to be appended to */
+    StringBuilder getSql() {
+        return this.sql
+    }
+
+    /** returns List of EntityConditionParam meant to be added to */
+    List<EntityConditionParam> getParams() {
+        return this.params
+    }
+
+    static class EntityConditionParam {
+        EntityConditionParam() {
+    
+        }
+    }
 }
