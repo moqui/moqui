@@ -61,7 +61,7 @@ class ServiceFacadeImpl implements ServiceFacade {
     public synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {
         List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
         if (callbackList == null) {
-            callbackList = new LinkedList()
+            callbackList = new ArrayList()
             callbackRegistry.put(serviceName, callbackList)
         }
         callbackList.add(serviceCallback);

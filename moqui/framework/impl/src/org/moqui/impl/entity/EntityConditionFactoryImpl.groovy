@@ -79,9 +79,6 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         /** Build SQL Where text to evaluate condition in a database. */
         public abstract void makeSqlWhere(EntityFindBuilder efb);
-
-        /** Evaluate the condition in memory. */
-        public abstract boolean mapMatches(Map<String, ?> map);
     }
 
     public static class BasicJoinCondition extends EntityConditionImplBase {

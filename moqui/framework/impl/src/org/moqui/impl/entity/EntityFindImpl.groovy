@@ -18,6 +18,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
 import java.sql.ResultSet
+import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 
 class EntityFindImpl implements EntityFind {
 
@@ -27,8 +28,8 @@ class EntityFindImpl implements EntityFind {
     protected EntityDynamicView dynamicView = null
 
     protected Map<String, Object> simpleAndMap = null
-    protected EntityCondition whereEntityCondition = null
-    protected EntityCondition havingEntityCondition = null
+    protected EntityConditionImplBase whereEntityCondition = null
+    protected EntityConditionImplBase havingEntityCondition = null
 
     protected Set<String> fieldsToSelect = null
     protected List<String> orderByFields = null
@@ -149,14 +150,14 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#orderBy(String) */
     EntityFind orderBy(String orderByFieldName) {
-        if (!this.orderByFields) this.orderByFields = new LinkedList()
+        if (!this.orderByFields) this.orderByFields = new ArrayList()
         this.orderByFields.add(orderByFieldName)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#orderBy(List<String>) */
     EntityFind orderBy(List<String> orderByFieldNames) {
-        if (!this.orderByFields) this.orderByFields = new LinkedList()
+        if (!this.orderByFields) this.orderByFields = new ArrayList()
         this.orderByFields.addAll(orderByFieldNames)
         return this
     }
@@ -249,18 +250,51 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#one() */
     EntityValue one() {
+        EntityFindBuilder efb = new EntityFindBuilder(this);
+
+        if (this.dynamicView) {
+            throw new IllegalArgumentException("Dynamic View not supported for 'one' find.");
+        }
+        EntityDefinition entityDefinition = this.efi.getDefinition(this.entityName)
+
+        efb.makeSqlSelectFields(this.fieldsToSelect, entityDefinition)
+        efb.makeSqlFromClause(entityDefinition)
+
+        // where clause only for one/pk query
+        efb.startWhereClause()
+        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        whereCondition.makeSqlWhere(efb)
+
+        //String viewClause = makeViewWhereClause(modelEntity, joinStyle);
+
         // TODO: implement this
         return null
     }
 
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() {
-        // TODO: implement this
-        return null
+        EntityListIterator eli = this.iterator()
+        return eli.getCompleteList()
     }
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() {
+        EntityFindBuilder efb = new EntityFindBuilder(this);
+
+        if (this.dynamicView) {
+            // TODO: implement for dynamic views
+        } else {
+            EntityDefinition entityDefinition = this.efi.getDefinition(this.entityName)
+            // TODO from/etc like in one() above
+        }
+
+        // where clause first
+        efb.startWhereClause()
+        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        whereCondition.makeSqlWhere(efb)
+
+        //String viewClause = makeViewWhereClause(modelEntity, joinStyle);
+
         // TODO: implement this
         return null
     }

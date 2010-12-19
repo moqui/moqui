@@ -11,11 +11,14 @@
  */
 package org.moqui.entity;
 
+import java.util.Map;
+
 /** Represents the conditions to be used to constrain a query.
  *
  * These can be used in various combinations using the different condition types.
  *
- * This class is mostly empty because it is a placeholder for use in the EntityConditionFactory.
+ * This class is mostly empty because it is a placeholder for use in the EntityConditionFactory and most functionality
+ * is internal only.
  */
 public interface EntityCondition {
     public enum ComparisonOperator { EQUALS, NOT_EQUAL,
@@ -23,4 +26,7 @@ public interface EntityCondition {
         IN, NOT_IN, BETWEEN, LIKE, NOT_LIKE }
 
     public enum JoinOperator { AND, OR }
+
+    /** Evaluate the condition in memory. */
+    boolean mapMatches(Map<String, ?> map);
 }

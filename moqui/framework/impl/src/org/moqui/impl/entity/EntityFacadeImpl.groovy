@@ -21,6 +21,7 @@ import org.moqui.entity.EntityList
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import groovy.util.slurpersupport.GPathResult
 
 class EntityFacadeImpl implements EntityFacade {
 
@@ -42,7 +43,23 @@ class EntityFacadeImpl implements EntityFacade {
 
     EntityDefinition getDefinition(String entityName) {
         // TODO: implement this?
-        return null;
+        return null
+    }
+
+    GPathResult getDatabaseNode(String entityName) {
+        // TODO impl this like the default one
+        return null
+    }
+    GPathResult getDefaultDatabaseNode(String entityName) {
+        def defaultConfXmlRoot = this.ecfi.getDefaultConfXmlRoot()
+        String databaseConfName = getDataBaseConfName(entityName)
+        // TODO: def defaultCacheElement = defaultConfXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
+        return null
+    }
+    String getDataBaseConfName(String entityName) {
+        String groupName = this.getEntityGroupName(entityName)
+        // TODO: get conf name based on group name
+        return null
     }
 
     // ========== Interface Implementations ==========
@@ -55,19 +72,19 @@ class EntityFacadeImpl implements EntityFacade {
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
     EntityValue makeValue(String entityName) {
         // TODO: implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityFacade#updateByCondition(String, Map<String,?>, EntityCondition) */
     int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition) {
         // TODO: implement this
-        return 0;
+        return 0
     }
 
     /** @see org.moqui.entity.EntityFacade#deleteByCondition(String, EntityCondition) */
     int deleteByCondition(String entityName, EntityCondition condition) {
         // TODO: implement this
-        return 0;
+        return 0
     }
 
     /** @see org.moqui.entity.EntityFacade#find(String) */
@@ -78,7 +95,7 @@ class EntityFacadeImpl implements EntityFacade {
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, long) */
     String sequencedIdPrimary(String seqName, Long staggerMax) {
         // TODO: implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdSecondary(EntityValue, String, int, int) */
@@ -89,30 +106,30 @@ class EntityFacadeImpl implements EntityFacade {
     /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */
     String getEntityGroupName(String entityName) {
         // TODO: implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
     Connection getConnection(String groupName) {
         // TODO: implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityFacade#readXmlDocument(URL) */
     EntityList readXmlDocument(URL url) {
         // TODO: implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityFacade#readXmlDocument(Document) */
     EntityList readXmlDocument(Document document) {
         // TODO: implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
     EntityValue makeValue(Element element) {
         // TODO: implement this
-        return null;
+        return null
     }
 }

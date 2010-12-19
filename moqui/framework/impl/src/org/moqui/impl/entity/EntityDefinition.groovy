@@ -5,6 +5,29 @@ import java.util.Set;
 
 public class EntityDefinition {
 
+    // ============= Actually Used Methods ==============
+    String getEntityName() {
+        // TODO: implement this
+        return null
+    }
+
+    boolean isViewEntity() {
+        // TODO: implement this
+        return false
+    }
+
+    String getColName(String fieldName) {
+        // TODO: implement this
+        return null
+    }
+
+    String getTableName() {
+        // TODO: implement this
+        return null
+    }
+
+    // ============= Possibly Useful Methods - 2nd Priority ==============
+
     /** Returns the full table name including the prefix from the datasource config and the table-name or converted entity-name */
     String getFullTableName() {
         // TODO: implement this
