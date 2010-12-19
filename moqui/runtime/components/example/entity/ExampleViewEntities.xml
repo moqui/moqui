@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="STIT">
             <exclude field="description"/>
         </alias-all>
-        <alias name="statusDescription" entity-alias="STIT" field="description"/>
+        <alias entity-alias="STIT" name="statusDescription" field="description"/>
         <alias entity-alias="EXPL" name="currentStatusId" field="statusId"/>
         <alias name="statusDelay">
             <complex-alias operator="-">

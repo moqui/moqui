@@ -18,11 +18,8 @@ import org.moqui.context.WebExecutionContext
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import java.util.Properties
-import java.net.URL
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 
@@ -35,10 +32,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final String runtimePath
 
     protected final String confPath
-    protected final GPathResult confXmlRoot
+    protected final Node confXmlRoot
     
-    protected final GPathResult defaultConfXmlRoot
-
     protected final Map componentLocationMap = new HashMap()
     // for future use if needed: protected final Map componentDetailMap;
 
@@ -121,11 +116,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
     protected void init() {
-        File confFile = new File(this.confPath)
-        this.confXmlRoot = new XmlSlurper().parse(confFile)
-
         URL defaultConfUrl = ClassLoader.getSystemResource("MoquiDefaultConf.xml")
-        this.defaultConfXmlRoot = new XmlSlurper().parse(defaultConfUrl.newInputStream())
+        this.confXmlRoot = new XmlParser().parse(defaultConfUrl.newInputStream())
+
+        File confFile = new File(this.confPath)
+        Node overrideConfXmlRoot = new XmlParser().parse(confFile)
+
+        // TODO: merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -137,12 +134,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.screenFacade = new ScreenFacadeImpl(this)
     }
 
-    GPathResult getConfXmlRoot() {
+    Node getConfXmlRoot() {
         return this.confXmlRoot
-    }
-
-    GPathResult getDefaultConfXmlRoot() {
-        return this.defaultConfXmlRoot
     }
 
     synchronized void destroy() {

@@ -21,7 +21,6 @@ import org.moqui.entity.EntityList
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import groovy.util.slurpersupport.GPathResult
 
 class EntityFacadeImpl implements EntityFacade {
 
@@ -34,6 +33,7 @@ class EntityFacadeImpl implements EntityFacade {
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
         // TODO: init connection pool
+        // TODO: init entity definitions
         // TODO: EECA rule tables
     }
 
@@ -41,25 +41,21 @@ class EntityFacadeImpl implements EntityFacade {
         // TODO: destroy connection pool, etc
     }
 
-    EntityDefinition getDefinition(String entityName) {
-        // TODO: implement this?
+    EntityDefinition getEntityDefinition(String entityName) {
+        // TODO: implement this
         return null
     }
 
-    GPathResult getDatabaseNode(String entityName) {
-        // TODO impl this like the default one
-        return null
-    }
-    GPathResult getDefaultDatabaseNode(String entityName) {
-        def defaultConfXmlRoot = this.ecfi.getDefaultConfXmlRoot()
-        String databaseConfName = getDataBaseConfName(entityName)
-        // TODO: def defaultCacheElement = defaultConfXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
-        return null
+    Object getDatabaseNode(String entityName) {
+        def confXmlRoot = this.ecfi.getConfXmlRoot()
+        def databaseConfName = getDataBaseConfName(entityName)
+        return confXmlRoot."database-list".database.find({ it.@name == databaseConfName })
     }
     String getDataBaseConfName(String entityName) {
         String groupName = this.getEntityGroupName(entityName)
-        // TODO: get conf name based on group name
-        return null
+        def confXmlRoot = this.ecfi.getConfXmlRoot()
+        def datasourceNode = confXmlRoot."entity-facade".datasource.find({ it."@group-name" == groupName })
+        return datasourceNode."@database-conf-name"
     }
 
     // ========== Interface Implementations ==========

@@ -405,12 +405,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="ansi"/>
                         <xs:enumeration value="ansi-no-parenthesis"/>
-                        <xs:enumeration value="theta-oracle"/>
-                        <xs:enumeration value="theta-mssql"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="alias-view-columns" default="false" type="boolean"/>
             <xs:attribute name="always-use-constraint-keyword" default="false" type="boolean"/>
             <xs:attribute name="drop-fk-use-foreign-key-keyword" default="false" type="boolean"/>
             <xs:attribute name="use-binary-type-for-blob" default="false" type="boolean"/>

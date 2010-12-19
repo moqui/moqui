@@ -68,21 +68,10 @@ public class CacheFacadeImpl implements CacheFacade {
 
             // set any applicable settings from the moqui conf xml file
             CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
-
-            // start with the default conf file, get settings form there
-            Map settings = [:]
-            def defaultConfXmlRoot = this.ecfi.getDefaultConfXmlRoot();
-            def defaultCacheElement = defaultConfXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
-            if (defaultCacheElement) {
-                settings.expireTimeIdle = defaultCacheElement."@expire-time-idle"
-                settings.expireTimeLive = defaultCacheElement."@expire-time-live"
-                settings.maxElements = defaultCacheElement."@max-elements"
-                settings.evictionStrategy = defaultCacheElement."@eviction-strategy"
-            }
-
-            // then get settings from the active conf file to override defaults
             def confXmlRoot = this.ecfi.getConfXmlRoot()
-            def cacheElement = confXmlRoot."cache-list".cache.find { it['@name'] == cacheName }
+            // TODO: this find(Closure) may not work since we're now using XmlParser instead of XmlSlurper, so watch for that
+            // if that doesn't work, see examples at: http://groovy.codehaus.org/Reading+XML+using+Groovy's+XmlParser
+            def cacheElement = confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
             if (cacheElement) {
                 settings.expireTimeIdle = cacheElement."@expire-time-idle"
                 settings.expireTimeLive = cacheElement."@expire-time-live"
@@ -90,23 +79,24 @@ public class CacheFacadeImpl implements CacheFacade {
                 settings.evictionStrategy = cacheElement."@eviction-strategy"
             }
 
-            if (settings.expireTimeIdle) {
-                newCacheConf.setTimeToIdleSeconds(Long.valueOf(settings.expireTimeIdle))
+            if (cacheElement."@expire-time-idle") {
+                newCacheConf.setTimeToIdleSeconds(Long.valueOf(cacheElement."@expire-time-idle"))
                 newCacheConf.setEternal(false)
             }
-            if (settings.expireTimeLive) {
-                newCacheConf.setTimeToLiveSeconds(Long.valueOf(settings.expireTimeLive))
+            if (cacheElement."@expire-time-live") {
+                newCacheConf.setTimeToLiveSeconds(Long.valueOf(cacheElement."@expire-time-live"))
                 newCacheConf.setEternal(false)
             }
-            if (settings.maxElements) {
-                newCacheConf.setMaxElementsInMemory(Integer.valueOf(settings.maxElements))
+            if (cacheElement."@max-elements") {
+                newCacheConf.setMaxElementsInMemory(Integer.valueOf(cacheElement."@max-elements"))
             }
-            if (settings.evictionStrategy) {
-                if ("least-recently-used" == settings.evictionStrategy) {
+            String evictionStrategy = cacheElement."@eviction-strategy"
+            if (evictionStrategy) {
+                if ("least-recently-used" == evictionStrategy) {
                     newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LRU)
-                } else if ("least-frequently-used" == settings.evictionStrategy) {
+                } else if ("least-frequently-used" == evictionStrategy) {
                     newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LFU)
-                } else if ("least-recently-added" == settings.evictionStrategy) {
+                } else if ("least-recently-added" == evictionStrategy) {
                     newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.FIFO)
                 }
             }

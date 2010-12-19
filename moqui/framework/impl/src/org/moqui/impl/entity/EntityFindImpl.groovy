@@ -258,7 +258,7 @@ class EntityFindImpl implements EntityFind {
         EntityDefinition entityDefinition = this.efi.getDefinition(this.entityName)
 
         efb.makeSqlSelectFields(this.fieldsToSelect, entityDefinition)
-        efb.makeSqlFromClause(entityDefinition)
+        efb.makeSqlFromClause(entityDefinition, null)
 
         // where clause only for one/pk query
         efb.startWhereClause()

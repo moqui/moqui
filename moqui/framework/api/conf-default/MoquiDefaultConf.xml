@@ -190,7 +190,6 @@
         <database name="derby"
                   use-pk-constraint-names="false"
                   use-indices-unique="false"
-                  alias-view-columns="false"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver">
             <field-type-def type="id" sql-type="VARCHAR(20)"/>
@@ -221,7 +220,6 @@
                   use-foreign-key-indices="true"
                   use-fk-initially-deferred="false"
                   join-style="ansi-no-parenthesis"
-                  alias-view-columns="true"
                   default-isolation-level="ReadUncommitted"
                   default-jdbc-driver="org.hsqldb.jdbcDriver">
             <field-type-def type="id" sql-type="VARCHAR"/>
@@ -250,7 +248,6 @@
         <database name="mysql"
                   use-foreign-keys="true"
                   join-style="ansi-no-parenthesis"
-                  alias-view-columns="false"
                   drop-fk-use-foreign-key-keyword="true"
                   table-type="InnoDB"
                   character-set="latin1"
@@ -281,7 +278,6 @@
             <field-type-def type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
         <database name="oracle"
-                  alias-view-columns="false"
                   join-style="ansi"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="oracle.jdbc.driver.OracleDriver">
@@ -310,7 +306,6 @@
         </database>
         <database name="postgres"
                   use-fk-initially-deferred="false"
-                  alias-view-columns="false"
                   join-style="ansi"
                   result-fetch-size="50"
                   use-binary-type-for-blob="true"

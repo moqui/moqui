@@ -1,19 +1,27 @@
 package org.moqui.impl.entity
 
-import java.util.List;
-import java.util.Set;
-
 public class EntityDefinition {
+    protected EntityFacadeImpl efi
+    protected String entityName
+    protected Node entityNode
+
+    EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
+        this.efi = efi
+        this.entityName = entityNode."@entity-name"
+        this.entityNode = entityNode
+    }
 
     // ============= Actually Used Methods ==============
     String getEntityName() {
-        // TODO: implement this
-        return null
+        return this.entityName
+    }
+
+    Node getEntityNode() {
+        return this.entityNode
     }
 
     boolean isViewEntity() {
-        // TODO: implement this
-        return false
+        return this.entityNode.name() == "view-entity"
     }
 
     String getColName(String fieldName) {
