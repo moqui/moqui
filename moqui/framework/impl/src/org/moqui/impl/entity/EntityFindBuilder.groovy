@@ -40,7 +40,7 @@ class EntityFindBuilder {
             boolean isFirst = true
             for (String fieldName in fieldsToSelect) {
                 if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
-                this.sqlTopLevel.append(entityDefinition.getColName(fieldName))
+                this.sqlTopLevel.append(entityDefinition.getColumnName(fieldName, true))
             }
         } else {
             this.sqlTopLevel.append("*")
@@ -58,7 +58,7 @@ class EntityFindBuilder {
             def joinStyle = databaseNode."@join-style"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
-                throw new IllegalArgumentException("The join-style " + joinStyle + " is not supported");
+                throw new IllegalArgumentException("The join-style " + joinStyle + " is not supported")
             }
 
             boolean useParenthesis = ("ansi" == joinStyle)
@@ -117,32 +117,15 @@ class EntityFindBuilder {
                 for (Node keyMap in viewLink."key-map") {
                     if (isFirstKeyMap) isFirstKeyMap = false else restOfStatement.append(" AND ")
 
-                    // TODO: here and everywhere else we refer to field we may need to refer to alias for view-entity
-                    Node linkField = linkEntityDefinition.entityNode.field.find({ it.@name == keyMap."@field-name" })
-                    if (!linkField) {
-                        throw new IllegalArgumentException("Invalid field-name in view-link key-map for the " +
-                                viewLink."@entity-alias" + " and the " + viewLink."@related-entity-alias" +
-                                " member-entity values of the " + entityDefinition.getEntityName() + " view-entity; the field [" +
-                                keyMap."@field-name" + "] does not exist on the [" + linkEntityDefinition.getEntityName() + "] entity.")
-                    }
-                    Node relatedLinkField = relatedLinkEntityDefinition.entityNode.field.find({ it.@name == keyMap."@related-field-name" })
-                    if (relatedLinkField == null) {
-                        throw new IllegalArgumentException("Invalid related-field-name in view-link key-map for the " +
-                                viewLink."@entity-alias" + " and the " + viewLink."@related-entity-alias" +
-                                " member-entities of the " + entityDefinition.getEntityName() +
-                                " view-entity; the field [" + keyMap."@related-field-name" + "] does not exist on the [" +
-                                relatedLinkEntityDefinition.getEntityName() + "] entity.")
-                    }
-
                     restOfStatement.append(viewLink."@entity-alias")
                     restOfStatement.append(".")
-                    restOfStatement.append(sanitizeColumnName(getColumnName(linkField, linkEntityDefinition, false)))
+                    restOfStatement.append(sanitizeColumnName(linkEntityDefinition.getColumnName(keyMap."@field-name", false)))
 
                     restOfStatement.append(" = ")
 
                     restOfStatement.append(viewLink."@related-entity-alias")
                     restOfStatement.append(".")
-                    restOfStatement.append(sanitizeColumnName(getColumnName(relatedLinkField, relatedLinkEntityDefinition, false)))
+                    restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(keyMap."@related-field-name", false)))
                 }
 
                 if (viewLink."entity-condition") {
@@ -176,13 +159,12 @@ class EntityFindBuilder {
             localBuilder.append("(SELECT ")
 
             boolean isFirst = true
-            // TODO: support alias-all somehow
             for (Node aliasNode in entityDefinition.entityNode.alias) {
                 if (isFirst) isFirst = false else localBuilder.append(", ")
-                localBuilder.append(getColumnName(aliasNode, entityDefinition, true))
+                localBuilder.append(entityDefinition.getColumnName(aliasNode, true))
                 // TODO: are the next two lines really needed? have removed AS stuff elsewhere since it is not commonly used and not needed
                 localBuilder.append(" AS ")
-                localBuilder.append(sanitizeColumnName(getColumnName(aliasNode, entityDefinition, false)))
+                localBuilder.append(sanitizeColumnName(entityDefinition.getColumnName(aliasNode, false)))
             }
 
             makeSqlFromClause(entityDefinition, localBuilder)
@@ -203,42 +185,8 @@ class EntityFindBuilder {
         }
     }
 
-    String getColumnName(Node fieldNode, EntityDefinition entityDefinition, boolean includeFunctionAndComplex) {
-        if (entityDefinition.isViewEntity()) {
-            // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
-
-            // TODO: column name for view-entity (prefix with "${entity-alias}.")
-            if (includeFunctionAndComplex) {
-                // TODO: column name view-entity complex-alias (build expression based on complex-alias)
-                // TODO: column name for view-entity alias with function (wrap in function, after complex-alias to wrap that too when used)
-            }
-        } else {
-            if (fieldNode."@column-name") {
-                return fieldNode."@column-name"
-            } else {
-                return camelCaseToUnderscored(fieldNode."@name")
-            }
-        }
-    }
-
     String sanitizeColumnName(String colName) {
         return colName.replace('.', '_').replace('(','_').replace(')','_');
-    }
-
-    String camelCaseToUnderscored(String camelCase) {
-        if (!camelCase) return ""
-        StringBuilder underscored = new StringBuilder()
-
-        underscored.append(Character.toUpperCase(camelCase.charAt(0)))
-        int inPos = 1
-        while (inPos < camelCase.length()) {
-            char curChar = camelCase.charAt(inPos)
-            if (Character.isUpperCase(curChar)) underscored.append('_')
-            underscored.append(Character.toUpperCase(curChar))
-            inPos++
-        }
-
-        return underscored.toString()
     }
 
     void startWhereClause() {
@@ -246,11 +194,11 @@ class EntityFindBuilder {
     }
 
     static class EntityConditionParameter {
-        protected EntityDefinition.EntityFieldDefinition fieldDefinition
+        protected Node fieldNode
         protected Object value
 
-        EntityConditionParameter(EntityDefinition.EntityFieldDefinition fieldDefinition, Object value) {
-            this.fieldDefinition = fieldDefinition
+        EntityConditionParameter(Node fieldNode, Object value) {
+            this.fieldNode = fieldNode
             this.value = value
         }
     }

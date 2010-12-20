@@ -92,7 +92,7 @@ class EntityFindImpl implements EntityFind {
             this.whereEntityCondition = this.efi.conditionFactory.makeCondition(
                     this.whereEntityCondition, EntityCondition.JoinOperator.AND, condition)
         } else {
-            this.whereEntityCondition = condition;
+            this.whereEntityCondition = (EntityConditionImplBase) condition
         }
         return this
     }
@@ -103,7 +103,7 @@ class EntityFindImpl implements EntityFind {
             this.havingEntityCondition = this.efi.conditionFactory.makeCondition(
                     this.havingEntityCondition, EntityCondition.JoinOperator.AND, condition)
         } else {
-            this.havingEntityCondition = condition;
+            this.havingEntityCondition = (EntityConditionImplBase) condition
         }
         return this
     }
@@ -253,9 +253,9 @@ class EntityFindImpl implements EntityFind {
         EntityFindBuilder efb = new EntityFindBuilder(this);
 
         if (this.dynamicView) {
-            throw new IllegalArgumentException("Dynamic View not supported for 'one' find.");
+            throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
         }
-        EntityDefinition entityDefinition = this.efi.getDefinition(this.entityName)
+        EntityDefinition entityDefinition = this.efi.getEntityDefinition(this.entityName)
 
         efb.makeSqlSelectFields(this.fieldsToSelect, entityDefinition)
         efb.makeSqlFromClause(entityDefinition, null)
@@ -279,12 +279,12 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() {
-        EntityFindBuilder efb = new EntityFindBuilder(this);
+        EntityFindBuilder efb = new EntityFindBuilder(this)
 
         if (this.dynamicView) {
             // TODO: implement for dynamic views
         } else {
-            EntityDefinition entityDefinition = this.efi.getDefinition(this.entityName)
+            EntityDefinition entityDefinition = this.efi.getEntityDefinition(this.entityName)
             // TODO from/etc like in one() above
         }
 

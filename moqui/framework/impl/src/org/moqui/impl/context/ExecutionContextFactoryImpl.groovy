@@ -122,7 +122,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         File confFile = new File(this.confPath)
         Node overrideConfXmlRoot = new XmlParser().parse(confFile)
 
-        // TODO: merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
+        // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
+        mergeConfigNodes(baseNode, overrideNode)
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -149,6 +150,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             this.destroyed = true
         }
     }
+
+    // ========== Getters ==========
 
     CacheFacadeImpl getCacheFacade() {
         return this.cacheFacade;
@@ -232,5 +235,145 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             this.loggerFacade.log(null, "Error in destroy, called in finalize of ExecutionContextFactoryImpl", e);
         }
         super.finalize();
+    }
+
+    void mergeConfigNodes(Node baseNode, Node overrideNode) {
+        if (overrideNode."cache-list"[0]) {
+            mergeNodeWithChildKey(baseNode."cache-list"[0], overrideNode."cache-list"[0], "cache", "name")
+        }
+        
+        if (overrideNode."server-stats") {
+            mergeNodeWithChildKey(baseNode."server-stats"[0], overrideNode."server-stats"[0], "artifact-stats", "type")
+        }
+
+        if (overrideNode."webapp-list") {
+            mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "type")
+        }
+
+        if (overrideNode."screen-facade") {
+            mergeNodeWithChildKey(baseNode."screen-facade"[0], overrideNode."screen-facade"[0], "screen-text-output", "type")
+        }
+
+        if (overrideNode."service-facade") {
+            Node sfBaseNode = baseNode."service-facade"[0]
+            Node sfOverrideNode = overrideNode."service-facade"[0]
+            mergeNodeWithChildKey(sfBaseNode, sfOverrideNode, "service-location", "name")
+            mergeNodeWithChildKey(sfBaseNode, sfOverrideNode, "startup-service", "name")
+
+            // handle thread-pool
+            Node tpOverrideNode = sfOverrideNode."thread-pool"[0]
+            if (tpOverrideNode) {
+                Node tpBaseNode = sfBaseNode."thread-pool"[0]
+                if (tpBaseNode) {
+                    mergeNodeWithChildKey(tpBaseNode, tpOverrideNode, "run-from-pool", "name")
+                } else {
+                    sfBaseNode.append(tpOverrideNode)
+                }
+            }
+
+            // handle jms-service, just copy all over
+            for (Node jsOverrideNode in sfOverrideNode."jms-service") {
+                sfBaseNode.append(jsOverrideNode)
+            }
+        }
+
+        if (overrideNode."entity-facade") {
+            Node efBaseNode = baseNode."entity-facade"[0]
+            Node efOverrideNode = overrideNode."entity-facade"[0]
+            mergeNodeWithChildKey(efBaseNode, efOverrideNode, "datasource", "group-name")
+
+            // handle app-server-jndi, transaction-factory
+            Node tfOverrideNode = efOverrideNode."transaction-factory"[0]
+            if (tfOverrideNode) {
+                Node tfBaseNode = efBaseNode."transaction-factory"[0]
+                if (tfBaseNode) {
+                    tfBaseNode.attributes().putAll(tfOverrideNode.attributes())
+                } else {
+                    efBaseNode.append(tfOverrideNode)
+                }
+            }
+            Node asjOverrideNode = efOverrideNode."app-server-jndi"[0]
+            if (asjOverrideNode) {
+                Node asjBaseNode = efBaseNode."app-server-jndi"[0]
+                if (asjBaseNode) {
+                    asjBaseNode.attributes().putAll(asjOverrideNode.attributes())
+                } else {
+                    efBaseNode.append(asjOverrideNode)
+                }
+            }
+        }
+
+        if (overrideNode."database-list") {
+            mergeNodeWithChildKey(baseNode."database-list"[0], overrideNode."database-list"[0], "database", "name")
+        }
+
+        if (overrideNode."repository-list") {
+            mergeNodeWithChildKey(baseNode."repository-list"[0], overrideNode."repository-list"[0], "repository", "name")
+        }
+    }
+
+    void mergeNodeWithChildKey(Node baseNode, Node overrideNode, String childNodesName, String keyAttributeName) {
+        // override attributes for this node
+        baseNode.attributes().putAll(overrideNode.attributes())
+
+        for (Node childOverrideNode in overrideNode[childNodesName]) {
+            String keyValue = childOverrideNode.attribute(keyAttributeName)
+            Node childBaseNode = baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })
+
+            if (childBaseNode) {
+                // merge the node attributes
+                childBaseNode.attributes().putAll(childOverrideNode.attributes())
+
+                // merge child nodes for specific nodes
+                if ("webapp" == childNodesName) {
+                    mergeWebappChildNodes(childBaseNode, childOverrideNode)
+                } else if ("database" == childNodesName) {
+                    // handle database -> field-type-def@type
+                    mergeNodeWithChildKey(childBaseNode, childOverrideNode, "field-type-def", "type")
+                }
+            } else {
+                // no matching child base node, so add a new one
+                baseNode.append(childOverrideNode.clone())
+            }
+
+
+        }
+    }
+
+    void mergeWebappChildNodes(Node baseNode, Node overrideNode) {
+        // handle webapp -> first-hit-in-visit[1], after-request[1], before-request[1], after-login[1], before-logout[1], root-screen[1]
+        mergeWebappActions(baseNode, overrideNode, "first-hit-in-visit")
+        mergeWebappActions(baseNode, overrideNode, "after-request")
+        mergeWebappActions(baseNode, overrideNode, "before-request")
+        mergeWebappActions(baseNode, overrideNode, "after-login")
+        mergeWebappActions(baseNode, overrideNode, "before-logout")
+
+        Node childOverrideNode = overrideNode."root-screen"[0]
+        if (childOverrideNode) {
+            Node childBaseNode = baseNode."root-screen"[0]
+            if (childBaseNode) {
+                childBaseNode.attributes().putAll(childOverrideNode.attributes())
+            } else {
+                baseNode.append((Node) childOverrideNode.clone())
+            }
+        }
+    }
+
+    void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {
+        List overrideActionNodes = overrideWebappNode[childNodeName].actions.children()
+        if (overrideActionNodes) {
+            Node childNode = baseWebappNode[childNodeName][0]
+            if (!childNode) {
+                childNode = baseWebappNode.appendNode(childNodeName)
+            }
+            Node actionsNode = childNode.actions[0]
+            if (!actionsNode) {
+                actionsNode = childNode.appendNode("actions")
+            }
+
+            for (Node overrideActionNode in overrideActionNodes) {
+                actionsNode.append(overrideActionNode)
+            }
+        }
     }
 }

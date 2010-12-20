@@ -9,6 +9,8 @@ public class EntityDefinition {
         this.efi = efi
         this.entityName = entityNode."@entity-name"
         this.entityNode = entityNode
+
+        // TODO if this is a view-entity, expand the alias-all elements into alias elements here
     }
 
     // ============= Actually Used Methods ==============
@@ -24,23 +26,44 @@ public class EntityDefinition {
         return this.entityNode.name() == "view-entity"
     }
 
-    String getColName(String fieldName) {
-        // TODO: implement this
-        return null
+    String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
+        if (isViewEntity()) {
+            // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
+            Node aliasNode = this.entityNode.alias.find({ it.@name == fieldName })
+            if (!aliasNode) {
+                throw new IllegalArgumentException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] view-entity")
+            }
+
+            // TODO: column name for view-entity (prefix with "${entity-alias}.")
+            if (includeFunctionAndComplex) {
+                // TODO: column name view-entity complex-alias (build expression based on complex-alias)
+                // TODO: column name for view-entity alias with function (wrap in function, after complex-alias to wrap that too when used)
+            }
+            return null
+        } else {
+            Node fieldNode = this.entityNode.field.find({ it.@name == fieldName })
+            if (!fieldNode) {
+                throw new IllegalArgumentException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
+            }
+
+            if (fieldNode."@column-name") {
+                return fieldNode."@column-name"
+            } else {
+                return camelCaseToUnderscored(fieldNode."@name")
+            }
+        }
     }
 
+    /** Returns the table name, ie table-name or converted entity-name */
     String getTableName() {
-        // TODO: implement this
-        return null
+        if (this.entityNode."@table-name") {
+            return this.entityNode."@table-name"
+        } else {
+            return camelCaseToUnderscored(this.entityNode."@entity-name")
+        }
     }
 
     // ============= Possibly Useful Methods - 2nd Priority ==============
-
-    /** Returns the full table name including the prefix from the datasource config and the table-name or converted entity-name */
-    String getFullTableName() {
-        // TODO: implement this
-        return null
-    }
 
     boolean isField(String fieldName) {
         // TODO: implement this
@@ -52,34 +75,19 @@ public class EntityDefinition {
         return null
     }
 
-    List<EntityFieldDefinition> getFields() {
-        // TODO: implement this
-        return null
-    }
+    static String camelCaseToUnderscored(String camelCase) {
+        if (!camelCase) return ""
+        StringBuilder underscored = new StringBuilder()
 
-    EntityFieldDefinition getField(String fieldName) {
-        // TODO: implement this
-        return null
-    }
-
-    static class EntityFieldDefinition {
-
-        boolean isAutoCreatedInternal() {
-            // TODO: implement this
-            return false
+        underscored.append(Character.toUpperCase(camelCase.charAt(0)))
+        int inPos = 1
+        while (inPos < camelCase.length()) {
+            char curChar = camelCase.charAt(inPos)
+            if (Character.isUpperCase(curChar)) underscored.append('_')
+            underscored.append(Character.toUpperCase(curChar))
+            inPos++
         }
-    }
 
-    static class EntityKeyMapDefinition {
-        
-    }
-
-    static class EntityRelationshipDefinition {
-
-        /** Returns the full relationship name which is: ${title}${related-entity-name} */
-        String getRelationshipName() {
-            // TODO: implement this
-            return null
-        }
+        return underscored.toString()
     }
 }

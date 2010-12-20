@@ -195,7 +195,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="service-facade">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="thread-pool"/>
+                <xs:element minOccurs="0" ref="thread-pool"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="startup-service"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/>
