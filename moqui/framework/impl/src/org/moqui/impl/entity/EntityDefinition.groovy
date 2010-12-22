@@ -159,8 +159,8 @@ public class EntityDefinition {
                             " because one already exists with the alias name [" + aliasName + "] and field name [" +
                             memberEntity."@entity-alias" + "(" + aliasedEntityDefinition.entityName + ")." +
                             fieldNode."@name" + "], existing field name is [" + existingAliasNode."@entity-alias" + "." +
-                            existingAliasNode."@field" + "]";
-                    if (isInViewLink) logger.trace(warnMsg) else logger.info(warnMsg)
+                            existingAliasNode."@field" + "]"
+                    if (isInViewLink) {logger.trace(warnMsg)} else {logger.info(warnMsg)}
 
                     // ship adding the new alias
                     continue

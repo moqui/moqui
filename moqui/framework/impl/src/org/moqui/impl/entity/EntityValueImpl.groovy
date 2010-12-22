@@ -296,7 +296,7 @@ class EntityValueImpl implements EntityValue {
         return this.valueMap.values()
     }
 
-    Set<Entry<String, Object>> entrySet() {
+    Set<Map.Entry<String, Object>> entrySet() {
         return this.valueMap.entrySet()
     }
 }
