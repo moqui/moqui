@@ -264,23 +264,25 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#one() */
     EntityValue one() throws EntityException {
+        if (this.dynamicView) {
+            throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
+        }
+
         // for find one we'll always use the basic result set type and concurrency:
         this.resultSetType(ResultSet.TYPE_FORWARD_ONLY)
         this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
 
-        EntityFindBuilder efb = new EntityFindBuilder(this);
+        EntityFindBuilder efb = new EntityFindBuilder(this)
 
-        if (this.dynamicView) {
-            throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
-        }
         EntityDefinition entityDefinition = this.efi.getEntityDefinition(this.entityName)
-
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true) 
+        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true)
+        // SELECT fields
         efb.makeSqlSelectFields(this.fieldsToSelect, entityDefinition)
+        // FROM Clause
         efb.makeSqlFromClause(entityDefinition, null)
 
-        // where clause only for one/pk query
+        // WHERE clause only for one/pk query
         efb.startWhereClause()
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         whereCondition.makeSqlWhere(efb)
@@ -307,6 +309,7 @@ class EntityFindImpl implements EntityFind {
                     getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue)
                     j++
                 }
+                return newEntityValue
             } else {
                 throw new EntityException("Result set was empty for find on entity [${this.entityName}] with condition [${whereCondition.toString()}]");
             }
@@ -315,9 +318,6 @@ class EntityFindImpl implements EntityFind {
             rs.close()
             // TODO: close the connection? or do as part of context open/close along with transaction?
         }
-
-        // TODO: implement this
-        return null
     }
 
     /** @see org.moqui.entity.EntityFind#list() */
@@ -328,30 +328,76 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() throws EntityException {
-        EntityFindBuilder efb = new EntityFindBuilder(this)
-
+        EntityDefinition entityDefinition;
         if (this.dynamicView) {
             // TODO: implement for dynamic views
+            //entityDefinition = this.dynamicView.makeEntityDefinition()
+            throw new IllegalArgumentException("Dynamic Views not yet supported")
         } else {
-            EntityDefinition entityDefinition = this.efi.getEntityDefinition(this.entityName)
-            // TODO from/etc like in one() above
+            entityDefinition = this.efi.getEntityDefinition(this.entityName)
         }
+
+        EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
+
+        if (this.getDistinct() || (entityDefinition.isViewEntity() &&
+                "true" == entityDefinition.getEntityNode()."entity-condition"[0]."@distinct")) {
+            efb.makeDistinct()
+        }
+
+        // we always want fieldsToSelect populated so that we know the order of the results coming back
+        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true)
+        // select fields
+        efb.makeSqlSelectFields(this.fieldsToSelect)
+        
+        // from Clause
+        efb.makeSqlFromClause(null)
 
         // where clause
         efb.startWhereClause()
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
-        whereCondition.makeSqlWhere(efb)
+        if (whereCondition) whereCondition.makeSqlWhere(efb)
 
         // group by clause
+        efb.makeGroupByClause()
 
         // having clause
+        efb.startHavingClause()
+        EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
+        if (havingCondition) havingCondition.makeSqlWhere(efb)
 
         // order by clause
+        List<String> orderByExpanded = new ArrayList()
+        // add the manually specified ones, then the ones in the view entity's entity-condition
+        if (this.getOrderBy()) {
+            orderByExpanded.addAll(this.getOrderBy())
+        }
+        for (Node orderBy in entityDefinition.getEntityNode()."entity-condition"[0]."order-by") {
+            orderByExpanded.add(orderBy."@field-name")
+        }
+        efb.makeOrderByClause(orderByExpanded)
 
-        // run the query
+        // run the SQL now that it is built
+        PreparedStatement ps
+        ResultSet rs
+        try {
+            ps = makePreparedStatement(efb)
 
-        // TODO: implement this
-        return null
+            // set all of the values from the SQL building in efb
+            int paramIndex = 1
+            for (EntityConditionParameter entityConditionParam: efb.getParameters()) {
+                setPreparedStatementValue(ps, paramIndex, entityConditionParam)
+                paramIndex++
+            }
+
+            rs = ps.executeQuery()
+
+            // TODO EntityListIteratorImpl eli = new EntityListIteratorImpl(ResultSet rs)
+            // TODO return eli
+            return null
+        } finally {
+            ps.close()
+            // ResultSet will be closed in the EntityListIterator
+        }
     }
 
     /** @see org.moqui.entity.EntityFind#count() */

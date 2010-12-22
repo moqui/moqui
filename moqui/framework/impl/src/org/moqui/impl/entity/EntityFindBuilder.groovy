@@ -13,12 +13,14 @@ package org.moqui.impl.entity
 
 class EntityFindBuilder {
     protected EntityFindImpl entityFindImpl
+    protected EntityDefinition entityDefinition
 
     protected StringBuilder sqlTopLevel
     protected List<EntityConditionParameter> parameters
 
-    EntityFindBuilder(EntityFindImpl entityFindImpl) {
+    EntityFindBuilder(EntityDefinition entityDefinition, EntityFindImpl entityFindImpl) {
         this.entityFindImpl = entityFindImpl
+        this.entityDefinition = entityDefinition
 
         // this is always going to start with "SELECT ", so just set it here
         this.sqlTopLevel = new StringBuilder("SELECT ")
@@ -35,7 +37,12 @@ class EntityFindBuilder {
         return this.parameters
     }
 
-    void makeSqlSelectFields(Set<String> fieldsToSelect, EntityDefinition entityDefinition) {
+    void makeDistinct() {
+        this.sqlTopLevel.append("DISTINCT ")
+
+    }
+
+    void makeSqlSelectFields(Set<String> fieldsToSelect) {
         if (fieldsToSelect.size() > 0) {
             boolean isFirst = true
             for (String fieldName in fieldsToSelect) {
@@ -47,7 +54,7 @@ class EntityFindBuilder {
         }
     }
 
-    void makeSqlFromClause(EntityDefinition entityDefinition, StringBuilder localBuilder) {
+    void makeSqlFromClause(StringBuilder localBuilder) {
         if (!localBuilder) localBuilder = this.sqlTopLevel
         localBuilder.append(" FROM ")
 
@@ -154,7 +161,7 @@ class EntityFindBuilder {
         }
     }
 
-    void makeSqlViewTableName(EntityDefinition entityDefinition, StringBuilder localBuilder) {
+    void makeSqlViewTableName(StringBuilder localBuilder) {
         if (entityDefinition.isViewEntity()) {
             localBuilder.append("(SELECT ")
 
@@ -186,11 +193,100 @@ class EntityFindBuilder {
     }
 
     void startWhereClause() {
-        this.sql.append(" WHERE ")
+        this.sqlTopLevel.append(" WHERE ")
+    }
+
+    void makeGroupByClause() {
+        if (entityDefinition.isViewEntity()) {
+            List groupByAliasNodes = (List) entityDefinition.getEntityNode().alias.find({ it."@group-by" == "true" })
+            if (groupByAliasNodes) {
+                this.sqlTopLevel.append(" GROUP BY ")
+
+                boolean isFirstGroupBy = true
+                for (Node aliasNode in groupByAliasNodes) {
+                    if (isFirstGroupBy) isFirstGroupBy = false else this.sqlTopLevel.append(", ")
+                    this.sqlTopLevel.append(entityDefinition.getColumnName(aliasNode."@name", false))
+                }
+            }
+        }
+    }
+
+    void startHavingClause() {
+        this.sqlTopLevel.append(" HAVING ")
+    }
+
+    void makeOrderByClause(List orderByFieldList) {
+
+        if (orderByFieldList) {
+            this.sqlTopLevel.append(" ORDER BY ")
+        }
+        boolean isFirst = true
+        for (String fieldName in orderByFieldList) {
+            if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
+
+            // Parse the fieldName (can have other stuff in it, need to tear down to just the field name)
+            Boolean nullsFirstLast = null
+            boolean descending = false
+            Boolean caseUpperLower = null
+
+            fieldName = fieldName.trim()
+
+            if (fieldName.toUpperCase().endsWith("NULLS FIRST")) {
+                nullsFirstLast = true
+                fieldName = fieldName.substring(0, fieldName.length() - "NULLS FIRST".length()).trim()
+            }
+            if (fieldName.toUpperCase().endsWith("NULLS LAST")) {
+                nullsFirstLast = false
+                fieldName = fieldName.substring(0, fieldName.length() - "NULLS LAST".length()).trim()
+            }
+
+            int startIndex = 0
+            int endIndex = fieldName.length()
+            if (fieldName.endsWith(" DESC")) {
+                descending = true
+                endIndex -= 5
+            } else if (fieldName.endsWith(" ASC")) {
+                descending = false
+                endIndex -= 4
+            } else if (fieldName.startsWith("-")) {
+                descending = true
+                startIndex++
+            } else if (fieldName.startsWith("+")) {
+                descending = false
+                startIndex++
+            }
+
+            if (fieldName.endsWith(")")) {
+                String upperText = fieldName.toUpperCase()
+                endIndex--
+                if (upperText.startsWith("UPPER(")) {
+                    caseUpperLower = true
+                    startIndex += 6
+                } else if (upperText.startsWith("LOWER(")) {
+                    caseUpperLower = false
+                    startIndex += 6
+                }
+            }
+
+            fieldName = fieldName.substring(startIndex, endIndex)
+
+            // not that it's all torn down, build it back up using the column name
+            if (caseUpperLower != null) {
+                this.sqlTopLevel.append(caseUpperLower ? "UPPER(" : "LOWER(")
+            }
+            this.sqlTopLevel.append(entityDefinition.getColumnName(fieldName, false))
+            if (caseUpperLower != null) this.sqlTopLevel.append(")")
+
+            this.sqlTopLevel.append(descending ? " DESC" : " ASC")
+
+            if (nullsFirstLast != null) {
+                this.sqlTopLevel.append(nullsFirstLast ? " NULLS FIRST" : " NULLS LAST")
+            }
+        }
     }
 
     String sanitizeColumnName(String colName) {
-        return colName.replace('.', '_').replace('(','_').replace(')','_');
+        return colName.replace('.', '_').replace('(','_').replace(')','_')
     }
 
     static class EntityConditionParameter {
