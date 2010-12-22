@@ -455,6 +455,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="sql-type" type="xs:string" use="required"/>
             <xs:attribute name="sql-type-alias" type="xs:string"/>
+            <xs:attribute name="java-type" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 

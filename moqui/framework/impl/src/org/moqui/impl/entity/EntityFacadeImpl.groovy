@@ -46,10 +46,10 @@ class EntityFacadeImpl implements EntityFacade {
         return null
     }
 
-    Object getDatabaseNode(String entityName) {
+    Node getDatabaseNode(String entityName) {
         def confXmlRoot = this.ecfi.getConfXmlRoot()
         def databaseConfName = getDataBaseConfName(entityName)
-        return confXmlRoot."database-list".database.find({ it.@name == databaseConfName })
+        return (Node) confXmlRoot."database-list".database.find({ it.@name == databaseConfName })[0]
     }
     String getDataBaseConfName(String entityName) {
         String groupName = this.getEntityGroupName(entityName)

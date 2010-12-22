@@ -102,6 +102,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             // TODO implement this
             return false
         }
+
+        String toString() {
+            // general SQL where clause style text with values included
+            // TODO implement this
+            return null
+        }
     }
 
     public static class FieldValueCondition extends EntityConditionImplBase {
@@ -124,6 +130,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         boolean mapMatches(Map<String, ?> map) {
             // TODO implement this
             return false
+        }
+
+        String toString() {
+            // TODO implement this
+            return null
         }
     }
 
@@ -148,6 +159,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             // TODO implement this
             return false
         }
+
+        String toString() {
+            // TODO implement this
+            return null
+        }
     }
 
     public static class ListCondition extends EntityConditionImplBase {
@@ -168,6 +184,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         boolean mapMatches(Map<String, ?> map) {
             // TODO implement this
             return false
+        }
+
+        String toString() {
+            // TODO implement this
+            return null
         }
     }
 
@@ -192,6 +213,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             // TODO implement this
             return false
         }
+
+        String toString() {
+            // TODO implement this
+            return null
+        }
     }
 
     public static class DateCondition extends EntityConditionImplBase {
@@ -215,6 +241,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             // TODO implement this
             return false
         }
+
+        String toString() {
+            // TODO implement this
+            return null
+        }
     }
 
     public static class WhereCondition extends EntityConditionImplBase {
@@ -232,6 +263,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         boolean mapMatches(Map<String, ?> map) {
             // TODO implement this
             return false
+        }
+
+        String toString() {
+            // TODO implement this
+            return null
         }
     }
 }

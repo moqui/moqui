@@ -1,6 +1,19 @@
+/*
+ * This Work is in the public domain and is provided on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+ * including, without limitation, any warranties or conditions of TITLE,
+ * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+ * You are solely responsible for determining the appropriateness of using
+ * this Work and assume any risks associated with your use of this Work.
+ *
+ * This Work includes contributions authored by David E. Jones, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
+ */
 package org.moqui.impl.entity
 
 public class EntityDefinition {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
+
     protected EntityFacadeImpl efi
     protected String entityName
     protected Node entityNode
@@ -10,10 +23,17 @@ public class EntityDefinition {
         this.entityName = entityNode."@entity-name"
         this.entityNode = entityNode
 
-        // TODO if this is a view-entity, expand the alias-all elements into alias elements here
+        if (isViewEntity()) {
+            // if this is a view-entity, expand the alias-all elements into alias elements here
+            this.expandAliasAlls()
+        } else {
+            if (!"false" == this.entityNode."@no-update-stamp") {
+                // automatically add the lastUpdatedStamp field
+                this.entityNode.appendNode("field", [name:"lastUpdatedStamp", type:"date-time"])
+            }
+        }
     }
 
-    // ============= Actually Used Methods ==============
     String getEntityName() {
         return this.entityName
     }
@@ -26,13 +46,19 @@ public class EntityDefinition {
         return this.entityNode.name() == "view-entity"
     }
 
+    Node getFieldNode(String fieldName) {
+        String nodeName = this.isViewEntity() ? "alias" : "field"
+        return (Node) this.entityNode[nodeName].find({ it.@name == fieldName })[0]
+    }
+
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
+        Node fieldNode = this.getFieldNode(fieldName)
+        if (!fieldNode) {
+            throw new IllegalArgumentException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
+        }
+
         if (isViewEntity()) {
             // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
-            Node aliasNode = this.entityNode.alias.find({ it.@name == fieldName })
-            if (!aliasNode) {
-                throw new IllegalArgumentException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] view-entity")
-            }
 
             // TODO: column name for view-entity (prefix with "${entity-alias}.")
             if (includeFunctionAndComplex) {
@@ -41,11 +67,6 @@ public class EntityDefinition {
             }
             return null
         } else {
-            Node fieldNode = this.entityNode.field.find({ it.@name == fieldName })
-            if (!fieldNode) {
-                throw new IllegalArgumentException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
-            }
-
             if (fieldNode."@column-name") {
                 return fieldNode."@column-name"
             } else {
@@ -63,16 +84,96 @@ public class EntityDefinition {
         }
     }
 
-    // ============= Possibly Useful Methods - 2nd Priority ==============
-
     boolean isField(String fieldName) {
-        // TODO: implement this
-        return false
+        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
+        return (this.getFieldNode(fieldName)) ? true : false
     }
 
-    List<String> getFieldNames(boolean includePk, boolean includeNonPk) {
-        // TODO: implement this
-        return null
+    TreeSet<String> getFieldNames(boolean includePk, boolean includeNonPk) {
+        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
+        TreeSet<String> nameSet = new TreeSet()
+        String nodeName = this.isViewEntity() ? "alias" : "field"
+        for (Node node in this.entityNode[nodeName]) {
+            if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
+                nameSet.add(node."@name")
+            }
+        }
+        return nameSet
+    }
+
+    protected void expandAliasAlls() {
+        if (!isViewEntity()) return
+        for (Node aliasAll: this.entityNode."alias-all") {
+            Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" = aliasAll."@entity-alias" })[0]
+            if (!memberEntity) {
+                logger.error("In alias-all with entity-alias [${aliasAll."@entity-alias"}], member-entity with same entity-alias not found, ignoring")
+                continue;
+            }
+
+            EntityDefinition aliasedEntityDefinition = this.efi.getEntityDefinition(memberEntity."@entity-name")
+            if (!aliasedEntityDefinition) {
+                logger.error("Entity [${memberEntity."@entity-name"}] referred to in member-entity with entity-alias [${aliasAll."@entity-alias"}] not found, ignoring")
+                continue;
+            }
+
+            for (Node fieldNode in aliasedEntityDefinition.entityNode.field) {
+                // never auto-alias these
+                if (fieldNode."@name" == "lastUpdatedStamp") continue
+                // if specified as excluded, leave it out
+                if (aliasAll.exclude.find({ it.@field == fieldNode."@name"})) continue
+
+                String aliasName = fieldNode."@name"
+                if (aliasAll.@prefix) {
+                    StringBuilder newAliasName = new StringBuilder((String) aliasAll.@prefix)
+                    newAliasName.append(Character.toUpperCase(aliasName.charAt(0)))
+                    newAliasName.append(aliasName.substring(1))
+                    aliasName = newAliasName.toString()
+                }
+
+                Node existingAliasNode = (Node) this.entityNode.alias.find({ it."@name" == aliasName })[0]
+                if (existingAliasNode) {
+                    //log differently if this is part of a view-link key-map because that is a common case when a field will be auto-expanded multiple times
+                    boolean isInViewLink = false
+                    for (Node viewLink in this.entityNode."view-link") {
+                        boolean isRel = false
+                        if (viewLink."@related-entity-alias" == aliasAll."@entity-alias") {
+                            isRel = true
+                        } else if (!viewLink."@entity-alias" == aliasAll."@entity-alias") {
+                            // not the rel-entity-alias or the entity-alias, so move along
+                            continue;
+                        }
+                        for (Node keyMap in viewLink."key-map") {
+                            if (!isRel && keyMap."@field-name" == fieldNode."@name") {
+                                isInViewLink = true
+                                break
+                            } else if (isRel && keyMap."@related-field-name" == fieldNode."@name") {
+                                isInViewLink = true
+                                break
+                            }
+                        }
+                        if (isInViewLink) break
+                    }
+
+                    //already exists, oh well... probably an override, but log just in case
+                    String warnMsg = "Throwing out field alias in view entity " + this.entityName +
+                            " because one already exists with the alias name [" + aliasName + "] and field name [" +
+                            memberEntity."@entity-alias" + "(" + aliasedEntityDefinition.entityName + ")." +
+                            fieldNode."@name" + "], existing field name is [" + existingAliasNode."@entity-alias" + "." +
+                            existingAliasNode."@field" + "]";
+                    if (isInViewLink) logger.trace(warnMsg) else logger.info(warnMsg)
+
+                    // ship adding the new alias
+                    continue
+                }
+
+                Node newAlias = this.entityNode.appendNode("alias",
+                        [name:aliasName, field:fieldNode."@name",
+                        "entity-alias":aliasAll."@entity-alias",
+                        "if-from-alias-all":true,
+                        "group-by":aliasAll."@group-by"])
+                if (fieldNode.description) newAlias.appendNode(fieldNode.description[0].clone())
+            }
+        }
     }
 
     static String camelCaseToUnderscored(String camelCase) {

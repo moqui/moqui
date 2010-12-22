@@ -54,8 +54,8 @@ class EntityFindBuilder {
         Node entityNode = entityDefinition.entityNode
 
         if (entityDefinition.isViewEntity()) {
-            def databaseNode = this.entityFindImpl.efi.getDatabaseNode(entityDefinition.entityName)
-            def joinStyle = databaseNode."@join-style"
+            Node databaseNode = this.entityFindImpl.efi.getDatabaseNode(entityDefinition.entityName)
+            String joinStyle = databaseNode."@join-style"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
                 throw new IllegalArgumentException("The join-style " + joinStyle + " is not supported")
@@ -185,12 +185,12 @@ class EntityFindBuilder {
         }
     }
 
-    String sanitizeColumnName(String colName) {
-        return colName.replace('.', '_').replace('(','_').replace(')','_');
-    }
-
     void startWhereClause() {
         this.sql.append(" WHERE ")
+    }
+
+    String sanitizeColumnName(String colName) {
+        return colName.replace('.', '_').replace('(','_').replace(')','_');
     }
 
     static class EntityConditionParameter {
@@ -200,6 +200,14 @@ class EntityFindBuilder {
         EntityConditionParameter(Node fieldNode, Object value) {
             this.fieldNode = fieldNode
             this.value = value
+        }
+
+        Node getFieldNode() {
+            return this.fieldNode
+        }
+
+        Object getValue() {
+            return this.value
         }
     }
 }
