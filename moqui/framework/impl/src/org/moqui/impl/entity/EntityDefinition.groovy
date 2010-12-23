@@ -26,6 +26,7 @@ public class EntityDefinition {
         if (isViewEntity()) {
             // if this is a view-entity, expand the alias-all elements into alias elements here
             this.expandAliasAlls()
+            // TODO: set is-pk on all alias Nodes, or change code to look up other entities to get pk/nonPk lists
         } else {
             if (!"false" == this.entityNode."@no-update-stamp") {
                 // automatically add the lastUpdatedStamp field

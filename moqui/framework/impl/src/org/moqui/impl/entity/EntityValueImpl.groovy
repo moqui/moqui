@@ -18,7 +18,6 @@ import java.sql.Date
 import org.moqui.entity.EntityList
 import org.w3c.dom.Element
 import org.w3c.dom.Document
-import org.moqui.entity.EntityException
 
 class EntityValueImpl implements EntityValue {
 
@@ -78,8 +77,11 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
     boolean containsPrimaryKey() {
-        // TODO implement this
-        return false
+        Set fieldNameSet = this.entityDefinition.getFieldNames(true, false)
+        for (String fieldName in fieldNameSet) {
+            if (!this.valueMap[fieldName]) return false
+        }
+        return true
     }
 
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
@@ -129,7 +131,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#getBoolean(String) */
     Boolean getBoolean(String name) {
-        return (Boolean) this.get(name).asType(Boolean.class)
+        return this.get(name) as Boolean
     }
 
     /** @see org.moqui.entity.EntityValue#getString(String) */
@@ -140,46 +142,109 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#getTimestamp(String) */
     Timestamp getTimestamp(String name) {
-        // TODO: all of these methods are using the Groovy asType to do type conversion
+        // NOTE: all of these methods are using the Groovy asType to do type conversion
         // if any don't work use the org.apache.commons.beanutils.Converter stuff
         return (Timestamp) this.get(name).asType(Timestamp.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getTime(String) */
     Time getTime(String name) {
-        return (Time) this.get(name).asType(Time.class)
+        return this.get(name) as Time
     }
 
     /** @see org.moqui.entity.EntityValue#getDate(String) */
     Date getDate(String name) {
-        return (Date) this.get(name).asType(Date.class)
+        return this.get(name) as Date
     }
 
     /** @see org.moqui.entity.EntityValue#getLong(String) */
     Long getLong(String name) {
-        return (Long) this.get(name).asType(Long.class)
+        return this.get(name) as Long
     }
 
     /** @see org.moqui.entity.EntityValue#getDouble(String) */
     Double getDouble(String name) {
-        return (Double) this.get(name).asType(Double.class)
+        return this.get(name) as Double
     }
 
     /** @see org.moqui.entity.EntityValue#getBigDecimal(String) */
     BigDecimal getBigDecimal(String name) {
-        return (BigDecimal) this.get(name).asType(BigDecimal.class)
+        return this.get(name) as BigDecimal
     }
 
     /** @see org.moqui.entity.EntityValue#setFields(Map<java.lang.String,?>, boolean, java.lang.String, boolean) */
     void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
-        // TODO implement this
+        if (fields == null) return
 
+        Set fieldNameSet
+        if (pks != null) {
+            fieldNameSet = this.entityDefinition.getFieldNames(pks, !pks)
+        } else {
+            fieldNameSet = this.entityDefinition.getFieldNames(true, true)
+        }
+
+        for (String fieldName in fieldNameSet) {
+            String sourceFieldName
+            if (namePrefix) {
+                sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
+            } else {
+                sourceFieldName = fieldName
+            }
+
+            if (fields.containsKey(sourceFieldName)) {
+                Object value = fields.get(sourceFieldName)
+
+                if (value) {
+                    if (value instanceof String) {
+                        this.setString(fieldName, (String) value)
+                    } else {
+                        this.set(fieldName, value)
+                    }
+                } else if (setIfEmpty) {
+                    // treat empty String as null, otherwise set as whatever null or empty type it is
+                    if (value != null && value instanceof String) {
+                        this.set(fieldName, null)
+                    } else {
+                        this.set(fieldName, value)
+                    }
+                }
+            }
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#compareTo(EntityValue) */
     int compareTo(EntityValue that) {
-        // TODO implement this
-        return 0;
+        // nulls go earlier
+        if (that == null) return -1
+
+        // first entity names
+        int result = this.entityName.compareTo(that.getEntityName())
+        if (result != 0) return result
+
+        // next compare PK fields
+        for (String pkFieldName in this.entityDefinition.getFieldNames(true, false)) {
+            result = compareFields(that, pkFieldName)
+            if (result != 0) return result
+        }
+        // then non-PK fields
+        for (String fieldName in this.entityDefinition.getFieldNames(false, true)) {
+            result = compareFields(that, fieldName)
+            if (result != 0) return result
+        }
+
+        // all the same, result should be 0
+        return result
+    }
+
+    protected int compareFields(EntityValue that, String name) {
+        Comparable thisVal = (Comparable) this.valueMap.get(name)
+        Object thatVal = that.get(name)
+        // NOTE: nulls go earlier in the list
+        if (thisVal == null) {
+            return thatVal == null ? 0 : 1
+        } else {
+            return thatVal == null ? -1 : thisVal.compareTo(thatVal)
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#create() */
@@ -214,11 +279,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#getOriginalDbValue(String) */
     Object getOriginalDbValue(String name) {
-        if (this.dbValueMap && this.dbValueMap[name]) {
-            return this.dbValueMap[name]
-        } else {
-            return this.valueMap[name]
-        }
+        return (this.dbValueMap && this.dbValueMap[name]) ? this.dbValueMap[name] : this.valueMap[name]
     }
 
     /** @see org.moqui.entity.EntityValue#findRelated(String, Map<java.lang.String,?>, java.util.List<java.lang.String>, boolean) */
@@ -259,21 +320,13 @@ class EntityValueImpl implements EntityValue {
     // ========== Map Interface Methods ==========
 
     /** @see java.util.Map#size() */
-    int size() {
-        return this.valueMap.size()
-    }
+    int size() { return this.valueMap.size() }
 
-    boolean isEmpty() {
-        return this.valueMap.isEmpty()
-    }
+    boolean isEmpty() { return this.valueMap.isEmpty() }
 
-    boolean containsKey(Object o) {
-        return this.valueMap.containsKey(o)
-    }
+    boolean containsKey(Object o) { return this.valueMap.containsKey(o) }
 
-    boolean containsValue(Object o) {
-        return this.valueMap.containsValue(o)
-    }
+    boolean containsValue(Object o) { return this.valueMap.containsValue(o) }
 
     Object get(Object o) {
         if (o instanceof String) {
@@ -302,19 +355,31 @@ class EntityValueImpl implements EntityValue {
         }
     }
 
-    void clear() {
-        this.valueMap.clear()
+    void clear() { this.valueMap.clear() }
+
+    Set<String> keySet() { return Collections.unmodifiableSet(this.valueMap.keySet()) }
+
+    Collection<Object> values() { return Collections.unmodifiableCollection(this.valueMap.values()) }
+
+    Set<Map.Entry<String, Object>> entrySet() { return Collections.unmodifiableSet(this.valueMap.entrySet()) }
+
+    // ========== Object Override Methods ==========
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof EntityValue)) return false
+        try {
+            // reuse the compare method
+            return this.compareTo((EntityValue) obj) == 0
+        } catch (ClassCastException e) {
+            return false
+        }
     }
 
-    Set<String> keySet() {
-        return this.valueMap.keySet()
-    }
-
-    Collection<Object> values() {
-        return this.valueMap.values()
-    }
-
-    Set<Map.Entry<String, Object>> entrySet() {
-        return this.valueMap.entrySet()
+    @Override
+    public int hashCode() {
+        // NOTE: consider caching the hash code in the future for performance
+        // divide both by two (shift to right one bit) to maintain scale and add together
+        return this.entityName.hashCode() >> 1 + this.valueMap.hashCode() >> 1
     }
 }

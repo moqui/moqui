@@ -85,10 +85,12 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     BigDecimal getBigDecimal(String name);
 
-    /** Intelligently sets fields on this entity from the Map of fields passed in
+    /** Sets fields on this entity from the Map of fields passed in using the entity definition to only get valid
+     * fields from the Map. For any String values passed in this will call setString to convert based on the field
+     * definition, otherwise it sets the Object as-is.
+     *
      * @param fields The fields Map to get the values from
-     * @param setIfEmpty Used to specify whether empty/null values in the field Map should over-write non-empty values
-     *   in this entity
+     * @param setIfEmpty Used to specify whether empty/null values in the field Map should be set
      * @param namePrefix If not null or empty will be pre-pended to each field name (upper-casing the first letter of
      *   the field name first), and that will be used as the fields Map lookup name instead of the field-name
      * @param pks If null, get all values, if TRUE just get PKs, if FALSE just get non-PKs
