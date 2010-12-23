@@ -18,6 +18,7 @@ import java.sql.Date
 import org.moqui.entity.EntityList
 import org.w3c.dom.Element
 import org.w3c.dom.Document
+import org.moqui.entity.EntityException
 
 class EntityValueImpl implements EntityValue {
 
@@ -45,29 +46,32 @@ class EntityValueImpl implements EntityValue {
         }
     }
 
+    EntityFacadeImpl getEntityFacadeImpl() { return this.efi }
+
     /** @see org.moqui.entity.EntityValue#getEntityName() */
-    String getEntityName() {
-        return this.entityName
-    }
+    String getEntityName() { return this.entityName }
 
     /** @see org.moqui.entity.EntityValue#isModified() */
-    boolean isModified() {
-        return this.modified
-    }
+    boolean isModified() { return this.modified }
 
     /** @see org.moqui.entity.EntityValue#isMutable() */
-    boolean isMutable() {
-        return this.mutable
-    }
+    boolean isMutable() { return this.mutable }
 
     /** @see org.moqui.entity.EntityValue#get(String) */
     Object get(String name) {
-        // TODO: if the name is not a valid field name, throw an exception
         if (!this.entityDefinition.isField(name)) {
-            
+            // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
+            Node relationship = (Node) this.entityDefinition.entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })[0]
+            if (relationship) {
+                if (relationship."@type" == "many") {
+                    return this.findRelated(name, null, null, null)
+                } else {
+                    return this.findRelatedOne(name, null)
+                }
+            } else {
+                throw new IllegalArgumentException("The name [${name}] is not a valid field name or relationship name for entity [${this.entityName}]")
+            }
         }
-
-        // TODO: if this is not a valid field name but is a valid relationship name, do a getRelated to return an EntityList or an EntityValue
 
         return this.valueMap[name]
     }
@@ -80,28 +84,52 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
     void set(String name, Object value) {
-        if (!this.mutable) throw new IllegalArgumentException("This entity value is not mutable (it is read-only)")
+        if (!this.mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
 
-        // TODO: if the name is not a valid field name, throw an exception
-        
+        if (!this.entityDefinition.isField(name)) {
+            throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${this.entityName}]")
+        }
+
         this.modified = true
         this.valueMap.put(name, value)
     }
 
     /** @see org.moqui.entity.EntityValue#setString(String, String) */
     void setString(String name, String value) {
-        // TODO implement this
-    }
+        if (value == null || value == "null") {
+            set(name, null)
+            return
+        }
+        if (value == "\null") value == "null"
 
-    /** @see org.moqui.entity.EntityValue#getBytes(String) */
-    void setBytes(String name, byte[] bytes) {
-        // TODO implement this
+        Node fieldNode = this.entityDefinition.getFieldNode(name)
+        if (!fieldNode) set(name, value) // cause an error on purpose
+
+        String javaType = this.getEntityFacadeImpl().getFieldJavaType(fieldNode."@type", this.entityName)
+        switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
+        case 1: set(name, value) break
+        case 2: set(name, java.sql.Timestamp.valueOf(value)) break
+        case 3: set(name, java.sql.Time.valueOf(value)) break
+        case 4: set(name, java.sql.Date.valueOf(value)) break
+        case 5: set(name, Integer.valueOf(value)) break
+        case 6: set(name, Long.valueOf(value)) break
+        case 7: set(name, Float.valueOf(value)) break
+        case 8: set(name, Double.valueOf(value)) break
+        case 9: set(name, new BigDecimal(value)) break
+        case 10: set(name, Boolean.valueOf(value)) break
+        case 11: set(name, value) break
+        // better way for Blob (12)? probably not...
+        case 12: set(name, value) break
+        case 13: set(name, value) break
+        case 14: set(name, value.asType(java.util.Date.class)) break
+        // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
+        case 15: set(name, value) break
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#getBoolean(String) */
     Boolean getBoolean(String name) {
-        // TODO implement this
-        return null;
+        return (Boolean) this.get(name).asType(Boolean.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getString(String) */
@@ -112,44 +140,34 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#getTimestamp(String) */
     Timestamp getTimestamp(String name) {
-        // TODO implement this
-        return null;
+        // TODO: all of these methods are using the Groovy asType to do type conversion
+        // if any don't work use the org.apache.commons.beanutils.Converter stuff
+        return (Timestamp) this.get(name).asType(Timestamp.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getTime(String) */
     Time getTime(String name) {
-        // TODO implement this
-        return null;
+        return (Time) this.get(name).asType(Time.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getDate(String) */
     Date getDate(String name) {
-        // TODO implement this
-        return null;
+        return (Date) this.get(name).asType(Date.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getLong(String) */
     Long getLong(String name) {
-        // TODO implement this
-        return null;
+        return (Long) this.get(name).asType(Long.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getDouble(String) */
     Double getDouble(String name) {
-        // TODO implement this
-        return null;
+        return (Double) this.get(name).asType(Double.class)
     }
 
     /** @see org.moqui.entity.EntityValue#getBigDecimal(String) */
     BigDecimal getBigDecimal(String name) {
-        // TODO implement this
-        return null;
-    }
-
-    /** @see org.moqui.entity.EntityValue#getBytes(String) */
-    byte[] getBytes(String name) {
-        // TODO implement this
-        return new byte[0];
+        return (BigDecimal) this.get(name).asType(BigDecimal.class)
     }
 
     /** @see org.moqui.entity.EntityValue#setFields(Map<java.lang.String,?>, boolean, java.lang.String, boolean) */
@@ -224,13 +242,13 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#checkFks(boolean) */
     boolean checkFks(boolean insertDummy) {
         // TODO implement this
-        return false;
+        return false
     }
 
     /** @see org.moqui.entity.EntityValue#makeXmlElement(Document, String) */
     Element makeXmlElement(Document document, String prefix) {
         // TODO implement this
-        return null;
+        return null
     }
 
     /** @see org.moqui.entity.EntityValue#writeXmlText(PrintWriter, String) */

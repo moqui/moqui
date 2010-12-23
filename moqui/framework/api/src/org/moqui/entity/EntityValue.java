@@ -60,16 +60,14 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     /** Sets the named field to the passed value, converting the value from a String to the corresponding type using 
      *   <code>Type.valueOf()</code>
+     *
+     * If the String "null" is passed in it will be treated the same as a null value. If you really want to set a
+     * String of "null" then pass in "\null".
+     *
      * @param name The field name to set
      * @param value The String value to convert and set
      */
     void setString(String name, String value);
-
-    /** Sets a field with an array of bytes, wrapping them automatically for easy use.
-     * @param name The field name to set
-     * @param bytes The byte array to be wrapped and set
-     */
-    void setBytes(String name, byte[] bytes);
 
     Boolean getBoolean(String name);
 
@@ -86,8 +84,6 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     Double getDouble(String name);
 
     BigDecimal getBigDecimal(String name);
-
-    byte[] getBytes(String name);
 
     /** Intelligently sets fields on this entity from the Map of fields passed in
      * @param fields The fields Map to get the values from
