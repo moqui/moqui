@@ -77,8 +77,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
     boolean containsPrimaryKey() {
-        Set fieldNameSet = this.entityDefinition.getFieldNames(true, false)
-        for (String fieldName in fieldNameSet) {
+        for (String fieldName in this.entityDefinition.getFieldNames(true, false)) {
             if (!this.valueMap[fieldName]) return false
         }
         return true
@@ -87,11 +86,9 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
     void set(String name, Object value) {
         if (!this.mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
-
         if (!this.entityDefinition.isField(name)) {
             throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${this.entityName}]")
         }
-
         this.modified = true
         this.valueMap.put(name, value)
     }
@@ -109,23 +106,23 @@ class EntityValueImpl implements EntityValue {
 
         String javaType = this.getEntityFacadeImpl().getFieldJavaType(fieldNode."@type", this.entityName)
         switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
-        case 1: set(name, value) break
-        case 2: set(name, java.sql.Timestamp.valueOf(value)) break
-        case 3: set(name, java.sql.Time.valueOf(value)) break
-        case 4: set(name, java.sql.Date.valueOf(value)) break
-        case 5: set(name, Integer.valueOf(value)) break
-        case 6: set(name, Long.valueOf(value)) break
-        case 7: set(name, Float.valueOf(value)) break
-        case 8: set(name, Double.valueOf(value)) break
-        case 9: set(name, new BigDecimal(value)) break
-        case 10: set(name, Boolean.valueOf(value)) break
-        case 11: set(name, value) break
+        case 1: set(name, value); break
+        case 2: set(name, java.sql.Timestamp.valueOf(value)); break
+        case 3: set(name, java.sql.Time.valueOf(value)); break
+        case 4: set(name, java.sql.Date.valueOf(value)); break
+        case 5: set(name, Integer.valueOf(value)); break
+        case 6: set(name, Long.valueOf(value)); break
+        case 7: set(name, Float.valueOf(value)); break
+        case 8: set(name, Double.valueOf(value)); break
+        case 9: set(name, new BigDecimal(value)); break
+        case 10: set(name, Boolean.valueOf(value)); break
+        case 11: set(name, value); break
         // better way for Blob (12)? probably not...
-        case 12: set(name, value) break
-        case 13: set(name, value) break
-        case 14: set(name, value.asType(java.util.Date.class)) break
+        case 12: set(name, value); break
+        case 13: set(name, value); break
+        case 14: set(name, value.asType(java.util.Date.class)); break
         // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
-        case 15: set(name, value) break
+        case 15: set(name, value); break
         }
     }
 
