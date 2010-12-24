@@ -115,7 +115,7 @@ class EntityListImpl implements EntityList {
     Object[] toArray() { return this.valueList.toArray() }
 
     @Override
-    EntityValue[] toArray(Object[] ts) { return this.valueList.toArray((EntityValue[]) ts) }
+    Object[] toArray(Object[] ts) { return this.valueList.toArray((EntityValue[]) ts) }
 
     @Override
     boolean add(EntityValue e) { return this.valueList.add(e) }
@@ -167,7 +167,6 @@ class EntityListImpl implements EntityList {
 
     @Override
     List<EntityValue> subList(int start, int end) { return this.valueList.subList(start, end) }
-
 
     public class EntityOrderByComparator implements Comparator<EntityValue> {
         protected List<String> fieldNameList = new ArrayList<String>()

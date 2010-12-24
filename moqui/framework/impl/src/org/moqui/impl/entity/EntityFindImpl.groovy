@@ -32,7 +32,7 @@ class EntityFindImpl implements EntityFind {
     protected final EntityFacadeImpl efi
 
     protected String entityName
-    protected EntityDynamicView dynamicView = null
+    protected EntityDynamicViewImpl dynamicView = null
 
     protected Map<String, Object> simpleAndMap = null
     protected EntityConditionImplBase whereEntityCondition = null
@@ -67,14 +67,10 @@ class EntityFindImpl implements EntityFind {
         return this.entityName
     }
 
-    /** @see org.moqui.entity.EntityFind#entityDynamicView(EntityDynamicView) */
-    EntityFind entityDynamicView(EntityDynamicView dynamicView) {
-        this.dynamicView = dynamicView
-        return this
-    }
-
-    /** @see org.moqui.entity.EntityFind#getEntityDynamicView() */
-    String getEntityDynamicView() {
+    /** @see org.moqui.entity.EntityFind#makeEntityDynamicView() */
+    EntityDynamicView makeEntityDynamicView() {
+        if (this.dynamicView) return this.dynamicView
+        this.dynamicView = new EntityDynamicViewImpl(this)
         return this.dynamicView
     }
 
@@ -284,8 +280,9 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         PreparedStatement ps
         ResultSet rs
+        EntityValueImpl newEntityValue = null
         try {
-            ps = makePreparedStatement(efb)
+            ps = efb.makePreparedStatement()
 
             // set all of the values from the SQL building in efb
             int paramIndex = 1
@@ -297,21 +294,22 @@ class EntityFindImpl implements EntityFind {
             rs = ps.executeQuery()
 
             if (rs.next()) {
-                EntityValueImpl newEntityValue = (EntityValueImpl) this.efi.makeValue(this.getEntity())
+                newEntityValue = (EntityValueImpl) this.efi.makeValue(this.getEntity())
                 int j = 1
                 for (String fieldName in this.fieldsToSelect) {
-                    getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue)
+                    efb.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue)
                     j++
                 }
-                return newEntityValue
             } else {
-                throw new EntityException("Result set was empty for find on entity [${this.entityName}] with condition [${whereCondition.toString()}]");
+                logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${whereCondition.toString()}]")
             }
         } finally {
             ps.close()
             rs.close()
-            // TODO: close the connection? or do as part of context open/close along with transaction?
+            // NOTE: close the connection? or do as part of context open/close along with transaction?
         }
+
+        return newEntityValue
     }
 
     /** @see org.moqui.entity.EntityFind#list() */
@@ -324,9 +322,7 @@ class EntityFindImpl implements EntityFind {
     EntityListIterator iterator() throws EntityException {
         EntityDefinition entityDefinition;
         if (this.dynamicView) {
-            // TODO: implement for dynamic views
-            //entityDefinition = this.dynamicView.makeEntityDefinition()
-            throw new IllegalArgumentException("Dynamic Views not yet supported")
+            entityDefinition = this.dynamicView.makeEntityDefinition()
         } else {
             entityDefinition = this.efi.getEntityDefinition(this.entityName)
         }
@@ -373,8 +369,9 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         PreparedStatement ps
         ResultSet rs
+        EntityListIteratorImpl eli = null
         try {
-            ps = makePreparedStatement(efb)
+            ps = efb.makePreparedStatement()
 
             // set all of the values from the SQL building in efb
             int paramIndex = 1
@@ -385,33 +382,17 @@ class EntityFindImpl implements EntityFind {
 
             rs = ps.executeQuery()
 
-            // TODO EntityListIteratorImpl eli = new EntityListIteratorImpl(ResultSet rs)
-            // TODO return eli
-            return null
+            eli = new EntityListIteratorImpl(rs, this.efi)
         } finally {
             ps.close()
             // ResultSet will be closed in the EntityListIterator
         }
+        return eli
     }
 
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
         // TODO: implement this
         return 0;
-    }
-
-    // ========= Internal Methods ==========
-    protected PreparedStatement makePreparedStatement(EntityFindBuilder efb) {
-        String sql = efb.getSqlTopLevel().toString()
-        Connection connection = this.efi.getConnection(this.efi.getEntityGroupName(this.entityName))
-        PreparedStatement ps
-        try {
-            ps = connection.prepareStatement(sql, this.resultSetType, this.resultSetConcurrency)
-            if (this.maxRows > 0) ps.setMaxRows(this.maxRows)
-            if (this.fetchSize > 0) ps.setFetchSize(this.fetchSize)
-        } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception preparing statement:" + sql, sqle)
-        }
-        return ps
     }
 }

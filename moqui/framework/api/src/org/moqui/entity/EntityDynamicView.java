@@ -11,74 +11,26 @@
  */
 package org.moqui.entity;
 
-import java.util.List;
 import java.util.Map;
 
-/**
- * This class is used for declaring Dynamic View Entities, to be used and thrown away.
- * A special method exists on the EntityFacade to accept a EntityDynamicView instead
- * of an entityName.
- *
+/** This class is used for declaring Dynamic View Entities, to be used and thrown away.
+ * A special method exists on the EntityFind to accept a EntityDynamicView instead of an entityName.
+ * The methods here return a reference to itself (this) for convenience.
  */
 public interface EntityDynamicView {
-    /** Getter for property entityName.
-     * @return Value of property entityName.
-     *
-     */
-    public String getEntityName();
+    /** This optionally sets a name for the dynamic view entity. If not used will default to "DynamicView" */
+    public EntityDynamicView setEntityName(String entityName);
 
-    /** Setter for property entityName.
-     * @param entityName New value of property entityName.
-     *
-     */
-    public void setEntityName(String entityName);
+    public EntityDynamicView addMemberEntity(String entityAlias, String entityName);
 
-    /** Getter for property packageName.
-     * @return Value of property packageName.
-     *
-     */
-    public String getPackageName();
+    public EntityDynamicView addAliasAll(String entityAlias, String prefix);
 
-    /** Setter for property packageName.
-     * @param packageName New value of property packageName.
-     *
-     */
-    public void setPackageName(String packageName);
-
-    /** Getter for property defaultResourceName.
-     * @return Value of property defaultResourceName.
-     *
-     */
-    public String getDefaultResourceName();
-
-    /** Setter for property defaultResourceName.
-     * @param defaultResourceName New value of property defaultResourceName.
-     *
-     */
-    public void setDefaultResourceName(String defaultResourceName);
-
-    /** Getter for property title.
-     * @return Value of property title.
-     *
-     */
-    public String getTitle();
-
-    /** Setter for property title.
-     * @param title New value of property title.
-     *
-     */
-    public void setTitle(String title);
-
-    public void addMemberEntity(String entityAlias, String entityName);
-
-    public void addAliasAll(String entityAlias, String prefix);
-
-    public void addAlias(String entityAlias, String name);
+    public EntityDynamicView addAlias(String entityAlias, String name);
 
     /** Add an alias, full detail. All parameters can be null except entityAlias and name. */
-    public void addAlias(String entityAlias, String name, String field, String colAlias, Boolean primKey, Boolean groupBy, String function);
+    public EntityDynamicView addAlias(String entityAlias, String name, String field, Boolean primKey, Boolean groupBy, String function);
 
-    public void addViewLink(String entityAlias, String relEntityAlias, Boolean relOptional, Map<String, String> entityKeyMaps);
+    public EntityDynamicView addViewLink(String entityAlias, String relatedEntityAlias, Boolean relatedOptional, Map<String, String> entityKeyMaps);
 
-    public void addRelation(String type, String title, String relEntityName, Map<String, String> entityKeyMaps);
+    public EntityDynamicView addRelationship(String type, String title, String relatedEntityName, Map<String, String> entityKeyMaps);
 }

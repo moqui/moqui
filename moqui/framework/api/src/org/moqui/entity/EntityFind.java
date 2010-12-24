@@ -28,16 +28,19 @@ import java.util.Set;
 public interface EntityFind extends java.io.Serializable {
 
     /** The Name of the Entity to use, as defined in an entity XML file.
+     *
      * @return Returns this for chaining of method calls.
      */
     EntityFind entity(String entityName);
     String getEntity();
 
-    /** A dynamic view object to use instead of the entity name (if used the entity name will be ignored).
-     * @return Returns this for chaining of method calls.
+    /** Make a dynamic view object to use instead of the entity name (if used the entity name will be ignored).
+     *
+     * If called multiple times will return the same object.
+     *
+     * @return EntityDynamicView object to add view details to.
      */
-    EntityFind entityDynamicView(EntityDynamicView dynamicView);
-    String getEntityDynamicView();
+    EntityDynamicView makeEntityDynamicView();
 
     // ======================== Conditions (Where and Having) =================
 

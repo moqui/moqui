@@ -22,6 +22,7 @@ import java.sql.Blob
 import javax.sql.rowset.serial.SerialBlob
 import javax.sql.rowset.serial.SerialClob
 import org.moqui.impl.StupidUtilities
+import java.sql.Connection
 
 class EntityFindBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
@@ -304,7 +305,23 @@ class EntityFindBuilder {
         return colName.replace('.', '_').replace('(','_').replace(')','_')
     }
 
-    protected void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl) throws EntityException {
+    protected PreparedStatement makePreparedStatement() {
+        String sql = this.getSqlTopLevel().toString()
+        Connection connection = this.entityFindImpl.efi.getConnection(
+                this.entityFindImpl.efi.getEntityGroupName(this.entityFindImpl.getEntity()))
+        PreparedStatement ps
+        try {
+            ps = connection.prepareStatement(sql, this.entityFindImpl.resultSetType, this.entityFindImpl.resultSetConcurrency)
+            if (this.entityFindImpl.maxRows > 0) ps.setMaxRows(this.entityFindImpl.maxRows)
+            if (this.entityFindImpl.fetchSize > 0) ps.setFetchSize(this.entityFindImpl.fetchSize)
+        } catch (SQLException sqle) {
+            throw new EntityException("SQL Exception preparing statement:" + sql, sqle)
+        }
+        return ps
+    }
+
+    protected void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl)
+            throws EntityException {
         String javaType = this.entityFindImpl.efi.getFieldJavaType(fieldNode."@type", entityValueImpl.getEntityName())
 
         try {
@@ -327,8 +344,8 @@ class EntityFindBuilder {
                         // read up to 4096 at a time
                         char[] inCharBuffer = new char[4096]
                         StringBuilder strBuf = new StringBuilder()
-                        int charsRead = 0
                         try {
+                            int charsRead
                             while ((charsRead = valueReader.read(inCharBuffer, 0, 4096)) > 0) {
                                 strBuf.append(inCharBuffer, 0, charsRead)
                             }

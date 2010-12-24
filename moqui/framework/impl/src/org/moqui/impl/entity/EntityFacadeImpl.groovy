@@ -71,7 +71,7 @@ class EntityFacadeImpl implements EntityFacade {
         return null
     }
 
-    /** @see org.moqui.entity.EntityFacade#updateByCondition(String, Map<String,?>, EntityCondition) */
+    /** @see org.moqui.entity.EntityFacade#updateByCondition(String, Map, EntityCondition) */
     int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition) {
         // TODO: implement this
         return 0
