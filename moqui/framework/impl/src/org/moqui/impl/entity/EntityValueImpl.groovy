@@ -169,7 +169,7 @@ class EntityValueImpl implements EntityValue {
         return this.get(name) as BigDecimal
     }
 
-    /** @see org.moqui.entity.EntityValue#setFields(Map<java.lang.String,?>, boolean, java.lang.String, boolean) */
+    /** @see org.moqui.entity.EntityValue#setFields(Map, boolean, java.lang.String, boolean) */
     void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (fields == null) return
 
@@ -279,7 +279,7 @@ class EntityValueImpl implements EntityValue {
         return (this.dbValueMap && this.dbValueMap[name]) ? this.dbValueMap[name] : this.valueMap[name]
     }
 
-    /** @see org.moqui.entity.EntityValue#findRelated(String, Map<java.lang.String,?>, java.util.List<java.lang.String>, boolean) */
+    /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, boolean) */
     EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy, Boolean useCache) {
         // TODO implement this
         return null;
@@ -378,5 +378,18 @@ class EntityValueImpl implements EntityValue {
         // NOTE: consider caching the hash code in the future for performance
         // divide both by two (shift to right one bit) to maintain scale and add together
         return this.entityName.hashCode() >> 1 + this.valueMap.hashCode() >> 1
+    }
+
+    @Override
+    public Object clone() {
+        return this.cloneValue()
+    }
+
+    public EntityValue cloneValue() {
+        EntityValueImpl newObj = new EntityValueImpl(this.entityName, this.entityFacadeImpl)
+        newObj.valueMap.putAll(this.valueMap)
+        if (this.dbValueMap) newObj.dbValueMap = this.dbValueMap.clone()
+        // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
+        return newObj
     }
 }

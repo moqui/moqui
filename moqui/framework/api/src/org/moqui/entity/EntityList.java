@@ -20,29 +20,36 @@ import java.util.Map;
 /**
  * Contains a list of EntityValue objects.
  * Entity List that adds some additional operations like filtering to the basic List<EntityValue>.
+ *
+ * The various methods here modify the internal list for efficiency and return a reference to this for convenience.
+ * If you want a new EntityList with the modifications, use clone() or cloneList() then modify it.
  */
-public interface EntityList extends List<EntityValue>, Iterable<EntityValue> {
+public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cloneable {
 
-    /** Get the first value in the list. */
+    /** Get the first value in the list.
+     *
+     * @return EntityValue that is first in the list.
+     */
     EntityValue getFirst();
 
-    /** Make a new EntityList containing only the values that are active for the moment passed in.
+    /** Modify this EntityList so that it contains only the values that are active for the moment passed in.
+     * The results include values that match the fromDate, but exclude values that match the thruDate.
      *
-     *@param moment The point in time to compare the values to
+     *@param moment The point in time to compare the values to; if null the current system date/time is used.
      *@param fromDateName The name of the from/beginning date/time field. Defaults to "fromDate".
      *@param thruDateName The name of the thru/ending date/time field. Defaults to "thruDate".
-     *@return EntityList for all values that are active at the moment passed in
+     *@return A reference to this for convenience.
      */
     EntityList filterByDate(Timestamp moment, String fromDateName, String thruDateName);
 
-    /** Make a new EntityList containing only the values that match the values in the fields parameter.
+    /** Modify this EntityList so that it contains only the values that match the values in the fields parameter.
      *
      *@param fields The name/value pairs that must match for a value to be included in the output list.
      *@return List of EntityValue objects that match the values in the fields parameter.
      */
     EntityList filterByAnd(Map<String, ?> fields);
 
-    /** Make a new EntityList that is ordered by the field names passed in.
+    /** Modify this EntityList so that is ordered by the field names passed in.
      *
      *@param fieldNames The field names for the entity values to sort the list by. Optionally prefix each field name
      * with a plus sign (+) for ascending or a minus sign (-) for descending. Defaults to ascending.
@@ -50,11 +57,12 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue> {
      */
     EntityList orderByFields(List<String> fieldNames);
 
-    /** Make a new EntityList that includes (or excludes) values matching the condition.
+    /** Modify this EntityList so that it includes (or excludes) values matching the condition.
      *
      * @param condition EntityCondition to filter by.
-     * @param include If true include matching values, if false exclude matching values. Defaults to true (include).
-     * @return
+     * @param include If true include matching values, if false exclude matching values.
+     *     Defaults to false (exclude, ie only include values that do not meet condition).
+     * @return List with filtered values.
      */
     EntityList filterByCondition(EntityCondition condition, Boolean include);
 
@@ -63,4 +71,6 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue> {
      * @return Iterator<EntityValue> to iterate over internal list.
      */
     Iterator<EntityValue> iterator();
+
+    EntityList cloneList();
 }

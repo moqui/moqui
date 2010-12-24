@@ -103,6 +103,8 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     int compareTo(EntityValue that);
 
+    EntityValue cloneValue();
+
     /** Creates a record for this entity value. */
     void create() throws EntityException;
 
