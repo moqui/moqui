@@ -320,9 +320,9 @@ class EntityFindBuilder {
         return ps
     }
 
-    protected void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl)
+    protected static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl, EntityFacadeImpl efi)
             throws EntityException {
-        String javaType = this.entityFindImpl.efi.getFieldJavaType(fieldNode."@type", entityValueImpl.getEntityName())
+        String javaType = efi.getFieldJavaType(fieldNode."@type", entityValueImpl.getEntityName())
 
         try {
             int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)

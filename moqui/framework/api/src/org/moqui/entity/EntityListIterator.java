@@ -102,8 +102,6 @@ public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<
      */
     EntityList getPartialList(int start, int number) throws EntityException;
 
-    int getResultsSizeAfterPartialList() throws EntityException;
-
     /** Method to implement the Iterable interface to allow an EntityListIterator to be used in a foreach loop. Just
      * returns this.
      */

@@ -67,8 +67,11 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
     EntityValue makeValue(String entityName) {
-        // TODO: implement this
-        return null
+        EntityDefinition entityDefinition = this.getEntityDefinition(entityName)
+        if (!entityDefinition) {
+            throw new IllegalArgumentException("Entity not found for name [${entityName}]")
+        }
+        return new EntityValueImpl(entityDefinition, this)
     }
 
     /** @see org.moqui.entity.EntityFacade#updateByCondition(String, Map, EntityCondition) */

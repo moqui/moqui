@@ -21,6 +21,7 @@ import org.moqui.impl.entity.EntityFindBuilder.EntityConditionParameter
 import org.moqui.impl.StupidUtilities
 
 class EntityConditionFactoryImpl implements EntityConditionFactory {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
 
     protected final EntityFacadeImpl efi;
 
@@ -381,6 +382,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         boolean mapMatches(Map<String, ?> map) {
             // TODO implement this, or not...
+            logger.warn("The mapMatches for the SQL Where Condition is not supported, text is [${this.sqlWhereClause}]")
             return false
         }
 

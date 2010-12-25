@@ -28,7 +28,7 @@ public interface EntityDynamicView {
     public EntityDynamicView addAlias(String entityAlias, String name);
 
     /** Add an alias, full detail. All parameters can be null except entityAlias and name. */
-    public EntityDynamicView addAlias(String entityAlias, String name, String field, Boolean primKey, Boolean groupBy, String function);
+    public EntityDynamicView addAlias(String entityAlias, String name, String field, Boolean groupBy, String function);
 
     public EntityDynamicView addViewLink(String entityAlias, String relatedEntityAlias, Boolean relatedOptional, Map<String, String> entityKeyMaps);
 

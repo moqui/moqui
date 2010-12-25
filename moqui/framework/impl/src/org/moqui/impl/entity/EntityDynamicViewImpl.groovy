@@ -18,56 +18,61 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     protected EntityFindImpl entityFind;
 
     protected String entityName = "DynamicView"
-    protected Node entityNode = new Node(null, "view-entity")
+    protected Node entityNode = new Node(null, "view-entity", ["entity-name":"DynamicView"])
 
     EntityDynamicViewImpl(EntityFindImpl entityFind) {
         this.entityFind = entityFind
     }
 
     EntityDefinition makeEntityDefinition() {
-        // TODO implement this
-        return null
+        return new EntityDefinition(this.entityFind.efi, this.entityNode)
     }
 
     @Override
     EntityDynamicView setEntityName(String entityName) {
-        // TODO implement this
-        return null
+        this.entityNode."@entity-name" = entityName
+        return this
     }
 
     @Override
     EntityDynamicView addMemberEntity(String entityAlias, String entityName) {
-        // TODO implement this
-        return null
+        this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":entityName])
+        return this
     }
 
     @Override
     EntityDynamicView addAliasAll(String entityAlias, String prefix) {
-        // TODO implement this
-        return null
+        this.entityNode.appendNode("alias-all", ["entity-alias":entityAlias, "prefix":prefix])
+        return this
     }
 
     @Override
     EntityDynamicView addAlias(String entityAlias, String name) {
-        // TODO implement this
-        return null
+        this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "name":name])
+        return this
     }
 
     @Override
-    EntityDynamicView addAlias(String entityAlias, String name, String field, Boolean primKey, Boolean groupBy, String function) {
-        // TODO implement this
-        return null
+    EntityDynamicView addAlias(String entityAlias, String name, String field, Boolean groupBy, String function) {
+        this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "name":name, "field":field, "group-by":(groupBy ? "true" : "false"), "function":function])
+        return this
     }
 
     @Override
     EntityDynamicView addViewLink(String entityAlias, String relatedEntityAlias, Boolean relatedOptional, Map<String, String> entityKeyMaps) {
-        // TODO implement this
-        return null
+        Node viewLink = this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "related-entity-alias":relatedEntityAlias, "related-optional":(relatedOptional ? "true" : "false")])
+        for (Map.Entry keyMapEntry in entityKeyMaps.entrySet()) {
+            viewLink.appendNode("key-map", ["field-name":keyMapEntry.getKey(), "related-field-name":keyMapEntry.getValue()])
+        }
+        return this
     }
 
     @Override
     EntityDynamicView addRelationship(String type, String title, String relatedEntityName, Map<String, String> entityKeyMaps) {
-        // TODO implement this
-        return null
+        Node viewLink = this.entityNode.appendNode("relationship", ["type":type, "title":title, "related-entity-name":relatedEntityName])
+        for (Map.Entry keyMapEntry in entityKeyMaps.entrySet()) {
+            viewLink.appendNode("key-map", ["field-name":keyMapEntry.getKey(), "related-field-name":keyMapEntry.getValue()])
+        }
+        return this
     }
 }

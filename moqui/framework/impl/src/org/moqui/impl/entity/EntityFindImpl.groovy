@@ -254,6 +254,8 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#one() */
     EntityValue one() throws EntityException {
+        // TODO: implement caching
+
         if (this.dynamicView) {
             throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
         }
@@ -294,10 +296,10 @@ class EntityFindImpl implements EntityFind {
             rs = ps.executeQuery()
 
             if (rs.next()) {
-                newEntityValue = (EntityValueImpl) this.efi.makeValue(this.getEntity())
+                newEntityValue = new EntityValueImpl(entityDefinition, this.efi)
                 int j = 1
                 for (String fieldName in this.fieldsToSelect) {
-                    efb.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue)
+                    EntityFindBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
                     j++
                 }
             } else {
@@ -314,6 +316,8 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() throws EntityException {
+        // TODO: implement caching
+
         EntityListIterator eli = this.iterator()
         return eli.getCompleteList()
     }
@@ -367,24 +371,26 @@ class EntityFindImpl implements EntityFind {
         efb.makeOrderByClause(orderByExpanded)
 
         // run the SQL now that it is built
-        PreparedStatement ps
-        ResultSet rs
+        PreparedStatement ps = null
+        ResultSet rs = null
         EntityListIteratorImpl eli = null
         try {
             ps = efb.makePreparedStatement()
 
             // set all of the values from the SQL building in efb
             int paramIndex = 1
-            for (EntityConditionParameter entityConditionParam: efb.getParameters()) {
+            for (EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 entityConditionParam.setPreparedStatementValue(ps, paramIndex)
                 paramIndex++
             }
 
             rs = ps.executeQuery()
 
-            eli = new EntityListIteratorImpl(rs, this.efi)
+            eli = new EntityListIteratorImpl(rs, entityDefinition, this.fieldsToSelect, this.efi)
+        } catch (SQLException e) {
+            throw new EntityException("Error finding value", e)
         } finally {
-            ps.close()
+            if (ps) ps.close()
             // ResultSet will be closed in the EntityListIterator
         }
         return eli

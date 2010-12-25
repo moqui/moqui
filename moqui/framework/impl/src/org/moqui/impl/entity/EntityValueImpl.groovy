@@ -27,7 +27,7 @@ class EntityValueImpl implements EntityValue {
     protected volatile EntityFacadeImpl efi
 
     protected final String entityName
-    protected EntityDefinition entityDefinition
+    protected volatile EntityDefinition entityDefinition
 
     protected final Map valueMap = new HashMap()
     /* Original DB Value Map: not used unless the value has been modified from its original state from the DB */
@@ -36,16 +36,20 @@ class EntityValueImpl implements EntityValue {
     protected boolean modified = false
     protected boolean mutable = true
 
-    protected EntityValueImpl(String entityName, EntityFacadeImpl efi) {
+    protected EntityValueImpl(EntityDefinition entityDefinition, EntityFacadeImpl efi) {
         this.efi = efi
-        this.entityName = entityName
-        this.entityDefinition = this.efi.getEntityDefinition(entityName)
-        if (!this.entityDefinition) {
-            throw new IllegalArgumentException("Entity not found for name [${entityName}]")
-        }
+        this.entityName = entityDefinition.getEntityName()
+        this.entityDefinition = entityDefinition
     }
 
-    EntityFacadeImpl getEntityFacadeImpl() { return this.efi }
+    EntityFacadeImpl getEntityFacadeImpl() {
+        // TODO: change this to handle null after deserialize
+        return this.efi
+    }
+    EntityDefinition getEntityDefinition() {
+        // TODO: change this to handle null after deserialize
+        return this.entityDefinition
+    }
 
     /** @see org.moqui.entity.EntityValue#getEntityName() */
     String getEntityName() { return this.entityName }
@@ -60,7 +64,7 @@ class EntityValueImpl implements EntityValue {
     Object get(String name) {
         if (!this.entityDefinition.isField(name)) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
-            Node relationship = (Node) this.entityDefinition.entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })[0]
+            Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })[0]
             if (relationship) {
                 if (relationship."@type" == "many") {
                     return this.findRelated(name, null, null, null)
@@ -77,7 +81,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
     boolean containsPrimaryKey() {
-        for (String fieldName in this.entityDefinition.getFieldNames(true, false)) {
+        for (String fieldName in this.getEntityDefinition().getFieldNames(true, false)) {
             if (!this.valueMap[fieldName]) return false
         }
         return true
@@ -86,7 +90,7 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
     void set(String name, Object value) {
         if (!this.mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
-        if (!this.entityDefinition.isField(name)) {
+        if (!this.getEntityDefinition().isField(name)) {
             throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${this.entityName}]")
         }
         this.modified = true
@@ -101,7 +105,7 @@ class EntityValueImpl implements EntityValue {
         }
         if (value == "\null") value == "null"
 
-        Node fieldNode = this.entityDefinition.getFieldNode(name)
+        Node fieldNode = this.getEntityDefinition().getFieldNode(name)
         if (!fieldNode) set(name, value) // cause an error on purpose
 
         String javaType = this.getEntityFacadeImpl().getFieldJavaType(fieldNode."@type", this.entityName)
@@ -175,9 +179,9 @@ class EntityValueImpl implements EntityValue {
 
         Set fieldNameSet
         if (pks != null) {
-            fieldNameSet = this.entityDefinition.getFieldNames(pks, !pks)
+            fieldNameSet = this.getEntityDefinition().getFieldNames(pks, !pks)
         } else {
-            fieldNameSet = this.entityDefinition.getFieldNames(true, true)
+            fieldNameSet = this.getEntityDefinition().getFieldNames(true, true)
         }
 
         for (String fieldName in fieldNameSet) {
@@ -219,12 +223,12 @@ class EntityValueImpl implements EntityValue {
         if (result != 0) return result
 
         // next compare PK fields
-        for (String pkFieldName in this.entityDefinition.getFieldNames(true, false)) {
+        for (String pkFieldName in this.getEntityDefinition().getFieldNames(true, false)) {
             result = compareFields(that, pkFieldName)
             if (result != 0) return result
         }
         // then non-PK fields
-        for (String fieldName in this.entityDefinition.getFieldNames(false, true)) {
+        for (String fieldName in this.getEntityDefinition().getFieldNames(false, true)) {
             result = compareFields(that, fieldName)
             if (result != 0) return result
         }
