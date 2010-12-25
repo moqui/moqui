@@ -11,11 +11,14 @@
  */
 package org.moqui.impl.entity
 
+import java.sql.Timestamp
+
 import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityCondition.ComparisonOperator
-import java.sql.Timestamp
+import org.moqui.impl.entity.EntityFindBuilder.EntityConditionParameter
+import org.moqui.impl.StupidUtilities
 
 class EntityConditionFactoryImpl implements EntityConditionFactory {
 
@@ -27,7 +30,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(EntityCondition, JoinOperator, EntityCondition) */
     EntityCondition makeCondition(EntityCondition lhs, JoinOperator operator, EntityCondition rhs) {
-        return new BasicJoinCondition(this, lhs, operator, rhs)
+        return new BasicJoinCondition(this, (EntityConditionImplBase) lhs, operator, (EntityConditionImplBase) rhs)
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(String, ComparisonOperator, Object) */
@@ -42,12 +45,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(List<EntityCondition>, JoinOperator) */
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
-        return new ListCondition(this, conditionList, operator)
+        return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, operator)
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(List<EntityCondition>) */
     EntityCondition makeCondition(List<EntityCondition> conditionList) {
-        return new ListCondition(this, conditionList, JoinOperator.AND)
+        return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, JoinOperator.AND)
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(Map<String,?>, ComparisonOperator, JoinOperator) */
@@ -82,12 +85,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     public static class BasicJoinCondition extends EntityConditionImplBase {
-        protected EntityCondition lhs
+        protected EntityConditionImplBase lhs
         protected JoinOperator operator
-        protected EntityCondition rhs
+        protected EntityConditionImplBase rhs
 
         BasicJoinCondition(EntityConditionFactoryImpl ecFactoryImpl,
-                EntityCondition lhs, JoinOperator operator, EntityCondition rhs) {
+                EntityConditionImplBase lhs, JoinOperator operator, EntityConditionImplBase rhs) {
             super(ecFactoryImpl)
             this.lhs = lhs
             this.operator = operator
@@ -95,18 +98,32 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            StringBuilder sql = efb.getSqlTopLevel()
+            sql.append('(')
+            this.lhs.makeSqlWhere(efb)
+            sql.append(' ')
+            sql.append(StupidUtilities.getJoinOperatorString(this.operator))
+            sql.append(' ')
+            this.rhs.makeSqlWhere(efb)
+            sql.append(')')
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
-            return false
+            boolean lhsMatches = this.lhs.mapMatches(map)
+
+            // handle cases where we don't need to evaluate rhs
+            if (lhsMatches && operator == JoinOperator.OR) return true
+            if (!lhsMatches && operator == JoinOperator.AND) return false
+
+            // handle opposite cases since we know cases above aren't true (ie if OR then lhs=false, if AND then lhs=true
+            // if rhs then result is true whether AND or OR
+            // if !rhs then result is false whether AND or OR
+            return this.rhs.mapMatches(map)
         }
 
         String toString() {
             // general SQL where clause style text with values included
-            // TODO implement this
-            return null
+            return "(" + lhs.toString() + " " + StupidUtilities.getJoinOperatorString(this.operator) + " " + rhs.toString() + ")"
         }
     }
 
@@ -124,17 +141,53 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            StringBuilder sql = efb.getSqlTopLevel()
+            sql.append(efb.mainEntityDefinition.getColumnName(this.fieldName, false))
+            sql.append(' ')
+            boolean valueDone = false
+            if (this.value == null) {
+                if (this.operator == ComparisonOperator.EQUALS || this.operator == ComparisonOperator.LIKE ||
+                        this.operator == ComparisonOperator.IN) {
+                    sql.append(" IS NULL")
+                    valueDone = true
+                } else if (this.operator == ComparisonOperator.NOT_EQUAL || this.operator == ComparisonOperator.NOT_LIKE ||
+                        this.operator == ComparisonOperator.NOT_IN) {
+                    sql.append(" IS NOT NULL")
+                    valueDone = true
+                }
+            }
+            if (!valueDone) {
+                sql.append(StupidUtilities.getComparisonOperatorString(this.operator))
+                if ((this.operator == ComparisonOperator.IN || this.operator == ComparisonOperator.NOT_IN) &&
+                        this.value instanceof Collection) {
+                    sql.append(" (")
+                    boolean isFirst = true
+                    for (Object curValue in this.value) {
+                        if (isFirst) isFirst = false else sql.append(", ")
+                        sql.append("?")
+                        efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), curValue, efb))
+                    }
+                    sql.append(')')
+                } else if (this.operator == ComparisonOperator.BETWEEN &&
+                        this.value instanceof Collection && ((Collection) this.value).size() == 2) {
+                    Iterator iterator = ((Collection) this.value).iterator()
+                    sql.append(" ? AND ?")
+                    efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), iterator.next(), efb))
+                    efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), iterator.next(), efb))
+                } else {
+                    sql.append(" ?")
+                    efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), this.value, efb))
+                }
+            }
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
-            return false
+            Object value1 = map.get(this.fieldName)
+            return compareByOperator(value1, this.operator, this.value)
         }
 
         String toString() {
-            // TODO implement this
-            return null
+            return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.value
         }
     }
 
@@ -152,43 +205,73 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            StringBuilder sql = efb.getSqlTopLevel()
+            sql.append(efb.mainEntityDefinition.getColumnName(this.fieldName, false))
+            sql.append(' ')
+            sql.append(StupidUtilities.getComparisonOperatorString(this.operator))
+            sql.append(' ')
+            sql.append(efb.mainEntityDefinition.getColumnName(this.toFieldName, false))
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
-            return false
+            Object value1 = map.get(this.fieldName)
+            Object value2 = map.get(this.toFieldName)
+            return compareByOperator(value1, this.operator, value2)
         }
 
         String toString() {
-            // TODO implement this
-            return null
+            return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.toFieldName
         }
     }
 
     public static class ListCondition extends EntityConditionImplBase {
-        protected List<EntityCondition> conditionList
+        protected List<EntityConditionImplBase> conditionList
         protected JoinOperator operator
 
         ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
-                List<EntityCondition> conditionList, JoinOperator operator) {
+                List<EntityConditionImplBase> conditionList, JoinOperator operator) {
             super(ecFactoryImpl)
             this.conditionList = conditionList
             this.operator = operator
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            if (!this.conditionList) return
+
+            StringBuilder sql = efb.getSqlTopLevel()
+            sql.append('(')
+            boolean isFirst = true
+            for (EntityConditionImplBase condition in this.conditionList) {
+                if (isFirst) isFirst = false else {
+                    sql.append(' ')
+                    sql.append(StupidUtilities.getJoinOperatorString(this.operator))
+                    sql.append(' ')
+                }
+                condition.makeSqlWhere(efb)
+            }
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
-            return false
+            for (EntityConditionImplBase condition in this.conditionList) {
+                boolean conditionMatches = condition.mapMatches(map)
+                if (conditionMatches && this.operator == JoinOperator.OR) return true
+                if (!conditionMatches && this.operator == JoinOperator.AND) return false
+            }
+            // if we got here it means that it's an OR with no trues, or an AND with no falses
+            return (this.operator == JoinOperator.AND)
         }
 
         String toString() {
-            // TODO implement this
-            return null
+            StringBuilder sb = new StringBuilder()
+            for (EntityConditionImplBase condition in this.conditionList) {
+                if (sb.length() > 0) {
+                    sb.append(' ')
+                    sb.append(StupidUtilities.getJoinOperatorString(this.operator))
+                    sb.append(' ')
+                }
+                sb.append(condition.toString())
+            }
+            return sb.toString()
         }
     }
 
@@ -206,17 +289,39 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            this.makeCondition().makeSqlWhere(efb)
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
-            return false
+            return this.makeCondition().mapMatches(map)
         }
 
         String toString() {
-            // TODO implement this
-            return null
+            return this.makeCondition().toString()
+            /* might want to do something like this at some point, but above is probably better for now
+            StringBuilder sb = new StringBuilder()
+            for (Map.Entry fieldEntry in this.fieldMap.entrySet()) {
+                if (sb.length() > 0) {
+                    sb.append(' ')
+                    sb.append(StupidUtilities.getJoinOperatorString(this.joinOperator))
+                    sb.append(' ')
+                }
+                sb.append(fieldEntry.getKey())
+                sb.append(' ')
+                sb.append(StupidUtilities.getComparisonOperatorString(this.comparisonOperator))
+                sb.append(' ')
+                sb.append(fieldEntry.getValue())
+            }
+            return sb.toString()
+            */
+        }
+
+        protected EntityConditionImplBase makeCondition() {
+            List conditionList = new LinkedList()
+            for (Map.Entry<String, ?> fieldEntry in this.fieldMap.entrySet()) {
+                conditionList.add(this.ecFactoryImpl.makeCondition(fieldEntry.getKey(), this.comparisonOperator, fieldEntry.getValue()))
+            }
+            return this.ecFactoryImpl.makeCondition(conditionList, this.joinOperator)
         }
     }
 
@@ -234,17 +339,31 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            this.makeCondition().makeSqlWhere(efb)
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
-            return false
+            return this.makeCondition().mapMatches(map)
         }
 
         String toString() {
-            // TODO implement this
-            return null
+            return this.makeCondition().toString()
+        }
+
+        protected EntityConditionImplBase makeCondition() {
+            return this.ecFactoryImpl.makeCondition(
+                this.ecFactoryImpl.makeCondition(
+                    this.ecFactoryImpl.makeCondition(this.thruFieldName, ComparisonOperator.EQUALS, null),
+                    JoinOperator.OR,
+                    this.ecFactoryImpl.makeCondition(this.thruFieldName, ComparisonOperator.GREATER_THAN, this.compareStamp)
+                ),
+                JoinOperator.AND,
+                this.ecFactoryImpl.makeCondition(
+                    this.ecFactoryImpl.makeCondition(this.fromFieldName, ComparisonOperator.EQUALS, null),
+                    JoinOperator.OR,
+                    this.ecFactoryImpl.makeCondition(this.fromFieldName, ComparisonOperator.LESS_THAN_EQUAL_TO, this.compareStamp)
+                )
+            )
         }
     }
 
@@ -257,17 +376,16 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         void makeSqlWhere(EntityFindBuilder efb) {
-            // TODO implement this
+            efb.getSqlTopLevel().append(this.sqlWhereClause)
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this
+            // TODO implement this, or not...
             return false
         }
 
         String toString() {
-            // TODO implement this
-            return null
+            return this.sqlWhereClause
         }
     }
 }
