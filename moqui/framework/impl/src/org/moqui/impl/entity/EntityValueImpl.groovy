@@ -76,6 +76,8 @@ class EntityValueImpl implements EntityValue {
             }
         }
 
+        // TODO use LocalizedEntityField for any localized fields
+
         return this.valueMap[name]
     }
 

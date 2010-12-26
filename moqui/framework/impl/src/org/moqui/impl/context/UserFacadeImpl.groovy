@@ -13,46 +13,91 @@ package org.moqui.impl.context
 
 import org.moqui.context.UserFacade
 import java.sql.Timestamp
+import org.moqui.entity.EntityValue
 
 class UserFacadeImpl implements UserFacade {
 
+    protected ExecutionContextImpl eci
+
+    protected Timestamp effectiveTime = null
+
+    protected EntityValue userAccount = null
+    protected EntityValue visit = null
+
+    UserFacadeImpl(ExecutionContextImpl eci) {
+        this.eci = eci
+    }
+
     /** @see org.moqui.context.UserFacade#getLocale() */
     Locale getLocale() {
-        return null;  // TODO: implement this
+        return this.userAccount ? new Locale((String) this.userAccount.locale) : Locale.getDefault()
+    }
+
+    /** @see org.moqui.context.UserFacade#setLocale(Locale) */
+    void setLocale(Locale locale) {
+        if (this.userAccount) {
+            // TODO: change this to a service to tx mgmt, etc
+            this.userAccount.refresh()
+            this.userAccount.locale = locale.toString()
+            this.userAccount.update()
+        } else {
+            throw new IllegalStateException("No user logged in, can't set Locale")
+        }
     }
 
     /** @see org.moqui.context.UserFacade#getTimeZone() */
     TimeZone getTimeZone() {
-        return null;  // TODO: implement this
+        return this.userAccount ? TimeZone.getTimeZone((String) this.userAccount.timeZone) : TimeZone.getDefault()
+    }
+
+    /** @see org.moqui.context.UserFacade#setTimeZone(TimeZone) */
+    void setTimeZone(TimeZone tz) {
+        if (this.userAccount) {
+            // TODO: change this to a service to tx mgmt, etc
+            this.userAccount.refresh()
+            this.userAccount.timeZone = tz.getID()
+            this.userAccount.update()
+        } else {
+            throw new IllegalStateException("No user logged in, can't set Time Zone")
+        }
     }
 
     /** @see org.moqui.context.UserFacade#getCurrencyUomId() */
-    String getCurrencyUomId() {
-        return null;  // TODO: implement this
+    String getCurrencyUomId() { return this.userAccount ? this.userAccount.currencyUomId : null }
+
+    /** @see org.moqui.context.UserFacade#setCurrencyUomId(String) */
+    void setCurrencyUomId(String uomId) {
+        if (this.userAccount) {
+            // TODO: change this to a service to tx mgmt, etc
+            this.userAccount.refresh()
+            this.userAccount.currencyUomId = uomId
+            this.userAccount.update()
+        } else {
+            throw new IllegalStateException("No user logged in, can't set Currency")
+        }
     }
 
     /** @see org.moqui.context.UserFacade#getNowTimestamp() */
     Timestamp getNowTimestamp() {
-        return null;  // TODO: implement this
+        // TODO: review Timestamp use, have things use this by default
+        return this.effectiveTime ? this.effectiveTime : new Timestamp(System.currentTimeMillis())
     }
 
     /** @see org.moqui.context.UserFacade#setEffectiveTime(Timestamp) */
-    void setEffectiveTime(Timestamp effectiveTime) {
-        // TODO: implement this
-    }
+    void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
     /** @see org.moqui.context.UserFacade#getUserId() */
-    String getUserId() {
-        return null;  // TODO: implement this
-    }
+    String getUserId() { return this.userAccount ? this.userAccount.userId : null }
+
+    /** @see org.moqui.context.UserFacade#getUserAccount() */
+    EntityValue getUserAccount() { return this.userAccount }
 
     /** @see org.moqui.context.UserFacade#getVisitUserId() */
-    String getVisitUserId() {
-        return null;  // TODO: implement this
-    }
+    String getVisitUserId() { return this.visit ? this.visit.userId : null }
 
     /** @see org.moqui.context.UserFacade#getVisitId() */
-    String getVisitId() {
-        return null;  // TODO: implement this
-    }
+    String getVisitId() { return this.visit ? this.visit.visitId : null }
+
+    /** @see org.moqui.context.UserFacade#getVisit() */
+    EntityValue getVisit() { return this.visit }
 }

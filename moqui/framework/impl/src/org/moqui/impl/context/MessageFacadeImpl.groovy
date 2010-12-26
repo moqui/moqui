@@ -16,21 +16,18 @@ import org.moqui.context.ValidationError
 
 public class MessageFacadeImpl implements MessageFacade {
 
+    protected List<String> messageList = new LinkedList<String>()
+    protected List<String> errorList = new LinkedList<String>()
+    protected List<ValidationError> validationErrorList = new LinkedList<ValidationError>()
+
+    MessageFacadeImpl() { }
+
     /** @see org.moqui.context.MessageFacade#getMessageList() */
-    public List<String> getMessageList() {
-        // TODO: implement this
-        return null;
-    }
+    public List<String> getMessageList() { return this.messageList }
 
     /** @see org.moqui.context.MessageFacade#getErrorList() */
-    public List<String> getErrorList() {
-        // TODO: implement this
-        return null;
-    }
+    public List<String> getErrorList() { return this.errorList }
 
     /** @see org.moqui.context.MessageFacade#getValidationErrorList() */
-    public List<ValidationError> getValidationErrorList() {
-        // TODO: implement this
-        return null;
-    }
+    public List<ValidationError> getValidationErrorList() { return this.validationErrorList }
 }

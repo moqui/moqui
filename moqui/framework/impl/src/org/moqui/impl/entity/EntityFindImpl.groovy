@@ -42,7 +42,7 @@ class EntityFindImpl implements EntityFind {
     protected TreeSet<String> fieldsToSelect = null
     protected List<String> orderByFields = null
 
-    protected boolean useCache = false
+    protected Boolean useCache = null
     protected boolean forUpdate = false
 
     protected int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE

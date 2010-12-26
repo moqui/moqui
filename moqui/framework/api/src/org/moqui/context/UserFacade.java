@@ -11,6 +11,8 @@
  */
 package org.moqui.context;
 
+import org.moqui.entity.EntityValue;
+
 import java.sql.Timestamp;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -20,11 +22,20 @@ public interface UserFacade {
     /** @return Locale The active Locale from user preference or system default. */
     Locale getLocale();
 
+    /** Set the user's Locale. This is used in this context and saved to the database for future contexts. */
+    void setLocale(Locale locale);
+
     /** @return TimeZone The active TimeZone from user preference or system default. */
     TimeZone getTimeZone();
 
+    /** Set the user's Time Zone. This is used in this context and saved to the database for future contexts. */
+    void setTimeZone(TimeZone tz);
+
     /** @return String The active ISO currency code from user preference or system default. */
     String getCurrencyUomId();
+
+    /** Set the user's Time Zone. This is used in this context and saved to the database for future contexts. */
+    void setCurrencyUomId(String uomId);
 
     /** Get the current date and time in a Timestamp object. This is either the current system time, or the Effective
      * Time if that has been set for this context (allowing testing of past and future system behavior).
@@ -42,9 +53,15 @@ public interface UserFacade {
     /** ID of the current active user (from the UserAccount entity) */
     String getUserId();
 
+    /** Value for the current active user (the UserAccount entity) */
+    EntityValue getUserAccount();
+
     /** ID of the user associated with the visit. May be different from the active user ID if a service or something is run explicitly as another user. */
     String getVisitUserId();
 
     /** ID for the current visit (aka session; from the Visit entity). Depending on the artifact being executed this may be null. */
     String getVisitId();
+
+    /** The current visit (aka session; from the Visit entity). Depending on the artifact being executed this may be null. */
+    EntityValue getVisit();
 }

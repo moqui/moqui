@@ -24,7 +24,6 @@ import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
-
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
     
     protected boolean destroyed = false

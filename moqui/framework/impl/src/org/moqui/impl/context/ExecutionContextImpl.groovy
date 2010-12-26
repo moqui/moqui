@@ -26,79 +26,65 @@ import org.moqui.context.ArtifactExecutionFacade
 
 class ExecutionContextImpl implements ExecutionContext {
 
-    ExecutionContextFactoryImpl ecfi;
+    ExecutionContextFactoryImpl ecfi
+
+    protected ContextStack context = new ContextStack()
+    protected String tenantId = null
+
+    protected UserFacadeImpl userFacade
+    protected MessageFacadeImpl messageFacade
+    protected L10nFacadeImpl l10nFacade
+    protected ArtifactExecutionFacadeImpl artifactExecutionFacade
 
     ExecutionContextImpl(ExecutionContextFactoryImpl ecfi) {
-        this.ecfi = ecfi;
+        this.ecfi = ecfi
+        this.userFacade = new UserFacadeImpl(this)
+        this.messageFacade = new MessageFacadeImpl()
+        this.l10nFacade = new L10nFacadeImpl(this)
+        this.artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this)
     }
 
     /** @see org.moqui.context.ExecutionContext#getContext() */
-    Map<String, Object> getContext() {
-        return null;  // TODO: implement this
-    }
+    Map<String, Object> getContext() { return this.context }
 
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
-    Map<String, Object> getContextRoot() {
-        return null;  // TODO: implement this
-    }
+    Map<String, Object> getContextRoot() { return this.context.getRootMap() }
     
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
-    String getTenantId() {
-        return null;  // TODO: implement this
-    }
+    String getTenantId() { return this.tenantId }
 
     /** @see org.moqui.context.ExecutionContext#getUser() */
-    UserFacade getUser() {
-        return null;  // TODO: implement this
-    }
+    UserFacade getUser() { return this.userFacade }
 
     /** @see org.moqui.context.ExecutionContext#getMessage() */
-    MessageFacade getMessage() {
-        return null;  // TODO: implement this
-    }
+    MessageFacade getMessage() { return this.messageFacade }
 
     /** @see org.moqui.context.ExecutionContext#getL10n() */
-    L10nFacade getL10n() {
-        return null;  // TODO: implement this
-    }
+    L10nFacade getL10n() { return this.l10nFacade }
 
     /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
-    ArtifactExecutionFacade getArtifactExecution() {
-        return null;  // TODO: implement this
-    }
+    ArtifactExecutionFacade getArtifactExecution() { return this.artifactExecutionFacade }
+
+    // ==== More Permanent Objects (get from the factory instead of locally) ===
 
     /** @see org.moqui.context.ExecutionContext#getResource() */
-    ResourceFacade getResource() {
-        return this.ecfi.getResourceFacade();
-    }
+    ResourceFacade getResource() { return this.ecfi.getResourceFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getLogger() */
-    LoggerFacade getLogger() {
-        return this.ecfi.getLoggerFacade();
-    }
+    LoggerFacade getLogger() { return this.ecfi.getLoggerFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getCache() */
-    CacheFacade getCache() {
-        return this.ecfi.getCacheFacade();
-    }
+    CacheFacade getCache() { return this.ecfi.getCacheFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getTransaction() */
-    TransactionFacade getTransaction() {
-        return this.ecfi.getTransactionFacade();
-    }
+    TransactionFacade getTransaction() { return this.ecfi.getTransactionFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getEntity() */
-    EntityFacade getEntity() {
-        return this.ecfi.getEntityFacade();
-    }
+    EntityFacade getEntity() { return this.ecfi.getEntityFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getService() */
-    ServiceFacade getService() {
-        return this.ecfi.getServiceFacade();
-    }
+    ServiceFacade getService() { return this.ecfi.getServiceFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
-    ScreenFacade getScreen() {
-        return this.ecfi.getScreenFacade();
-    }
+    ScreenFacade getScreen() { return this.ecfi.getScreenFacade() }
 }

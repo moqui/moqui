@@ -13,35 +13,33 @@ package org.moqui.impl.context
 
 import org.moqui.context.ArtifactExecutionInfo
 
-public class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
+class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
+
+    protected String location
+    protected String name
+    protected String authorizedUserId
+    protected boolean isAuthorizationInheritable
+
+    ArtifactExecutionInfoImpl(String location, String name, String authorizedUserId, boolean isAuthorizationInheritable) {
+        this.location = location
+        this.name = name
+        this.authorizedUserId = authorizedUserId
+        this.isAuthorizationInheritable = isAuthorizationInheritable
+    }
+
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getLocation() */
-    public String getLocation() {
-        // TODO: implement this
-        return null;
-    }
+    String getLocation() { return this.location }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getLocationURL() */
-    public URL getLocationURL() {
-        // TODO: implement this
-        return null;
-    }
+    URL getLocationURL() { return new URL(this.location) }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
-    public String getName() {
-        // TODO: implement this
-        return null;
-    }
+    String getName() { return this.name }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedUserId() */
-    public String getAuthorizedUserId() {
-        // TODO: implement this
-        return null;
-    }
+    String getAuthorizedUserId() { return this.authorizedUserId }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#isAuthorizationInheritable() */
-    public boolean isAuthorizationInheritable() {
-        // TODO: implement this
-        return null;
-    }
+    boolean isAuthorizationInheritable() { return this.isAuthorizationInheritable }
 }

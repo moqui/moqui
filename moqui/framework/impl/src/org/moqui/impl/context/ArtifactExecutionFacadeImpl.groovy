@@ -16,36 +16,45 @@ import org.moqui.context.ArtifactExecutionInfo
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
+    protected ExecutionContextImpl eci
+
+    protected List<ArtifactExecutionInfo> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfo>()
+
+    ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
+        this.eci = eci
+    }
+
     /** @see org.moqui.context.ArtifactExecutionFacade#getCurrentArtifactExecutionInfo() */
     public ArtifactExecutionInfo getCurrentArtifactExecutionInfo() {
-        // TODO: implement this
-        return null;
+        return this.artifactExecutionInfoStack ? this.artifactExecutionInfoStack[0] : null
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#getArtifactExecutionInfoStack() */
     public List<ArtifactExecutionInfo> getArtifactExecutionInfoStack() {
-        // TODO: implement this
-        return null;
-    }
-
-    void pushUserId(String userId) {
-
-    }
-    String popUserId() {
-
-    }
-
-    void pushSessionId(String sessionId) {
-        
-    }
-    String popSessionId() {
-
+        return this.artifactExecutionInfoStack
     }
 
     void pushArtifactExecutionInfo(ArtifactExecutionInfo artifactExecutionInfo) {
-
+        this.artifactExecutionInfoStack.add(0, artifactExecutionInfo)
     }
-    ArtifactExecutionInfo popArtifactExecutionInfo() {
 
+    ArtifactExecutionInfo popArtifactExecutionInfo() {
+        return this.artifactExecutionInfoStack ? this.artifactExecutionInfoStack.remove(0) : null
+    }
+
+    void pushUserId(String userId) {
+        // TODO: what to do with this? leave for now, possibly eliminate later
+    }
+    String popUserId() {
+        // TODO: what to do with this? leave for now, possibly eliminate later
+        return null
+    }
+
+    void pushSessionId(String sessionId) {
+        // TODO: what to do with this? leave for now, possibly eliminate later
+    }
+    String popSessionId() {
+        // TODO: what to do with this? leave for now, possibly eliminate later
+        return null
     }
 }
