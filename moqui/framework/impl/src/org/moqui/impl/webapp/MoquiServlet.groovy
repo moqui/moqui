@@ -44,6 +44,7 @@ class MoquiServlet extends HttpServlet {
     /** @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
         WebExecutionContext wec = Moqui.initWebExecutionContext(request, response)
 
         // TODO: render screens based on path in URL (should probably move this to another class that renders screens)

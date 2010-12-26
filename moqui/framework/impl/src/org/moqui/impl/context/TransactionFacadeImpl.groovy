@@ -11,108 +11,341 @@
  */
 package org.moqui.impl.context
 
-import org.moqui.context.TransactionFacade
 import javax.transaction.Transaction
 import javax.transaction.xa.XAResource
 import javax.transaction.Synchronization
+import javax.transaction.SystemException
+import javax.transaction.UserTransaction
+import javax.transaction.TransactionManager
+import javax.transaction.Status
+import javax.transaction.NotSupportedException
+import javax.transaction.RollbackException
+import javax.transaction.HeuristicMixedException
+import javax.transaction.HeuristicRollbackException
+
+import org.moqui.BaseException
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import javax.transaction.InvalidTransactionException
 
 class TransactionFacadeImpl implements TransactionFacade {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi;
 
+    protected UserTransaction ut
+    protected TransactionManager tm
+
+    private static ThreadLocal<ArrayList<Exception>> transactionBeginStack = new ThreadLocal<ArrayList<Exception>>().set(new ArrayList<Exception>())
+    private static ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStack = new ThreadLocal<ArrayList<RollbackInfo>>().set(new ArrayList<RollbackInfo>())
+    private static ThreadLocal<ArrayList<Transaction>> suspendedTxStack = new ThreadLocal<ArrayList<Transaction>>().set(new ArrayList<Transaction>())
+
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi;
 
-        // TODO: init tx mgr, etc
+        // TODO: init ut, tm
     }
 
     void destroy() {
-        // TODO: destroy tx mgr, etc
+        // TODO: destroy ut, tm
     }
 
+    /** This is called to make sure all transactions, etc are closed for the thread.
+     * It commits any active transactions, clears out internal data for the thread, etc.
+     */
     void destroyAllInThread() {
         if (this.isTransactionInPlace()) {
             logger.warn("Thread ending with a transaction in place. Trying to commit.")
             this.commit()
         }
 
-        // TODO: manage suspended transactions?
-        //if (suspendedTransactionsHeld()) {
-        //    int suspended = cleanSuspendedTransactions()
-        //    logger.warn("Cleaned up [" + suspended + "] transactions.")
-        //}
+        if (suspendedTxStack.get()) {
+            int numSuspended = 0;
+            for (Transaction tx in suspendedTxStack.get()) {
+                this.resume(tx)
+                this.commit()
+                numSuspended++
+            }
+            logger.warn("Cleaned up [" + numSuspended + "] suspended transactions.")
+        }
+
+        transactionBeginStack.set(new ArrayList<Exception>())
+        rollbackOnlyInfoStack.set(new ArrayList<RollbackInfo>())
+        suspendedTxStack.set(new ArrayList<Transaction>())
     }
 
     /** @see org.moqui.context.TransactionFacade#getStatus() */
     int getStatus() {
-        // TODO: implement this
-        return 0;
+        try {
+            return ut.getStatus()
+        } catch (SystemException e) {
+            throw new TransactionException("System error, could not get transaction status", e)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#getStatusString() */
     String getStatusString() {
-        // TODO: implement this
-        return null;
+        int statusInt = getStatus()
+        /*
+         * javax.transaction.Status
+         * STATUS_ACTIVE           0
+         * STATUS_MARKED_ROLLBACK  1
+         * STATUS_PREPARED         2
+         * STATUS_COMMITTED        3
+         * STATUS_ROLLEDBACK       4
+         * STATUS_UNKNOWN          5
+         * STATUS_NO_TRANSACTION   6
+         * STATUS_PREPARING        7
+         * STATUS_COMMITTING       8
+         * STATUS_ROLLING_BACK     9
+         */
+        switch (statusInt) {
+            case Status.STATUS_ACTIVE:
+                return "Active (${statusInt})";
+            case Status.STATUS_COMMITTED:
+                return "Committed (${statusInt})";
+            case Status.STATUS_COMMITTING:
+                return "Committing (${statusInt})";
+            case Status.STATUS_MARKED_ROLLBACK:
+                return "Marked Rollback-Only (${statusInt})";
+            case Status.STATUS_NO_TRANSACTION:
+                return "No Transaction (${statusInt})";
+            case Status.STATUS_PREPARED:
+                return "Prepared (${statusInt})";
+            case Status.STATUS_PREPARING:
+                return "Preparing (${statusInt})";
+            case Status.STATUS_ROLLEDBACK:
+                return "Rolledback (${statusInt})";
+            case Status.STATUS_ROLLING_BACK:
+                return "Rolling Back (${statusInt})";
+            case Status.STATUS_UNKNOWN:
+                return "Status Unknown (${statusInt})";
+            default:
+                return "Not a valid status code (${statusInt})";
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#isTransactionInPlace() */
     boolean isTransactionInPlace() {
-        // TODO: implement this
-        return false;
+        return getStatus() != Status.STATUS_NO_TRANSACTION
     }
 
     /** @see org.moqui.context.TransactionFacade#begin(Integer) */
     boolean begin(Integer timeout) {
-        // TODO: implement this
-        return false;
+        try {
+            int currentStatus = ut.getStatus()
+            if (currentStatus == Status.STATUS_ACTIVE) {
+                // don't begin, and return false so caller knows we didn't
+                return false
+            } else if (currentStatus == Status.STATUS_MARKED_ROLLBACK) {
+                if (transactionBeginStack.get()) {
+                    logger.warn("Current transaction marked for rollback, so no transaction begun. This stack trace shows where the transaction began: ", transactionBeginStack.get().get(0))
+                } else {
+                    logger.warn("Current transaction marked for rollback, so no transaction begun (NOTE: No stack trace to show where transaction began).")
+                }
+
+                if (rollbackOnlyInfoStack.get()) {
+                    logger.warn("Current transaction marked for rollback, not beginning a new transaction. The rollback-only was set here: ", rollbackOnlyInfoStack.get().get(0).rollbackLocation)
+                    throw new TransactionException("Current transaction marked for rollback, so no transaction begun. The rollback was originally caused by: " + rollbackOnlyInfoStack.get().get(0).causeMessage, rollbackOnlyInfoStack.get().get(0).causeThrowable)
+                } else {
+                    return false
+                }
+            }
+
+            if (timeout) ut.setTransactionTimeout(timeout)
+            ut.begin()
+            if (timeout) ut.setTransactionTimeout(0)
+
+            transactionBeginStack.get().set(0, new Exception("Tx Begin Placeholder"))
+
+            return true
+        } catch (NotSupportedException e) {
+            throw new TransactionException("Could not begin transaction (could be a nesting problem)", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not begin transaction", e)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#commit(boolean) */
-    void commit(boolean beganTransaction) {
-        // TODO: implement this
+    void commit(boolean beganTransaction) { if (beganTransaction) this.commit() }
+
+    /** @see org.moqui.context.TransactionFacade#commit() */
+    void commit() {
+        try {
+            int status = ut.getStatus();
+            if (status != Status.STATUS_NO_TRANSACTION && status != Status.STATUS_COMMITTING &&
+                    status != Status.STATUS_COMMITTED && status != Status.STATUS_ROLLING_BACK &&
+                    status != Status.STATUS_ROLLEDBACK) {
+                ut.commit()
+            } else {
+                logger.warn("Not committing transaction because status is " + getStatusString())
+            }
+        } catch (RollbackException e) {
+            RollbackInfo rollbackOnlyInfo = rollbackOnlyInfoStack.get().get(0)
+            if (rollbackOnlyInfo) {
+                logger.warn("Could not commit transaction, was marked rollback-only. The rollback-only was set here: ", rollbackOnlyInfoStack.get().get(0).rollbackLocation)
+                throw new TransactionException("Could not commit transaction, was marked rollback-only. The rollback was originally caused by: " + rollbackOnlyInfoStack.get().get(0).causeMessage, rollbackOnlyInfoStack.get().get(0).causeThrowable)
+            } else {
+                throw new TransactionException("Could not commit transaction, was rolled back instead (and we don't have a rollback-only cause)", e)
+            }
+        } catch (IllegalStateException e) {
+            throw new TransactionException("Could not commit transaction", e)
+        } catch (HeuristicMixedException e) {
+            throw new TransactionException("Could not commit transaction", e)
+        } catch (HeuristicRollbackException e) {
+            throw new TransactionException("Could not commit transaction", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not commit transaction", e)
+        } finally {
+            if (rollbackOnlyInfoStack.get()) rollbackOnlyInfoStack.get().set(0, null)
+            if (transactionBeginStack.get()) transactionBeginStack.get().set(0, null)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#rollback(boolean, String, Throwable) */
     void rollback(boolean beganTransaction, String causeMessage, Throwable causeThrowable) {
-        // TODO: implement this
+        if (beganTransaction) {
+            this.rollback(causeMessage, causeThrowable)
+        } else {
+            this.setRollbackOnly(causeMessage, causeThrowable)
+        }
     }
 
-    /** @see org.moqui.context.TransactionFacade#commit() */
-    void commit() {
-        // TODO: implement this
-    }
+    /** @see org.moqui.context.TransactionFacade#rollback(String, Throwable) */
+    void rollback(String causeMessage, Throwable causeThrowable) {
+        try {
+            if (getStatus() == Status.STATUS_NO_TRANSACTION) {
+                logger.warn("Transaction not rolled back, status is STATUS_NO_TRANSACTION")
+                return
+            }
 
-    /** @see org.moqui.context.TransactionFacade#rollback() */
-    void rollback() {
-        // TODO: implement this
+            logger.warn("Transaction rollback. Here is the current location: ", new Exception("Rollback Locations"))
+            logger.warn("Transaction rollback. The rollback was originally caused by: " + causeMessage, causeThrowable)
+
+            ut.rollback()
+        } catch (IllegalStateException e) {
+            throw new TransactionException("Could not rollback transaction", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not rollback transaction", e)
+        } finally {
+            // NOTE: should this really be in finally? maybe we only want to do this if there is a successful rollback
+            // to avoid removing things that should still be there, or maybe here in finally it will match up the adds
+            // and removes better
+            if (rollbackOnlyInfoStack.get()) rollbackOnlyInfoStack.get().set(0, null)
+            if (transactionBeginStack.get()) transactionBeginStack.get().set(0, null)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#setRollbackOnly(String, Throwable) */
     void setRollbackOnly(String causeMessage, Throwable causeThrowable) {
-        // TODO: implement this
+        try {
+            int status = getStatus()
+            if (status != Status.STATUS_NO_TRANSACTION) {
+                if (status != Status.STATUS_MARKED_ROLLBACK) {
+                    ut.setRollbackOnly()
+                    // do this after setRollbackOnly so it only tracks it if rollback-only was actually set
+                    rollbackOnlyInfoStack.get().set(0, new RollbackInfo(causeMessage, causeThrowable, new Exception("Set rollback-only location")))
+                }
+            } else {
+                logger.warn("Rollback only not set on current transaction, status is STATUS_NO_TRANSACTION")
+            }
+        } catch (IllegalStateException e) {
+            throw new TransactionException("Could not set rollback only on current transaction", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not set rollback only on current transaction", e)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#suspend() */
     Transaction suspend() {
-        // TODO: implement this
-        return null;
+        try {
+            if (getStatus() == Status.STATUS_NO_TRANSACTION) {
+                logger.warn("No transaction in place, so not suspending.")
+                return null
+            }
+            Transaction tx = tm.suspend()
+            // only do these after successful suspend
+            rollbackOnlyInfoStack.get().add(0, null)
+            transactionBeginStack.get().add(0, null)
+            suspendedTxStack.get().add(0, tx)
+            return tx
+        } catch (SystemException e) {
+            throw new TransactionException("Could not suspend transaction", e)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#resume(Transaction) */
     void resume(Transaction parentTx) {
-        // TODO: implement this
+        if (parentTx == null) return
+        try {
+            tm.resume(parentTx)
+            // only do these after successful resume
+            rollbackOnlyInfoStack.get().remove(0)
+            transactionBeginStack.get().remove(0)
+            suspendedTxStack.get().remove(0)
+        } catch (InvalidTransactionException e) {
+            throw new TransactionException("Could not resume transaction", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not resume transaction", e)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#enlistResource(XAResource) */
     void enlistResource(XAResource resource) {
-        // TODO: implement this
+        if (resource == null) return
+        if (getStatus() != Status.STATUS_ACTIVE) {
+            logger.warn("Not enlisting XAResource: transaction not ACTIVE", new Exception("Warning Location"))
+            return
+        }
+        try {
+            Transaction tx = tm.getTransaction()
+            if (tx) {
+                 tx.enlistResource(resource)
+            } else {
+                logger.warn("Not enlisting XAResource: transaction was null", new Exception("Warning Location"))
+            }
+        } catch (RollbackException e) {
+            throw new TransactionException("Could not enlist XAResource in transaction", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not enlist XAResource in transaction", e)
+        }
     }
 
     /** @see org.moqui.context.TransactionFacade#registerSynchronization(Synchronization) */
     void registerSynchronization(Synchronization sync) {
-        // TODO: implement this
+        if (sync== null) return
+        if (getStatus() != Status.STATUS_ACTIVE) {
+            logger.warn("Not registering Synchronization: transaction not ACTIVE", new Exception("Warning Location"))
+            return
+        }
+        try {
+            Transaction tx = tm.getTransaction()
+            if (tx) {
+                 tx.registerSynchronization(sync)
+            } else {
+                logger.warn("Not registering Synchronization: transaction was null", new Exception("Warning Location"))
+            }
+        } catch (RollbackException e) {
+            throw new TransactionException("Could not register Synchronization in transaction", e)
+        } catch (SystemException e) {
+            throw new TransactionException("Could not register Synchronization in transaction", e)
+        }
+    }
+
+    static class RollbackInfo {
+        String causeMessage
+        /** A rollback is often done because of another error, this represents that error. */
+        Throwable causeThrowable
+        /** This is for a stack trace for where the rollback was actually called to help track it down more easily. */
+        Exception rollbackLocation
+
+        RollbackInfo(String causeMessage, Throwable causeThrowable, Exception rollbackLocation) {
+            this.causeMessage = causeMessage
+            this.causeThrowable = causeThrowable
+            this.rollbackLocation = rollbackLocation
+        }
     }
 }

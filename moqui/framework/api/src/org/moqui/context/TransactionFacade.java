@@ -66,39 +66,37 @@ import javax.transaction.xa.XAResource;
  */
 public interface TransactionFacade {
 
-    /** Gets the status of the transaction in the current thread IF
-     * transactions are available, otherwise returns STATUS_NO_TRANSACTION */
+    /** Get the status of the current transaction */
     int getStatus() throws TransactionException;
 
     String getStatusString() throws TransactionException;
 
     boolean isTransactionInPlace() throws TransactionException;
 
-    /** Begins a transaction in the current thread IF transactions are available; only
-     * tries if the current transaction status is ACTIVE, if not active it returns false.
-     * If and on only if it begins a transaction it will return true. In other words, if
-     * a transaction is already in place it will return false and do nothing.
+    /** Begins a transaction in the current thread. Only tries if the current transaction status is not ACTIVE, if
+     * ACTIVE it returns false since no transaction was begun.
+     *
+     * @param timeout Optional Integer for the timeout. If null the default configured will be used.
+     * @return True if a transaction was begun, otherwise false.
+     * @throws TransactionException
      */
     boolean begin(Integer timeout) throws TransactionException;
 
-    /** Commits the transaction in the current thread IF transactions are available
-     *  AND if beganTransaction is true
-     */
+    /** Commits the transaction in the current thread if beganTransaction is true */
     void commit(boolean beganTransaction) throws TransactionException;
 
-    /** Rolls back transaction in the current thread IF transactions are available
-     *  AND if beganTransaction is true; if beganTransaction is not true,
-     *  setRollbackOnly is called to insure that the transaction will be rolled back
+    /** Commits the transaction in the current thread */
+    void commit() throws TransactionException;
+
+    /** Rollback current transaction if beganTransaction is true, otherwise setRollbackOnly is called to mark current
+     * transaction as rollback only.
      */
     void rollback(boolean beganTransaction, String causeMessage, Throwable causeThrowable) throws TransactionException;
 
-    /** Commits the transaction in the current thread IF transactions are available */
-    void commit() throws TransactionException;
+    /** Rollback current transaction */
+    void rollback(String causeMessage, Throwable causeThrowable) throws TransactionException;
 
-    /** Rolls back transaction in the current thread IF transactions are available */
-    void rollback() throws TransactionException;
-
-    /** Makes a rollback the only possible outcome of the transaction in the current thread IF transactions are available */
+    /** Mark current transaction as rollback-only (transaction can only be rolled back) */
     void setRollbackOnly(String causeMessage, Throwable causeThrowable) throws TransactionException;
 
     Transaction suspend() throws TransactionException;

@@ -16,7 +16,7 @@
     <!-- TODO: can this be setup programmatically for easier configuration? -->
     <listener>
         <!-- Implements HttpSessionListener; used to finalize Visit and track certain stats -->
-        <listener-class>org.moqui.impl.webapp.WebappEventListener</listener-class>
+        <listener-class>org.moqui.impl.webapp.MoquiEventListener</listener-class>
     </listener>
 
     <servlet>
