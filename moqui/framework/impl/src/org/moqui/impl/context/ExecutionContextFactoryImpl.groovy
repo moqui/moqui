@@ -122,7 +122,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         Node overrideConfXmlRoot = new XmlParser().parse(confFile)
 
         // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
-        mergeConfigNodes(baseNode, overrideNode)
+        mergeConfigNodes(this.confXmlRoot, overrideConfXmlRoot)
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -184,17 +184,17 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** @see org.moqui.context.ExecutionContextFactory#getExecutionContext() */
     ExecutionContext getExecutionContext() {
-        return null;  // TODO: implement this
+        return new ExecutionContextImpl(this)
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getWebExecutionContext(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response) {
-        return null;  // TODO: implement this
+        return new WebExecutionContextImpl(request, response, this)
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
     void initComponent(String baseLocation) throws BaseException {
-        // TODO: how to get component name? for now use last directory name
+        // NOTE: how to get component name? for now use last directory name
         if (baseLocation.endsWith('/')) baseLocation = baseLocation.substring(0, baseLocation.length()-1)
         int lastSlashIndex = baseLocation.lastIndexOf('/')
         String componentName
@@ -236,7 +236,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         super.finalize()
     }
 
-    void mergeConfigNodes(Node baseNode, Node overrideNode) {
+    protected void mergeConfigNodes(Node baseNode, Node overrideNode) {
         if (overrideNode."cache-list"[0]) {
             mergeNodeWithChildKey(baseNode."cache-list"[0], overrideNode."cache-list"[0], "cache", "name")
         }
@@ -311,13 +311,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    void mergeNodeWithChildKey(Node baseNode, Node overrideNode, String childNodesName, String keyAttributeName) {
+    protected void mergeNodeWithChildKey(Node baseNode, Node overrideNode, String childNodesName, String keyAttributeName) {
         // override attributes for this node
         baseNode.attributes().putAll(overrideNode.attributes())
 
         for (Node childOverrideNode in overrideNode[childNodesName]) {
             String keyValue = childOverrideNode.attribute(keyAttributeName)
-            Node childBaseNode = baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })
+            Node childBaseNode = (Node) baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })
 
             if (childBaseNode) {
                 // merge the node attributes
@@ -332,14 +332,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 }
             } else {
                 // no matching child base node, so add a new one
-                baseNode.append(childOverrideNode.clone())
+                baseNode.append((Node) childOverrideNode.clone())
             }
 
 
         }
     }
 
-    void mergeWebappChildNodes(Node baseNode, Node overrideNode) {
+    protected void mergeWebappChildNodes(Node baseNode, Node overrideNode) {
         // handle webapp -> first-hit-in-visit[1], after-request[1], before-request[1], after-login[1], before-logout[1], root-screen[1]
         mergeWebappActions(baseNode, overrideNode, "first-hit-in-visit")
         mergeWebappActions(baseNode, overrideNode, "after-request")
@@ -358,10 +358,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {
+    protected void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {
         List overrideActionNodes = overrideWebappNode[childNodeName].actions.children()
         if (overrideActionNodes) {
-            Node childNode = baseWebappNode[childNodeName][0]
+            Node childNode = (Node) baseWebappNode[childNodeName][0]
             if (!childNode) {
                 childNode = baseWebappNode.appendNode(childNodeName)
             }

@@ -65,4 +65,9 @@ public interface ExecutionContext {
 
     /** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
     ScreenFacade getScreen();
+
+    /** This should be called when the ExecutionContext won't be used any more. Implementations should make sure
+     * any active transactions, database connections, etc are closed.
+     */
+    void destroy();
 }

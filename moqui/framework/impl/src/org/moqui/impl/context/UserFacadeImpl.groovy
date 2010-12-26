@@ -14,8 +14,12 @@ package org.moqui.impl.context
 import org.moqui.context.UserFacade
 import java.sql.Timestamp
 import org.moqui.entity.EntityValue
+import javax.servlet.http.HttpSession
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class UserFacadeImpl implements UserFacade {
+    protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
 
     protected ExecutionContextImpl eci
 
@@ -26,6 +30,21 @@ class UserFacadeImpl implements UserFacade {
 
     UserFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
+    }
+
+    void initFromHttpSession(HttpSession session) {
+        if (session.getAttribute("userAccount")) {
+            this.userAccount = (EntityValue) session.getAttribute("userAccount")
+        } else {
+
+        // TODO if no userAccount get better defaults from webapp for locale, time zone?
+        }
+        if (session.getAttribute("visit")) {
+            this.visit = (EntityValue) session.getAttribute("visit")
+        } else {
+            // this should ALWAYS be there, if not warn
+            logger.warn("In UserFacade init no visit was found in session [${session.getId()}]")
+        }
     }
 
     /** @see org.moqui.context.UserFacade#getLocale() */

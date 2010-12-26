@@ -24,6 +24,20 @@ import freemarker.ext.servlet.ServletContextHashModel
 
 class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecutionContext {
 
+    protected HttpServletRequest request
+    protected HttpServletResponse response
+
+    WebExecutionContextImpl(HttpServletRequest request, HttpServletResponse response, ExecutionContextFactoryImpl ecfi) {
+        super(ecfi)
+        this.request = request
+        this.response = response
+
+        // TODO: if there is no visit in the session then set one up
+
+        request.setAttribute("executionContext", this)
+        this.userFacade.initFromHttpSession(request.getSession())
+    }
+
     /** @see org.moqui.context.WebExecutionContext#getParameters() */
     Map<String, Object> getParameters() {
         return null;  // TODO: implement this
@@ -31,7 +45,7 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
 
     /** @see org.moqui.context.WebExecutionContext#getRequest() */
     HttpServletRequest getRequest() {
-        return null;  // TODO: implement this
+        return this.request
     }
 
     /** @see org.moqui.context.WebExecutionContext#getRequestAttributes() */
@@ -47,12 +61,12 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
 
     /** @see org.moqui.context.WebExecutionContext#getResponse() */
     HttpServletResponse getResponse() {
-        return null;  // TODO: implement this
+        return this.response
     }
 
     /** @see org.moqui.context.WebExecutionContext#getSession() */
     HttpSession getSession() {
-        return null;  // TODO: implement this
+        return this.request.getSession()
     }
 
     /** @see org.moqui.context.WebExecutionContext#getSessionAttributes() */
@@ -63,7 +77,7 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
 
     /** @see org.moqui.context.WebExecutionContext#getServletContext() */
     ServletContext getServletContext() {
-        return null;  // TODO: implement this
+        return this.request.getServletContext()
     }
 
     /** @see org.moqui.context.WebExecutionContext#getApplicationAttributes() */

@@ -87,4 +87,11 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
     ScreenFacade getScreen() { return this.ecfi.getScreenFacade() }
+
+    /** @see org.moqui.context.ExecutionContext#destroy() */
+    void destroy() {
+        // TODO?: make sure there are no db connections open, if so close them
+        // make sure there are no transactions open, if any commit them all now
+        this.ecfi.transactionFacade.destroyAllInThread()
+    }
 }

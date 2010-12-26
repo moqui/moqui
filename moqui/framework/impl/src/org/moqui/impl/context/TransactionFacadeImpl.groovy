@@ -15,8 +15,11 @@ import org.moqui.context.TransactionFacade
 import javax.transaction.Transaction
 import javax.transaction.xa.XAResource
 import javax.transaction.Synchronization
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class TransactionFacadeImpl implements TransactionFacade {
+    protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi;
 
@@ -28,6 +31,19 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     void destroy() {
         // TODO: destroy tx mgr, etc
+    }
+
+    void destroyAllInThread() {
+        if (this.isTransactionInPlace()) {
+            logger.warn("Thread ending with a transaction in place. Trying to commit.")
+            this.commit()
+        }
+
+        // TODO: manage suspended transactions?
+        //if (suspendedTransactionsHeld()) {
+        //    int suspended = cleanSuspendedTransactions()
+        //    logger.warn("Cleaned up [" + suspended + "] transactions.")
+        //}
     }
 
     /** @see org.moqui.context.TransactionFacade#getStatus() */

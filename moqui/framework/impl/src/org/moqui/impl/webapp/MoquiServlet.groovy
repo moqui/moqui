@@ -18,6 +18,8 @@ import javax.servlet.ServletException
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.ServletConfig
+import org.moqui.Moqui
+import org.moqui.context.WebExecutionContext
 
 class MoquiServlet extends HttpServlet {
     protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
@@ -42,6 +44,19 @@ class MoquiServlet extends HttpServlet {
     /** @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        WebExecutionContext wec = Moqui.initWebExecutionContext(request, response)
 
+        // TODO: render screens based on path in URL (should probably move this to another class that renders screens)
+        String pathInfo = request.getPathInfo();
+        List<String> pathElements = pathInfo.split("/") as List
+        //wec.screen.renderScreenText(String screenLocation, Appendable appender, "html", String characterEncoding, null)
+
+        // make sure everything is cleaned up
+        Moqui.destroyActiveExecutionContext()
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
     }
 }

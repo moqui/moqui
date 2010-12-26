@@ -44,7 +44,7 @@ public class Moqui {
         // TODO make this more thread safe, preferably in a non-blocking way
         ExecutionContext executionContext = activeExecutionContext.get();
         if (executionContext == null) {
-            // this should always have been initialized before it is used, and if not get a non-web ExecutionContext
+            // this should always have been initialized before getting it this way, but if not get a non-web ExecutionContext
             executionContext = activeExecutionContextFactory.getExecutionContext();
             activeExecutionContext.set(executionContext);
         }
@@ -58,6 +58,15 @@ public class Moqui {
         WebExecutionContext wec = activeExecutionContextFactory.getWebExecutionContext(request, response);
         activeExecutionContext.set(wec);
         return wec;
+    }
+
+    /** This should be called when it is known a context won't be used any more, such as at the end of a web request or service execution. */
+    public static void destroyActiveExecutionContext() {
+        ExecutionContext executionContext = activeExecutionContext.get();
+        if (executionContext != null) {
+            executionContext.destroy();
+            activeExecutionContext.remove();
+        }
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
