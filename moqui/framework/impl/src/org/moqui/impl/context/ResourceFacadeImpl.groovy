@@ -15,88 +15,78 @@ import org.moqui.context.ResourceFacade
 
 public class ResourceFacadeImpl implements ResourceFacade {
 
-    protected final ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi
 
     public ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
-        this.ecfi = ecfi;
+        this.ecfi = ecfi
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
     public URL getLocationUrl(String location) {
-        String strippedLocation = stripLocationPrefix(location);
+        String strippedLocation = stripLocationPrefix(location)
 
         if (location.startsWith("component://")) {
             // turn this into another URL using the component location
-            StringBuffer baseLocation = new StringBuffer(strippedLocation);
+            StringBuffer baseLocation = new StringBuffer(strippedLocation)
 
             // componentName is everything before the first slash
             String componentName;
-            int firstSlash = baseLocation.indexOf("/");
+            int firstSlash = baseLocation.indexOf("/")
             if (firstSlash > 0) {
-                componentName = baseLocation.substring(0, firstSlash);
+                componentName = baseLocation.substring(0, firstSlash)
                 // got the componentName, now remove it from the baseLocation
-                baseLocation.delete(0, secondSlash + 1);
+                baseLocation.delete(0, firstSlash + 1)
             } else {
-                componentName = baseLocation;
-                baseLocation = new StringBuffer("");
+                componentName = baseLocation
+                baseLocation.delete(0, baseLocation.length())
             }
 
-            String rootLocation = this.ecfi.getComponentBaseLocations().get(componentName);
-            baseLocation.insert(0, '/');
-            baseLocation.insert(0, rootLocation);
-
-            location = baseLocation.toString();
+            baseLocation.insert(0, '/')
+            baseLocation.insert(0, this.ecfi.getComponentBaseLocations().get(componentName))
+            location = baseLocation.toString()
         }
 
-        URL locationUrl = null;
+        URL locationUrl
         if (location.startsWith("classpath://")) {
             // first try the ClassLoader that loaded this class
-            locationUrl = this.getClass().getClassLoader().getResource(strippedLocation);
+            locationUrl = this.getClass().getClassLoader().getResource(strippedLocation)
             // no luck? try the system ClassLoader
-            if (!locationUrl) locationUrl = ClassLoader.getSystemResource(strippedLocation);
+            if (!locationUrl) locationUrl = ClassLoader.getSystemResource(strippedLocation)
         } else if (location.startsWith("https://") || location.startsWith("http://") ||
                    location.startsWith("ftp://") || location.startsWith("file://") ||
                    location.startsWith("jar://")) {
-            locationUrl = new URL(location);
+            locationUrl = new URL(location)
         } else if (location.indexOf(":/") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
-            if (location.charAt(0) != '/') {
-                location = this.ecfi.runtimePath + '/' + location;
-            }
-            locationUrl = new File(location).toURI().toURL();
+            if (location.charAt(0) != '/') location = this.ecfi.runtimePath + '/' + location
+            locationUrl = new File(location).toURI().toURL()
         } else {
-            // unsupported location...
-            throw new IllegalArgumentException("Unsupported location, prefix (scheme) no supported in location: " + location);
+            throw new IllegalArgumentException("Prefix (scheme) not supported for location [${location}")
         }
 
-        return locationUrl;
+        return locationUrl
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */
     public InputStream getLocationStream(String location) {
-        URL locationUrl = this.getLocationUrl(location);
-        return locationUrl.newInputStream();
+        return this.getLocationUrl(location).newInputStream()
     }
 
     protected static String stripLocationPrefix(String location) {
-        if (!location) {
-            return "";
-        }
+        if (!location) return ""
 
         // first remove colon (:) and everything before it
-        StringBuilder strippedLocation = new StringBuilder(location);
-        int colonIndex = strippedLocation.indexOf(":");
+        StringBuilder strippedLocation = new StringBuilder(location)
+        int colonIndex = strippedLocation.indexOf(":")
         if (colonIndex == 0) {
-            strippedLocation.deleteCharAt(0);
+            strippedLocation.deleteCharAt(0)
         } else if (colonIndex > 0) {
-            strippedLocation.delete(0, colonIndex+1);
+            strippedLocation.delete(0, colonIndex+1)
         }
 
-        // now remove all forward slashes
-        while (strippedLocation.charAt(0) == '/') {
-            strippedLocation.deleteCharAt(0);
-        }
+        // delete all leading forward slashes
+        while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
 
-        return strippedLocation.toString();
+        return strippedLocation.toString()
     }
 }

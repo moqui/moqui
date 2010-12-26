@@ -44,7 +44,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     private static ThreadLocal<ArrayList<Transaction>> suspendedTxStack = new ThreadLocal<ArrayList<Transaction>>().set(new ArrayList<Transaction>())
 
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
-        this.ecfi = ecfi;
+        this.ecfi = ecfi
 
         // TODO: init ut, tm
     }
