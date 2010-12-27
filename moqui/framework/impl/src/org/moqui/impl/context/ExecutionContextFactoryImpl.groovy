@@ -250,28 +250,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."transaction-facade") {
-            Node efBaseNode = baseNode."transaction-facade"[0]
-            Node efOverrideNode = overrideNode."transaction-facade"[0]
-
-            // handle server-jndi, transaction-factory
-            Node sjOverrideNode = efOverrideNode."server-jndi"[0]
-            if (sjOverrideNode) {
-                Node sjBaseNode = efBaseNode."server-jndi"[0]
-                if (sjBaseNode) {
-                    sjBaseNode.attributes().putAll(sjOverrideNode.attributes())
-                } else {
-                    efBaseNode.append(sjOverrideNode)
-                }
-            }
-            Node tfOverrideNode = efOverrideNode."transaction-factory"[0]
-            if (tfOverrideNode) {
-                Node tfBaseNode = efBaseNode."transaction-factory"[0]
-                if (tfBaseNode) {
-                    tfBaseNode.attributes().putAll(tfOverrideNode.attributes())
-                } else {
-                    efBaseNode.append(tfOverrideNode)
-                }
-            }
+            Node tfBaseNode = baseNode."transaction-facade"[0]
+            Node tfOverrideNode = overrideNode."transaction-facade"[0]
+            mergeSingleChild(tfBaseNode, tfOverrideNode, "server-jndi")
+            mergeSingleChild(tfBaseNode, tfOverrideNode, "transaction-factory")
         }
 
         if (overrideNode."screen-facade") {
@@ -305,16 +287,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node efBaseNode = baseNode."entity-facade"[0]
             Node efOverrideNode = overrideNode."entity-facade"[0]
             mergeNodeWithChildKey(efBaseNode, efOverrideNode, "datasource", "group-name")
-
-            Node sjOverrideNode = efOverrideNode."server-jndi"[0]
-            if (sjOverrideNode) {
-                Node sjBaseNode = efBaseNode."server-jndi"[0]
-                if (sjBaseNode) {
-                    sjBaseNode.attributes().putAll(sjOverrideNode.attributes())
-                } else {
-                    efBaseNode.append(sjOverrideNode)
-                }
-            }
+            mergeSingleChild(efBaseNode, efOverrideNode, "server-jndi")
         }
 
         if (overrideNode."database-list") {
@@ -323,6 +296,18 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         if (overrideNode."repository-list") {
             mergeNodeWithChildKey(baseNode."repository-list"[0], overrideNode."repository-list"[0], "repository", "name")
+        }
+    }
+
+    protected void mergeSingleChild(Node baseNode, Node overrideNode, String childNodeName) {
+        Node childOverrideNode = (Node) overrideNode[childNodeName][0]
+        if (childOverrideNode) {
+            Node childBaseNode = (Node) baseNode[childNodeName][0]
+            if (childBaseNode) {
+                childBaseNode.attributes().putAll(childOverrideNode.attributes())
+            } else {
+                baseNode.append(childOverrideNode)
+            }
         }
     }
 
@@ -344,6 +329,18 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 } else if ("database" == childNodesName) {
                     // handle database -> field-type-def@type
                     mergeNodeWithChildKey(childBaseNode, childOverrideNode, "field-type-def", "type")
+                } else if ("datasource" == childNodesName) {
+                    // handle the jndi-jdbc and inline-jdbc nodes: if either exist in override have it totally remove both from base, then copy over
+                    if (childOverrideNode."jndi-jdbc" || childOverrideNode."inline-jdbc") {
+                        if (childBaseNode."jndi-jdbc") childBaseNode.remove(childBaseNode."jndi-jdbc"[0])
+                        if (childBaseNode."inline-jdbc") childBaseNode.remove(childBaseNode."inline-jdbc"[0])
+
+                        if (childOverrideNode."inline-jdbc") {
+                            childBaseNode.append(childOverrideNode."inline-jdbc"[0])
+                        } else if (childOverrideNode."jndi-jdbc") {
+                            childBaseNode.append(childOverrideNode."jndi-jdbc"[0])
+                        }
+                    }
                 }
             } else {
                 // no matching child base node, so add a new one

@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import com.atomikos.icatch.jta.UserTransactionManager
+
 import javax.transaction.Transaction
 import javax.transaction.xa.XAResource
 import javax.transaction.Synchronization
@@ -22,12 +24,6 @@ import javax.transaction.NotSupportedException
 import javax.transaction.RollbackException
 import javax.transaction.HeuristicMixedException
 import javax.transaction.HeuristicRollbackException
-
-import org.moqui.context.TransactionException
-import org.moqui.context.TransactionFacade
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import javax.transaction.InvalidTransactionException
 import javax.naming.InitialContext
 import javax.naming.NamingException
@@ -35,6 +31,12 @@ import javax.naming.Context
 import java.sql.SQLException
 import javax.sql.XAConnection
 import java.sql.Connection
+
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class TransactionFacadeImpl implements TransactionFacade {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
@@ -54,13 +56,23 @@ class TransactionFacadeImpl implements TransactionFacade {
         Node transactionFactory = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."transaction-factory"[0]
         if (transactionFactory."@factory-type" == "jndi") {
             this.populateTransactionObjectsJndi()
+        } else if (transactionFactory."@factory-type" == "internal") {
+            UserTransactionManager utm = new UserTransactionManager()
+            utm.init()
+            this.ut = utm
+            this.tm = utm
         } else {
             throw new IllegalArgumentException("Transaction factory type [${transactionFactory."@factory-type"}] not supported")
         }
     }
 
     void destroy() {
-        // TODO: destroy ut, tm (just for internal/geronimo; nothing for JNDI
+        // destroy ut, tm (just for internal/Atomikos; nothing for JNDI
+        if (this.tm instanceof UserTransactionManager) {
+            ((UserTransactionManager) this.tm).close()
+            this.tm = null
+            this.ut = null
+        }
     }
 
     /** This is called to make sure all transactions, etc are closed for the thread.

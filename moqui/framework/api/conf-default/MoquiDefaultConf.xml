@@ -61,15 +61,15 @@
                      url-pkg-prefixes="java.naming.rmi.security.manager"
                      security-principal="" security-credentials=""/> -->
 
+        <!-- Use this one for the internal transaction manager -->
+        <transaction-factory factory-type="internal"/>
+
         <!-- Use this one for getting the JTA objects from JNDI -->
-        <transaction-factory factory-type="jndi" transaction-manager-jndi-name="java:comp/UserTransaction"
-                             user-transaction-jndi-name="java:comp/UserTransaction"/>
+        <!-- <transaction-factory factory-type="jndi" transaction-manager-jndi-name="java:comp/UserTransaction"
+                             user-transaction-jndi-name="java:comp/UserTransaction"/> -->
         <!-- UserTransaction JNDI name for most servers: java:comp/UserTransaction (most servers: Resin, Orion, OC4J, etc)
             JBoss (separate objects): "java:comp/UserTransaction" and "java:comp/TransactionManager"
         -->
-
-        <!-- Use this one for the internal transaction manager -->
-        <!-- <transaction-factory factory-type="internal"/> -->
     </transaction-facade>
 
     <screen-facade boundary-comments="true" default-autocomplete-rows="20" default-paginate-rows="20">
@@ -133,44 +133,70 @@
                      url-pkg-prefixes="java.naming.rmi.security.manager"
                      security-principal="" security-credentials=""/> -->
 
+        <!--
+        The configurations below will use the XADataSource directly to connect, which is required for proper
+        transaction handling with multiple data sources.
+
+        For details about WHY to do it this way see:
+        http://www.atomikos.com/Documentation/NonXaDataSource#Caveats
+
+        For details about properties for different databases see:
+         http://www.atomikos.com/Documentation/ConfiguringTransactionsEssentials
+
+        To use the non-XA variety just specify the normal JDBC parameters (like jdbc-uri, etc) and leave out the
+        xa-properties element. If the xa-properties element is present the normal JDBC parameters will be ignored.
+        -->
         <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
-            <jndi-jdbc jndi-name="java:/MoquiTransactionalDataSource"/>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:moqui_transactional;create=true"
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional"/>
+            </inline-jdbc>
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTransactional;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="50"/> -->
+                         pool-minsize="5" pool-maxsize="50"/> -->
+            <!-- <jndi-jdbc jndi-name="java:/MoquiTransactionalDataSource"/> -->
         </datasource>
         <datasource group-name="analytical" database-conf-name="derby" schema-name="MOQUI">
-            <jndi-jdbc jndi-name="java:/MoquiAnalyticalDataSource"/>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:moqui_analytical;create=true"
+            <inline-jdbc pool-minsize="2" pool-maxsize="10">
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiAnalytical"/>
+            </inline-jdbc>
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiAnalytical;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
                          pool-minsize="2" pool-maxsize="10"/> -->
+            <!-- <jndi-jdbc jndi-name="java:/MoquiAnalyticalDataSource"/> -->
         </datasource>
         <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">
-            <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:moqui_tenantcommon;create=true"
+            <inline-jdbc pool-minsize="2" pool-maxsize="10">
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTenant"/>
+            </inline-jdbc>
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTenant;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
                          pool-minsize="2" pool-maxsize="10"/> -->
+            <!-- <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/> -->
         </datasource>
 
         <!-- some examples of how other databases would be configured -->
         <!-- PostgreSQL
         <datasource group-name="transactional" database-conf-name="postgres" schema-name="public">
-            <inline-jdbc jdbc-uri="jdbc:postgresql://127.0.0.1/moqui_transactional"
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="5432"
+                               databaseName="MoquiTransactional"/>
+            </inline-jdbc>
+            <!- - <inline-jdbc jdbc-uri="jdbc:postgresql://127.0.0.1/MoquiTransactional"
                     jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="50"/>
+                    pool-minsize="2" pool-maxsize="50"/> - ->
         </datasource>
         -->
         <!-- MySQL
         <datasource group-name="transactional" database-conf-name="mysql"
                     check-pks-on-start="false">
-            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1/moqui_transactional?autoReconnect=true"
+            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1/MoquiTransactional?autoReconnect=true"
                     jdbc-username="moqui" jdbc-password="moqui"
                     pool-minsize="2" pool-maxsize="50"/>
         </datasource>
         -->
         <!-- Oracle
         <datasource group-name="transactional" database-conf-name="oracle" schema-name="MOQUI">
-            <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:moqui_transactional"
+            <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiTransactional"
                     jdbc-username="moqui" jdbc-password="moqui"
                     pool-minsize="2" pool-maxsize="50"/>
         </datasource>
@@ -201,7 +227,8 @@
                   use-pk-constraint-names="false"
                   use-indices-unique="false"
                   default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver">
+                  default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
+                  default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">
             <field-type-def type="id" sql-type="VARCHAR(20)"/>
             <field-type-def type="id-long" sql-type="VARCHAR(60)"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR(255)"/>
@@ -290,7 +317,8 @@
         <database name="oracle"
                   join-style="ansi"
                   default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="oracle.jdbc.driver.OracleDriver">
+                  default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
+                  default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource">
             <field-type-def type="id" sql-type="VARCHAR2(20)"/>
             <field-type-def type="id-long" sql-type="VARCHAR2(60)"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR2(255)"/>
@@ -320,7 +348,8 @@
                   result-fetch-size="50"
                   use-binary-type-for-blob="true"
                   default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="org.postgresql.Driver">
+                  default-jdbc-driver="org.postgresql.Driver"
+                  default-xa-ds-class="org.postgresql.xa.PGXADataSource">
             <field-type-def type="id" sql-type="TEXT"/>
             <field-type-def type="id-long" sql-type="TEXT"/>
             <field-type-def type="id-vlong" sql-type="TEXT"/>

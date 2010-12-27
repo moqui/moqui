@@ -344,25 +344,41 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="inline-jdbc">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="1" ref="xa-properties"/>
+            </xs:sequence>
+            <xs:attribute name="jdbc-uri" type="xs:string" use="optional"/>
+            <xs:attribute name="jdbc-username" type="xs:string" use="optional"/>
+            <xs:attribute name="jdbc-password" type="xs:string" use="optional"/>
             <xs:attribute name="jdbc-driver" type="xs:string" use="optional"/>
-            <xs:attribute name="jdbc-uri" type="xs:string" use="required"/>
-            <xs:attribute name="jdbc-username" type="xs:string" use="required"/>
-            <xs:attribute name="jdbc-password" type="xs:string" use="required"/>
+            <xs:attribute name="xa-ds-class" type="xs:string" use="optional"/>
             <xs:attribute name="isolation-level" type="isolation-level"/>
             <xs:attribute name="pool-maxsize" type="xs:nonNegativeInteger" default="50"/>
-            <xs:attribute name="pool-minsize" type="xs:nonNegativeInteger" default="2"/>
-            <xs:attribute name="time-between-eviction-runs-millis" type="xs:nonNegativeInteger" default="600000"/>
-            <xs:attribute name="pool-sleeptime" type="xs:nonNegativeInteger" default="300000"/>
-            <xs:attribute name="pool-lifetime" type="xs:nonNegativeInteger" default="600000"/>
-            <xs:attribute name="pool-deadlock-maxwait" type="xs:nonNegativeInteger" default="300000"/>
-            <xs:attribute name="pool-deadlock-retrywait" type="xs:nonNegativeInteger" default="10000"/>
-            <xs:attribute name="pool-jdbc-test-stmt" type="xs:string"/>
+            <xs:attribute name="pool-minsize" type="xs:nonNegativeInteger" default="5"/>
+            <xs:attribute name="pool-time-idle" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>Maximum time in seconds that unused excess connections should stay in the pool.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="pool-time-reap" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>Time in seconds that the connection pool will allow a connection to be in use, before claiming it back. Defaults to no limit.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="pool-time-maint" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>Running interval in seconds for the pool maintenance thread. Defaults to 60 seconds.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="pool-time-wait" type="xs:nonNegativeInteger">
+                <xs:annotation><xs:documentation>Sets the maximum amount of time in seconds the pool will block waiting for a connection to become available in the pool when it is empty. Defaults to 30 seconds. Zero means no waiting.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="pool-test-query" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="jndi-jdbc">
         <xs:complexType>
             <xs:attribute name="jndi-name" type="xs:string" use="required"/>
             <xs:attribute name="isolation-level" type="isolation-level"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="xa-properties">
+        <xs:complexType>
+            <xs:anyAttribute processContents="skip"/>
         </xs:complexType>
     </xs:element>
 
@@ -429,6 +445,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="default-jdbc-driver" type="xs:string"/>
+            <xs:attribute name="default-xa-ds-class" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="field-type-def">

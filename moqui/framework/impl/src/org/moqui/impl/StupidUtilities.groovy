@@ -14,6 +14,7 @@ package org.moqui.impl
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityCondition.JoinOperator
 import java.util.regex.Pattern
+import java.sql.Connection
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -184,6 +185,23 @@ class StupidUtilities {
             return pattern.matcher(value1).matches()
         } else {
             return false
+        }
+    }
+
+    public static int getTxIsolationFromString(String isolationLevel) {
+        if (!isolationLevel) return -1
+        if ("Serializable".equals(isolationLevel)) {
+            return Connection.TRANSACTION_SERIALIZABLE
+        } else if ("RepeatableRead".equals(isolationLevel)) {
+            return Connection.TRANSACTION_REPEATABLE_READ
+        } else if ("ReadUncommitted".equals(isolationLevel)) {
+            return Connection.TRANSACTION_READ_UNCOMMITTED
+        } else if ("ReadCommitted".equals(isolationLevel)) {
+            return Connection.TRANSACTION_READ_COMMITTED
+        } else if ("None".equals(isolationLevel)) {
+            return Connection.TRANSACTION_NONE
+        } else {
+            return -1
         }
     }
 }

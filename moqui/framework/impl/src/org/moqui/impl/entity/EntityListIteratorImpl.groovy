@@ -17,11 +17,13 @@ import org.moqui.entity.EntityList
 import java.sql.ResultSet
 import java.sql.SQLException
 import org.moqui.entity.EntityException
+import java.sql.Connection
 
 class EntityListIteratorImpl implements EntityListIterator {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityListIteratorImpl.class)
 
     protected EntityFacadeImpl efi
+    protected Connection con
     protected ResultSet rs
 
     protected EntityDefinition entityDefinition
@@ -32,9 +34,33 @@ class EntityListIteratorImpl implements EntityListIterator {
 
     protected boolean closed = false
 
-    EntityListIteratorImpl(ResultSet rs, EntityDefinition entityDefinition, Set<String> fieldsSelected, EntityFacadeImpl efi) {
+    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition, Set<String> fieldsSelected, EntityFacadeImpl efi) {
         this.efi = efi
+        this.con = con
         this.rs = rs
+    }
+
+    @Override
+    void close() {
+        if (this.closed) {
+            logger.warn("EntityListIterator for entity [${this.entityDefinition.getEntityName()}] is already closed, not closing again")
+        } else {
+            if (rs) {
+                try {
+                    rs.close()
+                } catch (SQLException e) {
+                    throw new EntityException("Could not close ResultSet in EntityListIterator", e)
+                }
+            }
+            if (con) {
+                try {
+                    con.close()
+                } catch (SQLException e) {
+                    throw new EntityException("Could not close Connection in EntityListIterator", e)
+                }
+            }
+            this.closed = true
+        }
     }
 
     @Override
@@ -70,22 +96,6 @@ class EntityListIteratorImpl implements EntityListIterator {
             return rs.first()
         } catch (SQLException e) {
             throw new EntityException("Error moving EntityListIterator to first", e)
-        }
-    }
-
-    @Override
-    void close() {
-        if (this.closed) {
-            logger.warn("EntityListIterator for entity [${this.entityDefinition.getEntityName()}] is already closed, not closing again")
-        } else {
-            if (rs) {
-                try {
-                    rs.close()
-                } catch (SQLException e) {
-                    throw new EntityException("Could not close ResultSet in EntityListIterator", e)
-                }
-            }
-            this.closed = true
         }
     }
 

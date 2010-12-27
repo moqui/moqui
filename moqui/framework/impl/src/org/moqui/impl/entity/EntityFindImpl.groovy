@@ -280,20 +280,19 @@ class EntityFindImpl implements EntityFind {
         whereCondition.makeSqlWhere(efb)
 
         // run the SQL now that it is built
-        PreparedStatement ps
-        ResultSet rs
         EntityValueImpl newEntityValue = null
         try {
-            ps = efb.makePreparedStatement()
+            efb.makeConnection()
+            efb.makePreparedStatement()
 
             // set all of the values from the SQL building in efb
             int paramIndex = 1
             for (EntityConditionParameter entityConditionParam: efb.getParameters()) {
-                entityConditionParam.setPreparedStatementValue(ps, paramIndex)
+                entityConditionParam.setPreparedStatementValue(paramIndex)
                 paramIndex++
             }
 
-            rs = ps.executeQuery()
+            ResultSet rs = efb.executeQuery()
 
             if (rs.next()) {
                 newEntityValue = new EntityValueImpl(entityDefinition, this.efi)
@@ -306,9 +305,7 @@ class EntityFindImpl implements EntityFind {
                 logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${whereCondition.toString()}]")
             }
         } finally {
-            ps.close()
-            rs.close()
-            // NOTE: close the connection? or do as part of context open/close along with transaction?
+            efb.closeAll()
         }
 
         return newEntityValue
@@ -319,7 +316,9 @@ class EntityFindImpl implements EntityFind {
         // TODO: implement caching
 
         EntityListIterator eli = this.iterator()
-        return eli.getCompleteList()
+        EntityList el = eli.getCompleteList()
+        eli.close()
+        return el
     }
 
     /** @see org.moqui.entity.EntityFind#iterator() */
@@ -371,26 +370,25 @@ class EntityFindImpl implements EntityFind {
         efb.makeOrderByClause(orderByExpanded)
 
         // run the SQL now that it is built
-        PreparedStatement ps = null
-        ResultSet rs = null
         EntityListIteratorImpl eli = null
         try {
-            ps = efb.makePreparedStatement()
+            Connection con = efb.makeConnection()
+            efb.makePreparedStatement()
 
             // set all of the values from the SQL building in efb
             int paramIndex = 1
             for (EntityConditionParameter entityConditionParam in efb.getParameters()) {
-                entityConditionParam.setPreparedStatementValue(ps, paramIndex)
+                entityConditionParam.setPreparedStatementValue(paramIndex)
                 paramIndex++
             }
 
-            rs = ps.executeQuery()
+            ResultSet rs = efb.executeQuery()
 
-            eli = new EntityListIteratorImpl(rs, entityDefinition, this.fieldsToSelect, this.efi)
+            eli = new EntityListIteratorImpl(con, rs, entityDefinition, this.fieldsToSelect, this.efi)
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)
         } finally {
-            if (ps) ps.close()
+            efb.closePsOnly()
             // ResultSet will be closed in the EntityListIterator
         }
         return eli

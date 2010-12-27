@@ -33,6 +33,10 @@ class EntityFindBuilder {
     protected StringBuilder sqlTopLevel
     protected List<EntityConditionParameter> parameters
 
+    protected PreparedStatement ps
+    protected ResultSet rs
+    protected Connection connection
+
     EntityFindBuilder(EntityDefinition entityDefinition, EntityFindImpl entityFindImpl) {
         this.entityFindImpl = entityFindImpl
         this.mainEntityDefinition = entityDefinition
@@ -78,7 +82,7 @@ class EntityFindBuilder {
         Node entityNode = localEntityDefinition.entityNode
 
         if (localEntityDefinition.isViewEntity()) {
-            Node databaseNode = this.entityFindImpl.efi.getDatabaseNode(localEntityDefinition.entityName)
+            Node databaseNode = this.entityFindImpl.efi.getDatabaseNode(this.entityFindImpl.efi.getEntityGroupName(localEntityDefinition.entityName))
             String joinStyle = databaseNode."@join-style"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
@@ -305,19 +309,57 @@ class EntityFindBuilder {
         return colName.replace('.', '_').replace('(','_').replace(')','_')
     }
 
-    protected PreparedStatement makePreparedStatement() {
-        String sql = this.getSqlTopLevel().toString()
-        Connection connection = this.entityFindImpl.efi.getConnection(
+    protected Connection makeConnection() {
+        this.connection = this.entityFindImpl.efi.getConnection(
                 this.entityFindImpl.efi.getEntityGroupName(this.entityFindImpl.getEntity()))
-        PreparedStatement ps
+        return this.connection
+    }
+
+    protected PreparedStatement makePreparedStatement() {
+        if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
+        String sql = this.getSqlTopLevel().toString()
         try {
-            ps = connection.prepareStatement(sql, this.entityFindImpl.resultSetType, this.entityFindImpl.resultSetConcurrency)
-            if (this.entityFindImpl.maxRows > 0) ps.setMaxRows(this.entityFindImpl.maxRows)
-            if (this.entityFindImpl.fetchSize > 0) ps.setFetchSize(this.entityFindImpl.fetchSize)
+            this.ps = connection.prepareStatement(sql, this.entityFindImpl.resultSetType, this.entityFindImpl.resultSetConcurrency)
+            if (this.entityFindImpl.maxRows > 0) this.ps.setMaxRows(this.entityFindImpl.maxRows)
+            if (this.entityFindImpl.fetchSize > 0) this.ps.setFetchSize(this.entityFindImpl.fetchSize)
         } catch (SQLException sqle) {
             throw new EntityException("SQL Exception preparing statement:" + sql, sqle)
         }
-        return ps
+        return this.ps
+    }
+
+    protected ResultSet executeQuery() {
+        if (!this.ps) throw new IllegalStateException("Cannot Execut Query, no PreparedStatement in place")
+        this.rs = this.ps.executeQuery()
+        return this.rs
+    }
+
+    /** NOTE: this should be called in a finally clause to make this things are closed */
+    protected void closeAll() {
+        if (this.ps) {
+            this.ps.close()
+            this.ps = null
+        }
+        if (this.rs) {
+            this.rs.close()
+            this.rs = null
+        }
+        if (this.connection) {
+            this.connection.close()
+            this.connection = null
+        }
+    }
+
+    /** Only close the PreparedStatement, leave the ResultSet and Connection open, but null references to them
+     * NOTE: this should be called in a finally clause to make this things are closed
+     */
+    protected void closePsOnly() {
+        if (this.ps) {
+            this.ps.close()
+            this.ps = null
+        }
+        this.rs = null
+        this.connection = null
     }
 
     protected static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl, EntityFacadeImpl efi)
@@ -525,7 +567,8 @@ class EntityFindBuilder {
 
         Object getValue() { return this.value }
 
-        void setPreparedStatementValue(PreparedStatement ps, int index) throws EntityException {
+        void setPreparedStatementValue(int index) throws EntityException {
+            PreparedStatement ps = this.efb.ps
             String javaType = this.efb.entityFindImpl.efi.getFieldJavaType(this.fieldNode."@type", this.efb.entityFindImpl.getEntity())
             if (this.value) {
                 if (!StupidUtilities.isInstanceOf(this.value, javaType)) {
@@ -546,8 +589,8 @@ class EntityFindBuilder {
                 }
             }
 
-            boolean useBinaryTypeForBlob = ("true" == this.efb.entityFindImpl.efi.getDatabaseNode(this.efb.mainEntityDefinition.getEntityName())."@use-binary-type-for-blob")
-
+            EntityFacadeImpl efi = this.efb.entityFindImpl.efi
+            boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(this.efb.mainEntityDefinition.getEntityName()))."@use-binary-type-for-blob")
 
             try {
                 int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)

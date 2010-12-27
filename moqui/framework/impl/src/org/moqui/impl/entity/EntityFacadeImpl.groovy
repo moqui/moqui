@@ -11,7 +11,10 @@
  */
 package org.moqui.impl.entity
 
+import com.atomikos.jdbc.AtomikosDataSourceBean
+
 import java.sql.Connection
+import javax.sql.DataSource
 import javax.sql.XADataSource
 import javax.naming.InitialContext
 import javax.naming.Context
@@ -30,6 +33,9 @@ import org.slf4j.Logger
 
 import org.w3c.dom.Document
 import org.w3c.dom.Element
+import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
+import com.atomikos.jdbc.AbstractDataSourceBean
+import org.moqui.impl.StupidUtilities
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -38,7 +44,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final EntityConditionFactoryImpl entityConditionFactory
 
-    protected final Map<String, XADataSource> dataSourceByGroupMap
+    protected final Map<String, DataSource> dataSourceByGroupMap
 
     EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -70,7 +76,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                     XADataSource ds = (XADataSource) ic.lookup((String) datasource."jndi-jdbc"[0]."@jndi-name")
                     if (ds) {
-                        this.dataSourceByGroupMap.put(datasource."@group-name", ds)
+                        this.dataSourceByGroupMap.put(datasource."@group-name", (DataSource) ds)
                     } else {
                         logger.error("Could not find XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
                     }
@@ -79,7 +85,53 @@ class EntityFacadeImpl implements EntityFacade {
                     logger.error("Error finding XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
                 }
             } else if (datasource."inline-jdbc") {
-                throw new IllegalArgumentException("The inline-jdbc datasource is not yet supported (found in datasource with group-name [${datasource."@group-name"}])")
+                Node inlineJdbc = datasource."inline-jdbc"[0]
+                Node xaProperties = inlineJdbc."xa-properties"[0]
+                Node database = this.getDatabaseNode(datasource."@group-name")
+
+                AbstractDataSourceBean ads
+                if (xaProperties) {
+                    AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
+                    ds.setUniqueResourceName(datasource."@group-name")
+                    String xsDsClass = inlineJdbc."@xa-ds-class" ? inlineJdbc."@xa-ds-class" : database."@default-xa-ds-class"
+                    ds.setXaDataSourceClassName(xsDsClass)
+
+                    Properties p = new Properties()
+                    for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
+                        p.setProperty(entry.getKey(), entry.getValue())
+                    }
+                    ds.setXaProperties(p)
+
+                    ads = ds
+                } else {
+                    AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
+                    ds.setUniqueResourceName(datasource."@group-name")
+                    String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
+                    ds.setDriverClassName(driver)
+                    ds.setUrl(inlineJdbc."@jdbc-uri")
+                    ds.setUser(inlineJdbc."@jdbc-username")
+                    ds.setPassword(inlineJdbc."@jdbc-password")
+
+                    ads = ds
+                }
+
+                String txIsolationLevel = inlineJdbc."@isolation-level" ? inlineJdbc."@isolation-level" : database."@default-isolation-level"
+                if (txIsolationLevel && StupidUtilities.getTxIsolationFromString(txIsolationLevel) != -1) {
+                    ads.setDefaultIsolationLevel(StupidUtilities.getTxIsolationFromString(txIsolationLevel))
+                }
+
+                // no need for this, just sets min and max sizes: ads.setPoolSize
+                if (inlineJdbc."@pool-minsize") ads.setMinPoolSize(inlineJdbc."@pool-minsize" as int)
+                if (inlineJdbc."@pool-maxsize") ads.setMaxPoolSize(inlineJdbc."@pool-maxsize" as int)
+
+                if (inlineJdbc."@pool-time-idle") ads.setMaxIdleTime(inlineJdbc."@pool-time-idle" as int)
+                if (inlineJdbc."@pool-time-reap") ads.setReapTimeout(inlineJdbc."@pool-time-reap" as int)
+                if (inlineJdbc."@pool-time-maint") ads.setMaintenanceInterval(inlineJdbc."@pool-time-maint" as int)
+                if (inlineJdbc."@pool-time-wait") ads.setBorrowConnectionTimeout(inlineJdbc."@pool-time-wait" as int)
+
+                if (inlineJdbc."@pool-test-query") ads.setTestQuery(inlineJdbc."@pool-test-query")
+
+                this.dataSourceByGroupMap.put(datasource."@group-name", ads)
             } else {
                 throw new IllegalArgumentException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasource."@group-name"}])")
             }
@@ -87,10 +139,13 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     void destroy() {
-        for(Node datasource in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
-            //nothing to do for jndi-jdbc: if (datasource."jndi-jdbc") {
-            if (datasource."inline-jdbc") {
-                // TODO: destroy anything related to the internal impl
+        Set<String> groupNames = this.dataSourceByGroupMap.keySet()
+        for (String groupName in groupNames) {
+            DataSource ds = this.dataSourceByGroupMap.get(groupName)
+            // destroy anything related to the internal impl, ie Atomikos
+            if (ds instanceof AtomikosDataSourceBean) {
+                this.dataSourceByGroupMap.put(groupName, null)
+                ((AtomikosDataSourceBean) ds).close()
             }
         }
     }
@@ -100,13 +155,13 @@ class EntityFacadeImpl implements EntityFacade {
         return null
     }
 
-    Node getDatabaseNode(String entityName) {
+    Node getDatabaseNode(String groupName) {
         def confXmlRoot = this.ecfi.getConfXmlRoot()
-        def databaseConfName = getDataBaseConfName(entityName)
+        def databaseConfName = getDataBaseConfName(groupName)
         return (Node) confXmlRoot."database-list".database.find({ it.@name == databaseConfName })[0]
     }
-    String getDataBaseConfName(String entityName) {
-        String groupName = this.getEntityGroupName(entityName)
+    String getDataBaseConfName(String groupName) {
+        //String groupName = this.getEntityGroupName(entityName)
         def confXmlRoot = this.ecfi.getConfXmlRoot()
         def datasourceNode = confXmlRoot."entity-facade".datasource.find({ it."@group-name" == groupName })
         return datasourceNode."@database-conf-name"
@@ -164,9 +219,13 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
     Connection getConnection(String groupName) {
-        XADataSource xads = this.dataSourceByGroupMap.get(groupName)
-        if (!xads) throw new IllegalArgumentException("DataSource not initialized for group-name [${groupName}]")
-        return this.ecfi.transactionFacade.enlistConnection(xads.getXAConnection())
+        DataSource ds = this.dataSourceByGroupMap.get(groupName)
+        if (!ds) throw new IllegalArgumentException("DataSource not initialized for group-name [${groupName}]")
+        if (ds instanceof XADataSource) {
+            return this.ecfi.transactionFacade.enlistConnection(((XADataSource) ds).getXAConnection())
+        } else {
+            return ds.getConnection()
+        }
     }
 
     /** @see org.moqui.entity.EntityFacade#readXmlDocument(URL) */
@@ -206,7 +265,7 @@ class EntityFacadeImpl implements EntityFacade {
             "text-very-long":"java.lang.String",
             "binary-very-long":"java.sql.Blob"]
     protected String getFieldJavaType(String fieldType, String entityName) {
-        Node databaseNode = this.getDatabaseNode(entityName)
+        Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
         String javaType = databaseNode ? databaseNode."field-type-def".find({ it.@type == fieldType })[0]."@java-type" : null
         if (javaType) {
             return javaType
