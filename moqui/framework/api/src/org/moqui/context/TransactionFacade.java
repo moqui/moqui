@@ -11,9 +11,11 @@
  */
 package org.moqui.context;
 
+import javax.sql.XAConnection;
 import javax.transaction.Synchronization;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAResource;
+import java.sql.Connection;
 
 /** Use this interface to do transaction demarcation and related operations.
  * This should be used instead of using the JTA UserTransaction and TransactionManager interfaces.
@@ -102,6 +104,8 @@ public interface TransactionFacade {
     Transaction suspend() throws TransactionException;
 
     void resume(Transaction parentTx) throws TransactionException;
+
+    Connection enlistConnection(XAConnection con) throws TransactionException;
 
     void enlistResource(XAResource resource) throws TransactionException;
 

@@ -11,34 +11,88 @@
  */
 package org.moqui.impl.entity
 
+import java.sql.Connection
+import javax.sql.XADataSource
+import javax.naming.InitialContext
+import javax.naming.Context
+import javax.naming.NamingException
+
 import org.moqui.entity.EntityFacade
 import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityFind
-import java.sql.Connection
 import org.moqui.entity.EntityList
-import org.w3c.dom.Document
-import org.w3c.dom.Element
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+
+import org.w3c.dom.Document
+import org.w3c.dom.Element
+
 class EntityFacadeImpl implements EntityFacade {
+    protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final EntityConditionFactoryImpl entityConditionFactory
 
+    protected final Map<String, XADataSource> dataSourceByGroupMap
+
     EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
-        // TODO: init connection pool
+        // init connection pool (DataSource) for each group
+        this.initAllDatasources()
         // TODO: init entity definitions
         // TODO: EECA rule tables
     }
 
+    protected void initAllDatasources() {
+        for(Node datasource in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+            if (datasource."jndi-jdbc") {
+                Node serverJndi = this.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]
+                try {
+                    InitialContext ic;
+                    if (serverJndi) {
+                        Hashtable<String, Object> h = new Hashtable<String, Object>()
+                        h.put(Context.INITIAL_CONTEXT_FACTORY, serverJndi."@initial-context-factory")
+                        h.put(Context.PROVIDER_URL, serverJndi."@context-provider-url")
+                        if (serverJndi."@url-pkg-prefixes") h.put(Context.URL_PKG_PREFIXES, serverJndi."@url-pkg-prefixes")
+                        if (serverJndi."@security-principal") h.put(Context.SECURITY_PRINCIPAL, serverJndi."@security-principal")
+                        if (serverJndi."@security-credentials") h.put(Context.SECURITY_CREDENTIALS, serverJndi."@security-credentials")
+                        ic = new InitialContext(h)
+                    } else {
+                        ic = new InitialContext()
+                    }
+
+                    XADataSource ds = (XADataSource) ic.lookup((String) datasource."jndi-jdbc"[0]."@jndi-name")
+                    if (ds) {
+                        this.dataSourceByGroupMap.put(datasource."@group-name", ds)
+                    } else {
+                        logger.error("Could not find XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
+                    }
+
+                } catch (NamingException ne) {
+                    logger.error("Error finding XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
+                }
+            } else if (datasource."inline-jdbc") {
+                throw new IllegalArgumentException("The inline-jdbc datasource is not yet supported (found in datasource with group-name [${datasource."@group-name"}])")
+            } else {
+                throw new IllegalArgumentException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasource."@group-name"}])")
+            }
+        }
+    }
+
     void destroy() {
-        // TODO: destroy connection pool, etc
+        for(Node datasource in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+            //nothing to do for jndi-jdbc: if (datasource."jndi-jdbc") {
+            if (datasource."inline-jdbc") {
+                // TODO: destroy anything related to the internal impl
+            }
+        }
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
@@ -110,8 +164,9 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
     Connection getConnection(String groupName) {
-        // TODO: implement this
-        return null
+        XADataSource xads = this.dataSourceByGroupMap.get(groupName)
+        if (!xads) throw new IllegalArgumentException("DataSource not initialized for group-name [${groupName}]")
+        return this.ecfi.transactionFacade.enlistConnection(xads.getXAConnection())
     }
 
     /** @see org.moqui.entity.EntityFacade#readXmlDocument(URL) */

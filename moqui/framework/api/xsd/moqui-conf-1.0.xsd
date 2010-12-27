@@ -20,6 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="cache-list"/>
                 <xs:element minOccurs="0" ref="server-stats"/>
                 <xs:element minOccurs="0" ref="webapp-list"/>
+                <xs:element minOccurs="0" ref="transaction-facade"/>
                 <xs:element minOccurs="0" ref="screen-facade"/>
                 <xs:element minOccurs="0" ref="service-facade"/>
                 <xs:element minOccurs="0" ref="entity-facade"/>
@@ -168,6 +169,32 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
+    <!-- ====================== Transaction Facade Conf Root ======================= -->
+    <xs:element name="transaction-facade">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="server-jndi">
+                    <xs:annotation><xs:documentation>If not present the default JNDI server will be used.</xs:documentation></xs:annotation>
+                </xs:element>
+                <xs:element minOccurs="0" ref="transaction-factory"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="transaction-factory">
+        <xs:complexType>
+            <xs:attribute name="factory-type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="internal"/>
+                        <xs:enumeration value="jndi"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="user-transaction-jndi-name" type="xs:string"/>
+            <xs:attribute name="transaction-manager-jndi-name" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
     <!-- ====================== Screen Facade Conf Root ======================= -->
     <xs:element name="screen-facade">
         <xs:complexType>
@@ -284,8 +311,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="entity-facade">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" ref="app-server-jndi"/>
-                <xs:element ref="transaction-factory"/>
+                <xs:element minOccurs="0" ref="server-jndi">
+                    <xs:annotation><xs:documentation>If not present the default JNDI server will be used.</xs:documentation></xs:annotation>
+                </xs:element>
                 <xs:element maxOccurs="unbounded" ref="datasource"/>
             </xs:sequence>
             <xs:attribute name="entity-eca-enabled" default="true" type="boolean"/>
@@ -295,29 +323,6 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="app-server-jndi">
-        <xs:complexType>
-            <xs:attribute name="context-provider-url" type="xs:string"/>
-            <xs:attribute name="initial-context-factory" type="xs:string"/>
-            <xs:attribute name="url-pkg-prefixes" type="xs:string"/>
-            <xs:attribute name="security-principal" type="xs:string"><xs:annotation><xs:documentation>The username</xs:documentation></xs:annotation></xs:attribute>
-            <xs:attribute name="security-credentials" type="xs:string"><xs:annotation><xs:documentation>The password</xs:documentation></xs:annotation></xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="transaction-factory">
-        <xs:complexType>
-            <xs:attribute name="factory-type" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="internal"/>
-                        <xs:enumeration value="jndi"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="user-transaction-jndi-name" type="xs:string"/>
-            <xs:attribute name="transaction-manager-jndi-name" type="xs:string"/>
-        </xs:complexType>
-    </xs:element>
     <xs:element name="datasource">
         <xs:complexType>
             <xs:sequence>
@@ -380,8 +385,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="use-schemas" default="true" type="boolean"/>
             <xs:attribute name="use-pk-constraint-names" default="true" type="boolean"/>
             <xs:attribute name="constraint-name-clip-length" default="30" type="xs:nonNegativeInteger"/>
-            <xs:attribute name="use-proxy-cursor" default="false" type="boolean"/>
-            <xs:attribute name="proxy-cursor-name" default="p_cursor" type="xs:string"/>
             <xs:attribute name="result-fetch-size" default="-1" type="xs:integer"/>
             <xs:attribute name="use-foreign-keys" default="true" type="boolean"/>
             <xs:attribute name="use-foreign-key-indices" default="true" type="boolean"/>

@@ -54,6 +54,24 @@
         </webapp>
     </webapp-list>
 
+    <transaction-facade>
+        <!-- if this is not present the default JNDI server will be used -->
+        <!-- <server-jndi context-provider-url="rmi://127.0.0.1:1099"
+                     initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
+                     url-pkg-prefixes="java.naming.rmi.security.manager"
+                     security-principal="" security-credentials=""/> -->
+
+        <!-- Use this one for getting the JTA objects from JNDI -->
+        <transaction-factory factory-type="jndi" transaction-manager-jndi-name="java:comp/UserTransaction"
+                             user-transaction-jndi-name="java:comp/UserTransaction"/>
+        <!-- UserTransaction JNDI name for most servers: java:comp/UserTransaction (most servers: Resin, Orion, OC4J, etc)
+            JBoss (separate objects): "java:comp/UserTransaction" and "java:comp/TransactionManager"
+        -->
+
+        <!-- Use this one for the internal transaction manager -->
+        <!-- <transaction-factory factory-type="internal"/> -->
+    </transaction-facade>
+
     <screen-facade boundary-comments="true" default-autocomplete-rows="20" default-paginate-rows="20">
         <screen-text-output type="text" mime-type="text/plain"
                             macro-template-location="template/screen-macro/ScreenTextMacros.ftl"/>
@@ -109,37 +127,29 @@
 
     <entity-facade default-group-name="transactional" distributed-cache-clear-enabled="false"
                    entity-eca-enabled="true" sequenced-id-prefix="">
-
-        <!-- this is used for both transaction and data source access -->
-        <app-server-jndi context-provider-url="rmi://127.0.0.1:1099"
-                         initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
-                         url-pkg-prefixes="java.naming.rmi.security.manager"
-                         security-principal="" security-credentials=""/>
-
-
-        <!-- Use this one for the internal transaction manager -->
-        <transaction-factory factory-type="internal"/>
-        <!-- Use this one for getting the JTA objects from JNDI
-        <transaction-factory factory-type="jndi" transaction-manager-jndi-name="java:comp/UserTransaction" user-transaction-jndi-name="java:comp/UserTransaction"/>
-        -->
-        <!-- UserTransaction JNDI name for most servers: java:comp/UserTransaction (most servers: Resin, Orion, OC4J, etc)
-            JBoss (separate objects): "java:comp/UserTransaction" and "java:comp/TransactionManager"
-        -->
+        <!-- if this is not present the default JNDI server will be used -->
+        <!-- <server-jndi context-provider-url="rmi://127.0.0.1:1099"
+                     initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
+                     url-pkg-prefixes="java.naming.rmi.security.manager"
+                     security-principal="" security-credentials=""/> -->
 
         <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
-            <inline-jdbc jdbc-uri="jdbc:derby:moqui_transactional;create=true"
+            <jndi-jdbc jndi-name="java:/MoquiTransactionalDataSource"/>
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:moqui_transactional;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="50"/>
+                         pool-minsize="2" pool-maxsize="50"/> -->
         </datasource>
         <datasource group-name="analytical" database-conf-name="derby" schema-name="MOQUI">
-            <inline-jdbc jdbc-uri="jdbc:derby:moqui_analytical;create=true"
+            <jndi-jdbc jndi-name="java:/MoquiAnalyticalDataSource"/>
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:moqui_analytical;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="10"/>
+                         pool-minsize="2" pool-maxsize="10"/> -->
         </datasource>
         <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">
-            <inline-jdbc jdbc-uri="jdbc:derby:moqui_tenantcommon;create=true"
+            <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/>
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:moqui_tenantcommon;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="10"/>
+                         pool-minsize="2" pool-maxsize="10"/> -->
         </datasource>
 
         <!-- some examples of how other databases would be configured -->

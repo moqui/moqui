@@ -60,7 +60,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (!this.runtimePath) {
             throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).")
         }
-        if (this.runtimePath.endsWith('/')) this.runtimePath = this.runtimePath.substring(0, this.runtimePath.length()-1)
+        if (this.runtimePath.endsWith("/")) this.runtimePath = this.runtimePath.substring(0, this.runtimePath.length()-1)
 
         // setup the runtimeFile
         File runtimeFile = new File(this.runtimePath)
@@ -78,8 +78,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         // setup the confFile
-        if (confPartialPath.beginsWith('/')) confPartialPath = confPartialPath.substring(1)
-        String confFullPath = this.runtimePath + '/' + confPartialPath
+        if (confPartialPath.startsWith("/")) confPartialPath = confPartialPath.substring(1)
+        String confFullPath = this.runtimePath + "/" + confPartialPath
         File confFile = new File(confFullPath)
         if (!confFile.exists()) {
             throw new IllegalArgumentException("The moqui.conf path [${confFullPath}] was not found.")
@@ -249,6 +249,31 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "type")
         }
 
+        if (overrideNode."transaction-facade") {
+            Node efBaseNode = baseNode."transaction-facade"[0]
+            Node efOverrideNode = overrideNode."transaction-facade"[0]
+
+            // handle server-jndi, transaction-factory
+            Node sjOverrideNode = efOverrideNode."server-jndi"[0]
+            if (sjOverrideNode) {
+                Node sjBaseNode = efBaseNode."server-jndi"[0]
+                if (sjBaseNode) {
+                    sjBaseNode.attributes().putAll(sjOverrideNode.attributes())
+                } else {
+                    efBaseNode.append(sjOverrideNode)
+                }
+            }
+            Node tfOverrideNode = efOverrideNode."transaction-factory"[0]
+            if (tfOverrideNode) {
+                Node tfBaseNode = efBaseNode."transaction-factory"[0]
+                if (tfBaseNode) {
+                    tfBaseNode.attributes().putAll(tfOverrideNode.attributes())
+                } else {
+                    efBaseNode.append(tfOverrideNode)
+                }
+            }
+        }
+
         if (overrideNode."screen-facade") {
             mergeNodeWithChildKey(baseNode."screen-facade"[0], overrideNode."screen-facade"[0], "screen-text-output", "type")
         }
@@ -281,23 +306,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node efOverrideNode = overrideNode."entity-facade"[0]
             mergeNodeWithChildKey(efBaseNode, efOverrideNode, "datasource", "group-name")
 
-            // handle app-server-jndi, transaction-factory
-            Node tfOverrideNode = efOverrideNode."transaction-factory"[0]
-            if (tfOverrideNode) {
-                Node tfBaseNode = efBaseNode."transaction-factory"[0]
-                if (tfBaseNode) {
-                    tfBaseNode.attributes().putAll(tfOverrideNode.attributes())
+            Node sjOverrideNode = efOverrideNode."server-jndi"[0]
+            if (sjOverrideNode) {
+                Node sjBaseNode = efBaseNode."server-jndi"[0]
+                if (sjBaseNode) {
+                    sjBaseNode.attributes().putAll(sjOverrideNode.attributes())
                 } else {
-                    efBaseNode.append(tfOverrideNode)
-                }
-            }
-            Node asjOverrideNode = efOverrideNode."app-server-jndi"[0]
-            if (asjOverrideNode) {
-                Node asjBaseNode = efBaseNode."app-server-jndi"[0]
-                if (asjBaseNode) {
-                    asjBaseNode.attributes().putAll(asjOverrideNode.attributes())
-                } else {
-                    efBaseNode.append(asjOverrideNode)
+                    efBaseNode.append(sjOverrideNode)
                 }
             }
         }

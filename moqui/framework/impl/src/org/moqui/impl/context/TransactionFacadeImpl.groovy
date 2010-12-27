@@ -23,13 +23,18 @@ import javax.transaction.RollbackException
 import javax.transaction.HeuristicMixedException
 import javax.transaction.HeuristicRollbackException
 
-import org.moqui.BaseException
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.transaction.InvalidTransactionException
+import javax.naming.InitialContext
+import javax.naming.NamingException
+import javax.naming.Context
+import java.sql.SQLException
+import javax.sql.XAConnection
+import java.sql.Connection
 
 class TransactionFacadeImpl implements TransactionFacade {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
@@ -46,11 +51,16 @@ class TransactionFacadeImpl implements TransactionFacade {
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
 
-        // TODO: init ut, tm
+        Node transactionFactory = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."transaction-factory"[0]
+        if (transactionFactory."@factory-type" == "jndi") {
+            this.populateTransactionObjectsJndi()
+        } else {
+            throw new IllegalArgumentException("Transaction factory type [${transactionFactory."@factory-type"}] not supported")
+        }
     }
 
     void destroy() {
-        // TODO: destroy ut, tm
+        // TODO: destroy ut, tm (just for internal/geronimo; nothing for JNDI
     }
 
     /** This is called to make sure all transactions, etc are closed for the thread.
@@ -293,6 +303,18 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    /** @see org.moqui.context.TransactionFacade#enlistConnection(XAConnection) */
+    Connection enlistConnection(XAConnection con) {
+        if (con == null) return null
+        try {
+            XAResource resource = con.getXAResource()
+            this.enlistResource(resource)
+            return con.getConnection()
+        } catch (SQLException e) {
+            throw new TransactionException("Could not enlist connection in transaction", e)
+        }
+    }
+
     /** @see org.moqui.context.TransactionFacade#enlistResource(XAResource) */
     void enlistResource(XAResource resource) {
         if (resource == null) return
@@ -347,5 +369,38 @@ class TransactionFacadeImpl implements TransactionFacade {
             this.causeThrowable = causeThrowable
             this.rollbackLocation = rollbackLocation
         }
+    }
+
+    // ========== Initialize/Populate Methods ==========
+
+    void populateTransactionObjectsJndi() {
+        Node transactionFactory = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."transaction-factory"[0]
+        String userTxJndiName = transactionFactory."@user-transaction-jndi-name"
+        String txMgrJndiName = transactionFactory."@transaction-manager-jndi-name"
+
+        Node serverJndi = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."server-jndi"[0]
+
+        try {
+            InitialContext ic;
+            if (serverJndi) {
+                Hashtable<String, Object> h = new Hashtable<String, Object>()
+                h.put(Context.INITIAL_CONTEXT_FACTORY, serverJndi."@initial-context-factory")
+                h.put(Context.PROVIDER_URL, serverJndi."@context-provider-url")
+                if (serverJndi."@url-pkg-prefixes") h.put(Context.URL_PKG_PREFIXES, serverJndi."@url-pkg-prefixes")
+                if (serverJndi."@security-principal") h.put(Context.SECURITY_PRINCIPAL, serverJndi."@security-principal")
+                if (serverJndi."@security-credentials") h.put(Context.SECURITY_CREDENTIALS, serverJndi."@security-credentials")
+                ic = new InitialContext(h)
+            } else {
+                ic = new InitialContext()
+            }
+
+            this.ut = (UserTransaction) ic.lookup(userTxJndiName)
+            this.tm = (TransactionManager) ic.lookup(txMgrJndiName)
+        } catch (NamingException ne) {
+            logger.error("Error while finding JNDI Transaction objects [${userTxJndiName}] and [${txMgrJndiName}] from server [${serverJndi ? serverJndi."@context-provider-url" : "default"}].", ne)
+        }
+
+        if (!this.ut) logger.error("Could not find UserTransaction with name [${userTxJndiName}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}].")
+        if (!this.tm) logger.error("Could not find TransactionManager with name [${txMgrJndiName}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}].")
     }
 }
