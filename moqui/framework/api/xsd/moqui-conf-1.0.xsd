@@ -315,6 +315,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:annotation><xs:documentation>If not present the default JNDI server will be used.</xs:documentation></xs:annotation>
                 </xs:element>
                 <xs:element maxOccurs="unbounded" ref="datasource"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="load-entity"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="load-data"/>
             </xs:sequence>
             <xs:attribute name="entity-eca-enabled" default="true" type="boolean"/>
             <xs:attribute name="distributed-cache-clear-enabled" default="false" type="boolean"/>
@@ -356,16 +358,21 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="pool-maxsize" type="xs:nonNegativeInteger" default="50"/>
             <xs:attribute name="pool-minsize" type="xs:nonNegativeInteger" default="5"/>
             <xs:attribute name="pool-time-idle" type="xs:nonNegativeInteger">
-                <xs:annotation><xs:documentation>Maximum time in seconds that unused excess connections should stay in the pool.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Maximum time in seconds that unused excess connections should stay in
+                    the pool.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="pool-time-reap" type="xs:nonNegativeInteger">
-                <xs:annotation><xs:documentation>Time in seconds that the connection pool will allow a connection to be in use, before claiming it back. Defaults to no limit.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Time in seconds that the connection pool will allow a connection to be
+                    in use, before claiming it back. Defaults to no limit.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="pool-time-maint" type="xs:nonNegativeInteger">
-                <xs:annotation><xs:documentation>Running interval in seconds for the pool maintenance thread. Defaults to 60 seconds.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Running interval in seconds for the pool maintenance thread.
+                    Defaults to 60 seconds.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="pool-time-wait" type="xs:nonNegativeInteger">
-                <xs:annotation><xs:documentation>Sets the maximum amount of time in seconds the pool will block waiting for a connection to become available in the pool when it is empty. Defaults to 30 seconds. Zero means no waiting.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Sets the maximum amount of time in seconds the pool will block
+                    waiting for a connection to become available in the pool when it is empty. Defaults to 30 seconds.
+                    Zero means no waiting.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="pool-test-query" type="xs:string"/>
         </xs:complexType>
@@ -380,6 +387,20 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:anyAttribute processContents="skip"/>
         </xs:complexType>
+    </xs:element>
+    <xs:element name="load-entity">
+        <xs:annotation><xs:documentation>Most resources should be loaded by directory convention (convention over
+            configuration) within a component so this should only be used rarely. Sometimes that is not possible such
+            as remote locations or on a classpath that is inside a war or ear file, or that is from a special
+            ClassLoader.</xs:documentation></xs:annotation>
+        <xs:complexType><xs:attribute name="location" type="xs:string" use="required"/></xs:complexType>
+    </xs:element>
+    <xs:element name="load-data">
+        <xs:annotation><xs:documentation>Most resources should be loaded by directory convention (convention over
+            configuration) within a component so this should only be used rarely. Sometimes that is not possible such
+            as remote locations or on a classpath that is inside a war or ear file, or that is from a special
+            ClassLoader.</xs:documentation></xs:annotation>
+        <xs:complexType><xs:attribute name="location" type="xs:string" use="required"/></xs:complexType>
     </xs:element>
 
     <!-- ====================== Database Conf Root ======================= -->

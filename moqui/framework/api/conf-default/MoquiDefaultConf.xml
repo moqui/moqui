@@ -3,15 +3,14 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
 
-    <!-- Settings in this file can be overridden in one or runtime files that have a moqui-conf root element and any
-    of the desired sub-elements. -->
-    <!-- TODO: Settings can also be overridden with similar nodes in the JCR under the "" node in the "" repository. -->
+    <!-- Settings in this file can be overridden in a runtime file that has a any of the desired sub-elements. -->
+    <!-- TODO: (worth doing?) Settings can also be overridden with similar nodes in the JCR under the "" node in the "" repository. -->
 
     <cache-list>
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
-        <cache name="entity.name" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="entity.file" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="service.path" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="entity.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="service.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
@@ -28,6 +27,8 @@
     </server-stats>
     
     <webapp-list>
+        <!-- The webapp.@moqui-name attribute value is looked up based on the value of the moqui-name context-param in
+        the web.xml file. This configuration will allow the framework to do various things for that webapp. -->
         <webapp moqui-name="webroot"
                 http-port="8080" http-force-host=""
                 https-port="8443" https-force-host="" https-enabled="true"
@@ -201,6 +202,28 @@
                     pool-minsize="2" pool-maxsize="50"/>
         </datasource>
         -->
+
+        <!-- Refer to these explicitly instead of by directory name convention as is done in components.
+             There is no reliable way to search within directories on the classpath (if in a file or jar is fine, but
+             not in a war/ear file or from special ClassLoaders) -->
+        <load-entity location="classpath://entity/BasicEntities.xml"/>
+        <load-entity location="classpath://entity/EntityEntities.xml"/>
+        <load-entity location="classpath://entity/OlapEntities.xml"/>
+        <load-entity location="classpath://entity/ScreenEntities.xml"/>
+        <load-entity location="classpath://entity/SecurityEntities.xml"/>
+        <load-entity location="classpath://entity/ServerEntities.xml"/>
+        <load-entity location="classpath://entity/ServiceEntities.xml"/>
+        <load-entity location="classpath://entity/TenantEntities.xml"/>
+
+        <load-data location="classpath://data/BasicTypeData.xml"/>
+        <load-data location="classpath://data/CommonL10nData.xml"/>
+        <load-data location="classpath://data/EntityTypeData.xml"/>
+        <load-data location="classpath://data/ScreenTypeData.xml"/>
+        <load-data location="classpath://data/SecurityTypeData.xml"/>
+        <load-data location="classpath://data/ServerTypeData.xml"/>
+        <load-data location="classpath://data/ServiceTypeData.xml"/>
+        <load-data location="classpath://data/TenantTypeData.xml"/>
+        <load-data location="classpath://data/UnitTypeData.xml"/>
     </entity-facade>
     <database-list>
         <!-- Data Type Dictionary Types Available:

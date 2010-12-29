@@ -36,6 +36,8 @@ import org.w3c.dom.Element
 import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
 import com.atomikos.jdbc.AbstractDataSourceBean
 import org.moqui.impl.StupidUtilities
+import org.moqui.context.Cache
+import groovy.util.slurpersupport.GPathResult
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -46,13 +48,23 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final Map<String, DataSource> dataSourceByGroupMap
 
+    /** Cache with entity name as the key and an EntityDefinition as the value; clear this cache to reload entity def */
+    protected final Cache entityDefinitionCache
+    /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
+    protected final Cache entityLocationCache
+
     EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
         // init connection pool (DataSource) for each group
         this.initAllDatasources()
-        // TODO: init entity definitions
+
+        // init entity meta-data
+        this.entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
+        this.entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
+        this.loadAllEntityLocations()
+
         // TODO: EECA rule tables
     }
 
@@ -80,7 +92,6 @@ class EntityFacadeImpl implements EntityFacade {
                     } else {
                         logger.error("Could not find XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
                     }
-
                 } catch (NamingException ne) {
                     logger.error("Error finding XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
                 }
@@ -98,6 +109,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                     Properties p = new Properties()
                     for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
+                        // TODO: the Derby "databaseName" property has a ${moqui.runtime} which is a System property, do we need to expand those here?
                         p.setProperty(entry.getKey(), entry.getValue())
                     }
                     ds.setXaProperties(p)
@@ -138,6 +150,104 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    protected void loadAllEntityLocations() {
+        // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
+        for (Node loadEntity in this.ecfi.getConfXmlRoot()."entity-facade"[0]."load-entity") {
+            this.loadEntityFileLocations(loadEntity."@location")
+        }
+
+        // loop through components look for XML files in the entity directory, check each for "<entities>" root element
+        for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            URL entityDirUrl = this.ecfi.resourceFacade.getLocationUrl(location + "/entity")
+            if ("file" == entityDirUrl.getProtocol()) {
+                File entityDir = new File(entityDirUrl.toURI())
+                // if directory doesn't exist skip it, component doesn't have an entity directory
+                if (!entityDir.exists() || !entityDir.isDirectory()) continue
+                // get all files in the directory
+                for (File entityFile in entityDir.listFiles()) {
+                    if (!entityFile.isFile() || !entityFile.getName().endsWith(".xml")) continue
+                    this.loadEntityFileLocations(entityFile.toURI().toString())
+                }
+            } else {
+                throw new IllegalArgumentException("Cannot load entity file in location [${location}] because protocol [${entityDirUrl.getProtocol()}] is not yet supported.")
+            }
+        }
+    }
+
+    protected void loadEntityFileLocations(String location) {
+        // NOTE: using XmlSlurper here instead of XmlParser because it should be faster since it won't parse through the whole file right away
+        InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
+        GPathResult entityRoot = new XmlSlurper().parse(entityStream)
+        entityStream.close()
+        if (entityRoot.name() == "entities") {
+            // loop through all entity, view-entity, and extend-entity and add file location to List for any entity named
+            for (GPathResult entity in entityRoot.children()) {
+                List theList = (List) this.entityLocationCache.get((String) entity."@entity-name")
+                if (!theList) {
+                    theList = new ArrayList()
+                    this.entityLocationCache.put((String) entity."@entity-name", theList)
+                }
+                theList.add(location)
+            }
+        }
+    }
+
+    protected synchronized EntityDefinition loadEntityDefinition(String entityName) {
+        EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
+        if (ed) return ed
+
+        List<String> entityLocationList = (List<String>) this.entityLocationCache.get(entityName)
+        if (!entityLocationList) {
+            this.loadAllEntityLocations()
+            entityLocationList = (List<String>) this.entityLocationCache.get(entityName)
+            // no locations found for this entity, entity probably doesn't exist
+            if (!entityLocationList) {
+                throw new IllegalArgumentException("No definition found for entity-name [${entityName}]")
+            }
+        }
+
+        // get entity, view-entity and extend-entity Nodes for entity from each location
+        Node entityNode = null
+        List<Node> extendEntityNodes = new ArrayList<Node>()
+        for (String location in entityLocationList) {
+            InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
+            Node entityRoot = new XmlParser().parse(entityStream)
+            entityStream.close()
+            for (Node childNode in entityRoot.children().find({ it."@entity-name" == entityName })) {
+                if (childNode.name() == "extend-entity") {
+                    extendEntityNodes.add(childNode)
+                } else {
+                    if (entityNode != null) logger.warn("Entity [${entityName}] was found again, so overriding")
+                    entityNode = childNode
+                }
+            }
+        }
+
+        if (!entityNode) throw new IllegalArgumentException("No definition found for entity-name [${entityName}]")
+
+        // merge the extend-entity nodes
+        for (Node extendEntity in extendEntityNodes) {
+            // merge attributes
+            entityNode.attributes().putAll(extendEntity.attributes())
+            // merge field nodes
+            for (Node childOverrideNode in extendEntity."field") {
+                String keyValue = childOverrideNode."@name"
+                Node childBaseNode = (Node) entityNode."field".find({ it."@name" == keyValue })[0]
+                if (childBaseNode) childBaseNode.attributes().putAll(childOverrideNode.attributes())
+                else entityNode.append((Node) childOverrideNode.clone())
+            }
+            // add relationship, key-map (copy over, will get child nodes too
+            for (Node copyNode in extendEntity."relationship") entityNode.append(copyNode)
+            // add index, index-field
+            for (Node copyNode in extendEntity."index") entityNode.append(copyNode)
+        }
+
+        // create the new EntityDefinition
+        ed = new EntityDefinition(this, entityNode)
+
+        return ed
+    }
+
     void destroy() {
         Set<String> groupNames = this.dataSourceByGroupMap.keySet()
         for (String groupName in groupNames) {
@@ -151,8 +261,9 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
-        // TODO: implement this
-        return null
+        EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
+        if (ed) return ed
+        return loadEntityDefinition(entityName)
     }
 
     Node getDatabaseNode(String groupName) {

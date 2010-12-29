@@ -2,7 +2,10 @@
 ================================================================
 Implementation Plans
 
-- Use XML binding for parsing: Apache XMLBeans
+- Use Groovy Node-based XML parsing with only thin objects when needed wrapping Node
+
+- For groovy string expansion use SimpleTemplateEngine (or maybe GStringTemplateEngine),
+  see: http://groovy.codehaus.org/Groovy+Templates
 
 - Integrated Artifact Definition Info, not separate classes?
 
@@ -16,6 +19,8 @@ Implementation Plans
 
 - Support single/simple war file for deployment in any app server, point to things without using classpath; make so all
   can be in a war file, and can point to directory structure outside the war file
+- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
+  the file
 
 - lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently
   used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load
@@ -25,9 +30,6 @@ Implementation Plans
 - Refer to entities as they are now, but when loaded system will remember the file the entity came from and get that
   file through the cache to facilitate reloading by file; moving an entity to another file will still require a restart
   (or maybe just use a second cache for that?...)
-
-- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
-  the file
 
 - support wiki-style templates (same library as Confluence?)
 - for simplified templating in managed content use the map tree concept (ie simple dot-syntax expressions for

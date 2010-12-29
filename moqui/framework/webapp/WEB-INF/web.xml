@@ -10,7 +10,7 @@
     <context-param>
         <param-name>moqui-name</param-name>
         <param-value>webroot</param-value>
-        <description>The name of the Moqui webapp used to lookup configuration in the moqui-conf -> webapp-list -> webapp.moqui-name attribute.</description>
+        <description>The name of the Moqui webapp used to lookup configuration in the moqui-conf.webapp-list.webapp.@moqui-name attribute.</description>
     </context-param>
 
     <!-- TODO: can this be setup programmatically for easier configuration? -->

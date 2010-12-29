@@ -56,6 +56,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
         if (!this.runtimePath) {
             this.runtimePath = System.getProperty("moqui.runtime")
+        } else {
+            System.setProperty("moqui.runtime", this.runtimePath)
         }
         if (!this.runtimePath) {
             throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).")
@@ -288,6 +290,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node efOverrideNode = overrideNode."entity-facade"[0]
             mergeNodeWithChildKey(efBaseNode, efOverrideNode, "datasource", "group-name")
             mergeSingleChild(efBaseNode, efOverrideNode, "server-jndi")
+            // for load-entity and load-data just copy over override nodes
+            for (Node copyNode in efOverrideNode."load-entity") efBaseNode.append(copyNode)
+            for (Node copyNode in efOverrideNode."load-data") efBaseNode.append(copyNode)
         }
 
         if (overrideNode."database-list") {
@@ -317,7 +322,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         for (Node childOverrideNode in overrideNode[childNodesName]) {
             String keyValue = childOverrideNode.attribute(keyAttributeName)
-            Node childBaseNode = (Node) baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })
+            Node childBaseNode = (Node) baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })[0]
 
             if (childBaseNode) {
                 // merge the node attributes
@@ -346,8 +351,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 // no matching child base node, so add a new one
                 baseNode.append((Node) childOverrideNode.clone())
             }
-
-
         }
     }
 

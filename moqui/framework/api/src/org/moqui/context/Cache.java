@@ -30,8 +30,8 @@ public interface Cache {
     EvictionStrategy getEvictionStrategy();
     void setMaxElements(int maxSize, EvictionStrategy strategy);
 
-    Serializable get(Serializable key);
-    Serializable put(Serializable key, Serializable value);
+    Object get(Serializable key);
+    Object put(Serializable key, Object value);
     Serializable remove(Serializable key);
 
     Set<Serializable> keySet();

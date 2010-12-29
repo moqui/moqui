@@ -204,4 +204,14 @@ class StupidUtilities {
             return -1
         }
     }
+
+    public static void addToListInMap(String key, Object value, Map theMap) {
+        if (!theMap) return
+        List theList = (List) theMap.get(key)
+        if (!theList) {
+            theList = new ArrayList()
+            theMap.put(key, theList)
+        }
+        theList.add(value)
+    }
 }

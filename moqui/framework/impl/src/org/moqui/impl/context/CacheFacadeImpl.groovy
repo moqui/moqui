@@ -31,14 +31,10 @@ public class CacheFacadeImpl implements CacheFacade {
         this.ecfi = ecfi
     }
 
-    public void destroy() {
-        this.cacheManager.shutdown()
-    }
+    public void destroy() { this.cacheManager.shutdown() }
 
     /** @see org.moqui.context.CacheFacade#clearAllCaches() */
-    public void clearAllCaches() {
-        this.cacheManager.clearAll()
-    }
+    public void clearAllCaches() { this.cacheManager.clearAll() }
 
     /** @see org.moqui.context.CacheFacade#clearExpiredFromAllCaches() */
     public void clearExpiredFromAllCaches() {
@@ -50,13 +46,11 @@ public class CacheFacadeImpl implements CacheFacade {
     }
 
     /** @see org.moqui.context.CacheFacade#clearCachesByPrefix(String) */
-    public void clearCachesByPrefix(String prefix) {
-        this.cacheManager.clearAllStartingWith(prefix)
-    }
+    public void clearCachesByPrefix(String prefix) { this.cacheManager.clearAllStartingWith(prefix) }
 
     /** @see org.moqui.context.CacheFacade#getCache(String) */
     public Cache getCache(String cacheName) {
-        Cache theCache = null
+        Cache theCache
         if (this.cacheManager.cacheExists(cacheName)) {
             // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
             theCache = new CacheImpl(cacheManager.getCache(cacheName))
@@ -68,10 +62,8 @@ public class CacheFacadeImpl implements CacheFacade {
 
             // set any applicable settings from the moqui conf xml file
             CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
-            def confXmlRoot = this.ecfi.getConfXmlRoot()
-            // TODO: this find(Closure) may not work since we're now using XmlParser instead of XmlSlurper, so watch for that
-            // if that doesn't work, see examples at: http://groovy.codehaus.org/Reading+XML+using+Groovy's+XmlParser
-            def cacheElement = confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
+            Node confXmlRoot = this.ecfi.getConfXmlRoot()
+            Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })[0]
             if (cacheElement) {
                 settings.expireTimeIdle = cacheElement."@expire-time-idle"
                 settings.expireTimeLive = cacheElement."@expire-time-live"
@@ -80,15 +72,15 @@ public class CacheFacadeImpl implements CacheFacade {
             }
 
             if (cacheElement."@expire-time-idle") {
-                newCacheConf.setTimeToIdleSeconds(Long.valueOf(cacheElement."@expire-time-idle"))
+                newCacheConf.setTimeToIdleSeconds(Long.valueOf((String) cacheElement."@expire-time-idle"))
                 newCacheConf.setEternal(false)
             }
             if (cacheElement."@expire-time-live") {
-                newCacheConf.setTimeToLiveSeconds(Long.valueOf(cacheElement."@expire-time-live"))
+                newCacheConf.setTimeToLiveSeconds(Long.valueOf((String) cacheElement."@expire-time-live"))
                 newCacheConf.setEternal(false)
             }
             if (cacheElement."@max-elements") {
-                newCacheConf.setMaxElementsInMemory(Integer.valueOf(cacheElement."@max-elements"))
+                newCacheConf.setMaxElementsInMemory(Integer.valueOf((String) cacheElement."@max-elements"))
             }
             String evictionStrategy = cacheElement."@eviction-strategy"
             if (evictionStrategy) {
