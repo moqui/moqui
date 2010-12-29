@@ -36,8 +36,7 @@ class UserFacadeImpl implements UserFacade {
         if (session.getAttribute("userAccount")) {
             this.userAccount = (EntityValue) session.getAttribute("userAccount")
         } else {
-
-        // TODO if no userAccount get better defaults from webapp for locale, time zone?
+            // TODO if no userAccount get better defaults from webapp for locale, time zone?
         }
         if (session.getAttribute("visit")) {
             this.visit = (EntityValue) session.getAttribute("visit")

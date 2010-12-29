@@ -64,7 +64,7 @@ class EntityValueImpl implements EntityValue {
     Object get(String name) {
         if (!this.entityDefinition.isField(name)) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
-            Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })[0]
+            Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })
             if (relationship) {
                 if (relationship."@type" == "many") {
                     return this.findRelated(name, null, null, null)

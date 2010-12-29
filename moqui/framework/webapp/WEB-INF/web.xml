@@ -2,8 +2,8 @@
 <!-- No copyright or license for configuration file, details here are not considered a creative work. -->
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
 	     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	     version="2.5">
+	     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	     version="3.0">
     <display-name>Moqui Base (Root) Webapp</display-name>
     <description></description>
 
@@ -13,7 +13,6 @@
         <description>The name of the Moqui webapp used to lookup configuration in the moqui-conf.webapp-list.webapp.@moqui-name attribute.</description>
     </context-param>
 
-    <!-- TODO: can this be setup programmatically for easier configuration? -->
     <listener>
         <!-- Implements HttpSessionListener; used to finalize Visit and track certain stats -->
         <listener-class>org.moqui.impl.webapp.MoquiEventListener</listener-class>

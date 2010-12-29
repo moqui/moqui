@@ -21,27 +21,41 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 /**
- * This is a base class that implements a simple way to access the Moqui framework for use in simple deployments like a
- * single webapp or an OSGi component. 
+ * This is a base class that implements a simple way to access the Moqui framework for use in simple deployments where
+ * there is nothing available like a webapp or an OSGi component.
  *
  * In deployments where a static reference to the ExecutionContextFactory is not helpful, or not possible, this does
  * not need to be used and the ExecutionContextFactory instance should be referenced and used from somewhere else.
  */
 
 public class Moqui {
-    private static final ServiceLoader<ExecutionContextFactory> executionContextFactoryLoader =
-            ServiceLoader.load(ExecutionContextFactory.class);
-    private static final ExecutionContextFactory activeExecutionContextFactory;
-    static {
-        // initialize the activeExecutionContextFactory from configuration using java.util.ServiceLoader
-        // the implementation class name should be in: "META-INF/services/org.moqui.context.ExecutionContextFactory"
-        activeExecutionContextFactory = executionContextFactoryLoader.iterator().next();
-    }
-    
+    private static ExecutionContextFactory activeExecutionContextFactory = null;
     private static final ThreadLocal<ExecutionContext> activeExecutionContext = new ThreadLocal<ExecutionContext>();
 
+    private static final ServiceLoader<ExecutionContextFactory> executionContextFactoryLoader =
+            ServiceLoader.load(ExecutionContextFactory.class);
+    static {
+        // only do this if the moqui.init.static System property is true
+        if ("true".equals(System.getProperty("moqui.init.static"))) {
+            // initialize the activeExecutionContextFactory from configuration using java.util.ServiceLoader
+            // the implementation class name should be in: "META-INF/services/org.moqui.context.ExecutionContextFactory"
+            activeExecutionContextFactory = executionContextFactoryLoader.iterator().next();
+        }
+    }
+
+    public static void dynamicInit(ExecutionContextFactory executionContextFactory) {
+        if (activeExecutionContextFactory == null) {
+            activeExecutionContextFactory = executionContextFactory;
+        } else {
+            throw new IllegalStateException("Active ExecutionContextFactory already in place, cannot set one dynamically.");
+        }
+
+    }
+
+    public static ExecutionContextFactory getExecutionContextFactory() { return activeExecutionContextFactory; }
+    
     public static ExecutionContext getExecutionContext() {
-        // TODO make this more thread safe, preferably in a non-blocking way
+        // TODO make this more thread safe, preferably in a non-blocking way?
         ExecutionContext executionContext = activeExecutionContext.get();
         if (executionContext == null) {
             // this should always have been initialized before getting it this way, but if not get a non-web ExecutionContext
@@ -67,20 +81,5 @@ public class Moqui {
             executionContext.destroy();
             activeExecutionContext.remove();
         }
-    }
-
-    /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
-    public static void initComponent(String baseLocation) throws BaseException {
-        activeExecutionContextFactory.initComponent(baseLocation);
-    }
-
-    /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
-    public static void destroyComponent(String componentName) throws BaseException {
-        activeExecutionContextFactory.destroyComponent(componentName);
-    }
-
-    /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
-    public static Map<String, String> getComponentBaseLocations() {
-        return activeExecutionContextFactory.getComponentBaseLocations();
     }
 }

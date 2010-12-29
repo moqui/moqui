@@ -27,6 +27,8 @@ public interface ExecutionContextFactory {
     /** Initialize a WebExecutionContext for a single request. */
     WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response);
 
+    void destroy();
+
     /**
      * Register a component with the framework.
      *

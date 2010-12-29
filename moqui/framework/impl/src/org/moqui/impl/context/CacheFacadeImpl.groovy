@@ -63,13 +63,7 @@ public class CacheFacadeImpl implements CacheFacade {
             // set any applicable settings from the moqui conf xml file
             CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
             Node confXmlRoot = this.ecfi.getConfXmlRoot()
-            Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })[0]
-            if (cacheElement) {
-                settings.expireTimeIdle = cacheElement."@expire-time-idle"
-                settings.expireTimeLive = cacheElement."@expire-time-live"
-                settings.maxElements = cacheElement."@max-elements"
-                settings.evictionStrategy = cacheElement."@eviction-strategy"
-            }
+            Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
 
             if (cacheElement."@expire-time-idle") {
                 newCacheConf.setTimeToIdleSeconds(Long.valueOf((String) cacheElement."@expire-time-idle"))

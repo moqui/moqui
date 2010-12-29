@@ -46,9 +46,9 @@ class TransactionFacadeImpl implements TransactionFacade {
     protected UserTransaction ut
     protected TransactionManager tm
 
-    private static ThreadLocal<ArrayList<Exception>> transactionBeginStack = new ThreadLocal<ArrayList<Exception>>().set(new ArrayList<Exception>())
-    private static ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStack = new ThreadLocal<ArrayList<RollbackInfo>>().set(new ArrayList<RollbackInfo>())
-    private static ThreadLocal<ArrayList<Transaction>> suspendedTxStack = new ThreadLocal<ArrayList<Transaction>>().set(new ArrayList<Transaction>())
+    private static ThreadLocal<ArrayList<Exception>> transactionBeginStackList = new ThreadLocal<ArrayList<Exception>>()
+    private static ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStackList = new ThreadLocal<ArrayList<RollbackInfo>>()
+    private static ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
 
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -84,9 +84,9 @@ class TransactionFacadeImpl implements TransactionFacade {
             this.commit()
         }
 
-        if (suspendedTxStack.get()) {
+        if (suspendedTxStackList.get()) {
             int numSuspended = 0;
-            for (Transaction tx in suspendedTxStack.get()) {
+            for (Transaction tx in suspendedTxStackList.get()) {
                 this.resume(tx)
                 this.commit()
                 numSuspended++
@@ -94,10 +94,36 @@ class TransactionFacadeImpl implements TransactionFacade {
             logger.warn("Cleaned up [" + numSuspended + "] suspended transactions.")
         }
 
-        transactionBeginStack.set(new ArrayList<Exception>())
-        rollbackOnlyInfoStack.set(new ArrayList<RollbackInfo>())
-        suspendedTxStack.set(new ArrayList<Transaction>())
+        transactionBeginStackList.remove()
+        rollbackOnlyInfoStackList.remove()
+        suspendedTxStackList.remove()
     }
+
+    protected ArrayList<Exception> getTransactionBeginStack() {
+        ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()
+        if (!list) {
+            list = new ArrayList<Exception>()
+            transactionBeginStackList.set(list)
+        }
+        return list
+    }
+    protected ArrayList<RollbackInfo> getRollbackOnlyInfoStack() {
+        ArrayList<RollbackInfo> list = (ArrayList<RollbackInfo>) rollbackOnlyInfoStackList.get()
+        if (!list) {
+            list = new ArrayList<RollbackInfo>()
+            rollbackOnlyInfoStackList.set(list)
+        }
+        return list
+    }
+    protected ArrayList<Transaction> getSuspendedTxStack() {
+        ArrayList<Transaction> list = (ArrayList<Transaction>) suspendedTxStackList.get()
+        if (!list) {
+            list = new ArrayList<Transaction>()
+            suspendedTxStackList.set(list)
+        }
+        return list
+    }
+
 
     /** @see org.moqui.context.TransactionFacade#getStatus() */
     int getStatus() {
@@ -163,15 +189,15 @@ class TransactionFacadeImpl implements TransactionFacade {
                 // don't begin, and return false so caller knows we didn't
                 return false
             } else if (currentStatus == Status.STATUS_MARKED_ROLLBACK) {
-                if (transactionBeginStack.get()) {
-                    logger.warn("Current transaction marked for rollback, so no transaction begun. This stack trace shows where the transaction began: ", transactionBeginStack.get().get(0))
+                if (getTransactionBeginStack()) {
+                    logger.warn("Current transaction marked for rollback, so no transaction begun. This stack trace shows where the transaction began: ", getTransactionBeginStack().get(0))
                 } else {
                     logger.warn("Current transaction marked for rollback, so no transaction begun (NOTE: No stack trace to show where transaction began).")
                 }
 
-                if (rollbackOnlyInfoStack.get()) {
-                    logger.warn("Current transaction marked for rollback, not beginning a new transaction. The rollback-only was set here: ", rollbackOnlyInfoStack.get().get(0).rollbackLocation)
-                    throw new TransactionException("Current transaction marked for rollback, so no transaction begun. The rollback was originally caused by: " + rollbackOnlyInfoStack.get().get(0).causeMessage, rollbackOnlyInfoStack.get().get(0).causeThrowable)
+                if (getRollbackOnlyInfoStack()) {
+                    logger.warn("Current transaction marked for rollback, not beginning a new transaction. The rollback-only was set here: ", getRollbackOnlyInfoStack().get(0).rollbackLocation)
+                    throw new TransactionException("Current transaction marked for rollback, so no transaction begun. The rollback was originally caused by: " + getRollbackOnlyInfoStack().get(0).causeMessage, getRollbackOnlyInfoStack().get(0).causeThrowable)
                 } else {
                     return false
                 }
@@ -181,7 +207,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             ut.begin()
             if (timeout) ut.setTransactionTimeout(0)
 
-            transactionBeginStack.get().set(0, new Exception("Tx Begin Placeholder"))
+            getTransactionBeginStack().set(0, new Exception("Tx Begin Placeholder"))
 
             return true
         } catch (NotSupportedException e) {
@@ -206,10 +232,10 @@ class TransactionFacadeImpl implements TransactionFacade {
                 logger.warn("Not committing transaction because status is " + getStatusString())
             }
         } catch (RollbackException e) {
-            RollbackInfo rollbackOnlyInfo = rollbackOnlyInfoStack.get().get(0)
+            RollbackInfo rollbackOnlyInfo = getRollbackOnlyInfoStack().get(0)
             if (rollbackOnlyInfo) {
-                logger.warn("Could not commit transaction, was marked rollback-only. The rollback-only was set here: ", rollbackOnlyInfoStack.get().get(0).rollbackLocation)
-                throw new TransactionException("Could not commit transaction, was marked rollback-only. The rollback was originally caused by: " + rollbackOnlyInfoStack.get().get(0).causeMessage, rollbackOnlyInfoStack.get().get(0).causeThrowable)
+                logger.warn("Could not commit transaction, was marked rollback-only. The rollback-only was set here: ", rollbackOnlyInfo.rollbackLocation)
+                throw new TransactionException("Could not commit transaction, was marked rollback-only. The rollback was originally caused by: " + rollbackOnlyInfo.causeMessage, rollbackOnlyInfo.causeThrowable)
             } else {
                 throw new TransactionException("Could not commit transaction, was rolled back instead (and we don't have a rollback-only cause)", e)
             }
@@ -222,8 +248,8 @@ class TransactionFacadeImpl implements TransactionFacade {
         } catch (SystemException e) {
             throw new TransactionException("Could not commit transaction", e)
         } finally {
-            if (rollbackOnlyInfoStack.get()) rollbackOnlyInfoStack.get().set(0, null)
-            if (transactionBeginStack.get()) transactionBeginStack.get().set(0, null)
+            if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
+            if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
         }
     }
 
@@ -256,8 +282,8 @@ class TransactionFacadeImpl implements TransactionFacade {
             // NOTE: should this really be in finally? maybe we only want to do this if there is a successful rollback
             // to avoid removing things that should still be there, or maybe here in finally it will match up the adds
             // and removes better
-            if (rollbackOnlyInfoStack.get()) rollbackOnlyInfoStack.get().set(0, null)
-            if (transactionBeginStack.get()) transactionBeginStack.get().set(0, null)
+            if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
+            if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
         }
     }
 
@@ -269,7 +295,7 @@ class TransactionFacadeImpl implements TransactionFacade {
                 if (status != Status.STATUS_MARKED_ROLLBACK) {
                     ut.setRollbackOnly()
                     // do this after setRollbackOnly so it only tracks it if rollback-only was actually set
-                    rollbackOnlyInfoStack.get().set(0, new RollbackInfo(causeMessage, causeThrowable, new Exception("Set rollback-only location")))
+                    getRollbackOnlyInfoStack().set(0, new RollbackInfo(causeMessage, causeThrowable, new Exception("Set rollback-only location")))
                 }
             } else {
                 logger.warn("Rollback only not set on current transaction, status is STATUS_NO_TRANSACTION")
@@ -290,9 +316,9 @@ class TransactionFacadeImpl implements TransactionFacade {
             }
             Transaction tx = tm.suspend()
             // only do these after successful suspend
-            rollbackOnlyInfoStack.get().add(0, null)
-            transactionBeginStack.get().add(0, null)
-            suspendedTxStack.get().add(0, tx)
+            getRollbackOnlyInfoStack().add(0, null)
+            getTransactionBeginStack().add(0, null)
+            getSuspendedTxStack().add(0, tx)
             return tx
         } catch (SystemException e) {
             throw new TransactionException("Could not suspend transaction", e)
@@ -305,9 +331,9 @@ class TransactionFacadeImpl implements TransactionFacade {
         try {
             tm.resume(parentTx)
             // only do these after successful resume
-            rollbackOnlyInfoStack.get().remove(0)
-            transactionBeginStack.get().remove(0)
-            suspendedTxStack.get().remove(0)
+            getRollbackOnlyInfoStack().remove(0)
+            getTransactionBeginStack().remove(0)
+            getSuspendedTxStack().remove(0)
         } catch (InvalidTransactionException e) {
             throw new TransactionException("Could not resume transaction", e)
         } catch (SystemException e) {

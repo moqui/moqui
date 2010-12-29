@@ -200,7 +200,7 @@ class EntityFindBuilder {
 
             makeSqlFromClause(localEntityDefinition, localBuilder)
 
-            def groupByAliases = localEntityDefinition.entityNode.alias.find({ it."@group-by" == "true" })
+            def groupByAliases = localEntityDefinition.entityNode.alias.findAll({ it."@group-by" == "true" })
             if (groupByAliases) {
                 localBuilder.append(" GROUP BY ")
                 boolean isFirstGroupBy = true
@@ -222,7 +222,7 @@ class EntityFindBuilder {
 
     void makeGroupByClause() {
         if (this.mainEntityDefinition.isViewEntity()) {
-            List groupByAliasNodes = (List) this.mainEntityDefinition.getEntityNode().alias.find({ it."@group-by" == "true" })
+            List groupByAliasNodes = (List) this.mainEntityDefinition.getEntityNode().alias.findAll({ it."@group-by" == "true" })
             if (groupByAliasNodes) {
                 this.sqlTopLevel.append(" GROUP BY ")
 

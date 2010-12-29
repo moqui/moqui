@@ -20,9 +20,13 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.ServletConfig
 import org.moqui.Moqui
 import org.moqui.context.WebExecutionContext
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.context.ExecutionContextFactory
 
 class MoquiServlet extends HttpServlet {
     protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
+
+    ExecutionContextFactory executionContextFactory = null
 
     public MoquiServlet() {
         super();
@@ -32,7 +36,18 @@ class MoquiServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         logger.info("Loading Moqui Webapp [" + config.getServletContext().getContextPath().substring(1) + "] " + config.getServletContext().getServletContextName() + ", located at " + config.getServletContext().getRealPath("/"))
-        // TODO: anything to init here, or all per request that is not global?
+        this.executionContextFactory = new ExecutionContextFactoryImpl()
+        logger.info("Loaded Moqui Execution Context Factory")
+    }
+
+    @Override
+    public void destroy() {
+        logger.info("Destroying Moqui Execution Context Factory")
+        if (this.executionContextFactory) {
+            this.executionContextFactory.destroy()
+            this.executionContextFactory = null
+        }
+        super.destroy();
     }
 
     /** @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
@@ -45,7 +60,7 @@ class MoquiServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
-        WebExecutionContext wec = Moqui.initWebExecutionContext(request, response)
+        WebExecutionContext wec = this.executionContextFactory.getWebExecutionContext(request, response)
 
         // TODO: render screens based on path in URL (should probably move this to another class that renders screens)
         String pathInfo = request.getPathInfo();
@@ -53,11 +68,6 @@ class MoquiServlet extends HttpServlet {
         //wec.screen.renderScreenText(String screenLocation, Appendable appender, "html", String characterEncoding, null)
 
         // make sure everything is cleaned up
-        Moqui.destroyActiveExecutionContext()
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
+        wec.destroy()
     }
 }

@@ -18,7 +18,7 @@
 
     <!-- stdout appender -->
     <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
-        <param name="threshold" value="info"/>
+        <param name="threshold" value="all"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
         </layout>
@@ -29,7 +29,7 @@
         <param name="maxFileSize" value="1000KB"/>
         <param name="maxBackupIndex" value="10"/>
         <param name="File" value="runtime/log/moqui.log"/>
-        <param name="threshold" value="info"/>
+        <param name="threshold" value="all"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
         </layout>
@@ -80,18 +80,10 @@
     <category name="org.apache.log4j">
         <priority value="warn"/>
     </category>
-    <category name="org.apache.geronimo.transaction">
-        <priority value="warn"/>
-        <appender-ref ref="minerva-log"/>
-    </category>
-    <category name="org.apache.fop">
-        <priority value="info"/>
-        <appender-ref ref="fop-log"/>
-    </category>
 
     <!-- root logger -->
     <root>
-        <priority value="all"></priority>
+        <priority value="all"/>
         <appender-ref ref="async"/>
     </root>
 </log4j:configuration>

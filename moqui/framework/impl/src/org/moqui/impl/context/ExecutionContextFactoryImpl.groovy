@@ -47,12 +47,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /**
      * This constructor gets runtime directory and conf file location from a properties file on the classpath so that
-     * it can initialize on its own. This is the constructor to be used by the ServiceLoader in the Moqui.java file.
+     * it can initialize on its own. This is the constructor to be used by the ServiceLoader in the Moqui.java file,
+     * or by init methods in a servlet or context filter or OSGi component or Spring component or whatever.
      */
     ExecutionContextFactoryImpl() {
         // get the runtime directory path
         Properties moquiInitProperties = new Properties()
-        moquiInitProperties.load(ClassLoader.getSystemResourceAsStream("MoquiInit.properties"))
+        moquiInitProperties.load(this.class.getClassLoader().getResourceAsStream("MoquiInit.properties"))
         this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
         if (!this.runtimePath) {
             this.runtimePath = System.getProperty("moqui.runtime")
@@ -117,7 +118,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
     protected void init() {
-        URL defaultConfUrl = ClassLoader.getSystemResource("MoquiDefaultConf.xml")
+        URL defaultConfUrl = this.class.getClassLoader().getResource("MoquiDefaultConf.xml")
+        if (!defaultConfUrl) throw new IllegalArgumentException("Could not find MoquiDefaultConf.xml file on the classpath")
         this.confXmlRoot = new XmlParser().parse(defaultConfUrl.newInputStream())
 
         File confFile = new File(this.confPath)
@@ -134,22 +136,37 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.entityFacade = new EntityFacadeImpl(this)
         this.serviceFacade = new ServiceFacadeImpl(this)
         this.screenFacade = new ScreenFacadeImpl(this)
-    }
 
-    Node getConfXmlRoot() {
-        return this.confXmlRoot
+        // TODO: init all components in the runtime/components directory
     }
 
     synchronized void destroy() {
         if (!this.destroyed) {
             // this destroy order is important as some use others so must be destroyed first
-            this.serviceFacade.destroy()
-            this.entityFacade.destroy()
-            this.transactionFacade.destroy()
-            this.cacheFacade.destroy()
+            if (this.serviceFacade) { this.serviceFacade.destroy(); this.serviceFacade = null }
+            if (this.entityFacade) { this.entityFacade.destroy(); this.entityFacade = null }
+            if (this.transactionFacade) { this.transactionFacade.destroy(); this.transactionFacade = null }
+            if (this.cacheFacade) { this.cacheFacade.destroy(); this.cacheFacade = null }
 
             this.destroyed = true
         }
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            if (!this.destroyed) {
+                this.destroy()
+                logger.warn("ExecutionContextFactoryImpl not destroyed, caught in finalize.")
+            }
+        } catch (Exception e) {
+            logger.warn("Error in destroy, called in finalize of ExecutionContextFactoryImpl", e)
+        }
+        super.finalize()
+    }
+
+    Node getConfXmlRoot() {
+        return this.confXmlRoot
     }
 
     // ========== Getters ==========
@@ -223,19 +240,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
     Map<String, String> getComponentBaseLocations() {
         return Collections.unmodifiableMap(this.componentLocationMap)
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            if (!this.destroyed) {
-                this.destroy()
-                logger.warn("ExecutionContextFactoryImpl not destroyed, caught in finalize.")
-            }
-        } catch (Exception e) {
-            logger.warn("Error in destroy, called in finalize of ExecutionContextFactoryImpl", e)
-        }
-        super.finalize()
     }
 
     protected void mergeConfigNodes(Node baseNode, Node overrideNode) {
@@ -322,7 +326,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         for (Node childOverrideNode in overrideNode[childNodesName]) {
             String keyValue = childOverrideNode.attribute(keyAttributeName)
-            Node childBaseNode = (Node) baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })[0]
+            Node childBaseNode = (Node) baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })
 
             if (childBaseNode) {
                 // merge the node attributes
@@ -349,7 +353,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 }
             } else {
                 // no matching child base node, so add a new one
-                baseNode.append((Node) childOverrideNode.clone())
+                baseNode.append(childOverrideNode)
             }
         }
     }
@@ -368,7 +372,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             if (childBaseNode) {
                 childBaseNode.attributes().putAll(childOverrideNode.attributes())
             } else {
-                baseNode.append((Node) childOverrideNode.clone())
+                baseNode.append(childOverrideNode)
             }
         }
     }

@@ -84,6 +84,7 @@ public class CacheImpl implements Cache {
     /** @see org.moqui.context.Cache#get(Serializable) */
     public Object get(Serializable key) {
         Element element = this.ehcache.get(key)
+        if (!element) return null
         if (element.isExpired()) {
             this.ehcache.removeElement(element)
             return null

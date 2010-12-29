@@ -46,7 +46,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final EntityConditionFactoryImpl entityConditionFactory
 
-    protected final Map<String, DataSource> dataSourceByGroupMap
+    protected final Map<String, DataSource> dataSourceByGroupMap = new HashMap()
 
     /** Cache with entity name as the key and an EntityDefinition as the value; clear this cache to reload entity def */
     protected final Cache entityDefinitionCache
@@ -213,7 +213,7 @@ class EntityFacadeImpl implements EntityFacade {
             InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
             Node entityRoot = new XmlParser().parse(entityStream)
             entityStream.close()
-            for (Node childNode in entityRoot.children().find({ it."@entity-name" == entityName })) {
+            for (Node childNode in entityRoot.children().findAll({ it."@entity-name" == entityName })) {
                 if (childNode.name() == "extend-entity") {
                     extendEntityNodes.add(childNode)
                 } else {
@@ -232,9 +232,9 @@ class EntityFacadeImpl implements EntityFacade {
             // merge field nodes
             for (Node childOverrideNode in extendEntity."field") {
                 String keyValue = childOverrideNode."@name"
-                Node childBaseNode = (Node) entityNode."field".find({ it."@name" == keyValue })[0]
+                Node childBaseNode = (Node) entityNode."field".find({ it."@name" == keyValue })
                 if (childBaseNode) childBaseNode.attributes().putAll(childOverrideNode.attributes())
-                else entityNode.append((Node) childOverrideNode.clone())
+                else entityNode.append(childOverrideNode)
             }
             // add relationship, key-map (copy over, will get child nodes too
             for (Node copyNode in extendEntity."relationship") entityNode.append(copyNode)
@@ -267,14 +267,14 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     Node getDatabaseNode(String groupName) {
-        def confXmlRoot = this.ecfi.getConfXmlRoot()
-        def databaseConfName = getDataBaseConfName(groupName)
-        return (Node) confXmlRoot."database-list".database.find({ it.@name == databaseConfName })[0]
+        Node confXmlRoot = this.ecfi.getConfXmlRoot()
+        String databaseConfName = getDataBaseConfName(groupName)
+        return (Node) confXmlRoot."database-list".database.find({ it.@name == databaseConfName })
     }
     String getDataBaseConfName(String groupName) {
         //String groupName = this.getEntityGroupName(entityName)
-        def confXmlRoot = this.ecfi.getConfXmlRoot()
-        def datasourceNode = confXmlRoot."entity-facade".datasource.find({ it."@group-name" == groupName })
+        Node confXmlRoot = this.ecfi.getConfXmlRoot()
+        Node datasourceNode = (Node) confXmlRoot."entity-facade".datasource.find({ it."@group-name" == groupName })
         return datasourceNode."@database-conf-name"
     }
 
@@ -377,7 +377,7 @@ class EntityFacadeImpl implements EntityFacade {
             "binary-very-long":"java.sql.Blob"]
     protected String getFieldJavaType(String fieldType, String entityName) {
         Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
-        String javaType = databaseNode ? databaseNode."field-type-def".find({ it.@type == fieldType })[0]."@java-type" : null
+        String javaType = databaseNode ? databaseNode."field-type-def".find({ it.@type == fieldType })."@java-type" : null
         if (javaType) {
             return javaType
         } else {

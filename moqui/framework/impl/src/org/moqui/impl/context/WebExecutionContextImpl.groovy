@@ -32,7 +32,7 @@ class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecuti
         this.request = request
         this.response = response
 
-        // TODO: if there is no visit in the session then set one up
+        // NOTE: the Visit is not setup here but rather in the MoquiEventListener (for init and destroy)
 
         request.setAttribute("executionContext", this)
         this.userFacade.initFromHttpSession(request.getSession())
