@@ -230,10 +230,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         try {
             if (!this.destroyed) {
                 this.destroy()
-                this.loggerFacade.log(null, "\n===========================================================\n ExecutionContextFactoryImpl not destroyed, caught in finalize\n===========================================================\n", null)
+                logger.warn("ExecutionContextFactoryImpl not destroyed, caught in finalize.")
             }
         } catch (Exception e) {
-            this.loggerFacade.log(null, "Error in destroy, called in finalize of ExecutionContextFactoryImpl", e)
+            logger.warn("Error in destroy, called in finalize of ExecutionContextFactoryImpl", e)
         }
         super.finalize()
     }

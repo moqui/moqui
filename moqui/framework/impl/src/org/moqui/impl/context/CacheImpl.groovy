@@ -104,7 +104,7 @@ public class CacheImpl implements Cache {
         }
     }
 
-    /** @see org.moqui.context.Cache#remove(String) */
+    /** @see org.moqui.context.Cache#remove(Serializable) */
     public Object remove(Serializable key) {
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)

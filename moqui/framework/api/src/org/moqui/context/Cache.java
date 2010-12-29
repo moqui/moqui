@@ -32,7 +32,7 @@ public interface Cache {
 
     Object get(Serializable key);
     Object put(Serializable key, Object value);
-    Serializable remove(Serializable key);
+    Object remove(Serializable key);
 
     Set<Serializable> keySet();
     boolean hasExpired(Serializable key);

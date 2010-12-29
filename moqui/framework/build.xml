@@ -119,4 +119,14 @@ This Work includes contributions authored by David E. Jones, not as a
             </fileset>
         </javadoc>
     </target>
+
+    <!-- ========== build targets ========== -->
+    <target name="war" depends="build">
+        <war destfile="build/moqui-framework-${version}.war" webxml="webapp/WEB-INF/web.xml">
+            <!-- no html/etc webapp files for now: <fileset dir="html"/> -->
+            <lib dir="api/lib"/>
+            <lib dir="impl/lib"/>
+            <lib dir="build/lib"/>
+        </war>
+    </target>
 </project>
