@@ -61,6 +61,56 @@ class EntityFindBuilder {
 
     }
 
+    void makeCountFunction() {
+        boolean isDistinct = this.entityFindImpl.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&
+                "true" == this.mainEntityDefinition.getEntityNode()."entity-condition"[0]."@distinct")
+        boolean isGroupBy = false
+        if (this.mainEntityDefinition.isViewEntity()) {
+            if (this.mainEntityDefinition.getEntityNode().alias.find({ it."@group-by" == "true" })) isGroupBy = true
+        }
+
+        if (isGroupBy) {
+            this.sqlTopLevel.append("COUNT(1) FROM (SELECT ")
+        }
+
+        if (isDistinct) {
+            // old style, not sensitive to selecting limited columns: sql.append("DISTINCT COUNT(*) ")
+
+            /* NOTE: the code below was causing problems so the line above may be used instead, in view-entities in
+             * some cases it seems to cause the "COUNT(DISTINCT " to appear twice, causing an attempt to try to count
+             * a count (function="count-distinct", distinct=true in find options)
+             */
+            if (this.entityFindImpl.fieldsToSelect) {
+                Node aliasNode = this.mainEntityDefinition.getFieldNode(this.entityFindImpl.fieldsToSelect[0])
+                if (aliasNode && aliasNode."@function") {
+                    // if the field has a function already we don't want to count just it, would be meaningless
+                    this.sqlTopLevel.append("COUNT(DISTINCT *) ")
+                } else {
+                    this.sqlTopLevel.append("COUNT(DISTINCT ")
+                    // TODO: possible to do all fieldsToSelect, or only one in SQL? if do all col names here it will blow up...
+                    this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(this.entityFindImpl.fieldsToSelect[0], false))
+                    this.sqlTopLevel.append(")")
+                }
+            } else {
+                this.sqlTopLevel.append("COUNT(DISTINCT *) ")
+            }
+        } else {
+            // This is COUNT(1) instead of COUNT(*) for better performance, and should get the same results at least
+            // when there is no DISTINCT
+            this.sqlTopLevel.append("COUNT(1) ")
+        }
+    }
+
+    void closeCountFunctionIfGroupBy() {
+        boolean isGroupBy = false
+        if (this.mainEntityDefinition.isViewEntity()) {
+            if (this.mainEntityDefinition.getEntityNode().alias.find({ it."@group-by" == "true" })) isGroupBy = true
+        }
+        if (isGroupBy) {
+            this.sqlTopLevel.append(") TEMP_NAME")
+        }
+    }
+
     void makeSqlSelectFields(Set<String> fieldsToSelect) {
         if (fieldsToSelect.size() > 0) {
             boolean isFirst = true
@@ -309,13 +359,13 @@ class EntityFindBuilder {
         return colName.replace('.', '_').replace('(','_').replace(')','_')
     }
 
-    protected Connection makeConnection() {
+    Connection makeConnection() {
         this.connection = this.entityFindImpl.efi.getConnection(
                 this.entityFindImpl.efi.getEntityGroupName(this.entityFindImpl.getEntity()))
         return this.connection
     }
 
-    protected PreparedStatement makePreparedStatement() {
+    PreparedStatement makePreparedStatement() {
         if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
         String sql = this.getSqlTopLevel().toString()
         try {
@@ -328,14 +378,23 @@ class EntityFindBuilder {
         return this.ps
     }
 
-    protected ResultSet executeQuery() {
+    void setPreparedStatementValues() {
+        // set all of the values from the SQL building in efb
+        int paramIndex = 1
+        for (EntityConditionParameter entityConditionParam: getParameters()) {
+            entityConditionParam.setPreparedStatementValue(paramIndex)
+            paramIndex++
+        }
+    }
+
+    ResultSet executeQuery() {
         if (!this.ps) throw new IllegalStateException("Cannot Execut Query, no PreparedStatement in place")
         this.rs = this.ps.executeQuery()
         return this.rs
     }
 
     /** NOTE: this should be called in a finally clause to make this things are closed */
-    protected void closeAll() {
+    void closeAll() {
         if (this.ps) {
             this.ps.close()
             this.ps = null
@@ -353,7 +412,7 @@ class EntityFindBuilder {
     /** Only close the PreparedStatement, leave the ResultSet and Connection open, but null references to them
      * NOTE: this should be called in a finally clause to make this things are closed
      */
-    protected void closePsOnly() {
+    void closePsOnly() {
         if (this.ps) {
             this.ps.close()
             this.ps = null

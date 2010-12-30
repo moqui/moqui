@@ -43,7 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="SI" entity-name="StatusItem"/>
         <alias-all entity-alias="SI"/>
         <entity-condition>
-            <condition-expr entity-alias="SI" field-name="statusTypeId" operator="equals" value="EXAMPLE_STATUS"/>
+            <econdition entity-alias="SI" field-name="statusTypeId" operator="equals" value="EXAMPLE_STATUS"/>
             <order-by field-name="sequenceId"/>
         </entity-condition>
     </view-entity>
@@ -86,10 +86,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="EFAAFV" entity-name="ExampleFeatureAndApplFullView"/>
         <alias-all entity-alias="EFAAFV"/>
         <entity-condition>
-            <condition-list combine="and">
-                <condition-expr field-name="exampleTypeId" value="CONTRIVED"/>
-                <condition-expr field-name="exampleFeatureApplTypeId" value="REQUIRED"/>
-            </condition-list>
+            <econditions combine="and">
+                <econdition field-name="exampleTypeId" value="CONTRIVED"/>
+                <econdition field-name="exampleFeatureApplTypeId" value="REQUIRED"/>
+            </econditions>
             <order-by field-name="exampleName"/>
         </entity-condition>
     </view-entity>
@@ -107,7 +107,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="exampleFeatureApplTypeId"/>
         </view-link>
         <entity-condition>
-            <condition-expr field-name="exampleFeatureApplTypeId" value="DESIRED"/>
+            <econdition field-name="exampleFeatureApplTypeId" value="DESIRED"/>
         </entity-condition>
     </view-entity>
     <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="org.moqui.example.example">
@@ -127,7 +127,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="exampleId"/>
         </view-link>
         <entity-condition>
-            <condition-expr field-name="featureSourceEnumId" value="EXFTSRC_CUSTOMER"/>
+            <econdition field-name="featureSourceEnumId" value="EXFTSRC_CUSTOMER"/>
             <order-by field-name="exampleName"/>
         </entity-condition>
     </view-entity>

@@ -141,10 +141,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             for (File componentSubDir in componentDir.listFiles()) {
                 // if it's a directory and doesn't start with a "." then add it as a component dir
                 if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
-                    String componentPath = componentSubDir.toURI().toURL().toString()
-                    if (componentPath.endsWith("/")) componentPath = componentPath.substring(0, componentPath.length()-1)
-                    this.componentLocationMap.put(componentSubDir.getName(), componentPath)
-                    logger.info("Auto-added runtime/component [${componentSubDir.getName()}] at [${componentPath}]")
+                    this.initComponent(componentSubDir.toURI().toURL().toString())
                 }
             }
         }
@@ -254,15 +251,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         this.componentLocationMap.put(componentName, baseLocation)
-
-        // TODO: implement rest of this as needed
+        logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
     void destroyComponent(String componentName) throws BaseException {
         this.componentLocationMap.remove(componentName)
-
-        // TODO: implement rest of this as needed
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */

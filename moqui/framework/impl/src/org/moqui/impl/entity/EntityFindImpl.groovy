@@ -284,16 +284,9 @@ class EntityFindImpl implements EntityFind {
         try {
             efb.makeConnection()
             efb.makePreparedStatement()
-
-            // set all of the values from the SQL building in efb
-            int paramIndex = 1
-            for (EntityConditionParameter entityConditionParam: efb.getParameters()) {
-                entityConditionParam.setPreparedStatementValue(paramIndex)
-                paramIndex++
-            }
+            efb.setPreparedStatementValues()
 
             ResultSet rs = efb.executeQuery()
-
             if (rs.next()) {
                 newEntityValue = new EntityValueImpl(entityDefinition, this.efi)
                 int j = 1
@@ -349,6 +342,7 @@ class EntityFindImpl implements EntityFind {
         efb.startWhereClause()
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         if (whereCondition) whereCondition.makeSqlWhere(efb)
+        // TODO: add the view-entity.entity-condition.econdition(s) support
 
         // group by clause
         efb.makeGroupByClause()
@@ -357,6 +351,7 @@ class EntityFindImpl implements EntityFind {
         efb.startHavingClause()
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
         if (havingCondition) havingCondition.makeSqlWhere(efb)
+        // TODO: add the view-entity.entity-condition.having-econditions support
 
         // order by clause
         List<String> orderByExpanded = new ArrayList()
@@ -374,13 +369,7 @@ class EntityFindImpl implements EntityFind {
         try {
             Connection con = efb.makeConnection()
             efb.makePreparedStatement()
-
-            // set all of the values from the SQL building in efb
-            int paramIndex = 1
-            for (EntityConditionParameter entityConditionParam in efb.getParameters()) {
-                entityConditionParam.setPreparedStatementValue(paramIndex)
-                paramIndex++
-            }
+            efb.setPreparedStatementValues()
 
             ResultSet rs = efb.executeQuery()
 
@@ -396,7 +385,55 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
-        // TODO: implement this
-        return 0;
+        long count = 0
+
+        EntityDefinition entityDefinition;
+        if (this.dynamicView) {
+            entityDefinition = this.dynamicView.makeEntityDefinition()
+        } else {
+            entityDefinition = this.efi.getEntityDefinition(this.entityName)
+        }
+        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true)
+
+        EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
+
+        // count function instead of select fields
+        efb.makeCountFunction()
+
+        // from Clause
+        efb.makeSqlFromClause()
+
+        // where clause
+        efb.startWhereClause()
+        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        if (whereCondition) whereCondition.makeSqlWhere(efb)
+        // TODO: add the view-entity.entity-condition.econdition(s) support
+
+        // group by clause
+        efb.makeGroupByClause()
+
+        // having clause
+        efb.startHavingClause()
+        EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
+        if (havingCondition) havingCondition.makeSqlWhere(efb)
+        // TODO: add the view-entity.entity-condition.having-econditions support
+
+        efb.closeCountFunctionIfGroupBy()
+
+        // run the SQL now that it is built
+        EntityListIteratorImpl eli = null
+        try {
+            efb.makeConnection()
+            efb.makePreparedStatement()
+            efb.setPreparedStatementValues()
+
+            ResultSet rs = efb.executeQuery()
+            if (rs.next()) count = rs.getLong(1)
+        } catch (SQLException e) {
+            throw new EntityException("Error finding count", e)
+        } finally {
+            efb.closeAll()
+        }
+        return count
     }
 }

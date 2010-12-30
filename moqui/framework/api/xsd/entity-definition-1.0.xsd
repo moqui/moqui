@@ -249,18 +249,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="date-filter"/>
-                <xs:choice minOccurs="0">
-                    <xs:element ref="condition-expr"/>
-                    <xs:element ref="condition-list"/>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="econdition"/>
+                    <xs:element ref="econditions"/>
                 </xs:choice>
-                <xs:element minOccurs="0" ref="having-condition-list"/>
+                <xs:element minOccurs="0" ref="having-econditions"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="order-by"/>
             </xs:sequence>
             <xs:attribute name="distinct" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="date-filter">
-        <xs:annotation><xs:documentation>Adds a constraint to find to filter by the from and thru dates in each record, comparing them to the valid-date value.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Adds a econdition to find to filter by the from and thru dates in each record, comparing them to the valid-date value.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute type="xs:string" name="valid-date">
                 <xs:annotation><xs:documentation>The name of a field in the context to compare each value to. Defaults to now.</xs:documentation></xs:annotation>
@@ -273,7 +273,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="condition-expr">
+    <xs:element name="econdition">
         <xs:complexType>
             <xs:attribute name="entity-alias" type="xs:string"/>
             <xs:attribute name="field-name" type="xs:string" use="required"/>
@@ -284,11 +284,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="ignore-case" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="condition-list">
+    <xs:element name="econditions">
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
-                <xs:element ref="condition-expr"/>
-                <xs:element ref="condition-list"/>
+                <xs:element ref="econdition"/>
+                <xs:element ref="econditions"/>
             </xs:choice>
             <xs:attribute name="combine" default="and">
                 <xs:simpleType>
@@ -300,11 +300,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="having-condition-list">
+    <xs:element name="having-econditions">
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
-                <xs:element ref="condition-expr"/>
-                <xs:element ref="condition-list"/>
+                <xs:element ref="econdition"/>
+                <xs:element ref="econditions"/>
             </xs:choice>
             <xs:attribute name="combine" default="and">
                 <xs:simpleType>
