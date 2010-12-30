@@ -24,11 +24,13 @@ import freemarker.ext.servlet.ServletContextHashModel
 
 class WebExecutionContextImpl extends ExecutionContextImpl implements WebExecutionContext {
 
+    protected String webappMoquiName
     protected HttpServletRequest request
     protected HttpServletResponse response
 
-    WebExecutionContextImpl(HttpServletRequest request, HttpServletResponse response, ExecutionContextFactoryImpl ecfi) {
+    WebExecutionContextImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response, ExecutionContextFactoryImpl ecfi) {
         super(ecfi)
+        this.webappMoquiName = webappMoquiName
         this.request = request
         this.response = response
 

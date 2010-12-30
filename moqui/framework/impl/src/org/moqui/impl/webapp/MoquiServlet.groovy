@@ -26,7 +26,9 @@ import org.moqui.context.ExecutionContextFactory
 class MoquiServlet extends HttpServlet {
     protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
 
-    ExecutionContextFactory executionContextFactory = null
+    protected ExecutionContextFactory executionContextFactory = null
+    protected String webappId = null
+    protected String webappMoquiName = null
 
     public MoquiServlet() {
         super();
@@ -35,19 +37,23 @@ class MoquiServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        logger.info("Loading Moqui Webapp [" + config.getServletContext().getContextPath().substring(1) + "] " + config.getServletContext().getServletContextName() + ", located at " + config.getServletContext().getRealPath("/"))
+        this.webappId = config.getServletContext().getContextPath().substring(1)
+        this.webappMoquiName = config.getInitParameter("moqui-name")
+
+        logger.info("Loading Moqui Webapp [${webappId}] ${config.getServletContext().getServletContextName()}, located at ${config.getServletContext().getRealPath("/")}")
         this.executionContextFactory = new ExecutionContextFactoryImpl()
-        logger.info("Loaded Moqui Execution Context Factory")
+        logger.info("Loaded Moqui Execution Context Factory for webapp [${webappId}]")
     }
 
     @Override
     public void destroy() {
-        logger.info("Destroying Moqui Execution Context Factory")
+        logger.info("Destroying Moqui Execution Context Factory for webapp [${webappId}]")
         if (this.executionContextFactory) {
             this.executionContextFactory.destroy()
             this.executionContextFactory = null
         }
         super.destroy();
+        logger.info("Destroyed Moqui Execution Context Factory for webapp [${webappId}]")
     }
 
     /** @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
@@ -60,7 +66,7 @@ class MoquiServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
-        WebExecutionContext wec = this.executionContextFactory.getWebExecutionContext(request, response)
+        WebExecutionContext wec = this.executionContextFactory.getWebExecutionContext(this.webappMoquiName, request, response)
 
         // TODO: render screens based on path in URL (should probably move this to another class that renders screens)
         String pathInfo = request.getPathInfo();

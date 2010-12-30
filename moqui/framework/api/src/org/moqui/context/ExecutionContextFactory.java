@@ -25,7 +25,7 @@ public interface ExecutionContextFactory {
     ExecutionContext getExecutionContext();
 
     /** Initialize a WebExecutionContext for a single request. */
-    WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response);
+    WebExecutionContext getWebExecutionContext(String webappMoquiName, HttpServletRequest request, HttpServletResponse response);
 
     void destroy();
 

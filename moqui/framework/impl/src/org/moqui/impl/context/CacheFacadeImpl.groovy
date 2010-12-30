@@ -17,8 +17,11 @@ import net.sf.ehcache.CacheManager
 import net.sf.ehcache.Ehcache
 import net.sf.ehcache.config.CacheConfiguration
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 public class CacheFacadeImpl implements CacheFacade {
+    protected final static Logger logger = LoggerFactory.getLogger(CacheFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
     
@@ -55,41 +58,48 @@ public class CacheFacadeImpl implements CacheFacade {
             // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
             theCache = new CacheImpl(cacheManager.getCache(cacheName))
         } else {
-            // make a cache with the default seetings from ehcache.xml
-            this.cacheManager.addCacheIfAbsent(cacheName)
-            net.sf.ehcache.Cache newCache = this.cacheManager.getCache(cacheName)
-            newCache.setSampledStatisticsEnabled(true)
-
-            // set any applicable settings from the moqui conf xml file
-            CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
-            Node confXmlRoot = this.ecfi.getConfXmlRoot()
-            Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
-
-            if (cacheElement."@expire-time-idle") {
-                newCacheConf.setTimeToIdleSeconds(Long.valueOf((String) cacheElement."@expire-time-idle"))
-                newCacheConf.setEternal(false)
-            }
-            if (cacheElement."@expire-time-live") {
-                newCacheConf.setTimeToLiveSeconds(Long.valueOf((String) cacheElement."@expire-time-live"))
-                newCacheConf.setEternal(false)
-            }
-            if (cacheElement."@max-elements") {
-                newCacheConf.setMaxElementsInMemory(Integer.valueOf((String) cacheElement."@max-elements"))
-            }
-            String evictionStrategy = cacheElement."@eviction-strategy"
-            if (evictionStrategy) {
-                if ("least-recently-used" == evictionStrategy) {
-                    newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LRU)
-                } else if ("least-frequently-used" == evictionStrategy) {
-                    newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LFU)
-                } else if ("least-recently-added" == evictionStrategy) {
-                    newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.FIFO)
-                }
-            }
-
-            theCache = new CacheImpl(newCache)
+            theCache = new CacheImpl(this.initCache(cacheName))
         }
 
         return theCache
+    }
+
+    protected synchronized net.sf.ehcache.Cache initCache(String cacheName) {
+        if (this.cacheManager.cacheExists(cacheName)) return cacheManager.getCache(cacheName)
+
+        // make a cache with the default seetings from ehcache.xml
+        this.cacheManager.addCacheIfAbsent(cacheName)
+        net.sf.ehcache.Cache newCache = this.cacheManager.getCache(cacheName)
+        newCache.setSampledStatisticsEnabled(true)
+
+        // set any applicable settings from the moqui conf xml file
+        CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
+        Node confXmlRoot = this.ecfi.getConfXmlRoot()
+        Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
+
+        if (cacheElement."@expire-time-idle") {
+            newCacheConf.setTimeToIdleSeconds(Long.valueOf((String) cacheElement."@expire-time-idle"))
+            newCacheConf.setEternal(false)
+        }
+        if (cacheElement."@expire-time-live") {
+            newCacheConf.setTimeToLiveSeconds(Long.valueOf((String) cacheElement."@expire-time-live"))
+            newCacheConf.setEternal(false)
+        }
+        if (cacheElement."@max-elements") {
+            newCacheConf.setMaxElementsInMemory(Integer.valueOf((String) cacheElement."@max-elements"))
+        }
+        String evictionStrategy = cacheElement."@eviction-strategy"
+        if (evictionStrategy) {
+            if ("least-recently-used" == evictionStrategy) {
+                newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LRU)
+            } else if ("least-frequently-used" == evictionStrategy) {
+                newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LFU)
+            } else if ("least-recently-added" == evictionStrategy) {
+                newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.FIFO)
+            }
+        }
+
+        logger.info("Initialized new cache [${cacheName}]")
+        return newCache
     }
 }

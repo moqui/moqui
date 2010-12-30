@@ -181,6 +181,7 @@ class EntityFacadeImpl implements EntityFacade {
         entityStream.close()
         if (entityRoot.name() == "entities") {
             // loop through all entity, view-entity, and extend-entity and add file location to List for any entity named
+            int numEntities = 0
             for (GPathResult entity in entityRoot.children()) {
                 List theList = (List) this.entityLocationCache.get((String) entity."@entity-name")
                 if (!theList) {
@@ -188,7 +189,9 @@ class EntityFacadeImpl implements EntityFacade {
                     this.entityLocationCache.put((String) entity."@entity-name", theList)
                 }
                 theList.add(location)
+                numEntities++
             }
+            logger.info("Found [${numEntities}] entity definitions in [${location}]")
         }
     }
 

@@ -33,7 +33,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final String confPath
     protected final Node confXmlRoot
     
-    protected final Map componentLocationMap = new HashMap()
+    protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
     // for future use if needed: protected final Map componentDetailMap;
 
     // ======== Permanent Delegated Facades ========
@@ -57,8 +57,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
         if (!this.runtimePath) {
             this.runtimePath = System.getProperty("moqui.runtime")
-        } else {
-            System.setProperty("moqui.runtime", this.runtimePath)
         }
         if (!this.runtimePath) {
             throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).")
@@ -69,7 +67,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         File runtimeFile = new File(this.runtimePath)
         if (!runtimeFile.exists()) {
             throw new IllegalArgumentException("The moqui.runtime path [${this.runtimePath}] was not found.")
+        } else {
+            this.runtimePath = runtimeFile.getCanonicalPath()
         }
+
+        // always set the full moqui.runtime system property for use in various places
+        System.setProperty("moqui.runtime", this.runtimePath)
 
         // get the moqui configuration file path
         String confPartialPath = moquiInitProperties.getProperty("moqui.conf")
@@ -118,6 +121,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
     protected void init() {
+        logger.info("Initializing Moqui ExecutionContextFactoryImpl\n - runtime directory [${this.runtimePath}]\n - config file [${this.confPath}]\n - moqui.runtime property [${System.getProperty("moqui.runtime")}]")
+
         URL defaultConfUrl = this.class.getClassLoader().getResource("MoquiDefaultConf.xml")
         if (!defaultConfUrl) throw new IllegalArgumentException("Could not find MoquiDefaultConf.xml file on the classpath")
         this.confXmlRoot = new XmlParser().parse(defaultConfUrl.newInputStream())
@@ -128,16 +133,39 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
         mergeConfigNodes(this.confXmlRoot, overrideConfXmlRoot)
 
+        // init all components in the runtime/component directory
+        File componentDir = new File(this.runtimePath + "/component")
+        // if directory doesn't exist skip it, component doesn't have an entity directory
+        if (componentDir.exists() && componentDir.isDirectory()) {
+            // get all files in the directory
+            for (File componentSubDir in componentDir.listFiles()) {
+                // if it's a directory and doesn't start with a "." then add it as a component dir
+                if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
+                    String componentPath = componentSubDir.toURI().toURL().toString()
+                    if (componentPath.endsWith("/")) componentPath = componentPath.substring(0, componentPath.length()-1)
+                    this.componentLocationMap.put(componentSubDir.getName(), componentPath)
+                    logger.info("Auto-added runtime/component [${componentSubDir.getName()}] at [${componentPath}]")
+                }
+            }
+        }
+
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
+        logger.info("Moqui CacheFacadeImpl Initialized")
         this.loggerFacade = new LoggerFacadeImpl(this)
+        logger.info("Moqui LoggerFacadeImpl Initialized")
         this.resourceFacade = new ResourceFacadeImpl(this)
+        logger.info("Moqui ResourceFacadeImpl Initialized")
         this.transactionFacade = new TransactionFacadeImpl(this)
+        logger.info("Moqui TransactionFacadeImpl Initialized")
         this.entityFacade = new EntityFacadeImpl(this)
+        logger.info("Moqui EntityFacadeImpl Initialized")
         this.serviceFacade = new ServiceFacadeImpl(this)
+        logger.info("Moqui ServiceFacadeImpl Initialized")
         this.screenFacade = new ScreenFacadeImpl(this)
+        logger.info("Moqui ScreenFacadeImpl Initialized")
 
-        // TODO: init all components in the runtime/components directory
+        logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
 
     synchronized void destroy() {
@@ -206,9 +234,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return new ExecutionContextImpl(this)
     }
 
-    /** @see org.moqui.context.ExecutionContextFactory#getWebExecutionContext(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
-    WebExecutionContext getWebExecutionContext(HttpServletRequest request, HttpServletResponse response) {
-        return new WebExecutionContextImpl(request, response, this)
+    /** @see org.moqui.context.ExecutionContextFactory#getWebExecutionContext(String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
+    WebExecutionContext getWebExecutionContext(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
+        return new WebExecutionContextImpl(webappMoquiName, request, response, this)
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */

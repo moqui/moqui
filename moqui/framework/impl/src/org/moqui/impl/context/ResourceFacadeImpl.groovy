@@ -53,7 +53,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
             // no luck? try the system ClassLoader
             if (!locationUrl) locationUrl = ClassLoader.getSystemResource(strippedLocation)
         } else if (location.startsWith("https://") || location.startsWith("http://") ||
-                   location.startsWith("ftp://") || location.startsWith("file://") ||
+                   location.startsWith("ftp://") || location.startsWith("file:") ||
                    location.startsWith("jar://")) {
             locationUrl = new URL(location)
         } else if (location.indexOf(":/") < 0) {
