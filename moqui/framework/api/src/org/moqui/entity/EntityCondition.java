@@ -11,6 +11,7 @@
  */
 package org.moqui.entity;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /** Represents the conditions to be used to constrain a query.
@@ -20,7 +21,7 @@ import java.util.Map;
  * This class is mostly empty because it is a placeholder for use in the EntityConditionFactory and most functionality
  * is internal only.
  */
-public interface EntityCondition {
+public interface EntityCondition extends Serializable {
     public enum ComparisonOperator { EQUALS, NOT_EQUAL,
         LESS_THAN, GREATER_THAN, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO,
         IN, NOT_IN, BETWEEN, LIKE, NOT_LIKE }

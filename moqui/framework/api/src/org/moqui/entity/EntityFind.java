@@ -92,7 +92,7 @@ public interface EntityFind extends java.io.Serializable {
      * @return Returns this for chaining of method calls.
      */
     EntityFind selectFields(Collection<String> fieldsToSelect);
-    Set<String> getSelectFields();
+    List<String> getSelectFields();
 
     /** A field of the named entity to order the query by; optionally add a " ASC" to the end or "+" to the
      *     beginning for ascending, or " DESC" to the end of "-" to the beginning for descending.

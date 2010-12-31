@@ -126,6 +126,18 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             // general SQL where clause style text with values included
             return "(" + lhs.toString() + " " + StupidUtilities.getJoinOperatorString(this.operator) + " " + rhs.toString() + ")"
         }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
+        }
     }
 
     public static class FieldValueCondition extends EntityConditionImplBase {
@@ -184,11 +196,23 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         boolean mapMatches(Map<String, ?> map) {
             Object value1 = map.get(this.fieldName)
-            return compareByOperator(value1, this.operator, this.value)
+            return StupidUtilities.compareByOperator(value1, this.operator, this.value)
         }
 
         String toString() {
             return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.value
+        }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
         }
     }
 
@@ -217,11 +241,23 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         boolean mapMatches(Map<String, ?> map) {
             Object value1 = map.get(this.fieldName)
             Object value2 = map.get(this.toFieldName)
-            return compareByOperator(value1, this.operator, value2)
+            return StupidUtilities.compareByOperator(value1, this.operator, value2)
         }
 
         String toString() {
             return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.toFieldName
+        }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
         }
     }
 
@@ -274,6 +310,18 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             }
             return sb.toString()
         }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
+        }
     }
 
     public static class MapCondition extends EntityConditionImplBase {
@@ -324,6 +372,18 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             }
             return this.ecFactoryImpl.makeCondition(conditionList, this.joinOperator)
         }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
+        }
     }
 
     public static class DateCondition extends EntityConditionImplBase {
@@ -366,6 +426,18 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 )
             )
         }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
+        }
     }
 
     public static class WhereCondition extends EntityConditionImplBase {
@@ -381,13 +453,26 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         boolean mapMatches(Map<String, ?> map) {
-            // TODO implement this, or not...
+            // NOTE: always return false unless we eventually implement some sort of SQL parsing, for caching/etc
+            // always consider not matching
             logger.warn("The mapMatches for the SQL Where Condition is not supported, text is [${this.sqlWhereClause}]")
             return false
         }
 
         String toString() {
             return this.sqlWhereClause
+        }
+
+        @Override
+        int hashCode() {
+            // TODO override for use as a cache key
+            return super.hashCode()
+        }
+
+        @Override
+        boolean equals(Object o) {
+            // TODO override for use as a cache key
+            return super.equals(o)
         }
     }
 }

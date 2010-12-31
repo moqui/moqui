@@ -248,8 +248,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="entity-condition">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" ref="date-filter"/>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="date-filter"/>
                     <xs:element ref="econdition"/>
                     <xs:element ref="econditions"/>
                 </xs:choice>
@@ -287,6 +287,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="econditions">
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
+                <xs:element ref="date-filter"/>
                 <xs:element ref="econdition"/>
                 <xs:element ref="econditions"/>
             </xs:choice>
@@ -303,6 +304,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="having-econditions">
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
+                <xs:element ref="date-filter"/>
                 <xs:element ref="econdition"/>
                 <xs:element ref="econditions"/>
             </xs:choice>

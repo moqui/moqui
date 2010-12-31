@@ -389,10 +389,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="1" ref="date-filter"/>
                 <xs:element minOccurs="0" maxOccurs="1" ref="search-form-inputs"/>
 
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="date-filter"/>
                     <xs:element ref="econdition"/>
                     <xs:element ref="econditions"/>
                     <xs:element ref="econdition-object"/>
@@ -464,6 +464,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:annotation>
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
+                <xs:element ref="date-filter"/>
                 <xs:element ref="econdition"/>
                 <xs:element ref="econditions"/>
                 <xs:element ref="econdition-object"/>
@@ -483,6 +484,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:annotation><xs:documentation>Similar to econditions but runs after the grouping and functions are done.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:choice maxOccurs="unbounded">
+                <xs:element ref="date-filter"/>
                 <xs:element ref="econdition"/>
                 <xs:element ref="econditions"/>
                 <xs:element ref="econdition-object"/>
@@ -642,6 +644,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="date-filter"/>
                     <xs:element ref="econdition"/>
                     <xs:element ref="econditions"/>
                     <xs:element ref="econdition-object"/>
@@ -857,6 +860,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="date-filter"/>
                     <xs:element ref="econdition"/>
                     <xs:element ref="econditions"/>
                     <xs:element ref="econdition-object"/>

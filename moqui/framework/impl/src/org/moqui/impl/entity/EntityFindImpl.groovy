@@ -25,6 +25,9 @@ import java.sql.ResultSet
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.PreparedStatement
+import org.apache.commons.collections.set.ListOrderedSet
+import org.moqui.context.Cache
+import org.moqui.entity.EntityCondition.JoinOperator
 
 class EntityFindImpl implements EntityFind {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindImpl.class)
@@ -32,14 +35,15 @@ class EntityFindImpl implements EntityFind {
     protected final EntityFacadeImpl efi
 
     protected String entityName
+    protected EntityDefinition entityDef = null
     protected EntityDynamicViewImpl dynamicView = null
 
     protected Map<String, Object> simpleAndMap = null
     protected EntityConditionImplBase whereEntityCondition = null
     protected EntityConditionImplBase havingEntityCondition = null
 
-    /** This is always a TreeSet so that we can get the results in a consistent order */
-    protected TreeSet<String> fieldsToSelect = null
+    /** This is always a ListOrderedSet so that we can get the results in a consistent order */
+    protected ListOrderedSet fieldsToSelect = null
     protected List<String> orderByFields = null
 
     protected Boolean useCache = null
@@ -135,21 +139,21 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#selectField(String) */
     EntityFind selectField(String fieldToSelect) {
-        if (!this.fieldsToSelect) this.fieldsToSelect = new TreeSet()
+        if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
         this.fieldsToSelect.add(fieldToSelect)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#selectFields(Collection<String>) */
     EntityFind selectFields(Collection<String> fieldsToSelect) {
-        if (!this.fieldsToSelect) this.fieldsToSelect = new TreeSet()
+        if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
         this.fieldsToSelect.addAll(fieldsToSelect)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getSelectFields() */
-    Set<String> getSelectFields() {
-        return Collections.unmodifiableSet(this.fieldsToSelect)
+    List<String> getSelectFields() {
+        return this.fieldsToSelect.asList()
     }
 
     /** @see org.moqui.entity.EntityFind#orderBy(String) */
@@ -254,29 +258,36 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#one() */
     EntityValue one() throws EntityException {
-        // TODO: implement caching
-
         if (this.dynamicView) {
             throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
+        }
+
+        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        Cache entityOneCache = null
+        if (this.shouldCache()) {
+            entityOneCache = this.efi.ecfi.getCacheFacade().getCache("entity.one.${this.entityName}")
+            if (entityOneCache.containsKey(whereCondition)) return (EntityValue) entityOneCache.get(whereCondition)
         }
 
         // for find one we'll always use the basic result set type and concurrency:
         this.resultSetType(ResultSet.TYPE_FORWARD_ONLY)
         this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
 
-        EntityDefinition entityDefinition = this.efi.getEntityDefinition(this.entityName)
+        EntityDefinition entityDefinition = this.getEntityDef()
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true)
+        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
         // SELECT fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         // FROM Clause
         efb.makeSqlFromClause()
 
         // WHERE clause only for one/pk query
+        // NOTE: do this here after caching because this will always be added on and isn't a part of the original where
+        EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
+        if (viewWhere) whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         efb.startWhereClause()
-        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         whereCondition.makeSqlWhere(efb)
 
         // run the SQL now that it is built
@@ -301,37 +312,46 @@ class EntityFindImpl implements EntityFind {
             efb.closeAll()
         }
 
+        if (this.shouldCache()) {
+            // put it in whether null or not
+            entityOneCache.put(whereCondition, newEntityValue)
+        }
         return newEntityValue
     }
 
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() throws EntityException {
-        // TODO: implement caching
+        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        Cache entityListCache = null
+        // NOTE: don't cache if there is a having condition, for now just support where
+        boolean doCache = !this.havingEntityCondition && this.shouldCache()
+        if (doCache) {
+            entityListCache = this.efi.ecfi.getCacheFacade().getCache("entity.list.${this.entityName}")
+            if (entityListCache.containsKey(whereCondition)) return (EntityList) entityListCache.get(whereCondition)
+        }
 
         EntityListIterator eli = this.iterator()
         EntityList el = eli.getCompleteList()
         eli.close()
+
+        if (doCache) {
+            entityListCache.put(whereCondition, el)
+        }
         return el
     }
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() throws EntityException {
-        EntityDefinition entityDefinition;
-        if (this.dynamicView) {
-            entityDefinition = this.dynamicView.makeEntityDefinition()
-        } else {
-            entityDefinition = this.efi.getEntityDefinition(this.entityName)
-        }
-
+        EntityDefinition entityDefinition = this.getEntityDef()
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
 
         if (this.getDistinct() || (entityDefinition.isViewEntity() &&
-                "true" == entityDefinition.getEntityNode()."entity-condition"[0]."@distinct")) {
+                entityDefinition.getEntityNode()."entity-condition"[0]."@distinct") == "true") {
             efb.makeDistinct()
         }
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true)
+        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
         // select fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         
@@ -341,8 +361,13 @@ class EntityFindImpl implements EntityFind {
         // where clause
         efb.startWhereClause()
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
+        if (whereCondition && viewWhere) {
+            whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
+        } else if (viewWhere) {
+            whereCondition = viewWhere
+        }
         if (whereCondition) whereCondition.makeSqlWhere(efb)
-        // TODO: add the view-entity.entity-condition.econdition(s) support
 
         // group by clause
         efb.makeGroupByClause()
@@ -350,15 +375,18 @@ class EntityFindImpl implements EntityFind {
         // having clause
         efb.startHavingClause()
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
+        EntityConditionImplBase viewHaving = entityDefinition.makeViewHavingCondition()
+        if (havingCondition && viewHaving) {
+            havingCondition = this.efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
+        } else if (viewHaving) {
+            havingCondition = viewHaving
+        }
         if (havingCondition) havingCondition.makeSqlWhere(efb)
-        // TODO: add the view-entity.entity-condition.having-econditions support
 
         // order by clause
         List<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
-        if (this.getOrderBy()) {
-            orderByExpanded.addAll(this.getOrderBy())
-        }
+        if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
         for (Node orderBy in entityDefinition.getEntityNode()."entity-condition"[0]."order-by") {
             orderByExpanded.add(orderBy."@field-name")
         }
@@ -385,15 +413,8 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
-        long count = 0
-
-        EntityDefinition entityDefinition;
-        if (this.dynamicView) {
-            entityDefinition = this.dynamicView.makeEntityDefinition()
-        } else {
-            entityDefinition = this.efi.getEntityDefinition(this.entityName)
-        }
-        if (!this.fieldsToSelect) this.fieldsToSelect = entityDefinition.getFieldNames(false, true)
+        EntityDefinition entityDefinition = this.getEntityDef()
+        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
 
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
 
@@ -406,8 +427,13 @@ class EntityFindImpl implements EntityFind {
         // where clause
         efb.startWhereClause()
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
+        if (whereCondition && viewWhere) {
+            whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
+        } else if (viewWhere) {
+            whereCondition = viewWhere
+        }
         if (whereCondition) whereCondition.makeSqlWhere(efb)
-        // TODO: add the view-entity.entity-condition.econdition(s) support
 
         // group by clause
         efb.makeGroupByClause()
@@ -415,13 +441,18 @@ class EntityFindImpl implements EntityFind {
         // having clause
         efb.startHavingClause()
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
+        EntityConditionImplBase viewHaving = entityDefinition.makeViewHavingCondition()
+        if (havingCondition && viewHaving) {
+            havingCondition = this.efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
+        } else if (viewHaving) {
+            havingCondition = viewHaving
+        }
         if (havingCondition) havingCondition.makeSqlWhere(efb)
-        // TODO: add the view-entity.entity-condition.having-econditions support
 
         efb.closeCountFunctionIfGroupBy()
 
         // run the SQL now that it is built
-        EntityListIteratorImpl eli = null
+        long count = 0
         try {
             efb.makeConnection()
             efb.makePreparedStatement()
@@ -435,5 +466,21 @@ class EntityFindImpl implements EntityFind {
             efb.closeAll()
         }
         return count
+    }
+
+    protected EntityDefinition getEntityDef() {
+        if (this.entityDef) return this.entityDef
+        if (this.dynamicView) {
+            this.entityDef = this.dynamicView.makeEntityDefinition()
+        } else {
+            this.entityDef = this.efi.getEntityDefinition(this.entityName)
+        }
+        return this.entityDef
+    }
+
+    protected boolean shouldCache() {
+        if (this.dynamicView) return false
+        String entityCache = this.getEntityDef().getEntityNode()."@use-cache" == "true"
+        return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
     }
 }

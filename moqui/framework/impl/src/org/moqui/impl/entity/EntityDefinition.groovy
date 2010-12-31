@@ -11,6 +11,10 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
+import org.moqui.entity.EntityCondition.JoinOperator
+import org.moqui.entity.EntityCondition
+
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
 
@@ -175,6 +179,42 @@ public class EntityDefinition {
                 if (fieldNode.description) newAlias.appendNode(fieldNode.description[0].clone())
             }
         }
+    }
+
+    EntityConditionImplBase makeViewWhereCondition() {
+        if (!this.isViewEntity()) return null
+        // add the view-entity.entity-condition.econdition(s)
+        Node entityCondition = this.entityNode."entity-condition"[0]
+        return makeViewListCondition(entityCondition)
+    }
+    protected EntityConditionImplBase makeViewListCondition(Node conditionsParent) {
+        List<EntityConditionImplBase> condList = new ArrayList()
+        for (Node dateFilter in conditionsParent."date-filter") {
+            /*
+            <xs:attribute type="xs:string" name="valid-date">
+            <xs:attribute type="xs:string" name="from-field-name" default="fromDate">
+            <xs:attribute type="xs:string" name="thru-field-name" default="thruDate">
+             */
+            // TODO impl this
+        }
+        for (Node econdition in conditionsParent."econdition") {
+            // TODO impl this
+        }
+        for (Node econditions in conditionsParent."econditions") {
+            EntityConditionImplBase cond = this.makeViewListCondition(econditions)
+            if (cond) condList.add(cond)
+        }
+        if (!condList) return null
+        if (condList.size() == 1) return condList.get(0)
+        JoinOperator op = (conditionsParent."@combine" == "or" ? JoinOperator.OR : JoinOperator.AND)
+        return (EntityConditionImplBase) this.efi.conditionFactory.makeCondition((List<EntityCondition>) condList, op)
+    }
+
+    EntityConditionImplBase makeViewHavingCondition() {
+        if (!this.isViewEntity()) return null
+        // add the view-entity.entity-condition.having-econditions
+        Node havingEconditions = this.entityNode."entity-condition"[0]."having-econditions"[0]
+        return makeViewListCondition(havingEconditions)
     }
 
     static String camelCaseToUnderscored(String camelCase) {
