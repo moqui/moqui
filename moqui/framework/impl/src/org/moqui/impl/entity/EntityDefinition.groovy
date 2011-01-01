@@ -35,7 +35,13 @@ public class EntityDefinition {
         if (isViewEntity()) {
             // if this is a view-entity, expand the alias-all elements into alias elements here
             this.expandAliasAlls()
-            // TODO: set is-pk on all alias Nodes, or change code to look up other entities to get pk/nonPk lists
+            // set is-pk on all alias Nodes if the related field is-pk
+            for (Node aliasNode in entityNode."alias") {
+                Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
+                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                Node fieldNode = memberEd.getFieldNode(aliasNode."@field" ? aliasNode."@field" : aliasNode."@name")
+                if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
+            }
         } else {
             if (!"false" == this.entityNode."@no-update-stamp") {
                 // automatically add the lastUpdatedStamp field
@@ -69,11 +75,22 @@ public class EntityDefinition {
 
         if (isViewEntity()) {
             // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
-
-            // TODO: column name for view-entity (prefix with "${entity-alias}.")
+            StringBuilder colName = new StringBuilder()
             if (includeFunctionAndComplex) {
                 // TODO: column name view-entity complex-alias (build expression based on complex-alias)
                 // TODO: column name for view-entity alias with function (wrap in function, after complex-alias to wrap that too when used)
+
+                // column name for view-entity (prefix with "${entity-alias}.")
+                colName.append(fieldNode."@entity-alias").append('.')
+                throw new IllegalArgumentException("For view-entity include function and complex not yet supported")
+            } else {
+                // column name for view-entity (prefix with "${entity-alias}.")
+                colName.append(fieldNode."@entity-alias").append('.')
+
+                Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == fieldNode."@entity-alias" })
+                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                String memberFieldName = fieldNode."@field" ? fieldNode."@field" : fieldNode."@name"
+                colName.append(memberEd.getColumnName(memberFieldName, false))
             }
             return null
         } else {
@@ -211,7 +228,7 @@ public class EntityDefinition {
                 } else {
                     field = new ConditionField(econdition."@field-name")
                 }
-                // TODO: need to convert value from String to object for field?
+                // NOTE: may need to convert value from String to object for field
                 cond =  new FieldValueCondition(this.efi.conditionFactory, field,
                         StupidUtilities.getComparisonOperator(econdition."@operator"), econdition."@value")
             } else {

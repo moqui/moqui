@@ -11,10 +11,11 @@
  */
 package org.moqui.impl.entity
 
-import org.moqui.entity.EntityValue
 import java.sql.Timestamp
 import java.sql.Time
 import java.sql.Date
+
+import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.w3c.dom.Element
 import org.w3c.dom.Document
@@ -29,9 +30,9 @@ class EntityValueImpl implements EntityValue {
     protected final String entityName
     protected volatile EntityDefinition entityDefinition
 
-    protected final Map valueMap = new HashMap()
+    protected final Map<String, Object> valueMap = new HashMap()
     /* Original DB Value Map: not used unless the value has been modified from its original state from the DB */
-    protected final Map dbValueMap = null
+    protected Map<String, Object> dbValueMap = null
 
     protected boolean modified = false
     protected boolean mutable = true
@@ -370,13 +371,9 @@ class EntityValueImpl implements EntityValue {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof EntityValue)) return false
-        try {
-            // reuse the compare method
-            return this.compareTo((EntityValue) obj) == 0
-        } catch (ClassCastException e) {
-            return false
-        }
+        if (obj == null || obj.getClass() != this.getClass()) return false
+        // reuse the compare method
+        return this.compareTo((EntityValue) obj) == 0
     }
 
     @Override
@@ -392,7 +389,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     public EntityValue cloneValue() {
-        EntityValueImpl newObj = new EntityValueImpl(this.entityName, this.entityFacadeImpl)
+        EntityValueImpl newObj = new EntityValueImpl(this.entityDefinition, this.entityFacadeImpl)
         newObj.valueMap.putAll(this.valueMap)
         if (this.dbValueMap) newObj.dbValueMap = this.dbValueMap.clone()
         // don't set mutable (default to mutable even if original was not) or modified (start out not modified)

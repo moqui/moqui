@@ -131,13 +131,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (lhs ? lhs.hashCode() : 0) + operator.hashCode() + (rhs ? rhs.hashCode() : 0)
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof BasicJoinCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             BasicJoinCondition that = (BasicJoinCondition) o
             if (!this.lhs.equals(that.lhs)) return false
             if (this.operator != that.operator) return false
@@ -156,7 +155,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 ConditionField field, ComparisonOperator operator, Object value) {
             super(ecFactoryImpl)
             this.field = field
-            this.operator = operator ? operator : JoinOperator.AND
+            this.operator = operator ? operator : ComparisonOperator.EQUALS
             this.value = value
         }
 
@@ -222,17 +221,16 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (field ? field.hashCode() : 0) + operator.hashCode() + (value ? value.hashCode() : 0) + ignoreCase.hashCode()
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof FieldValueCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             FieldValueCondition that = (FieldValueCondition) o
-            if (!this.field.equals(that.field)) return false
+            if (this.field != that.field) return false
             if (this.operator != that.operator) return false
-            if (!this.value.equals(that.value)) return false
+            if (this.value != that.value) return false
             if (this.ignoreCase != that.ignoreCase) return false
             return true
         }
@@ -248,7 +246,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 ConditionField field, ComparisonOperator operator, ConditionField toField) {
             super(ecFactoryImpl)
             this.field = field
-            this.operator = operator ? operator : JoinOperator.AND
+            this.operator = operator ? operator : ComparisonOperator.EQUALS
             this.toField = toField
         }
 
@@ -279,13 +277,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (field ? field.hashCode() : 0) + operator.hashCode() + (toField ? toField.hashCode() : 0) + ignoreCase.hashCode()
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof FieldToFieldCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             FieldToFieldCondition that = (FieldToFieldCondition) o
             if (!this.field.equals(that.field)) return false
             if (this.operator != that.operator) return false
@@ -349,13 +346,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (conditionList ? conditionList.hashCode() : 0) + operator.hashCode()
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof ListCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             ListCondition that = (ListCondition) o
             if (this.operator != that.operator) return false
             if (!this.conditionList.equals(that.conditionList)) return false
@@ -420,13 +416,13 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (fieldMap ? fieldMap.hashCode() : 0) + comparisonOperator.hashCode() + joinOperator.hashCode() +
+                    ignoreCase.hashCode()
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof MapCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             MapCondition that = (MapCondition) o
             if (this.comparisonOperator != that.comparisonOperator) return false
             if (this.joinOperator != that.joinOperator) return false
@@ -481,13 +477,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (compareStamp ? compareStamp.hashCode() : 0) + fromFieldName.hashCode() + thruFieldName.hashCode()
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof DateCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             DateCondition that = (DateCondition) o
             if (!this.fromFieldName.equals(that.fromFieldName)) return false
             if (!this.thruFieldName.equals(that.thruFieldName)) return false
@@ -523,13 +518,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (sqlWhereClause ? sqlWhereClause.hashCode() : 0)
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof WhereCondition)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             WhereCondition that = (WhereCondition) o
             if (!this.sqlWhereClause.equals(that.sqlWhereClause)) return false
             return true
@@ -565,13 +559,13 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         int hashCode() {
-            // TODO override for use as a cache key
-            return super.hashCode()
+            return (entityAlias ? entityAlias.hashCode() : 0) + (fieldName ? fieldName.hashCode() : 0) +
+                   (aliasEntityDef ? aliasEntityDef.hashCode() : 0)
         }
 
         @Override
         boolean equals(Object o) {
-            if (!(o instanceof ConditionField)) return false
+            if (o == null || o.getClass() != this.getClass()) return false
             ConditionField that = (ConditionField) o
             if (this.entityAlias != that.entityAlias) return false
             if (this.aliasEntityDef != that.aliasEntityDef) return false
