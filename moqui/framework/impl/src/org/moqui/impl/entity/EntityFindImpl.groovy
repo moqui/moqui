@@ -19,12 +19,10 @@ import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityException
 import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
-import org.moqui.impl.entity.EntityFindBuilder.EntityConditionParameter
 
 import java.sql.ResultSet
 import java.sql.Connection
 import java.sql.SQLException
-import java.sql.PreparedStatement
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition.JoinOperator

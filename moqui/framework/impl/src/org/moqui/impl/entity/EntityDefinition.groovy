@@ -11,11 +11,12 @@
  */
 package org.moqui.impl.entity
 
-import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
+import java.sql.Timestamp
+import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityCondition
-import java.sql.Timestamp
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldValueCondition
@@ -64,7 +65,7 @@ public class EntityDefinition {
 
     Node getFieldNode(String fieldName) {
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        return (Node) this.entityNode[nodeName].find({ it.@name == fieldName })[0]
+        return (Node) this.entityNode[nodeName].find({ it.@name == fieldName })
     }
 
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
@@ -116,9 +117,9 @@ public class EntityDefinition {
         return (this.getFieldNode(fieldName)) ? true : false
     }
 
-    TreeSet<String> getFieldNames(boolean includePk, boolean includeNonPk) {
+    ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk) {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
-        TreeSet<String> nameSet = new TreeSet()
+        ListOrderedSet nameSet = new ListOrderedSet()
         String nodeName = this.isViewEntity() ? "alias" : "field"
         for (Node node in this.entityNode[nodeName]) {
             if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {

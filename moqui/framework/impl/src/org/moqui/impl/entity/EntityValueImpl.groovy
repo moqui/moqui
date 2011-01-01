@@ -15,10 +15,12 @@ import java.sql.Timestamp
 import java.sql.Time
 import java.sql.Date
 
+import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.w3c.dom.Element
 import org.w3c.dom.Document
+import org.moqui.entity.EntityException
 
 class EntityValueImpl implements EntityValue {
 
@@ -45,21 +47,21 @@ class EntityValueImpl implements EntityValue {
 
     EntityFacadeImpl getEntityFacadeImpl() {
         // TODO: change this to handle null after deserialize
-        return this.efi
+        return efi
     }
     EntityDefinition getEntityDefinition() {
         // TODO: change this to handle null after deserialize
-        return this.entityDefinition
+        return entityDefinition
     }
 
     /** @see org.moqui.entity.EntityValue#getEntityName() */
-    String getEntityName() { return this.entityName }
+    String getEntityName() { return entityName }
 
     /** @see org.moqui.entity.EntityValue#isModified() */
-    boolean isModified() { return this.modified }
+    boolean isModified() { return modified }
 
     /** @see org.moqui.entity.EntityValue#isMutable() */
-    boolean isMutable() { return this.mutable }
+    boolean isMutable() { return mutable }
 
     /** @see org.moqui.entity.EntityValue#get(String) */
     Object get(String name) {
@@ -111,7 +113,7 @@ class EntityValueImpl implements EntityValue {
         Node fieldNode = this.getEntityDefinition().getFieldNode(name)
         if (!fieldNode) set(name, value) // cause an error on purpose
 
-        String javaType = this.getEntityFacadeImpl().getFieldJavaType(fieldNode."@type", this.entityName)
+        String javaType = this.getEntityFacadeImpl().getFieldJavaType(fieldNode."@type", entityName)
         switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
         case 1: set(name, value); break
         case 2: set(name, java.sql.Timestamp.valueOf(value)); break
@@ -253,8 +255,57 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
-        // TODO implement this
+        if (getEntityDefinition().isViewEntity()) {
+            // TODO implement this
+        } else {
+            Node lastUpdatedStamp = getEntityDefinition().getFieldNode("lastUpdatedStamp")
+            if (lastUpdatedStamp && !this.get("lastUpdatedStamp")) {
+                this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
+            }
 
+            ListOrderedSet allFieldList = getEntityDefinition().getFieldNames(true, true)
+            ListOrderedSet fieldList = new ListOrderedSet()
+            for (String fieldName in allFieldList) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+
+            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityFacadeImpl(), entityName)
+            StringBuilder sql = eqb.getSqlTopLevel()
+            sql.append("INSERT INTO ")
+            sql.append(getEntityDefinition().getTableName())
+
+            sql.append(" (")
+            boolean isFirstField = true
+            StringBuilder values = new StringBuilder()
+            for (String fieldName in fieldList) {
+                if (isFirstField) {
+                    isFirstField = false
+                } else {
+                    sql.append(", ")
+                    values.append(", ")
+                }
+                sql.append(getEntityDefinition().getColumnName(fieldName, false))
+                values.append('?')
+            }
+            sql.append(") VALUES (")
+            sql.append(values.toString())
+            sql.append(')')
+
+            try {
+                eqb.makeConnection()
+                eqb.makePreparedStatement()
+                int index = 1
+                for (String fieldName in fieldList) {
+                    eqb.setPreparedStatementValue(index, valueMap.get(fieldName), getEntityDefinition().getFieldNode(fieldName))
+                    index++
+                }
+                eqb.executeUpdate()
+                // reset local db Map
+                dbValueMap = valueMap.clone()
+            } catch (EntityException e) {
+                throw new EntityException("Error in create of [${this.toString()}]", e)
+            } finally {
+                eqb.closeAll()
+            }
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#createOrUpdate() */
@@ -324,13 +375,13 @@ class EntityValueImpl implements EntityValue {
     // ========== Map Interface Methods ==========
 
     /** @see java.util.Map#size() */
-    int size() { return this.valueMap.size() }
+    int size() { return valueMap.size() }
 
-    boolean isEmpty() { return this.valueMap.isEmpty() }
+    boolean isEmpty() { return valueMap.isEmpty() }
 
-    boolean containsKey(Object o) { return this.valueMap.containsKey(o) }
+    boolean containsKey(Object o) { return valueMap.containsKey(o) }
 
-    boolean containsValue(Object o) { return this.valueMap.containsValue(o) }
+    boolean containsValue(Object o) { return valueMap.containsValue(o) }
 
     Object get(Object o) {
         if (o instanceof String) {
@@ -349,8 +400,8 @@ class EntityValueImpl implements EntityValue {
     }
 
     Object remove(Object o) {
-        this.modified = true
-        return this.valueMap.remove(o)
+        modified = true
+        return valueMap.remove(o)
     }
 
     void putAll(Map<? extends String, ? extends Object> map) {
@@ -359,13 +410,13 @@ class EntityValueImpl implements EntityValue {
         }
     }
 
-    void clear() { this.valueMap.clear() }
+    void clear() { valueMap.clear() }
 
-    Set<String> keySet() { return Collections.unmodifiableSet(this.valueMap.keySet()) }
+    Set<String> keySet() { return Collections.unmodifiableSet(valueMap.keySet()) }
 
-    Collection<Object> values() { return Collections.unmodifiableCollection(this.valueMap.values()) }
+    Collection<Object> values() { return Collections.unmodifiableCollection(valueMap.values()) }
 
-    Set<Map.Entry<String, Object>> entrySet() { return Collections.unmodifiableSet(this.valueMap.entrySet()) }
+    Set<Map.Entry<String, Object>> entrySet() { return Collections.unmodifiableSet(valueMap.entrySet()) }
 
     // ========== Object Override Methods ==========
 
@@ -389,9 +440,9 @@ class EntityValueImpl implements EntityValue {
     }
 
     public EntityValue cloneValue() {
-        EntityValueImpl newObj = new EntityValueImpl(this.entityDefinition, this.entityFacadeImpl)
-        newObj.valueMap.putAll(this.valueMap)
-        if (this.dbValueMap) newObj.dbValueMap = this.dbValueMap.clone()
+        EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), entityFacadeImpl)
+        newObj.valueMap.putAll(valueMap)
+        if (dbValueMap) newObj.dbValueMap = dbValueMap.clone()
         // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
         return newObj
     }
