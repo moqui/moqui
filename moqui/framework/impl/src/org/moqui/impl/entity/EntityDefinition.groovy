@@ -14,6 +14,11 @@ package org.moqui.impl.entity
 import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityCondition
+import java.sql.Timestamp
+import org.moqui.impl.StupidUtilities
+import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
+import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition
+import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldValueCondition
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -190,15 +195,48 @@ public class EntityDefinition {
     protected EntityConditionImplBase makeViewListCondition(Node conditionsParent) {
         List<EntityConditionImplBase> condList = new ArrayList()
         for (Node dateFilter in conditionsParent."date-filter") {
-            /*
-            <xs:attribute type="xs:string" name="valid-date">
-            <xs:attribute type="xs:string" name="from-field-name" default="fromDate">
-            <xs:attribute type="xs:string" name="thru-field-name" default="thruDate">
-             */
-            // TODO impl this
+            // NOTE: this doesn't do context expansion of the valid-date as it doesn't make sense for an entity def to depend on something being in the context
+            condList.add((EntityConditionImplBase) this.efi.conditionFactory.makeConditionDate(
+                dateFilter."@from-field-name", dateFilter."@thru-field-name", dateFilter."@valid-date" as Timestamp))
         }
         for (Node econdition in conditionsParent."econdition") {
-            // TODO impl this
+            EntityConditionImplBase cond;
+            if (econdition."@value") {
+                ConditionField field
+                if (econdition."@entity-alias") {
+                    Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
+                    if (!memberEntity) throw new IllegalArgumentException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.entityName}]")
+                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                    field = new ConditionField(econdition."@entity-alias", econdition."@field-name", aliasEntityDef)
+                } else {
+                    field = new ConditionField(econdition."@field-name")
+                }
+                // TODO: need to convert value from String to object for field?
+                cond =  new FieldValueCondition(this.efi.conditionFactory, field,
+                        StupidUtilities.getComparisonOperator(econdition."@operator"), econdition."@value")
+            } else {
+                ConditionField field
+                if (econdition."@entity-alias") {
+                    Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
+                    if (!memberEntity) throw new IllegalArgumentException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.entityName}]")
+                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                    field = new ConditionField(econdition."@entity-alias", econdition."@field-name", aliasEntityDef)
+                } else {
+                    field = new ConditionField(econdition."@field-name")
+                }
+                ConditionField toField
+                if (econdition."@to-entity-alias") {
+                    Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
+                    if (!memberEntity) throw new IllegalArgumentException("The entity-alias [${econdition."@to-entity-alias"}] was not found in view-entity [${this.entityName}]")
+                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                    toField = new ConditionField(econdition."@to-entity-alias", econdition."@to-field-name", aliasEntityDef)
+                } else {
+                    toField = new ConditionField(econdition."@to-field-name")
+                }
+                cond =  new FieldToFieldCondition(this.efi.conditionFactory, field,
+                        StupidUtilities.getComparisonOperator(econdition."@operator"), toField)
+            }
+            if (econdition."@ignore-case" == "true") cond.ignoreCase()
         }
         for (Node econditions in conditionsParent."econditions") {
             EntityConditionImplBase cond = this.makeViewListCondition(econditions)
@@ -231,5 +269,18 @@ public class EntityDefinition {
         }
 
         return underscored.toString()
+    }
+
+    @Override
+    int hashCode() {
+        return this.entityName.hashCode()
+    }
+
+    @Override
+    boolean equals(Object o) {
+        if (!(o instanceof EntityDefinition)) return false
+        EntityDefinition that = (EntityDefinition) o
+        if (!this.entityName.equals(that.entityName)) return false
+        return true
     }
 }

@@ -278,8 +278,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="entity-alias" type="xs:string"/>
             <xs:attribute name="field-name" type="xs:string" use="required"/>
             <xs:attribute name="operator" default="equals" type="operator-entity"/>
-            <xs:attribute name="related-entity-alias" type="xs:string"/>
-            <xs:attribute name="related-field-name" type="xs:string"/>
+            <xs:attribute name="to-entity-alias" type="xs:string"/>
+            <xs:attribute name="to-field-name" type="xs:string"/>
             <xs:attribute name="value" type="xs:string"/>
             <xs:attribute name="ignore-case" default="false" type="boolean"/>
         </xs:complexType>

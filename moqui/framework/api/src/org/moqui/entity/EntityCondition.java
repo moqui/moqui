@@ -30,4 +30,11 @@ public interface EntityCondition extends Serializable {
 
     /** Evaluate the condition in memory. */
     boolean mapMatches(Map<String, ?> map);
+
+    /** Set this condition to ignore case in the query.
+     * This may not have an effect for all types of conditions.
+     *
+     * @return Returns reference to the query for convenience.
+     */
+    EntityCondition ignoreCase();
 }
