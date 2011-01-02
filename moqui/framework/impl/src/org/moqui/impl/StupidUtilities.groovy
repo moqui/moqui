@@ -15,6 +15,7 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityCondition.JoinOperator
 import java.util.regex.Pattern
 import java.sql.Connection
+import org.w3c.dom.Element
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -213,5 +214,21 @@ class StupidUtilities {
             theMap.put(key, theList)
         }
         theList.add(value)
+    }
+
+    public static String elementValue(Element element) {
+        if (element == null) return null
+        element.normalize()
+        org.w3c.dom.Node textNode = element.getFirstChild()
+        if (textNode == null) return null
+
+        StringBuilder value = new StringBuilder()
+        if (textNode.getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE || textNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+            value.append(textNode.getNodeValue())
+        while ((textNode = textNode.getNextSibling()) != null) {
+            if (textNode.getNodeType() == org.w3c.dom.Node.CDATA_SECTION_NODE || textNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+                value.append(textNode.getNodeValue())
+        }
+        return value.toString()
     }
 }

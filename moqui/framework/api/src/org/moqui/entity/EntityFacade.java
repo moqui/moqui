@@ -117,10 +117,10 @@ public interface EntityFacade {
 
     /** Convert an already read XML document to entity values.
      *
-     * @param document A DOM document object representing the XML file.
+     * @param xmlText String with XML text in it, ready to be parsed.
      * @return An EntityList object representing a List of EntityValue objects for the values in the XML document.
      */
-    EntityList readXmlDocument(Document document);
+    EntityList readXmlDocument(String xmlText);
 
     /** Make an EntityValue and populate it with the data (attributes and sub-elements) from the given XML element.
      *

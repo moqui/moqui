@@ -371,20 +371,72 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#readXmlDocument(URL) */
     EntityList readXmlDocument(URL url) {
-        // TODO: implement this
-        return null
+        InputStream entityStream = url.openStream()
+        GPathResult entityRoot = new XmlSlurper(false, false).parse(entityStream)
+        entityStream.close()
+        return readXmlDocument(entityRoot)
     }
 
-    /** @see org.moqui.entity.EntityFacade#readXmlDocument(Document) */
-    EntityList readXmlDocument(Document document) {
-        // TODO: implement this
-        return null
+    /** @see org.moqui.entity.EntityFacade#readXmlDocument(String) */
+    EntityList readXmlDocument(String xmlText) {
+        GPathResult entityRoot = new XmlSlurper(false, false).parseText(xmlText)
+        return readXmlDocument(entityRoot)
+    }
+
+    EntityList readXmlDocument(GPathResult entityRoot) {
+        EntityList el = new EntityListImpl(this)
+        for (GPathResult valueNode in entityRoot.children()) {
+            el.add(makeValue(valueNode))
+        }
+        return el
+    }
+
+    EntityValue makeValue(GPathResult valueNode) {
+        if (!valueNode) return null
+
+        String entityName = valueNode.name()
+        if (entityName.indexOf('-') > 0) entityName = entityName.substring(entityName.indexOf('-') + 1)
+        if (entityName.indexOf(':') > 0) entityName = entityName.substring(entityName.indexOf(':') + 1)
+
+        EntityValue newValue = makeValue(entityName)
+        EntityDefinition ed = newValue.getEntityDefinition()
+
+        for (String fieldName in ed.getFieldNames(true, true)) {
+            String attrValue = valueNode["@${fieldName}"]
+            if (attrValue) {
+                newValue.setString(fieldName, attrValue)
+            } else {
+                def childNode = valueNode[fieldName][0]
+                if (childNode) newValue.setString(fieldName, childNode.text())
+            }
+        }
+
+        return newValue
     }
 
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
     EntityValue makeValue(Element element) {
-        // TODO: implement this
-        return null
+        if (!element) return null
+
+        String entityName = element.getTagName()
+        if (entityName.indexOf('-') > 0) entityName = entityName.substring(entityName.indexOf('-') + 1)
+        if (entityName.indexOf(':') > 0) entityName = entityName.substring(entityName.indexOf(':') + 1)
+
+        EntityValue newValue = makeValue(entityName)
+        EntityDefinition ed = newValue.getEntityDefinition()
+
+        for (String fieldName in ed.getFieldNames(true, true)) {
+            String attrValue = element.getAttribute(fieldName)
+            if (attrValue) {
+                newValue.setString(fieldName, attrValue)
+            } else {
+                org.w3c.dom.NodeList seList = element.getElementsByTagName(fieldName)
+                Element subElement = seList.getLength() > 0 ? (Element) seList.item(0) : null
+                if (subElement) newValue.setString(fieldName, StupidUtilities.elementValue(subElement))
+            }
+        }
+
+        return newValue
     }
 
     protected static final Map<String, String> fieldTypeMap = [
