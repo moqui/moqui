@@ -134,7 +134,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @return List of EntityValue instances as specified in the relation definition
      */
     EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy,
-                                  Boolean useCache) throws EntityException;
+                                  Boolean useCache, Boolean forUpdate) throws EntityException;
 
     /** Get the named Related Entity for the EntityValue from the persistent store
      * @param relationshipName String containing the relationship name which is the combination of relationship.title
@@ -142,7 +142,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param useCache Look in the cache before finding in the datasource. Defaults to setting on entity definition.
      * @return List of EntityValue instances as specified in the relation definition
      */
-    EntityValue findRelatedOne(String relationshipName, Boolean useCache) throws EntityException;
+    EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) throws EntityException;
 
     /** Remove the named Related Entity for the EntityValue from the persistent store
      * @param relationshipName String containing the relationship name which is the combination of relationship.title

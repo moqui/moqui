@@ -138,43 +138,43 @@ class EntityFindImpl implements EntityFind {
     /** @see org.moqui.entity.EntityFind#selectField(String) */
     EntityFind selectField(String fieldToSelect) {
         if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
-        this.fieldsToSelect.add(fieldToSelect)
+        if (fieldToSelect) this.fieldsToSelect.add(fieldToSelect)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#selectFields(Collection<String>) */
     EntityFind selectFields(Collection<String> fieldsToSelect) {
         if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
-        this.fieldsToSelect.addAll(fieldsToSelect)
+        if (fieldsToSelect) this.fieldsToSelect.addAll(fieldsToSelect)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getSelectFields() */
     List<String> getSelectFields() {
-        return this.fieldsToSelect.asList()
+        return this.fieldsToSelect ? this.fieldsToSelect.asList() : null
     }
 
     /** @see org.moqui.entity.EntityFind#orderBy(String) */
     EntityFind orderBy(String orderByFieldName) {
         if (!this.orderByFields) this.orderByFields = new ArrayList()
-        this.orderByFields.add(orderByFieldName)
+        if (orderByFieldName) this.orderByFields.add(orderByFieldName)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#orderBy(List<String>) */
     EntityFind orderBy(List<String> orderByFieldNames) {
         if (!this.orderByFields) this.orderByFields = new ArrayList()
-        this.orderByFields.addAll(orderByFieldNames)
+        if (orderByFieldNames) this.orderByFields.addAll(orderByFieldNames)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#getOrderBy() */
     List<String> getOrderBy() {
-        return Collections.unmodifiableList(this.orderByFields)
+        return this.orderByFields ? Collections.unmodifiableList(this.orderByFields) : null
     }
 
     /** @see org.moqui.entity.EntityFind#useCache(boolean) */
-    EntityFind useCache(boolean useCache) {
+    EntityFind useCache(Boolean useCache) {
         this.useCache = useCache
         return this
     }
@@ -288,6 +288,8 @@ class EntityFindImpl implements EntityFind {
         efb.startWhereClause()
         whereCondition.makeSqlWhere(efb)
 
+        if (this.forUpdate) efb.makeForUpdate()
+
         // run the SQL now that it is built
         EntityValueImpl newEntityValue = null
         try {
@@ -396,6 +398,8 @@ class EntityFindImpl implements EntityFind {
             orderByExpanded.add(orderBy."@field-name")
         }
         efb.makeOrderByClause(orderByExpanded)
+
+        if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
         EntityListIteratorImpl eli = null

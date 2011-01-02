@@ -60,10 +60,10 @@ public interface EntityFacade {
     /** Create an EntityFind object that can be used to specify additional options, and then to execute one or more
      * finds (queries).
      * 
-     * @param entityName The Name of the Entity as defined in the entity XML file
+     * @param entityName The Name of the Entity as defined in the entity XML file, can be null.
      * @return An EntityFind object.
      */
-    EntityFind find(String entityName);
+    EntityFind makeFind(String entityName);
 
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;
      * if the named sequence doesn't exist, it will be created

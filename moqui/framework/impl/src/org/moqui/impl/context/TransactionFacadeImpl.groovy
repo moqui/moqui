@@ -203,10 +203,7 @@ class TransactionFacadeImpl implements TransactionFacade {
                 }
             }
 
-            if (timeout) ut.setTransactionTimeout(timeout)
-            ut.begin()
-            if (timeout) ut.setTransactionTimeout(0)
-
+            this.beginWithTimeout(timeout)
             getTransactionBeginStack().set(0, new Exception("Tx Begin Placeholder"))
 
             return true
@@ -215,6 +212,13 @@ class TransactionFacadeImpl implements TransactionFacade {
         } catch (SystemException e) {
             throw new TransactionException("Could not begin transaction", e)
         }
+    }
+
+    /** This is a synchronized method since we can only set the timeout for the whole system, and this will allow us to do it just for this transaction */
+    private synchronized void beginWithTimeout(Integer timeout) {
+        if (timeout) ut.setTransactionTimeout(timeout)
+        ut.begin()
+        if (timeout) ut.setTransactionTimeout(0)
     }
 
     /** @see org.moqui.context.TransactionFacade#commit(boolean) */

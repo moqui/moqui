@@ -37,6 +37,11 @@ class EntityFindBuilder extends EntityQueryBuilder {
         this.sqlTopLevel.append("SELECT ")
     }
 
+    /** Adds FOR UPDATE, should be added to end of query */
+    void makeForUpdate() {
+        this.sqlTopLevel.append(" FOR UPDATE")
+    }
+
     void makeDistinct() {
         this.sqlTopLevel.append("DISTINCT ")
 

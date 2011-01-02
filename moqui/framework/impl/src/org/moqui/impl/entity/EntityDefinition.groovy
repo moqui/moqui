@@ -68,6 +68,26 @@ public class EntityDefinition {
         return (Node) this.entityNode[nodeName].find({ it.@name == fieldName })
     }
 
+    Node getRelationshipNode(String relationshipName) {
+        return (Node) this.entityNode."relationship".find(
+                { "${it.'@title'}${it.'@related-entity-name'}" == relationshipName })
+    }
+
+    Map getRelationshipExpandedKeyMap(Node relationship) {
+        Map eKeyMap = new HashMap()
+        EntityDefinition relEd = this.efi.getEntityDefinition(relationship."@related-entity-name")
+        if (!relEd) throw new IllegalArgumentException("Could not find entity [${relationship."@related-entity-name"}] referred to in a relationship in entity [${entityName}]")
+        if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
+            // go through pks of related entity, assume field names match
+            ListOrderedSet pkFieldNames = relEd.getFieldNames(true, false)
+            for (String pkFieldName in pkFieldNames) eKeyMap.put(pkFieldName, pkFieldName)
+        } else {
+            for (Node keyMap in relationship."key-map") eKeyMap.put(keyMap."@field-name",
+                    keyMap."@related-field-name" ? keyMap."@related-field-name" : keyMap."@field-name")
+        }
+        return eKeyMap
+    }
+
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
         Node fieldNode = this.getFieldNode(fieldName)
         if (!fieldNode) {

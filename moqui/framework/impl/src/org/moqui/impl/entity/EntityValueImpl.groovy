@@ -14,16 +14,18 @@ package org.moqui.impl.entity
 import java.sql.Timestamp
 import java.sql.Time
 import java.sql.Date
+import java.sql.ResultSet
 
 import org.apache.commons.collections.set.ListOrderedSet
+
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
+import org.moqui.entity.EntityException
+import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
+import org.moqui.entity.EntityFind
+
 import org.w3c.dom.Element
 import org.w3c.dom.Document
-import org.moqui.entity.EntityException
-import org.moqui.entity.EntityCondition
-import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
-import java.sql.ResultSet
 
 class EntityValueImpl implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -261,6 +263,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
+        // TODO: add EECA execution
         if (getEntityDefinition().isViewEntity()) {
             throw new IllegalArgumentException("Create not yet implemented for view-entity")
         } else {
@@ -321,6 +324,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#update() */
     void update() {
+        // TODO: add EECA execution
         if (getEntityDefinition().isViewEntity()) {
             throw new IllegalArgumentException("Update not yet implemented for view-entity")
         } else {
@@ -383,6 +387,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#delete() */
     void delete() {
+        // TODO: add EECA execution
         if (getEntityDefinition().isViewEntity()) {
             throw new IllegalArgumentException("Delete not implemented for view-entity")
         } else {
@@ -474,22 +479,43 @@ class EntityValueImpl implements EntityValue {
         return (dbValueMap && dbValueMap[name]) ? dbValueMap[name] : valueMap[name]
     }
 
-    /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, boolean) */
-    EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy, Boolean useCache) {
-        // TODO implement this
-        return null;
+    /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, Boolean, Boolean) */
+    EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
+        Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
+        if (!relationship) throw new IllegalArgumentException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+
+        Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
+        if (!keyMap) throw new IllegalArgumentException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
+
+        // make a Map where the key is the related entity's field name, and the value is the value from this entity
+        Map condMap = new HashMap()
+        for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
+        if (byAndFields) condMap.putAll(byAndFields)
+
+        EntityFind find = getEntityFacadeImpl().makeFind(relationship."@related-entity-name")
+        return find.condition(condMap).orderBy(orderBy).useCache(useCache).forUpdate(forUpdate).list()
     }
 
-    /** @see org.moqui.entity.EntityValue#findRelatedOne(String, boolean) */
-    EntityValue findRelatedOne(String relationshipName, Boolean useCache) {
-        // TODO implement this
-        return null;
+    /** @see org.moqui.entity.EntityValue#findRelatedOne(String, Boolean, Boolean) */
+    EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) {
+        Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
+        if (!relationship) throw new IllegalArgumentException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+
+        Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
+        if (!keyMap) throw new IllegalArgumentException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
+
+        // make a Map where the key is the related entity's field name, and the value is the value from this entity
+        Map condMap = new HashMap()
+        for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
+
+        EntityFind find = getEntityFacadeImpl().makeFind(relationship."@related-entity-name")
+        return find.condition(condMap).useCache(useCache).forUpdate(forUpdate).one()
     }
 
     /** @see org.moqui.entity.EntityValue#deleteRelated(String) */
     void deleteRelated(String relationshipName) {
-        // TODO implement this
-
+        EntityList relatedList = findRelated(relationshipName, null, null, false, true)
+        for (EntityValue relatedValue in relatedList) relatedValue.delete()
     }
 
     /** @see org.moqui.entity.EntityValue#checkFks(boolean) */

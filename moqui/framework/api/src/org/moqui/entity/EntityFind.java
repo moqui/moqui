@@ -113,7 +113,7 @@ public interface EntityFind extends java.io.Serializable {
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind useCache(boolean useCache);
+    EntityFind useCache(Boolean useCache);
     boolean getUseCache();
 
     /** Lock the selected record so only this transaction can change it until it is ended.

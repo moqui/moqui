@@ -12,6 +12,10 @@
 package org.moqui.impl.entity
 
 import com.atomikos.jdbc.AtomikosDataSourceBean
+import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
+import com.atomikos.jdbc.AbstractDataSourceBean
+
+import groovy.util.slurpersupport.GPathResult
 
 import java.sql.Connection
 import javax.sql.DataSource
@@ -33,11 +37,8 @@ import org.slf4j.Logger
 
 import org.w3c.dom.Document
 import org.w3c.dom.Element
-import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
-import com.atomikos.jdbc.AbstractDataSourceBean
 import org.moqui.impl.StupidUtilities
 import org.moqui.context.Cache
-import groovy.util.slurpersupport.GPathResult
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -309,8 +310,8 @@ class EntityFacadeImpl implements EntityFacade {
         return 0
     }
 
-    /** @see org.moqui.entity.EntityFacade#find(String) */
-    EntityFind find(String entityName) {
+    /** @see org.moqui.entity.EntityFacade#makeFind(String) */
+    EntityFind makeFind(String entityName) {
         return new EntityFindImpl(this, entityName)
     }
 
