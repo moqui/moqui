@@ -28,22 +28,13 @@ class EntityFindBuilder extends EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
 
     protected EntityFindImpl entityFindImpl
-    protected EntityDefinition mainEntityDefinition
-
-    protected List<EntityConditionParameter> parameters = new ArrayList()
 
     EntityFindBuilder(EntityDefinition entityDefinition, EntityFindImpl entityFindImpl) {
-        super(entityFindImpl.efi, entityFindImpl.getEntity())
+        super(entityDefinition, entityFindImpl.efi)
         this.entityFindImpl = entityFindImpl
-        this.mainEntityDefinition = entityDefinition
 
         // this is always going to start with "SELECT ", so just set it here
         this.sqlTopLevel.append("SELECT ")
-    }
-
-    /** returns List of EntityConditionParameter meant to be added to */
-    List<EntityConditionParameter> getParameters() {
-        return this.parameters
     }
 
     void makeDistinct() {
@@ -356,37 +347,5 @@ class EntityFindBuilder extends EntityQueryBuilder {
             throw new EntityException("SQL Exception preparing statement:" + sql, sqle)
         }
         return this.ps
-    }
-
-    void setPreparedStatementValues() {
-        // set all of the values from the SQL building in efb
-        int paramIndex = 1
-        for (EntityConditionParameter entityConditionParam: getParameters()) {
-            entityConditionParam.setPreparedStatementValue(paramIndex)
-            paramIndex++
-        }
-    }
-
-    static class EntityConditionParameter {
-        protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionParameter.class)
-
-        protected Node fieldNode
-        protected Object value
-        protected EntityFindBuilder efb
-
-        EntityConditionParameter(Node fieldNode, Object value, EntityFindBuilder efb) {
-            this.fieldNode = fieldNode
-            this.value = value
-            this.efb = efb
-        }
-
-        Node getFieldNode() { return this.fieldNode }
-
-        Object getValue() { return this.value }
-
-        void setPreparedStatementValue(int index) throws EntityException {
-            setPreparedStatementValue(this.efb.ps, index, this.value, this.fieldNode,
-                    this.efb.entityFindImpl.getEntity(), this.efb.efi)
-        }
     }
 }

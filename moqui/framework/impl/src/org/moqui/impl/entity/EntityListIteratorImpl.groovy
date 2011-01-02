@@ -11,13 +11,14 @@
  */
 package org.moqui.impl.entity
 
+import java.sql.Connection
+import java.sql.ResultSet
+import java.sql.SQLException
+
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
-import java.sql.ResultSet
-import java.sql.SQLException
 import org.moqui.entity.EntityException
-import java.sql.Connection
 
 class EntityListIteratorImpl implements EntityListIterator {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityListIteratorImpl.class)
@@ -104,7 +105,7 @@ class EntityListIteratorImpl implements EntityListIterator {
         EntityValueImpl newEntityValue = new EntityValueImpl(this.entityDefinition, this.efi)
         int j = 1
         for (String fieldName in this.fieldsSelected) {
-            EntityFindBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
+            EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
             j++
         }
         this.haveMadeValue = true

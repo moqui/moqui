@@ -29,16 +29,17 @@ class EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityQueryBuilder.class)
 
     protected EntityFacadeImpl efi
-    protected String entityName
+    protected EntityDefinition mainEntityDefinition
     protected StringBuilder sqlTopLevel = new StringBuilder()
+    protected List<EntityConditionParameter> parameters = new ArrayList()
 
     protected PreparedStatement ps
     protected ResultSet rs
     protected Connection connection
 
-    EntityQueryBuilder(EntityFacadeImpl efi, String entityName) {
+    EntityQueryBuilder(EntityDefinition entityDefinition, EntityFacadeImpl efi) {
+        this.mainEntityDefinition = entityDefinition
         this.efi = efi
-        this.entityName = entityName
     }
 
     /** @return StringBuilder meant to be appended to */
@@ -46,8 +47,13 @@ class EntityQueryBuilder {
         return this.sqlTopLevel
     }
 
+    /** returns List of EntityConditionParameter meant to be added to */
+    List<EntityConditionParameter> getParameters() {
+        return this.parameters
+    }
+
     Connection makeConnection() {
-        this.connection = this.efi.getConnection(this.efi.getEntityGroupName(this.entityName))
+        this.connection = this.efi.getConnection(this.efi.getEntityGroupName(this.mainEntityDefinition.getEntityName()))
         return this.connection
     }
 
@@ -116,6 +122,43 @@ class EntityQueryBuilder {
     void getResultSetValue(int index, Node fieldNode, EntityValueImpl entityValueImpl) throws EntityException {
         getResultSetValue(this.rs, index, fieldNode, entityValueImpl, this.efi)
     }
+
+    void setPreparedStatementValue(int index, Object value, Node fieldNode) throws EntityException {
+        setPreparedStatementValue(this.ps, index, value, fieldNode, this.mainEntityDefinition.getEntityName(), this.efi)
+    }
+
+    void setPreparedStatementValues() {
+        // set all of the values from the SQL building in efb
+        int paramIndex = 1
+        for (EntityConditionParameter entityConditionParam: getParameters()) {
+            entityConditionParam.setPreparedStatementValue(paramIndex)
+            paramIndex++
+        }
+    }
+
+    static class EntityConditionParameter {
+        protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionParameter.class)
+
+        protected Node fieldNode
+        protected Object value
+        protected EntityQueryBuilder eqb
+
+        EntityConditionParameter(Node fieldNode, Object value, EntityQueryBuilder eqb) {
+            this.fieldNode = fieldNode
+            this.value = value
+            this.eqb = eqb
+        }
+
+        Node getFieldNode() { return this.fieldNode }
+
+        Object getValue() { return this.value }
+
+        void setPreparedStatementValue(int index) throws EntityException {
+            setPreparedStatementValue(this.eqb.ps, index, this.value, this.fieldNode,
+                    this.eqb.mainEntityDefinition.getEntityName(), this.eqb.efi)
+        }
+    }
+
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
         String javaType = efi.getFieldJavaType(fieldNode."@type", entityValueImpl.getEntityName())
@@ -304,9 +347,6 @@ class EntityQueryBuilder {
         }
     }
 
-    void setPreparedStatementValue(int index, Object value, Node fieldNode) throws EntityException {
-        setPreparedStatementValue(this.ps, index, value, fieldNode, this.entityName, this.efi)
-    }
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
                                           String entityName, EntityFacadeImpl efi) throws EntityException {
         String javaType = efi.getFieldJavaType(fieldNode."@type", entityName)

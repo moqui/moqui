@@ -21,8 +21,12 @@ import org.moqui.entity.EntityList
 import org.w3c.dom.Element
 import org.w3c.dom.Document
 import org.moqui.entity.EntityException
+import org.moqui.entity.EntityCondition
+import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
+import java.sql.ResultSet
 
 class EntityValueImpl implements EntityValue {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
 
     /** This is a reference to where the entity value came from.
      * It is volatile so not stored when this is serialized, and will get a reference to the active EntityFacade after. 
@@ -53,6 +57,8 @@ class EntityValueImpl implements EntityValue {
         // TODO: change this to handle null after deserialize
         return entityDefinition
     }
+
+    void setSyncedWithDb() { dbValueMap = (Map) valueMap.clone(); modified = false }
 
     /** @see org.moqui.entity.EntityValue#getEntityName() */
     String getEntityName() { return entityName }
@@ -256,21 +262,18 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
         if (getEntityDefinition().isViewEntity()) {
-            // TODO implement this
+            throw new IllegalArgumentException("Create not yet implemented for view-entity")
         } else {
-            Node lastUpdatedStamp = getEntityDefinition().getFieldNode("lastUpdatedStamp")
-            if (lastUpdatedStamp && !this.get("lastUpdatedStamp")) {
+            if (getEntityDefinition().isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
                 this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
-            }
 
             ListOrderedSet allFieldList = getEntityDefinition().getFieldNames(true, true)
             ListOrderedSet fieldList = new ListOrderedSet()
             for (String fieldName in allFieldList) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
-            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityFacadeImpl(), entityName)
+            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("INSERT INTO ")
-            sql.append(getEntityDefinition().getTableName())
+            sql.append("INSERT INTO ").append(getEntityDefinition().getTableName())
 
             sql.append(" (")
             boolean isFirstField = true
@@ -285,9 +288,7 @@ class EntityValueImpl implements EntityValue {
                 sql.append(getEntityDefinition().getColumnName(fieldName, false))
                 values.append('?')
             }
-            sql.append(") VALUES (")
-            sql.append(values.toString())
-            sql.append(')')
+            sql.append(") VALUES (").append(values.toString()).append(')')
 
             try {
                 eqb.makeConnection()
@@ -298,8 +299,8 @@ class EntityValueImpl implements EntityValue {
                     index++
                 }
                 eqb.executeUpdate()
-                // reset local db Map
-                dbValueMap = valueMap.clone()
+                setSyncedWithDb()
+                // TODO: notify cache clear
             } catch (EntityException e) {
                 throw new EntityException("Error in create of [${this.toString()}]", e)
             } finally {
@@ -310,31 +311,167 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#createOrUpdate() */
     void createOrUpdate() {
-        // TODO implement this
-
+        EntityValue dbValue = (EntityValue) this.clone()
+        if (dbValue.refresh()) {
+            create()
+        } else {
+            update()
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#update() */
     void update() {
-        // TODO implement this
+        if (getEntityDefinition().isViewEntity()) {
+            throw new IllegalArgumentException("Update not yet implemented for view-entity")
+        } else {
+            ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
 
+            ListOrderedSet nonPkAllFieldList = getEntityDefinition().getFieldNames(false, true)
+            ListOrderedSet nonPkFieldList = new ListOrderedSet()
+            for (String fieldName in nonPkAllFieldList)
+                if (valueMap.containsKey(fieldName)) nonPkFieldList.add(fieldName)
+            if (!nonPkFieldList) {
+                logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+                return
+            }
+
+            if (getEntityDefinition().getEntityNode()."@optimistic-lock" == "true") {
+                EntityValue dbValue = (EntityValue) this.clone()
+                dbValue.refresh()
+                if (getTimestamp("lastUpdatedStamp") != dbValue.getTimestamp("lastUpdatedStamp"))
+                    throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${dbValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
+            }
+
+            if (getEntityDefinition().isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
+                this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
+
+            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+            StringBuilder sql = eqb.getSqlTopLevel()
+            sql.append("UPDATE ").append(getEntityDefinition().getTableName()).append(" SET ")
+
+            boolean isFirstField = true
+            for (String fieldName in nonPkFieldList) {
+                if (isFirstField) isFirstField = false else sql.append(", ")
+                sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                        valueMap.get(fieldName), eqb))
+            }
+            sql.append(" WHERE ")
+            boolean isFirstPk = true
+            for (String fieldName in pkFieldList) {
+                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                        valueMap.get(fieldName), eqb))
+            }
+
+            try {
+                eqb.makeConnection()
+                eqb.makePreparedStatement()
+                eqb.setPreparedStatementValues()
+                if (eqb.executeUpdate() == 0)
+                    throw new EntityException("Tried to update a value that does not exist [${this.toString()}].")
+                setSyncedWithDb()
+                // TODO: notify cache clear
+            } catch (EntityException e) {
+                throw new EntityException("Error in update of [${this.toString()}]", e)
+            } finally {
+                eqb.closeAll()
+            }
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#delete() */
     void delete() {
-        // TODO implement this
+        if (getEntityDefinition().isViewEntity()) {
+            throw new IllegalArgumentException("Delete not implemented for view-entity")
+        } else {
+            ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
 
+            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+            StringBuilder sql = eqb.getSqlTopLevel()
+            sql.append("DELETE FROM ").append(getEntityDefinition().getTableName()).append(" WHERE ")
+
+            boolean isFirstPk = true
+            for (String fieldName in pkFieldList) {
+                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                        valueMap.get(fieldName), eqb))
+            }
+
+            try {
+                eqb.makeConnection()
+                eqb.makePreparedStatement()
+                eqb.setPreparedStatementValues()
+                if (eqb.executeUpdate() == 0) logger.info("Tried to delete a value that does not exist [${this.toString()}]")
+                // TODO: notify cache clear
+            } catch (EntityException e) {
+                throw new EntityException("Error in delete of [${this.toString()}]", e)
+            } finally {
+                eqb.closeAll()
+            }
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#refresh() */
-    void refresh() {
-        // TODO implement this
+    boolean refresh() {
+        // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
+        ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
+        ListOrderedSet nonPkFieldList = getEntityDefinition().getFieldNames(false, true)
+        if (!nonPkFieldList) {
+            logger.trace("Not doing refresh on entity with no non-PK fields; entity=" + this.toString())
+            return
+        }
+
+        EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+        StringBuilder sql = eqb.getSqlTopLevel()
+        sql.append("SELECT ")
+        boolean isFirstField = true
+        for (String fieldName in nonPkFieldList) {
+            if (isFirstField) isFirstField = false else sql.append(", ")
+            sql.append(getEntityDefinition().getColumnName(fieldName, false))
+        }
+
+        sql.append(" FROM ").append(getEntityDefinition().getTableName()).append(" WHERE ")
+
+        boolean isFirstPk = true
+        for (String fieldName in pkFieldList) {
+            if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+            sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
+            eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                    valueMap.get(fieldName), eqb))
+        }
+
+        boolean retVal = false
+        try {
+            eqb.makeConnection()
+            eqb.makePreparedStatement()
+            eqb.setPreparedStatementValues()
+
+            ResultSet rs = eqb.executeQuery()
+            if (rs.next()) {
+                int j = 1
+                for (String fieldName in nonPkFieldList) {
+                    EntityQueryBuilder.getResultSetValue(rs, j, getEntityDefinition().getFieldNode(fieldName), this, getEntityFacadeImpl())
+                    j++
+                }
+                retVal = true
+            } else {
+                logger.trace("No record found in refresh for entity [${entityName}] with values [${valueMap}]")
+            }
+        } catch (EntityException e) {
+            throw new EntityException("Error in refresh of [${this.toString()}]", e)
+        } finally {
+            eqb.closeAll()
+        }
+        return retVal
     }
 
     /** @see org.moqui.entity.EntityValue#getOriginalDbValue(String) */
     Object getOriginalDbValue(String name) {
-        return (this.dbValueMap && this.dbValueMap[name]) ? this.dbValueMap[name] : this.valueMap[name]
+        return (dbValueMap && dbValueMap[name]) ? dbValueMap[name] : valueMap[name]
     }
 
     /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, boolean) */
@@ -432,6 +569,12 @@ class EntityValueImpl implements EntityValue {
         // NOTE: consider caching the hash code in the future for performance
         // divide both by two (shift to right one bit) to maintain scale and add together
         return this.entityName.hashCode() >> 1 + this.valueMap.hashCode() >> 1
+    }
+
+    @Override
+    String toString() {
+        // general SQL where clause style text with values included
+        return "[${entityName}: ${valueMap}]"
     }
 
     @Override

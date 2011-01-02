@@ -117,8 +117,10 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     /** Deletes the record that matches the primary key. */
     void delete() throws EntityException;
 
-    /** Refreshes this value based on the record that matches the primary key. */
-    void refresh() throws EntityException;
+    /** Refreshes this value based on the record that matches the primary key.
+     * @return true if a record was found, otherwise false also meaning no refresh was done
+     */
+    boolean refresh() throws EntityException;
 
     Object getOriginalDbValue(String name);
 

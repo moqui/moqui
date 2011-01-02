@@ -17,7 +17,7 @@ import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityCondition.ComparisonOperator
-import org.moqui.impl.entity.EntityFindBuilder.EntityConditionParameter
+import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.moqui.impl.StupidUtilities
 
 class EntityConditionFactoryImpl implements EntityConditionFactory {
@@ -82,7 +82,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
 
         /** Build SQL Where text to evaluate condition in a database. */
-        public abstract void makeSqlWhere(EntityFindBuilder efb);
+        public abstract void makeSqlWhere(EntityQueryBuilder eqb);
     }
 
     public static class BasicJoinCondition extends EntityConditionImplBase {
@@ -98,17 +98,19 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.rhs = rhs
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
-            StringBuilder sql = efb.getSqlTopLevel()
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
+            StringBuilder sql = eqb.getSqlTopLevel()
             sql.append('(')
-            this.lhs.makeSqlWhere(efb)
+            this.lhs.makeSqlWhere(eqb)
             sql.append(' ')
             sql.append(StupidUtilities.getJoinOperatorString(this.operator))
             sql.append(' ')
-            this.rhs.makeSqlWhere(efb)
+            this.rhs.makeSqlWhere(eqb)
             sql.append(')')
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             boolean lhsMatches = this.lhs.mapMatches(map)
 
@@ -122,8 +124,10 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             return this.rhs.mapMatches(map)
         }
 
+        @Override
         EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 
+        @Override
         String toString() {
             // general SQL where clause style text with values included
             return "(" + lhs.toString() + " " + StupidUtilities.getJoinOperatorString(this.operator) + " " + rhs.toString() + ")"
@@ -159,10 +163,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.value = value
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
-            StringBuilder sql = efb.getSqlTopLevel()
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
+            StringBuilder sql = eqb.getSqlTopLevel()
             if (this.ignoreCase) sql.append("UPPER(")
-            sql.append(efb.mainEntityDefinition.getColumnName(this.fieldName, false))
+            sql.append(eqb.mainEntityDefinition.getColumnName(this.fieldName, false))
             if (this.ignoreCase) sql.append(')')
             sql.append(' ')
             boolean valueDone = false
@@ -187,7 +192,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                         if (isFirst) isFirst = false else sql.append(", ")
                         sql.append("?")
                         if (this.ignoreCase && curValue instanceof String) curValue = ((String) curValue).toUpperCase()
-                        efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), curValue, efb))
+                        eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), curValue, eqb))
                     }
                     sql.append(')')
                 } else if (this.operator == ComparisonOperator.BETWEEN &&
@@ -198,23 +203,26 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                     if (this.ignoreCase && value1 instanceof String) value1 = ((String) value1).toUpperCase()
                     Object value2 = iterator.next()
                     if (this.ignoreCase && value2 instanceof String) value2 = ((String) value2).toUpperCase()
-                    efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), value1, efb))
-                    efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), value2, efb))
+                    eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), value1, eqb))
+                    eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), value2, eqb))
                 } else {
                     if (this.ignoreCase && this.value instanceof String) this.value = ((String) this.value).toUpperCase()
                     sql.append(" ?")
-                    efb.getParameters().add(new EntityConditionParameter(efb.mainEntityDefinition.getFieldNode(this.fieldName), this.value, efb))
+                    eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), this.value, eqb))
                 }
             }
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             Object value1 = map.get(this.fieldName)
             return StupidUtilities.compareByOperator(value1, this.operator, this.value)
         }
 
+        @Override
         EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 
+        @Override
         String toString() {
             return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.value
         }
@@ -250,27 +258,31 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.toField = toField
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
-            StringBuilder sql = efb.getSqlTopLevel()
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
+            StringBuilder sql = eqb.getSqlTopLevel()
             if (this.ignoreCase) sql.append("UPPER(")
-            sql.append(efb.mainEntityDefinition.getColumnName(this.fieldName, false))
+            sql.append(eqb.mainEntityDefinition.getColumnName(this.fieldName, false))
             if (this.ignoreCase) sql.append(")")
             sql.append(' ')
             sql.append(StupidUtilities.getComparisonOperatorString(this.operator))
             sql.append(' ')
             if (this.ignoreCase) sql.append("UPPER(")
-            sql.append(efb.mainEntityDefinition.getColumnName(this.toFieldName, false))
+            sql.append(eqb.mainEntityDefinition.getColumnName(this.toFieldName, false))
             if (this.ignoreCase) sql.append(")")
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             Object value1 = map.get(this.fieldName)
             Object value2 = map.get(this.toFieldName)
             return StupidUtilities.compareByOperator(value1, this.operator, value2)
         }
 
+        @Override
         EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 
+        @Override
         String toString() {
             return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.toFieldName
         }
@@ -303,10 +315,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.operator = operator ? operator : JoinOperator.AND
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
             if (!this.conditionList) return
 
-            StringBuilder sql = efb.getSqlTopLevel()
+            StringBuilder sql = eqb.getSqlTopLevel()
             sql.append('(')
             boolean isFirst = true
             for (EntityConditionImplBase condition in this.conditionList) {
@@ -315,10 +328,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                     sql.append(StupidUtilities.getJoinOperatorString(this.operator))
                     sql.append(' ')
                 }
-                condition.makeSqlWhere(efb)
+                condition.makeSqlWhere(eqb)
             }
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             for (EntityConditionImplBase condition in this.conditionList) {
                 boolean conditionMatches = condition.mapMatches(map)
@@ -329,8 +343,10 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             return (this.operator == JoinOperator.AND)
         }
 
+        @Override
         EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 
+        @Override
         String toString() {
             StringBuilder sb = new StringBuilder()
             for (EntityConditionImplBase condition in this.conditionList) {
@@ -373,16 +389,20 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.joinOperator = joinOperator ? joinOperator : JoinOperator.AND
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
-            this.makeCondition().makeSqlWhere(efb)
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
+            this.makeCondition().makeSqlWhere(eqb)
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             return this.makeCondition().mapMatches(map)
         }
 
+        @Override
         EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 
+        @Override
         String toString() {
             return this.makeCondition().toString()
             /* might want to do something like this at some point, but above is probably better for now
@@ -445,16 +465,20 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.compareStamp = compareStamp
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
-            this.makeCondition().makeSqlWhere(efb)
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
+            this.makeCondition().makeSqlWhere(eqb)
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             return this.makeCondition().mapMatches(map)
         }
 
+        @Override
         EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 
+        @Override
         String toString() {
             return this.makeCondition().toString()
         }
@@ -499,10 +523,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.sqlWhereClause = sqlWhereClause ? sqlWhereClause : ""
         }
 
-        void makeSqlWhere(EntityFindBuilder efb) {
-            efb.getSqlTopLevel().append(this.sqlWhereClause)
+        @Override
+        void makeSqlWhere(EntityQueryBuilder eqb) {
+            eqb.getSqlTopLevel().append(this.sqlWhereClause)
         }
 
+        @Override
         boolean mapMatches(Map<String, ?> map) {
             // NOTE: always return false unless we eventually implement some sort of SQL parsing, for caching/etc
             // always consider not matching
@@ -510,8 +536,10 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             return false
         }
 
+        @Override
         EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 
+        @Override
         String toString() {
             return this.sqlWhereClause
         }

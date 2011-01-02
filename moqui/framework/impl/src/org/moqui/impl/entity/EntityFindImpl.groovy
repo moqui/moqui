@@ -300,11 +300,14 @@ class EntityFindImpl implements EntityFind {
                 newEntityValue = new EntityValueImpl(entityDefinition, this.efi)
                 int j = 1
                 for (String fieldName in this.fieldsToSelect) {
-                    EntityFindBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
+                    EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
                     j++
                 }
             } else {
                 logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${whereCondition.toString()}]")
+            }
+            if (rs.next()) {
+                logger.trace("Found more than one result for condition [${whereCondition}] on entity [${entityDefinition.getEntityName()}]")
             }
         } finally {
             efb.closeAll()
@@ -357,7 +360,6 @@ class EntityFindImpl implements EntityFind {
         efb.makeSqlFromClause()
 
         // where clause
-        efb.startWhereClause()
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
@@ -365,13 +367,15 @@ class EntityFindImpl implements EntityFind {
         } else if (viewWhere) {
             whereCondition = viewWhere
         }
-        if (whereCondition) whereCondition.makeSqlWhere(efb)
+        if (whereCondition) {
+            efb.startWhereClause()
+            whereCondition.makeSqlWhere(efb)
+        }
 
         // group by clause
         efb.makeGroupByClause()
 
         // having clause
-        efb.startHavingClause()
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
         EntityConditionImplBase viewHaving = entityDefinition.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
@@ -379,7 +383,10 @@ class EntityFindImpl implements EntityFind {
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
-        if (havingCondition) havingCondition.makeSqlWhere(efb)
+        if (havingCondition) {
+            efb.startHavingClause()
+            havingCondition.makeSqlWhere(efb)
+        }
 
         // order by clause
         List<String> orderByExpanded = new ArrayList()

@@ -47,7 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="package-name" type="xs:string" use="required"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
             <xs:attribute name="sequence-bank-size" type="xs:string"/>
-            <xs:attribute name="enable-optimistic-lock" default="false" type="boolean"/>
+            <xs:attribute name="optimistic-lock" default="false" type="boolean"/>
             <xs:attribute name="no-update-stamp" default="false" type="boolean">
                 <xs:annotation>
                     <xs:documentation>
