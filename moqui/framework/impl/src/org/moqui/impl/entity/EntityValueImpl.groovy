@@ -73,7 +73,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#get(String) */
     Object get(String name) {
-        if (!this.entityDefinition.isField(name)) {
+        if (!getEntityDefinition().isField(name)) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })
             if (relationship) {
@@ -89,25 +89,25 @@ class EntityValueImpl implements EntityValue {
 
         // TODO use LocalizedEntityField for any localized fields
 
-        return this.valueMap[name]
+        return valueMap[name]
     }
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
     boolean containsPrimaryKey() {
         for (String fieldName in this.getEntityDefinition().getFieldNames(true, false)) {
-            if (!this.valueMap[fieldName]) return false
+            if (!valueMap[fieldName]) return false
         }
         return true
     }
 
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
     void set(String name, Object value) {
-        if (!this.mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
-        if (!this.getEntityDefinition().isField(name)) {
-            throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${this.entityName}]")
+        if (!mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
+        if (!getEntityDefinition().isField(name)) {
+            throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${entityName}]")
         }
-        this.modified = true
-        this.valueMap.put(name, value)
+        if (valueMap[name] != value) modified = true
+        valueMap.put(name, value)
     }
 
     /** @see org.moqui.entity.EntityValue#setString(String, String) */
@@ -500,9 +500,12 @@ class EntityValueImpl implements EntityValue {
     EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
         if (!relationship) throw new IllegalArgumentException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        return findRelatedOne(relationship, useCache, forUpdate)
+    }
 
+    protected EntityValue findRelatedOne(Node relationship, Boolean useCache, Boolean forUpdate) {
         Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
-        if (!keyMap) throw new IllegalArgumentException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
+        if (!keyMap) throw new IllegalArgumentException("Relationship [${relationship."@title"}${relationship."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
@@ -514,14 +517,35 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#deleteRelated(String) */
     void deleteRelated(String relationshipName) {
+        // NOTE: this does a select for update, may consider not doing that by default
         EntityList relatedList = findRelated(relationshipName, null, null, false, true)
         for (EntityValue relatedValue in relatedList) relatedValue.delete()
     }
 
     /** @see org.moqui.entity.EntityValue#checkFks(boolean) */
     boolean checkFks(boolean insertDummy) {
-        // TODO implement this
-        return false
+        for (Node oneRel in getEntityDefinition().entityNode."relationship".find({ it."@type" == "one" })) {
+            EntityValue value = findRelatedOne(oneRel, true, false)
+            if (!value) {
+                if (insertDummy) {
+                    EntityValue newValue = getEntityFacadeImpl().makeValue((String) oneRel."@related-entity-name")
+                    Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(oneRel)
+                    if (!keyMap) throw new IllegalArgumentException("Relationship [${${oneRel."@title"}${oneRel."@related-entity-name"}}] in entity [${entityName}] has no key-map sub-elements and no default values")
+
+                    // make a Map where the key is the related entity's field name, and the value is the value from this entity
+                    for (Map.Entry entry in keyMap.entrySet())
+                        newValue.set((String) entry.getValue(), valueMap.get(entry.getKey()))
+
+                    if (newValue.containsPrimaryKey()){
+                        newValue.create()
+                    }
+                } else {
+                    return false
+                }
+            }
+        }
+        // if we haven't found one missing, we're all good
+        return true
     }
 
     /** @see org.moqui.entity.EntityValue#makeXmlElement(Document, String) */
@@ -563,7 +587,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     Object remove(Object o) {
-        modified = true
+        if (valueMap.containsKey(o)) modified = true
         return valueMap.remove(o)
     }
 
@@ -593,8 +617,7 @@ class EntityValueImpl implements EntityValue {
     @Override
     public int hashCode() {
         // NOTE: consider caching the hash code in the future for performance
-        // divide both by two (shift to right one bit) to maintain scale and add together
-        return this.entityName.hashCode() >> 1 + this.valueMap.hashCode() >> 1
+        return entityName.hashCode() + valueMap.hashCode()
     }
 
     @Override

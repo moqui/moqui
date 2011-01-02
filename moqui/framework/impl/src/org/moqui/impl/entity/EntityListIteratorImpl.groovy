@@ -267,6 +267,8 @@ class EntityListIteratorImpl implements EntityListIterator {
 
     @Override
     void remove() {
+        // TODO: call EECAs
+        // TODO: notify cache clear
         try {
             rs.deleteRow()
         } catch (SQLException e) {
@@ -278,6 +280,8 @@ class EntityListIteratorImpl implements EntityListIterator {
     void set(EntityValue e) {
         throw new IllegalArgumentException("EntityListIterator.set() not currently supported")
         // TODO implement this
+        // TODO: call EECAs
+        // TODO: notify cache clear
     }
 
     @Override

@@ -39,6 +39,7 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.moqui.impl.StupidUtilities
 import org.moqui.context.Cache
+import org.moqui.entity.EntityListIterator
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -273,12 +274,11 @@ class EntityFacadeImpl implements EntityFacade {
     Node getDatabaseNode(String groupName) {
         Node confXmlRoot = this.ecfi.getConfXmlRoot()
         String databaseConfName = getDataBaseConfName(groupName)
-        return (Node) confXmlRoot."database-list".database.find({ it.@name == databaseConfName })
+        return (Node) confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
     }
     String getDataBaseConfName(String groupName) {
-        //String groupName = this.getEntityGroupName(entityName)
         Node confXmlRoot = this.ecfi.getConfXmlRoot()
-        Node datasourceNode = (Node) confXmlRoot."entity-facade".datasource.find({ it."@group-name" == groupName })
+        Node datasourceNode = (Node) confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
         return datasourceNode."@database-conf-name"
     }
 
@@ -300,14 +300,38 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#updateByCondition(String, Map, EntityCondition) */
     int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition) {
-        // TODO: implement this
-        return 0
+        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
+        // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
+        EntityFind find = makeFind(entityName)
+        EntityListIterator eli = find.condition(condition).useCache(false).forUpdate(true).iterator()
+        EntityValue value
+        int totalUpdated = 0
+        while ((value = eli.next()) != null) {
+            value.putAll(fieldsToSet)
+            if (value.isModified()) {
+                // NOTE: this may blow up in some cases, if it does then change this to put all values to update in a
+                // list and update them after the eli is closed, or implement and use the eli.set(value) method
+                value.update()
+                totalUpdated++
+            }
+        }
+        eli.close()
+        return totalUpdated
     }
 
     /** @see org.moqui.entity.EntityFacade#deleteByCondition(String, EntityCondition) */
     int deleteByCondition(String entityName, EntityCondition condition) {
-        // TODO: implement this
-        return 0
+        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
+        // NOTE: consider expanding this to do a bulk delete in the DB if there are no EECAs for the entity
+        EntityFind find = makeFind(entityName)
+        EntityListIterator eli = find.condition(condition).useCache(false).forUpdate(true).iterator()
+        int totalDeleted = 0
+        while (eli.next() != null) {
+            eli.remove()
+            totalDeleted++
+        }
+        eli.close()
+        return totalDeleted
     }
 
     /** @see org.moqui.entity.EntityFacade#makeFind(String) */
@@ -328,8 +352,10 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */
     String getEntityGroupName(String entityName) {
-        // TODO: implement this
-        return null
+        EntityDefinition ed = this.getEntityDefinition(entityName)
+        if (!ed) return null
+        if (ed.entityNode."@group-name") return ed.entityNode."@group-name"
+        return this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
     }
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
