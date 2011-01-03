@@ -130,8 +130,8 @@ class EntityFacadeImpl implements EntityFacade {
                 }
 
                 String txIsolationLevel = inlineJdbc."@isolation-level" ? inlineJdbc."@isolation-level" : database."@default-isolation-level"
-                if (txIsolationLevel && StupidUtilities.getTxIsolationFromString(txIsolationLevel) != -1) {
-                    ads.setDefaultIsolationLevel(StupidUtilities.getTxIsolationFromString(txIsolationLevel))
+                if (txIsolationLevel && getTxIsolationFromString(txIsolationLevel) != -1) {
+                    ads.setDefaultIsolationLevel(getTxIsolationFromString(txIsolationLevel))
                 }
 
                 // no need for this, just sets min and max sizes: ads.setPoolSize
@@ -149,6 +149,23 @@ class EntityFacadeImpl implements EntityFacade {
             } else {
                 throw new IllegalArgumentException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasource."@group-name"}])")
             }
+        }
+    }
+
+    static int getTxIsolationFromString(String isolationLevel) {
+        if (!isolationLevel) return -1
+        if ("Serializable".equals(isolationLevel)) {
+            return Connection.TRANSACTION_SERIALIZABLE
+        } else if ("RepeatableRead".equals(isolationLevel)) {
+            return Connection.TRANSACTION_REPEATABLE_READ
+        } else if ("ReadUncommitted".equals(isolationLevel)) {
+            return Connection.TRANSACTION_READ_UNCOMMITTED
+        } else if ("ReadCommitted".equals(isolationLevel)) {
+            return Connection.TRANSACTION_READ_COMMITTED
+        } else if ("None".equals(isolationLevel)) {
+            return Connection.TRANSACTION_NONE
+        } else {
+            return -1
         }
     }
 

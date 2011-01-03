@@ -43,7 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the API classes -->
         <echo message="===== Building api classes"/>
-        <javac destdir="build/api/classes" srcdir="api/src"
+        <javac destdir="build/api/classes" srcdir="api/src" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
             <classpath>

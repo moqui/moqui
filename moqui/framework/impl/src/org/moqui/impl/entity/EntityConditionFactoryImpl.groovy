@@ -103,9 +103,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             StringBuilder sql = eqb.getSqlTopLevel()
             sql.append('(')
             this.lhs.makeSqlWhere(eqb)
-            sql.append(' ')
-            sql.append(StupidUtilities.getJoinOperatorString(this.operator))
-            sql.append(' ')
+            sql.append(' ').append(getJoinOperatorString(this.operator)).append(' ')
             this.rhs.makeSqlWhere(eqb)
             sql.append(')')
         }
@@ -130,7 +128,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         @Override
         String toString() {
             // general SQL where clause style text with values included
-            return "(" + lhs.toString() + " " + StupidUtilities.getJoinOperatorString(this.operator) + " " + rhs.toString() + ")"
+            return "(" + lhs.toString() + " " + getJoinOperatorString(this.operator) + " " + rhs.toString() + ")"
         }
 
         @Override
@@ -167,7 +165,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         void makeSqlWhere(EntityQueryBuilder eqb) {
             StringBuilder sql = eqb.getSqlTopLevel()
             if (this.ignoreCase) sql.append("UPPER(")
-            sql.append(eqb.mainEntityDefinition.getColumnName(this.fieldName, false))
+            sql.append(field.getColumnName(eqb.mainEntityDefinition))
             if (this.ignoreCase) sql.append(')')
             sql.append(' ')
             boolean valueDone = false
@@ -183,7 +181,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 }
             }
             if (!valueDone) {
-                sql.append(StupidUtilities.getComparisonOperatorString(this.operator))
+                sql.append(getComparisonOperatorString(this.operator))
                 if ((this.operator == ComparisonOperator.IN || this.operator == ComparisonOperator.NOT_IN) &&
                         this.value instanceof Collection) {
                     sql.append(" (")
@@ -192,7 +190,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                         if (isFirst) isFirst = false else sql.append(", ")
                         sql.append("?")
                         if (this.ignoreCase && curValue instanceof String) curValue = ((String) curValue).toUpperCase()
-                        eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), curValue, eqb))
+                        eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), curValue, eqb))
                     }
                     sql.append(')')
                 } else if (this.operator == ComparisonOperator.BETWEEN &&
@@ -203,28 +201,25 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                     if (this.ignoreCase && value1 instanceof String) value1 = ((String) value1).toUpperCase()
                     Object value2 = iterator.next()
                     if (this.ignoreCase && value2 instanceof String) value2 = ((String) value2).toUpperCase()
-                    eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), value1, eqb))
-                    eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), value2, eqb))
+                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value1, eqb))
+                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value2, eqb))
                 } else {
                     if (this.ignoreCase && this.value instanceof String) this.value = ((String) this.value).toUpperCase()
                     sql.append(" ?")
-                    eqb.getParameters().add(new EntityConditionParameter(eqb.mainEntityDefinition.getFieldNode(this.fieldName), this.value, eqb))
+                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
                 }
             }
         }
 
         @Override
-        boolean mapMatches(Map<String, ?> map) {
-            Object value1 = map.get(this.fieldName)
-            return StupidUtilities.compareByOperator(value1, this.operator, this.value)
-        }
+        boolean mapMatches(Map<String, ?> map) { return compareByOperator(map.get(field.fieldName), operator, value) }
 
         @Override
         EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 
         @Override
         String toString() {
-            return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.value
+            return field + " " + getComparisonOperatorString(this.operator) + " " + this.value
         }
 
         @Override
@@ -262,21 +257,19 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         void makeSqlWhere(EntityQueryBuilder eqb) {
             StringBuilder sql = eqb.getSqlTopLevel()
             if (this.ignoreCase) sql.append("UPPER(")
-            sql.append(eqb.mainEntityDefinition.getColumnName(this.fieldName, false))
+            sql.append(field.getColumnName(eqb.mainEntityDefinition))
             if (this.ignoreCase) sql.append(")")
             sql.append(' ')
-            sql.append(StupidUtilities.getComparisonOperatorString(this.operator))
+            sql.append(getComparisonOperatorString(this.operator))
             sql.append(' ')
             if (this.ignoreCase) sql.append("UPPER(")
-            sql.append(eqb.mainEntityDefinition.getColumnName(this.toFieldName, false))
+            sql.append(toField.getColumnName(eqb.mainEntityDefinition))
             if (this.ignoreCase) sql.append(")")
         }
 
         @Override
         boolean mapMatches(Map<String, ?> map) {
-            Object value1 = map.get(this.fieldName)
-            Object value2 = map.get(this.toFieldName)
-            return StupidUtilities.compareByOperator(value1, this.operator, value2)
+            return compareByOperator(map.get(field.fieldName), this.operator, map.get(toField.fieldName))
         }
 
         @Override
@@ -284,7 +277,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         String toString() {
-            return this.fieldName + " " + StupidUtilities.getComparisonOperatorString(this.operator) + " " + this.toFieldName
+            return field + " " + getComparisonOperatorString(this.operator) + " " + toField
         }
 
         @Override
@@ -324,9 +317,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             boolean isFirst = true
             for (EntityConditionImplBase condition in this.conditionList) {
                 if (isFirst) isFirst = false else {
-                    sql.append(' ')
-                    sql.append(StupidUtilities.getJoinOperatorString(this.operator))
-                    sql.append(' ')
+                    sql.append(' ').append(getJoinOperatorString(this.operator)).append(' ')
                 }
                 condition.makeSqlWhere(eqb)
             }
@@ -350,11 +341,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         String toString() {
             StringBuilder sb = new StringBuilder()
             for (EntityConditionImplBase condition in this.conditionList) {
-                if (sb.length() > 0) {
-                    sb.append(' ')
-                    sb.append(StupidUtilities.getJoinOperatorString(this.operator))
-                    sb.append(' ')
-                }
+                if (sb.length() > 0) sb.append(' ').append(getJoinOperatorString(this.operator)).append(' ')
                 sb.append(condition.toString())
             }
             return sb.toString()
@@ -410,12 +397,12 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             for (Map.Entry fieldEntry in this.fieldMap.entrySet()) {
                 if (sb.length() > 0) {
                     sb.append(' ')
-                    sb.append(StupidUtilities.getJoinOperatorString(this.joinOperator))
+                    sb.append(getJoinOperatorString(this.joinOperator))
                     sb.append(' ')
                 }
                 sb.append(fieldEntry.getKey())
                 sb.append(' ')
-                sb.append(StupidUtilities.getComparisonOperatorString(this.comparisonOperator))
+                sb.append(getComparisonOperatorString(this.comparisonOperator))
                 sb.append(' ')
                 sb.append(fieldEntry.getValue())
             }
@@ -540,14 +527,10 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 
         @Override
-        String toString() {
-            return this.sqlWhereClause
-        }
+        String toString() { return this.sqlWhereClause }
 
         @Override
-        int hashCode() {
-            return (sqlWhereClause ? sqlWhereClause.hashCode() : 0)
-        }
+        int hashCode() { return (sqlWhereClause ? sqlWhereClause.hashCode() : 0) }
 
         @Override
         boolean equals(Object o) {
@@ -585,6 +568,17 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             return colName.toString()
         }
 
+        Node getFieldNode(EntityDefinition ed) {
+            if (this.aliasEntityDef) {
+                return this.aliasEntityDef.getFieldNode(fieldName)
+            } else {
+                return ed.getFieldNode(fieldName)
+            }
+        }
+
+        @Override
+        String toString() { return (entityAlias ? entityAlias+"." : "") + fieldName }
+
         @Override
         int hashCode() {
             return (entityAlias ? entityAlias.hashCode() : 0) + (fieldName ? fieldName.hashCode() : 0) +
@@ -600,5 +594,116 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             if (!this.fieldName.equals(that.fieldName)) return false
             return true
         }
+    }
+
+    protected static final Map<ComparisonOperator, String> comparisonOperatorStringMap = new HashMap()
+    static {
+        comparisonOperatorStringMap.put(ComparisonOperator.EQUALS, "=")
+        comparisonOperatorStringMap.put(ComparisonOperator.NOT_EQUAL, "<>")
+        comparisonOperatorStringMap.put(ComparisonOperator.LESS_THAN, "<")
+        comparisonOperatorStringMap.put(ComparisonOperator.GREATER_THAN, ">")
+        comparisonOperatorStringMap.put(ComparisonOperator.LESS_THAN_EQUAL_TO, "<=")
+        comparisonOperatorStringMap.put(ComparisonOperator.GREATER_THAN_EQUAL_TO, ">=")
+        comparisonOperatorStringMap.put(ComparisonOperator.IN, "IN")
+        comparisonOperatorStringMap.put(ComparisonOperator.NOT_IN, "NOT IN")
+        comparisonOperatorStringMap.put(ComparisonOperator.BETWEEN, "BETWEEN")
+        comparisonOperatorStringMap.put(ComparisonOperator.LIKE, "LIKE")
+        comparisonOperatorStringMap.put(ComparisonOperator.NOT_LIKE, "NOT LIKE")
+    }
+    protected static final Map<String, ComparisonOperator> stringComparisonOperatorMap = [
+            "=":ComparisonOperator.EQUALS,
+            "equals":ComparisonOperator.EQUALS,
+
+            "not-equals":ComparisonOperator.NOT_EQUAL,
+            "not-equal":ComparisonOperator.NOT_EQUAL,
+            "!=":ComparisonOperator.NOT_EQUAL,
+            "<>":ComparisonOperator.NOT_EQUAL,
+
+            "less-than":ComparisonOperator.LESS_THAN,
+            "less":ComparisonOperator.LESS_THAN,
+            "<":ComparisonOperator.LESS_THAN,
+
+            "greater-than":ComparisonOperator.GREATER_THAN,
+            "greater":ComparisonOperator.GREATER_THAN,
+            ">":ComparisonOperator.GREATER_THAN,
+
+            "less-than-equal-to":ComparisonOperator.LESS_THAN_EQUAL_TO,
+            "less-equals":ComparisonOperator.LESS_THAN_EQUAL_TO,
+            "<=":ComparisonOperator.LESS_THAN_EQUAL_TO,
+
+            "greater-than-equal-to":ComparisonOperator.GREATER_THAN_EQUAL_TO,
+            "greater-equals":ComparisonOperator.GREATER_THAN_EQUAL_TO,
+            ">=":ComparisonOperator.GREATER_THAN_EQUAL_TO,
+
+            "in":ComparisonOperator.IN,
+            "IN":ComparisonOperator.IN,
+
+            "not-in":ComparisonOperator.NOT_IN,
+            "NOT IN":ComparisonOperator.NOT_IN,
+
+            "between":ComparisonOperator.BETWEEN,
+            "BETWEEN":ComparisonOperator.BETWEEN,
+
+            "like":ComparisonOperator.LIKE,
+            "LIKE":ComparisonOperator.LIKE,
+
+            "not-like":ComparisonOperator.LIKE,
+            "NOT LIKE":ComparisonOperator.NOT_LIKE
+    ]
+
+    static String getJoinOperatorString(JoinOperator op) {
+        return op == JoinOperator.OR ? "OR" : "AND"
+    }
+    static String getComparisonOperatorString(ComparisonOperator op) {
+        return comparisonOperatorStringMap.get(op)
+    }
+    static ComparisonOperator getComparisonOperator(String opName) {
+        return stringComparisonOperatorMap.get(opName)
+    }
+
+    static boolean compareByOperator(Object value1, ComparisonOperator op, Object value2) {
+        switch (op) {
+        case ComparisonOperator.EQUALS:
+            return value1 == value2
+        case ComparisonOperator.NOT_EQUAL:
+            return value1 != value2
+        case ComparisonOperator.LESS_THAN:
+            return value1 < value2
+        case ComparisonOperator.GREATER_THAN:
+            return value1 > value2
+        case ComparisonOperator.LESS_THAN_EQUAL_TO:
+            return value1 <= value2
+        case ComparisonOperator.GREATER_THAN_EQUAL_TO:
+            return value1 >= value2
+        case ComparisonOperator.IN:
+            if (value2 instanceof Collection) {
+                return ((Collection) value2).contains(value1)
+            } else {
+                // not a Collection, try equals
+                return value1 == value2
+            }
+        case ComparisonOperator.NOT_IN:
+            if (value2 instanceof Collection) {
+                return !((Collection) value2).contains(value1)
+            } else {
+                // not a Collection, try not-equals
+                return value1 != value2
+            }
+        case ComparisonOperator.BETWEEN:
+            if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
+                Iterator iterator = ((Collection) value2).iterator()
+                Object lowObj = iterator.next()
+                Object highObj = iterator.next()
+                return lowObj <= value1 && value1 < highObj
+            } else {
+                return false
+            }
+        case ComparisonOperator.LIKE:
+            return StupidUtilities.compareLike(value1, value2)
+        case ComparisonOperator.NOT_LIKE:
+            return !StupidUtilities.compareLike(value1, value2)
+        }
+        // default return false
+        return false
     }
 }

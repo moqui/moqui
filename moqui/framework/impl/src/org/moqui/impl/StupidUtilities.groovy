@@ -42,7 +42,6 @@ class StupidUtilities {
             "java.util.List":java.util.List.class,
             "java.util.Map":java.util.Map.class,
             "java.util.Set":java.util.Set.class]
-
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = commonJavaClassesMap.get(javaType)
         if (!theClass) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)
@@ -51,119 +50,7 @@ class StupidUtilities {
         return theClass.isInstance(theObjectInQuestion)
     }
 
-
-    public static final Map<ComparisonOperator, String> comparisonOperatorStringMap = new HashMap()
-    static {
-        comparisonOperatorStringMap.put(ComparisonOperator.EQUALS, "=")
-        comparisonOperatorStringMap.put(ComparisonOperator.NOT_EQUAL, "<>")
-        comparisonOperatorStringMap.put(ComparisonOperator.LESS_THAN, "<")
-        comparisonOperatorStringMap.put(ComparisonOperator.GREATER_THAN, ">")
-        comparisonOperatorStringMap.put(ComparisonOperator.LESS_THAN_EQUAL_TO, "<=")
-        comparisonOperatorStringMap.put(ComparisonOperator.GREATER_THAN_EQUAL_TO, ">=")
-        comparisonOperatorStringMap.put(ComparisonOperator.IN, "IN")
-        comparisonOperatorStringMap.put(ComparisonOperator.NOT_IN, "NOT IN")
-        comparisonOperatorStringMap.put(ComparisonOperator.BETWEEN, "BETWEEN")
-        comparisonOperatorStringMap.put(ComparisonOperator.LIKE, "LIKE")
-        comparisonOperatorStringMap.put(ComparisonOperator.NOT_LIKE, "NOT LIKE")
-    }
-    public static final Map<String, ComparisonOperator> stringComparisonOperatorMap = [
-            "=":ComparisonOperator.EQUALS,
-            "equals":ComparisonOperator.EQUALS,
-
-            "not-equals":ComparisonOperator.NOT_EQUAL,
-            "not-equal":ComparisonOperator.NOT_EQUAL,
-            "!=":ComparisonOperator.NOT_EQUAL,
-            "<>":ComparisonOperator.NOT_EQUAL,
-
-            "less-than":ComparisonOperator.LESS_THAN,
-            "less":ComparisonOperator.LESS_THAN,
-            "<":ComparisonOperator.LESS_THAN,
-
-            "greater-than":ComparisonOperator.GREATER_THAN,
-            "greater":ComparisonOperator.GREATER_THAN,
-            ">":ComparisonOperator.GREATER_THAN,
-
-            "less-than-equal-to":ComparisonOperator.LESS_THAN_EQUAL_TO,
-            "less-equals":ComparisonOperator.LESS_THAN_EQUAL_TO,
-            "<=":ComparisonOperator.LESS_THAN_EQUAL_TO,
-
-            "greater-than-equal-to":ComparisonOperator.GREATER_THAN_EQUAL_TO,
-            "greater-equals":ComparisonOperator.GREATER_THAN_EQUAL_TO,
-            ">=":ComparisonOperator.GREATER_THAN_EQUAL_TO,
-
-            "in":ComparisonOperator.IN,
-            "IN":ComparisonOperator.IN,
-
-            "not-in":ComparisonOperator.NOT_IN,
-            "NOT IN":ComparisonOperator.NOT_IN,
-
-            "between":ComparisonOperator.BETWEEN,
-            "BETWEEN":ComparisonOperator.BETWEEN,
-
-            "like":ComparisonOperator.LIKE,
-            "LIKE":ComparisonOperator.LIKE,
-
-            "not-like":ComparisonOperator.LIKE,
-            "NOT LIKE":ComparisonOperator.NOT_LIKE
-    ]
-
-    public static String getJoinOperatorString(JoinOperator op) {
-        return op == JoinOperator.OR ? "OR" : "AND"
-    }
-    public static String getComparisonOperatorString(ComparisonOperator op) {
-        return comparisonOperatorStringMap.get(op)
-    }
-    public static ComparisonOperator getComparisonOperator(String opName) {
-        return stringComparisonOperatorMap.get(opName)
-    }
-
-    public static boolean compareByOperator(Object value1, ComparisonOperator op, Object value2) {
-        switch (op) {
-        case ComparisonOperator.EQUALS:
-            return value1 == value2
-        case ComparisonOperator.NOT_EQUAL:
-            return value1 != value2
-        case ComparisonOperator.LESS_THAN:
-            return value1 < value2
-        case ComparisonOperator.GREATER_THAN:
-            return value1 > value2
-        case ComparisonOperator.LESS_THAN_EQUAL_TO:
-            return value1 <= value2
-        case ComparisonOperator.GREATER_THAN_EQUAL_TO:
-            return value1 >= value2
-        case ComparisonOperator.IN:
-            if (value2 instanceof Collection) {
-                return ((Collection) value2).contains(value1)
-            } else {
-                // not a Collection, try equals
-                return value1 == value2
-            }
-        case ComparisonOperator.NOT_IN:
-            if (value2 instanceof Collection) {
-                return !((Collection) value2).contains(value1)
-            } else {
-                // not a Collection, try not-equals
-                return value1 != value2
-            }
-        case ComparisonOperator.BETWEEN:
-            if (value2 instanceof Collection && ((Collection) value2).size() == 2) {
-                Iterator iterator = ((Collection) value2).iterator()
-                Object lowObj = iterator.next()
-                Object highObj = iterator.next()
-                return lowObj <= value1 && value1 < highObj
-            } else {
-                return false
-            }
-        case ComparisonOperator.LIKE:
-            return compareLike(value1, value2)
-        case ComparisonOperator.NOT_LIKE:
-            return !compareLike(value1, value2)
-        }
-        // default return false
-        return false
-    }
-
-    public static final boolean compareLike(Object value1, Object value2) {
+    static final boolean compareLike(Object value1, Object value2) {
         // nothing to be like? consider a match
         if (!value2) return true
         // something to be like but nothing to compare? consider a mismatch
@@ -189,24 +76,7 @@ class StupidUtilities {
         }
     }
 
-    public static int getTxIsolationFromString(String isolationLevel) {
-        if (!isolationLevel) return -1
-        if ("Serializable".equals(isolationLevel)) {
-            return Connection.TRANSACTION_SERIALIZABLE
-        } else if ("RepeatableRead".equals(isolationLevel)) {
-            return Connection.TRANSACTION_REPEATABLE_READ
-        } else if ("ReadUncommitted".equals(isolationLevel)) {
-            return Connection.TRANSACTION_READ_UNCOMMITTED
-        } else if ("ReadCommitted".equals(isolationLevel)) {
-            return Connection.TRANSACTION_READ_COMMITTED
-        } else if ("None".equals(isolationLevel)) {
-            return Connection.TRANSACTION_NONE
-        } else {
-            return -1
-        }
-    }
-
-    public static void addToListInMap(String key, Object value, Map theMap) {
+    static void addToListInMap(String key, Object value, Map theMap) {
         if (!theMap) return
         List theList = (List) theMap.get(key)
         if (!theList) {
@@ -216,7 +86,7 @@ class StupidUtilities {
         theList.add(value)
     }
 
-    public static String elementValue(Element element) {
+    static String elementValue(Element element) {
         if (element == null) return null
         element.normalize()
         org.w3c.dom.Node textNode = element.getFirstChild()
@@ -230,5 +100,36 @@ class StupidUtilities {
                 value.append(textNode.getNodeValue())
         }
         return value.toString()
+    }
+
+    static String encodeForXmlAttribute(String original) {
+        StringBuilder newValue = new StringBuilder(original)
+        for (int i = 0; i < newValue.length(); i++) {
+            char curChar = newValue.charAt(i)
+
+            switch (curChar) {
+            case '\'': newValue.replace(i, i+1, "&apos;"); break;
+            case '"' : newValue.replace(i, i+1, "&quot;"); break;
+            case '&' : newValue.replace(i, i+1, "&amp;"); break;
+            case '<' : newValue.replace(i, i+1, "&lt;"); break;
+            case '>' : newValue.replace(i, i+1, "&gt;"); break;
+            case 0x5 : newValue.replace(i, i+1, "..."); break;
+            case 0x12: newValue.replace(i, i+1, "&apos;"); break;
+            case 0x13: newValue.replace(i, i+1, "&quot;"); break; // left
+            case 0x14: newValue.replace(i, i+1, "&quot;"); break; // right
+            case 0x16: newValue.replace(i, i+1, "-"); break; // big dash
+            case 0x17: newValue.replace(i, i+1, "-"); break;
+            case 0x19: newValue.replace(i, i+1, "tm"); break;
+            default:
+                if (curChar < 0x20 && curChar != 0x9 && curChar != 0xA && curChar != 0xD) {
+                    // the only valid values < 0x20 are 0x9 (tab), 0xA (newline), 0xD (carriage return)
+                    newValue.deleteCharAt(i)
+                } else if (curChar > 0x7F) {
+                    // Replace each char which is out of the ASCII range with a XML entity
+                    newValue.replace(i, i+1, "&#" + (int) curChar + ";")
+                }
+            }
+        }
+        return newValue.toString()
     }
 }

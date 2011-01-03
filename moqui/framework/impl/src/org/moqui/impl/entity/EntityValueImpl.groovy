@@ -26,6 +26,8 @@ import org.moqui.entity.EntityFind
 
 import org.w3c.dom.Element
 import org.w3c.dom.Document
+import org.apache.commons.codec.binary.Base64
+import org.moqui.impl.StupidUtilities
 
 class EntityValueImpl implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -52,11 +54,11 @@ class EntityValueImpl implements EntityValue {
     }
 
     EntityFacadeImpl getEntityFacadeImpl() {
-        // TODO: change this to handle null after deserialize
+        // TODO: change this to handle null after deserialize; how to do that? no static reference or other may be available...
         return efi
     }
     EntityDefinition getEntityDefinition() {
-        // TODO: change this to handle null after deserialize
+        if (!entityDefinition) entityDefinition = getEntityFacadeImpl().getEntityDefinition(entityName)
         return entityDefinition
     }
 
@@ -144,9 +146,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#getBoolean(String) */
-    Boolean getBoolean(String name) {
-        return this.get(name) as Boolean
-    }
+    Boolean getBoolean(String name) { return this.get(name) as Boolean }
 
     /** @see org.moqui.entity.EntityValue#getString(String) */
     String getString(String name) {
@@ -162,29 +162,19 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#getTime(String) */
-    Time getTime(String name) {
-        return this.get(name) as Time
-    }
+    Time getTime(String name) { return this.get(name) as Time }
 
     /** @see org.moqui.entity.EntityValue#getDate(String) */
-    Date getDate(String name) {
-        return this.get(name) as Date
-    }
+    Date getDate(String name) { return this.get(name) as Date }
 
     /** @see org.moqui.entity.EntityValue#getLong(String) */
-    Long getLong(String name) {
-        return this.get(name) as Long
-    }
+    Long getLong(String name) { return this.get(name) as Long }
 
     /** @see org.moqui.entity.EntityValue#getDouble(String) */
-    Double getDouble(String name) {
-        return this.get(name) as Double
-    }
+    Double getDouble(String name) { return this.get(name) as Double }
 
     /** @see org.moqui.entity.EntityValue#getBigDecimal(String) */
-    BigDecimal getBigDecimal(String name) {
-        return this.get(name) as BigDecimal
-    }
+    BigDecimal getBigDecimal(String name) { return this.get(name) as BigDecimal }
 
     /** @see org.moqui.entity.EntityValue#setFields(Map, boolean, java.lang.String, boolean) */
     void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
@@ -550,13 +540,77 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#makeXmlElement(Document, String) */
     Element makeXmlElement(Document document, String prefix) {
-        // TODO implement this
-        return null
+        Element element = null
+        if (document != null) element = document.createElement((prefix ? prefix : "") + entityName)
+        if (!element) return null
+
+        for (String fieldName in getEntityDefinition().getFieldNames(true, true)) {
+            String value = getString(fieldName)
+            if (value) {
+                if (value.contains('\n') || value.contains('\r')) {
+                    Element childElement = document.createElement(fieldName)
+                    element.appendChild(childElement)
+                    childElement.appendChild(document.createCDATASection(value))
+                } else {
+                    element.setAttribute(fieldName, value)
+                }
+            }
+        }
+
+        return element
     }
 
     /** @see org.moqui.entity.EntityValue#writeXmlText(PrintWriter, String) */
-    void writeXmlText(PrintWriter writer, String prefix) {
-        // TODO implement this
+    void writeXmlText(PrintWriter pw, String prefix) {
+        // indent 4 spaces
+        String indentString = "    "
+        // if a CDATA element is needed for a field it goes in this Map to be added at the end
+        Map<String, String> cdataMap = new HashMap()
+
+        pw.print(indentString); pw.print('<'); if (prefix) pw.print(prefix); pw.print(entityName);
+
+        for (String fieldName in getEntityDefinition().getFieldNames(true, true)) {
+            Node fieldNode = getEntityDefinition().getFieldNode(fieldName)
+            String type = fieldNode."@type"
+
+            if (type == "binary-very-long") {
+                Object obj = get(fieldName)
+                if (obj instanceof byte[]) {
+                    cdataMap.put(fieldName, new String(Base64.encodeBase64((byte[]) obj)))
+                } else {
+                    logger.warn("Field [${fieldName}] on entity [${entityName}] is not of type 'byte[]', is [${obj}] so skipping, won't be in export")
+                }
+                continue
+            }
+
+            String valueStr = getString(fieldName)
+            if (!valueStr) continue
+            if (valueStr.contains('\n') || valueStr.contains('\r')) {
+                cdataMap.put(fieldName, valueStr)
+                continue
+            }
+
+            pw.print(' '); pw.print(fieldName); pw.print("=\"");
+            pw.print(StupidUtilities.encodeForXmlAttribute(valueStr))
+            pw.print("\"")
+        }
+
+        if (cdataMap.size() == 0) {
+            // self-close the entity element
+            pw.println("/>")
+        } else {
+            pw.println('>')
+
+            for (Map.Entry<String, String> entry in cdataMap.entrySet()) {
+                pw.print(indentString); pw.print(indentString);
+                pw.print('<'); pw.print(entry.getKey()); pw.print('>');
+                pw.print("<![CDATA["); pw.print(entry.getValue()); pw.print("]]>");
+                pw.print("</"); pw.print(entry.getKey()); pw.println('>');
+            }
+
+            // close the entity element
+            pw.print(indentString); pw.print("</"); pw.print(entityName); pw.println(">");
+        }
     }
 
     // ========== Map Interface Methods ==========
