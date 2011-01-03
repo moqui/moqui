@@ -27,6 +27,10 @@ public interface ExecutionContextFactory {
     /** Initialize a WebExecutionContext for a single request. */
     WebExecutionContext getWebExecutionContext(String webappMoquiName, HttpServletRequest request, HttpServletResponse response);
 
+    /** Destroy the active Execution Context. When another is requested in this thread a new one will be created. */
+    void destroyActiveExecutionContext();
+
+    /** Destroy this Execution Context Factory. */
     void destroy();
 
     /**

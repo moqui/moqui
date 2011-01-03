@@ -94,12 +94,18 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="is-pk" default="false" type="boolean"/>
             <xs:attribute name="encrypt" default="false" type="boolean"/>
             <xs:attribute name="enable-audit-log" default="false" type="boolean">
-                <xs:annotation>
-                    <xs:documentation>
-                        If this is set to true then whenever the value for this field on a record changes the Entity Engine will record the change in the EntityAuditLog entity.
-                        Defaults to false.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    If true whenever the value for this field on a record changes the Entity Facade will record the
+                    change in the EntityAuditLog entity.
+                    Defaults to false.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="enable-localization" default="false" type="boolean">
+                <xs:annotation><xs:documentation>
+                    If true gets on this field will be looked up with the LocalizedEntityField entity and if there is
+                    a matching record the localized value there will be returned instead of the actual record's value.
+                    Defaults to false for performance reasons, only set to true for fields that will have translations.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

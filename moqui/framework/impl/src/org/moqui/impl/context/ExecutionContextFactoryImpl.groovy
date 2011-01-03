@@ -22,6 +22,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.Moqui
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -34,7 +35,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final Node confXmlRoot
     
     protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
-    // for future use if needed: protected final Map componentDetailMap;
+
+    protected ThreadLocal<ExecutionContext> activeContext = new ThreadLocal<ExecutionContext>()
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -54,9 +56,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // get the runtime directory path
         Properties moquiInitProperties = new Properties()
         moquiInitProperties.load(this.class.getClassLoader().getResourceAsStream("MoquiInit.properties"))
-        this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
+
+        // if there is a system property use that, otherwise from the properties file
+        this.runtimePath = System.getProperty("moqui.runtime")
         if (!this.runtimePath) {
-            this.runtimePath = System.getProperty("moqui.runtime")
+            this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
         }
         if (!this.runtimePath) {
             throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).")
@@ -75,9 +79,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         System.setProperty("moqui.runtime", this.runtimePath)
 
         // get the moqui configuration file path
-        String confPartialPath = moquiInitProperties.getProperty("moqui.conf")
+        String confPartialPath = System.getProperty("moqui.conf")
         if (!confPartialPath) {
-            confPartialPath = System.getProperty("moqui.conf")
+            confPartialPath = moquiInitProperties.getProperty("moqui.conf")
         }
         if (!confPartialPath) {
             throw new IllegalArgumentException("No moqui.conf property found in MoquiInit.properties or in a system property (with: -Dmoqui.conf=... on the command line).")
@@ -92,7 +96,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         this.confPath = confFullPath
-
         this.init()
     }
 
@@ -228,12 +231,42 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** @see org.moqui.context.ExecutionContextFactory#getExecutionContext() */
     ExecutionContext getExecutionContext() {
-        return new ExecutionContextImpl(this)
+        ExecutionContext ec = this.activeContext.get()
+        if (ec) {
+            return ec
+        } else {
+            ec = new ExecutionContextImpl(this)
+            this.activeContext.set(ec)
+            return ec
+        }
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#getWebExecutionContext(String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     WebExecutionContext getWebExecutionContext(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
-        return new WebExecutionContextImpl(webappMoquiName, request, response, this)
+        ExecutionContext ec = this.activeContext.get()
+        if (ec) {
+            if (ec instanceof WebExecutionContext) {
+                return ec
+            } else {
+                // make a Web EC based on the plain EC
+                ec = new WebExecutionContextImpl(webappMoquiName, request, response, (ExecutionContextImpl) ec)
+                this.activeContext.set(ec)
+                return ec
+            }
+        } else {
+            // make a Web EC with a new plain EC
+            ec = new WebExecutionContextImpl(webappMoquiName, request, response, new ExecutionContextImpl(this))
+            this.activeContext.set(ec)
+            return ec
+        }
+    }
+
+    void destroyActiveExecutionContext() {
+        ExecutionContext ec = this.activeContext.get()
+        if (ec) {
+            ec.destroy()
+            this.activeContext.remove()
+        }
     }
 
     /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */

@@ -28,6 +28,8 @@ import org.w3c.dom.Element
 import org.w3c.dom.Document
 import org.apache.commons.codec.binary.Base64
 import org.moqui.impl.StupidUtilities
+import org.moqui.Moqui
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class EntityValueImpl implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -54,9 +56,11 @@ class EntityValueImpl implements EntityValue {
     }
 
     EntityFacadeImpl getEntityFacadeImpl() {
-        // TODO: change this to handle null after deserialize; how to do that? no static reference or other may be available...
+        // handle null after deserialize; this requires a static reference in Moqui.java or we'll get an error
+        if (!efi) efi = ((ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()).getEntityFacade()
         return efi
     }
+
     EntityDefinition getEntityDefinition() {
         if (!entityDefinition) entityDefinition = getEntityFacadeImpl().getEntityDefinition(entityName)
         return entityDefinition
@@ -75,21 +79,36 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#get(String) */
     Object get(String name) {
-        if (!getEntityDefinition().isField(name)) {
+        Node fieldNode = getEntityDefinition().getFieldNode(name)
+        if (!fieldNode) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })
             if (relationship) {
                 if (relationship."@type" == "many") {
-                    return this.findRelated(name, null, null, null)
+                    return this.findRelated(name, null, null, null, null)
                 } else {
-                    return this.findRelatedOne(name, null)
+                    return this.findRelatedOne(name, null, null)
                 }
             } else {
                 throw new IllegalArgumentException("The name [${name}] is not a valid field name or relationship name for entity [${this.entityName}]")
             }
         }
 
-        // TODO use LocalizedEntityField for any localized fields
+        // if enabled use LocalizedEntityField for any localized fields
+        if (fieldNode."@enable-localization" == "true") {
+            Locale userLocale = getEntityFacadeImpl().ecfi.executionContext.user.locale
+            if (userLocale) {
+                EntityFind lefFind = getEntityFacadeImpl().makeFind("LocalizedEntityField")
+                lefFind.condition([entityName:entityName, fieldName:name, locale:userLocale.toString()])
+                EntityValue lefValue = lefFind.useCache(true).one()
+                if (lefValue) return lefValue.localized
+                // no luck? try getting a localized value from LocalizedMessage
+                EntityFind lmFind = getEntityFacadeImpl().makeFind("LocalizedMessage")
+                lmFind.condition([original:valueMap[name], locale:userLocale.toString()])
+                EntityValue lmValue = lmFind.useCache(true).one()
+                if (lmValue) return lmValue.localized
+            }
+        }
 
         return valueMap[name]
     }

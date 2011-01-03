@@ -42,6 +42,9 @@ class MoquiServlet extends HttpServlet {
 
         logger.info("Loading Moqui Webapp [${webappId}] ${config.getServletContext().getServletContextName()}, located at ${config.getServletContext().getRealPath("/")}")
         this.executionContextFactory = new ExecutionContextFactoryImpl()
+        // there should always be one ECF that is active for things like deserialize of EntityValue
+        // for a servlet that has a factory separate from the rest of the system DON'T call this (ie to have multiple ECFs on a single system)
+        Moqui.dynamicInit(this.executionContextFactory)
         logger.info("Loaded Moqui Execution Context Factory for webapp [${webappId}]")
     }
 
@@ -74,6 +77,6 @@ class MoquiServlet extends HttpServlet {
         //wec.screen.renderScreenText(String screenLocation, Appendable appender, "html", String characterEncoding, null)
 
         // make sure everything is cleaned up
-        wec.destroy()
+        this.executionContextFactory.destroyActiveExecutionContext()
     }
 }

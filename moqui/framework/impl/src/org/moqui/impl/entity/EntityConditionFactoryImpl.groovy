@@ -23,10 +23,10 @@ import org.moqui.impl.StupidUtilities
 class EntityConditionFactoryImpl implements EntityConditionFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
 
-    protected final EntityFacadeImpl efi;
+    protected final EntityFacadeImpl efi
 
     EntityConditionFactoryImpl(EntityFacadeImpl efi) {
-        this.efi = efi;
+        this.efi = efi
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(EntityCondition, JoinOperator, EntityCondition) */
@@ -75,14 +75,14 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     public static abstract class EntityConditionImplBase implements EntityCondition {
-        EntityConditionFactoryImpl ecFactoryImpl;
+        EntityConditionFactoryImpl ecFactoryImpl
 
         EntityConditionImplBase(EntityConditionFactoryImpl ecFactoryImpl) {
-            this.ecFactoryImpl = ecFactoryImpl;
+            this.ecFactoryImpl = ecFactoryImpl
         }
 
         /** Build SQL Where text to evaluate condition in a database. */
-        public abstract void makeSqlWhere(EntityQueryBuilder eqb);
+        public abstract void makeSqlWhere(EntityQueryBuilder eqb)
     }
 
     public static class BasicJoinCondition extends EntityConditionImplBase {

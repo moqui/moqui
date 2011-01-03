@@ -46,9 +46,9 @@ class TransactionFacadeImpl implements TransactionFacade {
     protected UserTransaction ut
     protected TransactionManager tm
 
-    private static ThreadLocal<ArrayList<Exception>> transactionBeginStackList = new ThreadLocal<ArrayList<Exception>>()
-    private static ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStackList = new ThreadLocal<ArrayList<RollbackInfo>>()
-    private static ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
+    private ThreadLocal<ArrayList<Exception>> transactionBeginStackList = new ThreadLocal<ArrayList<Exception>>()
+    private ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStackList = new ThreadLocal<ArrayList<RollbackInfo>>()
+    private ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
 
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi

@@ -22,9 +22,7 @@ class UserFacadeImpl implements UserFacade {
     protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
 
     protected ExecutionContextImpl eci
-
     protected Timestamp effectiveTime = null
-
     protected EntityValue userAccount = null
     protected EntityValue visit = null
 
@@ -38,8 +36,8 @@ class UserFacadeImpl implements UserFacade {
         } else {
             // TODO if no userAccount get better defaults from webapp for locale, time zone?
         }
-        if (session.getAttribute("visit")) {
-            this.visit = (EntityValue) session.getAttribute("visit")
+        if (session.getAttribute("moqui.visit")) {
+            this.visit = (EntityValue) session.getAttribute("moqui.visit")
         } else {
             // this should ALWAYS be there, if not warn
             logger.warn("In UserFacade init no visit was found in session [${session.getId()}]")

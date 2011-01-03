@@ -35,7 +35,6 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
-import org.w3c.dom.Document
 import org.w3c.dom.Element
 import org.moqui.impl.StupidUtilities
 import org.moqui.context.Cache

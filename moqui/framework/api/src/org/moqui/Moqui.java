@@ -30,7 +30,6 @@ import java.util.ServiceLoader;
 
 public class Moqui {
     private static ExecutionContextFactory activeExecutionContextFactory = null;
-    private static final ThreadLocal<ExecutionContext> activeExecutionContext = new ThreadLocal<ExecutionContext>();
 
     private static final ServiceLoader<ExecutionContextFactory> executionContextFactoryLoader =
             ServiceLoader.load(ExecutionContextFactory.class);
@@ -55,31 +54,18 @@ public class Moqui {
     public static ExecutionContextFactory getExecutionContextFactory() { return activeExecutionContextFactory; }
     
     public static ExecutionContext getExecutionContext() {
-        // TODO make this more thread safe, preferably in a non-blocking way?
-        ExecutionContext executionContext = activeExecutionContext.get();
-        if (executionContext == null) {
-            // this should always have been initialized before getting it this way, but if not get a non-web ExecutionContext
-            executionContext = activeExecutionContextFactory.getExecutionContext();
-            activeExecutionContext.set(executionContext);
-        }
-        return executionContext;
+        return activeExecutionContextFactory.getExecutionContext();
     }
 
     /** This should be called by a filter or servlet at the beginning of an HTTP request to initialize a web context
      * for the current thread.
      */
     public static WebExecutionContext initWebExecutionContext(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
-        WebExecutionContext wec = activeExecutionContextFactory.getWebExecutionContext(webappMoquiName, request, response);
-        activeExecutionContext.set(wec);
-        return wec;
+        return activeExecutionContextFactory.getWebExecutionContext(webappMoquiName, request, response);
     }
 
     /** This should be called when it is known a context won't be used any more, such as at the end of a web request or service execution. */
     public static void destroyActiveExecutionContext() {
-        ExecutionContext executionContext = activeExecutionContext.get();
-        if (executionContext != null) {
-            executionContext.destroy();
-            activeExecutionContext.remove();
-        }
+        activeExecutionContextFactory.destroyActiveExecutionContext();
     }
 }
