@@ -39,6 +39,9 @@ import org.w3c.dom.Element
 import org.moqui.impl.StupidUtilities
 import org.moqui.context.Cache
 import org.moqui.entity.EntityListIterator
+import javax.transaction.Transaction
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -357,13 +360,73 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, long) */
     String sequencedIdPrimary(String seqName, Long staggerMax) {
-        // TODO: implement this
-        return null
+        // NOTE: simple approach with forUpdate, not using the update/select "ethernet" approach used in OFBiz; consider
+        // that in the future if there are issues with this approach
+        Long seqNum = null
+        TransactionFacade transactionFacade = this.ecfi.getTransactionFacade()
+        Transaction parentTransaction = null
+        try {
+            if (transactionFacade.isTransactionInPlace()) parentTransaction = transactionFacade.suspend()
+            boolean beganTransaction = transactionFacade.begin(null)
+            try {
+                EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName).useCache(false).forUpdate(true).one()
+                if (!svi) {
+                    svi = makeValue("SequenceValueItem")
+                    svi.set("seqName", seqName)
+                    // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
+                    svi.set("seqNum", 100000)
+                    svi.create()
+                }
+                seqNum = svi.getLong("seqNum")
+                if (staggerMax) {
+                    long stagger = Math.round(Math.random() * staggerMax)
+                    if (stagger == 0) stagger = 1
+                    seqNum += stagger
+                } else {
+                    seqNum += 1
+                }
+                svi.set("seqNum", seqNum)
+                svi.update()
+            } catch (Throwable t) {
+                transactionFacade.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+            } finally {
+                if (transactionFacade.isTransactionInPlace()) transactionFacade.commit(beganTransaction)
+            }
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            if (parentTransaction != null) transactionFacade.resume(parentTransaction)
+        }
+
+        String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"
+        return (prefix ? prefix : "") + seqNum.toString()
     }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdSecondary(EntityValue, String, int, int) */
-    void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy) {
-        // TODO: implement this
+    void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer paddedLength, Integer incrementBy) {
+        if (!value) return
+
+        value.remove(seqFieldName)
+        EntityValue lookupValue = makeValue(value.getEntityName())
+        lookupValue.setFields(value, false, null, true)
+
+        List<EntityValue> allValues = makeFind(value.getEntityName()).condition(lookupValue).list()
+        Integer highestSeqVal = null;
+        for (EntityValue curValue in allValues) {
+            String currentSeqId = curValue.getString(seqFieldName)
+            if (currentSeqId) {
+                try {
+                    int seqVal = Integer.parseInt(currentSeqId)
+                    if (highestSeqVal == null || seqVal > highestSeqVal) highestSeqVal = seqVal
+                } catch (Exception e) {
+                    logger.warn("Error in secondary sequenced ID converting SeqId [${currentSeqId}] in field [${seqFieldName}] from entity [${value.getEntityName()}] to a number: ${e.toString()}")
+                }
+            }
+        }
+
+        int seqValToUse = (highestSeqVal ? highestSeqVal + incrementBy : 1)
+        String newSeqId = StupidUtilities.paddedNumber(seqValToUse, paddedLength)
+        value.set(seqFieldName, newSeqId)
     }
 
     /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */

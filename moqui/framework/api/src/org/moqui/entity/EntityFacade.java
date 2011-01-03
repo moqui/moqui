@@ -80,10 +80,10 @@ public interface EntityFacade {
      *
      * @param value An existing value object with the primary sequenced field already populated.
      * @param seqFieldName The field to set the secondary sequenced value on.
-     * @param numericPadding If specified front-pads the secondary sequenced value with zeroes until it is this length.
+     * @param paddedLength If specified front-pads the secondary sequenced value with zeroes until it is this length.
      * @param incrementBy If specified adds this value instead of the default (1) to the highest existing value. 
      */
-    void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer numericPadding, Integer incrementBy);
+    void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer paddedLength, Integer incrementBy);
 
     /** Gets the group name for specified entityName
      * @param entityName The name of the entity to get the group name

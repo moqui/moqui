@@ -132,4 +132,11 @@ class StupidUtilities {
         }
         return newValue.toString()
     }
+
+    public static String paddedNumber(long number, Integer desiredLength) {
+        StringBuilder outStrBfr = new StringBuilder(Long.toString(number))
+        if (!desiredLength) return outStrBfr.toString()
+        while (desiredLength > outStrBfr.length()) outStrBfr.insert(0, '0')
+        return outStrBfr.toString()
+    }
 }

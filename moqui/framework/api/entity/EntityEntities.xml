@@ -44,7 +44,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc">
         <field name="seqName" type="id-long" is-pk="true"/>
-        <field name="seqId" type="number-integer"/>
+        <field name="seqNum" type="number-integer"/>
     </entity>
 
     <!-- ========================================================= -->

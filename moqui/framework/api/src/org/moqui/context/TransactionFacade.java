@@ -43,8 +43,8 @@ import java.sql.Connection;
  * <pre>
  * Transaction parentTransaction = null;
  * try {
- *     if (TransactionUtil.isTransactionInPlace()) {
- *         parentTransaction = TransactionUtil.suspend();
+ *     if (transactionFacade.isTransactionInPlace()) {
+ *         parentTransaction = transactionFacade.suspend();
  *     }
  *
  *     boolean beganTransaction = transactionFacade.begin(timeout);
