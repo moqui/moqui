@@ -20,6 +20,8 @@ import java.util.ListIterator;
  */
 public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<EntityValue> {
 
+    void close() throws EntityException;
+
     /** Sets the cursor position to just after the last result so that previous() will return the last result */
     void afterLast() throws EntityException;
 
@@ -31,8 +33,6 @@ public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<
 
     /** Sets the cursor position to last result; if result set is empty returns false */
     boolean first() throws EntityException;
-
-    void close() throws EntityException;
 
     /** NOTE: Calling this method does return the current value, but so does calling next() or previous(), so calling
      * one of those AND this method will cause the value to be created twice
