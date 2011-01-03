@@ -25,14 +25,14 @@ public interface WebExecutionContext extends ExecutionContext {
     Map<String, Object> getParameters();
 
     HttpServletRequest getRequest();
-    Map<String, ?> getRequestAttributes();
-    Map<String, String> getRequestParameters();
+    Map<String, Object> getRequestAttributes();
+    Map<String, Object> getRequestParameters();
 
     HttpServletResponse getResponse();
 
     HttpSession getSession();
-    Map<String, ?> getSessionAttributes();
+    Map<String, Object> getSessionAttributes();
 
     ServletContext getServletContext();
-    Map<String, ?> getApplicationAttributes();
+    Map<String, Object> getApplicationAttributes();
 }
