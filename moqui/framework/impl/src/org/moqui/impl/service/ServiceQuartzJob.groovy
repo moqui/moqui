@@ -9,25 +9,14 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.service;
+package org.moqui.impl.service
 
-import java.util.Map;
-import java.io.Serializable;
+import org.quartz.Job
+import org.quartz.JobExecutionContext
 
-/**
- * Generic Requester Interface
- */
-public interface ServiceRequester extends Serializable {
-
-    /**
-     * Receive the result of an asynchronous service call
-     * @param result Map of name, value pairs composing the result
-     */
-    public void receiveResult(Map<String, Object> result);
-
-    /**
-     * Receive an exception (Throwable) from an asynchronous service cell
-     * @param t The Throwable which was received
-     */
-    public void receiveThrowable(Throwable t);
+class ServiceQuartzJob implements Job {
+    void execute(JobExecutionContext jobExecutionContext) {
+        // TODO impl this
+        String serviceName = jobExecutionContext.jobDetail.key.group
+    }
 }

@@ -362,6 +362,7 @@ class EntityFacadeImpl implements EntityFacade {
     String sequencedIdPrimary(String seqName, Long staggerMax) {
         // NOTE: simple approach with forUpdate, not using the update/select "ethernet" approach used in OFBiz; consider
         // that in the future if there are issues with this approach
+        // TODO: add support for bins of IDs for performance, ie to avoid going to the db for each one
         Long seqNum = null
         TransactionFacade transactionFacade = this.ecfi.getTransactionFacade()
         Transaction parentTransaction = null

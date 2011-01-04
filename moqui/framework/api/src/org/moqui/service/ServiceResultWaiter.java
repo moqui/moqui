@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * ServiceFacade Result Waiter Class
  */
-public class ServiceResultWaiter implements ServiceRequester {
+public class ServiceResultWaiter implements ServiceResultReceiver {
 
     protected final static Logger logger = LoggerFactory.getLogger(ServiceResultWaiter.class);
 
@@ -36,7 +36,7 @@ public class ServiceResultWaiter implements ServiceRequester {
     private Throwable t = null;
 
     /**
-     * @see org.moqui.service.ServiceRequester#receiveResult(java.util.Map)
+     * @see ServiceResultReceiver#receiveResult(java.util.Map)
      */
     public synchronized void receiveResult(Map<String, Object> result) {
         this.result = result;
@@ -46,7 +46,7 @@ public class ServiceResultWaiter implements ServiceRequester {
     }
 
     /**
-     * @see org.moqui.service.ServiceRequester#receiveThrowable(java.lang.Throwable)
+     * @see ServiceResultReceiver#receiveThrowable(java.lang.Throwable)
      */
     public synchronized void receiveThrowable(Throwable t) {
         this.t = t;
