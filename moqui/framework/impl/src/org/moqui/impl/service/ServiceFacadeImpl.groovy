@@ -55,95 +55,17 @@ class ServiceFacadeImpl implements ServiceFacade {
         scheduler.shutdown(true)
     }
 
-    ServiceCallSync sync(String serviceName) {
-        // TODO: implement this
-        return null
-    }
+    @Override
+    ServiceCallSync sync() { return new ServiceCallSyncImpl(this) }
 
-    ServiceCallAsync async(String serviceName) {
-        // TODO: implement this
-        return null
-    }
+    @Override
+    ServiceCallAsync async() { return new ServiceCallAsyncImpl(this) }
 
-    ServiceCallSchedule schedule(String serviceName) {
-        // TODO: implement this
-        return null
-    }
+    @Override
+    ServiceCallSchedule schedule() { return new ServiceCallScheduleImpl(this) }
 
-    ServiceCallSpecial special(String serviceName) {
-        // TODO: implement this
-        return null
-    }
-
-    public void callAsync(String serviceName, Map<String, Object> context, ServiceResultReceiver resultReceiver, boolean persist,
-                          Integer transactionIsolation) {
-        // TODO: how to do transactionIsolation?
-        // TODO: how to handle persist on a per-job bases? seems like the volatile Job concept matched this, but that is deprecated in 2.0
-
-        // NOTE: is this the best way to get a unique job name? (needed to register a listener below)
-        String uniqueJobName = UUID.randomUUID()
-        // NOTE: don't store durably, ie tell it to get rid of it after it is run
-        JobBuilder jobBuilder = JobBuilder.newJob(ServiceQuartzJob.class)
-                .withIdentity(uniqueJobName, serviceName)
-                .usingJobData(new JobDataMap(context))
-                .requestRecovery().storeDurably(false)
-        JobDetail job = jobBuilder.build()
-
-        Trigger nowTrigger = TriggerBuilder.newTrigger()
-                .withIdentity(uniqueJobName, "NowTrigger").startNow().withPriority(5)
-                .forJob(job).build()
-
-        if (resultReceiver) {
-            ServiceRequesterListener sqjl = new ServiceRequesterListener(resultReceiver)
-            // NOTE: is this the best way to get this to run for ONLY this job?
-            scheduler.getListenerManager().addJobListener(sqjl, NameMatcher.matchNameEquals(uniqueJobName))
-        }
-
-        scheduler.scheduleJob(job, nowTrigger)
-    }
-
-    public ServiceResultWaiter callAsync(String serviceName, Map<String, Object> context, boolean persist,
-                                         Integer transactionIsolation) {
-        ServiceResultWaiter requester = new ServiceResultWaiter()
-        this.callAsync(serviceName, context, requester, persist, transactionIsolation)
-        return requester
-    }
-
-    public void schedule(String jobName, String poolName, String serviceName, Map<String, Object> context,
-                         Long startTime, Integer frequency, Integer interval, Integer count, Long endTime,
-                         Integer maxRetry) {
-        // TODO poolName: any way to handle the pool concept? or get rid of that? multiple schedulers?
-        // TODO maxRetry: any way to set and then track the number of retries?
-
-        // NOTE: get existing job based on jobName/serviceName pair IFF a jobName is specified
-        JobKey jk = JobKey.jobKey(jobName, serviceName)
-        JobDetail job
-        if (jobName && scheduler.checkExists(jk)) {
-            job = scheduler.getJobDetail(jk)
-        } else {
-            JobBuilder jobBuilder = JobBuilder.newJob(ServiceQuartzJob.class)
-                    .withIdentity(jobName, serviceName)
-                    .requestRecovery().storeDurably(jobName ? true : false)
-            job = jobBuilder.build()
-        }
-
-        // do we have to have an identity?: .withIdentity(TODO, "ScheduleTrigger")
-        TriggerBuilder tb = TriggerBuilder.newTrigger()
-                .withPriority(3)
-                .usingJobData(new JobDataMap(context))
-                .forJob(job)
-        if (startTime) tb.startAt(new Date(startTime))
-        if (endTime) tb.endAt(new Date(endTime))
-
-        ScheduleBuilder sb = ScheduleBuilder
-        SimpleScheduleBuilder ssb = SimpleScheduleBuilder.simpleSchedule()
-        if (count) ssb.withRepeatCount(count)
-        if (!count && !endTime) ssb.repeatForever()
-        tb.withSchedule(ssb)
-        Trigger trigger = tb.build()
-
-        scheduler.scheduleJob(job, trigger)
-    }
+    @Override
+    ServiceCallSpecial special() { return new ServiceCallSpecialImpl(this) }
 
     /** @see org.moqui.service.ServiceFacade#registerCallback(String, ServiceCallback) */
     public synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {

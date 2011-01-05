@@ -18,13 +18,13 @@ import java.util.Map;
  */
 public interface ServiceFacade {
 
-    ServiceCallSync sync(String serviceName);
+    ServiceCallSync sync();
 
-    ServiceCallAsync async(String serviceName);
+    ServiceCallAsync async();
 
-    ServiceCallSchedule schedule(String serviceName);
+    ServiceCallSchedule schedule();
 
-    ServiceCallSpecial special(String serviceName);
+    ServiceCallSpecial special();
 
     /** Register a callback listener on a specific service.
      * @param serviceName Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To

@@ -41,8 +41,14 @@ public interface ServiceCallSchedule extends ServiceCall {
      * @param intervalUnit One of ServiceCall.IntervalUnit { SECONDS, MINUTES, HOURS, DAYS, WEEKS, MONTHS, YEARS }
      * @return Reference to this for convenience.
      */
-    ServiceCallSchedule interval(int interval, IntervalUnit intervalUnit);
+    ServiceCallSchedule interval(int interval, TimeUnit intervalUnit);
+
     /** A string in the same format used by cron to define a recurrence.
+     *
+     * dailyAtHourAndMinute(int hour, int minute): String.format("0 %d %d ? * *", minute, hour)
+     * weeklyOnDayAndHourAndMinute(int dayOfWeek, int hour, int minute): String.format("0 %d %d ? * %d", minute, hour, dayOfWeek)
+     * monthlyOnDayAndHourAndMinute(int dayOfMonth, int hour, int minute): String.format("0 %d %d %d * ?", minute, hour, dayOfMonth)
+     *
      * @return Reference to this for convenience.
      */
     ServiceCallSchedule cron(String cronString);
