@@ -23,25 +23,25 @@ import javax.sql.XADataSource
 import javax.naming.InitialContext
 import javax.naming.Context
 import javax.naming.NamingException
+import javax.transaction.Transaction
 
+import org.moqui.context.Cache
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityFacade
 import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityList
+import org.moqui.entity.EntityListIterator
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.StupidUtilities
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 import org.w3c.dom.Element
-import org.moqui.impl.StupidUtilities
-import org.moqui.context.Cache
-import org.moqui.entity.EntityListIterator
-import javax.transaction.Transaction
-import org.moqui.context.TransactionException
-import org.moqui.context.TransactionFacade
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -190,7 +190,8 @@ class EntityFacadeImpl implements EntityFacade {
                     this.loadEntityFileLocations(entityFile.toURI().toString())
                 }
             } else {
-                throw new IllegalArgumentException("Cannot load entity file in location [${location}] because protocol [${entityDirUrl.getProtocol()}] is not yet supported.")
+                // just warn here, no exception because any non-file component location would blow everything up
+                logger.warn("Cannot load entity file in component location [${location}] because protocol [${entityDirUrl.getProtocol()}] is not yet supported.")
             }
         }
     }

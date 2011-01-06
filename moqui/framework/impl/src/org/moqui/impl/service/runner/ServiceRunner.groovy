@@ -9,25 +9,14 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.service;
+package org.moqui.impl.service.runner
 
-import java.util.Map;
-import java.io.Serializable;
+import org.moqui.impl.service.ServiceDefinition
+import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.service.ServiceException
 
-/**
- * Generic Requester Interface
- */
-interface ServiceResultReceiver extends Serializable {
-
-    /**
-     * Receive the result of an asynchronous service call
-     * @param result Map of name, value pairs composing the result
-     */
-    void receiveResult(Map<String, Object> result);
-
-    /**
-     * Receive an exception (Throwable) from an asynchronous service cell
-     * @param t The Throwable which was received
-     */
-    void receiveThrowable(Throwable t);
+interface ServiceRunner {
+    ServiceRunner init(ServiceFacadeImpl sfi);
+    Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) throws ServiceException;
+    void destroy();
 }

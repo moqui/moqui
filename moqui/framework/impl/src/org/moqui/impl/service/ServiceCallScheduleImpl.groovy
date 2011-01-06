@@ -11,10 +11,11 @@
  */
 package org.moqui.impl.service
 
+import org.moqui.service.ServiceCall.TimeUnit
 import org.moqui.service.ServiceCallSchedule
+
 import org.quartz.Trigger
 import org.quartz.SimpleScheduleBuilder
-import org.quartz.ScheduleBuilder
 import org.quartz.JobDataMap
 import org.quartz.TriggerBuilder
 import org.quartz.JobBuilder
@@ -40,52 +41,28 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     }
 
     @Override
-    ServiceCallSchedule jobName(String jobName) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule jobName(String jn) { jobName = jn; return this }
 
     @Override
-    ServiceCallSchedule poolName(String poolName) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule poolName(String pn) { poolName = pn; return this }
 
     @Override
-    ServiceCallSchedule startTime(long startTime) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule startTime(long st) { startTime = st; return this }
 
     @Override
-    ServiceCallSchedule count(int count) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule count(int c) { count = c; return this }
 
     @Override
-    ServiceCallSchedule endTime(long endTime) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule endTime(long et) { endTime = et; return this }
 
     @Override
-    ServiceCallSchedule interval(int interval, TimeUnit intervalUnit) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule interval(int i, TimeUnit iu) { interval = i; intervalUnit = iu; return this }
 
     @Override
-    ServiceCallSchedule cron(String cronString) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule cron(String cs) { cronString = cs; return this }
 
     @Override
-    ServiceCallSchedule maxRetry(int maxRetry) {
-        // TODO implement
-        return null
-    }
+    ServiceCallSchedule maxRetry(int mr) { maxRetry = mr; return this }
 
     @Override
     void call() {

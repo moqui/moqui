@@ -27,19 +27,9 @@ class ServiceCallImpl implements ServiceCall {
 
     @Override
     ServiceCall serviceName(String serviceName) {
-        StringBuilder sn = new StringBuilder(serviceName)
-        if (sn.indexOf("#") > 0) {
-            noun = sn.substring(sn.indexOf("#") + 1)
-            sn.delete(sn.indexOf("#"), sn.length())
-        }
-        if (sn.indexOf(".") > 0) {
-            verb = sn.substring(sn.lastIndexOf(".") + 1)
-            sn.delete(sn.lastIndexOf("."), sn.length())
-            path = sn ? sn.toString() : null
-        } else {
-            path = null
-            verb = sn.toString()
-        }
+        path = ServiceDefinition.getPathFromName(serviceName)
+        verb = ServiceDefinition.getVerbFromName(serviceName)
+        noun = ServiceDefinition.getNounFromName(serviceName)
         return this
     }
 
@@ -50,7 +40,7 @@ class ServiceCallImpl implements ServiceCall {
     ServiceCall serviceName(String p, String v, String n) { path = p; verb = v; noun = n; return this }
 
     @Override
-    String getServiceName() { return "${path}.${verb}#${noun}" }
+    String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
 
     @Override
     ServiceCall context(Map<String, Object> map) { context.putAll(map); return this }

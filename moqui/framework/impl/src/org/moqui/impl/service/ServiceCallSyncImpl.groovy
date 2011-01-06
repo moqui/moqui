@@ -12,6 +12,7 @@
 package org.moqui.impl.service
 
 import org.moqui.service.ServiceCallSync
+import org.moqui.impl.service.runner.ServiceRunner
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected boolean requireNewTransaction = false
@@ -29,7 +30,24 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
     @Override
     Map<String, Object> call() {
-        // TODO implement
-        return null
+        ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
+
+        String type = sd.serviceNode."@type"
+        if (type == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
+
+        ServiceRunner sr = sfi.getServiceRunner(type)
+
+        // TODO trigger SECAs
+
+        // TODO validation
+
+        // TODO authentication
+
+        // TODO other...
+
+        // TODO this is a simple implementation so add support for transaction handling, etc
+        Map<String, Object> result = sr.runService(sd, this.context)
+
+        return result
     }
 }

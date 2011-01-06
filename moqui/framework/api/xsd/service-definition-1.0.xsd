@@ -56,11 +56,12 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="proxy-http"/>
                         <xs:enumeration value="proxy-jms"/>
                         <xs:enumeration value="proxy-rmi"/>
+                        <xs:enumeration value="remote-xmlrpc"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="location" type="xs:string" use="optional"/>
-            <xs:attribute name="invoke" type="xs:string" use="optional"/>
+            <xs:attribute name="method" type="xs:string" use="optional"/>
             <xs:attribute name="authentication" default="true" type="boolean"/>
             <xs:attribute name="export" default="false" type="boolean"/>
             <xs:attribute name="validate" default="true" type="boolean"/>
@@ -73,7 +74,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="transaction-timeout" type="xs:int" default="0">
+            <xs:attribute name="transaction-timeout" type="xs:int">
                 <xs:annotation><xs:documentation>
                     Defines the timeout for the transaction, in seconds.
                     This value is only used if this service begins a transaction (either require-new, or

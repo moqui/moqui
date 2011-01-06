@@ -9,25 +9,22 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.service;
+package org.moqui.impl.service.runner
 
-import java.util.Map;
-import java.io.Serializable;
+import org.moqui.impl.service.ServiceDefinition
+import org.moqui.impl.service.ServiceFacadeImpl
 
-/**
- * Generic Requester Interface
- */
-interface ServiceResultReceiver extends Serializable {
+public class RemoteXmlrpcServiceRunner implements ServiceRunner {
+    protected ServiceFacadeImpl sfi = null
 
-    /**
-     * Receive the result of an asynchronous service call
-     * @param result Map of name, value pairs composing the result
-     */
-    void receiveResult(Map<String, Object> result);
+    RemoteXmlrpcServiceRunner() {}
 
-    /**
-     * Receive an exception (Throwable) from an asynchronous service cell
-     * @param t The Throwable which was received
-     */
-    void receiveThrowable(Throwable t);
+    public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
+
+    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) {
+        // TODO implement
+        return null
+    }
+
+    public void destroy() { }
 }
