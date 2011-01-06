@@ -12,17 +12,27 @@
 package org.moqui.impl.context
 
 import org.moqui.context.ResourceFacade
+import org.moqui.context.Cache
+import java.nio.charset.Charset
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 public class ResourceFacadeImpl implements ResourceFacade {
+    protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 
-    public ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+    protected final Cache scriptGroovyLocationCache
+    protected final Cache scriptXmlActionLocationCache
+
+    ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
+        this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("script.groovy.location")
+        this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("script.xml-actions.location")
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
-    public URL getLocationUrl(String location) {
+    URL getLocationUrl(String location) {
         String strippedLocation = stripLocationPrefix(location)
 
         if (location.startsWith("component://")) {
@@ -68,8 +78,32 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */
-    public InputStream getLocationStream(String location) {
-        return this.getLocationUrl(location).newInputStream()
+    InputStream getLocationStream(String location) {
+        URL lu = getLocationUrl(location)
+        if (!lu) return null
+        return lu.newInputStream()
+    }
+
+    String getLocationText(String location) {
+        InputStream is = null
+        Reader r = null
+        try {
+            is = getLocationStream(location)
+            if (!is) return null
+
+            r = new InputStreamReader(new BufferedInputStream(is), Charset.forName("UTF-8"))
+
+            StringBuilder sb = new StringBuilder()
+            char[] buf = new char[4096]
+            int i
+            while ((i = r.read(buf, 0, 4096)) > 0) {
+                sb.append(buf, 0, i)
+            }
+            return sb.toString()
+        } finally {
+            // closing r should close is, if not add that here
+            try { if (r) r.close() } catch (IOException e) { logger.warn("Error in close after reading text", e) }
+        }
     }
 
     protected static String stripLocationPrefix(String location) {
@@ -88,5 +122,24 @@ public class ResourceFacadeImpl implements ResourceFacade {
         while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
 
         return strippedLocation.toString()
+    }
+
+    Class getGroovyByLocation(String location) {
+        Class gc = (Class) scriptGroovyLocationCache.get(location)
+        if (!gc) {
+            gc = new GroovyClassLoader().parseClass(getLocationText(location), location)
+            scriptGroovyLocationCache.put(location, gc)
+        }
+        return gc
+    }
+
+    Object getXmlActionByLocation(String location) {
+        Object xa = (Object) scriptGroovyLocationCache.get(location)
+        if (!xa) {
+            // TODO: impl this after XmlAction stuff in place
+            //xa = ?
+            //scriptGroovyLocationCache.put(location, xa)
+        }
+        return xa
     }
 }

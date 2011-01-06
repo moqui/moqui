@@ -10,7 +10,9 @@
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
         <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
         <cache name="entity.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+
         <cache name="service.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="service.java.class" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
