@@ -24,6 +24,8 @@ class ServiceDefinition {
         this.path = path
         this.verb = serviceNode."@verb"
         this.noun = serviceNode."@noun"
+
+        // TODO: expand auto-parameters in in-parameters and out-parameters
     }
 
     Node getServiceNode() { return serviceNode }
@@ -52,4 +54,7 @@ class ServiceDefinition {
         // TODO: see if the location is an alias from the conf -> service-facade
         return serviceNode."@location"
     }
+
+    Node getInParameter(String name) { return (Node) serviceNode."in-parameters"[0]."parameter".find({ it."@name" == name }) }
+    Node getOutParameter(String name) { return (Node) serviceNode."out-parameters"[0]."parameter".find({ it."@name" == name }) }
 }

@@ -149,6 +149,76 @@ public class EntityDefinition {
         return nameSet
     }
 
+    void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
+        if (src == null) return
+
+        Set fieldNameSet
+        if (pks != null) {
+            fieldNameSet = this.getFieldNames(pks, !pks)
+        } else {
+            fieldNameSet = this.getFieldNames(true, true)
+        }
+
+        for (String fieldName in fieldNameSet) {
+            String sourceFieldName
+            if (namePrefix) {
+                sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
+            } else {
+                sourceFieldName = fieldName
+            }
+
+            if (src.containsKey(sourceFieldName)) {
+                Object value = src.get(sourceFieldName)
+                if (value) {
+                    if (value instanceof String) {
+                        this.setString(fieldName, (String) value, dest)
+                    } else {
+                        dest.put(fieldName, value)
+                    }
+                } else if (setIfEmpty) {
+                    // treat empty String as null, otherwise set as whatever null or empty type it is
+                    if (value != null && value instanceof String) {
+                        dest.put(fieldName, null)
+                    } else {
+                        dest.put(fieldName, value)
+                    }
+                }
+            }
+        }
+    }
+
+    void setString(String name, String value, Map<String, Object> dest) {
+        if (value == null || value == "null") {
+            dest.put(name, null)
+            return
+        }
+        if (value == "\null") value == "null"
+
+        Node fieldNode = this.getFieldNode(name)
+        if (!fieldNode) dest.put(name, value) // cause an error on purpose
+
+        String javaType = this.efi.getFieldJavaType(fieldNode."@type", entityName)
+        switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
+        case 1: dest.put(name, value); break
+        case 2: dest.put(name, java.sql.Timestamp.valueOf(value)); break
+        case 3: dest.put(name, java.sql.Time.valueOf(value)); break
+        case 4: dest.put(name, java.sql.Date.valueOf(value)); break
+        case 5: dest.put(name, Integer.valueOf(value)); break
+        case 6: dest.put(name, Long.valueOf(value)); break
+        case 7: dest.put(name, Float.valueOf(value)); break
+        case 8: dest.put(name, Double.valueOf(value)); break
+        case 9: dest.put(name, new BigDecimal(value)); break
+        case 10: dest.put(name, Boolean.valueOf(value)); break
+        case 11: dest.put(name, value); break
+        // better way for Blob (12)? probably not...
+        case 12: dest.put(name, value); break
+        case 13: dest.put(name, value); break
+        case 14: dest.put(name, value.asType(java.util.Date.class)); break
+        // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
+        case 15: dest.put(name, value); break
+        }
+    }
+
     protected void expandAliasAlls() {
         if (!isViewEntity()) return
         for (Node aliasAll: this.entityNode."alias-all") {

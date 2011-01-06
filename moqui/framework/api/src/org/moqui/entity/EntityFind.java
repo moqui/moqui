@@ -56,6 +56,10 @@ public interface EntityFind extends java.io.Serializable {
      * If a field has been set with the same name and any of the Map keys, this will replace that field's value.
      * Fields set in this way will be combined with other conditions (if applicable) just before doing the query.
      *
+     * This will do conversions if needed from Strings to field types as needed, and will only get keys that match
+     * entity fields. In other words, it does the same thing as:
+     * <code>EntityValue.setFields(fields, true, null, null)</code>
+     *
      * @return Returns this for chaining of method calls.
      */
     EntityFind condition(Map<String, ?> fields);

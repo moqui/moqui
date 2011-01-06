@@ -31,6 +31,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     @Override
     Map<String, Object> call() {
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
+        if (!sd) {
+            // TODO if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
+            throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+        }
 
         String type = sd.serviceNode."@type"
         if (type == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")

@@ -80,15 +80,15 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#condition(String, Object) */
     EntityFind condition(String fieldName, Object value) {
-        if (!this.simpleAndMap) this.simpleAndMap = new HashMap();
+        if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
         this.simpleAndMap.put(fieldName, value)
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#condition(Map<String,?>) */
     EntityFind condition(Map<String, ?> fields) {
-        if (!this.simpleAndMap) this.simpleAndMap = new HashMap();
-        this.simpleAndMap.putAll(fields)
+        if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
+        getEntityDef().setFields(fields, this.simpleAndMap, true, null, null)
         return this
     }
 

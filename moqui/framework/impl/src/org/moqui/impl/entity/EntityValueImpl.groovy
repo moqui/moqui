@@ -133,35 +133,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#setString(String, String) */
     void setString(String name, String value) {
-        if (value == null || value == "null") {
-            set(name, null)
-            return
-        }
-        if (value == "\null") value == "null"
-
-        Node fieldNode = this.getEntityDefinition().getFieldNode(name)
-        if (!fieldNode) set(name, value) // cause an error on purpose
-
-        String javaType = this.getEntityFacadeImpl().getFieldJavaType(fieldNode."@type", entityName)
-        switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
-        case 1: set(name, value); break
-        case 2: set(name, java.sql.Timestamp.valueOf(value)); break
-        case 3: set(name, java.sql.Time.valueOf(value)); break
-        case 4: set(name, java.sql.Date.valueOf(value)); break
-        case 5: set(name, Integer.valueOf(value)); break
-        case 6: set(name, Long.valueOf(value)); break
-        case 7: set(name, Float.valueOf(value)); break
-        case 8: set(name, Double.valueOf(value)); break
-        case 9: set(name, new BigDecimal(value)); break
-        case 10: set(name, Boolean.valueOf(value)); break
-        case 11: set(name, value); break
-        // better way for Blob (12)? probably not...
-        case 12: set(name, value); break
-        case 13: set(name, value); break
-        case 14: set(name, value.asType(java.util.Date.class)); break
-        // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
-        case 15: set(name, value); break
-        }
+        entityDefinition.setString(name, value, this)
     }
 
     /** @see org.moqui.entity.EntityValue#getBoolean(String) */
@@ -197,42 +169,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#setFields(Map, boolean, java.lang.String, boolean) */
     void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
-        if (fields == null) return
-
-        Set fieldNameSet
-        if (pks != null) {
-            fieldNameSet = this.getEntityDefinition().getFieldNames(pks, !pks)
-        } else {
-            fieldNameSet = this.getEntityDefinition().getFieldNames(true, true)
-        }
-
-        for (String fieldName in fieldNameSet) {
-            String sourceFieldName
-            if (namePrefix) {
-                sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
-            } else {
-                sourceFieldName = fieldName
-            }
-
-            if (fields.containsKey(sourceFieldName)) {
-                Object value = fields.get(sourceFieldName)
-
-                if (value) {
-                    if (value instanceof String) {
-                        this.setString(fieldName, (String) value)
-                    } else {
-                        this.set(fieldName, value)
-                    }
-                } else if (setIfEmpty) {
-                    // treat empty String as null, otherwise set as whatever null or empty type it is
-                    if (value != null && value instanceof String) {
-                        this.set(fieldName, null)
-                    } else {
-                        this.set(fieldName, value)
-                    }
-                }
-            }
-        }
+        entityDefinition.setFields(fields, this, setIfEmpty, namePrefix, pks)
     }
 
     /** @see org.moqui.entity.EntityValue#compareTo(EntityValue) */
