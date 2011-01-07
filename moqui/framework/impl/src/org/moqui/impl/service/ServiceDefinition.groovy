@@ -57,4 +57,9 @@ class ServiceDefinition {
 
     Node getInParameter(String name) { return (Node) serviceNode."in-parameters"[0]."parameter".find({ it."@name" == name }) }
     Node getOutParameter(String name) { return (Node) serviceNode."out-parameters"[0]."parameter".find({ it."@name" == name }) }
+    Set<String> getOutParameterNames() {
+        Set<String> outNames = new HashSet()
+        for (Node parameter in serviceNode."out-parameters"[0]."parameter") outNames.add(parameter."@name")
+        return outNames
+    }
 }

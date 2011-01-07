@@ -14,6 +14,7 @@ package org.moqui.impl.service.runner
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.moqui.impl.service.ServiceRunner
 
 public class ScriptServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null

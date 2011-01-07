@@ -12,7 +12,8 @@
 package org.moqui.impl.service
 
 import org.moqui.service.ServiceCallSync
-import org.moqui.impl.service.runner.ServiceRunner
+import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.service.runner.EntityAutoServiceRunner
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected boolean requireNewTransaction = false
@@ -32,8 +33,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     Map<String, Object> call() {
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
         if (!sd) {
-            // TODO if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
-            throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+            // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
+            if ((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
+                return runImplicitEntityAuto()
+            } else {
+                throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+            }
         }
 
         String type = sd.serviceNode."@type"
@@ -47,11 +52,28 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         // TODO authentication
 
+        // TODO transaction handling
+
         // TODO other...
 
-        // TODO this is a simple implementation so add support for transaction handling, etc
         Map<String, Object> result = sr.runService(sd, this.context)
 
+        return result
+    }
+
+    protected Map<String, Object> runImplicitEntityAuto() {
+        // TODO trigger SECAs
+        // TODO authentication
+        // TODO transaction handling
+        EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
+        Map<String, Object> result = new HashMap()
+        if (verb == "create") {
+            EntityAutoServiceRunner.createEntity(sfi, ed, context, result, null)
+        } else if (verb == "update") {
+            EntityAutoServiceRunner.updateEntity(sfi, ed, context, result, null)
+        } else if (verb == "delete") {
+            EntityAutoServiceRunner.deleteEntity(sfi, ed, context)
+        }
         return result
     }
 }

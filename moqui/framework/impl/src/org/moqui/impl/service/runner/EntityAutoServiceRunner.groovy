@@ -11,14 +11,16 @@
  */
 package org.moqui.impl.service.runner
 
-import org.moqui.impl.service.ServiceDefinition
-import org.moqui.impl.service.ServiceFacadeImpl
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.moqui.service.ServiceException
-import org.moqui.impl.entity.EntityDefinition
 import org.moqui.BaseException
 import org.moqui.entity.EntityValue
+import org.moqui.impl.service.ServiceDefinition
+import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.service.ServiceRunner
+import org.moqui.service.ServiceException
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
@@ -47,122 +49,110 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             }
 
             if ("create" == sd.verb) {
-                EntityValue newEntity = sfi.ecfi.entityFacade.makeValue(ed.entityName)
-
-                boolean isSinglePk = pkFieldNames.size() == 1
-                boolean isDoublePk = pkFieldNames.size() == 2
-
-                Node singlePkField = isSinglePk ? ed.getFieldNode(pkFieldNames[0]) : null
-                Node singlePkParamIn = isSinglePk ? sd.getInParameter(pkFieldNames[0]) : null
-                Node singlePkParamOut = isSinglePk ? sd.getOutParameter(pkFieldNames[0]) : null
-
-                Node doublePkPrimaryInParam = null
-                Node doublePkSecondaryOutParam = null
-                Node doublePkSecondaryOutField = null
-                if (isDoublePk) {
-                    if (sd.getInParameter(pkFieldNames[0]) && sd.getOutParameter(pkFieldNames[1])) {
-                        doublePkPrimaryInParam = sd.getInParameter(pkFieldNames[0])
-                        doublePkSecondaryOutParam = sd.getOutParameter(pkFieldNames[1])
-                        doublePkSecondaryOutField = ed.getFieldNode(pkFieldNames[1])
-                    } else if (sd.getOutParameter(pkFieldNames[0]) && sd.getInParameter(pkFieldNames[1])) {
-                        doublePkPrimaryInParam = sd.getInParameter(pkFieldNames[1])
-                        doublePkSecondaryOutParam = sd.getOutParameter(pkFieldNames[0])
-                        doublePkSecondaryOutField = ed.getFieldNode(pkFieldNames[0])
-                    }
-                    // otherwise we don't have an IN and an OUT... so do nothing and leave them null
-                }
-
-
-                if (isSinglePk && singlePkParamOut && !singlePkParamIn) {
-                    /* **** primary sequenced primary key **** */
-                    String sequencedId = sfi.ecfi.entityFacade.sequencedIdPrimary(ed.entityName, null)
-                    newEntity.set(singlePkField."@name", sequencedId)
-                    result.put(singlePkParamOut."@name", sequencedId)
-                } else if (isSinglePk && singlePkParamOut && singlePkParamIn) {
-                    /* **** primary sequenced key with optional override passed in **** */
-                    Object pkValue = context.get(singlePkField."@name")
-                    if (!pkValue) pkValue = sfi.ecfi.entityFacade.sequencedIdPrimary(ed.entityName, null)
-                    newEntity.set(singlePkField."@name", pkValue)
-                    result.put(singlePkParamOut."@name", pkValue)
-                } else if (isDoublePk && doublePkPrimaryInParam != null && doublePkSecondaryOutParam != null) {
-                    /* **** secondary sequenced primary key **** */
-                    newEntity.setFields(context, true, null, true)
-                    sfi.ecfi.entityFacade.sequencedIdSecondary(newEntity, doublePkSecondaryOutField."@name", 5, 1)
-                    result.put(doublePkSecondaryOutParam."@name", newEntity.get(doublePkSecondaryOutField."@name"))
-                } else if (allPksInOnly) {
-                    /* **** plain specified primary key **** */
-                    newEntity.setFields(context, true, null, true)
-                } else {
-                    throw new ServiceException("In Service [${sd.serviceName}] which uses the entity-auto engine with the create invoke option: " +
-                            "could not find a valid combination of primary key settings to do a known create operation; options include: " +
-                            "1. a single OUT pk for primary auto-sequencing, " +
-                            "2. a single IN and OUT pk for primary auto-sequencing with optional override, " +
-                            "3. a 2-part pk with one part IN (existing primary pk) and one part OUT (the secdonary pk to sub-sequence, " +
-                            "4. all pk fields are IN for a manually specified primary key");
-                }
-
-                newEntity.setFields(context, true, null, false)
-
-                // handle the case where there is a fromDate in the pk of the entity, and it is optional or undefined in the service def, populate automatically
-                Node fromDateField = ed.getFieldNode("fromDate")
-                if (fromDateField != null && fromDateField."@is-pk" == "true") {
-                    Node fromDateParamIn = sd.getInParameter("fromDate")
-                    if (!fromDateParamIn || (fromDateParamIn."@required" != "true" && !context.get("fromDate"))) {
-                        newEntity.set("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
-                    }
-                }
-
-                newEntity.create()
+                createEntity(sfi, ed, context, result, sd.getOutParameterNames())
             } else if ("update" == sd.verb) {
                 /* <auto-attributes include="pk" mode="IN" optional="false"/> */
                 if (!allPksInOnly) throw new ServiceException("In entity-auto type service [${sd.serviceName}] with update noun, not all pk fields have the mode IN")
-
-                EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(context).useCache(false).one()
-                if (lookedUpValue == null) {
-                    throw new ServiceException("In entity-auto update service [${sd.serviceName}] value not found, cannot update")
-                }
-
-                // populate the oldStatusId out if there is a service parameter for it, and before we do the set non-pk fields
-                Node statusIdParamIn = sd.getInParameter("statusId")
-                Node statusIdField = ed.getFieldNode("statusId")
-                Node oldStatusIdParamOut = sd.getOutParameter("oldStatusId")
-                if (statusIdParamIn && oldStatusIdParamOut && statusIdField) {
-                    result.put("oldStatusId", lookedUpValue.get("statusId"))
-                }
-
-                // do the StatusValidChange check
-                String parameterStatusId = (String) context.get("statusId")
-                if (statusIdParamIn && parameterStatusId && statusIdField) {
-                    String lookedUpStatusId = (String) lookedUpValue.get("statusId")
-                    if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
-                        // there was an old status, and in this call we are trying to change it, so do the StatusValidChange check
-
-                        EntityValue statusValidChange = sfi.ecfi.entityFacade.makeFind("StatusValidChange")
-                                .condition(["statusId":lookedUpStatusId, "statusIdTo":parameterStatusId])
-                                .useCache(true).one()
-                        if (!statusValidChange) {
-                            // uh-oh, no valid change...
-                            throw new ServiceException("In service [${sd.serviceName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
-                        }
-                    }
-                }
-
-                // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule
-
-                lookedUpValue.setFields(context, true, null, false)
-                lookedUpValue.update()
+                updateEntity(sfi, ed, context, result, sd.getOutParameterNames())
             } else if ("delete" == sd.verb) {
                 /* <auto-attributes include="pk" mode="IN" optional="false"/> */
                 if (!allPksInOnly) throw new ServiceException("In entity-auto type service [${sd.serviceName}] with delete noun, not all pk fields have the mode IN")
-
-                EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(context).useCache(false).one()
-                if (lookedUpValue != null) lookedUpValue.delete()
+                deleteEntity(sfi, ed, context)
             }
         } catch (BaseException e) {
             throw new ServiceException("Error doing entity-auto operation for entity [${ed.entityName}] in service [${sd.serviceName}]", e)
         }
 
         return result
+    }
+
+    public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> context, Map<String, Object> result, Set<String> outParamNames) {
+        EntityValue newEntity = sfi.ecfi.entityFacade.makeValue(ed.entityName)
+
+        List<String> pkFieldNames = ed.getFieldNames(true, false)
+        boolean allPksIn = true
+        for (String pkFieldName in pkFieldNames) if (!context.get(pkFieldName)) { allPksIn = false; break }
+        boolean isSinglePk = pkFieldNames.size() == 1
+        boolean isDoublePk = pkFieldNames.size() == 2
+
+        if (isSinglePk) {
+            /* **** primary sequenced primary key **** */
+            /* **** primary sequenced key with optional override passed in **** */
+            String singlePkParamName = pkFieldNames[0]
+            Node singlePkField = ed.getFieldNode(singlePkParamName)
+
+            Object pkValue = context.get(singlePkField."@name")
+            if (!pkValue) pkValue = sfi.ecfi.entityFacade.sequencedIdPrimary(ed.entityName, null)
+            newEntity.set(singlePkField."@name", pkValue)
+            if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
+        } else if (isDoublePk && !allPksIn) {
+            /* **** secondary sequenced primary key **** */
+            String doublePkSecondaryName = context.get(pkFieldNames[0]) ? pkFieldNames[1] : pkFieldNames[0]
+            newEntity.setFields(context, true, null, true)
+            sfi.ecfi.entityFacade.sequencedIdSecondary(newEntity, doublePkSecondaryName, 5, 1)
+            if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
+                result.put(doublePkSecondaryName, newEntity.get(doublePkSecondaryName))
+        } else if (allPksIn) {
+            /* **** plain specified primary key **** */
+            newEntity.setFields(context, true, null, true)
+        } else {
+            throw new ServiceException("In entity-auto create service for entity [${ed.entityName}]: " +
+                    "could not find a valid combination of primary key settings to do a create operation; options include: " +
+                    "1. a single entity primary-key field for primary auto-sequencing with or without matching in-parameter, and with or without matching out-parameter for the possibly sequenced value, " +
+                    "2. a 2-part entity primary-key with one part passed in as an in-parameter (existing primary pk value) and with or without the other part defined as an out-parameter (the secodnary pk to sub-sequence), " +
+                    "3. all entity pk fields are passed into the service");
+        }
+
+        newEntity.setFields(context, true, null, false)
+
+        // handle the case where there is a fromDate in the pk of the entity, and it is optional or undefined in the service def, populate automatically
+        Node fromDateField = ed.getFieldNode("fromDate")
+        if (fromDateField != null && fromDateField."@is-pk" == "true") {
+            if (!context.get("fromDate")) {
+                newEntity.set("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
+            }
+        }
+
+        newEntity.create()
+    }
+
+    public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> context, Map<String, Object> result, Set<String> outParamNames) {
+        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(context).useCache(false).forUpdate(true).one()
+        if (lookedUpValue == null) {
+            throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] no value not found, cannot update")
+        }
+
+        // populate the oldStatusId out if there is a service parameter for it, and before we do the set non-pk fields
+        Node statusIdField = ed.getFieldNode("statusId")
+        if ((outParamNames == null || outParamNames.contains("oldStatusId")) && statusIdField) {
+            result.put("oldStatusId", lookedUpValue.get("statusId"))
+        }
+
+        // do the StatusValidChange check
+        String parameterStatusId = (String) context.get("statusId")
+        if (parameterStatusId && statusIdField) {
+            String lookedUpStatusId = (String) lookedUpValue.get("statusId")
+            if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
+                // there was an old status, and in this call we are trying to change it, so do the StatusValidChange check
+                EntityValue statusValidChange = sfi.ecfi.entityFacade.makeFind("StatusValidChange")
+                        .condition(["statusId":lookedUpStatusId, "statusIdTo":parameterStatusId])
+                        .useCache(true).one()
+                if (!statusValidChange) {
+                    // uh-oh, no valid change...
+                    throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
+                }
+            }
+        }
+
+        // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule
+
+        lookedUpValue.setFields(context, true, null, false)
+        lookedUpValue.update()
+    }
+
+    public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> context) {
+        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(context).useCache(false).one()
+        if (lookedUpValue != null) lookedUpValue.delete()
     }
 
     public void destroy() { }

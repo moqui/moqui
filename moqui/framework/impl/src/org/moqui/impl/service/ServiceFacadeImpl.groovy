@@ -19,13 +19,6 @@ import org.moqui.service.ServiceCallAsync
 import org.moqui.service.ServiceCallSchedule
 import org.moqui.service.ServiceCallSpecial
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
-import org.quartz.Scheduler
-import org.quartz.impl.StdSchedulerFactory
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.moqui.impl.service.runner.ServiceRunner
 import org.moqui.impl.service.runner.JavaServiceRunner
 import org.moqui.impl.service.runner.ScriptServiceRunner
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
@@ -34,6 +27,12 @@ import org.moqui.impl.service.runner.ProxyHttpServiceRunner
 import org.moqui.impl.service.runner.ProxyJmsServiceRunner
 import org.moqui.impl.service.runner.ProxyRmiServiceRunner
 import org.moqui.impl.service.runner.RemoteXmlrpcServiceRunner
+
+import org.quartz.Scheduler
+import org.quartz.impl.StdSchedulerFactory
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -67,7 +66,11 @@ class ServiceFacadeImpl implements ServiceFacade {
         serviceRunners.put("proxy-rmi", new ProxyRmiServiceRunner().init(this))
         serviceRunners.put("remote-xmlrpc", new RemoteXmlrpcServiceRunner().init(this))
 
-        // TODO: load other service runners from configuration, post 1.0 feature?
+        // load other service runners from configuration
+        for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
+            ServiceRunner sr = (ServiceRunner) this.getClass().getClassLoader().loadClass(serviceType."@runner-class").newInstance()
+            serviceRunners.put(serviceType."@name", sr.init(this))
+        }
     }
 
     void destroy() {

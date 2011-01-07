@@ -325,6 +325,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node sfBaseNode = baseNode."service-facade"[0]
             Node sfOverrideNode = overrideNode."service-facade"[0]
             mergeNodeWithChildKey(sfBaseNode, sfOverrideNode, "service-location", "name")
+            mergeNodeWithChildKey(sfBaseNode, sfOverrideNode, "service-type", "name")
             mergeNodeWithChildKey(sfBaseNode, sfOverrideNode, "startup-service", "name")
 
             // handle thread-pool

@@ -104,6 +104,11 @@
         <service-location name="entity-sync-rmi" location="rmi://localhost:1099/RMIDispatcher"/>
         <service-location name="entity-sync-http" location="http://localhost:8080/webtools/control/httpService"/>
 
+        <!-- runner-class needs to implement the org.moqui.impl.service.ServiceRunner interface -->
+        <!-- this is just an example, no need to declare the java service-type because it is internal:
+        <service-type name="java" runner-class="org.moqui.impl.service.runner.JavaServiceRunner"/>
+        -->
+
         <!-- Start-Up Services -->
         <!--
            - runtime-data-id refers to the RuntimeData entity for in-parameters

@@ -224,6 +224,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:element minOccurs="0" ref="thread-pool"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-type"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="startup-service"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/>
             </xs:sequence>
@@ -254,6 +255,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="service-type">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="runner-class" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Fully qualified name of class that implements the org.moqui.impl.service.ServiceRunner interface.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="jms-service">

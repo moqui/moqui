@@ -13,6 +13,7 @@ package org.moqui.impl.service.runner
 
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.impl.service.ServiceRunner
 
 public class ProxyHttpServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null
