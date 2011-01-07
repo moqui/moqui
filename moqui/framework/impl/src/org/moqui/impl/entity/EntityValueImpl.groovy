@@ -278,8 +278,12 @@ class EntityValueImpl implements EntityValue {
 
             ListOrderedSet nonPkAllFieldList = getEntityDefinition().getFieldNames(false, true)
             ListOrderedSet nonPkFieldList = new ListOrderedSet()
-            for (String fieldName in nonPkAllFieldList)
-                if (valueMap.containsKey(fieldName)) nonPkFieldList.add(fieldName)
+            for (String fieldName in nonPkAllFieldList) {
+                if (valueMap.containsKey(fieldName) &&
+                        (!dbValueMap || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
+                    nonPkFieldList.add(fieldName)
+                }
+            }
             if (!nonPkFieldList) {
                 logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
                 return
@@ -409,6 +413,7 @@ class EntityValueImpl implements EntityValue {
                     j++
                 }
                 retVal = true
+                setSyncedWithDb()
             } else {
                 logger.trace("No record found in refresh for entity [${entityName}] with values [${valueMap}]")
             }

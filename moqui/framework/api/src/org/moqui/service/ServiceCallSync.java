@@ -19,10 +19,10 @@ public interface ServiceCallSync extends ServiceCall {
      */
     ServiceCallSync requireNewTransaction(boolean requireNewTransaction);
 
-    /** If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
+    /* * If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
      * @return Reference to this for convenience.
      */
-    ServiceCallSync transactionIsolation(int transactionIsolation);
+    /* not supported by Atomikos/etc right now, consider for later: ServiceCallSync transactionIsolation(int transactionIsolation); */
 
     /** Call the service synchronously and immediately get the result.
      * @return Map containing the result (out parameters) from the service call.

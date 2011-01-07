@@ -222,7 +222,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="service-facade">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" ref="thread-pool"/>
+                <!-- leaving this out for now, not easily supported by Quartz Scheduler: <xs:element minOccurs="0" ref="thread-pool"/> -->
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-type"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="startup-service"/>
@@ -230,6 +230,12 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
         </xs:complexType>
     </xs:element>
+    <!--
+      Example XML for conf file for using these elements when supported in the future:
+        <thread-pool send-to-pool="default">
+            <run-from-pool name="default"/>
+        </thread-pool>
+
     <xs:element name="thread-pool">
         <xs:complexType>
             <xs:sequence>
@@ -243,6 +249,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
+    -->
     <xs:element name="startup-service">
         <xs:complexType>
             <xs:attribute name="name" type="xs:string" use="required"/>

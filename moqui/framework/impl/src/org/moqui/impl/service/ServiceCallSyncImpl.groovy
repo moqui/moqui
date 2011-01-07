@@ -11,13 +11,17 @@
  */
 package org.moqui.impl.service
 
+import javax.transaction.Transaction
+
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
 import org.moqui.service.ServiceCallSync
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected boolean requireNewTransaction = false
-    protected int transactionIsolation = -1
+    /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
 
     ServiceCallSyncImpl(ServiceFacadeImpl sfi) {
         super(sfi)
@@ -26,8 +30,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     @Override
     ServiceCallSync requireNewTransaction(boolean rnt) { this.requireNewTransaction = rnt; return this }
 
+    /* not supported by Atomikos/etc right now, consider for later:
     @Override
     ServiceCallSync transactionIsolation(int ti) { this.transactionIsolation = ti; return this }
+    */
 
     @Override
     Map<String, Object> call() {
@@ -44,35 +50,85 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         String type = sd.serviceNode."@type"
         if (type == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
 
+        // start with the settings for the default: use-or-begin
+        boolean pauseResumeIfNeeded = false
+        boolean beginTransactionIfNeeded = true
+        if (requireNewTransaction) {
+            // if the setting for this service call is in place, use it regardless of the settings on the service
+            pauseResumeIfNeeded = true
+        } else {
+            if (sd.serviceNode."@transaction" == "ignore") {
+                beginTransactionIfNeeded = false
+            } else if (sd.serviceNode."@transaction" == "force-new") {
+                pauseResumeIfNeeded = true
+            }
+        }
+
+        Integer transactionTimeout = null
+        if (sd.serviceNode."@transaction-timeout") {
+            transactionTimeout = sd.serviceNode."@transaction-timeout" as Integer
+        }
+
         ServiceRunner sr = sfi.getServiceRunner(type)
 
         // TODO trigger SECAs
 
-        // TODO validation
+        // TODO validation (sd.serviceNode."@validate")
 
-        // TODO authentication
+        // TODO authentication (sd.serviceNode."@authenticate")
 
-        // TODO transaction handling
+        // TODO sd.serviceNode."@debug"
+        // TODO sd.serviceNode."@semaphore"
 
-        // TODO other...
-
-        Map<String, Object> result = sr.runService(sd, this.context)
-
+        TransactionFacade tf = sfi.ecfi.getTransactionFacade()
+        Transaction parentTransaction = null
+        Map<String, Object> result = null
+        try {
+            if (pauseResumeIfNeeded && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(transactionTimeout) : false
+            try {
+                result = sr.runService(sd, this.context)
+            } catch (Throwable t) {
+                tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+            } finally {
+                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+            }
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            if (parentTransaction != null) tf.resume(parentTransaction)
+        }
         return result
     }
 
     protected Map<String, Object> runImplicitEntityAuto() {
         // TODO trigger SECAs
-        // TODO authentication
-        // TODO transaction handling
-        EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
+        // NOTE: no authentication, assume not required for this; security settings can override this and require
+        //     permissions, which will require authentication
+        TransactionFacade tf = sfi.ecfi.getTransactionFacade()
+        Transaction parentTransaction = null
         Map<String, Object> result = new HashMap()
-        if (verb == "create") {
-            EntityAutoServiceRunner.createEntity(sfi, ed, context, result, null)
-        } else if (verb == "update") {
-            EntityAutoServiceRunner.updateEntity(sfi, ed, context, result, null)
-        } else if (verb == "delete") {
-            EntityAutoServiceRunner.deleteEntity(sfi, ed, context)
+        try {
+            if (requireNewTransaction && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            boolean beganTransaction = tf.begin(null)
+            try {
+                EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
+                if (verb == "create") {
+                    EntityAutoServiceRunner.createEntity(sfi, ed, context, result, null)
+                } else if (verb == "update") {
+                    EntityAutoServiceRunner.updateEntity(sfi, ed, context, result, null)
+                } else if (verb == "delete") {
+                    EntityAutoServiceRunner.deleteEntity(sfi, ed, context)
+                }
+            } catch (Throwable t) {
+                tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+            } finally {
+                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+            }
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            if (parentTransaction != null) tf.resume(parentTransaction)
         }
         return result
     }

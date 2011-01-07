@@ -17,19 +17,22 @@ public interface ServiceCallSchedule extends ServiceCall {
      */
 
     ServiceCallSchedule jobName(String jobName);
-    /** Name of the service pool to send to (optional).
+
+    /* * Name of the service pool to send to (optional).
      * @return Reference to this for convenience.
      */
-    ServiceCallSchedule poolName(String poolName);
+    /* leaving this out for now, not easily supported by Quartz Scheduler: ServiceCallSchedule poolName(String poolName); */
 
     /** Time to first run this service (in milliseconds from Java epoch).
      * @return Reference to this for convenience.
      */
     ServiceCallSchedule startTime(long startTime);
+
     /** Number of times to repeat.
      * @return Reference to this for convenience.
      */
     ServiceCallSchedule count(int count);
+
     /** Time that this service schedule should expire (in milliseconds from Java epoch).
      * @return Reference to this for convenience.
      */

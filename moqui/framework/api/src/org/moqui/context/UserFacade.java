@@ -50,6 +50,19 @@ public interface UserFacade {
      */
     void setEffectiveTime(Timestamp effectiveTime);
 
+    /** Authenticate a user and make active in this ExecutionContext (and session of WebExecutionContext if applicable).
+     * @return true if user was logged in, otherwise false
+     */
+    boolean loginUser(String userId, String password);
+
+    /** Only authenticate the user, do not make active in current context.
+     * @return true if user was authenticated successfully, otherwise false
+     */
+    boolean authenticateUser(String userId, String password);
+
+    /** Remove (logout) active user. */
+    void logoutUser();
+
     /** ID of the current active user (from the UserAccount entity) */
     String getUserId();
 

@@ -17,13 +17,15 @@ public interface ServiceCallAsync extends ServiceCall {
      * @return Reference to this for convenience.
      */
     ServiceCallAsync persist(boolean persist);
-    /** Specify the transaction isolation desired for this service call.
+
+    /* * Specify the transaction isolation desired for this service call.
      * For possible values see JavaDoc for javax.sql.Connection.
      * If not specified defaults to configured value for service, or container.
      *
      * @return Reference to this for convenience.
      */
-    ServiceCallAsync transactionIsolation(int transactionIsolation);
+    /* not supported by Atomikos/etc right now, consider for later: ServiceCallAsync transactionIsolation(int transactionIsolation); */
+
     /** Object implementing ServiceResultReceiver interface which will receive the result when service is complete.
      * @return Reference to this for convenience.
      */

@@ -23,7 +23,7 @@ import org.quartz.JobBuilder
 
 class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     protected boolean persist = false
-    protected int transactionIsolation = -1
+    /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
     protected ServiceResultReceiver resultReceiver = null
     protected int maxRetry = 1
 
@@ -34,8 +34,10 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     @Override
     ServiceCallAsync persist(boolean p) { this.persist = p; return this }
 
+    /* not supported by Atomikos/etc right now, consider for later:
     @Override
     ServiceCallAsync transactionIsolation(int ti) { this.transactionIsolation = ti; return this }
+    */
 
     @Override
     ServiceCallAsync resultReceiver(ServiceResultReceiver rr) { this.resultReceiver = rr; return this }
@@ -45,8 +47,8 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
 
     @Override
     void call() {
-        // TODO: how to do transactionIsolation?
         // TODO: how to handle persist on a per-job bases? seems like the volatile Job concept matched this, but that is deprecated in 2.0
+        // TODO: how to handle maxRetry
 
         // NOTE: is this the best way to get a unique job name? (needed to register a listener below)
         String uniqueJobName = UUID.randomUUID()

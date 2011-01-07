@@ -17,9 +17,9 @@ Implementation Plans
 - Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and
   if there is a standard Tomcat OSGi bundle; look at Apache Sling for examples
 
-- Support single/simple war file for deployment in any app server, point to things without using classpath; make so all
+X Support single/simple war file for deployment in any app server, point to things without using classpath; make so all
   can be in a war file, and can point to directory structure outside the war file
-- Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
+X Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
   the file
 
 - lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently

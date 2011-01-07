@@ -94,9 +94,6 @@
 
     <service-facade>
         <!-- NOTE: service jobs are managed using Quartz Scheduler, see quartz configuration for more details -->
-        <thread-pool send-to-pool="default">
-            <run-from-pool name="default"/>
-        </thread-pool>
 
         <service-location name="main-rmi" location="rmi://localhost:1099/RMIDispatcher"/>
         <service-location name="main-http" location="http://localhost:8080/webtools/control/httpService"/>

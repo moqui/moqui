@@ -16,6 +16,8 @@ import org.moqui.entity.EntityCondition.JoinOperator
 import java.util.regex.Pattern
 import java.sql.Connection
 import org.w3c.dom.Element
+import java.security.MessageDigest
+import org.apache.commons.codec.binary.Hex
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -138,5 +140,48 @@ class StupidUtilities {
         if (!desiredLength) return outStrBfr.toString()
         while (desiredLength > outStrBfr.length()) outStrBfr.insert(0, '0')
         return outStrBfr.toString()
+    }
+
+    public static String getHashDigest(String key, String salt, String hashType) {
+        if (!key) return null
+        // NOTE: if salt is an empty String then there will effectively be no salt
+        if (salt == null) salt = paddedNumber(Math.round(Math.random() * 99999999L), 8)
+        if (!hashType) hashType = "SHA"
+        try {
+            String str = salt + key
+            MessageDigest md = MessageDigest.getInstance(hashType)
+            md.update(str.getBytes())
+            char[] digestChars = Hex.encodeHex(md.digest())
+
+            StringBuilder sb = new StringBuilder()
+            sb.append("{").append(hashType).append("}")
+            sb.append(salt).append(":")
+            sb.append(digestChars, 0, digestChars.length)
+            return sb.toString()
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while computing hash of type [${hashType}]", e);
+        }
+    }
+
+    public static String getHashTypeFromFull(String hashString) {
+        if (!hashString || hashString.charAt(0) != '{')  return ""
+        return hashString.substring(1, hashString.indexOf('}'))
+    }
+    public static String getHashSaltFromFull(String hashString) {
+        // NOTE: return empty String instead of null because the getHashDigest method will treat that as no salt instead of generating a salt value
+        if (!hashString)  return ""
+        if (!hashString.contains(":"))  return ""
+        int closeBraceIndex = hashString.indexOf('}')
+        if (closeBraceIndex > 0) {
+            return hashString.substring(closeBraceIndex + 1, hashString.indexOf(':'))
+        } else {
+            return hashString.substring(0, hashString.indexOf(':'))
+        }
+    }
+    public static String getHashHashFromFull(String hashString) {
+        if (!hashString)  return ""
+        if (hashString.contains(":")) return hashString.substring(hashString.indexOf(':') + 1)
+        if (hashString.contains("}")) return hashString.substring(hashString.indexOf('}') + 1)
+        return hashString
     }
 }

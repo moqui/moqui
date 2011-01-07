@@ -11,20 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.0.xsd">
-
     <!-- ServiceFacade Engine Interfaces -->
-    <service verb="authenticate" noun="User" type="interface">
-        <in-parameters>
-            <parameter name="userId" type="String" required="true"/>
-            <parameter name="password" type="String" required="true"/>
-            <parameter name="visitId" type="String"/>
-            <parameter name="isServiceAuth" type="Boolean"/>
-        </in-parameters>
-        <out-parameters>
-            <parameter name="userAccount" type="EntityValue"/>
-        </out-parameters>
-    </service>
-
     <service verb="check" noun="ServiceEcaCondition" type="interface">
         <description>Interface to describe services which are used as SECA conditions</description>
         <in-parameters>

@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="location" type="xs:string" use="optional"/>
             <xs:attribute name="method" type="xs:string" use="optional"/>
-            <xs:attribute name="authentication" default="true" type="boolean"/>
+            <xs:attribute name="authenticate" default="true" type="boolean"/>
             <xs:attribute name="export" default="false" type="boolean"/>
             <xs:attribute name="validate" default="true" type="boolean"/>
             <xs:attribute name="transaction" default="use-or-begin">
@@ -81,11 +81,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     use-or-begin and there is no other transaction already in place).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <!-- not supported by Atomikos/etc right now, consider for later:
             <xs:attribute name="transaction-isolation" type="isolation-level" use="optional">
                 <xs:annotation><xs:documentation>
                     The transaction isolation level to use if a transaction is begun when calling this service.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            -->
             <xs:attribute name="max-retry" type="xs:int" default="-1"/>
             <xs:attribute name="debug" default="false" type="boolean"/>
             <xs:attribute name="semaphore" default="none">

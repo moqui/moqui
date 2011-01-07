@@ -138,8 +138,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-vlong" is-pk="true"/>
         <field name="userName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
         <field name="currentPassword" type="text-medium">
-            <description>This is not two-way encrypted by the Entity Proxy, and should one one-way encrypted with the
-                algorithm type before the value in curly braces.</description>
+            <description>This is not two-way encrypted by the Entity Facade, and should one one-way encrypted with the
+                hash algorithm type before the value in curly braces, and a salt plus semicolon before the hash text, ie:
+                "{${type}}${salt}:${hash}" (where hashType = SHA or MD5, salt is default 8 characters)
+            </description>
         </field>
         <field name="passwordHint" type="text-long"/>
         <field name="hasLoggedOut" type="text-indicator"/>

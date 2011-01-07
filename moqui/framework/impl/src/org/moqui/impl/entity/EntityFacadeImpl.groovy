@@ -365,11 +365,11 @@ class EntityFacadeImpl implements EntityFacade {
         // that in the future if there are issues with this approach
         // TODO: add support for bins of IDs for performance, ie to avoid going to the db for each one
         Long seqNum = null
-        TransactionFacade transactionFacade = this.ecfi.getTransactionFacade()
+        TransactionFacade tf = this.ecfi.getTransactionFacade()
         Transaction parentTransaction = null
         try {
-            if (transactionFacade.isTransactionInPlace()) parentTransaction = transactionFacade.suspend()
-            boolean beganTransaction = transactionFacade.begin(null)
+            if (tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            boolean beganTransaction = tf.begin(null)
             try {
                 EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName).useCache(false).forUpdate(true).one()
                 if (!svi) {
@@ -390,14 +390,14 @@ class EntityFacadeImpl implements EntityFacade {
                 svi.set("seqNum", seqNum)
                 svi.update()
             } catch (Throwable t) {
-                transactionFacade.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+                tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
             } finally {
-                if (transactionFacade.isTransactionInPlace()) transactionFacade.commit(beganTransaction)
+                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
             }
         } catch (TransactionException e) {
             throw e
         } finally {
-            if (parentTransaction != null) transactionFacade.resume(parentTransaction)
+            if (parentTransaction != null) tf.resume(parentTransaction)
         }
 
         String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"

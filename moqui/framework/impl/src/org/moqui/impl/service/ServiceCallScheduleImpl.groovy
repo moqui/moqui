@@ -27,7 +27,7 @@ import org.quartz.CronScheduleBuilder
 
 class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSchedule {
     protected String jobName = null
-    protected String poolName = null
+    /* leaving this out for now, not easily supported by Quartz Scheduler: protected String poolName = null */
     protected Long startTime = null
     protected Integer count = null
     protected Long endTime = null
@@ -43,8 +43,10 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     @Override
     ServiceCallSchedule jobName(String jn) { jobName = jn; return this }
 
+    /* leaving this out for now, not easily supported by Quartz Scheduler:
     @Override
     ServiceCallSchedule poolName(String pn) { poolName = pn; return this }
+    */
 
     @Override
     ServiceCallSchedule startTime(long st) { startTime = st; return this }
@@ -66,7 +68,6 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
 
     @Override
     void call() {
-        // TODO poolName: any way to handle the pool concept? or get rid of that? multiple schedulers?
         // TODO maxRetry: any way to set and then track the number of retries?
 
         // NOTE: get existing job based on jobName/serviceName pair IFF a jobName is specified
@@ -81,7 +82,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
             job = jobBuilder.build()
         }
 
-        // do we have to have an identity?: .withIdentity(TODO, "ScheduleTrigger")
+        // do we have to have an identity?: .withIdentity(..., "ScheduleTrigger")
         TriggerBuilder tb = TriggerBuilder.newTrigger()
                 .withPriority(3)
                 .usingJobData(new JobDataMap(context))
