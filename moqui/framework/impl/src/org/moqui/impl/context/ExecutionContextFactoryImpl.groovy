@@ -298,7 +298,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void mergeConfigNodes(Node baseNode, Node overrideNode) {
-        if (overrideNode."cache-list"[0]) {
+        if (overrideNode."cache-list") {
             mergeNodeWithChildKey(baseNode."cache-list"[0], overrideNode."cache-list"[0], "cache", "name")
         }
         
@@ -308,6 +308,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         if (overrideNode."webapp-list") {
             mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "type")
+        }
+
+        if (overrideNode."user-facade") {
+            Node ufBaseNode = baseNode."user-facade"[0]
+            Node ufOverrideNode = overrideNode."user-facade"[0]
+            mergeSingleChild(ufBaseNode, ufOverrideNode, "password")
+            mergeSingleChild(ufBaseNode, ufOverrideNode, "login")
         }
 
         if (overrideNode."transaction-facade") {
