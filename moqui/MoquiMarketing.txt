@@ -10,7 +10,7 @@ and filling in gaps that are not handled by default, Moqui is ready to go.
 
 The Moqui Framework includes:
 
-- Database (entity) proxy for data tier
+- Database (entity) facade for data tier
   - Define your entities and go, no code to write and no redundancy
   - Java API or XML tags for a wide variety of queries and common operations
   - Event-Condition-Action rules to do things based on data changes
@@ -19,6 +19,7 @@ The Moqui Framework includes:
     add support for other databases, usually just through configuration
 - Service-based logic tier
   - Call services synchronously, async, or scheduled
+  - Scheduled and async calls backed by Quartz Scheduler
   - Services can be local or remote and implemented in a variety of languages
   - Flexible XML service definitions
   - Validation of data type, required or not, regexp, and other constraints;
@@ -35,18 +36,20 @@ The Moqui Framework includes:
   - Outgoing transitions point to input processing logic and conditional
     forwarding to other screens or external URLs
   - Forms (single, list), trees, panels, and various other common widgets
+- Uses JTA transaction management and JDBC connection pool from JNDI, or
+  internally managed with Atomikos
 - Uses Groovy for scripting and Freemarker for templates (can add others)
 - JCR 2.0 (JSR-283) based content and artifact management
 - Manage incoming and outgoing email
-- Implicit internationalization and easy localization
+- Implicit internationalization and easy database-driven localization
 - Comprehensive security with declarative authorization
   - Settings in the database, separate from implementation artifacts
   - Define run-time inheritable permissions for any artifact in the system
   - Both record level and implementation artifact level security
 - Protection from XSS and XSRF threats (uses ESAPI and Antisamy)
 - Flexible resource access from files, JCR repository, and many others
-- Cache management for framework and application resources
-- Logging
+- Cache management for framework and application resources backed by ehcache
+- Logging using SLF4J
 - Multi-tenant architecture (single application, one database per tenant)
 - Common business data structures and seed data
   - Enumerations and statuses with transitions
