@@ -111,7 +111,6 @@ class UserFacadeImpl implements UserFacade {
 
             // TODO: if there is already a user authenticated, what to do? push onto a stack to remember?
 
-
             // TODO if hasLoggedOut==Y set hasLoggedOut=N
 
             // update visit if no user in visit yet

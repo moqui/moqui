@@ -15,7 +15,7 @@ import java.util.Map;
 import java.io.Serializable;
 
 /**
- * Generic Requester Interface
+ * Service Result Receiver Interface
  */
 interface ServiceResultReceiver extends Serializable {
 

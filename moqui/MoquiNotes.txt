@@ -9,7 +9,7 @@ Implementation Plans
 
 - Integrated Artifact Definition Info, not separate classes?
 
-- start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the
+X start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the
   {type}value format?)
 
 - default style sheet very general and context sensitive

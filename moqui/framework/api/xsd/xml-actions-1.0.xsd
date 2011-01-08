@@ -383,7 +383,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="entity-find" substitutionGroup="EntityFindOperations">
         <xs:annotation>
             <xs:documentation>
-                Like entity-and returns a list of generic values if any are found, otherwise returns an empty list.
+                Like entity-and returns a list of entity values if any are found, otherwise returns an empty list.
                 Use any combination of constraint, constraints and constraint-object.
             </xs:documentation>
         </xs:annotation>
@@ -670,7 +670,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="entity-find-related-one" substitutionGroup="EntityFindOperations">
         <xs:annotation>
             <xs:documentation>
-                If you have a generic value object sitting in the context and you want to get a related entity
+                If you have a entity value object sitting in the context and you want to get a related entity
                 following one of the type one relationships in the data model, then you can specify the name of the value
                 here, the relation-name, the name of the relationship between the two entities, and the to-value where it
                 should put the result, and you can tell it to use-cache or not, by default it doesn't.
@@ -680,14 +680,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="value-field" type="xs:string" use="required">
                 <xs:annotation>
                     <xs:documentation>
-                        Name of a generic value sitting in the context from where you want to get a related-one generic value.
+                        Name of a entity value sitting in the context from where you want to get a related-one entity value.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="relation-name" type="xs:string" use="required">
                 <xs:annotation>
                     <xs:documentation>
-                        Name of the one-relation to use to relate generic value in value-field to generic value in to-value.
+                        Name of the one-relation to use to relate entity value in value-field to entity value in to-value.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -703,7 +703,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="to-value-field" type="xs:string" use="required">
                 <xs:annotation>
                     <xs:documentation>
-                        Name of a generic value where to put the result.
+                        Name of field to put the entity value result in.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
@@ -729,14 +729,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute type="xs:string" name="value-field" use="required">
                 <xs:annotation>
                     <xs:documentation>
-                        Name of a generic value sitting in the context from where you want to get a related generic value.
+                        Name of a entity value sitting in the context from where you want to get a related entity value.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute type="xs:string" name="relation-name" use="required">
                 <xs:annotation>
                     <xs:documentation>
-                        Name of the relation to use to relate generic value in value-field to generic value in to-value.
+                        Name of the relation to use to relate entity value in value-field to entity value in to-value.
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>

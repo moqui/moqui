@@ -24,6 +24,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <taskdef name="groovyc"
              classname="org.codehaus.groovy.ant.Groovyc"
              classpathref="groovy.class.path"/>
+    <taskdef name="groovydoc"
+             classname="org.codehaus.groovy.ant.Groovydoc"
+             classpathref="groovy.class.path"/>
 
     <target name="init">
         <!-- just a place holder for now -->
@@ -94,19 +97,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========== javadoc targets ========== -->
 
     <target name="docs" depends="init">
-        <mkdir dir="build/javadoc"/>
-        <javadoc packagenames="org.moqui.*"
-                destdir="build/javadoc"
-                maxmemory="256M"
-                windowtitle="Moqui Framework API and Implementation"
-                useexternalfile="yes">
-            <fileset dir="impl/src">
-                <include name="**/*.java"/>
-            </fileset>
-            <fileset dir="api/src">
-                <include name="**/*.java"/>
-            </fileset>
-        </javadoc>
+        <mkdir dir="build/javadoc-impl"/>
+        <groovydoc destdir="build/javadoc-impl" sourcepath="impl/src"
+                packagenames="**.*" use="true" private="true"
+                windowtitle="Moqui Framework Implementation" doctitle="Moqui Framework Implementation">
+            <link packages="java.,org.xml.,javax." href="http://download.oracle.com/javase/6/docs/api/"/>
+            <link packages="groovy.,org.codehaus.groovy." href="http://groovy.codehaus.org/api/"/>
+        </groovydoc>
 
         <mkdir dir="build/javadoc-api"/>
         <javadoc packagenames="org.moqui.*"
@@ -117,6 +114,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <fileset dir="api/src">
                 <include name="**/*.java"/>
             </fileset>
+            <link href="http://download.oracle.com/javase/6/docs/api/"/>
         </javadoc>
     </target>
 </project>
