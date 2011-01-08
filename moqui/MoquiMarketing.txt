@@ -37,7 +37,7 @@ The Moqui Framework includes:
     forwarding to other screens or external URLs
   - Forms (single, list), trees, panels, and various other common widgets
 - Uses JTA transaction management and JDBC connection pool from JNDI, or
-  internally managed with Atomikos
+  internally managed with Atomikos TransactionsEssentials
 - Uses Groovy for scripting and Freemarker for templates (can add others)
 - JCR 2.0 (JSR-283) based content and artifact management
 - Manage incoming and outgoing email
@@ -58,6 +58,11 @@ The Moqui Framework includes:
   - Time periods and temporal expressions
 - Service/logic and data level integration options
 - Data migration and mapping tools (especially for to/from XML, to/from db)
+- Easy deployment with the framework in a WAR file and a separate runtime
+  directory with your configuration, application components, log files,
+  database and content repository files, and so on
+- Can also deploy without a servlet container using Static initialization or
+  custom init for OSGi, Spring, etc
 
 The framework features a well-defined Java API that makes it easy to get at
 the features listed above, especially in Groovy code. What's even better is
