@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.0.xsd">
+
+    <service verb="increment" noun="UserAccountFailedLogins">
+        <in-parameters><parameter name="userId" type="String" required="true"/></in-parameters>
+        <actions>
+            <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
+            <set field="userAccount.successiveFailedLogins" from-field="userAccount.successiveFailedLogins + 1"/>
+            <!-- if successiveFailedLogins is greater than max in conf then disable account -->
+            <compare field="userAccount.successiveFailedLogins" operator="greater"
+                     to-field="ec.ecfi.confXmlRoot.'user-facade'[0].login[0].'@max-failures' ?: 3" type="Integer">
+                <set field="userAccount.disabled" value="Y"/>
+                <set field="userAccount.disabledDateTime" from-field="ec.user.nowTimestamp"/>
+            </compare>
+            <entity-update value-field="userAccount"/>
+        </actions>
+    </service>
+</services>

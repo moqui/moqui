@@ -20,7 +20,7 @@ class MoquiEventListener implements HttpSessionListener {
         HttpSession session = event.getSession()
 
         // TODO create and persist Visit
-        // put visit in session as "moqui.visit"
+        // put visitId in session as "moqui.visitId"
     }
 
     void sessionDestroyed(HttpSessionEvent event) {

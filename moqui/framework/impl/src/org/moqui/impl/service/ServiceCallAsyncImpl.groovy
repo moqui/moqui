@@ -32,6 +32,21 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     }
 
     @Override
+    ServiceCallAsync name(String serviceName) { this.setServiceName(serviceName); return this }
+
+    @Override
+    ServiceCallAsync name(String v, String n) { path = null; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallAsync name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallAsync context(Map<String, Object> map) { context.putAll(map); return this }
+
+    @Override
+    ServiceCallAsync context(String name, Object value) { context.put(name, value); return this }
+
+    @Override
     ServiceCallAsync persist(boolean p) { this.persist = p; return this }
 
     /* not supported by Atomikos/etc right now, consider for later:

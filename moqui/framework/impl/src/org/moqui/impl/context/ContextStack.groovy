@@ -12,7 +12,7 @@
 package org.moqui.impl.context
 
 class ContextStack implements Map<String, Object> {
-    protected List<Map<String, Object>> stackList = new LinkedList()
+    protected Deque<Map<String, Object>> stackList = new LinkedList()
 
     public ContextStack() {
     }
@@ -22,20 +22,20 @@ class ContextStack implements Map<String, Object> {
      */
     public ContextStack push() {
         Map<String, Object> newMap = new HashMap()
-        stackList.add(0, newMap)
+        stackList.push(newMap)
         return this
     }
 
     /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack) */
     public void push(Map<String, Object> existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map")
-        stackList.add(0, existingMap)
+        stackList.push(existingMap)
     }
 
     /** Remove and returns the Map from the top of the stack (the local context).
      * If there is only one Map on the stack it returns null and does not remove it.
      */
-    public Map<String, Object> pop() { return (stackList.size() > 1) ? stackList.remove(0) : null }
+    public Map<String, Object> pop() { return stackList ? stackList.pop() : null }
 
     /** Add an existing Map as the Root Map, ie on the BOTTOM of the stack meaning it will be overridden by other Maps on the stack */
     public void addRootMap(Map<String, Object> existingMap) {
@@ -43,7 +43,7 @@ class ContextStack implements Map<String, Object> {
         stackList.add(existingMap)
     }
 
-    public Map<String, Object> getRootMap() { return stackList.get(stackList.size()-1) }
+    public Map<String, Object> getRootMap() { return stackList.peekLast() }
 
     /**
      * Creates a ContextStack object that has the same Map objects on its stack (a shallow clone).
@@ -115,22 +115,22 @@ class ContextStack implements Map<String, Object> {
     /** @see java.util.Map#  */
     @Override
     public Object put(String key, Object value) {
-        return stackList[0].put(key, value)
+        return stackList.peek().put(key, value)
     }
 
     /** @see java.util.Map#remove(java.lang.Object) */
     @Override
     public Object remove(Object key) {
-        return stackList[0].remove(key)
+        return stackList.peek().remove(key)
     }
 
     /** @see java.util.Map#putAll(java.util.Map) */
     @Override
-    public void putAll(Map<? extends String, ? extends Object> arg0) { stackList[0].putAll(arg0) }
+    public void putAll(Map<? extends String, ? extends Object> arg0) { stackList.peek().putAll(arg0) }
 
     /** @see java.util.Map#clear() */
     @Override
-    public void clear() { stackList[0].clear() }
+    public void clear() { stackList.peek().clear() }
 
     /** @see java.util.Map#keySet() */
     @Override

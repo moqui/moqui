@@ -11,7 +11,26 @@
  */
 package org.moqui.service;
 
+import java.util.Map;
+
 public interface ServiceCallAsync extends ServiceCall {
+    /** Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To explicitly separate
+     * the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}" (this is useful for calling the
+     * implicit entity CrUD services where verb is create, update, or delete and noun is the name of the entity).
+     */
+    ServiceCallAsync name(String serviceName);
+
+    ServiceCallAsync name(String verb, String noun);
+
+    ServiceCallAsync name(String path, String verb, String noun);
+
+    /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
+    ServiceCallAsync context(Map<String, Object> context);
+
+    /** Single name, value pairs to put in the context (in parameters) passed to the service. */
+    ServiceCallAsync context(String name, Object value);
+
+
     /** If true the service call will be persisted and then run. If false it will be run from memory only.
      * Defaults to false.
      * @return Reference to this for convenience.

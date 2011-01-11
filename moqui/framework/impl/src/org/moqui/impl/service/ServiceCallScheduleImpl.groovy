@@ -41,6 +41,21 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     }
 
     @Override
+    ServiceCallSchedule name(String serviceName) { this.setServiceName(serviceName); return this }
+
+    @Override
+    ServiceCallSchedule name(String v, String n) { path = null; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallSchedule name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallSchedule context(Map<String, Object> map) { context.putAll(map); return this }
+
+    @Override
+    ServiceCallSchedule context(String name, Object value) { context.put(name, value); return this }
+
+    @Override
     ServiceCallSchedule jobName(String jn) { jobName = jn; return this }
 
     /* leaving this out for now, not easily supported by Quartz Scheduler:

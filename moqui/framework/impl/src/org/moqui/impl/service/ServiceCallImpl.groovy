@@ -25,29 +25,15 @@ class ServiceCallImpl implements ServiceCall {
         this.sfi = sfi
     }
 
-    @Override
-    ServiceCall serviceName(String serviceName) {
+    protected void setServiceName(String serviceName) {
         path = ServiceDefinition.getPathFromName(serviceName)
         verb = ServiceDefinition.getVerbFromName(serviceName)
         noun = ServiceDefinition.getNounFromName(serviceName)
-        return this
     }
-
-    @Override
-    ServiceCall serviceName(String v, String n) { path = null; verb = v; noun = n; return this }
-
-    @Override
-    ServiceCall serviceName(String p, String v, String n) { path = p; verb = v; noun = n; return this }
 
     @Override
     String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
 
     @Override
-    ServiceCall context(Map<String, Object> map) { context.putAll(map); return this }
-
-    @Override
-    ServiceCall context(String name, Object value) { context.put(name, value); return this }
-
-    @Override
-    Map<String, Object> getContext() { return context }
+    Map<String, Object> getCurrentContext() { return context }
 }

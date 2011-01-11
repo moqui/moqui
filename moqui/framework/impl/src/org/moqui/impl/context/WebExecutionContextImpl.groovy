@@ -51,7 +51,7 @@ class WebExecutionContextImpl implements WebExecutionContext {
 
         // NOTE: the Visit is not setup here but rather in the MoquiEventListener (for init and destroy)
         request.setAttribute("executionContext", this)
-        this.eci.userFacade.initFromHttpSession(request.getSession())
+        this.eci.userFacade.initFromHttpRequest(request)
     }
 
     // ========== Web EC Methods

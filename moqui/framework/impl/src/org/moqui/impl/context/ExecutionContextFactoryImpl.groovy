@@ -32,7 +32,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final String runtimePath
 
     protected final String confPath
-    protected final Node confXmlRoot
+    final Node confXmlRoot
     
     protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
 

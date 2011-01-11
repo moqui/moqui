@@ -182,24 +182,32 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="password">
         <xs:complexType>
             <xs:attribute name="encrypt-hash-type" default="SHA">
+                <!-- TODO use in impl -->
                 <xs:simpleType><xs:restriction base="xs:token">
                     <xs:enumeration value="SHA"/>
                     <xs:enumeration value="MD5"/>
                 </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="min-length" type="xs:nonNegativeInteger" default="6">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Minimum length of password</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="min-numeric" type="xs:nonNegativeInteger" default="1">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Minimum number of numeric characters in the password</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="min-others" type="xs:nonNegativeInteger" default="1">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Minimum number of other (non-alpha/numeric) characters in the password</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="history-limit" type="xs:nonNegativeInteger" default="5">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Number of old passwords to save that cannot be reused (0 means don't save any history)</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="change-weeks" type="xs:nonNegativeInteger" default="12">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Require password change after this many months (0 means don't ever require change)</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="email-require-change" type="boolean" default="true">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Require password change after a password reset email?</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="email-expire-hours" type="xs:nonNegativeInteger" default="48">
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>Require password change after a password reset email?</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>

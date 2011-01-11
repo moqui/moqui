@@ -28,6 +28,21 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     }
 
     @Override
+    ServiceCallSync name(String serviceName) { this.setServiceName(serviceName); return this }
+
+    @Override
+    ServiceCallSync name(String v, String n) { path = null; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallSync name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallSync context(Map<String, Object> map) { context.putAll(map); return this }
+
+    @Override
+    ServiceCallSync context(String name, Object value) { context.put(name, value); return this }
+
+    @Override
     ServiceCallSync requireNewTransaction(boolean rnt) { this.requireNewTransaction = rnt; return this }
 
     /* not supported by Atomikos/etc right now, consider for later:

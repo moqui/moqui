@@ -20,6 +20,21 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
     }
 
     @Override
+    ServiceCallSpecial name(String serviceName) { this.setServiceName(serviceName); return this }
+
+    @Override
+    ServiceCallSpecial name(String v, String n) { path = null; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallSpecial name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
+
+    @Override
+    ServiceCallSpecial context(Map<String, Object> map) { context.putAll(map); return this }
+
+    @Override
+    ServiceCallSpecial context(String name, Object value) { context.put(name, value); return this }
+
+    @Override
     void registerOnCommit() {
         // TODO implement
     }

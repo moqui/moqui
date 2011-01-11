@@ -11,53 +11,64 @@
  */
 package org.moqui.impl.context
 
-import org.moqui.context.UserFacade
 import java.sql.Timestamp
+import javax.servlet.http.HttpServletRequest
+
+import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
-import javax.servlet.http.HttpSession
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.moqui.context.ExecutionContext
 import org.moqui.context.WebExecutionContext
 import org.moqui.impl.StupidUtilities
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class UserFacadeImpl implements UserFacade {
     protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
 
     protected ExecutionContextImpl eci
     protected Timestamp effectiveTime = null
-    protected EntityValue userAccount = null
-    protected EntityValue visit = null
+
+    // just keep the userId, always get the UserAccount value from the entity cache
+    protected Deque<String> userIdStack = new LinkedList()
+
+    // there may be non-web visits, so keep a copy of the visitId here
+    protected String visitId = null
+
+    // we mostly want this for the Locale default, and may be useful for other things
+    protected HttpServletRequest request = null
 
     UserFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
     }
 
-    void initFromHttpSession(HttpSession session) {
-        if (session.getAttribute("moqui.user")) {
-            this.userAccount = (EntityValue) session.getAttribute("moqui.user")
-        } else {
-            // TODO if no userAccount get better defaults from webapp for locale, time zone?
+    void initFromHttpRequest(HttpServletRequest request) {
+        this.request = request
+        if (request.session.getAttribute("moqui.userId")) {
+            // effectively login the user
+            String userId = (String) request.session.getAttribute("moqui.userId")
+            // better not to do this, if there was a user before this init leave it for history/debug: if (this.userIdStack) this.userIdStack.pop()
+            if (this.userIdStack.size() == 0 || this.userIdStack.peek() != userId) this.userIdStack.push(userId)
         }
-        if (session.getAttribute("moqui.visit")) {
-            this.visit = (EntityValue) session.getAttribute("moqui.visit")
-        } else {
-            // this should ALWAYS be there, if not warn
-            logger.warn("In UserFacade init no visit was found in session [${session.getId()}]")
+        if (request.session.getAttribute("moqui.visitId")) {
+            this.visitId = (String) request.session.getAttribute("moqui.visitId")
         }
     }
 
     /** @see org.moqui.context.UserFacade#getLocale() */
     Locale getLocale() {
-        return this.userAccount ? new Locale((String) this.userAccount.locale) : Locale.getDefault()
+        Locale locale = null
+        if (this.userId) {
+            String localeStr = this.userAccount.locale
+            if (localeStr) locale = new Locale(localeStr)
+        }
+        return (locale ?: (request ? request.getLocale() : Locale.getDefault()))
     }
 
     /** @see org.moqui.context.UserFacade#setLocale(Locale) */
     void setLocale(Locale locale) {
-        if (this.userAccount) {
-            // TODO: change this to a service to tx mgmt, etc
-            this.userAccount.locale = locale.toString()
-            this.userAccount.update()
+        if (this.userId) {
+            eci.service.sync().name("update", "UserAccount")
+                    .context((Map<String, Object>) [userId:getUserId(), locale:locale.toString()]).call()
         } else {
             throw new IllegalStateException("No user logged in, can't set Locale")
         }
@@ -65,29 +76,32 @@ class UserFacadeImpl implements UserFacade {
 
     /** @see org.moqui.context.UserFacade#getTimeZone() */
     TimeZone getTimeZone() {
-        return this.userAccount ? TimeZone.getTimeZone((String) this.userAccount.timeZone) : TimeZone.getDefault()
+        TimeZone tz = null
+        if (this.userId) {
+            String tzStr = this.userAccount.timeZone
+            if (tzStr) tz = TimeZone.getTimeZone(tzStr)
+        }
+        return tz ?: TimeZone.getDefault()
     }
 
     /** @see org.moqui.context.UserFacade#setTimeZone(TimeZone) */
     void setTimeZone(TimeZone tz) {
-        if (this.userAccount) {
-            // TODO: change this to a service to tx mgmt, etc
-            this.userAccount.timeZone = tz.getID()
-            this.userAccount.update()
+        if (this.userId) {
+            eci.service.sync().name("update", "UserAccount")
+                    .context((Map<String, Object>) [userId:getUserId(), timeZone:tz.getID()]).call()
         } else {
             throw new IllegalStateException("No user logged in, can't set Time Zone")
         }
     }
 
     /** @see org.moqui.context.UserFacade#getCurrencyUomId() */
-    String getCurrencyUomId() { return this.userAccount ? this.userAccount.currencyUomId : null }
+    String getCurrencyUomId() { return this.userId ? this.userAccount.currencyUomId : null }
 
     /** @see org.moqui.context.UserFacade#setCurrencyUomId(String) */
     void setCurrencyUomId(String uomId) {
-        if (this.userAccount) {
-            // TODO: change this to a service to tx mgmt, etc
-            this.userAccount.currencyUomId = uomId
-            this.userAccount.update()
+        if (this.userId) {
+            eci.service.sync().name("update", "UserAccount")
+                    .context((Map<String, Object>) [userId:getUserId(), currencyUomId:uomId]).call()
         } else {
             throw new IllegalStateException("No user logged in, can't set Currency")
         }
@@ -95,7 +109,7 @@ class UserFacadeImpl implements UserFacade {
 
     /** @see org.moqui.context.UserFacade#getNowTimestamp() */
     Timestamp getNowTimestamp() {
-        // TODO: review Timestamp use, have things use this by default
+        // TODO: review Timestamp and nowTimestamp use, have things use this by default
         return this.effectiveTime ? this.effectiveTime : new Timestamp(System.currentTimeMillis())
     }
 
@@ -109,37 +123,37 @@ class UserFacadeImpl implements UserFacade {
 
             EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("userId", userId).useCache(true).one()
 
-            // TODO: if there is already a user authenticated, what to do? push onto a stack to remember?
-
-            // TODO if hasLoggedOut==Y set hasLoggedOut=N
+            // if hasLoggedOut==Y set hasLoggedOut=N
+            if (newUserAccount.hasLoggedOut == "Y") {
+                eci.service.sync().name("update", "UserAccount")
+                        .context((Map<String, Object>) [userId:userId, hasLoggedOut:"N"]).call()
+            }
 
             // update visit if no user in visit yet
             if (this.visit && !this.visit.userId) {
-                this.visit.userId = userId
-                this.visit.update()
+                eci.service.sync().name("update", "Visit")
+                        .context((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
             }
 
             // if WebExecutionContext add to session
             if (eci.ecfi.getExecutionContext() instanceof WebExecutionContext) {
                 WebExecutionContext wec = (WebExecutionContext) eci.ecfi.getExecutionContext()
-                wec.getSession().setAttribute("moqui.user", newUserAccount)
+                wec.getSession().setAttribute("moqui.userId", newUserAccount.userId)
             }
 
-            this.userAccount = newUserAccount
+            // just in case there is already a user authenticated push onto a stack to remember
+            this.userIdStack.push((String) newUserAccount.userId)
         }
-        /* TODO: on success or failure, save history:
-        <entity entity-name="UserLoginHistory" package-name="org.moqui.security.user" cache="never">
-            <field name="userId" type="id-vlong" is-pk="true"/>
-            <field name="fromDate" type="date-time" is-pk="true"/>
-            <field name="thruDate" type="date-time"/>
-            <field name="visitId" type="id"/>
-            <field name="passwordUsed" type="text-medium" encrypt="true"/>
-            <field name="successfulLogin" type="text-indicator"/>
-            <relationship type="one-nofk" related-entity-name="UserAccount">
-                <description>No FK in order to allow externally authenticated users.</description>
-            </relationship>
-        </entity>
-         */
+
+        Node loginNode = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]
+
+        // track the UserLoginHistory
+        if (loginNode."@history-store" != "false") {
+            Map<String, Object> ulhContext =
+                    (Map<String, Object>) [userId:userId, visitId:getVisitId(), successfulLogin:(successful?"Y":"N")]
+            if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = password
+            eci.service.sync().name("create", "UserLoginHistory").context(ulhContext).call()
+        }
 
         return successful
     }
@@ -154,39 +168,71 @@ class UserFacadeImpl implements UserFacade {
                 StupidUtilities.getHashSaltFromFull((String) newUserAccount.currentPassword),
                 StupidUtilities.getHashTypeFromFull((String) newUserAccount.currentPassword))
         // just compare the hash part of the full string
-        if (StupidUtilities.getHashHashFromFull(passedInHash) != StupidUtilities.getHashHashFromFull((String) newUserAccount.currentPassword)) {
-            /* TODO if failed on password only, increment
-             * if over configured amount, set disabled and disabledDateTime
-            <field name="successiveFailedLogins" type="number-integer"/>
-             */
+        if (StupidUtilities.getHashHashFromFull(passedInHash) !=
+                StupidUtilities.getHashHashFromFull((String) newUserAccount.currentPassword)) {
+            // only if failed on password, increment in new transaction to make sure it sticks
+            eci.service.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
+                    .context((Map<String, Object>) [userId:userId]).requireNewTransaction(true).call()
             return false
         }
 
-        /* TODO check and fail on:
-        <field name="disabled" type="text-indicator"/>
-        <field name="disabledDateTime" type="date-time"/>
-        <field name="requirePasswordChange" type="text-indicator"/>
-         */
+        Map<String, Object> uaContext = (Map<String, Object>) [userId:userId, successiveFailedLogins:0]
+        if (newUserAccount.requirePasswordChange == "Y") {
+            throw new IllegalStateException("Authenticate failed for user [${userId}] because account requires password change [PWDCHG].")
+        }
+        if (newUserAccount.disabled == "Y") {
+            Timestamp reEnableTime = null
+            if (newUserAccount.disabledDateTime) {
+                Integer disabledMinutes = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]."@disable-minutes" ?: 30 as Integer
+                reEnableTime = new Timestamp(newUserAccount.getTimestamp("disabledDateTime").getTime() + (disabledMinutes*60*1000))
+            }
+            if (!reEnableTime || reEnableTime < getNowTimestamp()) {
+                throw new IllegalStateException("Authenticate failed for user [${userId}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
+            } else {
+                uaContext.disabled = "N"
+                uaContext.disabledDateTime = null
+            }
+        }
+        // no more auth failures? record the various account state updates
+        eci.service.sync().name("update", "UserAccount").context(uaContext).call()
 
         return true
     }
 
-    void logoutUser() {
+    /* @see org.moqui.context.UserFacade#setUserPassword(String, String, String) */
+    void setUserPassword(String userId, String oldPassword, String newPassword) {
+        /*
+            <password encrypt-hash-type="SHA" min-length="6" min-numeric="1" min-others="1"
+                      history-limit="5" change-weeks="12" email-require-change="true" email-expire-hours="48"/>
 
+         */
+        Node passwordNode = eci.ecfi.confXmlRoot."user-facade"[0]."password"[0]
+
+        // TODO impl
     }
 
-    /** @see org.moqui.context.UserFacade#getUserId() */
-    String getUserId() { return this.userAccount ? this.userAccount.userId : null }
+    void logoutUser() {
+        if (this.userIdStack) this.userIdStack.pop()
+    }
 
-    /** @see org.moqui.context.UserFacade#getUserAccount() */
-    EntityValue getUserAccount() { return this.userAccount }
+    /* @see org.moqui.context.UserFacade#getUserId() */
+    String getUserId() { return this.userIdStack ? this.userIdStack.peek() : null }
+
+    /* @see org.moqui.context.UserFacade#getUserAccount() */
+    EntityValue getUserAccount() {
+        if (!userIdStack) return null
+        return eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peek()).useCache(true).one()
+    }
 
     /** @see org.moqui.context.UserFacade#getVisitUserId() */
-    String getVisitUserId() { return this.visit ? this.visit.userId : null }
+    String getVisitUserId() { return visitId ? getVisit().userId : null }
 
     /** @see org.moqui.context.UserFacade#getVisitId() */
-    String getVisitId() { return this.visit ? this.visit.visitId : null }
+    String getVisitId() { return visitId }
 
     /** @see org.moqui.context.UserFacade#getVisit() */
-    EntityValue getVisit() { return this.visit }
+    EntityValue getVisit() {
+        if (!visitId) return null
+        return eci.entity.makeFind("Visit").condition("visitId", visitId).useCache(true).one()
+    }
 }

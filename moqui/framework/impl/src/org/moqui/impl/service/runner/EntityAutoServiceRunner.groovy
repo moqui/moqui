@@ -70,6 +70,13 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         EntityValue newEntity = sfi.ecfi.entityFacade.makeValue(ed.entityName)
 
         List<String> pkFieldNames = ed.getFieldNames(true, false)
+
+        // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
+        if (pkFieldNames.contains("fromDate") && !context.containsKey("fromDate")) {
+            context.put("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
+        }
+
+        // see if all PK fields were passed in
         boolean allPksIn = true
         for (String pkFieldName in pkFieldNames) if (!context.get(pkFieldName)) { allPksIn = false; break }
         boolean isSinglePk = pkFieldNames.size() == 1
@@ -104,14 +111,6 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         }
 
         newEntity.setFields(context, true, null, false)
-
-        // handle the case where there is a fromDate in the pk of the entity, and it is optional or undefined in the service def, populate automatically
-        Node fromDateField = ed.getFieldNode("fromDate")
-        if (fromDateField != null && fromDateField."@is-pk" == "true") {
-            if (!context.get("fromDate")) {
-                newEntity.set("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
-            }
-        }
 
         newEntity.create()
     }

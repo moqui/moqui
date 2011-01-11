@@ -60,6 +60,11 @@ public interface UserFacade {
      */
     boolean authenticateUser(String userId, String password);
 
+    /** Set a user's password. The userId must match the current user and the oldPassword must match the user's
+     * currentPassword or special permission is required.
+     */
+    void setUserPassword(String userId, String oldPassword, String newPassword);
+
     /** Remove (logout) active user. */
     void logoutUser();
 

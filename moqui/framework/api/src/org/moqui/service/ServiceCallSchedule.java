@@ -11,11 +11,29 @@
  */
 package org.moqui.service;
 
+import java.util.Map;
+
 public interface ServiceCallSchedule extends ServiceCall {
+    /** Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To explicitly separate
+     * the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}" (this is useful for calling the
+     * implicit entity CrUD services where verb is create, update, or delete and noun is the name of the entity).
+     */
+    ServiceCallSchedule name(String serviceName);
+
+    ServiceCallSchedule name(String verb, String noun);
+
+    ServiceCallSchedule name(String path, String verb, String noun);
+
+    /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
+    ServiceCallSchedule context(Map<String, Object> context);
+
+    /** Single name, value pairs to put in the context (in parameters) passed to the service. */
+    ServiceCallSchedule context(String name, Object value);
+
+
     /** Name of the job. If specified repeated schedules with the same jobName will use the same underlying job.
      * @return Reference to this for convenience.
      */
-
     ServiceCallSchedule jobName(String jobName);
 
     /* * Name of the service pool to send to (optional).

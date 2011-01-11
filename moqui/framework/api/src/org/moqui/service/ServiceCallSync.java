@@ -14,6 +14,23 @@ package org.moqui.service;
 import java.util.Map;
 
 public interface ServiceCallSync extends ServiceCall {
+    /** Name of the service to run. The combined service name, like: "${path}.${verb}${noun}". To explicitly separate
+     * the verb and noun put a hash (#) between them, like: "${path}.${verb}#${noun}" (this is useful for calling the
+     * implicit entity CrUD services where verb is create, update, or delete and noun is the name of the entity).
+     */
+    ServiceCallSync name(String serviceName);
+
+    ServiceCallSync name(String verb, String noun);
+
+    ServiceCallSync name(String path, String verb, String noun);
+
+    /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
+    ServiceCallSync context(Map<String, Object> context);
+
+    /** Single name, value pairs to put in the context (in parameters) passed to the service. */
+    ServiceCallSync context(String name, Object value);
+
+
     /** If true suspend and create a new transaction if a transaction is active.
      * @return Reference to this for convenience.
      */
@@ -22,7 +39,7 @@ public interface ServiceCallSync extends ServiceCall {
     /* * If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
      * @return Reference to this for convenience.
      */
-    /* not supported by Atomikos/etc right now, consider for later: ServiceCallSync transactionIsolation(int transactionIsolation); */
+    /* not supported by Atomikos/etc right now, consider for later: ServiceCallSync transactionIsolation(int transactionIsolation);
 
     /** Call the service synchronously and immediately get the result.
      * @return Map containing the result (out parameters) from the service call.
