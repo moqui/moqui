@@ -78,6 +78,22 @@ class StupidUtilities {
         }
     }
 
+    static int countChars(String s, boolean countDigits, boolean countLetters, boolean countOthers) {
+        // this seems like it should be part of some standard Java API, but I haven't found it
+        // (can use Pattern/Matcher, but that is even uglier and probably a lot slower)
+        int count = 0
+        for (char c in s) {
+            if (Character.isDigit(c)) {
+                if (countDigits) count++
+            } else if (Character.isLetter(c)) {
+                if (countLetters) count++
+            } else {
+                if (countOthers) count++
+            }
+        }
+        return count
+    }
+
     static void addToListInMap(String key, Object value, Map theMap) {
         if (!theMap) return
         List theList = (List) theMap.get(key)

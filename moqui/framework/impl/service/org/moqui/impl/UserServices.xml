@@ -69,16 +69,29 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <set field="minLength" from-field="passwordNode.'@min-length'" default-value="6" type="Integer"/>
             <if condition="newPassword.length &lt; minLength">
-                <return message="New password must be at least ${minLength} characters long" error="true"/>
+                <message error="true">Password shorter than ${minLength} characters</message>
             </if>
 
-            <set field="minNumeric" from-field="passwordNode.'@min-numeric'" default-value="1" type="Integer"/>
+            <set field="minDigits" from-field="passwordNode.'@min-digits'" default-value="1" type="Integer"/>
+            <if condition="org.moqui.impl.StupidUtilities.countChars(newPassword,true,false,false) >= minDigits">
+                <message error="true">Password needs ${minDigits} digits</message>
+            </if>
 
             <set field="minOthers" from-field="passwordNode.'@min-others'" default-value="1" type="Integer"/>
+            <if condition="org.moqui.impl.StupidUtilities.countChars(newPassword,false,false,true) >= minOthers">
+                <message error="true">Password needs ${minOthers} others (not letter or digit)</message>
+            </if>
 
             <!-- TODO save history, if more in history than password.@history-limit default 5 then remove oldest -->
+            <set field="historyLimit" from-field="passwordNode.'@history-limit'" default-value="5" type="Integer"/>
 
-            <!-- TODO all good, now encrypt password (using password.@encrypt-hash-type default SHA) and save -->
+            <check-errors/>
+
+            <!-- all good, now encrypt password (using password.@encrypt-hash-type default SHA) and save -->
+            <set field="hashType" from-field="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
+            <set field="userAccount.currentPassword"
+                 from-field="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
+            <entity-update value-field="userAccount"/>
         </actions>
     </service>
 </services>

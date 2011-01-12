@@ -1102,7 +1102,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="else-if"/>
                 <xs:element minOccurs="0" ref="else"/>
             </xs:sequence>
-            <xs:attribute name="condition" type="xs:string" use="required">
+            <xs:attribute name="condition" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>
                     A boolean expression in Groovy. Will be AND combined with other conditions if present.
                 </xs:documentation></xs:annotation>
