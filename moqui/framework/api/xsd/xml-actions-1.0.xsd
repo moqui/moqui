@@ -69,6 +69,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="call-service" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>Calls a service.</xs:documentation></xs:annotation>
         <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-map"/>
+            </xs:sequence>
             <xs:attribute name="service" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
@@ -128,12 +131,14 @@ This Work includes contributions authored by David E. Jones, not as a
                     use-or-begin and there is no other transaction already in place).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <!-- Not supported for 1.0
             <xs:attribute name="transaction-isolation" type="isolation-level" use="optional">
                 <xs:annotation><xs:documentation>
                     The transaction isolation level to use if a transaction is begun when calling this service.
                     For definitions see the javax.sql.Connection.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            -->
             <xs:attribute name="ignore-error" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
@@ -597,7 +602,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:annotation>
             </xs:attribute>
             <xs:attribute name="view-size" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>Number of records to view, like the number of results per-screen.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Number of records to view, like the number of results per-screen.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -605,7 +611,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:annotation>
             <xs:documentation>
                 Specifies whether or not to use the EntityListIterator when doing the query.
-                This is much more efficient for large data sets because the results are read incrementaly instead of all at once.
+                This is much more efficient for large data sets because the results are read incrementally instead of all at once.
                 Note that when using this the use-cache setting will be ignored.
                 Also note that an EntityListIterator must be closed when you are finished, but this is done automatically by the iterate operation.
                 Must be "true" or "false", defaults to "false".
@@ -614,7 +620,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType/>
     </xs:element>
     <xs:element name="field-map">
-        <xs:annotation><xs:documentation>A name/value pair.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>A name/value pair. If from-field and value are empty will look in the context
+            for a field matching the field-name.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="field-name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Name of the entity field.</xs:documentation></xs:annotation>
@@ -929,17 +936,21 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="message" substitutionGroup="ControlOperations" type="xs:string">
+    <xs:element name="message" substitutionGroup="ControlOperations">
         <xs:annotation><xs:documentation>
             Adds the message (sub-element text) to the ExecutionContext MessageFacade, either the errors list
             if error=true or the messages list otherwise.
         </xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute name="error" type="boolean" default="false">
-                <xs:annotation><xs:documentation>
-                    If true will be considered caused by an error, meaning transaction will be rolled back, etc.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="error" type="boolean" default="false">
+                        <xs:annotation><xs:documentation>
+                            If true will be considered caused by an error, meaning transaction will be rolled back, etc.
+                        </xs:documentation></xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
         </xs:complexType>
     </xs:element>
     <xs:element name="check-errors" substitutionGroup="ControlOperations">
@@ -1115,9 +1126,15 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="condition"/>
-                <xs:element ref="then"/>
+                <xs:element minOccurs="0" ref="condition"/>
+                <xs:element minOccurs="0" ref="then"/>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
             </xs:sequence>
+            <xs:attribute name="condition" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>
+                    A boolean expression in Groovy. Will be AND combined with other conditions if present.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="then">
@@ -1142,6 +1159,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="condition"/>
                 <xs:element ref="then"/>
             </xs:sequence>
+            <xs:attribute name="condition" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>
+                    A boolean expression in Groovy. Will be AND combined with other conditions if present.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="else">

@@ -51,7 +51,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <return message="Please enter current password" error="true"/>
                 </if>
 
-                <call-script>
+                <call-script location="foo">
                     import org.moqui.impl.StupidUtilities
                     String oldPasswordFullHash = StupidUtilities.getHashDigest(oldPassword,
                             StupidUtilities.getHashSaltFromFull((String) userAccount.currentPassword),
@@ -82,12 +82,33 @@ This Work includes contributions authored by David E. Jones, not as a
                 <message error="true">Password needs ${minOthers} others (not letter or digit)</message>
             </if>
 
-            <!-- TODO save history, if more in history than password.@history-limit default 5 then remove oldest -->
+            <!-- if password is in the history don't allow it -->
             <set field="historyLimit" from-field="passwordNode.'@history-limit'" default-value="5" type="Integer"/>
+            <entity-find entity-name="UserPasswordHistory" list="duplicateUserPasswordHistoryList">
+                <econdition field-name="userId" from-field="userId"/>
+                <econdition field-name="password" from-field="newPassword"/>
+            </entity-find>
+            <if condition="duplicateUserPasswordHistoryList">
+                <message error="true">Password used in last ${historyLimit} passwords</message>
+            </if>
 
             <check-errors/>
+            <!-- from here on the newPassword is considered okay -->
 
-            <!-- all good, now encrypt password (using password.@encrypt-hash-type default SHA) and save -->
+            <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
+            <call-service service="create#UserPasswordHistory">
+                <field-map field-name="userId"/>
+                <field-map field-name="password" from-field="newPassword"/>
+            </call-service>
+            <entity-find entity-name="UserPasswordHistory" list="existingUserPasswordHistoryList">
+                <econdition field-name="userId" from-field="userId"/>
+                <order-by field-name="fromDate"/>
+            </entity-find>
+            <while condition="existingUserPasswordHistoryList.size() &gt; historyLimit">
+                <entity-delete value-field="existingUserPasswordHistoryList.remove(0)"/>
+            </while>
+
+            <!-- encrypt password (using password.@encrypt-hash-type default SHA) and save -->
             <set field="hashType" from-field="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
             <set field="userAccount.currentPassword"
                  from-field="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>

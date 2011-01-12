@@ -188,7 +188,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="UserPasswordHistory" package-name="org.moqui.security.user" cache="never">
         <field name="userId" type="id-vlong" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
-        <field name="thruDate" type="date-time"/>
         <field name="password" type="text-medium" encrypt="true"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
