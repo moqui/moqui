@@ -16,13 +16,15 @@ import java.util.List;
 /** For user messages including general feedback, errors, and field-specific validation errors. */
 public interface MessageFacade {
     /** A freely modifiable List of general (non-error) messages that will be shown to the user. */
-    List<String> getMessageList();
+    List<String> getMessages();
+    void addMessage(String message);
 
     /** A freely modifiable List of error messages that will be shown to the user. */
-    List<String> getErrorList();
+    List<String> getErrors();
+    void addError(String error);
 
     /** A freely modifiable List of ValidationError objects that will be shown to the user in the context of the
      * fields that triggered the error.
      */
-    List<ValidationError> getValidationErrorList();
+    List<ValidationError> getValidationErrors();
 }

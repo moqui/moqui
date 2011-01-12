@@ -22,12 +22,14 @@ public class MessageFacadeImpl implements MessageFacade {
 
     MessageFacadeImpl() { }
 
-    /** @see org.moqui.context.MessageFacade#getMessageList() */
-    public List<String> getMessageList() { return this.messageList }
+    /** @see org.moqui.context.MessageFacade#getMessages() */
+    public List<String> getMessages() { return this.messageList }
+    void addMessage(String message) { if (message) this.messageList.add(message) }
 
-    /** @see org.moqui.context.MessageFacade#getErrorList() */
-    public List<String> getErrorList() { return this.errorList }
+    /** @see org.moqui.context.MessageFacade#getErrors() */
+    public List<String> getErrors() { return this.errorList }
+    void addError(String error) { if (error) this.errorList.add(error) }
 
-    /** @see org.moqui.context.MessageFacade#getValidationErrorList() */
-    public List<ValidationError> getValidationErrorList() { return this.validationErrorList }
+    /** @see org.moqui.context.MessageFacade#getValidationErrors() */
+    public List<ValidationError> getValidationErrors() { return this.validationErrorList }
 }

@@ -26,4 +26,59 @@ This Work includes contributions authored by David E. Jones, not as a
             <entity-update value-field="userAccount"/>
         </actions>
     </service>
+
+    <service verb="update" noun="UserAccountPassword">
+        <description>Set a user's password. The userId must match the current user and the oldPassword must match the
+            user's currentPassword or special permission is required.</description>
+        <in-parameters>
+            <parameter name="userId" required="false"><description>Defaults to the current userId in the ExecutionContext.</description></parameter>
+            <parameter name="oldPassword" required="false"><description>Required unless current user has password admin permissions.</description></parameter>
+            <parameter name="newPassword" required="true"/>
+        </in-parameters>
+        <actions>
+            <set field="userId" from-field="userId ?: ec.user.userId"/>
+            <!-- TODO get perm from ? -->
+            <set field="hasPwAdminPermission" value="false"/>
+
+            <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
+
+            <!-- compare the passwords, encrypted -->
+            <if condition="!hasPwAdminPermission">
+                <if condition="userId != this.userId">
+                    <return message="Cannot update the password of another user without password admin permission" error="true"/>
+                </if>
+                <if condition="!oldPassword">
+                    <return message="Please enter current password" error="true"/>
+                </if>
+
+                <call-script>
+                    import org.moqui.impl.StupidUtilities
+                    String oldPasswordFullHash = StupidUtilities.getHashDigest(oldPassword,
+                            StupidUtilities.getHashSaltFromFull((String) userAccount.currentPassword),
+                            StupidUtilities.getHashTypeFromFull((String) userAccount.currentPassword))
+                    String oldPasswordHashOnly = StupidUtilities.getHashHashFromFull(oldPasswordFullHash)
+                    String currentPasswordHashOnly = StupidUtilities.getHashHashFromFull(userAccount.currentPassword)
+                </call-script>
+                <if condition="oldPasswordHashOnly != currentPasswordHashOnly">
+                    <return message="Current passwords did not match" error="true"/>
+                </if>
+            </if>
+
+            <!-- check a bunch of stuff about the new password -->
+            <set field="passwordNode" from-field="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
+
+            <set field="minLength" from-field="passwordNode.'@min-length'" default-value="6" type="Integer"/>
+            <if condition="newPassword.length &lt; minLength">
+                <return message="New password must be at least ${minLength} characters long" error="true"/>
+            </if>
+
+            <set field="minNumeric" from-field="passwordNode.'@min-numeric'" default-value="1" type="Integer"/>
+
+            <set field="minOthers" from-field="passwordNode.'@min-others'" default-value="1" type="Integer"/>
+
+            <!-- TODO save history, if more in history than password.@history-limit default 5 then remove oldest -->
+
+            <!-- TODO all good, now encrypt password (using password.@encrypt-hash-type default SHA) and save -->
+        </actions>
+    </service>
 </services>

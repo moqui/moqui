@@ -15,8 +15,8 @@ import java.sql.Timestamp
 import javax.servlet.http.HttpServletRequest
 
 import org.moqui.context.UserFacade
-import org.moqui.entity.EntityValue
 import org.moqui.context.WebExecutionContext
+import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 
 import org.slf4j.Logger
@@ -193,22 +193,12 @@ class UserFacadeImpl implements UserFacade {
                 uaContext.disabledDateTime = null
             }
         }
+        // TODO: check time since password was last changed, if it has been too long (user-facade.password.@change-weeks default 12) then fail
+
         // no more auth failures? record the various account state updates
         eci.service.sync().name("update", "UserAccount").context(uaContext).call()
 
         return true
-    }
-
-    /* @see org.moqui.context.UserFacade#setUserPassword(String, String, String) */
-    void setUserPassword(String userId, String oldPassword, String newPassword) {
-        /*
-            <password encrypt-hash-type="SHA" min-length="6" min-numeric="1" min-others="1"
-                      history-limit="5" change-weeks="12" email-require-change="true" email-expire-hours="48"/>
-
-         */
-        Node passwordNode = eci.ecfi.confXmlRoot."user-facade"[0]."password"[0]
-
-        // TODO impl
     }
 
     void logoutUser() {

@@ -21,6 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="EntityListOperations" abstract="true"/>
     <xs:element name="ControlOperations" abstract="true"/>
     <xs:element name="XmlOperations" abstract="true"/>
+    <xs:element name="IfCombineConditions" abstract="true"/>
     <xs:element name="IfBasicOperations" abstract="true"/>
     <xs:element name="IfOtherOperations" abstract="true"/>
     <xs:element name="OtherOperations" abstract="true"/>
@@ -928,33 +929,38 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="check-errors" substitutionGroup="ControlOperations">
-        <xs:annotation>
-            <xs:documentation>
-                The message lists from invoking are not checked until the check-errors tag is used.
-                The named list is checked and if it contains any messages they are put in the servlet
-                request object and the specified error code is returned to the control servlet.
-            </xs:documentation>
-        </xs:annotation>
+    <xs:element name="message" substitutionGroup="ControlOperations" type="xs:string">
+        <xs:annotation><xs:documentation>
+            Adds the message (sub-element text) to the ExecutionContext MessageFacade, either the errors list
+            if error=true or the messages list otherwise.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute type="xs:string" name="error-code" default="error">
-                 <xs:annotation><xs:documentation>Defaults to "error".</xs:documentation></xs:annotation>
+            <xs:attribute name="error" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    If true will be considered caused by an error, meaning transaction will be rolled back, etc.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
+    <xs:element name="check-errors" substitutionGroup="ControlOperations">
+        <xs:annotation><xs:documentation>
+            Check the ExecutionContext error message list (ec.message.errors) and if it is not empty return as an error
+            immediately.
+        </xs:documentation></xs:annotation>
+    </xs:element>
     <xs:element name="return" substitutionGroup="ControlOperations">
-        <xs:annotation>
-            <xs:documentation>
-                Returns immediately from the xml-action with the given response code string.
-            </xs:documentation>
-        </xs:annotation>
+        <xs:annotation><xs:documentation>Returns immediately.</xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute type="xs:string" name="response-code" default="success">
-                <xs:annotation>
-                    <xs:documentation>
-                        The string to return as a response code. Defaults to "success".
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="message" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    Adds a message to the errors list (ec.message.errors) if error=true,
+                    the messages list (ec.message.messages) otherwise.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="error" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    If true will be considered caused by an error, meaning transaction will be rolled back, etc.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -1076,7 +1082,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:element ref="IfBasicOperations"/>
         </xs:choice>
     </xs:group>
-    <xs:element name="IfCombineConditions" abstract="true"/>
     <xs:element name="if" substitutionGroup="IfOtherOperations">
         <xs:annotation>
             <xs:documentation>
@@ -1091,19 +1096,23 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="condition"/>
-                <xs:element ref="then"/>
+                <xs:element minOccurs="0" ref="condition"/>
+                <xs:element minOccurs="0" ref="then"/>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="else-if"/>
                 <xs:element minOccurs="0" ref="else"/>
             </xs:sequence>
+            <xs:attribute name="condition" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    A boolean expression in Groovy. Will be AND combined with other conditions if present.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="while" substitutionGroup="IfOtherOperations">
-        <xs:annotation>
-            <xs:documentation>
+        <xs:annotation><xs:documentation>
                 While loop operation, uses the same condition element as the if operation.
-            </xs:documentation>
-        </xs:annotation>
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="condition"/>
@@ -1112,11 +1121,9 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="then">
-        <xs:annotation>
-            <xs:documentation>
+        <xs:annotation><xs:documentation>
                 Contain operations that will run if the corresponding condition evaluate to true.
-            </xs:documentation>
-        </xs:annotation>
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
         </xs:complexType>
@@ -1266,36 +1273,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="message" type="xs:string">
                 <xs:annotation><xs:documentation>The message to log. Can insert variables using the ${} syntax.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="property-map" substitutionGroup="OtherOperations">
-        <xs:complexType>
-            <xs:attribute name="location" type="xs:string" use="required"/>
-            <xs:attribute name="map-name" type="xs:string" use="required"/>
-            <xs:attribute name="global" default="false" type="boolean"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="property-to-field" substitutionGroup="OtherOperations">
-        <xs:annotation>
-            <xs:documentation>
-                The property-to-field looks up the given property in the given resource.
-                The String value looked up will be expanded using the current context of the actions.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-            <xs:attribute name="field" type="xs:string" use="required"/>
-            <xs:attribute name="location" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>Location of a properties file.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="property" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The property whose value will be put in the field.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="default-value" type="xs:string">
-                <xs:annotation><xs:documentation>The default value to use if the specified property is empty.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="no-locale" default="false" type="boolean">
-                <xs:annotation><xs:documentation>Get the property without a locale. Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
