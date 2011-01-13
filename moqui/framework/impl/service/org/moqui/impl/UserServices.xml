@@ -110,9 +110,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- encrypt password (using password.@encrypt-hash-type default SHA) and save -->
             <set field="hashType" from-field="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
-            <set field="userAccount.currentPassword"
-                 from-field="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
-            <entity-update value-field="userAccount"/>
+            <call-service service="update#UserAccount">
+                <field-map field-name="userId"/>
+                <field-map field-name="currentPassword"
+                           from-field="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
+                <field-map field-name="passwordSetDate" from-field="ec.user.nowTimestamp"/>
+            </call-service>
         </actions>
     </service>
 </services>
