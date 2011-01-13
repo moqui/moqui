@@ -19,5 +19,5 @@ public interface ServiceCall {
     String getServiceName();
 
     /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
-    Map<String, Object> getCurrentContext();
+    Map<String, Object> getCurrentParameters();
 }

@@ -22,7 +22,7 @@ public class RemoteXmlrpcServiceRunner implements ServiceRunner {
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
-    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) {
+    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         // TODO implement
         return null
     }

@@ -30,7 +30,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
-    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) {
+    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         // check the verb and noun
         if (!sd.verb || ("create" != sd.verb && "update" != sd.verb && "delete" != sd.verb))
             throw new ServiceException("In service [${sd.serviceName}] the verb must be create, update, or delete for entity-auto type services.")
@@ -49,15 +49,15 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             }
 
             if ("create" == sd.verb) {
-                createEntity(sfi, ed, context, result, sd.getOutParameterNames())
+                createEntity(sfi, ed, parameters, result, sd.getOutParameterNames())
             } else if ("update" == sd.verb) {
                 /* <auto-attributes include="pk" mode="IN" optional="false"/> */
                 if (!allPksInOnly) throw new ServiceException("In entity-auto type service [${sd.serviceName}] with update noun, not all pk fields have the mode IN")
-                updateEntity(sfi, ed, context, result, sd.getOutParameterNames())
+                updateEntity(sfi, ed, parameters, result, sd.getOutParameterNames())
             } else if ("delete" == sd.verb) {
                 /* <auto-attributes include="pk" mode="IN" optional="false"/> */
                 if (!allPksInOnly) throw new ServiceException("In entity-auto type service [${sd.serviceName}] with delete noun, not all pk fields have the mode IN")
-                deleteEntity(sfi, ed, context)
+                deleteEntity(sfi, ed, parameters)
             }
         } catch (BaseException e) {
             throw new ServiceException("Error doing entity-auto operation for entity [${ed.entityName}] in service [${sd.serviceName}]", e)
@@ -66,19 +66,19 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         return result
     }
 
-    public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> context, Map<String, Object> result, Set<String> outParamNames) {
+    public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
         EntityValue newEntity = sfi.ecfi.entityFacade.makeValue(ed.entityName)
 
         List<String> pkFieldNames = ed.getFieldNames(true, false)
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
-        if (pkFieldNames.contains("fromDate") && !context.containsKey("fromDate")) {
-            context.put("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
+        if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {
+            parameters.put("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
         }
 
         // see if all PK fields were passed in
         boolean allPksIn = true
-        for (String pkFieldName in pkFieldNames) if (!context.get(pkFieldName)) { allPksIn = false; break }
+        for (String pkFieldName in pkFieldNames) if (!parameters.get(pkFieldName)) { allPksIn = false; break }
         boolean isSinglePk = pkFieldNames.size() == 1
         boolean isDoublePk = pkFieldNames.size() == 2
 
@@ -88,20 +88,20 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             String singlePkParamName = pkFieldNames[0]
             Node singlePkField = ed.getFieldNode(singlePkParamName)
 
-            Object pkValue = context.get(singlePkField."@name")
+            Object pkValue = parameters.get(singlePkField."@name")
             if (!pkValue) pkValue = sfi.ecfi.entityFacade.sequencedIdPrimary(ed.entityName, null)
             newEntity.set(singlePkField."@name", pkValue)
             if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
-            String doublePkSecondaryName = context.get(pkFieldNames[0]) ? pkFieldNames[1] : pkFieldNames[0]
-            newEntity.setFields(context, true, null, true)
+            String doublePkSecondaryName = parameters.get(pkFieldNames[0]) ? pkFieldNames[1] : pkFieldNames[0]
+            newEntity.setFields(parameters, true, null, true)
             sfi.ecfi.entityFacade.sequencedIdSecondary(newEntity, doublePkSecondaryName, 5, 1)
             if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
                 result.put(doublePkSecondaryName, newEntity.get(doublePkSecondaryName))
         } else if (allPksIn) {
             /* **** plain specified primary key **** */
-            newEntity.setFields(context, true, null, true)
+            newEntity.setFields(parameters, true, null, true)
         } else {
             throw new ServiceException("In entity-auto create service for entity [${ed.entityName}]: " +
                     "could not find a valid combination of primary key settings to do a create operation; options include: " +
@@ -110,13 +110,13 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                     "3. all entity pk fields are passed into the service");
         }
 
-        newEntity.setFields(context, true, null, false)
+        newEntity.setFields(parameters, true, null, false)
 
         newEntity.create()
     }
 
-    public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> context, Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(context).useCache(false).forUpdate(true).one()
+    public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
+        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] no value not found, cannot update")
         }
@@ -128,7 +128,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         }
 
         // do the StatusValidChange check
-        String parameterStatusId = (String) context.get("statusId")
+        String parameterStatusId = (String) parameters.get("statusId")
         if (parameterStatusId && statusIdField) {
             String lookedUpStatusId = (String) lookedUpValue.get("statusId")
             if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
@@ -145,12 +145,12 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule
 
-        lookedUpValue.setFields(context, true, null, false)
+        lookedUpValue.setFields(parameters, true, null, false)
         lookedUpValue.update()
     }
 
-    public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> context) {
-        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(context).useCache(false).one()
+    public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
+        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).one()
         if (lookedUpValue != null) lookedUpValue.delete()
     }
 

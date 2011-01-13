@@ -19,7 +19,6 @@ import java.util.Map;
  */
 public interface ArtifactExecutionInfo {
     String getLocation();
-    URL getLocationURL();
     String getName();
     
     String getAuthorizedUserId();

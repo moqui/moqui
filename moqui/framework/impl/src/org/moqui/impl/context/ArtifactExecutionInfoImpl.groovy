@@ -27,12 +27,8 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         this.isAuthorizationInheritable = isAuthorizationInheritable
     }
 
-
     /** @see org.moqui.context.ArtifactExecutionInfo#getLocation() */
     String getLocation() { return this.location }
-
-    /** @see org.moqui.context.ArtifactExecutionInfo#getLocationURL() */
-    URL getLocationURL() { return new URL(this.location) }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
     String getName() { return this.name }

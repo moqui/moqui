@@ -15,6 +15,10 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.impl.service.ServiceRunner
+import org.moqui.impl.actions.XmlAction
+import org.moqui.context.ExecutionContext
+import org.moqui.impl.context.ExecutionContextImpl
+import org.moqui.impl.context.ContextStack
 
 public class ScriptServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null
@@ -23,35 +27,46 @@ public class ScriptServiceRunner implements ServiceRunner {
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
-    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) {
+    static void popScriptContext(ContextStack context) {
+    }
+
+    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
+        ExecutionContext ec = sfi.ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
         String location = sd.location
-        if (location.endsWith(".groovy")) {
-            Map<String, Object> vars = new HashMap()
-            if (context != null) {
-                vars.putAll(context)
-                vars.put("context", context)
-                vars.put("ec", sfi.ecfi.getExecutionContext())
-                vars.put("result", new HashMap())
-            }
-            Script script = InvokerHelper.createScript(sfi.ecfi.resourceFacade.getGroovyByLocation(sd.location), new Binding(vars))
-            Object result
-            if (sd.serviceNode."@method") {
-                result = script.invokeMethod(sd.serviceNode."@method", {})
+        try {
+            cs.push(parameters)
+            // push again to get a new Map that will protect the parameters Map passed in
+            cs.push()
+            // ec is already in place, in the contextRoot, so no need to put here
+            // context is handled by the ContextStack itself, always there
+            ec.context.put("result", new HashMap())
+
+            if (location.endsWith(".groovy")) {
+                Script script = InvokerHelper.createScript(sfi.ecfi.resourceFacade.getGroovyByLocation(sd.location), new Binding(ec.context))
+                Object result
+                if (sd.serviceNode."@method") {
+                    result = script.invokeMethod(sd.serviceNode."@method", {})
+                } else {
+                    result = script.run()
+                }
+                if (result instanceof Map) {
+                    return (Map<String, Object>) result
+                } else if (ec.context.get("result")) {
+                    return (Map<String, Object>) ec.context.get("result")
+                } else {
+                    return null
+                }
+            } else if (location.endsWith(".xml")) {
+                XmlAction xa = sfi.ecfi.resourceFacade.getXmlActionByLocation(sd.location)
+                return xa.run(ec)
             } else {
-                result = script.run()
+                throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
             }
-            if (result instanceof Map) {
-                return (Map<String, Object>) result
-            } else if (vars.get("result")) {
-                return (Map<String, Object>) vars.get("result")
-            } else {
-                return null
-            }
-        } else if (location.endsWith(".xml")) {
-            // TODO implement this once XmlAction stuff is in place
-            throw new IllegalArgumentException("Cannot run script [${location}], XML Actions not yet implemented.")
-        } else {
-            throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
+        } finally {
+            // in the push we pushed two Maps to protect the parameters Map, so pop twice
+            cs.pop()
+            cs.pop()
         }
     }
 

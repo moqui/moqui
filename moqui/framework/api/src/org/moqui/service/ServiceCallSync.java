@@ -25,10 +25,10 @@ public interface ServiceCallSync extends ServiceCall {
     ServiceCallSync name(String path, String verb, String noun);
 
     /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
-    ServiceCallSync context(Map<String, Object> context);
+    ServiceCallSync parameters(Map<String, Object> context);
 
     /** Single name, value pairs to put in the context (in parameters) passed to the service. */
-    ServiceCallSync context(String name, Object value);
+    ServiceCallSync parameter(String name, Object value);
 
 
     /** If true suspend and create a new transaction if a transaction is active.

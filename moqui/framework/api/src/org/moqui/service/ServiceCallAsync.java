@@ -25,10 +25,10 @@ public interface ServiceCallAsync extends ServiceCall {
     ServiceCallAsync name(String path, String verb, String noun);
 
     /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
-    ServiceCallAsync context(Map<String, Object> context);
+    ServiceCallAsync parameters(Map<String, Object> context);
 
     /** Single name, value pairs to put in the context (in parameters) passed to the service. */
-    ServiceCallAsync context(String name, Object value);
+    ServiceCallAsync parameter(String name, Object value);
 
 
     /** If true the service call will be persisted and then run. If false it will be run from memory only.

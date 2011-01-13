@@ -16,6 +16,7 @@ import org.moqui.context.Cache
 import java.nio.charset.Charset
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.moqui.impl.actions.XmlAction
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -126,6 +127,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     Class getGroovyByLocation(String location) {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
+        if (!gc) gc = loadGroovy(location)
+        return gc
+    }
+    protected synchronized Class loadGroovy(String location) {
+        Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) {
             gc = new GroovyClassLoader().parseClass(getLocationText(location), location)
             scriptGroovyLocationCache.put(location, gc)
@@ -133,12 +139,16 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return gc
     }
 
-    Object getXmlActionByLocation(String location) {
-        Object xa = (Object) scriptGroovyLocationCache.get(location)
+    XmlAction getXmlActionByLocation(String location) {
+        XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
+        if (!xa) loadXmlAction(location)
+        return xa
+    }
+    protected synchronized XmlAction loadXmlAction(String location) {
+        XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
         if (!xa) {
-            // TODO: impl this after XmlAction stuff in place
-            //xa = ?
-            //scriptGroovyLocationCache.put(location, xa)
+            xa = new XmlAction(ecfi, getLocationText(location))
+            scriptXmlActionLocationCache.put(location, xa)
         }
         return xa
     }

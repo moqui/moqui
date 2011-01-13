@@ -11,19 +11,22 @@
  */
 package org.moqui.context;
 
-import java.util.List;
+import java.util.Deque;
 
 /** For information about artifacts as they are being executed. */
 public interface ArtifactExecutionFacade {
     /** Gets information about the current artifact being executed, and about authentication and authorization for
      * that artifact.
      */
-    ArtifactExecutionInfo getCurrentArtifactExecutionInfo();
+    ArtifactExecutionInfo peek();
 
-    /** Gets a list of objects representing artifacts that have been executed to get to the current artifact (last in
-     * the list). The first artifact in the list will generally be a screen or a service. If a service is run locally
+    ArtifactExecutionInfo pop();
+    void push(ArtifactExecutionInfo aei);
+
+    /** Gets a stack/deque/list of objects representing artifacts that have been executed to get to the current artifact.
+     * The bottom artifact in the stack will generally be a screen or a service. If a service is run locally
      * this will trace back to the screen or service that called it, and if a service was called remotely it will be
-     * the top of the stack (first in the list).
+     * the bottom of the stack.
      */
-    List<ArtifactExecutionInfo> getArtifactExecutionInfoStack();
+    Deque<ArtifactExecutionInfo> getStack();
 }

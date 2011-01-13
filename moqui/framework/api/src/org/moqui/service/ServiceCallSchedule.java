@@ -25,10 +25,10 @@ public interface ServiceCallSchedule extends ServiceCall {
     ServiceCallSchedule name(String path, String verb, String noun);
 
     /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
-    ServiceCallSchedule context(Map<String, Object> context);
+    ServiceCallSchedule parameters(Map<String, Object> context);
 
     /** Single name, value pairs to put in the context (in parameters) passed to the service. */
-    ServiceCallSchedule context(String name, Object value);
+    ServiceCallSchedule parameter(String name, Object value);
 
 
     /** Name of the job. If specified repeated schedules with the same jobName will use the same underlying job.

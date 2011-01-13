@@ -106,6 +106,8 @@ class ContextStack implements Map<String, Object> {
     /** @see java.util.Map#get(java.lang.Object) */
     @Override
     public Object get(Object key) {
+        // the "context" key always gets a self-reference, effectively the top of the stack
+        if (key == "context") return this
         for (Map<String, Object> curMap in stackList) {
             if (curMap.containsKey(key)) return curMap.get(key)
         }

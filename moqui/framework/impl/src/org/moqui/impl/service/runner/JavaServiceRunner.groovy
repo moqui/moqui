@@ -21,6 +21,7 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.service.ServiceException
 import org.moqui.impl.service.ServiceRunner
+import org.moqui.impl.context.ContextStack
 
 public class JavaServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi
@@ -34,24 +35,31 @@ public class JavaServiceRunner implements ServiceRunner {
         return this
     }
 
-    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) {
+    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         if (!sd.serviceNode."@location" || !sd.serviceNode."@method") {
             throw new ServiceException("Service [" + sd.serviceName + "] is missing location and/or method attributes and they are required for running a java service.")
         }
 
+        ExecutionContext ec = sfi.ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
         Map<String, Object> result
-
         try {
+            cs.push(parameters)
+            // push again to get a new Map that will protect the parameters Map passed in
+            cs.push()
+            // ec is already in place, in the contextRoot, so no need to put here
+            // context is handled by the ContextStack itself, always there
+
             Class c = (Class) classCache.get(sd.location)
             if (!c) {
                 c = this.getClass().getClassLoader().loadClass(sd.location)
                 classCache.put(sd.location, c)
             }
-            Method m = c.getMethod(sd.serviceNode."@method", ExecutionContext.class, Map.class)
+            Method m = c.getMethod(sd.serviceNode."@method", ExecutionContext.class)
             if (Modifier.isStatic(m.getModifiers())) {
-                result = (Map<String, Object>) m.invoke(null, sfi.ecfi.getExecutionContext(), context)
+                result = (Map<String, Object>) m.invoke(null, sfi.ecfi.getExecutionContext())
             } else {
-                result = (Map<String, Object>) m.invoke(c.newInstance(), sfi.ecfi.getExecutionContext(), context)
+                result = (Map<String, Object>) m.invoke(c.newInstance(), sfi.ecfi.getExecutionContext())
             }
         } catch (ClassNotFoundException e) {
             throw new ServiceException("Could not find class for java service [${sd.serviceName}]", e)
@@ -71,6 +79,10 @@ public class JavaServiceRunner implements ServiceRunner {
             throw new ServiceException("Java method for service [${sd.serviceName}] threw an exception", e.getTargetException())
         } catch (Throwable t) {
             throw new ServiceException("Error or unknown exception in service [${sd.serviceName}]", t)
+        } finally {
+            // in the push we pushed two Maps to protect the parameters Map, so pop twice
+            cs.pop()
+            cs.pop()
         }
 
         return result

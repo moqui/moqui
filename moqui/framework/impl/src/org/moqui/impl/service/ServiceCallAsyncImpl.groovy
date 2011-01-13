@@ -41,10 +41,10 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     ServiceCallAsync name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
 
     @Override
-    ServiceCallAsync context(Map<String, Object> map) { context.putAll(map); return this }
+    ServiceCallAsync parameters(Map<String, Object> map) { parameters.putAll(map); return this }
 
     @Override
-    ServiceCallAsync context(String name, Object value) { context.put(name, value); return this }
+    ServiceCallAsync parameter(String name, Object value) { parameters.put(name, value); return this }
 
     @Override
     ServiceCallAsync persist(boolean p) { this.persist = p; return this }

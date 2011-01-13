@@ -42,6 +42,8 @@ class ExecutionContextImpl implements ExecutionContext {
         this.messageFacade = new MessageFacadeImpl()
         this.l10nFacade = new L10nFacadeImpl(this)
         this.artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this)
+
+        context.put("ec", this)
     }
 
     /** @see org.moqui.context.ExecutionContext#getContext() */
@@ -49,7 +51,7 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
     Map<String, Object> getContextRoot() { return this.context.getRootMap() }
-    
+
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
     String getTenantId() { return this.tenantId }
 

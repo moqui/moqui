@@ -17,44 +17,21 @@ import org.moqui.context.ArtifactExecutionInfo
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
     protected ExecutionContextImpl eci
-
-    protected List<ArtifactExecutionInfo> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfo>()
+    protected Deque<ArtifactExecutionInfo> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfo>()
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
     }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#getCurrentArtifactExecutionInfo() */
-    public ArtifactExecutionInfo getCurrentArtifactExecutionInfo() {
-        return this.artifactExecutionInfoStack ? this.artifactExecutionInfoStack[0] : null
-    }
+    /** @see org.moqui.context.ArtifactExecutionFacade#peek() */
+    public ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peek() }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#getArtifactExecutionInfoStack() */
-    public List<ArtifactExecutionInfo> getArtifactExecutionInfoStack() {
-        return this.artifactExecutionInfoStack
-    }
+    /** @see org.moqui.context.ArtifactExecutionFacade#pop() */
+    public ArtifactExecutionInfo pop() { return this.artifactExecutionInfoStack.pop() }
 
-    void pushArtifactExecutionInfo(ArtifactExecutionInfo artifactExecutionInfo) {
-        this.artifactExecutionInfoStack.add(0, artifactExecutionInfo)
-    }
+    /** @see org.moqui.context.ArtifactExecutionFacade#push(ArtifactExecutionInfo) */
+    public void push(ArtifactExecutionInfo aei) { this.artifactExecutionInfoStack.push(aei) }
 
-    ArtifactExecutionInfo popArtifactExecutionInfo() {
-        return this.artifactExecutionInfoStack ? this.artifactExecutionInfoStack.remove(0) : null
-    }
-
-    void pushUserId(String userId) {
-        // TODO: what to do with this? leave for now, possibly eliminate later
-    }
-    String popUserId() {
-        // TODO: what to do with this? leave for now, possibly eliminate later
-        return null
-    }
-
-    void pushSessionId(String sessionId) {
-        // TODO: what to do with this? leave for now, possibly eliminate later
-    }
-    String popSessionId() {
-        // TODO: what to do with this? leave for now, possibly eliminate later
-        return null
-    }
+    /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */
+    public Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
 }

@@ -17,6 +17,6 @@ import org.moqui.service.ServiceException
 
 interface ServiceRunner {
     ServiceRunner init(ServiceFacadeImpl sfi);
-    Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> context) throws ServiceException;
+    Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) throws ServiceException;
     void destroy();
 }

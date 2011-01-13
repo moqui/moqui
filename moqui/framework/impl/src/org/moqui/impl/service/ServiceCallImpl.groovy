@@ -19,7 +19,7 @@ class ServiceCallImpl implements ServiceCall {
     protected String verb = null
     protected String noun = null
 
-    protected Map<String, Object> context = new HashMap<String, Object>()
+    protected Map<String, Object> parameters = new HashMap<String, Object>()
 
     ServiceCallImpl(ServiceFacadeImpl sfi) {
         this.sfi = sfi
@@ -35,5 +35,5 @@ class ServiceCallImpl implements ServiceCall {
     String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
 
     @Override
-    Map<String, Object> getCurrentContext() { return context }
+    Map<String, Object> getCurrentParameters() { return parameters }
 }
