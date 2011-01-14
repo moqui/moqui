@@ -108,12 +108,13 @@ class ServiceFacadeImpl implements ServiceFacade {
     protected synchronized Node findServiceNode(String path, String verb, String noun) {
         // make a file location from the path
         String partialLocation = path.replace('.', '/') + ".xml"
+        String servicePathLocation = "service/" + partialLocation
 
         Node serviceNode = null
 
         // search for the service def XML file in the components
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
-            URL serviceComponentUrl = this.ecfi.resourceFacade.getLocationUrl(location + "/service/" + partialLocation)
+            URL serviceComponentUrl = this.ecfi.resourceFacade.getLocationUrl(location + "/" + servicePathLocation)
             if (serviceComponentUrl.getProtocol() == "file") {
                 File serviceComponentFile = new File(serviceComponentUrl.toURI())
                 if (serviceComponentFile.exists()) serviceNode = findServiceNode(serviceComponentUrl, verb, noun)
@@ -127,14 +128,16 @@ class ServiceFacadeImpl implements ServiceFacade {
         // search for the service def XML file in the classpath LAST (allow components to override, same as in entity defs)
         // first try the ClassLoader that loaded this class
         if (serviceNode == null) {
-            URL serviceFileUrl = this.getClass().getClassLoader().getResource(partialLocation)
+            URL serviceFileUrl = this.getClass().getClassLoader().getResource(servicePathLocation)
             if (serviceFileUrl) serviceNode = findServiceNode(serviceFileUrl, verb, noun)
         }
         // no luck? try the system ClassLoader
         if (serviceNode == null) {
-            URL serviceFileUrl = ClassLoader.getSystemResource(partialLocation)
+            URL serviceFileUrl = ClassLoader.getSystemResource(servicePathLocation)
             if (serviceFileUrl) serviceNode = findServiceNode(serviceFileUrl, verb, noun)
         }
+
+        if (serviceNode == null) logger.info("Service ${path}.${verb}#${noun} not found; used relative location [${servicePathLocation}]")
 
         return serviceNode
     }

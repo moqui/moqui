@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-map"/>
             </xs:sequence>
-            <xs:attribute name="service" type="xs:string" use="required">
+            <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
                     put a hash (#) between them, like: "${path}.${verb}#${noun}".
@@ -159,7 +159,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="service-invoke">
         <xs:complexType>
-            <xs:attribute name="service" type="xs:string" use="required">
+            <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
                     put a hash (#) between them, like: "${path}.${verb}#${noun}".

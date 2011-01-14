@@ -22,6 +22,8 @@ import freemarker.template.Template
 import freemarker.ext.beans.BeansWrapper
 import freemarker.template.Configuration
 import freemarker.template.TemplateException
+import org.xml.sax.SAXParseException
+import org.moqui.BaseException
 
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
@@ -36,11 +38,9 @@ class XmlAction {
         return newConfig
     }
 
-    protected final ExecutionContextFactoryImpl ecfi
     protected final Class groovyClass
 
     XmlAction(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
-        this.ecfi = ecfi
         // transform XML to groovy
         String groovyText = null
         InputStream xmlStream = null
@@ -65,10 +65,15 @@ class XmlAction {
             env.process()
 
             groovyText = outWriter.toString()
+        } catch (SAXParseException e) {
+            logger.error("Error reading XML actions from [${location}], text: ${xmlText}")
+            throw new BaseException("Error reading XML actions from [${location}]", e)
         } finally {
             if (xmlStream) xmlStream.close()
             if (templateReader) templateReader.close()
         }
+
+        logger.info("xml-actions at [${location}] produced groovy script:\n${groovyText}")
 
         // parse groovy
         groovyClass = new GroovyClassLoader().parseClass(groovyText, location)

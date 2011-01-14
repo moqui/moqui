@@ -14,6 +14,9 @@ package org.moqui.impl.service.runner
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
+import org.moqui.context.ExecutionContext
+import org.moqui.impl.context.ContextStack
+import org.moqui.impl.actions.XmlAction
 
 public class InlineServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null
@@ -23,8 +26,23 @@ public class InlineServiceRunner implements ServiceRunner {
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
-        // TODO implement
-        return null
+        ExecutionContext ec = sfi.ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
+        try {
+            cs.push(parameters)
+            // push again to get a new Map that will protect the parameters Map passed in
+            cs.push()
+            // ec is already in place, in the contextRoot, so no need to put here
+            // context is handled by the ContextStack itself, always there
+            ec.context.put("result", new HashMap())
+
+            XmlAction xa = sd.getXmlAction()
+            return xa.run(ec)
+        } finally {
+            // in the push we pushed two Maps to protect the parameters Map, so pop twice
+            cs.pop()
+            cs.pop()
+        }
     }
 
     public void destroy() { }

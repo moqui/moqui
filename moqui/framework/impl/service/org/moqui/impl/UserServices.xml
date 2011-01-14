@@ -44,20 +44,19 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- compare the passwords, encrypted -->
             <if condition="!hasPwAdminPermission">
-                <if condition="userId != this.userId">
+                <if condition="userId != ec.user.userId">
                     <return message="Cannot update the password of another user without password admin permission" error="true"/>
                 </if>
                 <if condition="!oldPassword">
                     <return message="Please enter current password" error="true"/>
                 </if>
 
-                <call-script location="foo">
-                    import org.moqui.impl.StupidUtilities
-                    String oldPasswordFullHash = StupidUtilities.getHashDigest(oldPassword,
-                            StupidUtilities.getHashSaltFromFull((String) userAccount.currentPassword),
-                            StupidUtilities.getHashTypeFromFull((String) userAccount.currentPassword))
-                    String oldPasswordHashOnly = StupidUtilities.getHashHashFromFull(oldPasswordFullHash)
-                    String currentPasswordHashOnly = StupidUtilities.getHashHashFromFull(userAccount.currentPassword)
+                <call-script>
+                    String oldPasswordFullHash = org.moqui.impl.StupidUtilities.getHashDigest(oldPassword,
+                            org.moqui.impl.StupidUtilities.getHashSaltFromFull((String) userAccount.currentPassword),
+                            org.moqui.impl.StupidUtilities.getHashTypeFromFull((String) userAccount.currentPassword))
+                    String oldPasswordHashOnly = org.moqui.impl.StupidUtilities.getHashHashFromFull(oldPasswordFullHash)
+                    String currentPasswordHashOnly = org.moqui.impl.StupidUtilities.getHashHashFromFull(userAccount.currentPassword)
                 </call-script>
                 <if condition="oldPasswordHashOnly != currentPasswordHashOnly">
                     <return message="Current passwords did not match" error="true"/>
@@ -68,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <set field="passwordNode" from-field="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
 
             <set field="minLength" from-field="passwordNode.'@min-length'" default-value="6" type="Integer"/>
-            <if condition="newPassword.length &lt; minLength">
+            <if condition="newPassword.length() &lt; minLength">
                 <message error="true">Password shorter than ${minLength} characters</message>
             </if>
 
@@ -96,7 +95,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- from here on the newPassword is considered okay -->
 
             <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
-            <call-service service="create#UserPasswordHistory">
+            <call-service name="create#UserPasswordHistory">
                 <field-map field-name="userId"/>
                 <field-map field-name="password" from-field="newPassword"/>
             </call-service>
@@ -110,7 +109,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- encrypt password (using password.@encrypt-hash-type default SHA) and save -->
             <set field="hashType" from-field="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
-            <call-service service="update#UserAccount">
+            <call-service name="update#UserAccount">
                 <field-map field-name="userId"/>
                 <field-map field-name="currentPassword"
                            from-field="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>

@@ -62,7 +62,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             }
         }
 
-        String type = sd.serviceNode."@type"
+        String type = sd.serviceNode."@type" ?: "inline"
         if (type == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
 
         // start with the settings for the default: use-or-begin
@@ -85,6 +85,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         }
 
         ServiceRunner sr = sfi.getServiceRunner(type)
+        if (!sr) throw new IllegalArgumentException("Could not find service runner for type [${type}] for service [${getServiceName()}]")
 
         // TODO trigger SECAs
 
@@ -102,7 +103,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (pauseResumeIfNeeded && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(transactionTimeout) : false
             try {
-                result = sr.runService(sd, this.context)
+                result = sr.runService(sd, this.parameters)
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
             } finally {
@@ -129,11 +130,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             try {
                 EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
                 if (verb == "create") {
-                    EntityAutoServiceRunner.createEntity(sfi, ed, context, result, null)
+                    EntityAutoServiceRunner.createEntity(sfi, ed, parameters, result, null)
                 } else if (verb == "update") {
-                    EntityAutoServiceRunner.updateEntity(sfi, ed, context, result, null)
+                    EntityAutoServiceRunner.updateEntity(sfi, ed, parameters, result, null)
                 } else if (verb == "delete") {
-                    EntityAutoServiceRunner.deleteEntity(sfi, ed, context)
+                    EntityAutoServiceRunner.deleteEntity(sfi, ed, parameters)
                 }
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)

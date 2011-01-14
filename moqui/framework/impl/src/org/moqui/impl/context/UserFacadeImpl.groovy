@@ -68,7 +68,7 @@ class UserFacadeImpl implements UserFacade {
     void setLocale(Locale locale) {
         if (this.userId) {
             eci.service.sync().name("update", "UserAccount")
-                    .context((Map<String, Object>) [userId:getUserId(), locale:locale.toString()]).call()
+                    .parameters((Map<String, Object>) [userId:getUserId(), locale:locale.toString()]).call()
         } else {
             throw new IllegalStateException("No user logged in, can't set Locale")
         }
@@ -88,7 +88,7 @@ class UserFacadeImpl implements UserFacade {
     void setTimeZone(TimeZone tz) {
         if (this.userId) {
             eci.service.sync().name("update", "UserAccount")
-                    .context((Map<String, Object>) [userId:getUserId(), timeZone:tz.getID()]).call()
+                    .parameters((Map<String, Object>) [userId:getUserId(), timeZone:tz.getID()]).call()
         } else {
             throw new IllegalStateException("No user logged in, can't set Time Zone")
         }
@@ -101,7 +101,7 @@ class UserFacadeImpl implements UserFacade {
     void setCurrencyUomId(String uomId) {
         if (this.userId) {
             eci.service.sync().name("update", "UserAccount")
-                    .context((Map<String, Object>) [userId:getUserId(), currencyUomId:uomId]).call()
+                    .parameters((Map<String, Object>) [userId:getUserId(), currencyUomId:uomId]).call()
         } else {
             throw new IllegalStateException("No user logged in, can't set Currency")
         }
@@ -126,13 +126,13 @@ class UserFacadeImpl implements UserFacade {
             // if hasLoggedOut==Y set hasLoggedOut=N
             if (newUserAccount.hasLoggedOut == "Y") {
                 eci.service.sync().name("update", "UserAccount")
-                        .context((Map<String, Object>) [userId:userId, hasLoggedOut:"N"]).call()
+                        .parameters((Map<String, Object>) [userId:userId, hasLoggedOut:"N"]).call()
             }
 
             // update visit if no user in visit yet
             if (this.visit && !this.visit.userId) {
                 eci.service.sync().name("update", "Visit")
-                        .context((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
+                        .parameters((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
             }
 
             // if WebExecutionContext add to session
@@ -152,7 +152,7 @@ class UserFacadeImpl implements UserFacade {
             Map<String, Object> ulhContext =
                     (Map<String, Object>) [userId:userId, visitId:getVisitId(), successfulLogin:(successful?"Y":"N")]
             if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = password
-            eci.service.sync().name("create", "UserLoginHistory").context(ulhContext).call()
+            eci.service.sync().name("create", "UserLoginHistory").parameters(ulhContext).call()
         }
 
         return successful
@@ -172,11 +172,11 @@ class UserFacadeImpl implements UserFacade {
                 StupidUtilities.getHashHashFromFull((String) newUserAccount.currentPassword)) {
             // only if failed on password, increment in new transaction to make sure it sticks
             eci.service.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
-                    .context((Map<String, Object>) [userId:userId]).requireNewTransaction(true).call()
+                    .parameters((Map<String, Object>) [userId:userId]).requireNewTransaction(true).call()
             return false
         }
 
-        Map<String, Object> uaContext = (Map<String, Object>) [userId:userId, successiveFailedLogins:0]
+        Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0]
         if (newUserAccount.requirePasswordChange == "Y") {
             throw new IllegalStateException("Authenticate failed for user [${userId}] because account requires password change [PWDCHG].")
         }
@@ -189,8 +189,8 @@ class UserFacadeImpl implements UserFacade {
             if (!reEnableTime || reEnableTime < getNowTimestamp()) {
                 throw new IllegalStateException("Authenticate failed for user [${userId}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
             } else {
-                uaContext.disabled = "N"
-                uaContext.disabledDateTime = null
+                uaParameters.disabled = "N"
+                uaParameters.disabledDateTime = null
             }
         }
 
@@ -204,7 +204,7 @@ class UserFacadeImpl implements UserFacade {
         }
 
         // no more auth failures? record the various account state updates
-        eci.service.sync().name("update", "UserAccount").context(uaContext).call()
+        eci.service.sync().name("update", "UserAccount").parameters(uaParameters).call()
 
         return true
     }

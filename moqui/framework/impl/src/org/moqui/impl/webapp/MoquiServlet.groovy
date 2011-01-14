@@ -76,6 +76,19 @@ class MoquiServlet extends HttpServlet {
         List<String> pathElements = pathInfo.split("/") as List
         //wec.screen.renderScreenText(String screenLocation, Appendable appender, "html", String characterEncoding, null)
 
+        // =========== start test code
+        def result1 = wec.service.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
+                .parameters((Map<String, Object>) [userId:"john.doe"]).call()
+        def result2 = wec.service.sync().name("org.moqui.impl.UserServices.updateUserAccountPassword")
+                .parameters((Map<String, Object>) [userId:"john.doe", oldPassword:"moqui", newPassword:"moqui"]).call()
+
+        response.writer.append("<html><head></head><body><h1>Test Output 1</h1>")
+        response.writer.append(result1.toString())
+        response.writer.append("<h1>Test Output 2</h1>")
+        response.writer.append(result2.toString())
+        response.writer.append("</body></html>")
+        // =========== end test code
+
         // make sure everything is cleaned up
         this.executionContextFactory.destroyActiveExecutionContext()
     }

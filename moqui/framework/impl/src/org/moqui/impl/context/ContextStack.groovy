@@ -15,6 +15,8 @@ class ContextStack implements Map<String, Object> {
     protected Deque<Map<String, Object>> stackList = new LinkedList()
 
     public ContextStack() {
+        // start with a single Map
+        push()
     }
 
     /** Puts a new Map on the top of the stack for a fresh local context

@@ -102,7 +102,8 @@ class TransactionFacadeImpl implements TransactionFacade {
     protected ArrayList<Exception> getTransactionBeginStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()
         if (!list) {
-            list = new ArrayList<Exception>()
+            list = new ArrayList<Exception>(10)
+            list.add(null)
             transactionBeginStackList.set(list)
         }
         return list
@@ -110,7 +111,8 @@ class TransactionFacadeImpl implements TransactionFacade {
     protected ArrayList<RollbackInfo> getRollbackOnlyInfoStack() {
         ArrayList<RollbackInfo> list = (ArrayList<RollbackInfo>) rollbackOnlyInfoStackList.get()
         if (!list) {
-            list = new ArrayList<RollbackInfo>()
+            list = new ArrayList<RollbackInfo>(10)
+            list.add(null)
             rollbackOnlyInfoStackList.set(list)
         }
         return list
@@ -118,7 +120,8 @@ class TransactionFacadeImpl implements TransactionFacade {
     protected ArrayList<Transaction> getSuspendedTxStack() {
         ArrayList<Transaction> list = (ArrayList<Transaction>) suspendedTxStackList.get()
         if (!list) {
-            list = new ArrayList<Transaction>()
+            list = new ArrayList<Transaction>(10)
+            list.add(null)
             suspendedTxStackList.set(list)
         }
         return list
