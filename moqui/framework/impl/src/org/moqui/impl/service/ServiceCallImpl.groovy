@@ -31,6 +31,12 @@ class ServiceCallImpl implements ServiceCall {
         noun = ServiceDefinition.getNounFromName(serviceName)
     }
 
+    protected void setParametersClean(Map<String, Object> parms) {
+        // TODO: if service is to be validated, go through service in-parameters definition and only get valid parameters
+        // TODO: do type conversions as needed for matching in parameters
+        this.parameters.putAll(parms)
+    }
+
     @Override
     String getServiceName() { return (path ? path + "." : "") + verb + (noun ? "#" + noun : "") }
 

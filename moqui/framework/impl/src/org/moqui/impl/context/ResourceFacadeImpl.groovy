@@ -147,7 +147,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected synchronized XmlAction loadXmlAction(String location) {
         XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
         if (!xa) {
-            xa = new XmlAction(ecfi, getLocationText(location))
+            xa = new XmlAction(ecfi, getLocationText(location), location)
             scriptXmlActionLocationCache.put(location, xa)
         }
         return xa

@@ -37,7 +37,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     ServiceCallSync name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
 
     @Override
-    ServiceCallSync parameters(Map<String, Object> map) { parameters.putAll(map); return this }
+    ServiceCallSync parameters(Map<String, Object> map) { setParametersClean(map); return this }
 
     @Override
     ServiceCallSync parameter(String name, Object value) { parameters.put(name, value); return this }

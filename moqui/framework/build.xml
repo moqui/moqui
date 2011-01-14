@@ -94,6 +94,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <fileset dir="impl">
                 <include name="service/**"/>
             </fileset>
+            <fileset dir="impl">
+                <include name="template/**"/>
+            </fileset>
         </jar>
     </target>
 

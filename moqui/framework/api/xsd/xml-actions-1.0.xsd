@@ -78,16 +78,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     put a hash (#) between them, like: "${path}.${verb}#${noun}".
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="in-map" type="xs:string">
-                <xs:annotation><xs:documentation>Map in the context to use as the service input parameters.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="auto-in-map" default="false" type="xs:string">
+            <xs:attribute name="in-map" default="false" type="xs:string">
                 <xs:annotation><xs:documentation>
-                    Creates an in-map with variables matching the names of service in-parameters, doing types
-                    conversions as needed.
+                    Creates an in parameters with variables matching the names of service in-parameters elements, doing
+                    type conversions as needed.
 
                     If false (default) does nothing. If true constructs an in-map from the context.
-                    If the name of a Map in the context uses it as the source Map for the service context.
+                    Otherwise is the name of a Map in the context uses it as the source Map for the service context.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="out-map" type="xs:string">
