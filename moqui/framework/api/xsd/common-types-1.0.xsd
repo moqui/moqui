@@ -23,12 +23,9 @@ This Work includes contributions authored by David E. Jones, not as a
     
     <xs:simpleType name="object-type">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="PlainString"/>
             <xs:enumeration value="String"/>
             <xs:enumeration value="BigDecimal"/>
-            <xs:enumeration value="Double"/>
             <xs:enumeration value="Float"/>
-            <xs:enumeration value="Long"/>
             <xs:enumeration value="Integer"/>
             <xs:enumeration value="Date"/>
             <xs:enumeration value="Time"/>
@@ -39,7 +36,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:simpleType>
     <xs:simpleType name="object-type-new">
         <xs:restriction base="xs:token">
-            <xs:enumeration value="PlainString"/>
             <xs:enumeration value="String"/>
             <xs:enumeration value="BigDecimal"/>
             <xs:enumeration value="Double"/>
