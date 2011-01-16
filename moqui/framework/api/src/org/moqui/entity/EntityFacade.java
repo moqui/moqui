@@ -37,26 +37,6 @@ public interface EntityFacade {
      */
     EntityValue makeValue(String entityName);
     
-    /** Update a set of values that match a condition.
-     *
-     * @param entityName The name of the Entity as defined in the entity XML file
-     * @param fieldsToSet The fields of the named entity to set in the database
-     * @param condition The condition that restricts the list of stored values
-     * @return int representing number of rows effected by this operation
-     * @throws EntityException
-     */
-    int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition)
-           throws EntityException;
-
-    /** Delete entity records that match a condition.
-     *
-     * @param entityName The Name of the Entity as defined in the entity XML file
-     * @param condition The condition used to restrict the removing
-     * @return int representing number of rows effected by this operation
-     * @throws EntityException
-     */
-    int deleteByCondition(String entityName, EntityCondition condition) throws EntityException;
-
     /** Create an EntityFind object that can be used to specify additional options, and then to execute one or more
      * finds (queries).
      * 

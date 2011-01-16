@@ -52,53 +52,6 @@ class ExecutionContextImpl implements ExecutionContext {
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
     Map<String, Object> getContextRoot() { return this.context.getRootMap() }
 
-    boolean compareInContext(String fieldName, String operator, String value, String toFieldName, String format, String type) {
-        def field = context.get(fieldName)
-        def toField = toFieldName ? context.get(toFieldName) : value
-
-        if (format) {
-            // TODO handle type conversion with format for Date, Time, Timestamp
-        }
-
-        switch (type) {
-            case "String": field = field as String; toField = toField as String; break;
-            case "BigDecimal": field = field as BigDecimal; toField = toField as BigDecimal; break;
-            case "Double": field = field as Double; toField = toField as Double; break;
-            case "Float": field = field as Double; toField = toField as Double; break;
-            case "Long": field = field as Long; toField = toField as Long; break;
-            case "Integer": field = field as Long; toField = toField as Long; break;
-            case "Date": field = field as java.sql.Date; toField = toField as java.sql.Date; break;
-            case "Time": field = field as java.sql.Time; toField = toField as java.sql.Time; break;
-            case "Timestamp": field = field as java.sql.Timestamp; toField = toField as java.sql.Timestamp; break;
-            case "Boolean": field = field as Boolean; toField = toField as Boolean; break;
-            case "Object":
-            default: break; // do nothing for Object or by default
-        }
-
-        boolean result
-        switch (operator) {
-            case "less": result = (field < toField); break;
-            case "greater": result = (field > toField); break;
-            case "less-equals": result = (field <= toField); break;
-            case "greater-equals": result = (field >= toField); break;
-
-            case "contains": result = (field as String).contains(toField as String); break;
-            case "not-contains": result = !(field as String).contains(toField as String); break;
-
-            case "empty": result = (field ? true : false); break;
-            case "not-empty": result = (field ? false : true); break;
-
-            case "matches": result = (field as String).matches(toField as String); break;
-            case "not-matches": result = !(field as String).matches(toField as String); break;
-
-            case "not-equals": result = (field != toField); break;
-            case "equals":
-            default: result = (field == toField)
-            break;
-        }
-        return result
-    }
-
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
     String getTenantId() { return this.tenantId }
 

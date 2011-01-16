@@ -318,42 +318,6 @@ class EntityFacadeImpl implements EntityFacade {
         return new EntityValueImpl(entityDefinition, this)
     }
 
-    /** @see org.moqui.entity.EntityFacade#updateByCondition(String, Map, EntityCondition) */
-    int updateByCondition(String entityName, Map<String, ?> fieldsToSet, EntityCondition condition) {
-        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
-        // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
-        EntityFind find = makeFind(entityName)
-        EntityListIterator eli = find.condition(condition).useCache(false).forUpdate(true).iterator()
-        EntityValue value
-        int totalUpdated = 0
-        while ((value = eli.next()) != null) {
-            value.putAll(fieldsToSet)
-            if (value.isModified()) {
-                // NOTE: this may blow up in some cases, if it does then change this to put all values to update in a
-                // list and update them after the eli is closed, or implement and use the eli.set(value) method
-                value.update()
-                totalUpdated++
-            }
-        }
-        eli.close()
-        return totalUpdated
-    }
-
-    /** @see org.moqui.entity.EntityFacade#deleteByCondition(String, EntityCondition) */
-    int deleteByCondition(String entityName, EntityCondition condition) {
-        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
-        // NOTE: consider expanding this to do a bulk delete in the DB if there are no EECAs for the entity
-        EntityFind find = makeFind(entityName)
-        EntityListIterator eli = find.condition(condition).useCache(false).forUpdate(true).iterator()
-        int totalDeleted = 0
-        while (eli.next() != null) {
-            eli.remove()
-            totalDeleted++
-        }
-        eli.close()
-        return totalDeleted
-    }
-
     /** @see org.moqui.entity.EntityFacade#makeFind(String) */
     EntityFind makeFind(String entityName) {
         return new EntityFindImpl(this, entityName)

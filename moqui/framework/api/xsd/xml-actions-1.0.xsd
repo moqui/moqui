@@ -302,19 +302,15 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The EntityValue object to work on.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="seq-field-name" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Field to receive the sequenced ID. Usually the second primary key field after a primary sequenced ID.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    Field to receive the sequenced ID. Usually the second primary key field after a primary sequenced ID.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="numeric-padding" type="xs:string" default="3">
-                <xs:annotation>
-                    <xs:documentation>
-                        To consistently sort on the String value, pad the beginning with zeroes until the number
-                        has this number of digits. Defaults to 3 digits total.
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="padded-length" type="xs:string" default="3">
+                <xs:annotation><xs:documentation>
+                    To consistently sort on the String value, pad the beginning with zeroes until the number
+                    has this number of digits. Defaults to 3 digits total.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="increment-by" type="xs:string" default="1">
                 <xs:annotation><xs:documentation>Increment by more than 1 to stagger sequenced IDs. Defaults to 1.</xs:documentation></xs:annotation>
@@ -373,7 +369,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="cache" type="boolean">
                 <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for this comes from the cache attribute on the entity definition.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="for-update" default="false" type="boolean">
+            <xs:attribute name="for-update" type="boolean" default="false">
                 <xs:annotation><xs:documentation>
                     Lock the selected record so only this transaction can change it until it is ended (committed or rolled back).
                     This does not have to be set to true in order to update the record, it just keeps other transactions
@@ -384,12 +380,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="entity-find" substitutionGroup="EntityFindOperations">
-        <xs:annotation>
-            <xs:documentation>
-                Like entity-and returns a list of entity values if any are found, otherwise returns an empty list.
-                Use any combination of constraint, constraints and constraint-object.
-            </xs:documentation>
-        </xs:annotation>
+        <xs:annotation><xs:documentation>
+            Like entity-and returns a list of entity values if any are found, otherwise returns an empty list.
+            Use any combination of constraint, constraints and constraint-object.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="1" ref="search-form-inputs"/>
@@ -417,23 +411,18 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Name of the list to put results in.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="cache" type="boolean">
-                <xs:annotation>
-                    <xs:documentation>
-                        Specifies whether or not the cache should be searched before going to the database.
-                        The default for this comes from the cache attribute on the entity definition.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for this comes from the cache attribute on the entity definition.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="for-update" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    Lock the selected record so only this transaction can change it until it is ended (committed or rolled back).
+                    This does not have to be set to true in order to update the record, it just keeps other transactions
+                    from updating it. In SQL this does a select for update.
+                    If this is true the cache will not be used, regardless of the cache attribute here and on the entity definition.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="distinct" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Get only distinct results, based on the combination of all fields selected. Defaults to false.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="result-set-type" default="scroll">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="forward"/>
-                        <xs:enumeration value="scroll"/>
-                    </xs:restriction>
-                </xs:simpleType>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -545,13 +534,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="to-field-name" type="xs:string">
                 <xs:annotation><xs:documentation>Compare the field-name field to another field on the entity.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="ignore-if-empty" default="false" type="boolean">
-                <xs:annotation><xs:documentation>Leave out the constraint if the comparison value is empty or null. Defaults to false.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="ignore-case" default="false" type="boolean">
+            <xs:attribute name="ignore-case" type="boolean" default="false">
                 <xs:annotation><xs:documentation>Ignore case when doing the compare. Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="ignore" default="false">
+            <xs:attribute name="ignore-if-empty" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Leave out the constraint if the comparison value is empty or null. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ignore" type="xs:string" default="false">
                 <xs:annotation><xs:documentation>Ignore the econdition (leave out of the find) if set to true. Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -632,20 +621,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="entity-find-count" substitutionGroup="EntityFindOperations">
-        <xs:annotation>
-            <xs:documentation>
-                The entity-find-count is very similar to entity-find.
-
-                Specify the entity-name, optionally the delgator-name if you want to override that,
-                and then the name of the variable to put the count in.
-
-                You can do the same econdition or econditions elements which can have econdition
-                and other econditions underneath it for a tree of econditions that can be arbitrarily complex.
-                You can also use the having-econditions, this is the same as on the entity-find.
-                What this will do basically is, rather than doing a query and getting the results back,
-                it will just count the results and put that number in the context in the variable named by the count-name.
-            </xs:documentation>
-        </xs:annotation>
+        <xs:annotation><xs:documentation>
+            Find the count of the number of records that match the given conditions.
+            Conditions follow the same structure as in the entity-find operation.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -655,6 +634,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element ref="econdition-object"/>
                 </xs:choice>
                 <xs:element minOccurs="0" ref="having-econditions"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="select-field"/>
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required">
                 <xs:annotation>
@@ -670,114 +650,87 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
+            <xs:attribute name="cache" type="boolean">
+                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for this comes from the cache attribute on the entity definition.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="distinct" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Get only distinct results, based on the combination of all fields selected. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="entity-find-related-one" substitutionGroup="EntityFindOperations">
-        <xs:annotation>
-            <xs:documentation>
-                If you have a entity value object sitting in the context and you want to get a related entity
-                following one of the type one relationships in the data model, then you can specify the name of the value
-                here, the relation-name, the name of the relationship between the two entities, and the to-value where it
-                should put the result, and you can tell it to use-cache or not, by default it doesn't.
-            </xs:documentation>
-        </xs:annotation>
+        <xs:annotation><xs:documentation>
+            Find a single value related to an existing value.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="value-field" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of a entity value sitting in the context from where you want to get a related-one entity value.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    Name of the existing entity value in the context.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="relation-name" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of the one-relation to use to relate entity value in value-field to entity value in to-value.
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="relationship-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Name of the relationship to use, consists of the relationship title and the related entity name,
+                    like: ${title}${related-entity-name}.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="use-cache" type="xs:string" default="false">
-                <xs:annotation>
-                    <xs:documentation>
-                        Specifies whether or not the delegator's cache should be searched before going to the database.
-                        This results in much faster retrieval times, but can return stale data that is not the most current in the database.
-                        Must be "true" or "false", defaults to "false".
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="cache" type="boolean">
+                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for this comes from the cache attribute on the entity definition.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="for-update" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    Lock the selected record so only this transaction can change it until it is ended (committed or rolled back).
+                    This does not have to be set to true in order to update the record, it just keeps other transactions
+                    from updating it. In SQL this does a select for update.
+                    If this is true the cache will not be used, regardless of the cache attribute here and on the entity definition.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="to-value-field" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of field to put the entity value result in.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>Name of field to put the entity value result in.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="entity-find-related" substitutionGroup="EntityFindOperations">
-        <xs:annotation>
-            <xs:documentation>
-                Get-related is just like get-related-one,
-                except that instead of getting a single value back to put in the to-value,
-                it gets a full list back.
-
-                You start with the the value object, specify the name of the relationship.
-                You can specify the name of a map that will restrain the query further,
-                beyond the field mappings and their relationship.
-
-                You can also specify how you want to order it.
-
-                Use-cache true or false, list-name for the output.
-            </xs:documentation>
-        </xs:annotation>
+        <xs:annotation><xs:documentation>
+            Find a list of values related to a specific value.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="value-field" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of a entity value sitting in the context from where you want to get a related entity value.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    Name of the existing entity value in the context.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="relation-name" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of the relation to use to relate entity value in value-field to entity value in to-value.
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="relationship-name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Name of the relationship to use, consists of the relationship title and the related entity name,
+                    like: ${title}${related-entity-name}.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="map" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of a map that will restrain the query further,
-                        beyond the field mappings and their relationship.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    A map containing extra constraints for the find.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="order-by-list" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        This will be a list sitting in the context that has string entries in it for each field that you want it to order by/
-                        Each field in the list, or each entry in the list, will just be a string with a field name.
-                        It can be preceded by a plus or a minus to specify an ascending or descending sort for that.
-                        The default is ascending sort, so you just put a minus in front of the field-name if you want it to be descending.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    A list of field names to order the results by.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="use-cache" type="xs:string" default="false">
-                <xs:annotation>
-                    <xs:documentation>
-                        Specifies whether or not the delegator's cache should be searched before going to the database.
-                        This results in much faster retrieval times, but can return stale data that is not the most current in the database.
-                        Must be "true" or "false", defaults to "false".
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="cache" type="boolean">
+                <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for this comes from the cache attribute on the entity definition.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="for-update" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    Lock the selected record so only this transaction can change it until it is ended (committed or rolled back).
+                    This does not have to be set to true in order to update the record, it just keeps other transactions
+                    from updating it. In SQL this does a select for update.
+                    If this is true the cache will not be used, regardless of the cache attribute here and on the entity definition.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="list" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of a list where to put the result in.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    Name of the list to put the entity list result in.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -978,8 +931,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:group maxOccurs="unbounded" ref="IfConditions"/>
             <xs:attribute name="title" type="xs:string">
                 <xs:annotation><xs:documentation>
-                    Each assert operation have a title that can be used in the report for the testing.
-                    These can be used in the normal code.
+                    A title that can be used in reports for testing.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -1138,8 +1090,9 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="condition"/>
-                <xs:element ref="then"/>
+                <xs:element minOccurs="0" ref="condition"/>
+                <xs:element minOccurs="0" ref="then"/>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
             </xs:sequence>
             <xs:attribute name="condition" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>
@@ -1162,16 +1115,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:annotation><xs:documentation>
             To be true just one of the conditions underneath needs to be true.
             Will return true as soon as a condition is true, not evaluating remaining conditions.
-        </xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:group maxOccurs="unbounded" ref="IfConditions"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="xor" substitutionGroup="IfCombineConditions">
-        <xs:annotation><xs:documentation>
-            To be true only one of the conditions underneath can be true.
-            Will return false as soon as 2 conditions are true, not evaluating remaining conditions.
-            If no conditions evaluate to true will return false.
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:group maxOccurs="unbounded" ref="IfConditions"/>
@@ -1230,19 +1173,7 @@ This Work includes contributions authored by David E. Jones, not as a
             When not under a condition element any xml-action operation can be nested under this tag, and will only be run if it evaluates to true.
         </xs:documentation></xs:annotation>
     </xs:element>
-    <xs:element name="check-id" substitutionGroup="IfOtherOperations">
-        <xs:annotation><xs:documentation>
-            <![CDATA[The check-id tag checks to see if the ID value in the given field is a valid ID string.
-            Valid IDs can be any sequence of characters or digits but must not containt the following characters:
-            space [ ], doublequote ["], single quote ['], ampersand [&], question mark [?], less-than sign [<], greater-than sign [>].]]>
-        </xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:attribute name="field" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>Name of the field with the ID value to check.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <!-- the "Other" Operations -->
+    <!-- "Other" Operations -->
     <xs:element name="log" substitutionGroup="OtherOperations">
         <xs:annotation><xs:documentation>Logs a message using Log4J.</xs:documentation></xs:annotation>
         <xs:complexType>

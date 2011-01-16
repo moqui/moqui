@@ -74,6 +74,30 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         return new WhereCondition(this, sqlWhereClause)
     }
 
+    EntityCondition makeActionCondition(String fieldName, String operator, Object fromField, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
+        if (ignore) return null
+
+        if (toFieldName) {
+            EntityCondition ec = makeConditionToField(fieldName, getComparisonOperator(operator), toFieldName)
+            if (ignoreCase) ec.ignoreCase()
+            return ec
+        } else {
+            Object condValue = null
+            if (fromField) {
+                condValue = fromField
+            } else if (value) {
+                // NOTE: have to convert value (if needed) later on because we don't know which entity/field this is for, or change to pass in entity?
+                condValue = value
+            } else {
+                if (ignoreIfEmpty) return null
+            }
+
+            EntityCondition ec = makeCondition(fieldName, getComparisonOperator(operator), condValue)
+            if (ignoreCase) ec.ignoreCase()
+            return ec
+        }
+    }
+
     public static abstract class EntityConditionImplBase implements EntityCondition {
         EntityConditionFactoryImpl ecFactoryImpl
 
@@ -307,6 +331,8 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.conditionList = conditionList ? conditionList : new LinkedList()
             this.operator = operator ? operator : JoinOperator.AND
         }
+
+        void addCondition(EntityConditionImplBase condition) { conditionList.add(condition) }
 
         @Override
         void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -653,6 +679,16 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     static String getJoinOperatorString(JoinOperator op) {
         return op == JoinOperator.OR ? "OR" : "AND"
+    }
+    static JoinOperator getJoinOperator(String opName) {
+        if (!opName) return JoinOperator.AND
+        switch (opName) {
+            case "or":
+            case "OR": return JoinOperator.OR
+            case "and":
+            case "AND":
+            default: return JoinOperator.AND
+        }
     }
     static String getComparisonOperatorString(ComparisonOperator op) {
         return comparisonOperatorStringMap.get(op)

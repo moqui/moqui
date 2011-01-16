@@ -68,11 +68,14 @@ class MoquiServlet extends HttpServlet {
     /** @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String pathInfo = request.getPathInfo()
+        long startTime = System.currentTimeMillis()
+        if (logger.infoEnabled) logger.info("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
+
         // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
         WebExecutionContext wec = this.executionContextFactory.getWebExecutionContext(this.webappMoquiName, request, response)
 
         // TODO: render screens based on path in URL (should probably move this to another class that renders screens)
-        String pathInfo = request.getPathInfo();
         List<String> pathElements = pathInfo.split("/") as List
         //wec.screen.renderScreenText(String screenLocation, Appendable appender, "html", String characterEncoding, null)
 
@@ -91,5 +94,8 @@ class MoquiServlet extends HttpServlet {
 
         // make sure everything is cleaned up
         this.executionContextFactory.destroyActiveExecutionContext()
+
+        double runningTime = (System.currentTimeMillis() - startTime) / 1000
+        if (logger.infoEnabled) logger.info("End request to [${pathInfo}] in [${runningTime}] seconds, in session [${request.session.id}]")
     }
 }

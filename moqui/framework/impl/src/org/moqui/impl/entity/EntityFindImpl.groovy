@@ -26,6 +26,7 @@ import java.sql.SQLException
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition.JoinOperator
+import org.moqui.impl.entity.EntityConditionFactoryImpl.ListCondition
 
 class EntityFindImpl implements EntityFind {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindImpl.class)
@@ -94,22 +95,32 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#condition(EntityCondition) */
     EntityFind condition(EntityCondition condition) {
-        if (this.whereEntityCondition) {
-            this.whereEntityCondition = this.efi.conditionFactory.makeCondition(
-                    this.whereEntityCondition, EntityCondition.JoinOperator.AND, condition)
+        if (!condition) return this
+        if (whereEntityCondition) {
+            // use ListCondition instead of ANDing two at a time to avoid a bunch of nested ANDs
+            if (whereEntityCondition instanceof ListCondition) {
+                ((ListCondition) whereEntityCondition).addCondition((EntityConditionImplBase) condition)
+            } else {
+                whereEntityCondition = efi.conditionFactory.makeCondition([whereEntityCondition, condition])
+            }
         } else {
-            this.whereEntityCondition = (EntityConditionImplBase) condition
+            whereEntityCondition = (EntityConditionImplBase) condition
         }
         return this
     }
 
     /** @see org.moqui.entity.EntityFind#havingCondition(EntityCondition) */
     EntityFind havingCondition(EntityCondition condition) {
-        if (this.havingEntityCondition) {
-            this.havingEntityCondition = this.efi.conditionFactory.makeCondition(
-                    this.havingEntityCondition, EntityCondition.JoinOperator.AND, condition)
+        if (!condition) return this
+        if (havingEntityCondition) {
+            // use ListCondition instead of ANDing two at a time to avoid a bunch of nested ANDs
+            if (havingEntityCondition instanceof ListCondition) {
+                ((ListCondition) havingEntityCondition).addCondition((EntityConditionImplBase) condition)
+            } else {
+                havingEntityCondition = efi.conditionFactory.makeCondition([havingEntityCondition, condition])
+            }
         } else {
-            this.havingEntityCondition = (EntityConditionImplBase) condition
+            havingEntityCondition = (EntityConditionImplBase) condition
         }
         return this
     }
@@ -422,6 +433,15 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
+        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        Cache entityCountCache = null
+        // NOTE: don't cache if there is a having condition, for now just support where
+        boolean doCache = !this.havingEntityCondition && this.shouldCache()
+        if (doCache) {
+            entityCountCache = this.efi.ecfi.getCacheFacade().getCache("entity.count.${this.entityName}")
+            if (entityCountCache.containsKey(whereCondition)) return (Long) entityCountCache.get(whereCondition)
+        }
+
         EntityDefinition entityDefinition = this.getEntityDef()
         if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
 
@@ -435,7 +455,6 @@ class EntityFindImpl implements EntityFind {
 
         // where clause
         efb.startWhereClause()
-        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
             whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
@@ -474,7 +493,54 @@ class EntityFindImpl implements EntityFind {
         } finally {
             efb.closeAll()
         }
+
+        if (doCache) {
+            entityCountCache.put(whereCondition, count)
+        }
+
         return count
+    }
+
+    long updateAll(Map<String, ?> fieldsToSet) {
+        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
+        // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
+        this.useCache(false).forUpdate(true)
+        EntityListIterator eli = null
+        long totalUpdated = 0
+        try {
+            eli = iterator()
+            EntityValue value
+            while ((value = eli.next()) != null) {
+                value.putAll(fieldsToSet)
+                if (value.isModified()) {
+                    // NOTE: this may blow up in some cases, if it does then change this to put all values to update in a
+                    // list and update them after the eli is closed, or implement and use the eli.set(value) method
+                    value.update()
+                    totalUpdated++
+                }
+            }
+        } finally {
+            eli.close()
+        }
+        return totalUpdated
+    }
+
+    long deleteAll() {
+        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
+        // NOTE: consider expanding this to do a bulk delete in the DB if there are no EECAs for the entity
+        this.useCache(false).forUpdate(true)
+        EntityListIterator eli = null
+        long totalDeleted = 0
+        try {
+            eli = iterator()
+            while (eli.next() != null) {
+                eli.remove()
+                totalDeleted++
+            }
+        } finally {
+            eli.close()
+        }
+        return totalDeleted
     }
 
     protected EntityDefinition getEntityDef() {

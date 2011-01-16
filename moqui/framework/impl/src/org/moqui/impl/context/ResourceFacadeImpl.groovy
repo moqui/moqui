@@ -17,6 +17,8 @@ import java.nio.charset.Charset
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.moqui.impl.actions.XmlAction
+import org.moqui.context.ExecutionContext
+import org.codehaus.groovy.runtime.InvokerHelper
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -123,6 +125,25 @@ public class ResourceFacadeImpl implements ResourceFacade {
         while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
 
         return strippedLocation.toString()
+    }
+
+    Object runScriptInContextByLocation(String location, String method) {
+        ExecutionContext ec = ecfi.executionContext
+        if (location.endsWith(".groovy")) {
+            Script script = InvokerHelper.createScript(getGroovyByLocation(location), new Binding(ec.context))
+            Object result
+            if (method) {
+                result = script.invokeMethod(method, {})
+            } else {
+                result = script.run()
+            }
+            return result
+        } else if (location.endsWith(".xml")) {
+            XmlAction xa = getXmlActionByLocation(location)
+            return xa.run(ec)
+        } else {
+            throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
+        }
     }
 
     Class getGroovyByLocation(String location) {

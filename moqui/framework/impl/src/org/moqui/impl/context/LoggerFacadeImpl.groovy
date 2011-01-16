@@ -26,6 +26,20 @@ public class LoggerFacadeImpl implements LoggerFacade {
         this.ecfi = ecfi;
     }
 
+    public void log(String levelStr, String message, Throwable thrown) {
+        int level
+        switch (levelStr) {
+            case "trace": level = Level.TRACE_INT; break;
+            case "debug": level = Level.DEBUG_INT; break;
+            case "info": level = Level.INFO_INT; break;
+            case "warn": level = Level.WARN_INT; break;
+            case "error": level = Level.ERROR_INT; break;
+            case "off": // do nothing
+            default: return;
+        }
+        log(level, message, thrown)
+    }
+
     /** @see org.moqui.context.LoggerFacade#log(int, String, Throwable) */
     public void log(int level, String message, Throwable thrown) {
         switch (level) {

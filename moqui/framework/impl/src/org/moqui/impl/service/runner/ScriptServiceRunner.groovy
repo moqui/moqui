@@ -33,7 +33,6 @@ public class ScriptServiceRunner implements ServiceRunner {
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         ExecutionContext ec = sfi.ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
-        String location = sd.location
         try {
             cs.push(parameters)
             // push again to get a new Map that will protect the parameters Map passed in
@@ -42,26 +41,14 @@ public class ScriptServiceRunner implements ServiceRunner {
             // context is handled by the ContextStack itself, always there
             ec.context.put("result", new HashMap())
 
-            if (location.endsWith(".groovy")) {
-                Script script = InvokerHelper.createScript(sfi.ecfi.resourceFacade.getGroovyByLocation(sd.location), new Binding(ec.context))
-                Object result
-                if (sd.serviceNode."@method") {
-                    result = script.invokeMethod(sd.serviceNode."@method", {})
-                } else {
-                    result = script.run()
-                }
-                if (result instanceof Map) {
-                    return (Map<String, Object>) result
-                } else if (ec.context.get("result")) {
-                    return (Map<String, Object>) ec.context.get("result")
-                } else {
-                    return null
-                }
-            } else if (location.endsWith(".xml")) {
-                XmlAction xa = sfi.ecfi.resourceFacade.getXmlActionByLocation(sd.location)
-                return xa.run(ec)
+            Object result = ec.resource.runScriptInContextByLocation(sd.location, sd.serviceNode."@method")
+
+            if (result instanceof Map) {
+                return (Map<String, Object>) result
+            } else if (ec.context.get("result")) {
+                return (Map<String, Object>) ec.context.get("result")
             } else {
-                throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
+                return null
             }
         } finally {
             // in the push we pushed two Maps to protect the parameters Map, so pop twice

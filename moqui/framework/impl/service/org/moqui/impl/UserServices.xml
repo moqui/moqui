@@ -78,7 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <set field="minOthers" from-field="passwordNode.'@min-others'" default-value="1" type="Integer"/>
             <if condition="org.moqui.impl.StupidUtilities.countChars(newPassword,false,false,true) >= minOthers">
-                <message error="true">Password needs ${minOthers} others (not letter or digit)</message>
+                <message error="true">Password needs ${minOthers} other characters (not letter or digit)</message>
             </if>
 
             <!-- if password is in the history don't allow it -->
@@ -88,7 +88,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="password" from-field="newPassword"/>
             </entity-find>
             <if condition="duplicateUserPasswordHistoryList">
-                <message error="true">Password used in last ${historyLimit} passwords</message>
+                <message error="true">Password was used in last ${historyLimit} passwords</message>
             </if>
 
             <check-errors/>

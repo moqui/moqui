@@ -197,4 +197,19 @@ public interface EntityFind extends java.io.Serializable {
      * This method ignores the cache setting and always gets results from the database.
      */
     long count() throws EntityException;
+
+    /** Update a set of values that match a condition.
+     *
+     * @param fieldsToSet The fields of the named entity to set in the database
+     * @return long representing number of rows effected by this operation
+     * @throws EntityException
+     */
+    long updateAll(Map<String, ?> fieldsToSet) throws EntityException;
+
+    /** Delete entity records that match a condition.
+     *
+     * @return long representing number of rows effected by this operation
+     * @throws EntityException
+     */
+    long deleteAll() throws EntityException;
 }

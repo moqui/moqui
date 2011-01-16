@@ -21,30 +21,46 @@ import freemarker.core.Environment
 import freemarker.template.Template
 import freemarker.ext.beans.BeansWrapper
 import freemarker.template.Configuration
-import freemarker.template.TemplateException
 import org.xml.sax.SAXParseException
 import org.moqui.BaseException
 
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
 
-    protected final static String templateLocation = "classpath://template/XmlActions.groovy.ftl"
-    protected final static BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-    protected final static Configuration defaultConfig = makeConfiguration()
-    public static Configuration makeConfiguration() {
+    // ============ Static Fields for the Template (same one used over an over, so just always keep it here)
+    protected final static String templateLocation = "template/XmlActions.groovy.ftl"
+    protected final static Template template = makeTemplate()
+    protected static Template makeTemplate() {
+        Template newTemplate = null
+        Reader templateReader = null
+        try {
+            URL templateUrl = XmlAction.class.getClassLoader().getResource(templateLocation)
+            if (!templateUrl) templateUrl = ClassLoader.getSystemResource(templateLocation)
+            InputStream templateStream = templateUrl.newInputStream()
+            templateReader = new InputStreamReader(templateStream)
+            newTemplate = new Template(templateLocation, templateReader, makeConfiguration())
+        } catch (Exception e) {
+            logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
+        } finally {
+            if (templateReader) templateReader.close()
+        }
+        return newTemplate
+    }
+    protected static Configuration makeConfiguration() {
+        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
         Configuration newConfig = new Configuration()
         newConfig.setObjectWrapper(defaultWrapper)
         newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
         return newConfig
     }
 
+    /** The Groovy class compiled from the script transformed from the XML actions text using the FTL template. */
     protected final Class groovyClass
 
     XmlAction(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
         // transform XML to groovy
         String groovyText = null
         InputStream xmlStream = null
-        Reader templateReader = null
         try {
             Map root = new HashMap()
             InputSource xmlInputSource
@@ -56,10 +72,6 @@ class XmlAction {
             }
             root.put("doc", freemarker.ext.dom.NodeModel.parse(xmlInputSource))
 
-            InputStream templateStream = ecfi.resourceFacade.getLocationStream(templateLocation)
-            templateReader = new InputStreamReader(templateStream)
-            Template template = new Template(templateLocation, templateReader, defaultConfig)
-
             Writer outWriter = new StringWriter()
             Environment env = template.createProcessingEnvironment(root, (Writer) outWriter)
             env.process()
@@ -70,25 +82,19 @@ class XmlAction {
             throw new BaseException("Error reading XML actions from [${location}]", e)
         } finally {
             if (xmlStream) xmlStream.close()
-            if (templateReader) templateReader.close()
         }
 
-        logger.info("xml-actions at [${location}] produced groovy script:\n${groovyText}")
+        if (logger.debugEnabled) logger.debug("xml-actions at [${location}] produced groovy script:\n${groovyText}")
 
         // parse groovy
         groovyClass = new GroovyClassLoader().parseClass(groovyText, location)
     }
 
     /** Run the XML actions in the current context of the ExecutionContext */
-    Map<String, Object> run(ExecutionContext ec) {
+    Object run(ExecutionContext ec) {
+        if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
+
         Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
-        Object result = script.run()
-        if (result instanceof Map) {
-            return (Map<String, Object>) result
-        } else if (ec.context.get("result")) {
-            return (Map<String, Object>) ec.context.get("result")
-        } else {
-            return null
-        }
+        return script.run()
     }
 }
