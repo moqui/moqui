@@ -16,6 +16,7 @@ import java.sql.Timestamp
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition
+import org.moqui.impl.StupidUtilities.MapOrderByComparator
 
 class EntityListImpl implements EntityList {
 
@@ -62,7 +63,7 @@ class EntityListImpl implements EntityList {
     @Override
     EntityList orderByFields(List<String> fieldNames) {
         if (fieldNames) {
-            Collections.sort(this.valueList, new EntityOrderByComparator(fieldNames))
+            Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
         }
         return this
     }
@@ -167,52 +168,4 @@ class EntityListImpl implements EntityList {
 
     @Override
     List<EntityValue> subList(int start, int end) { return this.valueList.subList(start, end) }
-
-    public class EntityOrderByComparator implements Comparator<EntityValue> {
-        protected List<String> fieldNameList = new ArrayList<String>()
-
-        public EntityOrderByComparator(List<String> fieldNameList) {
-            this.fieldNameList = fieldNameList
-        }
-
-        @Override
-        public int compare(EntityValue entity1, EntityValue entity2) {
-            for (String fieldName in this.fieldNameList) {
-                boolean ascending = true
-                if (fieldName.charAt(0) == '-') {
-                    ascending = false
-                    fieldName = fieldName.substring(1)
-                } else if (fieldName.charAt(0) == '+') {
-                    fieldName = fieldName.substring(1)
-                }
-                Comparable value1 = (Comparable) entity1.get(fieldName)
-                Comparable value2 = (Comparable) entity2.get(fieldName)
-                // NOTE: nulls go earlier in the list for ascending, later in the list for !ascending
-                if (value1 == null) {
-                    if (value2 != null) return ascending ? 1 : -1
-                } else {
-                    if (value2 == null) {
-                        return ascending ? -1 : 1
-                    } else {
-                        int comp = value1.compareTo(value2)
-                        if (comp != 0) return ascending ? comp : -comp
-                    }
-                }
-            }
-            // all evaluated to 0, so is the same, so return 0
-            return 0
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (!(obj instanceof EntityOrderByComparator)) return false
-            EntityOrderByComparator that = (EntityOrderByComparator) obj
-            return this.fieldNameList.equals(that.fieldNameList)
-        }
-
-        @Override
-        public String toString() {
-            return this.fieldNameList.toString()
-        }
-    }
 }

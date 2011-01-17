@@ -227,33 +227,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute type="xs:string" name="list" use="required">
                 <xs:annotation><xs:documentation>Name of the list to be sorted.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute type="xs:string" name="to-list">
-                <xs:annotation>
-                    <xs:documentation>
-                        The name of the field the ordered list will be put into.
-                        Defaults to the value of the list-name attribute (ie goes to the same place it came from, replacing the old list).
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="filter-map-list" substitutionGroup="EnvOperations">
         <xs:annotation><xs:documentation>Filters the given List of Maps by the field-maps specified.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="field-map"/>
-                <xs:element minOccurs="0" maxOccurs="1" ref="date-filter"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-map"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="date-filter"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="list" use="required">
                 <xs:annotation><xs:documentation>The name of the field that contains a List of Map objects.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute type="xs:string" name="to-list">
-                <xs:annotation>
-                    <xs:documentation>
-                        The name of the field the filtered list will be put into.
-                        Defaults to the value of the list-name attribute (ie goes to the same place it came from, replacing the old list).
-                    </xs:documentation>
-                </xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

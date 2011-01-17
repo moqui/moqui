@@ -18,6 +18,7 @@ import java.sql.Connection
 import org.w3c.dom.Element
 import java.security.MessageDigest
 import org.apache.commons.codec.binary.Hex
+import java.sql.Timestamp
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -123,6 +124,82 @@ class StupidUtilities {
         }
         return result
     }
+
+    static void filterMapList(List<Map> theList, Map<String, Object> fieldValues) {
+        if (!theList || !fieldValues) return
+        Iterator<Map> theIterator = theList.iterator()
+        while (theIterator.hasNext()) {
+            Map curMap = theIterator.next()
+            for (Map.Entry entry in fieldValues.entrySet()) {
+                if (curMap.get(entry.key) != entry.value) { theIterator.remove(); break }
+            }
+        }
+    }
+
+    static void filterMapListByDate(List<Map> theList, String fromDateName, String thruDateName, Timestamp compareStamp) {
+        if (!theList) return
+        if (!fromDateName) fromDateName = "fromDate"
+        if (!thruDateName) thruDateName = "thruDate"
+        // no access to ec.user here, so this should always be passed in, but just in case
+        if (!compareStamp) compareStamp = new Timestamp(System.currentTimeMillis())
+
+        Iterator<Map> theIterator = theList.iterator()
+        while (theIterator.hasNext()) {
+            Map curMap = theIterator.next()
+            Timestamp fromDate = curMap.get(fromDateName) as Timestamp
+            if (fromDate && compareStamp < fromDate) { theIterator.remove(); continue }
+            Timestamp thruDate = curMap.get(thruDateName) as Timestamp
+            if (thruDate && compareStamp >= thruDate) theIterator.remove();
+        }
+    }
+
+    static void orderMapList(List<Map> theList, List<String> fieldNames) {
+        if (theList && fieldNames) Collections.sort(theList, new MapOrderByComparator(fieldNames))
+    }
+
+    static class MapOrderByComparator implements Comparator<Map> {
+        protected List<String> fieldNameList = new ArrayList<String>()
+
+        public MapOrderByComparator(List<String> fieldNameList) { this.fieldNameList = fieldNameList }
+
+        @Override
+        public int compare(Map map1, Map map2) {
+            for (String fieldName in this.fieldNameList) {
+                boolean ascending = true
+                if (fieldName.charAt(0) == '-') {
+                    ascending = false
+                    fieldName = fieldName.substring(1)
+                } else if (fieldName.charAt(0) == '+') {
+                    fieldName = fieldName.substring(1)
+                }
+                Comparable value1 = (Comparable) map1.get(fieldName)
+                Comparable value2 = (Comparable) map2.get(fieldName)
+                // NOTE: nulls go earlier in the list for ascending, later in the list for !ascending
+                if (value1 == null) {
+                    if (value2 != null) return ascending ? 1 : -1
+                } else {
+                    if (value2 == null) {
+                        return ascending ? -1 : 1
+                    } else {
+                        int comp = value1.compareTo(value2)
+                        if (comp != 0) return ascending ? comp : -comp
+                    }
+                }
+            }
+            // all evaluated to 0, so is the same, so return 0
+            return 0
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof MapOrderByComparator)) return false
+            return this.fieldNameList.equals(((MapOrderByComparator) obj).fieldNameList)
+        }
+
+        @Override
+        public String toString() { return this.fieldNameList.toString() }
+    }
+
 
     static int countChars(String s, boolean countDigits, boolean countLetters, boolean countOthers) {
         // this seems like it should be part of some standard Java API, but I haven't found it

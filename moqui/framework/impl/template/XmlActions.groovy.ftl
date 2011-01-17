@@ -32,10 +32,13 @@ import org.moqui.impl.StupidUtilities
 if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_temp_internal<#else/>${.node["@field"]} = <#if .node["@from-field"]?has_content>${.node["@from-field"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: ${.node["@default-value"]}</#if><#if .node["@type"]?has_content> as ${.node["@type"]}</#if></#if></#macro>
 
 <#macro "order-map-list">
-    // TODO impl
+    StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>'${ob["@field-name"]}'<#if ob_has_next>, </#if></#list>])
 </#macro>
-<#macro "filter-map-list">
-    // TODO impl
+<#macro "filter-map-list"><#if .node["field-map"]?has_content>
+    StupidUtilities.filterMapList(${.node["@list"]}, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from-field"]?has_content>${fm["@from-field"]}<#else/>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
+    </#if><#list .node["date-filter"] as df>
+    StupidUtilities.filterMapListByDate(${.node["@list"]}, ${df["@from-field-name"][0]?default("fromDate")}, ${df["@thru-field-name"][0]?default("thruDate")}, <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else/>ec.user.nowTimestamp</#if>)
+    </#list>
 </#macro>
 
 <#macro "entity-sequenced-id-primary">
