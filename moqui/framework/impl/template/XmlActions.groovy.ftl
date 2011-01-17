@@ -22,7 +22,7 @@ import org.moqui.impl.StupidUtilities
         <#if .node["@in-map"]?has_content>.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter(${fieldMap["@field-name"]}, <#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#else><#if fieldMap.@value?has_content>"""${fieldMap.@value}"""<#else/>${fieldMap["@field-name"]}</#if></#if>)</#list>.call()
 </#macro>
 
-<#macro "call-script"><#if .node["@location"]?has_content>ec.resource.runScriptInContextByLocation(${.node["@location"]}, null)</#if>
+<#macro "call-script"><#if .node["@location"]?has_content>ec.resource.runScriptInCurrentContext(${.node["@location"]}, null)</#if>
     // begin inline script
     ${.node}
     // end inline script

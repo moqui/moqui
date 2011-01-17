@@ -41,7 +41,7 @@ public class ScriptServiceRunner implements ServiceRunner {
             // context is handled by the ContextStack itself, always there
             ec.context.put("result", new HashMap())
 
-            Object result = ec.resource.runScriptInContextByLocation(sd.location, sd.serviceNode."@method")
+            Object result = ec.resource.runScriptInCurrentContext(sd.location, sd.serviceNode."@method")
 
             if (result instanceof Map) {
                 return (Map<String, Object>) result

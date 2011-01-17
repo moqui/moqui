@@ -127,7 +127,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return strippedLocation.toString()
     }
 
-    Object runScriptInContextByLocation(String location, String method) {
+    /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */
+    Object runScriptInCurrentContext(String location, String method) {
         ExecutionContext ec = ecfi.executionContext
         if (location.endsWith(".groovy")) {
             Script script = InvokerHelper.createScript(getGroovyByLocation(location), new Binding(ec.context))

@@ -30,4 +30,11 @@ public interface ResourceFacade {
      * @param location A URL-style location string that also support the Moqui-specific component and content protocols.
      */
     InputStream getLocationStream(String location);
+
+    /** Run a script at the given location (optionally with the given method, like in a groovy class) using the current
+     * context for its variable space.
+     *
+     * @return The value returned by the script, if any.
+     */
+    Object runScriptInCurrentContext(String location, String method);
 }
