@@ -11,14 +11,12 @@
  */
 package org.moqui.impl
 
-import org.moqui.entity.EntityCondition.ComparisonOperator
-import org.moqui.entity.EntityCondition.JoinOperator
-import java.util.regex.Pattern
-import java.sql.Connection
-import org.w3c.dom.Element
 import java.security.MessageDigest
-import org.apache.commons.codec.binary.Hex
 import java.sql.Timestamp
+import java.util.regex.Pattern
+
+import org.apache.commons.codec.binary.Hex
+import org.w3c.dom.Element
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 

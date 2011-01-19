@@ -9,13 +9,25 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.context;
+package org.moqui.impl.screen
 
-import java.nio.charset.Charset;
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.context.ScreenRenderImpl
 
-/** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
-public interface ScreenFacade {
+class ScreenWidgets {
+    protected ExecutionContextFactoryImpl ecfi
+    protected Node widgetsNode
+    protected String location
 
-    /** Make a ScreenRender object to render a screen. */
-    ScreenRender makeRender();
+    ScreenWidgets(ExecutionContextFactoryImpl ecfi, Node widgetsNode, String location) {
+        this.ecfi = ecfi
+        this.widgetsNode = widgetsNode
+        this.location = location
+
+        // TODO prep FTL Template
+    }
+
+    void render(ScreenRenderImpl sri) {
+        // TODO render Template
+    }
 }

@@ -9,13 +9,23 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.context;
+package org.moqui.impl.webapp
 
-import java.nio.charset.Charset;
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
-/** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
-public interface ScreenFacade {
+class WebappDefinition {
 
-    /** Make a ScreenRender object to render a screen. */
-    ScreenRender makeRender();
+    protected final ExecutionContextFactoryImpl ecfi
+    protected final String webappName
+    protected final Node webappNode
+
+    WebappDefinition(String webappName, ExecutionContextFactoryImpl ecfi) {
+        this.webappName = webappName
+        this.ecfi = ecfi
+
+        webappNode = (Node) ecfi.confXmlRoot["webapp-list"][0].webapp.find({ it.@name == webappName })
+    }
+
+    String getWebappName() { return webappName }
+    Node getWebappNode() { return webappNode }
 }

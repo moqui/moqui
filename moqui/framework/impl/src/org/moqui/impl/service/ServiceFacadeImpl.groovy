@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
 
-    final ExecutionContextFactoryImpl ecfi
+    protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache serviceLocationCache
 
@@ -81,6 +81,8 @@ class ServiceFacadeImpl implements ServiceFacade {
         scheduler.shutdown(true)
     }
 
+    ExecutionContextFactoryImpl getEcfi() { return ecfi }
+
     ServiceRunner getServiceRunner(String type) { return serviceRunners.get(type) }
 
     ServiceDefinition getServiceDefinition(String serviceName) {
@@ -88,16 +90,20 @@ class ServiceFacadeImpl implements ServiceFacade {
         String verb = ServiceDefinition.getVerbFromName(serviceName)
         String noun = ServiceDefinition.getNounFromName(serviceName)
 
-        // use a consistent format as the key in the cache, keeping in mind that the verb and noun may be merged in the serviceName passed in
-        // no # here so that it doesn't matter if the caller used one or not
-        String cacheKey = (path ? path + "." : "") + verb + (noun ? noun : "")
+        ServiceDefinition sd = (ServiceDefinition) serviceLocationCache.get(makeCacheKey(path, verb, noun))
+        if (sd) return sd
 
+        return makeServiceDefinition(path, verb, noun)
+    }
+
+    protected synchronized ServiceDefinition makeServiceDefinition(String path, String verb, String noun) {
+        String cacheKey = makeCacheKey(path, verb, noun)
         ServiceDefinition sd = (ServiceDefinition) serviceLocationCache.get(cacheKey)
         if (sd) return sd
 
         Node serviceNode = findServiceNode(path, verb, noun)
         if (serviceNode == null) {
-            throw new IllegalArgumentException("Cound not find definition for service name [${serviceName}]")
+            throw new IllegalArgumentException("Cound not find definition for service name [${cacheKey}]")
         }
 
         sd = new ServiceDefinition(this, path, serviceNode)
@@ -105,7 +111,13 @@ class ServiceFacadeImpl implements ServiceFacade {
         return sd
     }
 
-    protected synchronized Node findServiceNode(String path, String verb, String noun) {
+    protected static String makeCacheKey(String path, String verb, String noun) {
+        // use a consistent format as the key in the cache, keeping in mind that the verb and noun may be merged in the serviceName passed in
+        // no # here so that it doesn't matter if the caller used one or not
+        return (path ? path + "." : "") + verb + (noun ? noun : "")
+    }
+
+    protected Node findServiceNode(String path, String verb, String noun) {
         // make a file location from the path
         String partialLocation = path.replace('.', '/') + ".xml"
         String servicePathLocation = "service/" + partialLocation

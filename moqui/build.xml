@@ -13,6 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <project name="Moqui Main Build" default="build" basedir=".">
     <property environment="env"/>
+    <property name="tomcat.home" value="../apache-tomcat-7.0.5"/>
 
     <target name="init">
         <!-- just a place holder for now -->
@@ -81,13 +82,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <classes file="MoquiInit.properties"/>
         </war>
     </target>
-    <target name="redeploy" depends="war">
-        <delete verbose="on" failonerror="false" dir="../apache-tomcat-7.0.5/runtime"/>
-        <delete verbose="on" failonerror="false" dir="../apache-tomcat-7.0.5/webapps/moqui"/>
-        <delete verbose="on" failonerror="false" file="../apache-tomcat-7.0.5/webapps/moqui.war"/>
+    <target name="war-tomcat" depends="war">
+        <delete verbose="on" failonerror="false" dir="${tomcat.home}/runtime"/>
+        <delete verbose="on" failonerror="false" dir="${tomcat.home}/webapps/moqui"/>
+        <delete verbose="on" failonerror="false" file="${tomcat.home}/webapps/moqui.war"/>
         <delete verbose="on" failonerror="false">
-            <fileset dir="../apache-tomcat-7.0.5/logs" includes="*"/>
+            <fileset dir="${tomcat.home}/logs" includes="*"/>
         </delete>
-        <copy file="moqui.war" todir="../apache-tomcat-7.0.5/webapps/"/>
+        <copy file="moqui.war" todir="${tomcat.home}/webapps/"/>
     </target>
 </project>

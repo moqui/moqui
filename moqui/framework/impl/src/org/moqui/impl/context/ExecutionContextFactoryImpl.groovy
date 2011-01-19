@@ -307,7 +307,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."webapp-list") {
-            mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "type")
+            mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "name")
         }
 
         if (overrideNode."user-facade") {
@@ -428,16 +428,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         mergeWebappActions(baseNode, overrideNode, "before-request")
         mergeWebappActions(baseNode, overrideNode, "after-login")
         mergeWebappActions(baseNode, overrideNode, "before-logout")
-
-        Node childOverrideNode = overrideNode."root-screen"[0]
-        if (childOverrideNode) {
-            Node childBaseNode = baseNode."root-screen"[0]
-            if (childBaseNode) {
-                childBaseNode.attributes().putAll(childOverrideNode.attributes())
-            } else {
-                baseNode.append(childOverrideNode)
-            }
-        }
     }
 
     protected void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {

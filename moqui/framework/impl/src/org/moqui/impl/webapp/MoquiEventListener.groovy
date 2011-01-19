@@ -15,17 +15,51 @@ import javax.servlet.http.HttpSessionListener
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
 
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+import java.sql.Timestamp
+
 class MoquiEventListener implements HttpSessionListener {
+    protected final static Logger logger = LoggerFactory.getLogger(MoquiEventListener.class)
+
     void sessionCreated(HttpSessionEvent event) {
         HttpSession session = event.getSession()
+        ExecutionContextFactoryImpl ecfi = (ExecutionContextFactoryImpl) session.getServletContext().getAttribute("executionContextFactory")
+        if (!ecfi) {
+            logger.warn("Not creating visit for session [${session.id}], no executionContextFactory in ServletContext")
+            return
+        }
 
-        // TODO create and persist Visit
+        // create and persist Visit
+        String webappName = session.getServletContext().getContextPath().substring(1) ?: "ROOT"
+        Map parameters = [sessionId:session.id, webappName:webappName, fromDate:new Timestamp(session.getCreationTime())]
+        InetAddress address = InetAddress.getLocalHost();
+        if (address) {
+            parameters.serverIpAddress = address.getHostAddress()
+            parameters.serverHostName = address.getHostName()
+        }
+        Map result = ecfi.serviceFacade.sync().name("create", "Visit").parameters((Map<String, Object>) parameters).call()
+
         // put visitId in session as "moqui.visitId"
+        session.setAttribute("moqui.visitId", result.visitId)
     }
 
     void sessionDestroyed(HttpSessionEvent event) {
         HttpSession session = event.getSession()
-
-        // TODO set thruDate on Visit
+        ExecutionContextFactoryImpl ecfi = (ExecutionContextFactoryImpl) session.getServletContext().getAttribute("executionContextFactory")
+        if (!ecfi) {
+            logger.warn("Not updating (closing) visit for session [${session.id}], no executionContextFactory in ServletContext")
+            return
+        }
+        String visitId = session.getAttribute("visitId")
+        if (!visitId) {
+            logger.warn("Not updating (closing) visit for session [${session.id}], no visitId attribute found")
+            return
+        }
+        // set thruDate on Visit
+        ecfi.serviceFacade.sync().name("update", "Visit")
+                .parameters((Map<String, Object>) [visitId:visitId, thruDate:new Timestamp(System.currentTimeMillis())])
+                .call()
     }
 }

@@ -110,14 +110,14 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="before-request"/>
                 <xs:element minOccurs="0" ref="after-login"/>
                 <xs:element minOccurs="0" ref="before-logout"/>
-                <xs:element minOccurs="0" ref="root-screen"/>
             </xs:sequence>
-            <xs:attribute name="moqui-name" type="xs:string">
+            <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     Matched against value of a context-param -> param-value element in the web.xml file where the
                     param-name is "moqui-name".
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="root-screen-location" type="xs:string" use="required"/>
             <xs:attribute name="https-enabled" default="true" type="boolean"/>
             <xs:attribute name="https-port" type="xs:string" default="8443"/>
             <xs:attribute name="https-force-host" type="xs:string"/>
@@ -162,11 +162,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:element ref="actions"/>
             </xs:sequence>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="root-screen">
-        <xs:complexType>
-            <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 

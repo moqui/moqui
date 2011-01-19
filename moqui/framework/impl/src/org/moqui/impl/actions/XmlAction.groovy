@@ -11,18 +11,19 @@
  */
 package org.moqui.impl.actions
 
-import org.moqui.context.ExecutionContext
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.codehaus.groovy.runtime.InvokerHelper
-import org.xml.sax.InputSource
 import freemarker.core.Environment
 import freemarker.template.Template
 import freemarker.ext.beans.BeansWrapper
 import freemarker.template.Configuration
-import org.xml.sax.SAXParseException
+
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.BaseException
+import org.moqui.context.ExecutionContext
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+import org.xml.sax.InputSource
+import org.xml.sax.SAXParseException
 
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
@@ -57,7 +58,18 @@ class XmlAction {
     /** The Groovy class compiled from the script transformed from the XML actions text using the FTL template. */
     protected final Class groovyClass
 
+    XmlAction(ExecutionContextFactoryImpl ecfi, Node xmlNode, String location) {
+        StringWriter sw = new StringWriter()
+        XmlNodePrinter xnp = new XmlNodePrinter(new PrintWriter(sw))
+        xnp.print(xmlNode)
+        groovyClass = makeGroovyClass(ecfi, sw.toString(), location)
+    }
+
     XmlAction(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
+        groovyClass = makeGroovyClass(ecfi, xmlText, location)
+    }
+
+    protected Class makeGroovyClass(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
         // transform XML to groovy
         String groovyText = null
         InputStream xmlStream = null
@@ -87,7 +99,7 @@ class XmlAction {
         if (logger.debugEnabled) logger.debug("xml-actions at [${location}] produced groovy script:\n${groovyText}")
 
         // parse groovy
-        groovyClass = new GroovyClassLoader().parseClass(groovyText, location)
+        return new GroovyClassLoader().parseClass(groovyText, location)
     }
 
     /** Run the XML actions in the current context of the ExecutionContext */
@@ -96,5 +108,13 @@ class XmlAction {
 
         Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
         return script.run()
+    }
+
+    boolean checkCondition(ExecutionContext ec) {
+        if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
+
+        Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
+        // NOTE: not sure if this is the proper way to evaluate the compiled expression... will see
+        return script.run() as boolean
     }
 }

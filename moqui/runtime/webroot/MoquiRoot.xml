@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <subscreens-panel id="WebrootSubsPanel" type="tab"/>
                 </panel-center>
                 <panel-footer height="20">
-                    <label text="Public Domain - No Copyright Applies" id="WebrootFooter"/>
+                    <label text="Built on Moqui" id="WebrootFooter"/>
                 </panel-footer>
             </container-panel>
         </widgets>

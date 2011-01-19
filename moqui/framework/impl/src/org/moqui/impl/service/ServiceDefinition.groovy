@@ -32,13 +32,8 @@ class ServiceDefinition {
 
         // if this is an inline service, get that now
         if (serviceNode."actions") {
-            Node actionsNode = serviceNode."actions"[0]
-            StringWriter sw = new StringWriter()
-            XmlNodePrinter xnp = new XmlNodePrinter(new PrintWriter(sw))
-            xnp.print(actionsNode)
-            xmlAction = new XmlAction(sfi.ecfi, sw.toString(), getServiceName())
+            xmlAction = new XmlAction(sfi.ecfi, serviceNode."actions"[0], getServiceName())
         }
-
     }
 
     Node getServiceNode() { return serviceNode }

@@ -72,14 +72,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="initialRequest" type="text-long"/>
         <field name="initialReferrer" type="text-long"/>
         <field name="initialUserAgent" type="text-long"/>
-        <field name="clientIpAddress" type="id"/>
+        <field name="clientIpAddress" type="text-medium"/>
         <field name="clientHostName" type="text-long"/>
         <field name="clientUser" type="text-medium"/>
         <field name="clientIpIspName" type="text-medium"/>
         <field name="clientIpPostalCode" type="text-medium"/>
         <field name="clientIpStateProvGeoId" type="id"/>
         <field name="clientIpCountryGeoId" type="id"/>
-        <field name="cookie" type="text-medium"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
         <relationship type="one" related-entity-name="Visitor"/>

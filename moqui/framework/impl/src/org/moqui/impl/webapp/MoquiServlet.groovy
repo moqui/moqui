@@ -22,13 +22,14 @@ import org.moqui.Moqui
 import org.moqui.context.WebExecutionContext
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ExecutionContextFactory
+import org.moqui.context.ScreenRender
 
 class MoquiServlet extends HttpServlet {
     protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
 
-    protected ExecutionContextFactory executionContextFactory = null
     protected String webappId = null
     protected String webappMoquiName = null
+    protected WebappDefinition webappDef = null
 
     public MoquiServlet() {
         super();
@@ -37,23 +38,29 @@ class MoquiServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        this.webappId = config.getServletContext().getContextPath().substring(1)
-        this.webappMoquiName = config.getInitParameter("moqui-name")
+        webappId = config.getServletContext().getContextPath().substring(1) ?: "ROOT"
+        webappMoquiName = config.getInitParameter("moqui-name")
 
-        logger.info("Loading Moqui Webapp [${webappId}] ${config.getServletContext().getServletContextName()}, located at ${config.getServletContext().getRealPath("/")}")
-        this.executionContextFactory = new ExecutionContextFactoryImpl()
+        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${webappMoquiName}], context name [${config.getServletContext().getServletContextName()}], located at ${config.getServletContext().getRealPath("/")}")
+        ExecutionContextFactory executionContextFactory = new ExecutionContextFactoryImpl()
+        config.getServletContext().setAttribute("executionContextFactory", executionContextFactory)
+
         // there should always be one ECF that is active for things like deserialize of EntityValue
         // for a servlet that has a factory separate from the rest of the system DON'T call this (ie to have multiple ECFs on a single system)
-        Moqui.dynamicInit(this.executionContextFactory)
+        Moqui.dynamicInit(executionContextFactory)
         logger.info("Loaded Moqui Execution Context Factory for webapp [${webappId}]")
+
+        webappDef = new WebappDefinition(webappMoquiName, executionContextFactory)
     }
 
     @Override
     public void destroy() {
         logger.info("Destroying Moqui Execution Context Factory for webapp [${webappId}]")
-        if (this.executionContextFactory) {
-            this.executionContextFactory.destroy()
-            this.executionContextFactory = null
+        if (getServletContext().getAttribute("executionContextFactory")) {
+            ExecutionContextFactory executionContextFactory =
+                    (ExecutionContextFactory) getServletContext().getAttribute("executionContextFactory")
+            executionContextFactory.destroy()
+            getServletContext().removeAttribute("executionContextFactory")
         }
         super.destroy();
         logger.info("Destroyed Moqui Execution Context Factory for webapp [${webappId}]")
@@ -68,32 +75,26 @@ class MoquiServlet extends HttpServlet {
     /** @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        ExecutionContextFactory executionContextFactory =
+                (ExecutionContextFactory) getServletContext().getAttribute("executionContextFactory")
+
         String pathInfo = request.getPathInfo()
         long startTime = System.currentTimeMillis()
         if (logger.infoEnabled) logger.info("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
 
         // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
-        WebExecutionContext wec = this.executionContextFactory.getWebExecutionContext(this.webappMoquiName, request, response)
+        WebExecutionContext wec = executionContextFactory.getWebExecutionContext(webappMoquiName, request, response)
 
-        // TODO: render screens based on path in URL (should probably move this to another class that renders screens)
+        // render screens based on path in URL
         List<String> pathElements = pathInfo.split("/") as List
-        //wec.screen.renderScreenText(String screenLocation, Appendable appender, "html", String characterEncoding, null)
+        ScreenRender render = wec.screen.makeRender().rootScreen(webappDef.webappNode."@root-screen-location")
+                .screenPath(pathElements).outputType("html")
+        if (request.getCharacterEncoding()) render.encoding(request.getCharacterEncoding())
 
-        // =========== start test code
-        def result1 = wec.service.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
-                .parameters((Map<String, Object>) [userId:"john.doe"]).call()
-        def result2 = wec.service.sync().name("org.moqui.impl.UserServices.updateUserAccountPassword")
-                .parameters((Map<String, Object>) [userId:"john.doe", oldPassword:"moqui", newPassword:"moqui"]).call()
-
-        response.writer.append("<html><head></head><body><h1>Test Output 1</h1>")
-        response.writer.append(result1.toString())
-        response.writer.append("<h1>Test Output 2</h1>")
-        response.writer.append(result2.toString())
-        response.writer.append("</body></html>")
-        // =========== end test code
+        render.render(response.getWriter())
 
         // make sure everything is cleaned up
-        this.executionContextFactory.destroyActiveExecutionContext()
+        executionContextFactory.destroyActiveExecutionContext()
 
         double runningTime = (System.currentTimeMillis() - startTime) / 1000
         if (logger.infoEnabled) logger.info("End request to [${pathInfo}] in [${runningTime}] seconds, in session [${request.session.id}]")

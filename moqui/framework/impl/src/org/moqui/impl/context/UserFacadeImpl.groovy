@@ -51,6 +51,27 @@ class UserFacadeImpl implements UserFacade {
         }
         if (request.session.getAttribute("moqui.visitId")) {
             this.visitId = (String) request.session.getAttribute("moqui.visitId")
+
+            EntityValue visit = getVisit()
+            if (!visit.initialLocale) {
+                // TODO visitorId and cookie
+
+                StringBuilder requestUrl = new StringBuilder()
+                requestUrl.append(request.getScheme())
+                requestUrl.append("://" + request.getServerName())
+                if (request.getServerPort() != 80 && request.getServerPort() != 443) requestUrl.append(":" + request.getServerPort())
+                requestUrl.append(request.getRequestURI())
+                if (request.getQueryString()) requestUrl.append("?" + request.getQueryString())
+                String fullUrl = (requestUrl.length() > 250) ? requestUrl.substring(0, 250) : requestUrl.toString()
+
+                eci.service.sync().name("update", "Visit")
+                        .parameters((Map<String, Object>) [visitId:visit.visitId, initialLocale:getLocale().toString(),
+                            initialRequest:fullUrl, initialReferrer:request.getHeader("Referrer")?:"",
+                            initialUserAgent:request.getHeader("User-Agent")?:"",
+                            clientIpAddress:request.getRemoteAddr(), clientHostName:request.getRemoteHost(),
+                            clientUser:request.getRemoteUser()])
+                        .call()
+            }
         }
     }
 
@@ -130,7 +151,8 @@ class UserFacadeImpl implements UserFacade {
             }
 
             // update visit if no user in visit yet
-            if (this.visit && !this.visit.userId) {
+            EntityValue visit = getVisit()
+            if (visit && !visit.userId) {
                 eci.service.sync().name("update", "Visit")
                         .parameters((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
             }
