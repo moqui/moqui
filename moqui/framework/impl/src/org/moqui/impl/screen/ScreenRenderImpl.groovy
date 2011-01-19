@@ -9,12 +9,12 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.impl.context
+package org.moqui.impl.screen
 
 import org.moqui.context.ScreenRender
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.moqui.impl.screen.ScreenDefinition
+
 import org.moqui.context.ExecutionContext
 
 class ScreenRenderImpl implements ScreenRender {
@@ -37,6 +37,7 @@ class ScreenRenderImpl implements ScreenRender {
     Appendable getAppender() { return this.appender }
 
     ExecutionContext getEc() { return sfi.ecfi.getExecutionContext() }
+    ScreenFacadeImpl getSfi() { return sfi }
 
     @Override
     ScreenRender rootScreen(String rootScreenLocation) { this.rootScreenLocation = rootScreenLocation; return this }

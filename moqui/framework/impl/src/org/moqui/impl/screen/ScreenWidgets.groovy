@@ -11,23 +11,40 @@
  */
 package org.moqui.impl.screen
 
+import freemarker.template.Template
+
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.impl.context.ScreenRenderImpl
+
+import org.moqui.impl.actions.XmlAction
+
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+import org.xml.sax.InputSource
+import freemarker.ext.dom.NodeModel
 
 class ScreenWidgets {
-    protected ExecutionContextFactoryImpl ecfi
+    protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
+
     protected Node widgetsNode
+    protected NodeModel widgetsNodeModel
     protected String location
 
     ScreenWidgets(ExecutionContextFactoryImpl ecfi, Node widgetsNode, String location) {
-        this.ecfi = ecfi
         this.widgetsNode = widgetsNode
         this.location = location
 
-        // TODO prep FTL Template
+        // translate the Groovy Node into an FTL NodeModel going through text
+        StringWriter sw = new StringWriter()
+        new XmlNodePrinter(new PrintWriter(sw)).print(widgetsNode)
+        this.widgetsNodeModel = freemarker.ext.dom.NodeModel.parse(new InputSource(new StringReader(sw.toString())))
     }
 
     void render(ScreenRenderImpl sri) {
-        // TODO render Template
+        Template template = sri.sfi.getTemplateForOutputType(sri.outputType)
+
+        Map root = [sri:sri, ec:sri.ec, widgetsNode:widgetsNodeModel]
+
+        // TODO: how to user Appender instead of Writer?
+        template.createProcessingEnvironment(root, sri.appender).process()
     }
 }

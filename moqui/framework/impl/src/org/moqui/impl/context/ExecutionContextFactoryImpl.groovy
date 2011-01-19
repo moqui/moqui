@@ -22,7 +22,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
-import org.moqui.Moqui
+
+import org.moqui.impl.screen.ScreenFacadeImpl
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)

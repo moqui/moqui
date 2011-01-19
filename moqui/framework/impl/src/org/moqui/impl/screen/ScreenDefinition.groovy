@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.screen
 
-import org.moqui.impl.context.ScreenFacadeImpl
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
