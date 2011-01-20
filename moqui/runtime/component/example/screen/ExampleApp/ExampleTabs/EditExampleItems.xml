@@ -17,31 +17,31 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
 
     <transition name="createExampleItem">
-        <actions><call-service verb="create" noun="ExampleItem" auto-in-map="true"/></actions>
+        <actions><call-service name="create#ExampleItem" in-map="true"/></actions>
         <default-response url="EditExampleItems"/>
     </transition>
     <transition name="updateExampleItem">
-        <actions><call-service verb="update" noun="ExampleItem" auto-in-map="true"/></actions>
+        <actions><call-service name="update#ExampleItem" in-map="true"/></actions>
         <default-response url="EditExampleItems"/>
     </transition>
     <transition name="deleteExampleItem">
-        <actions><call-service verb="delete" noun="ExampleItem" auto-in-map="true"/></actions>
+        <actions><call-service name="delete#ExampleItem" in-map="true"/></actions>
         <default-response url="EditExampleItems"/>
     </transition>
 
-    <section>
+    <section name="root">
         <actions>
             <entity-find entity-name="ExampleItem" list="exampleItemList">
-                <constraint field-name="exampleId" from-field="exampleId"/>
+                <econdition field-name="exampleId" from-field="exampleId"/>
                 <order-by field-name="exampleItemSeqId"/>
             </entity-find>
         </actions>
         <widgets>
-            <form name="ListExampleItems" transition="updateExampleItem" type="list" list="exampleItemList">
+            <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList">
                 <auto-fields-service service-name="updateExampleItem"/>
                 <field name="exampleId"><hidden/></field>
                 <field name="exampleItemSeqId" title="Item"><display/></field>
-                <field name="description"><text size="30"/></field>
+                <field name="description"><text-line size="30"/></field>
                 <field name="amountUomId" title="UOM">
                     <drop-down allow-empty="true">
                         <entity-options entity-name="UomAndType" key-field="uomId" text="${typeDescription}: ${description} (${abbreviation})">
@@ -52,12 +52,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 </field>
                 <field name="deleteLink">
                     <!-- the parameters for this will be auto-mapped: exampleId, exampleItemSeqId -->
-                    <link url="deleteExampleItem" text="Delete" confirmation-message="Really Delete?"/>
+                    <link url="deleteExampleItem" text="Delete" confirmation="Really Delete?"/>
                 </field>
                 <field name="submitButton" title="${uiLabelMap.CommonUpdate}"><submit button-type="button"/></field>
-            </form>
+            </form-list>
 
-            <form name="AddExampleItem" type="single" transition="createExampleItem">
+            <form-single name="AddExampleItem" transition="createExampleItem">
                 <auto-fields-service service-name="createExampleItem"/>
                 <field name="exampleId"><hidden/></field>
                 <field name="exampleItemSeqId"><ignored/><!-- this will be auto-sequenced --></field>
@@ -70,7 +70,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </drop-down>
                 </field>
                 <field name="submitButton" title="Add"><submit button-type="button" confirmation-message="Really Add?"/></field>
-            </form>
+            </form-single>
         </widgets>
     </section>
 </screen>

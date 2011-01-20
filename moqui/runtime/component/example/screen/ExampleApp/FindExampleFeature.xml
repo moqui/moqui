@@ -28,19 +28,19 @@ This Work includes contributions authored by David E. Jones, not as a
         <widgets>
             <container id="button-bar"><link url="newExampleFeature" text="New Feature"/></container>
             <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form -->
-            <form name="FindExampleFeatures" type="single" transition="findExampleFeature">
+            <form-single name="FindExampleFeatures" transition="findExampleFeature">
                 <field name="exampleFeatureId" title="Example Feature ID"><text-find/></field>
                 <field name="description" title="Description"><text-find/></field>
                 <field name="searchButton" title="Find"><submit button-type="button"/></field>
-            </form>
-            <form name="ListExampleFeatures" type="list" list="exampleFeatureList">
+            </form-single>
+            <form-list name="ListExampleFeatures" list="exampleFeatureList">
                 <field name="exampleFeatureId" title="Example Feature ID">
                     <header-field show-order-by="true"/>
                     <!-- this list will pass an exampleFeatureId param, as defined on the EditExampleFeature screen as an incoming parameter -->
                     <link url="editExampleFeature" text="${exampleFeatureId}"/>
                 </field>
-                <field name="description" title="Description"><display/><header-field show-order-by="true"/></field>
-            </form>
+                <field name="description" title="Description"><header-field show-order-by="true"/><display/></field>
+            </form-list>
         </widgets>
     </section>
 </screen>

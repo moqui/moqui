@@ -34,11 +34,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Section ================ -->
 <#macro section>    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
-    </div>
-</#macro>
+    </div></#macro>
 <#macro section-iterate>    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
-    </div>
-</#macro>
+    </div></#macro>
 
 <#-- ================ Containers ================ -->
 <#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse/>
@@ -107,17 +105,15 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="out-field-map"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="node-name" use="required"/>
-<!-- TODO implement -->
-</#macro>
 
-<#macro "out-field-map">
+            out-field-map:
             <xs:attribute type="xs:string" name="field-name" use="required"/>
             <xs:attribute type="xs:string" name="to-field-name"/>
 <!-- TODO implement -->
 </#macro>
 
 <#-- ============== Render Mode Elements =============== -->
-<#macro "render-mode">
+<#macro "render-mode"><#compress>
 <#if .node["text"]>
     <#list .node["text"] as textNode><#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode/></#if></#list>
     <#if !textToUse?has_content><#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list></#if>
@@ -125,6 +121,57 @@ This Work includes contributions authored by David E. Jones, not as a
     ${sri.renderText(textToUse["@location"], textToUse["@template"])}
     </#if>
 </#if>
-</#macro>
+</#compress></#macro>
 
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
+
+<#-- ================== Standalone Fields ==================== -->
+<#macro "link"><#compress single_line=true>
+<#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
+    ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") && .node["@url-type"]?has_content && .node["@url-type"] != "transition")>
+    <#assign parameterMap = ec.getContext().get(.node["@parameter-map"]?if_exists)?if_exists/>
+    <#assign parameterString><#t>
+        <#t><#list .node["parameter"] as parameterNode>${parameterNode["@name"][0]?url}=${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?url}<#if parameterNode_has_next>&amp;</#if></#list>
+        <#t><#if .node["parameter"]?has_content && .node["@parameter-map"]?has_content && ec.getContext().get(.node["@parameter-map"])?has_content>&amp;</#if>
+        <#t><#list parameterMap?keys as pKey>${pKey?url}=${parameterMap[pKey]?url}<#if pKey_has_next>&amp;</#if></#list>
+    <#t></#assign>
+    <a href="${sri.makeUrl((.node["@url"][0] + "?" + parameterString), .node["@url-type"][0]!"content")}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
+    <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${.node["@text"]}</#if>
+    </a>
+<else/>
+    <form method="post" action="${sri.makeUrl(.node["@url"][0], .node["@url-type"][0]!"content")}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
+        <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"][0]?html}" value="${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?html}" type="hidden"/></#list>
+        <#list parameterMap?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
+    </form>
+    <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
+    <input type="image" src="${sri.makeUrl(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
+    <#else/>
+    <input type="submit" value="${.node["@text"]}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>
+    </#if>
+    <#-- NOTE: consider using a link instead of submit buttons/image, would look something like this (would require id attribute, or add a name attribute):
+        <a href="javascript:document.${.node["@id"]}.submit()">
+            <#if .node["image"]?has_content>
+            <img src="${sri.makeUrl(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
+            <#else/>
+            ${.node["@text"]}
+            <#/if>
+        </a>
+    -->
+</#if>
+</#compress></#macro>
+<#macro "image"><img src="${sri.makeUrl(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"</#if><#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+<#macro "label"><span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span></#macro>
+<#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
+
+<#-- ============================================ -->
+<#-- ================== Form ==================== -->
+<#macro form-single>
+    <!-- TODO: make form markup -->
+    <div id="${.node["@name"]}">${sri.renderForm(.node["@name"])}
+    </div>
+</#macro>
+<#macro form-list>
+    <!-- TODO: make form markup -->
+    <div id="${.node["@name"]}">${sri.renderForm(.node["@name"])}
+    </div>
+</#macro>

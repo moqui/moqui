@@ -21,7 +21,8 @@ class ScreenDefinition {
     protected final Node screenNode
     protected final String location
     protected ScreenSection rootSection = null
-    protected Map<String, ScreenSection> sectionByName = null
+    protected Map<String, ScreenSection> sectionByName = new HashMap()
+    protected Map<String, ScreenForm> formByName = new HashMap()
 
     ScreenDefinition(ScreenFacadeImpl sfi, Node screenNode, String location) {
         this.sfi = sfi
@@ -36,11 +37,17 @@ class ScreenDefinition {
         // get the root section
         if (screenNode.section) rootSection = new ScreenSection(sfi.ecfi, screenNode.section[0], location + ".rootSection")
 
-        // get all of the other sections by name
         if (rootSection && rootSection.widgets) {
+            // get all of the other sections by name
             for (Node sectionNode in rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it.name() == "section" || it.name() == "section-iterate" })) {
-                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.section[${}]"))
+                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name()}[${sectionNode["@name"]}]"))
+            }
+
+            // get all forms by name
+            for (Node formNode in rootSection.widgets.widgetsNode.depthFirst()
+                    .findAll({ it.name() == "form-single" || it.name() == "form-list" })) {
+                formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, formNode, "${location}.${formNode.name()}[${formNode["@name"]}]"))
             }
         }
     }
@@ -50,4 +57,6 @@ class ScreenDefinition {
     ScreenSection getRootSection() { return rootSection }
 
     ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
+
+    ScreenForm getForm(String formName) { return (ScreenForm) formByName.get(formName) }
 }

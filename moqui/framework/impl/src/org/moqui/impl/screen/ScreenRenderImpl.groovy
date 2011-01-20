@@ -110,6 +110,15 @@ class ScreenRenderImpl implements ScreenRender {
         return ""
     }
 
+    String renderForm(String formName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        ScreenForm form = sd.getForm(formName)
+        if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+        form.render(this)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
+    }
+
     String renderIncludeScreen(String location, String shareScopeStr) {
         boolean shareScope = false
         if (shareScopeStr == "true") shareScope = true
@@ -137,6 +146,32 @@ class ScreenRenderImpl implements ScreenRender {
             return ""
         } else {
             return sfi.ecfi.resourceFacade.getLocationText(location)
+        }
+    }
+
+    String makeUrl(String url, String urlType) {
+        /* TODO handle urlType:
+            <xs:enumeration value="transition">
+                <xs:annotation><xs:documentation>The name of a transition in the current screen. URL will be build based on the transition definition.</xs:documentation></xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="content">
+                <xs:annotation><xs:documentation>A content location (without the content://). URL will be one that can access that content.</xs:documentation></xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="plain">
+                <xs:annotation><xs:documentation>A plain URL to be used literally (should start with http:// or https://).</xs:documentation></xs:annotation>
+            </xs:enumeration>
+         */
+        return url
+    }
+
+    String makeValue(String fromField, String value) {
+        // TODO to groovy interpretation/expansion on fromField and value
+        if (value) {
+            return value
+        } else if (fromField) {
+            return ec.context.get(fromField) as String
+        } else {
+            return ""
         }
     }
 }

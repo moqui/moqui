@@ -18,27 +18,27 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="editExampleFeature"><default-response url="/ExampleApp/FeatureTabs/EditExampleFeature"/></transition>
     <transition name="createExampleFeatureAppl">
-        <actions><call-service verb="create" noun="ExampleFeatureAppl" auto-in-map="true"/></actions>
+        <actions><call-service name="create#ExampleFeatureAppl" in-map="true"/></actions>
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
     <transition name="updateExampleFeatureAppl">
-        <actions><call-service verb="update" noun="ExampleFeatureAppl" auto-in-map="true"/></actions>
+        <actions><call-service name="update#ExampleFeatureAppl" in-map="true"/></actions>
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
     <transition name="deleteExampleFeatureAppl">
-        <actions><call-service verb="delete" noun="ExampleFeatureAppl" auto-in-map="true"/></actions>
+        <actions><call-service name="delete#ExampleFeatureAppl" in-map="true"/></actions>
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
 
-    <section>
+    <section name="root">
         <actions>
             <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-                <constraint field-name="exampleId" from-field="exampleId"/>
+                <econdition field-name="exampleId" from-field="exampleId"/>
                 <order-by field-name="sequenceNum"/>
             </entity-find>
         </actions>
         <widgets>
-            <form name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" type="list" list="exampleFeatureApplList">
+            <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
                 <auto-fields-service service-name="updateExampleFeatureAppl"/>
                 <field name="exampleId"><hidden/></field>
                 <field name="exampleFeatureId" title="Feature">
@@ -60,9 +60,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     names and will be auto-mapped (exampleId, exampleFeatureId, fromDate) -->
                     <link url="deleteExampleFeatureAppl" text="Delete"/>
                 </field>
-            </form>
+            </form-list>
 
-            <form name="AddExampleFeatureAppl" type="single" transition="createExampleFeatureAppl">
+            <form-single name="AddExampleFeatureAppl" transition="createExampleFeatureAppl">
                 <auto-fields-service service-name="createExampleFeatureAppl"/>
                 <field name="exampleId"><hidden/></field>
 
@@ -90,7 +90,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </drop-down>
                 </field>
                 <field name="submitButton" title="Add"><submit button-type="button"/></field>
-            </form>
+            </form-single>
         </widgets>
     </section>
 </screen>

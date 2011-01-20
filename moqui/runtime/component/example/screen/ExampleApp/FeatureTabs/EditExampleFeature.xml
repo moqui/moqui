@@ -33,7 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <section name="create">
                 <condition><compare field="fieldValues" operator="empty"/></condition>
                 <widgets>
-                    <form name="CreateExampleFeature" type="single" transition="createExampleFeature">
+                    <form-single name="CreateExampleFeature" transition="createExampleFeature">
                         <auto-fields-service service-name="createExampleFeature"/>
                         <field name="exampleFeatureId" title="Example Feature ID">
                             <conditional>
@@ -51,16 +51,16 @@ This Work includes contributions authored by David E. Jones, not as a
                             </drop-down>
                         </field>
                         <field name="submitButton" title="Create"><submit button-type="button"/></field>
-                    </form>
+                    </form-single>
                 </widgets>
             </section>
             <section name="update">
                 <condition><compare field="fieldValues" operator="not-empty"/></condition>
                 <widgets>
-                    <form name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
+                    <form-single name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
                         <field name="exampleId" title="Example Feature ID"><display/></field>
                         <field name="submitButton" title="Update"><submit button-type="button"/></field>
-                    </form>
+                    </form-single>
                 </widgets>
             </section>
         </widgets>

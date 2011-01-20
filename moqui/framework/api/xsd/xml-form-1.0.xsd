@@ -18,7 +18,39 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="StandaloneFields" abstract="true"/>
     
     <!-- ================== form ==================== -->
-    <xs:element name="form" substitutionGroup="AllWidgets">
+    <xs:element name="form-single" substitutionGroup="AllWidgets">
+        <xs:annotation><xs:documentation>A single form is used to view or edit fields of a single map/hash/record/etc.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-service"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-entity"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
+                <xs:element minOccurs="0" ref="field-layout"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="extends" type="xs:string">
+                <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
+                    extend.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="transition" type="xs:string"/>
+            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="focus-field" type="xs:string"/>
+            <xs:attribute name="skip-start" default="false" type="boolean"/>
+            <xs:attribute name="skip-end" default="false" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
+
+
+    <xs:element name="form-list" substitutionGroup="AllWidgets">
+        <xs:annotation><xs:documentation>A
+            list form is a list of individual forms in a table (could
+            be called a tabular form), it has a list of sets of values and creates one form for each
+            list element.
+
+            A variation on the list form is the multi form (set the attribute multi=true). In the multi mode all
+            list elements will be put into a single large form with suffixes on each field for each row, with a
+            single submit button at the bottom instead of a submit button on each row.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="row-actions"/>
@@ -32,34 +64,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
                     extend.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="type">
-                <xs:annotation><xs:documentation>The form type is always required unless you are extending another form.</xs:documentation></xs:annotation>
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="single">
-                            <xs:annotation><xs:documentation>a single form is a simple single form with values from a
-                                single set of values</xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                        <xs:enumeration value="list">
-                            <xs:annotation><xs:documentation>a list form is a list of individual forms in a table (could
-                                be called a tabular form), it has a list of sets of values and creates one form for each
-                                list element</xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                        <xs:enumeration value="multi">
-                            <xs:annotation><xs:documentation>a multi form is like a list/tabular form, but it creates a
-                                single form to submit all list item forms at once; the field names in the resulting form
-                                have an appendage attached to make them unique according to the pattern used for the
-                                multi-service event handler that will call one service for each list element</xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="multi" default="false" type="boolean"/>
             <xs:attribute name="transition" type="xs:string"/>
             <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="focus-field" type="xs:string"/>
             <xs:attribute name="list" type="xs:string">
-                <xs:annotation><xs:documentation>For list type and other multiple data/form types this is the name of
-                    the list in the context to iterate over</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The name of the list in the context to iterate over.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="list-entry" type="xs:string">
                 <xs:annotation><xs:documentation>If specified each list entry will be put in the context with this
@@ -70,9 +79,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Indicate if this form should paginate or not. Defaults to true.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate-size" type="xs:integer">
-                <xs:annotation><xs:documentation>The number of items to display per page</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The number of items to display per page when using pagination.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="use-row-submit" default="false" type="boolean"/>
             <xs:attribute name="skip-start" default="false" type="boolean"/>
             <xs:attribute name="skip-end" default="false" type="boolean"/>
         </xs:complexType>
@@ -178,25 +186,25 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="url" type="xs:string" use="required"/>
-            <xs:attribute name="url-type" default="transition" type="url-type"/>
+            <xs:attribute name="url-type" type="url-type" default="transition"/>
             <xs:attribute name="text" type="xs:string"/>
             <xs:attribute name="target-window" type="xs:string"/>
-            <xs:attribute name="confirmation-message" type="xs:string"><xs:annotation><xs:documentation>If there is a message here it will show in a confirmation box when the link is clicked on.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="confirmation" type="xs:string"><xs:annotation><xs:documentation>If there is a message here it will show in a confirmation box when the link is clicked on.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
-        <xs:complexType mixed="true">
+        <xs:complexType>
             <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="url" type="xs:string"/>
-            <xs:attribute name="url-type" default="content" type="url-type"/>
+            <xs:attribute name="url" type="xs:string" use="required"/>
+            <xs:attribute name="url-type" type="url-type" default="content"/>
             <xs:attribute name="width" type="xs:string"/>
             <xs:attribute name="height" type="xs:string"/>
             <xs:attribute name="alt" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="label" substitutionGroup="StandaloneFields">
-        <xs:complexType mixed="true">
+        <xs:complexType>
             <xs:attribute name="text" type="xs:string"/>
             <xs:attribute name="id" type="xs:string"/>
         </xs:complexType>

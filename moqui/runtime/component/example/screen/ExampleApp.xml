@@ -13,10 +13,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
     <subscreens default-item="FindExample"/>
-    <section>
+    <section name="root">
         <widgets>
             <container-panel id="ExamplePanel">
-                <panel-header height="30">
+                <panel-header>
                     <label text="Moqui Example App" id="ExampleHeader"/>
                 </panel-header>
                 <panel-center>

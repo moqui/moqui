@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-include="false">
     <subscreens default-item="EditExampleFeature"/>
-    <section>
+    <section name="root">
         <widgets>
             <subscreens-panel id="FeatureTabsPanel" type="tab"/>
         </widgets>
