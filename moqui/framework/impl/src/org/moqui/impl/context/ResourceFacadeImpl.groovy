@@ -19,17 +19,22 @@ import org.slf4j.Logger
 import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ExecutionContext
 import org.codehaus.groovy.runtime.InvokerHelper
+import freemarker.template.Template
+import freemarker.template.Configuration
+import freemarker.ext.beans.BeansWrapper
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 
+    protected final Cache templateFtlLocationCache
     protected final Cache scriptGroovyLocationCache
     protected final Cache scriptXmlActionLocationCache
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
+        this.templateFtlLocationCache = ecfi.getCacheFacade().getCache("template.ftl.location")
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("script.groovy.location")
         this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("script.xml-actions.location")
     }
@@ -125,6 +130,44 @@ public class ResourceFacadeImpl implements ResourceFacade {
         while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
 
         return strippedLocation.toString()
+    }
+
+    /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
+    void renderTemplateInCurrentContext(String location, Writer writer) {
+        Template theTemplate = (Template) templateFtlLocationCache.get(location)
+        if (!theTemplate) theTemplate = makeTemplate(location)
+
+        if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
+
+        Map root = ecfi.executionContext.context
+        theTemplate.createProcessingEnvironment(root, writer).process()
+    }
+
+    protected synchronized Template makeTemplate(String location) {
+        Template theTemplate = (Template) templateFtlLocationCache.get(location)
+        if (theTemplate) return theTemplate
+
+        Template newTemplate = null
+        Reader templateReader = null
+        try {
+            templateReader = new InputStreamReader(getLocationStream(location))
+            newTemplate = new Template(location, templateReader, makeConfiguration())
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
+        } finally {
+            if (templateReader) templateReader.close()
+        }
+
+        if (newTemplate) templateFtlLocationCache.put(location, newTemplate)
+        return newTemplate
+    }
+
+    protected static Configuration makeConfiguration() {
+        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
+        Configuration newConfig = new Configuration()
+        newConfig.setObjectWrapper(defaultWrapper)
+        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
+        return newConfig
     }
 
     /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */

@@ -20,7 +20,8 @@ class ScreenDefinition {
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
     protected final String location
-    protected ScreenSection section = null
+    protected ScreenSection rootSection = null
+    protected Map<String, ScreenSection> sectionByName = null
 
     ScreenDefinition(ScreenFacadeImpl sfi, Node screenNode, String location) {
         this.sfi = sfi
@@ -32,10 +33,21 @@ class ScreenDefinition {
         // TODO transition
         // TODO subscreens
 
-        if (screenNode.section) this.section = new ScreenSection(sfi.ecfi, screenNode.section[0], location + ".section")
+        // get the root section
+        if (screenNode.section) rootSection = new ScreenSection(sfi.ecfi, screenNode.section[0], location + ".rootSection")
+
+        // get all of the other sections by name
+        if (rootSection && rootSection.widgets) {
+            for (Node sectionNode in rootSection.widgets.widgetsNode.depthFirst()
+                    .findAll({ it.name() == "section" || it.name() == "section-iterate" })) {
+                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.section[${}]"))
+            }
+        }
     }
 
-    Node getScreenNode() { return this.screenNode }
+    Node getScreenNode() { return screenNode }
 
-    ScreenSection getSection() { return this.section }
+    ScreenSection getRootSection() { return rootSection }
+
+    ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
 }

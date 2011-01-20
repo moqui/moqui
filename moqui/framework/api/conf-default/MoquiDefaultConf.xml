@@ -15,7 +15,8 @@
         <cache name="service.java.class" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="screen.output.template" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="screen.template.mode" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="screen.template.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <cache name="script.xml-actions.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
         <cache name="script.groovy.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>

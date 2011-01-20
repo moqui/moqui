@@ -356,9 +356,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="section" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:group ref="section-elements"/>
-            <xs:attribute name="name" type="xs:string">
+            <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
-                    A name for the section, used for external reference within the screen.
+                    A name for the section, used for reference within the screen.
+                    Must be specified and must be unique within the screen.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -366,7 +367,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="section-iterate" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:group ref="section-elements"/>
-            <xs:attribute name="name" type="xs:string">
+            <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     A name for the section, used for external reference within the screen.
                 </xs:documentation></xs:annotation>
@@ -387,9 +388,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     where the entry attribute refers to.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="paginate" type="xs:string" default="${paginate}">
+            <!-- TODO handle paginate* in ScreenSection.groovy -->
+            <xs:attribute name="paginate" type="xs:string" default="false">
                 <xs:annotation><xs:documentation>
-                    Indicate if this section is paginated or not, true by default.
+                    Indicate if this section is paginated or not, false by default.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate-size" type="xs:string"/>
@@ -412,6 +414,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
             <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="container-panel" substitutionGroup="AllWidgets">
@@ -420,8 +423,8 @@ This Work includes contributions authored by David E. Jones, not as a
             This can be re-used within the different areas as well, usually just the center area but could be used to
             split up even the header and footer.
 
-            There is an id for the outer container, and each area will have an automatic id as well (with a suffix of:
-            _header, _left, _center, _right, _footer).
+            If there is an id for the outer container, and each area will have an automatic id as well (with a suffix
+            of: _header, _left, _center, _right, _footer).
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
@@ -432,6 +435,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="panel-footer" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string"/>
+            <!-- not for 1.0, should use CSS styles, may add later if determined to be a good thing:
             <xs:attribute name="area-size-unit" default="px">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
@@ -440,18 +444,20 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            -->
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-header">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="height" type="xs:float"/>
+            <!-- not for 1.0, should use CSS styles, may add later if determined to be a good thing: <xs:attribute name="height" type="xs:float"/> -->
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-left">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="width" type="xs:float"/>
+            <!-- not for 1.0, should use CSS styles, may add later if determined to be a good thing: <xs:attribute name="width" type="xs:float"/> -->
+            <!-- TODO handle draggable -->
             <xs:attribute name="draggable" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
@@ -463,17 +469,18 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="panel-right">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="width" type="xs:float"/>
+            <!-- not for 1.0, should use CSS styles, may add later if determined to be a good thing: <xs:attribute name="width" type="xs:float"/> -->
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-footer">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <xs:attribute name="height" type="xs:float"/>
+            <!-- not for 1.0, should use CSS styles, may add later if determined to be a good thing:  <xs:attribute name="height" type="xs:float"/> -->
         </xs:complexType>
     </xs:element>
 
     <!-- ================ Includes ================ -->
+    <!-- possible good idea, but not implementing in 1.0; should use render-mode.text instead
     <xs:element name="include-content" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:attribute name="content-path" type="xs:string"/>
@@ -481,6 +488,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="xml-escape" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
+    -->
     <xs:element name="include-screen" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:attribute name="location" type="xs:string" use="required"/>
@@ -536,11 +544,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <!-- ============== Platform Specific Elements =============== -->
-    <xs:element name="platform-specific" substitutionGroup="AllWidgets">
+    <!-- ============== Render Mode Elements =============== -->
+    <xs:element name="render-mode" substitutionGroup="AllWidgets">
         <xs:complexType>
-            <xs:choice>
-                <xs:element ref="template"/>
+            <xs:choice minOccurs="1" maxOccurs="unbounded">
+                <xs:element ref="text"/>
                 <!-- the gwt and swing elements are just placeholders for now, won't be implemented in this rev -->
                 <!-- <xs:element ref="gwt"/> -->
                 <!-- <xs:element ref="swing"/> -->
@@ -549,17 +557,24 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     
     <!-- ============== Text Specific Elements =============== -->
-    <xs:element name="template">
+    <xs:element name="text">
         <xs:complexType>
-            <xs:attribute name="type" type="xs:string" use="required">
+            <xs:attribute name="type" type="xs:string" default="any">
                 <xs:annotation><xs:documentation>
                     Can be anything. Default supported values include: text, cwiki, html, xhtml, xsl-fo, xml, and csv.
+                    A value of "any" will cause it to be used if no other element matches the current output type.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="location" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     Template location can include various prefixes to support including from a file, http, component,
                     or a content repository.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="template" type="boolean" default="true">
+                <xs:annotation><xs:documentation>
+                    Interpret the text at the location as an FTL template?
+                    Defaults to true, set to false if you want the text included literally.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>

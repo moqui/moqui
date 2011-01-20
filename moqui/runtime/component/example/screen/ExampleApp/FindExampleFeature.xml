@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="findExampleFeature"><default-response url="FindExampleFeature"/></transition>
     <transition name="editExampleFeature"><default-response url="FeatureTabs/EditExampleFeature"/></transition>
 
-    <section>
+    <section name="root">
         <actions>
             <entity-find entity-name="ExampleFeature" list="exampleFeatureList">
                 <search-form-inputs/>
@@ -27,17 +27,19 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
         <widgets>
             <container id="button-bar"><link url="newExampleFeature" text="New Feature"/></container>
+            <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form -->
             <form name="FindExampleFeatures" type="single" transition="findExampleFeature">
                 <field name="exampleFeatureId" title="Example Feature ID"><text-find/></field>
                 <field name="description" title="Description"><text-find/></field>
                 <field name="searchButton" title="Find"><submit button-type="button"/></field>
             </form>
             <form name="ListExampleFeatures" type="list" list="exampleFeatureList">
-                <field name="exampleFeatureId" title="Example Feature ID" sort-by-field="true">
+                <field name="exampleFeatureId" title="Example Feature ID">
+                    <header-field show-order-by="true"/>
                     <!-- this list will pass an exampleFeatureId param, as defined on the EditExampleFeature screen as an incoming parameter -->
                     <link url="editExampleFeature" text="${exampleFeatureId}"/>
                 </field>
-                <field name="description" title="Description" sort-by-field="true"><display/></field>
+                <field name="description" title="Description"><display/><header-field show-order-by="true"/></field>
             </form>
         </widgets>
     </section>

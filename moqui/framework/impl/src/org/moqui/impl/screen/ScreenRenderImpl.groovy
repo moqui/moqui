@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 import org.moqui.context.ExecutionContext
+import freemarker.template.Template
+import org.moqui.impl.context.ContextStack
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -23,18 +25,23 @@ class ScreenRenderImpl implements ScreenRender {
     protected final ScreenFacadeImpl sfi
 
     protected String rootScreenLocation = null
+    protected ScreenDefinition rootScreenDef = null
+
     protected List<String> screenPathNameList = new ArrayList<String>()
-    protected String outputType = "html"
+    protected List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
+    protected int screenPathIndex = -1
+
+    protected String renderMode = "html"
     protected String characterEncoding = "UTF-8"
     protected String macroTemplateLocation = null
 
-    protected Appendable appender
+    protected Writer writer
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
     }
 
-    Appendable getAppender() { return this.appender }
+    Writer getWriter() { return this.writer }
 
     ExecutionContext getEc() { return sfi.ecfi.getExecutionContext() }
     ScreenFacadeImpl getSfi() { return sfi }
@@ -46,7 +53,9 @@ class ScreenRenderImpl implements ScreenRender {
     ScreenRender screenPath(List<String> screenNameList) { this.screenPathNameList.addAll(screenNameList); return this }
 
     @Override
-    ScreenRender outputType(String outputType) { this.outputType = outputType; return this }
+    ScreenRender renderMode(String renderMode) { this.renderMode = renderMode; return this }
+
+    String getRenderMode() { return this.renderMode }
 
     @Override
     ScreenRender encoding(String characterEncoding) { this.characterEncoding = characterEncoding;  return this }
@@ -55,23 +64,79 @@ class ScreenRenderImpl implements ScreenRender {
     ScreenRender macroTemplate(String mtl) { this.macroTemplateLocation = mtl; return this }
 
     @Override
-    void render(Appendable appender) {
-        this.appender = appender
+    void render(Writer writer) {
+        this.writer = writer
         internalRender()
     }
 
     @Override
     String render() {
-        this.appender = new StringWriter()
+        this.writer = new StringWriter()
         internalRender()
-        return this.appender.toString()
+        return this.writer.toString()
     }
 
     protected internalRender() {
-        // TODO get screen defs for each screen in path to use for subscreens
-        List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>(screenPathNameList.size())
-        ScreenDefinition rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
+        rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
 
-        rootScreenDef.getSection().render(this)
+        // TODO get screen defs for each screen in path to use for subscreens
+
+        // start rendering at the root section of the root screen
+        rootScreenDef.getRootSection().render(this)
+    }
+
+    ScreenDefinition getActiveScreenDef() {
+        ScreenDefinition screenDef = rootScreenDef
+        if (screenPathIndex >= 0) {
+            screenDef = screenPathDefList[screenPathIndex]
+        }
+        return screenDef
+    }
+
+    Template getTemplate() {
+        if (macroTemplateLocation) {
+            return sfi.getTemplateByLocation(macroTemplateLocation)
+        } else {
+            return sfi.getTemplateByMode(renderMode)
+        }
+    }
+
+    String renderSection(String sectionName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        ScreenSection section = sd.getSection(sectionName)
+        if (!section) throw new IllegalArgumentException("No section with name [${sectionName}] in screen [${sd.location}]")
+        section.render(this)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
+    }
+
+    String renderIncludeScreen(String location, String shareScopeStr) {
+        boolean shareScope = false
+        if (shareScopeStr == "true") shareScope = true
+
+        ContextStack cs = (ContextStack) ec.context
+        try {
+            if (!shareScope) cs.push()
+            sfi.makeRender().rootScreen(location).renderMode(renderMode).encoding(characterEncoding)
+                    .macroTemplate(macroTemplateLocation).render(writer)
+        } finally {
+            if (!shareScope) cs.pop()
+        }
+
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
+    }
+
+    String renderText(String location, String isTemplateStr) {
+        boolean isTemplate = true
+        if (isTemplateStr == "false") isTemplate = false
+
+        if (isTemplate) {
+            sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(location, writer)
+            // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+            return ""
+        } else {
+            return sfi.ecfi.resourceFacade.getLocationText(location)
+        }
     }
 }

@@ -17,31 +17,31 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
     
     <transition name="createExample">
-        <actions><call-service service-name="createExample" auto-in-map="true"/></actions>
+        <actions><call-service name="create#Example" in-map="true"/></actions>
         <default-response url="EditExample"/>
     </transition>
     <transition name="updateExample">
-        <actions><call-service service-name="updateExample" auto-in-map="true"/></actions>
+        <actions><call-service name="update#Example" in-map="true"/></actions>
         <default-response url="EditExample"/>
     </transition>
 
-    <section>
+    <section name="root">
         <actions>
-            <entity-find-one entity-name="Example" value-field="example"/>
+            <entity-find-one entity-name="Example" value-field="fieldValues"/>
             <entity-find-one entity-name="StatusItem" value-field="currentStatus">
-                <field-map field-name="statusId" from-field="example.statusId"/>
+                <field-map field-name="statusId" from-field="fieldValues.statusId"/>
             </entity-find-one>
         </actions>
         <widgets>
             <section name="create">
-                <condition><compare field="example" operator="empty"/></condition>
+                <condition><compare field="fieldValues" operator="empty"/></condition>
                 <widgets>
-                    <form name="CreateExample" type="single" transition="createExample" default-map-name="example">
+                    <form name="CreateExample" type="single" transition="createExample">
                         <auto-fields-service service-name="createExample"/>
 
                         <field name="exampleId" title="Example ID">
                             <conditional>
-                                <!-- the condition -> expression element evaluates as a groovy boolean expression,
+                                <!-- the condition.expression element evaluates as a groovy boolean expression,
                                  so this will see if the exampleId String is not null and length > 0 -->
                                 <condition><expression>exampleId</expression></condition>
                                 <display text="Not Found: [${exampleId}]" also-hidden="false"/>
@@ -79,22 +79,23 @@ This Work includes contributions authored by David E. Jones, not as a
                 </widgets>
             </section>
             <section name="update">
-                <condition><compare field="example" operator="not-empty"/></condition>
+                <condition><compare field="fieldValues" operator="not-empty"/></condition>
                 <widgets>
                     <form name="UpdateExample" extends="CreateExample" transition="updateExample">
                         <field name="exampleId" title="Example ID"><display/></field>
                         <field name="statusId" title="Status">
                             <drop-down allow-empty="false" current-description="${currentStatus.description}">
-                                <entity-options entity-name="StatusValidChangeToDetail" key-field="statusIdTo" text="${transitionName} (${description})">
-                                    <constraint field-name="statusId" from-field="example.statusId"/>
+                                <entity-options entity-name="StatusValidChangeToDetail" key-field="statusIdTo"
+                                                text="${transitionName} (${description})">
+                                    <econdition field-name="statusId" from-field="fieldValues.statusId"/>
                                 </entity-options>
                             </drop-down>
                         </field>
                         <!-- uncomment the Example.anotherText field too in order to try this
                         <field name="displayAnotherText">
                             <conditional>
-                                <condition><compare field="example.anotherText" operator="not-empty"/></condition>
-                                <display text="${example.anotherText}"/>
+                                <condition><compare field="fieldValues.anotherText" operator="not-empty"/></condition>
+                                <display text="${fieldValues.anotherText}"/>
                             </conditional>
                         </field>
                         -->

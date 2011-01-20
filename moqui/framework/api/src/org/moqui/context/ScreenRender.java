@@ -11,6 +11,7 @@
  */
 package org.moqui.context;
 
+import java.io.Writer;
 import java.util.List;
 
 public interface ScreenRender {
@@ -26,8 +27,8 @@ public interface ScreenRender {
      */
     ScreenRender screenPath(List<String> screenNameList);
 
-    /** The type of output. Used to select sub-elements of the <code>platform-specific</code> element and the default
-     * macro template (if one is not specified for this render).
+    /** The mode to render for (type of output). Used to select sub-elements of the <code>render-mode</code>
+     * element and the default macro template (if one is not specified for this render).
      *
      * If macroTemplateLocation is not specified is also used to determine the default macro template
      * based on configuration. Can be anything. Default supported values include: text, html, xsl-fo,
@@ -35,7 +36,7 @@ public interface ScreenRender {
      *
      * @return Reference to this ScreenRender for convenience
      */
-    ScreenRender outputType(String outputType);
+    ScreenRender renderMode(String outputType);
 
     /** The MIME character encoding for the text produced. Defaults to <code>UTF-8</code>. Must be a valid charset in
      * the java.nio.charset.Charset class.
@@ -51,10 +52,10 @@ public interface ScreenRender {
      */
     ScreenRender macroTemplate(String macroTemplateLocation);
 
-    /** Render a screen to an appender using the current context. The screen will run in a sub-context so the original
+    /** Render a screen to a writer using the current context. The screen will run in a sub-context so the original
      * context will not be changed.
      */
-    void render(Appendable appender);
+    void render(Writer writer);
 
     /** Render a screen and return the output as a String. Context semantics are the same as other render methods. */
     String render();

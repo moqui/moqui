@@ -17,24 +17,23 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleFeatureId"/>
 
     <transition name="createExampleFeature">
-        <actions><call-service verb="create" noun="ExampleFeature" auto-in-map="true"/></actions>
+        <actions><call-service name="create#ExampleFeature" in-map="true"/></actions>
         <default-response url="EditExampleFeature"/>
     </transition>
     <transition name="updateExampleFeature">
-        <actions><call-service verb="update" noun="ExampleFeature" auto-in-map="true"/></actions>
+        <actions><call-service name="update#ExampleFeature" in-map="true"/></actions>
         <default-response url="EditExampleFeature"/>
     </transition>
 
-    <section>
+    <section name="root">
         <actions>
-            <entity-find-one entity-name="ExampleFeature" value-field="exampleFeature"/>
+            <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
         </actions>
         <widgets>
             <section name="create">
-                <condition><compare field="exampleFeature" operator="empty"/></condition>
+                <condition><compare field="fieldValues" operator="empty"/></condition>
                 <widgets>
-                    <form name="CreateExampleFeature" type="single" transition="createExampleFeature"
-                          default-map-name="exampleFeature">
+                    <form name="CreateExampleFeature" type="single" transition="createExampleFeature">
                         <auto-fields-service service-name="createExampleFeature"/>
                         <field name="exampleFeatureId" title="Example Feature ID">
                             <conditional>
@@ -46,7 +45,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <field name="featureSourceEnumId" title="Feature Source">
                             <drop-down allow-empty="false">
                                 <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
-                                    <constraint field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+                                    <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
                                     <order-by field-name="sequenceId"/>
                                 </entity-options>
                             </drop-down>
@@ -56,7 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </widgets>
             </section>
             <section name="update">
-                <condition><compare field="exampleFeature" operator="not-empty"/></condition>
+                <condition><compare field="fieldValues" operator="not-empty"/></condition>
                 <widgets>
                     <form name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
                         <field name="exampleId" title="Example Feature ID"><display/></field>

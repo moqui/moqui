@@ -42,6 +42,12 @@ class WebExecutionContextImpl implements WebExecutionContext {
     protected HttpServletRequest request
     protected HttpServletResponse response
 
+    protected Map<String, Object> parameters = null
+    protected Map<String, Object> requestAttributes = null
+    protected Map<String, Object> requestParameters = null
+    protected Map<String, Object> sessionAttributes = null
+    protected Map<String, Object> applicationAttributes = null
+
     WebExecutionContextImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response, ExecutionContextImpl eci) {
         this.eci = eci
         this.ecfi = eci.ecfi
@@ -58,6 +64,11 @@ class WebExecutionContextImpl implements WebExecutionContext {
 
     /** @see org.moqui.context.WebExecutionContext#getParameters() */
     Map<String, Object> getParameters() {
+        // NOTE: no blocking in these methods because the ExecutionContext is created for each thread
+
+        // only create when requested, then keep for additional requests
+        if (parameters) return parameters
+
         // Uses the approach of creating a series of this objects wrapping the other non-Map attributes/etc instead of
         // copying everything from the various places into a single combined Map; this should be much faster to create
         // and only slightly slower when running.
@@ -66,7 +77,8 @@ class WebExecutionContextImpl implements WebExecutionContext {
         cs.push(getApplicationAttributes())
         cs.push(getSessionAttributes())
         cs.push(getRequestAttributes())
-        return cs
+        parameters = cs
+        return parameters
     }
 
     /** @see org.moqui.context.WebExecutionContext#getRequest() */
@@ -74,15 +86,19 @@ class WebExecutionContextImpl implements WebExecutionContext {
 
     /** @see org.moqui.context.WebExecutionContext#getRequestAttributes() */
     Map<String, Object> getRequestAttributes() {
-        return new StupidWebUtilities.RequestAttributeMap(request)
+        if (requestAttributes) return requestAttributes
+        requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
+        return requestAttributes
     }
 
     /** @see org.moqui.context.WebExecutionContext#getRequestParameters() */
     Map<String, Object> getRequestParameters() {
+        if (requestParameters) return requestParameters
         ContextStack cs = new ContextStack()
         cs.push((Map<String, Object>) request.getParameterMap())
         cs.push(StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))
-        return new StupidWebUtilities.CanonicalizeMap(cs)
+        requestParameters = new StupidWebUtilities.CanonicalizeMap(cs)
+        return requestParameters
     }
 
     /** @see org.moqui.context.WebExecutionContext#getResponse() */
@@ -93,7 +109,9 @@ class WebExecutionContextImpl implements WebExecutionContext {
 
     /** @see org.moqui.context.WebExecutionContext#getSessionAttributes() */
     Map<String, Object> getSessionAttributes() {
-        return new StupidWebUtilities.SessionAttributeMap(request.getSession())
+        if (sessionAttributes) return sessionAttributes
+        sessionAttributes = new StupidWebUtilities.SessionAttributeMap(request.getSession())
+        return sessionAttributes
     }
 
     /** @see org.moqui.context.WebExecutionContext#getServletContext() */
@@ -101,7 +119,9 @@ class WebExecutionContextImpl implements WebExecutionContext {
 
     /** @see org.moqui.context.WebExecutionContext#getApplicationAttributes() */
     Map<String, Object> getApplicationAttributes() {
-        return new StupidWebUtilities.ServletContextAttributeMap(request.getServletContext())
+        if (applicationAttributes) return applicationAttributes
+        applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.getServletContext())
+        return applicationAttributes
     }
 
     /** @see org.moqui.context.ExecutionContext#getContext() */

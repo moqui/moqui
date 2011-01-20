@@ -18,22 +18,22 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="editExample"><default-response url="/ExampleApp/ExampleTabs/EditExample"/></transition>
     <transition name="createExampleFeatureAppl">
-        <actions><call-service verb="create" noun="ExampleFeatureAppl" auto-in-map="true"/></actions>
+        <actions><call-service name="create#ExampleFeatureAppl" in-map="true"/></actions>
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
     <transition name="updateExampleFeatureAppl">
-        <actions><call-service verb="update" noun="ExampleFeatureAppl" auto-in-map="true"/></actions>
+        <actions><call-service name="update#ExampleFeatureAppl" in-map="true"/></actions>
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
     <transition name="deleteExampleFeatureAppl">
-        <actions><call-service verb="delete" noun="ExampleFeatureAppl" auto-in-map="true"/></actions>
+        <actions><call-service name="delete#ExampleFeatureAppl" in-map="true"/></actions>
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
 
-    <section>
+    <section name="root">
         <actions>
             <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-                <constraint field-name="exampleFeatureId" from-field="exampleFeatureId"/>
+                <econdition field-name="exampleFeatureId" from-field="exampleFeatureId"/>
                 <order-by field-name="sequenceNum"/>
             </entity-find>
         </actions>

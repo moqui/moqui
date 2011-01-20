@@ -23,6 +23,7 @@ import org.moqui.context.WebExecutionContext
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ScreenRender
+import org.moqui.impl.context.ContextStack
 
 class MoquiServlet extends HttpServlet {
     protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
@@ -90,8 +91,14 @@ class MoquiServlet extends HttpServlet {
         ScreenRender render = wec.screen.makeRender().rootScreen(webappDef.webappNode."@root-screen-location")
                 .screenPath(pathElements).outputType("html")
         if (request.getCharacterEncoding()) render.encoding(request.getCharacterEncoding())
-
-        render.render(response.getWriter())
+        // NOTE: not creating a protected context for now for the screen, it is the only thing now, nothing to muck up
+        // ContextStack cs = (ContextStack) wec.context
+        try {
+            //cs.push()
+            render.render(response.getWriter())
+        } finally {
+            //cs.pop()
+        }
 
         // make sure everything is cleaned up
         executionContextFactory.destroyActiveExecutionContext()

@@ -12,6 +12,7 @@
 package org.moqui.context;
 
 import java.io.InputStream;
+import java.io.Writer;
 import java.net.URL;
 
 /** For accessing resources by location string (http://, jar://, component://, content://, classpath://, etc). */
@@ -30,6 +31,9 @@ public interface ResourceFacade {
      * @param location A URL-style location string that also support the Moqui-specific component and content protocols.
      */
     InputStream getLocationStream(String location);
+
+    /** Render a template at the given location using the current context and write the output to the given writer. */
+    void renderTemplateInCurrentContext(String location, Writer writer);
 
     /** Run a script at the given location (optionally with the given method, like in a groovy class) using the current
      * context for its variable space.

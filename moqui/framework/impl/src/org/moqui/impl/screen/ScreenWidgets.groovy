@@ -11,16 +11,14 @@
  */
 package org.moqui.impl.screen
 
-import freemarker.template.Template
+import freemarker.ext.dom.NodeModel
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
 import org.moqui.impl.actions.XmlAction
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.xml.sax.InputSource
-import freemarker.ext.dom.NodeModel
 
 class ScreenWidgets {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
@@ -40,11 +38,10 @@ class ScreenWidgets {
     }
 
     void render(ScreenRenderImpl sri) {
-        Template template = sri.sfi.getTemplateForOutputType(sri.outputType)
-
-        Map root = [sri:sri, ec:sri.ec, widgetsNode:widgetsNodeModel]
-
-        // TODO: how to user Appender instead of Writer?
-        template.createProcessingEnvironment(root, sri.appender).process()
+        Map root = sri.ec.context
+        root.sri = sri
+        root.ec = sri.ec
+        root.widgetsNode = widgetsNodeModel
+        sri.template.createProcessingEnvironment(root, sri.writer).process()
     }
 }

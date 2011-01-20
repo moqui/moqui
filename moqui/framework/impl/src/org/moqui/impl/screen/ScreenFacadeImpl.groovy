@@ -30,12 +30,14 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache screenLocationCache
-    protected final Cache screenOutputTemplateCache
+    protected final Cache screenTemplateModeCache
+    protected final Cache screenTemplateLocationCache
 
     ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.screenLocationCache = ecfi.cacheFacade.getCache("screen.location")
-        this.screenOutputTemplateCache = ecfi.cacheFacade.getCache("screen.output.template")
+        this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
+        this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
@@ -73,19 +75,19 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return sd
     }
 
-    Template getTemplateForOutputType(String outputType) {
-        Template template = (Template) screenOutputTemplateCache.get(outputType)
+    Template getTemplateByMode(String renderMode) {
+        Template template = (Template) screenTemplateModeCache.get(renderMode)
         if (template) return template
 
-        return makeTemplate(outputType)
+        return makeTemplateByMode(renderMode)
     }
 
-    protected synchronized Template makeTemplate(String outputType) {
-        Template template = (Template) screenOutputTemplateCache.get(outputType)
+    protected synchronized Template makeTemplateByMode(String renderMode) {
+        Template template = (Template) screenTemplateModeCache.get(renderMode)
         if (template) return template
 
         String templateLocation = ecfi.getConfXmlRoot()."screen-facade"[0]
-                ."screen-text-output".find({ it.@type == outputType })."@macro-template-location"
+                ."screen-text-output".find({ it.@type == renderMode })."@macro-template-location"
 
         Template newTemplate = null
         Reader templateReader = null
@@ -98,7 +100,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
             if (templateReader) templateReader.close()
         }
 
-        if (newTemplate) screenOutputTemplateCache.put(outputType, newTemplate)
+        if (newTemplate) screenTemplateModeCache.put(renderMode, newTemplate)
         return newTemplate
     }
     protected static Configuration makeConfiguration() {
@@ -107,6 +109,31 @@ public class ScreenFacadeImpl implements ScreenFacade {
         newConfig.setObjectWrapper(defaultWrapper)
         newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
         return newConfig
+    }
+
+    Template getTemplateByLocation(String templateLocation) {
+        Template template = (Template) screenTemplateLocationCache.get(templateLocation)
+        if (template) return template
+
+        return makeTemplateByLocation(templateLocation)
+    }
+    protected synchronized Template makeTemplateByLocation(String templateLocation) {
+        Template template = (Template) screenTemplateLocationCache.get(templateLocation)
+        if (template) return template
+
+        Template newTemplate = null
+        Reader templateReader = null
+        try {
+            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
+            newTemplate = new Template(templateLocation, templateReader, makeConfiguration())
+        } catch (Exception e) {
+            logger.error("Error while initializing Screen Widgets template at [${templateLocation}]", e)
+        } finally {
+            if (templateReader) templateReader.close()
+        }
+
+        if (newTemplate) screenTemplateLocationCache.put(templateLocation, newTemplate)
+        return newTemplate
     }
 
     @Override
