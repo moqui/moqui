@@ -11,11 +11,6 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
-
-    <!-- ========================================================= -->
-    <!-- org.moqui.entity.tenant -->
-    <!-- ========================================================= -->
-
     <entity entity-name="DateDayDimension" package-name="org.moqui.olap.dimension">
         <description>Date Day Dimension. The natural key is [dateValue]</description>
         <field name="dimensionId" type="id" is-pk="true"/>
