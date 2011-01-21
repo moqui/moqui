@@ -294,14 +294,6 @@ This Work includes contributions authored by David E. Jones, not as a
             highlighted.
         </xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="condition" minOccurs="0">
-                    <xs:annotation><xs:documentation>
-                        This condition is run the subscreens menu is rendered to seeif the item is available
-                        (otherwise the button/link/etc is disabled).
-                    </xs:documentation></xs:annotation>
-                </xs:element>
-            </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
                     The name of the subscreens item for use in the screen path. The screen path element following the
@@ -323,6 +315,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     If specified this item will be inserted in existing list of subscreens at this index (1-based).
                     If empty this item will be added to the end of the list (after the directory load, before the
                     entity load).
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="disable-when" type="xs:positiveInteger">
+                <xs:annotation><xs:documentation>
+                    This condition is run the subscreens menu is rendered to see if the item is available
+                    (otherwise the button/link/etc is disabled).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>

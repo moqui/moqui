@@ -205,12 +205,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
 
     <entity entity-name="SubscreensItem" package-name="org.moqui.screen.subscreen">
-        <field name="screenLocation" type="id" is-pk="true"/>
+        <field name="screenLocation" type="text-long" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
         <field name="userId" type="id-vlong" is-pk="true">
             <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
         </field>
-        <field name="screenLocation" type="text-long"/>
+        <field name="subscreenLocation" type="text-long"/>
         <field name="menuTitle" type="text-medium">
             <description>
                 The title to show for this subscreen in the menu. Can be used to override subscreen titles in the

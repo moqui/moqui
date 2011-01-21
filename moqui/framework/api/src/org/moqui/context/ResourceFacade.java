@@ -41,4 +41,8 @@ public interface ResourceFacade {
      * @return The value returned by the script, if any.
      */
     Object runScriptInCurrentContext(String location, String method);
+
+    boolean evaluateCondition(String expression, String debugLocation);
+    Object evaluateContextField(String expression, String debugLocation);
+    String evaluateStringExpand(String inputString, String debugLocation);
 }

@@ -110,11 +110,20 @@ class ScreenRenderImpl implements ScreenRender {
         return ""
     }
 
-    String renderForm(String formName) {
+    String renderFormSingle(String formName) {
         ScreenDefinition sd = getActiveScreenDef()
         ScreenForm form = sd.getForm(formName)
         if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
-        form.render(this)
+        form.renderSingle(this)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
+    }
+
+    String renderFormList(String formName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        ScreenForm form = sd.getForm(formName)
+        if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+        form.renderListRow(this)
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
@@ -157,19 +166,20 @@ class ScreenRenderImpl implements ScreenRender {
             <xs:enumeration value="content">
                 <xs:annotation><xs:documentation>A content location (without the content://). URL will be one that can access that content.</xs:documentation></xs:annotation>
             </xs:enumeration>
-            <xs:enumeration value="plain">
-                <xs:annotation><xs:documentation>A plain URL to be used literally (should start with http:// or https://).</xs:documentation></xs:annotation>
-            </xs:enumeration>
          */
-        return url
+        switch (urlType) {
+            case "transition": throw new IllegalArgumentException("The url-type transition is not yet supported")
+            case "content": throw new IllegalArgumentException("The url-type content is not yet supported")
+            case "plain":
+            default: return url
+        }
     }
 
     String makeValue(String fromField, String value) {
-        // TODO to groovy interpretation/expansion on fromField and value
         if (value) {
-            return value
+            return ec.resource.evaluateStringExpand(value, getActiveScreenDef().location)
         } else if (fromField) {
-            return ec.context.get(fromField) as String
+            return ec.resource.evaluateContextField(fromField, getActiveScreenDef().location) as String
         } else {
             return ""
         }

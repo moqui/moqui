@@ -32,6 +32,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Cache scriptGroovyLocationCache
     protected final Cache scriptXmlActionLocationCache
 
+    protected GroovyShell localGroovyShell = null
+
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.templateFtlLocationCache = ecfi.getCacheFacade().getCache("template.ftl.location")
@@ -216,5 +218,25 @@ public class ResourceFacadeImpl implements ResourceFacade {
             scriptXmlActionLocationCache.put(location, xa)
         }
         return xa
+    }
+
+    boolean evaluateCondition(String expression, String debugLocation) {
+        return getGroovyShell().evaluate(expression, debugLocation) as boolean
+    }
+
+    Object evaluateContextField(String expression, String debugLocation) {
+        return getGroovyShell().evaluate(expression, debugLocation)
+    }
+
+    String evaluateStringExpand(String inputString, String debugLocation) {
+        return getGroovyShell().evaluate('"""' + inputString + '"""', debugLocation) as String
+    }
+    protected GroovyShell getGroovyShell() {
+        // consider not caching this; does Binding eval at runtime or when built? if at runtime can just create one
+        // for the context and it will update with the context, if not then would have to be created every time an
+        // expression/script is run
+        if (localGroovyShell) return localGroovyShell
+        localGroovyShell = new GroovyShell(new Binding(ecfi.executionContext.context))
+        return localGroovyShell
     }
 }

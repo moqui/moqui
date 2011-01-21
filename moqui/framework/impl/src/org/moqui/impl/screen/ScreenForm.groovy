@@ -30,16 +30,23 @@ class ScreenForm {
             rowActions = new XmlAction(ecfi, (Node) formNode."row-actions"[0], location + ".row-actions")
         }
 
+        // TODO handle auto-fields-service
+        // TODO handle auto-fields-entity
+
         // TODO prep fields (use ScreenWidget, or a different class for fields?
+
+        // TODO handle field-layout
     }
 
-    void render(ScreenRenderImpl sri) {
+    void renderSingle(ScreenRenderImpl sri) {
+
+    }
+
+    void renderListRow(ScreenRenderImpl sri) {
 
         // TODO if list or multi, iterate and run rowActions
         if (rowActions) rowActions.run(sri.ec)
 
         // TODO if list or multi and list is an ELI, close it
     }
-
-    void renderSingle
 }

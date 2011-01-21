@@ -13,23 +13,33 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
-            <xs:attribute name="id" type="xs:string"/>
-<!-- TODO implement -->
+    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-menu">
+<!-- TODO render menu -->
+    </div>
 </#macro>
 
 <#macro "subscreens-active">
-            <xs:attribute name="id" type="xs:string"/>
-<!-- TODO implement -->
+    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-active">
+<!-- TODO render active subscreen -->
+    </div>
 </#macro>
 
 <#macro "subscreens-panel">
-            <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="type" default="tab">
-                        <xs:enumeration value="tab"/>
-                        <xs:enumeration value="stack"/>
-                        <xs:enumeration value="wizard"/>
-            </xs:attribute>
-<!-- TODO implement -->
+<!-- TODO handle type:
+    <xs:attribute name="type" default="tab">
+                <xs:enumeration value="tab"/>
+                <xs:enumeration value="stack"/>
+                <xs:enumeration value="wizard"/>
+    </xs:attribute>
+-->
+    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
+<!-- TODO render menu -->
+        </div>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
+<!-- TODO render active subscreen -->
+        </div>
+    </div>
 </#macro>
 
 <#-- ================ Section ================ -->
@@ -167,11 +177,13 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ================== Form ==================== -->
 <#macro form-single>
     <!-- TODO: make form markup -->
-    <div id="${.node["@name"]}">${sri.renderForm(.node["@name"])}
-    </div>
+    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
+    ${sri.renderFormSingle(.node["@name"])}
+    </form>
 </#macro>
 <#macro form-list>
     <!-- TODO: make form markup -->
-    <div id="${.node["@name"]}">${sri.renderForm(.node["@name"])}
-    </div>
+    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
+    ${sri.renderFormList(.node["@name"])}
+    </form>
 </#macro>

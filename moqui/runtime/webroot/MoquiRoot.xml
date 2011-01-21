@@ -16,13 +16,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- refer to the various app roots here -->
         <subscreens-item name="example" location="component://example/screen" menu-title="Example" menu-index="9"/>
     </subscreens>
-    <section>
+    <section name="root">
         <widgets>
             <container-panel id="WebrootPanel">
                 <panel-center>
                     <subscreens-panel id="WebrootSubsPanel" type="tab"/>
                 </panel-center>
-                <panel-footer height="20">
+                <panel-footer>
                     <label text="Built on Moqui" id="WebrootFooter"/>
                 </panel-footer>
             </container-panel>
