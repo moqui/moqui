@@ -83,24 +83,18 @@ public interface EntityFacade {
 
     // ======= XML Related Methods ========
 
-    /** Read an XML document containing value/record data for entities.
+    /** Make an object used to load XML entity data into the database or into an EntityList. The XML can come from
+     * a specific location, XML text already read from somewhere, or by searching all component data directories
+     * and the entity-facade.load-data elements for XML entity data files that match a type in the Set of types
+     * specified.
      *
      * The document should have a root element like <code>&lt;entity-facade-xml type=&quot;seed&quot;&gt;</code>. The
      * type attribute will be used to determine if the file should be loaded by whether or not it matches the values
-     * specified for file types when loading the files.
+     * specified for data types on the loader.
      *
-     * @param url The location of the document to read.
-     * @return An EntityList object representing a List of EntityValue objects for the values in the XML document.
-     * @throws EntityException
+     * @return EntityDataLoader instance
      */
-    EntityList readXmlDocument(URL url) throws EntityException;
-
-    /** Convert an already read XML document to entity values.
-     *
-     * @param xmlText String with XML text in it, ready to be parsed.
-     * @return An EntityList object representing a List of EntityValue objects for the values in the XML document.
-     */
-    EntityList readXmlDocument(String xmlText);
+    EntityDataLoader makeDataLoader();
 
     /** Make an EntityValue and populate it with the data (attributes and sub-elements) from the given XML element.
      *

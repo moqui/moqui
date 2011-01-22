@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 import org.w3c.dom.Element
+import org.moqui.entity.EntityDataLoader
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -417,49 +418,9 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    /** @see org.moqui.entity.EntityFacade#readXmlDocument(URL) */
-    EntityList readXmlDocument(URL url) {
-        InputStream entityStream = url.openStream()
-        GPathResult entityRoot = new XmlSlurper(false, false).parse(entityStream)
-        entityStream.close()
-        return readXmlDocument(entityRoot)
-    }
-
-    /** @see org.moqui.entity.EntityFacade#readXmlDocument(String) */
-    EntityList readXmlDocument(String xmlText) {
-        GPathResult entityRoot = new XmlSlurper(false, false).parseText(xmlText)
-        return readXmlDocument(entityRoot)
-    }
-
-    EntityList readXmlDocument(GPathResult entityRoot) {
-        EntityList el = new EntityListImpl(this)
-        for (GPathResult valueNode in entityRoot.children()) {
-            el.add(makeValue(valueNode))
-        }
-        return el
-    }
-
-    EntityValue makeValue(GPathResult valueNode) {
-        if (!valueNode) return null
-
-        String entityName = valueNode.name()
-        if (entityName.indexOf('-') > 0) entityName = entityName.substring(entityName.indexOf('-') + 1)
-        if (entityName.indexOf(':') > 0) entityName = entityName.substring(entityName.indexOf(':') + 1)
-
-        EntityValue newValue = makeValue(entityName)
-        EntityDefinition ed = newValue.getEntityDefinition()
-
-        for (String fieldName in ed.getFieldNames(true, true)) {
-            String attrValue = valueNode["@${fieldName}"]
-            if (attrValue) {
-                newValue.setString(fieldName, attrValue)
-            } else {
-                def childNode = valueNode[fieldName][0]
-                if (childNode) newValue.setString(fieldName, childNode.text())
-            }
-        }
-
-        return newValue
+    /** @see org.moqui.entity.EntityFacade#makeDataLoader() */
+    EntityDataLoader makeDataLoader() {
+        return new EntityDataLoaderImpl(this)
     }
 
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
