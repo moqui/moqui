@@ -29,6 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="extends" type="xs:string">
+                <!-- TODO handle this in code -->
                 <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
                     extend.</xs:documentation></xs:annotation>
             </xs:attribute>
@@ -60,6 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="extends" type="xs:string">
+                <!-- TODO handle this in code -->
                 <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
                     extend.</xs:documentation></xs:annotation>
             </xs:attribute>
@@ -74,11 +76,14 @@ This Work includes contributions authored by David E. Jones, not as a
                     root directly.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate" type="xs:string" default="true">
+                <!-- TODO handle this in code -->
                 <xs:annotation><xs:documentation>Indicate if this form should paginate or not. Defaults to true.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate-size" type="xs:integer">
+                <!-- TODO handle this in code -->
                 <xs:annotation><xs:documentation>The number of items to display per page when using pagination.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <!-- TODO handle this in code -->
             <xs:attribute name="skip-start" default="false" type="boolean"/>
             <xs:attribute name="skip-end" default="false" type="boolean"/>
         </xs:complexType>

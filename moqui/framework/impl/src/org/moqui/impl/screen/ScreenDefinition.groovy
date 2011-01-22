@@ -44,7 +44,7 @@ class ScreenDefinition {
         populateSubscreens()
 
         // get the root section
-        if (screenNode.section) rootSection = new ScreenSection(sfi.ecfi, screenNode.section[0], location + ".rootSection")
+        rootSection = new ScreenSection(sfi.ecfi, screenNode, location + ".screen")
 
         if (rootSection && rootSection.widgets) {
             // get all of the other sections by name
@@ -94,9 +94,19 @@ class ScreenDefinition {
         for (EntityValue subscreensItem in subscreensItemList) {
             subscreensByName.put(subscreensItem.subscreenName, new SubscreensItem(subscreensItem))
         }
+        // override rest with SubscreensItem entity with userId of current user
+        if (sfi.ecfi.executionContext.user.userId) {
+            EntityList userSubscreensItemList = sfi.ecfi.entityFacade.makeFind("SubscreensItem")
+                    .condition([screenLocation:location, userId:sfi.ecfi.executionContext.user.userId]).useCache(true).list()
+            for (EntityValue subscreensItem in userSubscreensItemList) {
+                subscreensByName.put(subscreensItem.subscreenName, new SubscreensItem(subscreensItem))
+            }
+        }
     }
 
     Node getScreenNode() { return screenNode }
+
+    SubscreensItem getSubscreensItem(String subscreenName) { return (SubscreensItem) subscreensByName.get(subscreenName) }
 
     ScreenSection getRootSection() { return rootSection }
 

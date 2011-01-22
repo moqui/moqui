@@ -54,31 +54,41 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:element>
                 <xs:element ref="transition" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="subscreens" minOccurs="0"/>
-                <xs:element ref="section"/>
+                <xs:group ref="section-elements"/>
             </xs:sequence>
             <xs:attribute name="default-menu-title" type="xs:string"/>
             <xs:attribute name="default-menu-index" type="xs:positiveInteger"/>
-            <xs:attribute name="default-menu-include" default="true" type="boolean">
+            <xs:attribute name="default-menu-include" type="boolean" default="true">
                 <xs:annotation><xs:documentation>
                     Set this to false to not automatically appear in the parent's subscreens menu based on the directory 
                     it is in. If true this screen will automatically be included in the parent's subscreens menu.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="track-serverhit" default="true" type="boolean"/>
+            <!-- TODO support this in code -->
+            <xs:attribute name="track-serverhit" type="boolean" default="true"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="web-settings">
         <xs:complexType>
+            <!-- TODO support this in code -->
             <xs:attribute name="allow-web-request" default="true" type="boolean"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="mime-type" type="xs:string" default="text/html"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="character-encoding" type="xs:string" default="UTF-8"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="require-encryption" default="true" type="boolean"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="require-authentication" default="true" type="boolean"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="require-certificate" default="false" type="boolean"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="track-visit" default="true" type="boolean"/>
+            <!-- TODO support this in code -->
             <xs:attribute name="http-no-cache" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Send no-cache headers if true.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <!-- TODO support this in code -->
             <xs:attribute name="screen-theme-type-enum-id" type="xs:string" default="STT_INTERNAL"/>
         </xs:complexType>
     </xs:element>

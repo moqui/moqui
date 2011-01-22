@@ -20,7 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro "subscreens-active">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-active">
-<!-- TODO render active subscreen -->
+    ${sri.renderSubscreen()}
     </div>
 </#macro>
 
@@ -37,7 +37,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <!-- TODO render menu -->
         </div>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
-<!-- TODO render active subscreen -->
+        ${sri.renderSubscreen()}
         </div>
     </div>
 </#macro>

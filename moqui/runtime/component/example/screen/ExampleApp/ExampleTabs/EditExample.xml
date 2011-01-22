@@ -25,84 +25,82 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="EditExample"/>
     </transition>
 
-    <section name="root">
-        <actions>
-            <entity-find-one entity-name="Example" value-field="fieldValues"/>
-            <entity-find-one entity-name="StatusItem" value-field="currentStatus">
-                <field-map field-name="statusId" from-field="fieldValues.statusId"/>
-            </entity-find-one>
-        </actions>
-        <widgets>
-            <section name="create">
-                <condition><compare field="fieldValues" operator="empty"/></condition>
-                <widgets>
-                    <form-single name="CreateExample" transition="createExample">
-                        <auto-fields-service service-name="createExample"/>
+    <actions>
+        <entity-find-one entity-name="Example" value-field="fieldValues"/>
+        <entity-find-one entity-name="StatusItem" value-field="currentStatus">
+            <field-map field-name="statusId" from-field="fieldValues.statusId"/>
+        </entity-find-one>
+    </actions>
+    <widgets>
+        <section name="create">
+            <condition><compare field="fieldValues" operator="empty"/></condition>
+            <widgets>
+                <form-single name="CreateExample" transition="createExample">
+                    <auto-fields-service service-name="createExample"/>
 
-                        <field name="exampleId" title="Example ID">
-                            <conditional>
-                                <!-- the condition.expression element evaluates as a groovy boolean expression,
-                                 so this will see if the exampleId String is not null and length > 0 -->
-                                <condition><expression>exampleId</expression></condition>
-                                <display text="Not Found: [${exampleId}]" also-hidden="false"/>
-                            </conditional>
-                        </field>
+                    <field name="exampleId" title="Example ID">
+                        <conditional>
+                            <!-- the condition.expression element evaluates as a groovy boolean expression,
+                             so this will see if the exampleId String is not null and length > 0 -->
+                            <condition><expression>exampleId</expression></condition>
+                            <display text="Not Found: [${exampleId}]" also-hidden="false"/>
+                        </conditional>
+                    </field>
 
-                        <field name="exampleTypeId" title="Type">
-                            <drop-down allow-empty="false">
-                                <!-- this is a neat feature, but not good for the type because the user would have to know the possible types in order to enter at least the first letter, so leaving it out by default; just uncomment to enable: <auto-complete/> -->
-                                <entity-options entity-name="ExampleType" text="${description}">
-                                    <order-by field-name="description"/>
-                                </entity-options>
-                            </drop-down>
-                        </field>
-                        <field name="statusId" title="Status">
-                            <drop-down allow-empty="false">
-                                <entity-options entity-name="ExampleStatusItem" text="${description}"/>
-                            </drop-down>
-                        </field>
-                        <field name="description" title="Description"/>
-                        <field name="longDescription" title="Long Description"/>
-                        <!-- uncomment the Example.anotherText field too in order to try this
-                        <field name="anotherText">
-                            <drop-down allow-empty="true">
-                                <option key="Explicit Option" text="Explicit Option"/>
-                                <entity-options entity-name="ExampleType" text="${description}" key-field="exampleTypeId">
-                                    <order-by field-name="description"/>
-                                </entity-options>
-                            </drop-down>
-                        </field>
-                        -->
+                    <field name="exampleTypeId" title="Type">
+                        <drop-down allow-empty="false">
+                            <!-- this is a neat feature, but not good for the type because the user would have to know the possible types in order to enter at least the first letter, so leaving it out by default; just uncomment to enable: <auto-complete/> -->
+                            <entity-options entity-name="ExampleType" text="${description}">
+                                <order-by field-name="description"/>
+                            </entity-options>
+                        </drop-down>
+                    </field>
+                    <field name="statusId" title="Status">
+                        <drop-down allow-empty="false">
+                            <entity-options entity-name="ExampleStatusItem" text="${description}"/>
+                        </drop-down>
+                    </field>
+                    <field name="description" title="Description"/>
+                    <field name="longDescription" title="Long Description"/>
+                    <!-- uncomment the Example.anotherText field too in order to try this
+                    <field name="anotherText">
+                        <drop-down allow-empty="true">
+                            <option key="Explicit Option" text="Explicit Option"/>
+                            <entity-options entity-name="ExampleType" text="${description}" key-field="exampleTypeId">
+                                <order-by field-name="description"/>
+                            </entity-options>
+                        </drop-down>
+                    </field>
+                    -->
 
-                        <field name="submitButton" title="Create"><submit button-type="button"/></field>
-                    </form-single>
-                </widgets>
-            </section>
-            <section name="update">
-                <condition><compare field="fieldValues" operator="not-empty"/></condition>
-                <widgets>
-                    <form-single name="UpdateExample" extends="CreateExample" transition="updateExample">
-                        <field name="exampleId" title="Example ID"><display/></field>
-                        <field name="statusId" title="Status">
-                            <drop-down allow-empty="false" current-description="${currentStatus.description}">
-                                <entity-options entity-name="StatusValidChangeToDetail" key-field="statusIdTo"
-                                                text="${transitionName} (${description})">
-                                    <econdition field-name="statusId" from-field="fieldValues.statusId"/>
-                                </entity-options>
-                            </drop-down>
-                        </field>
-                        <!-- uncomment the Example.anotherText field too in order to try this
-                        <field name="displayAnotherText">
-                            <conditional>
-                                <condition><compare field="fieldValues.anotherText" operator="not-empty"/></condition>
-                                <display text="${fieldValues.anotherText}"/>
-                            </conditional>
-                        </field>
-                        -->
-                        <field name="submitButton" title="Update"><submit button-type="button"/></field>
-                    </form-single>
-                </widgets>
-            </section>
-        </widgets>
-    </section>
+                    <field name="submitButton" title="Create"><submit button-type="button"/></field>
+                </form-single>
+            </widgets>
+        </section>
+        <section name="update">
+            <condition><compare field="fieldValues" operator="not-empty"/></condition>
+            <widgets>
+                <form-single name="UpdateExample" extends="CreateExample" transition="updateExample">
+                    <field name="exampleId" title="Example ID"><display/></field>
+                    <field name="statusId" title="Status">
+                        <drop-down allow-empty="false" current-description="${currentStatus.description}">
+                            <entity-options entity-name="StatusValidChangeToDetail" key-field="statusIdTo"
+                                            text="${transitionName} (${description})">
+                                <econdition field-name="statusId" from-field="fieldValues.statusId"/>
+                            </entity-options>
+                        </drop-down>
+                    </field>
+                    <!-- uncomment the Example.anotherText field too in order to try this
+                    <field name="displayAnotherText">
+                        <conditional>
+                            <condition><compare field="fieldValues.anotherText" operator="not-empty"/></condition>
+                            <display text="${fieldValues.anotherText}"/>
+                        </conditional>
+                    </field>
+                    -->
+                    <field name="submitButton" title="Update"><submit button-type="button"/></field>
+                </form-single>
+            </widgets>
+        </section>
+    </widgets>
 </screen>

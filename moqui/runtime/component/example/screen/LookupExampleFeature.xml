@@ -16,39 +16,37 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="lookupExampleFeature"><default-response url="LookupExampleFeature"/></transition>
 
-    <section name="root">
-        <actions>
-            <entity-find entity-name="ExampleFeature" list="exampleFeatureList">
-                <search-form-inputs/>
-                <order-by field-name="description"/>
-            </entity-find>
-        </actions>
-        <widgets>
-            <form-single name="FindExampleFeature" transition="lookupExampleFeature">
-                <auto-fields-entity entity-name="ExampleFeature" field-type="find"/>
-                <field name="exampleFeatureId" title="Example Feature ID"/>
-                <field name="featureSourceEnumId" title="Feature Source">
-                    <drop-down allow-empty="true">
-                        <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
-                            <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
-                            <order-by field-name="sequenceId"/>
-                        </entity-options>
-                    </drop-down>
-                </field>
-                <field name="description" title="Description"/>
-                <field name="submitButton" title="Find"><submit button-type="button"/></field>
-            </form-single>
+    <actions>
+        <entity-find entity-name="ExampleFeature" list="exampleFeatureList">
+            <search-form-inputs/>
+            <order-by field-name="description"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-single name="FindExampleFeature" transition="lookupExampleFeature">
+            <auto-fields-entity entity-name="ExampleFeature" field-type="find"/>
+            <field name="exampleFeatureId" title="Example Feature ID"/>
+            <field name="featureSourceEnumId" title="Feature Source">
+                <drop-down allow-empty="true">
+                    <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
+                        <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+                        <order-by field-name="sequenceId"/>
+                    </entity-options>
+                </drop-down>
+            </field>
+            <field name="description" title="Description"/>
+            <field name="submitButton" title="Find"><submit button-type="button"/></field>
+        </form-single>
 
-            <form-list name="ListExampleFeatures" list="exampleFeatureList">
-                <!--<auto-fields-entity entity-name="ExampleFeature" field-type="display"/>-->
-                <field name="exampleFeatureId" title="Example Feature ID">
-                    <link url="javascript:set_value('${exampleFeatureId}')" url-type="plain" text="${exampleFeatureId}"/>
-                </field>
-                <field name="featureSourceEnumId" title="Feature Source">
-                    <display-entity entity-name="Enumeration" key-field-name="enumId" text="${description} [${enumCode}]"/>
-                </field>
-                <field name="description" title="Description"><display/></field>
-            </form-list>
-        </widgets>
-    </section>
+        <form-list name="ListExampleFeatures" list="exampleFeatureList">
+            <!--<auto-fields-entity entity-name="ExampleFeature" field-type="display"/>-->
+            <field name="exampleFeatureId" title="Example Feature ID">
+                <link url="javascript:set_value('${exampleFeatureId}')" url-type="plain" text="${exampleFeatureId}"/>
+            </field>
+            <field name="featureSourceEnumId" title="Feature Source">
+                <display-entity entity-name="Enumeration" key-field-name="enumId" text="${description} [${enumCode}]"/>
+            </field>
+            <field name="description" title="Description"><display/></field>
+        </form-list>
+    </widgets>
 </screen>

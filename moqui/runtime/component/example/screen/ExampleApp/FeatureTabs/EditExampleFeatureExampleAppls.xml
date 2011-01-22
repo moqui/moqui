@@ -30,57 +30,55 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="EditExampleFeatureAppl"/>
     </transition>
 
-    <section name="root">
-        <actions>
-            <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-                <econdition field-name="exampleFeatureId" from-field="exampleFeatureId"/>
-                <order-by field-name="sequenceNum"/>
-            </entity-find>
-        </actions>
-        <widgets>
-            <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
-                <auto-fields-service service-name="updateExampleFeatureAppl"/>
-                <field name="exampleId" title="Example">
-                    <display-entity entity-name="Example" text="${exampleName}"/>
-                    <link url="editExample" text="${exampleId}"/>
-                </field>
-                <field name="exampleFeatureId"><hidden/></field>
-                <field name="fromDate"><display/></field>
-                <field name="exampleFeatureApplTypeId" title="Type">
-                    <drop-down allow-empty="false">
-                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
-                            <order-by field-name="description"/>
-                        </entity-options>
-                    </drop-down>
-                </field>
-                <field name="submitButton" title="Update"><submit button-type="button"/></field>
-                <field name="deleteLink">
-                    <!-- no need to specify parameters for this link since the local env names match the parameter
-                    names and will be auto-mapped (exampleId, exampleFeatureId, fromDate) -->
-                    <link url="deleteExampleFeatureAppl" text="Delete"/>
-                </field>
-            </form-list>
+    <actions>
+        <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
+            <econdition field-name="exampleFeatureId" from-field="exampleFeatureId"/>
+            <order-by field-name="sequenceNum"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
+            <auto-fields-service service-name="updateExampleFeatureAppl"/>
+            <field name="exampleId" title="Example">
+                <display-entity entity-name="Example" text="${exampleName}"/>
+                <link url="editExample" text="${exampleId}"/>
+            </field>
+            <field name="exampleFeatureId"><hidden/></field>
+            <field name="fromDate"><display/></field>
+            <field name="exampleFeatureApplTypeId" title="Type">
+                <drop-down allow-empty="false">
+                    <entity-options entity-name="ExampleFeatureApplType" text="${description}">
+                        <order-by field-name="description"/>
+                    </entity-options>
+                </drop-down>
+            </field>
+            <field name="submitButton" title="Update"><submit button-type="button"/></field>
+            <field name="deleteLink">
+                <!-- no need to specify parameters for this link since the local env names match the parameter
+                names and will be auto-mapped (exampleId, exampleFeatureId, fromDate) -->
+                <link url="deleteExampleFeatureAppl" text="Delete"/>
+            </field>
+        </form-list>
 
-            <form-single name="AddExampleFeatureAppl" transition="createExampleFeatureAppl">
-                <auto-fields-service service-name="createExampleFeatureAppl"/>
-                <field name="exampleId" title="Example">
-                    <drop-down allow-empty="false">
-                        <entity-options entity-name="Example" text="${exampleName} [${exampleId}]">
-                            <order-by field-name="exampleName"/>
-                        </entity-options>
-                    </drop-down>
-                </field>
-                <field name="exampleFeatureId"><hidden/></field>
+        <form-single name="AddExampleFeatureAppl" transition="createExampleFeatureAppl">
+            <auto-fields-service service-name="createExampleFeatureAppl"/>
+            <field name="exampleId" title="Example">
+                <drop-down allow-empty="false">
+                    <entity-options entity-name="Example" text="${exampleName} [${exampleId}]">
+                        <order-by field-name="exampleName"/>
+                    </entity-options>
+                </drop-down>
+            </field>
+            <field name="exampleFeatureId"><hidden/></field>
 
-                <field name="exampleFeatureApplTypeId" title="Type">
-                    <drop-down allow-empty="false">
-                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
-                            <order-by field-name="description"/>
-                        </entity-options>
-                    </drop-down>
-                </field>
-                <field name="submitButton" title="Add"><submit button-type="button"/></field>
-            </form-single>
-        </widgets>
-    </section>
+            <field name="exampleFeatureApplTypeId" title="Type">
+                <drop-down allow-empty="false">
+                    <entity-options entity-name="ExampleFeatureApplType" text="${description}">
+                        <order-by field-name="description"/>
+                    </entity-options>
+                </drop-down>
+            </field>
+            <field name="submitButton" title="Add"><submit button-type="button"/></field>
+        </form-single>
+    </widgets>
 </screen>

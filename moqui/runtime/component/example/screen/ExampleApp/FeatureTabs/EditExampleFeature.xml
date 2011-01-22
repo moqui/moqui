@@ -25,44 +25,42 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="EditExampleFeature"/>
     </transition>
 
-    <section name="root">
-        <actions>
-            <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
-        </actions>
-        <widgets>
-            <section name="create">
-                <condition><compare field="fieldValues" operator="empty"/></condition>
-                <widgets>
-                    <form-single name="CreateExampleFeature" transition="createExampleFeature">
-                        <auto-fields-service service-name="createExampleFeature"/>
-                        <field name="exampleFeatureId" title="Example Feature ID">
-                            <conditional>
-                                <condition><compare field="exampleFeatureId" operator="not-empty"/></condition>
-                                <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>
-                            </conditional>
-                        </field>
-                        <field name="description" title="Description"/>
-                        <field name="featureSourceEnumId" title="Feature Source">
-                            <drop-down allow-empty="false">
-                                <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
-                                    <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
-                                    <order-by field-name="sequenceId"/>
-                                </entity-options>
-                            </drop-down>
-                        </field>
-                        <field name="submitButton" title="Create"><submit button-type="button"/></field>
-                    </form-single>
-                </widgets>
-            </section>
-            <section name="update">
-                <condition><compare field="fieldValues" operator="not-empty"/></condition>
-                <widgets>
-                    <form-single name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
-                        <field name="exampleId" title="Example Feature ID"><display/></field>
-                        <field name="submitButton" title="Update"><submit button-type="button"/></field>
-                    </form-single>
-                </widgets>
-            </section>
-        </widgets>
-    </section>
+    <actions>
+        <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
+    </actions>
+    <widgets>
+        <section name="create">
+            <condition><compare field="fieldValues" operator="empty"/></condition>
+            <widgets>
+                <form-single name="CreateExampleFeature" transition="createExampleFeature">
+                    <auto-fields-service service-name="createExampleFeature"/>
+                    <field name="exampleFeatureId" title="Example Feature ID">
+                        <conditional>
+                            <condition><compare field="exampleFeatureId" operator="not-empty"/></condition>
+                            <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>
+                        </conditional>
+                    </field>
+                    <field name="description" title="Description"/>
+                    <field name="featureSourceEnumId" title="Feature Source">
+                        <drop-down allow-empty="false">
+                            <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
+                                <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+                                <order-by field-name="sequenceId"/>
+                            </entity-options>
+                        </drop-down>
+                    </field>
+                    <field name="submitButton" title="Create"><submit button-type="button"/></field>
+                </form-single>
+            </widgets>
+        </section>
+        <section name="update">
+            <condition><compare field="fieldValues" operator="not-empty"/></condition>
+            <widgets>
+                <form-single name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
+                    <field name="exampleId" title="Example Feature ID"><display/></field>
+                    <field name="submitButton" title="Update"><submit button-type="button"/></field>
+                </form-single>
+            </widgets>
+        </section>
+    </widgets>
 </screen>

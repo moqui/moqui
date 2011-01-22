@@ -35,7 +35,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected String characterEncoding = "UTF-8"
     protected String macroTemplateLocation = null
 
-    protected Writer writer
+    protected Writer writer = null
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
@@ -65,12 +65,14 @@ class ScreenRenderImpl implements ScreenRender {
 
     @Override
     void render(Writer writer) {
+        if (this.writer) throw new IllegalStateException("This screen render has already been used")
         this.writer = writer
         internalRender()
     }
 
     @Override
     String render() {
+        if (this.writer) throw new IllegalStateException("This screen render has already been used")
         this.writer = new StringWriter()
         internalRender()
         return this.writer.toString()
@@ -78,8 +80,30 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected internalRender() {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
+        if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
-        // TODO get screen defs for each screen in path to use for subscreens
+        // get screen defs for each screen in path to use for subscreens
+        ScreenDefinition lastSd = rootScreenDef
+        for (String subscreenName in screenPathNameList) {
+            // TODO: handle case where last one may be a transition name, and not a subscreen name
+            String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
+            if (!nextLoc) throw new IllegalArgumentException("Could not find subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
+            if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            screenPathDefList.add(nextSd)
+            lastSd = nextSd
+        }
+
+        // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
+        while (lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item") {
+            String subscreenName = lastSd.screenNode."subscreens"."@default-item"
+            String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
+            if (!nextLoc) throw new IllegalArgumentException("Could not find subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
+            if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            screenPathDefList.add(nextSd)
+            lastSd = nextSd
+        }
 
         // start rendering at the root section of the root screen
         rootScreenDef.getRootSection().render(this)
@@ -91,6 +115,18 @@ class ScreenRenderImpl implements ScreenRender {
             screenDef = screenPathDefList[screenPathIndex]
         }
         return screenDef
+    }
+
+    String renderSubscreen() {
+        // first see if there is another screen def in the list
+        if ((screenPathIndex+1) >= screenPathDefList.size())
+            throw new IllegalArgumentException("Tried to render subscreen in screen [${getActiveScreenDef()?.location}] but there is no subscreens.@default-item, and no more subscreen names in the screen path")
+
+        screenPathIndex++
+        ScreenDefinition screenDef = screenPathDefList[screenPathIndex]
+        screenDef.getRootSection().render(this)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
     }
 
     Template getTemplate() {
