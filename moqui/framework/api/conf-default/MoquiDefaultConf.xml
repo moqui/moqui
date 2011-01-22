@@ -159,7 +159,7 @@
         -->
         <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional"/>
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
             </inline-jdbc>
             <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTransactional;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
@@ -168,7 +168,7 @@
         </datasource>
         <datasource group-name="analytical" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiAnalytical"/>
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiAnalytical" createDatabase="create"/>
             </inline-jdbc>
             <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiAnalytical;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
@@ -177,7 +177,7 @@
         </datasource>
         <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTenant"/>
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTenant" createDatabase="create"/>
             </inline-jdbc>
             <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTenant;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"

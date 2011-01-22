@@ -40,9 +40,9 @@ class MoquiServlet extends HttpServlet {
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         webappId = config.getServletContext().getContextPath().substring(1) ?: "ROOT"
-        webappMoquiName = config.getInitParameter("moqui-name")
+        webappMoquiName = config.getServletContext().getInitParameter("moqui-name")
 
-        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${webappMoquiName}], context name [${config.getServletContext().getServletContextName()}], located at ${config.getServletContext().getRealPath("/")}")
+        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${webappMoquiName}], context name [${config.getServletContext().getServletContextName()}], located at [${config.getServletContext().getRealPath("/")}]")
         ExecutionContextFactory executionContextFactory = new ExecutionContextFactoryImpl()
         config.getServletContext().setAttribute("executionContextFactory", executionContextFactory)
 
@@ -89,7 +89,7 @@ class MoquiServlet extends HttpServlet {
         // render screens based on path in URL
         List<String> pathElements = pathInfo.split("/") as List
         ScreenRender render = wec.screen.makeRender().rootScreen(webappDef.webappNode."@root-screen-location")
-                .screenPath(pathElements).outputType("html")
+                .screenPath(pathElements).renderMode("html")
         if (request.getCharacterEncoding()) render.encoding(request.getCharacterEncoding())
         // NOTE: not creating a protected context for now for the screen, it is the only thing now, nothing to muck up
         // ContextStack cs = (ContextStack) wec.context

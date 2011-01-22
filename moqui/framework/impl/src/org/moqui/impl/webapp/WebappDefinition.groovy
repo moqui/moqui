@@ -12,8 +12,11 @@
 package org.moqui.impl.webapp
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class WebappDefinition {
+    protected final static Logger logger = LoggerFactory.getLogger(WebappDefinition.class)
 
     protected final ExecutionContextFactoryImpl ecfi
     protected final String webappName
@@ -23,7 +26,7 @@ class WebappDefinition {
         this.webappName = webappName
         this.ecfi = ecfi
 
-        webappNode = (Node) ecfi.confXmlRoot["webapp-list"][0].webapp.find({ it.@name == webappName })
+        webappNode = (Node) ecfi.confXmlRoot["webapp-list"][0]["webapp"].find({ it.@name == webappName })
     }
 
     String getWebappName() { return webappName }

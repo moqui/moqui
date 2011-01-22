@@ -344,11 +344,16 @@ class EntityFindImpl implements EntityFind {
             if (entityListCache.containsKey(whereCondition)) return (EntityList) entityListCache.get(whereCondition)
         }
 
-        EntityListIterator eli = this.iterator()
-        EntityList el = eli.getCompleteList()
-        eli.close()
+        EntityListIterator eli = null
+        EntityList el = null
+        try {
+            eli = this.iterator()
+            el = eli.getCompleteList()
+        } finally {
+            if (eli) eli.close()
+        }
 
-        if (doCache) {
+        if (doCache && el) {
             entityListCache.put(whereCondition, el)
         }
         return el
@@ -405,7 +410,7 @@ class EntityFindImpl implements EntityFind {
         List<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        for (Node orderBy in entityDefinition.getEntityNode()."entity-condition"[0]."order-by") {
+        for (Node orderBy in entityDefinition.getEntityNode()."entity-condition"[0]?."order-by") {
             orderByExpanded.add(orderBy."@field-name")
         }
         efb.makeOrderByClause(orderByExpanded)

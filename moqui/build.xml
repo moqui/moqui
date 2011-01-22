@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <project name="Moqui Main Build" default="build" basedir=".">
     <property environment="env"/>
-    <property name="tomcat.home" value="../apache-tomcat-7.0.5"/>
+    <property name="tomcat.home" value="../apache-tomcat-7.0.6"/>
 
     <target name="init">
         <!-- just a place holder for now -->

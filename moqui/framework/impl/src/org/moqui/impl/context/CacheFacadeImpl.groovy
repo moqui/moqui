@@ -77,18 +77,18 @@ public class CacheFacadeImpl implements CacheFacade {
         Node confXmlRoot = this.ecfi.getConfXmlRoot()
         Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
 
-        if (cacheElement."@expire-time-idle") {
+        if (cacheElement?."@expire-time-idle") {
             newCacheConf.setTimeToIdleSeconds(Long.valueOf((String) cacheElement."@expire-time-idle"))
             newCacheConf.setEternal(false)
         }
-        if (cacheElement."@expire-time-live") {
+        if (cacheElement?."@expire-time-live") {
             newCacheConf.setTimeToLiveSeconds(Long.valueOf((String) cacheElement."@expire-time-live"))
             newCacheConf.setEternal(false)
         }
-        if (cacheElement."@max-elements") {
+        if (cacheElement?."@max-elements") {
             newCacheConf.setMaxElementsInMemory(Integer.valueOf((String) cacheElement."@max-elements"))
         }
-        String evictionStrategy = cacheElement."@eviction-strategy"
+        String evictionStrategy = cacheElement?."@eviction-strategy"
         if (evictionStrategy) {
             if ("least-recently-used" == evictionStrategy) {
                 newCacheConf.setMemoryStoreEvictionPolicyFromObject(MemoryStoreEvictionPolicy.LRU)

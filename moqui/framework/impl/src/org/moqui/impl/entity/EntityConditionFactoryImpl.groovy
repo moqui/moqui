@@ -347,6 +347,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 }
                 condition.makeSqlWhere(eqb)
             }
+            sql.append(')')
         }
 
         @Override

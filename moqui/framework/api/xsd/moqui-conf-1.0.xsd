@@ -410,7 +410,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="group-name" type="xs:string" use="required"/>
             <xs:attribute name="database-conf-name" type="xs:string" use="required"/>
+            <!-- TODO support in code -->
             <xs:attribute name="schema-name" type="xs:string"/>
+            <!-- TODO support in code -->
             <xs:attribute name="check-on-start" default="true" type="boolean"/>
             <xs:attribute name="add-missing-on-start" default="true" type="boolean"/>
             <xs:attribute name="check-pks-on-start" default="true" type="boolean"/>

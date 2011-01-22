@@ -113,8 +113,11 @@ class EntityFacadeImpl implements EntityFacade {
 
                     Properties p = new Properties()
                     for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
-                        // TODO: the Derby "databaseName" property has a ${moqui.runtime} which is a System property, do we need to expand those here?
-                        p.setProperty(entry.getKey(), entry.getValue())
+                        // the Derby "databaseName" property has a ${moqui.runtime} which is a System property, others may have it too
+                        String propValue = entry.getValue()
+                        // TODO consider changing this to expand for all system properties using groovy or something
+                        if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
+                        p.setProperty(entry.getKey(), propValue)
                     }
                     ds.setXaProperties(p)
 
