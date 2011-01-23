@@ -11,16 +11,29 @@
  */
 package org.moqui.impl.entity
 
+import javax.xml.parsers.SAXParserFactory
+
+import org.moqui.entity.EntityDataLoader
+import org.moqui.entity.EntityList
+import org.moqui.entity.EntityValue
+
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+
 import org.xml.sax.helpers.DefaultHandler
 import org.xml.sax.Attributes
-import org.moqui.entity.EntityValue
 import org.xml.sax.XMLReader
-import javax.xml.parsers.SAXParserFactory
 import org.xml.sax.InputSource
-import org.moqui.entity.EntityList
-import org.moqui.entity.EntityDataLoader
+import org.xml.sax.Locator
+import javax.transaction.Transaction
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
+import org.moqui.entity.EntityException
+import org.xml.sax.SAXException
+import org.apache.commons.codec.binary.Base64
 
 class EntityDataLoaderImpl implements EntityDataLoader {
+    protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
 
     protected EntityFacadeImpl efi
 
@@ -73,16 +86,82 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
 
     void internalRun(EntityXmlHandler exh) {
-        InputStream inputStream = null
+        // if no xmlText or locations, so find all of the component and entity-facade files
+        if (!this.xmlText && !this.locationList) {
+            // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
+            for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
+                locationList.add(loadData."@location")
+            }
+
+            // loop through components look for XML files in the entity directory, check each for "<entities>" root element
+            for (String location in efi.ecfi.getComponentBaseLocations().values()) {
+                URL dataDirUrl = efi.ecfi.resourceFacade.getLocationUrl(location + "/data")
+                if ("file" == dataDirUrl.getProtocol()) {
+                    File dataDir = new File(dataDirUrl.toURI())
+                    // if directory doesn't exist skip it, component doesn't have a data directory
+                    if (!dataDir.exists() || !dataDir.isDirectory()) continue
+                    for (File dataFile in dataDir.listFiles()) {
+                        if (!dataFile.isFile() || !dataFile.getName().endsWith(".xml")) continue
+                        locationList.add(dataFile.toURI().toString())
+                    }
+                } else {
+                    // just warn here, no exception because any non-file component location would blow everything up
+                    logger.warn("Cannot load entity data file in component location [${location}] because protocol [${dataDirUrl.getProtocol()}] is not yet supported.")
+                }
+            }
+        }
+        if (locationList && logger.infoEnabled) {
+            logger.info("Loading entity XML data from the following locations: " + locationList)
+        }
+
+        TransactionFacade tf = efi.ecfi.transactionFacade
+        Transaction parentTransaction = null
         try {
-            // TODO: change to also handle xmlText if present
-            // TODO: change to also handle dataTypes if present
-            inputStream = efi.ecfi.resourceFacade.getLocationStream(location)
-            XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
-            reader.setContentHandler(exh)
-            reader.parse(new InputSource(inputStream))
+            if (tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            // load the XML text in its own transaction
+            boolean beganTransaction = tf.begin(transactionTimeout)
+            try {
+                if (this.xmlText) {
+                    XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
+                    reader.setContentHandler(exh)
+                    reader.parse(new InputSource(new StringReader(this.xmlText)))
+                }
+            } catch (Throwable t) {
+                tf.rollback(beganTransaction, "Error loading XML text", t)
+            } finally {
+                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+            }
+            // load each file in its own transaction
+            for (String location in this.locationList) {
+                loadSingleFile(location, exh)
+            }
+        } catch (TransactionException e) {
+            throw e
         } finally {
-            if (inputStream) inputStream.close()
+            if (parentTransaction != null) tf.resume(parentTransaction)
+        }
+    }
+
+    void loadSingleFile(String location, EntityXmlHandler exh) {
+        TransactionFacade tf = efi.ecfi.transactionFacade
+        boolean beganTransaction = tf.begin(transactionTimeout)
+        try {
+            InputStream inputStream = null
+            try {
+                inputStream = efi.ecfi.resourceFacade.getLocationStream(location)
+                XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
+                reader.setContentHandler(exh)
+                reader.parse(new InputSource(inputStream))
+                logger.info("Loaded entity XML data from " + location)
+            } catch (TypeToSkipException e) {
+                // nothing to do, this just stops the parsing when we know the file is not in the types we want
+            } finally {
+                if (inputStream) inputStream.close()
+            }
+        } catch (Throwable t) {
+            tf.rollback(beganTransaction, "Error loading XML text", t)
+        } finally {
+            if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
         }
     }
 
@@ -95,31 +174,46 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         CheckValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
         List<String> getMessageList() { return messageList }
         void handleValue(EntityValue value) {
-            // TODO
+            value.checkAgainstDatabase(messageList)
         }
     }
     static class LoadValueHandler extends ValueHandler {
         LoadValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
         void handleValue(EntityValue value) {
-            // TODO
+            if (edli.dummyFks) value.checkFks(true)
+            if (edli.useTryInsert) {
+                try {
+                    value.create()
+                } catch (EntityException e) {
+                    // if this fails we have a real error so let the exception fall through
+                    value.update()
+                }
+            } else {
+                value.createOrUpdate()
+            }
         }
     }
     static class ListValueHandler extends ValueHandler {
         protected EntityList el
         ListValueHandler(EntityDataLoaderImpl edli) { this.edli = edli; el = new EntityListImpl(edli.efi) }
         void handleValue(EntityValue value) {
-            // TODO
+            el.add(value)
         }
-        EntityList getEntityList() {return el }
+        EntityList getEntityList() { return el }
+    }
+
+    static class TypeToSkipException extends RuntimeException {
+        TypeToSkipException() { }
     }
 
     static class EntityXmlHandler extends DefaultHandler {
+        protected Locator locator
         protected EntityDataLoaderImpl edli
         protected ValueHandler valueHandler
 
-        protected EntityValue currentValue = null
-        protected CharSequence currentFieldName = null
-        protected CharSequence currentFieldValue = null
+        protected EntityValueImpl currentValue = null
+        protected String currentFieldName = null
+        protected StringBuilder currentFieldValue = null
         protected long valuesRead = 0
         protected List<String> messageList = new LinkedList()
 
@@ -132,15 +226,104 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         long getValuesRead() { return valuesRead }
         List<String> getMessageList() { return messageList }
 
-        void startElement(String ns, String localName, String qName, Attributes atts) {
-            // TODO
+        void startElement(String ns, String localName, String qName, Attributes attributes) {
+            if (qName == "entity-facade-xml") {
+                String type = attributes.getValue("type")
+                if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
+                    throw new TypeToSkipException()
+                }
+            }
+
+            if (currentValue != null) {
+                // nested value/CDATA element
+                currentFieldName = qName
+            } else {
+                String entityName = qName
+
+                // if a dash or colon is in the tag name, grab what is after it
+                if (entityName.contains('-')) entityName = entityName.substring(entityName.indexOf('-') + 1)
+                if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
+
+                if (edli.efi.getEntityDefinition(entityName)) {
+                    currentValue = edli.efi.makeValue(entityName)
+
+                    int length = attributes.getLength()
+                    for (int i = 0; i < length; i++) {
+                        String name = attributes.getLocalName(i)
+                        String value = attributes.getValue(i)
+
+                        if (!name) name = attributes.getQName(i)
+                        try {
+                            // treat empty strings as nulls
+                            if (value) {
+                                if (currentValue.getEntityDefinition().isField(name)) {
+                                    currentValue.setString(name, value)
+                                } else {
+                                    logger.warn("Ignoring invalid attribute name [${name}] for entity [${currentValue.getEntityName()}] with value [${value}] because it is not field of that entity")
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.warn("Could not set field [${entityName}.${name}] to the value [${value}]", e)
+                        }
+                    }
+                } else {
+                    logger.warn("Found element name [${entityName}] that is not a valid entity name")
+                }
+            }
         }
         void characters(char[] chars, int offset, int length) {
-            // TODO
-            new String(chars, offset, length)
+            if (currentValue != null && currentFieldName) {
+                if (currentFieldValue == null) currentFieldValue = new StringBuilder()
+                currentFieldValue.append(chars, offset, length)
+            }
         }
         void endElement(String ns, String localName, String qName) {
-            // TODO
+            if (qName == "entity-facade-xml") return
+            if (currentValue != null) {
+                if (currentFieldName != null) {
+                    if (currentFieldValue) {
+                        EntityDefinition ed = currentValue.getEntityDefinition()
+                        if (ed.isField(currentFieldName)) {
+                            Node fieldNode = ed.getFieldNode(currentFieldName)
+                            String type = fieldNode."@type"
+                            if (type == "binary-very-long") {
+                                byte[] binData = Base64.decodeBase64(currentFieldValue.toString())
+                                currentValue.set(currentFieldName, binData)
+                            } else {
+                                currentValue.setString(currentFieldName, currentFieldValue.toString())
+                            }
+                        } else {
+                            logger.warn("Ignoring invalid field name [${currentFieldName}] found for the entity ${currentValue.getEntityName()} with value ${currentFieldValue}")
+                        }
+                        currentFieldValue = null
+                    }
+                    currentFieldName = null
+                } else {
+                    // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name
+                    if (!currentValue.containsPrimaryKey()) {
+                        List<String> pkFieldList = currentValue.getEntityDefinition().getFieldNames(true, false)
+                        if (pkFieldList.size() == 1) {
+                            String newSeq = edli.efi.sequencedIdPrimary(currentValue.getEntityName(), null)
+                            currentValue.setString(pkFieldList.get(0), newSeq)
+                        } else {
+                            throw new SAXException("Cannot store value with incomplete primary key with more than 1 primary key field: " + currentValue)
+                        }
+                    }
+
+                    try {
+                        valueHandler.handleValue(currentValue)
+                        valuesRead++
+                        currentValue = null
+                    } catch (EntityException e) {
+                        logger.error("Error storing value", e)
+                        throw new SAXException("Error storing value: " + e.toString())
+                    }
+                }
+            }
+        }
+
+        public void setDocumentLocator(org.xml.sax.Locator locator) {
+            this.locator = locator;
         }
     }
 }

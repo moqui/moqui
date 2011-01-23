@@ -175,7 +175,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    protected void loadAllEntityLocations() {
+    protected synchronized void loadAllEntityLocations() {
         // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
         for (Node loadEntity in this.ecfi.getConfXmlRoot()."entity-facade"[0]."load-entity") {
             this.loadEntityFileLocations(loadEntity."@location")
@@ -200,7 +200,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    protected void loadEntityFileLocations(String location) {
+    protected synchronized void loadEntityFileLocations(String location) {
         // NOTE: using XmlSlurper here instead of XmlParser because it should be faster since it won't parse through the whole file right away
         InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
         GPathResult entityRoot = new XmlSlurper().parse(entityStream)

@@ -121,6 +121,15 @@ class EntityValueImpl implements EntityValue {
         return true
     }
 
+    /** @see org.moqui.entity.EntityValue#getPrimaryKeys() */
+    Map<String, Object> getPrimaryKeys() {
+        Map<String, Object> pks = new HashMap()
+        for (String fieldName in this.getEntityDefinition().getFieldNames(true, false)) {
+            pks.put(fieldName, valueMap[fieldName])
+        }
+        return pks
+    }
+
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
     void set(String name, Object value) {
         if (!mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
@@ -497,6 +506,35 @@ class EntityValueImpl implements EntityValue {
         }
         // if we haven't found one missing, we're all good
         return true
+    }
+
+    /** @see org.moqui.entity.EntityValue#checkAgainstDatabase(List) */
+    void checkAgainstDatabase(List messages) {
+        try {
+            EntityValue dbValue = this.cloneValue()
+            if (!dbValue.refresh()) {
+                messages.add("Entity [${getEntityName()}] record not found for primary key [${getPrimaryKeys()}]")
+                return
+            }
+
+            for (String nonpkFieldName in this.getEntityDefinition().getFieldNames(false, true)) {
+                // skip the lastUpdatedStamp field
+                if (nonpkFieldName == "lastUpdatedStamp") continue
+
+                Object checkFieldValue = this.get(nonpkFieldName)
+                Object dbFieldValue = dbValue.get(nonpkFieldName)
+
+                if (checkFieldValue != null && !checkFieldValue.equals(dbFieldValue)) {
+                    messages.add("Field [${getEntityName()}.${nonpkFieldName}] did not match; check (file) value [${checkFieldValue}], db value [${dbFieldValue}] for primary key [${getPrimaryKeys()}]")
+                }
+            }
+        } catch (EntityException e) {
+            throw e
+        } catch (Throwable t) {
+            String errMsg = "Error checking entity [${getEntityName()}] with pk [${getPrimaryKeys()}]"
+            messages.add(errMsg)
+            logger.error(errMsg, t)
+        }
     }
 
     /** @see org.moqui.entity.EntityValue#makeXmlElement(Document, String) */

@@ -52,6 +52,8 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     /** Returns true if the entity contains all of the primary key fields. */
     boolean containsPrimaryKey();
 
+    Map<String, Object> getPrimaryKeys();
+
     /** Sets the named field to the passed value, even if the value is null
      * @param name The field name to set
      * @param value The value to set
@@ -159,6 +161,8 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @throws EntityException
      */
     boolean checkFks(boolean insertDummy) throws EntityException;
+
+    void checkAgainstDatabase(List messages);
 
     /** Makes an XML Element object with an attribute for each field of the entity
      * @param document The XML Document that the new Element will be part of
