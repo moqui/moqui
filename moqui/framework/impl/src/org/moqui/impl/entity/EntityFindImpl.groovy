@@ -304,24 +304,24 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         EntityValueImpl newEntityValue = null
         try {
-            efb.makeConnection()
-            efb.makePreparedStatement()
-            efb.setPreparedStatementValues()
-
-            ResultSet rs = efb.executeQuery()
-            if (rs.next()) {
-                newEntityValue = new EntityValueImpl(entityDefinition, this.efi)
-                int j = 1
-                for (String fieldName in this.fieldsToSelect) {
-                    EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
-                    j++
-                }
+            newEntityValue = internalOne(efb, whereCondition.toString())
+        } catch (TableMissingException e) {
+            efb.closeAll()
+            if (entityDefinition.isViewEntity()) {
+                throw e
             } else {
-                logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${whereCondition.toString()}]")
+                entityDefinition.createTable()
+
+                try {
+                    newEntityValue = internalOne(efb, whereCondition.toString())
+                } catch (SQLException e) {
+                    throw new EntityException("Error finding value", e)
+                } finally {
+                    efb.closeAll()
+                }
             }
-            if (rs.next()) {
-                logger.trace("Found more than one result for condition [${whereCondition}] on entity [${entityDefinition.getEntityName()}]")
-            }
+        } catch (SQLException e) {
+            throw new EntityException("Error finding value", e)
         } finally {
             efb.closeAll()
         }
@@ -329,6 +329,29 @@ class EntityFindImpl implements EntityFind {
         if (this.shouldCache()) {
             // put it in whether null or not
             entityOneCache.put(whereCondition, newEntityValue)
+        }
+        return newEntityValue
+    }
+
+    protected EntityValue internalOne(EntityFindBuilder efb, String condSql) {
+        efb.makeConnection()
+        efb.makePreparedStatement()
+        efb.setPreparedStatementValues()
+
+        EntityValue newEntityValue = null
+        ResultSet rs = efb.executeQuery()
+        if (rs.next()) {
+            newEntityValue = new EntityValueImpl(this.entityDef, this.efi)
+            int j = 1
+            for (String fieldName in this.fieldsToSelect) {
+                EntityQueryBuilder.getResultSetValue(rs, j, this.entityDef.getFieldNode(fieldName), newEntityValue, this.efi)
+                j++
+            }
+        } else {
+            logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${condSql}]")
+        }
+        if (rs.next()) {
+            logger.trace("Found more than one result for condition [${condSql}] on entity [${this.entityDef.getEntityName()}]")
         }
         return newEntityValue
     }
@@ -418,21 +441,42 @@ class EntityFindImpl implements EntityFind {
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
-        EntityListIteratorImpl eli = null
         try {
-            Connection con = efb.makeConnection()
-            efb.makePreparedStatement()
-            efb.setPreparedStatementValues()
+            return internalIterator(efb)
+        } catch (TableMissingException e) {
+            efb.closeAll()
+            if (entityDefinition.isViewEntity()) {
+                throw e
+            } else {
+                try {
+                    entityDefinition.createTable()
 
-            ResultSet rs = efb.executeQuery()
-
-            eli = new EntityListIteratorImpl(con, rs, entityDefinition, this.fieldsToSelect, this.efi)
-        } catch (SQLException e) {
-            throw new EntityException("Error finding value", e)
-        } finally {
-            efb.closePsOnly()
-            // ResultSet will be closed in the EntityListIterator
+                    return internalIterator(efb)
+                } catch (Throwable t) {
+                    efb.closeAll()
+                    throw new EntityException("Error in find", t)
+                }
+            }
+        } catch (EntityException e) {
+            efb.closeAll()
+            throw e
+        } catch (Throwable t) {
+            efb.closeAll()
+            throw new EntityException("Error in find", t)
         }
+    }
+
+    EntityListIteratorImpl internalIterator(EntityFindBuilder efb) {
+        EntityListIteratorImpl eli
+        Connection con = efb.makeConnection()
+        efb.makePreparedStatement()
+        efb.setPreparedStatementValues()
+
+        ResultSet rs = efb.executeQuery()
+
+        eli = new EntityListIteratorImpl(con, rs, this.entityDef, this.fieldsToSelect, this.efi)
+        efb.closePsOnly()
+        // ResultSet will be closed in the EntityListIterator
         return eli
     }
 
@@ -487,12 +531,22 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         long count = 0
         try {
-            efb.makeConnection()
-            efb.makePreparedStatement()
-            efb.setPreparedStatementValues()
+            count = internalCount(efb)
+        } catch (TableMissingException e) {
+            efb.closeAll()
+            if (entityDefinition.isViewEntity()) {
+                throw e
+            } else {
+                entityDefinition.createTable()
 
-            ResultSet rs = efb.executeQuery()
-            if (rs.next()) count = rs.getLong(1)
+                try {
+                    count = internalCount(efb)
+                } catch (SQLException e) {
+                    throw new EntityException("Error finding count", e)
+                } finally {
+                    efb.closeAll()
+                }
+            }
         } catch (SQLException e) {
             throw new EntityException("Error finding count", e)
         } finally {
@@ -503,6 +557,17 @@ class EntityFindImpl implements EntityFind {
             entityCountCache.put(whereCondition, count)
         }
 
+        return count
+    }
+
+    protected long internalCount(EntityFindBuilder efb) {
+        long count = 0
+        efb.makeConnection()
+        efb.makePreparedStatement()
+        efb.setPreparedStatementValues()
+
+        ResultSet rs = efb.executeQuery()
+        if (rs.next()) count = rs.getLong(1)
         return count
     }
 
@@ -562,5 +627,10 @@ class EntityFindImpl implements EntityFind {
         if (this.dynamicView) return false
         String entityCache = this.getEntityDef().getEntityNode()."@use-cache" == "true"
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
+    }
+
+    static class TableMissingException extends EntityException {
+        TableMissingException(String m) { super(m) }
+        TableMissingException(String m, Throwable t) { super(m, t) }
     }
 }

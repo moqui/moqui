@@ -23,6 +23,7 @@ import javax.sql.rowset.serial.SerialBlob
 import javax.sql.rowset.serial.SerialClob
 import org.moqui.impl.StupidUtilities
 import java.sql.Connection
+import org.moqui.impl.entity.EntityFindImpl.TableMissingException
 
 class EntityFindBuilder extends EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
@@ -348,8 +349,14 @@ class EntityFindBuilder extends EntityQueryBuilder {
             this.ps = connection.prepareStatement(sql, this.entityFindImpl.resultSetType, this.entityFindImpl.resultSetConcurrency)
             if (this.entityFindImpl.maxRows > 0) this.ps.setMaxRows(this.entityFindImpl.maxRows)
             if (this.entityFindImpl.fetchSize > 0) this.ps.setFetchSize(this.entityFindImpl.fetchSize)
-        } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception preparing statement:" + sql, sqle)
+        } catch (SQLException e) {
+            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(this.mainEntityDefinition.getEntityName()))
+            String tableMissingPattern = databaseNode ? databaseNode."@table-missing-pattern" : null
+            if (tableMissingPattern && e.message.matches(tableMissingPattern)) {
+                throw new TableMissingException("Table missing error while preparing statement:" + sql, e)
+            } else {
+                throw new EntityException("SQL Exception preparing statement:" + sql, e)
+            }
         }
         return this.ps
     }

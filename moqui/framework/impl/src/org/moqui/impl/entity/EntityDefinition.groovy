@@ -363,6 +363,23 @@ public class EntityDefinition {
         return makeViewListCondition(havingEconditions)
     }
 
+    void createTable() {
+        // TODO implement
+    }
+
+    @Override
+    int hashCode() {
+        return this.entityName.hashCode()
+    }
+
+    @Override
+    boolean equals(Object o) {
+        if (!(o instanceof EntityDefinition)) return false
+        EntityDefinition that = (EntityDefinition) o
+        if (!this.entityName.equals(that.entityName)) return false
+        return true
+    }
+
     static String camelCaseToUnderscored(String camelCase) {
         if (!camelCase) return ""
         StringBuilder underscored = new StringBuilder()
@@ -377,18 +394,5 @@ public class EntityDefinition {
         }
 
         return underscored.toString()
-    }
-
-    @Override
-    int hashCode() {
-        return this.entityName.hashCode()
-    }
-
-    @Override
-    boolean equals(Object o) {
-        if (!(o instanceof EntityDefinition)) return false
-        EntityDefinition that = (EntityDefinition) o
-        if (!this.entityName.equals(that.entityName)) return false
-        return true
     }
 }

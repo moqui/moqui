@@ -261,7 +261,8 @@
                   use-indices-unique="false"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
-                  default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">
+                  default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource"
+                  table-missing-pattern="Table.*does not exist.">
             <field-type-def type="id" sql-type="VARCHAR(20)"/>
             <field-type-def type="id-long" sql-type="VARCHAR(60)"/>
             <field-type-def type="id-vlong" sql-type="VARCHAR(255)"/>
