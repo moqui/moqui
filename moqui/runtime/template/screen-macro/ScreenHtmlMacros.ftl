@@ -10,6 +10,9 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <#recurse widgetsNode/>
+<#macro widgets><#recurse/></#macro>
+<#macro "fail-widgets"><#recurse/></#macro>
+<#macro @element><!-- doing nothing for element ${.node?node_name} --></#macro>
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
@@ -45,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ================ Section ================ -->
 <#macro section>    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
     </div></#macro>
-<#macro section-iterate>    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
+<#macro "section-iterate">    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
     </div></#macro>
 
 <#-- ================ Containers ================ -->
@@ -136,7 +139,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro "link"><#compress single_line=true>
+<#macro "link"><@compress single_line=true>
 <#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
     ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") && .node["@url-type"]?has_content && .node["@url-type"] != "transition")>
     <#assign parameterMap = ec.getContext().get(.node["@parameter-map"]?if_exists)?if_exists/>
@@ -168,20 +171,20 @@ This Work includes contributions authored by David E. Jones, not as a
         </a>
     -->
 </#if>
-</#compress></#macro>
-<#macro "image"><img src="${sri.makeUrl(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"</#if><#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+</@compress></#macro>
+<#macro "image"><img src="${sri.makeUrl(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro "label"><span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span></#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
 
 <#-- ============================================ -->
 <#-- ================== Form ==================== -->
-<#macro form-single>
+<#macro "form-single">
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
     ${sri.renderFormSingle(.node["@name"])}
     </form>
 </#macro>
-<#macro form-list>
+<#macro "form-list">
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
     ${sri.renderFormList(.node["@name"])}

@@ -307,15 +307,16 @@ class EntityFindImpl implements EntityFind {
             newEntityValue = internalOne(efb, whereCondition.toString())
         } catch (TableMissingException e) {
             efb.closeAll()
-            if (entityDefinition.isViewEntity()) {
+            if (entityDefinition.isViewEntity() ||
+                    efi.getDatasourceNode(efi.getEntityGroupName(entityDefinition.entityName))?."@add-missing-runtime" == "false") {
                 throw e
             } else {
-                entityDefinition.createTable()
+                efi.entityDbMeta.createTable(entityDefinition)
 
                 try {
                     newEntityValue = internalOne(efb, whereCondition.toString())
-                } catch (SQLException e) {
-                    throw new EntityException("Error finding value", e)
+                } catch (SQLException e2) {
+                    throw new EntityException("Error finding value", e2)
                 } finally {
                     efb.closeAll()
                 }
@@ -373,7 +374,7 @@ class EntityFindImpl implements EntityFind {
             eli = this.iterator()
             el = eli.getCompleteList()
         } finally {
-            if (eli) eli.close()
+            if (eli != null) eli.close()
         }
 
         if (doCache && el) {
@@ -445,11 +446,12 @@ class EntityFindImpl implements EntityFind {
             return internalIterator(efb)
         } catch (TableMissingException e) {
             efb.closeAll()
-            if (entityDefinition.isViewEntity()) {
+            if (entityDefinition.isViewEntity() ||
+                    efi.getDatasourceNode(efi.getEntityGroupName(entityDefinition.entityName))?."@add-missing-runtime" == "false") {
                 throw e
             } else {
                 try {
-                    entityDefinition.createTable()
+                    efi.entityDbMeta.createTable(entityDefinition)
 
                     return internalIterator(efb)
                 } catch (Throwable t) {
@@ -475,8 +477,8 @@ class EntityFindImpl implements EntityFind {
         ResultSet rs = efb.executeQuery()
 
         eli = new EntityListIteratorImpl(con, rs, this.entityDef, this.fieldsToSelect, this.efi)
-        efb.closePsOnly()
         // ResultSet will be closed in the EntityListIterator
+        efb.releaseAll()
         return eli
     }
 
@@ -534,15 +536,16 @@ class EntityFindImpl implements EntityFind {
             count = internalCount(efb)
         } catch (TableMissingException e) {
             efb.closeAll()
-            if (entityDefinition.isViewEntity()) {
+            if (entityDefinition.isViewEntity() ||
+                    efi.getDatasourceNode(efi.getEntityGroupName(entityDefinition.entityName))?."@add-missing-runtime" == "false") {
                 throw e
             } else {
-                entityDefinition.createTable()
+                efi.entityDbMeta.createTable(entityDefinition)
 
                 try {
                     count = internalCount(efb)
-                } catch (SQLException e) {
-                    throw new EntityException("Error finding count", e)
+                } catch (SQLException e2) {
+                    throw new EntityException("Error finding count", e2)
                 } finally {
                     efb.closeAll()
                 }

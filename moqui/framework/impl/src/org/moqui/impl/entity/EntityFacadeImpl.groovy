@@ -306,6 +306,14 @@ class EntityFacadeImpl implements EntityFacade {
         return datasourceNode."@database-conf-name"
     }
 
+    Node getDatasourceNode(String groupName) {
+        return (Node) this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource".find({ it."@group-name" == groupName })
+    }
+
+    EntityDbMeta getEntityDbMeta() {
+        return new EntityDbMeta(this)
+    }
+
     // ========== Interface Implementations ==========
 
     /** @see org.moqui.entity.EntityFacade#getConditionFactory() */

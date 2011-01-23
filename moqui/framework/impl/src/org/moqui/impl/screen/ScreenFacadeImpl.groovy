@@ -79,7 +79,9 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Template template = (Template) screenTemplateModeCache.get(renderMode)
         if (template) return template
 
-        return makeTemplateByMode(renderMode)
+        template = makeTemplateByMode(renderMode)
+        if (!template) throw new IllegalArgumentException("Could not find screen render template for mode [${renderMode}]")
+        return template
     }
 
     protected synchronized Template makeTemplateByMode(String renderMode) {
@@ -95,7 +97,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
             newTemplate = new Template(templateLocation, templateReader, makeConfiguration())
         } catch (Exception e) {
-            logger.error("Error while initializing Screen Widgets template at [${templateLocation}]", e)
+            throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {
             if (templateReader) templateReader.close()
         }

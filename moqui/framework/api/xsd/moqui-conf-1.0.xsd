@@ -412,13 +412,15 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="database-conf-name" type="xs:string" use="required"/>
             <!-- TODO support in code -->
             <xs:attribute name="schema-name" type="xs:string"/>
-            <!-- TODO support in code -->
+            <xs:attribute name="add-missing-runtime" default="true" type="boolean"/>
+            <!-- TODO support in code, or even use these?
             <xs:attribute name="check-on-start" default="true" type="boolean"/>
             <xs:attribute name="add-missing-on-start" default="true" type="boolean"/>
             <xs:attribute name="check-pks-on-start" default="true" type="boolean"/>
             <xs:attribute name="check-fks-on-start" default="true" type="boolean"/>
             <xs:attribute name="check-fk-indices-on-start" default="true" type="boolean"/>
             <xs:attribute name="check-indices-on-start" default="true" type="boolean"/>
+             -->
         </xs:complexType>
     </xs:element>
     <xs:element name="inline-jdbc">
@@ -496,12 +498,17 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <xs:attribute name="name" type="xs:string" use="required"/>
 
+            <!-- TODO use in code -->
             <xs:attribute name="use-schemas" default="true" type="boolean"/>
             <xs:attribute name="use-pk-constraint-names" default="true" type="boolean"/>
             <xs:attribute name="constraint-name-clip-length" default="30" type="xs:nonNegativeInteger"/>
+            <!-- TODO use in code -->
             <xs:attribute name="result-fetch-size" default="-1" type="xs:integer"/>
+            <!-- TODO use in code -->
             <xs:attribute name="use-foreign-keys" default="true" type="boolean"/>
+            <!-- TODO use in code -->
             <xs:attribute name="use-foreign-key-indices" default="true" type="boolean"/>
+            <!-- TODO use in code -->
             <xs:attribute name="fk-style" default="name_constraint">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
@@ -510,10 +517,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            <!-- TODO use in code -->
             <xs:attribute name="use-fk-initially-deferred" default="false" type="boolean"/>
+            <!-- TODO use in code -->
             <xs:attribute name="use-indices" default="true" type="boolean">
                 <xs:annotation><xs:documentation>Use manually declared indices (indexes)?</xs:documentation></xs:annotation>
             </xs:attribute>
+            <!-- TODO use in code -->
             <xs:attribute name="use-indices-unique" default="true" type="boolean">
                 <xs:annotation><xs:documentation>For manually declared indices (if used), use the unique constraint?</xs:documentation></xs:annotation>
             </xs:attribute>
@@ -526,9 +536,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="always-use-constraint-keyword" default="false" type="boolean"/>
+            <!-- TODO use in code -->
             <xs:attribute name="drop-fk-use-foreign-key-keyword" default="false" type="boolean"/>
-            <xs:attribute name="use-binary-type-for-blob" default="false" type="boolean"/>
-            <xs:attribute name="table-type" type="xs:string"/>
+            <xs:attribute name="table-engine" type="xs:string"/>
             <xs:attribute name="character-set" type="xs:string"/>
             <xs:attribute name="collate" type="xs:string"/>
             <xs:attribute name="default-isolation-level">

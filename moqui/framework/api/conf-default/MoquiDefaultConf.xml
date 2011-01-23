@@ -320,7 +320,7 @@
                   use-foreign-keys="true"
                   join-style="ansi-no-parenthesis"
                   drop-fk-use-foreign-key-keyword="true"
-                  table-type="InnoDB"
+                  table-engine="InnoDB"
                   character-set="latin1"
                   collate="latin1_general_cs"
                   default-isolation-level="ReadCommitted"

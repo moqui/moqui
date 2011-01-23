@@ -30,6 +30,7 @@ import org.apache.commons.codec.binary.Base64
 import org.moqui.impl.StupidUtilities
 import org.moqui.Moqui
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.entity.EntityFindImpl.TableMissingException
 
 class EntityValueImpl implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -249,22 +250,40 @@ class EntityValueImpl implements EntityValue {
             sql.append(") VALUES (").append(values.toString()).append(')')
 
             try {
-                eqb.makeConnection()
-                eqb.makePreparedStatement()
-                int index = 1
-                for (String fieldName in fieldList) {
-                    eqb.setPreparedStatementValue(index, valueMap.get(fieldName), getEntityDefinition().getFieldNode(fieldName))
-                    index++
+                internalCreate(eqb, fieldList)
+            } catch (TableMissingException e) {
+                eqb.closeAll()
+                if (getEntityDefinition().isViewEntity() ||
+                        efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
+                    throw e
+                } else {
+                    efi.entityDbMeta.createTable(getEntityDefinition())
+
+                    try {
+                        internalCreate(eqb, fieldList)
+                    } finally {
+                        eqb.closeAll()
+                    }
                 }
-                eqb.executeUpdate()
-                setSyncedWithDb()
-                // TODO: notify cache clear
             } catch (EntityException e) {
                 throw new EntityException("Error in create of [${this.toString()}]", e)
             } finally {
                 eqb.closeAll()
             }
         }
+    }
+
+    protected void internalCreate(EntityQueryBuilder eqb, ListOrderedSet fieldList) {
+        eqb.makeConnection()
+        eqb.makePreparedStatement()
+        int index = 1
+        for (String fieldName in fieldList) {
+            eqb.setPreparedStatementValue(index, valueMap.get(fieldName), getEntityDefinition().getFieldNode(fieldName))
+            index++
+        }
+        eqb.executeUpdate()
+        setSyncedWithDb()
+        // TODO: notify cache clear
     }
 
     /** @see org.moqui.entity.EntityValue#createOrUpdate() */
@@ -329,19 +348,37 @@ class EntityValueImpl implements EntityValue {
             }
 
             try {
-                eqb.makeConnection()
-                eqb.makePreparedStatement()
-                eqb.setPreparedStatementValues()
-                if (eqb.executeUpdate() == 0)
-                    throw new EntityException("Tried to update a value that does not exist [${this.toString()}].")
-                setSyncedWithDb()
-                // TODO: notify cache clear
+                internalUpdate(eqb)
+            } catch (TableMissingException e) {
+                eqb.closeAll()
+                if (getEntityDefinition().isViewEntity() ||
+                        efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
+                    throw e
+                } else {
+                    efi.entityDbMeta.createTable(getEntityDefinition())
+
+                    try {
+                        internalUpdate(eqb)
+                    } finally {
+                        eqb.closeAll()
+                    }
+                }
             } catch (EntityException e) {
                 throw new EntityException("Error in update of [${this.toString()}]", e)
             } finally {
                 eqb.closeAll()
             }
         }
+    }
+
+    protected void internalUpdate(EntityQueryBuilder eqb) {
+        eqb.makeConnection()
+        eqb.makePreparedStatement()
+        eqb.setPreparedStatementValues()
+        if (eqb.executeUpdate() == 0)
+            throw new EntityException("Tried to update a value that does not exist [${this.toString()}].")
+        setSyncedWithDb()
+        // TODO: notify cache clear
     }
 
     /** @see org.moqui.entity.EntityValue#delete() */
@@ -365,17 +402,35 @@ class EntityValueImpl implements EntityValue {
             }
 
             try {
-                eqb.makeConnection()
-                eqb.makePreparedStatement()
-                eqb.setPreparedStatementValues()
-                if (eqb.executeUpdate() == 0) logger.info("Tried to delete a value that does not exist [${this.toString()}]")
-                // TODO: notify cache clear
+                internalDelete(eqb)
+            } catch (TableMissingException e) {
+                eqb.closeAll()
+                if (getEntityDefinition().isViewEntity() ||
+                        efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
+                    throw e
+                } else {
+                    efi.entityDbMeta.createTable(getEntityDefinition())
+
+                    try {
+                        internalDelete(eqb)
+                    } finally {
+                        eqb.closeAll()
+                    }
+                }
             } catch (EntityException e) {
                 throw new EntityException("Error in delete of [${this.toString()}]", e)
             } finally {
                 eqb.closeAll()
             }
         }
+    }
+
+    protected void internalDelete(EntityQueryBuilder eqb) {
+        eqb.makeConnection()
+        eqb.makePreparedStatement()
+        eqb.setPreparedStatementValues()
+        if (eqb.executeUpdate() == 0) logger.info("Tried to delete a value that does not exist [${this.toString()}]")
+        // TODO: notify cache clear
     }
 
     /** @see org.moqui.entity.EntityValue#refresh() */
@@ -410,26 +465,46 @@ class EntityValueImpl implements EntityValue {
 
         boolean retVal = false
         try {
-            eqb.makeConnection()
-            eqb.makePreparedStatement()
-            eqb.setPreparedStatementValues()
-
-            ResultSet rs = eqb.executeQuery()
-            if (rs.next()) {
-                int j = 1
-                for (String fieldName in nonPkFieldList) {
-                    EntityQueryBuilder.getResultSetValue(rs, j, getEntityDefinition().getFieldNode(fieldName), this, getEntityFacadeImpl())
-                    j++
-                }
-                retVal = true
-                setSyncedWithDb()
+            retVal = internalRefresh(eqb, nonPkFieldList)
+        } catch (TableMissingException e) {
+            eqb.closeAll()
+            if (getEntityDefinition().isViewEntity() ||
+                    efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
+                throw e
             } else {
-                logger.trace("No record found in refresh for entity [${entityName}] with values [${valueMap}]")
+                efi.entityDbMeta.createTable(getEntityDefinition())
+
+                try {
+                    retVal = internalRefresh(eqb, nonPkFieldList)
+                } finally {
+                    eqb.closeAll()
+                }
             }
         } catch (EntityException e) {
             throw new EntityException("Error in refresh of [${this.toString()}]", e)
         } finally {
             eqb.closeAll()
+        }
+        return retVal
+    }
+
+    protected boolean internalRefresh(EntityQueryBuilder eqb, ListOrderedSet nonPkFieldList) {
+        eqb.makeConnection()
+        eqb.makePreparedStatement()
+        eqb.setPreparedStatementValues()
+
+        boolean retVal = false
+        ResultSet rs = eqb.executeQuery()
+        if (rs.next()) {
+            int j = 1
+            for (String fieldName in nonPkFieldList) {
+                EntityQueryBuilder.getResultSetValue(rs, j, getEntityDefinition().getFieldNode(fieldName), this, getEntityFacadeImpl())
+                j++
+            }
+            retVal = true
+            setSyncedWithDb()
+        } else {
+            logger.trace("No record found in refresh for entity [${entityName}] with values [${valueMap}]")
         }
         return retVal
     }

@@ -12,9 +12,10 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
-    <subscreens>
+    <subscreens default-item="example">
         <!-- refer to the various app roots here -->
-        <subscreens-item name="example" location="component://example/screen/ExampleApp.xml" menu-title="Example" menu-index="9"/>
+        <subscreens-item name="example" location="component://example/screen/ExampleApp.xml"
+                         menu-title="Example" menu-index="9"/>
     </subscreens>
     <widgets>
         <container-panel id="WebrootPanel">

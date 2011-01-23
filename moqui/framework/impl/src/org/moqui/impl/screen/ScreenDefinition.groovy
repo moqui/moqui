@@ -64,18 +64,22 @@ class ScreenDefinition {
     void populateSubscreens() {
         // start with file/directory structure
         URL locationUrl = sfi.ecfi.resourceFacade.getLocationUrl(location)
+        logger.info("Finding subscreens for screen at [${locationUrl}]")
         if (locationUrl.getProtocol() == "file") {
-            String filename = locationUrl.getFile()
-            String subscreensDirStr = locationUrl.getPath() + filename.substring(0, filename.lastIndexOf("."))
+            String subscreensDirStr = locationUrl.toString()
+            subscreensDirStr = subscreensDirStr.substring(subscreensDirStr.indexOf(":")+1, subscreensDirStr.lastIndexOf("."))
             File subscreensDir = new File(subscreensDirStr)
             if (subscreensDir.exists() && subscreensDir.isDirectory()) {
+                logger.info("Looking for subscreens in directory [${subscreensDir.toURI()}]")
                 for (File subscreenFile in subscreensDir.listFiles()) {
                     if (!subscreenFile.isFile() || !subscreenFile.getName().endsWith(".xml")) continue
                     GPathResult subscreenRoot = new XmlSlurper().parse(subscreenFile)
-                    if (subscreenRoot.name() == "screen" && subscreenRoot."@default-menu-include" != "false") {
+                    if (subscreenRoot.name() == "screen") {
                         String ssName = subscreenFile.getName()
                         ssName = ssName.substring(0, ssName.lastIndexOf("."))
-                        subscreensByName.put(ssName, new SubscreensItem(ssName, subscreenFile.toURI().toString(), subscreenRoot))
+                        SubscreensItem si = new SubscreensItem(ssName, subscreenFile.toURI().toString(), subscreenRoot)
+                        subscreensByName.put(si.name, si)
+                        logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
                     }
                 }
             }
@@ -85,21 +89,27 @@ class ScreenDefinition {
 
         // override dir structure with subscreens.subscreens-item elements
         for (Node subscreensItem in screenNode."subscreens"?."subscreens-item") {
-            subscreensByName.put(subscreensItem."@name", new SubscreensItem(subscreensItem, this))
+            SubscreensItem si = new SubscreensItem(subscreensItem, this)
+            subscreensByName.put(si.name, si)
+            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
         }
 
         // override dir structure and subscreens-item elements with SubscreensItem entity
         EntityList subscreensItemList = sfi.ecfi.entityFacade.makeFind("SubscreensItem")
                 .condition([screenLocation:location, userId:"_NA_"]).useCache(true).list()
         for (EntityValue subscreensItem in subscreensItemList) {
-            subscreensByName.put(subscreensItem.subscreenName, new SubscreensItem(subscreensItem))
+            SubscreensItem si = new SubscreensItem(subscreensItem)
+            subscreensByName.put(si.name, si)
+            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
         }
         // override rest with SubscreensItem entity with userId of current user
         if (sfi.ecfi.executionContext.user.userId) {
             EntityList userSubscreensItemList = sfi.ecfi.entityFacade.makeFind("SubscreensItem")
                     .condition([screenLocation:location, userId:sfi.ecfi.executionContext.user.userId]).useCache(true).list()
             for (EntityValue subscreensItem in userSubscreensItemList) {
-                subscreensByName.put(subscreensItem.subscreenName, new SubscreensItem(subscreensItem))
+                SubscreensItem si = new SubscreensItem(subscreensItem)
+                subscreensByName.put(si.name, si)
+                logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
             }
         }
     }
@@ -125,9 +135,9 @@ class ScreenDefinition {
         SubscreensItem(String name, String location, GPathResult screen) {
             this.name = name
             this.location = location
-            menuTitle = screen."@default-menu-title"
-            menuIndex = (screen."@default-menu-index" as Integer) ?: 1
-            menuInclude = true
+            menuTitle = screen."@default-menu-title"[0]
+            menuIndex = (screen."@default-menu-index"[0] as String ?: "1") as Integer
+            menuInclude = (!screen."@default-menu-include"[0] || screen."@default-menu-include"[0] == "true")
         }
 
         SubscreensItem(Node subscreensItem, ScreenDefinition parentScreen) {

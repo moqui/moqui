@@ -363,10 +363,6 @@ public class EntityDefinition {
         return makeViewListCondition(havingEconditions)
     }
 
-    void createTable() {
-        // TODO implement
-    }
-
     @Override
     int hashCode() {
         return this.entityName.hashCode()

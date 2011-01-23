@@ -82,9 +82,13 @@ class ScreenRenderImpl implements ScreenRender {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
+
+        logger.info("Rendering screen [${rootScreenLocation}] with path list [${screenPathNameList}]")
+
         // get screen defs for each screen in path to use for subscreens
         ScreenDefinition lastSd = rootScreenDef
         for (String subscreenName in screenPathNameList) {
+            if (!subscreenName) continue
             // TODO: handle case where last one may be a transition name, and not a subscreen name
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
             if (!nextLoc) throw new IllegalArgumentException("Could not find subscreen [${subscreenName}] in screen [${lastSd.location}]")
@@ -95,8 +99,8 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
-        while (lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item") {
-            String subscreenName = lastSd.screenNode."subscreens"."@default-item"
+        while (lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
+            String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
             if (!nextLoc) throw new IllegalArgumentException("Could not find subscreen [${subscreenName}] in screen [${lastSd.location}]")
             ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
@@ -106,7 +110,11 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         // start rendering at the root section of the root screen
-        rootScreenDef.getRootSection().render(this)
+        try {
+            rootScreenDef.getRootSection().render(this)
+        } catch (Throwable t) {
+            throw new RuntimeException("Error rendering screen [${getActiveScreenDef().location}]", t)
+        }
     }
 
     ScreenDefinition getActiveScreenDef() {
@@ -120,7 +128,7 @@ class ScreenRenderImpl implements ScreenRender {
     String renderSubscreen() {
         // first see if there is another screen def in the list
         if ((screenPathIndex+1) >= screenPathDefList.size())
-            throw new IllegalArgumentException("Tried to render subscreen in screen [${getActiveScreenDef()?.location}] but there is no subscreens.@default-item, and no more subscreen names in the screen path")
+            return "Tried to render subscreen in screen [${getActiveScreenDef()?.location}] but there is no subscreens.@default-item, and no more subscreen names in the screen path"
 
         screenPathIndex++
         ScreenDefinition screenDef = screenPathDefList[screenPathIndex]

@@ -87,30 +87,27 @@ class EntityQueryBuilder {
         }
     }
 
-    /** NOTE: this should be called in a finally clause to make this things are closed */
+    /** NOTE: this should be called in a finally clause to make sure things are closed */
     void closeAll() {
-        if (this.ps) {
+        if (this.ps != null) {
             this.ps.close()
             this.ps = null
         }
-        if (this.rs) {
+        if (this.rs != null) {
             this.rs.close()
             this.rs = null
         }
-        if (this.connection) {
+        if (this.connection != null) {
             this.connection.close()
             this.connection = null
         }
     }
 
     /** Only close the PreparedStatement, leave the ResultSet and Connection open, but null references to them
-     * NOTE: this should be called in a finally clause to make this things are closed
+     * NOTE: this should be called in a finally clause to make sure things are closed
      */
-    void closePsOnly() {
-        if (this.ps) {
-            this.ps.close()
-            this.ps = null
-        }
+    void releaseAll() {
+        this.ps = null
         this.rs = null
         this.connection = null
     }

@@ -149,7 +149,7 @@ class EntityListIteratorImpl implements EntityListIterator {
                 return !(!haveMadeValue && !rs.isBeforeFirst() && !rs.isFirst())
             }
         } catch (SQLException e) {
-            throw new EntityException("Error while checking to see there is a next result", e)
+            throw new EntityException("Error while checking to see if there is a next result", e)
         }
     }
 
@@ -163,7 +163,7 @@ class EntityListIteratorImpl implements EntityListIterator {
                 return !(!haveMadeValue && !rs.isAfterLast() && !rs.isLast())
             }
         } catch (SQLException e) {
-            throw new EntityException("Error while checking to see there is a previous result", e)
+            throw new EntityException("Error while checking to see if there is a previous result", e)
         }
     }
 
