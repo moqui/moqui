@@ -15,16 +15,14 @@ import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
 import groovy.util.slurpersupport.GPathResult
 
 class ScreenDefinition {
-    protected final static Logger logger = LoggerFactory.getLogger(ScreenDefinition.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
 
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
-    protected final String location
+    final String location
 
     protected Map subscreensByName = new HashMap()
 

@@ -31,9 +31,6 @@ class EntityDbMeta {
         String groupName = efi.getEntityGroupName(ed.entityName)
         Node databaseNode = efi.getDatabaseNode(groupName)
 
-        Connection con = efi.getConnection(groupName)
-        Statement stmt = null
-
         StringBuilder sql = new StringBuilder("CREATE TABLE ")
         sql.append(ed.getTableName())
         sql.append(" (")
@@ -104,14 +101,24 @@ class EntityDbMeta {
         }
 
         if (logger.traceEnabled) logger.trace("Create Table with SQL: " + sql.toString())
+
+        Connection con = null
+        Statement stmt = null
+        boolean beganTransaction = efi.ecfi.transactionFacade.begin(null)
         try {
+            con = efi.getConnection(groupName)
             stmt = con.createStatement()
             stmt.executeUpdate(sql.toString())
         } catch (SQLException e) {
-            throw new EntityException("SQL Exception while executing the following SQL [${sql.toString()}]", e)
+            String errMsg = "SQL Exception while executing the following SQL [${sql.toString()}]"
+            efi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, e)
+            throw new EntityException(errMsg, e)
         } finally {
-            if (stmt) stmt.close()
-            if (con) con.close()
+            if (stmt != null) stmt.close()
+            if (con != null) con.close()
+            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                efi.ecfi.transactionFacade.commit(beganTransaction)
+            }
         }
     }
 }

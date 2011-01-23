@@ -82,7 +82,19 @@
         <priority value="warn"/>
     </category>
 
+    <category name="freemarker">
+        <priority value="warn"/>
+    </category>
+
     <category name="net.sf.ehcache">
+        <priority value="warn"/>
+    </category>
+
+    <category name="org.quartz.core">
+        <priority value="warn"/>
+    </category>
+
+    <category name="com.atomikos">
         <priority value="warn"/>
     </category>
 

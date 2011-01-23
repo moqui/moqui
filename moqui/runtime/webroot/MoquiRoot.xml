@@ -18,13 +18,20 @@ This Work includes contributions authored by David E. Jones, not as a
                          menu-title="Example" menu-index="9"/>
     </subscreens>
     <widgets>
+        <render-mode><text type="html" location="webroot/includes/HtmlHeader.html.ftl"/></render-mode>
+
         <container-panel id="WebrootPanel">
+            <panel-header>
+                <label text="Welcome to Moqui"/>
+            </panel-header>
             <panel-center>
                 <subscreens-panel id="WebrootSubsPanel" type="tab"/>
             </panel-center>
             <panel-footer>
-                <label text="Built on Moqui" id="WebrootFooter"/>
+                <label text="Built on Moqui"/>
             </panel-footer>
         </container-panel>
+
+        <render-mode><text type="html" location="webroot/includes/HtmlFooter.html.ftl"/></render-mode>
     </widgets>
 </screen>

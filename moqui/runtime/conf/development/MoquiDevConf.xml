@@ -8,12 +8,13 @@
              Cleared by default every 10 seconds from when loaded into cache. -->
         <cache name="entity.definition" expire-time-live="10"/>
         <cache name="entity.location" expire-time-live="10"/>
-        <cache name="service.location" expire-time-live="10"/>
 
-        <cache name="entity.namespace" expire-time-live="10"/>
-        <cache name="service.namespace" expire-time-live="10"/>
+        <cache name="service.location" expire-time-live="10"/>
+        <cache name="service.java.class" expire-time-live="10"/>
 
         <cache name="screen.location" expire-time-live="10"/>
+        <cache name="screen.template.mode" expire-time-live="10"/>
+        <cache name="screen.template.location" expire-time-live="10"/>
 
         <cache name="script.xml-actions.location" expire-time-live="10"/>
         <cache name="script.groovy.location" expire-time-live="10"/>

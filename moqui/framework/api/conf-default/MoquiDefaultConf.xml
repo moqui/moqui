@@ -88,8 +88,6 @@
                             macro-template-location="template/screen-macro/ScreenCwikiMacros.ftl"/>
         <screen-text-output type="html" mime-type="text/html"
                             macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
-        <screen-text-output type="xhtml" mime-type="text/xhtml"
-                            macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
         <screen-text-output type="xsl-fo" mime-type="text/xml"
                             macro-template-location="template/screen-macro/ScreenXslFoMacros.ftl"/>
         <screen-text-output type="xml" mime-type="text/xml"

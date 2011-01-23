@@ -569,7 +569,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="type" type="xs:string" default="any">
                 <xs:annotation><xs:documentation>
-                    Can be anything. Default supported values include: text, cwiki, html, xhtml, xsl-fo, xml, and csv.
+                    Can be anything. Default supported values include: text, cwiki, html, xsl-fo, xml, and csv.
                     A value of "any" will cause it to be used if no other element matches the current output type.
                 </xs:documentation></xs:annotation>
             </xs:attribute>

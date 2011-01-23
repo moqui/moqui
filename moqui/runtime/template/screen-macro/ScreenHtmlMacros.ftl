@@ -10,9 +10,19 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <#recurse widgetsNode/>
-<#macro widgets><#recurse/></#macro>
-<#macro "fail-widgets"><#recurse/></#macro>
+
 <#macro @element><!-- doing nothing for element ${.node?node_name} --></#macro>
+
+<#macro widgets>
+<#if sri.doBoundaryComments()><!-- BEGIN screen[@location=${sri.getActiveScreenDef().location}].widgets --></#if>
+<#recurse/>
+<#if sri.doBoundaryComments()><!-- END   screen[@location=${sri.getActiveScreenDef().location}].widgets --></#if>
+</#macro>
+<#macro "fail-widgets">
+<#if sri.doBoundaryComments()><!-- BEGIN screen[@location=${sri.getActiveScreenDef().location}].fail-widgets --></#if>
+<#recurse/>
+<#if sri.doBoundaryComments()><!-- END   screen[@location=${sri.getActiveScreenDef().location}].fail-widgets --></#if>
+</#macro>
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
@@ -46,10 +56,18 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#-- ================ Section ================ -->
-<#macro section>    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
-    </div></#macro>
-<#macro "section-iterate">    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
-    </div></#macro>
+<#macro section>
+    <#if sri.doBoundaryComments()><!-- BEGIN section[@name=${.node["@name"]}] --></#if>
+    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
+    </div>
+    <#if sri.doBoundaryComments()><!-- END   section[@name=${.node["@name"]}] --></#if>
+</#macro>
+<#macro "section-iterate">
+    <#if sri.doBoundaryComments()><!-- BEGIN section-iterate[@name=${.node["@name"]}] --></#if>
+    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
+    </div>
+    <#if sri.doBoundaryComments()><!-- END   section-iterate[@name=${.node["@name"]}] --></#if>
+</#macro>
 
 <#-- ================ Containers ================ -->
 <#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse/>
@@ -77,7 +95,10 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#-- ================ Includes ================ -->
-<#macro "include-screen">${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"])}
+<#macro "include-screen">
+<#if sri.doBoundaryComments()><!-- BEGIN include-screen[@location=${.node["@location"]}][@share-scope=${.node["@share-scope"]?if_exists}] --></#if>
+${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
+<#if sri.doBoundaryComments()><!-- END   include-screen[@location=${.node["@location"]}][@share-scope=${.node["@share-scope"]?if_exists}] --></#if>
 </#macro>
 
 <#-- ============== Tree ============== -->
@@ -126,20 +147,22 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#-- ============== Render Mode Elements =============== -->
-<#macro "render-mode"><#compress>
-<#if .node["text"]>
+<#macro "render-mode">
+<#if .node["text"]?has_content>
     <#list .node["text"] as textNode><#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode/></#if></#list>
     <#if !textToUse?has_content><#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list></#if>
     <#if textToUse?has_content>
-    ${sri.renderText(textToUse["@location"], textToUse["@template"])}
+<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?if_exists}] --></#if>
+    ${sri.renderText(textToUse["@location"], textToUse["@template"][0]?if_exists)}
+<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?if_exists}] --></#if>
     </#if>
 </#if>
-</#compress></#macro>
+</#macro>
 
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro "link"><@compress single_line=true>
+<#macro "link">
 <#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
     ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") && .node["@url-type"]?has_content && .node["@url-type"] != "transition")>
     <#assign parameterMap = ec.getContext().get(.node["@parameter-map"]?if_exists)?if_exists/>
@@ -148,11 +171,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <#t><#if .node["parameter"]?has_content && .node["@parameter-map"]?has_content && ec.getContext().get(.node["@parameter-map"])?has_content>&amp;</#if>
         <#t><#list parameterMap?keys as pKey>${pKey?url}=${parameterMap[pKey]?url}<#if pKey_has_next>&amp;</#if></#list>
     <#t></#assign>
-    <a href="${sri.makeUrl((.node["@url"][0] + "?" + parameterString), .node["@url-type"][0]!"content")}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
+    <a href="${sri.makeUrl((.node["@url"][0] + "?" + parameterString), .node["@url-type"][0]!"transition")}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
     <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${.node["@text"]}</#if>
     </a>
-<else/>
-    <form method="post" action="${sri.makeUrl(.node["@url"][0], .node["@url-type"][0]!"content")}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
+<#else/>
+    <form method="post" action="${sri.makeUrl(.node["@url"][0], .node["@url-type"][0]!"transition")}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
         <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"][0]?html}" value="${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?html}" type="hidden"/></#list>
         <#list parameterMap?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
     </form>
@@ -171,7 +194,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </a>
     -->
 </#if>
-</@compress></#macro>
+</#macro>
 <#macro "image"><img src="${sri.makeUrl(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro "label"><span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span></#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
@@ -179,14 +202,18 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ============================================ -->
 <#-- ================== Form ==================== -->
 <#macro "form-single">
+<#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
     ${sri.renderFormSingle(.node["@name"])}
     </form>
+<#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro "form-list">
+<#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
     ${sri.renderFormList(.node["@name"])}
     </form>
+<#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>

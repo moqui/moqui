@@ -12,15 +12,13 @@
 package org.moqui.impl.screen
 
 import org.moqui.context.ScreenRender
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
 
 import org.moqui.context.ExecutionContext
 import freemarker.template.Template
 import org.moqui.impl.context.ContextStack
 
 class ScreenRenderImpl implements ScreenRender {
-    protected final static Logger logger = LoggerFactory.getLogger(ScreenRenderImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
 
     protected final ScreenFacadeImpl sfi
 
@@ -82,13 +80,16 @@ class ScreenRenderImpl implements ScreenRender {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
+        // clean up the screenPathNameList, remove null/empty entries
+        List<String> tempPathNameList = new ArrayList<String>()
+        for (String subscreenName in screenPathNameList) if (subscreenName) tempPathNameList.add(subscreenName)
+        screenPathNameList = tempPathNameList
 
         logger.info("Rendering screen [${rootScreenLocation}] with path list [${screenPathNameList}]")
 
         // get screen defs for each screen in path to use for subscreens
         ScreenDefinition lastSd = rootScreenDef
         for (String subscreenName in screenPathNameList) {
-            if (!subscreenName) continue
             // TODO: handle case where last one may be a transition name, and not a subscreen name
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
             if (!nextLoc) throw new IllegalArgumentException("Could not find subscreen [${subscreenName}] in screen [${lastSd.location}]")
@@ -117,6 +118,10 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
+    boolean doBoundaryComments() {
+        return sfi.ecfi.confXmlRoot."screen-facade"[0]."@boundary-comments" == "true"
+    }
+
     ScreenDefinition getActiveScreenDef() {
         ScreenDefinition screenDef = rootScreenDef
         if (screenPathIndex >= 0) {
@@ -132,7 +137,16 @@ class ScreenRenderImpl implements ScreenRender {
 
         screenPathIndex++
         ScreenDefinition screenDef = screenPathDefList[screenPathIndex]
-        screenDef.getRootSection().render(this)
+        try {
+            writer.flush()
+            screenDef.getRootSection().render(this)
+            writer.flush()
+        } catch (Throwable t) {
+            logger.error("Error rendering screen [${screenDef.location}]", t)
+            return "Error rendering screen [${screenDef.location}]: ${t.toString()}"
+        } finally {
+            screenPathIndex--
+        }
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
@@ -149,7 +163,9 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition sd = getActiveScreenDef()
         ScreenSection section = sd.getSection(sectionName)
         if (!section) throw new IllegalArgumentException("No section with name [${sectionName}] in screen [${sd.location}]")
+        writer.flush()
         section.render(this)
+        writer.flush()
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
@@ -158,7 +174,9 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition sd = getActiveScreenDef()
         ScreenForm form = sd.getForm(formName)
         if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+        writer.flush()
         form.renderSingle(this)
+        writer.flush()
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
@@ -167,7 +185,9 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition sd = getActiveScreenDef()
         ScreenForm form = sd.getForm(formName)
         if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+        writer.flush()
         form.renderListRow(this)
+        writer.flush()
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
@@ -179,8 +199,10 @@ class ScreenRenderImpl implements ScreenRender {
         ContextStack cs = (ContextStack) ec.context
         try {
             if (!shareScope) cs.push()
+            writer.flush()
             sfi.makeRender().rootScreen(location).renderMode(renderMode).encoding(characterEncoding)
                     .macroTemplate(macroTemplateLocation).render(writer)
+            writer.flush()
         } finally {
             if (!shareScope) cs.pop()
         }
@@ -194,7 +216,9 @@ class ScreenRenderImpl implements ScreenRender {
         if (isTemplateStr == "false") isTemplate = false
 
         if (isTemplate) {
+            writer.flush()
             sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(location, writer)
+            writer.flush()
             // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
             return ""
         } else {

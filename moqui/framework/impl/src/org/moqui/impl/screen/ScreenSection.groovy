@@ -16,6 +16,8 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ContextStack
 
 class ScreenSection {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenSection.class)
+
     protected Node sectionNode
     protected String location
 
@@ -74,6 +76,7 @@ class ScreenSection {
     }
 
     protected void renderSingle(ScreenRenderImpl sri) {
+        logger.info("Begin rendering screen section at [${location}]")
         boolean conditionPassed = true
         if (condition) conditionPassed = condition.checkCondition(sri.ec)
 
@@ -83,5 +86,6 @@ class ScreenSection {
         } else {
             if (failWidgets) failWidgets.render(sri)
         }
+        logger.info("End rendering screen section at [${location}]")
     }
 }
