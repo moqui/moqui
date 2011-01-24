@@ -131,6 +131,14 @@ class ScreenDefinition {
 
     SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
+    List<SubscreensItem> getSubscreensItemsSorted() {
+        List<SubscreensItem> newList = new ArrayList(subscreensByName.size())
+        if (subscreensByName.size() == 0) return newList
+        newList.addAll(subscreensByName.values())
+        Collections.sort(newList, new SubscreensItemComparator())
+        return newList
+    }
+
     ScreenSection getRootSection() { return rootSection }
 
     ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
@@ -286,7 +294,7 @@ class ScreenDefinition {
             this.name = name
             this.location = location
             menuTitle = screen."@default-menu-title"[0]
-            menuIndex = (screen."@default-menu-index"[0] as String ?: "1") as Integer
+            menuIndex = (screen."@default-menu-index"[0] as String ?: "5") as Integer
             menuInclude = (!screen."@default-menu-include"[0] || screen."@default-menu-include"[0] == "true")
         }
 
@@ -317,6 +325,18 @@ class ScreenDefinition {
         boolean getDisable(ExecutionContext ec) {
             if (!disableWhenGroovy) return false
             return InvokerHelper.createScript(disableWhenGroovy, new Binding(ec.context)) as boolean
+        }
+    }
+
+    static class SubscreensItemComparator implements Comparator<SubscreensItem> {
+        public MapOrderByComparator() { }
+        @Override
+        public int compare(SubscreensItem ssi1, SubscreensItem ssi2) {
+            // order by index
+            int indexComp = ssi1.menuIndex.compareTo(ssi2.menuIndex)
+            if (indexComp != 0) return indexComp
+            // if index is the same, order by title
+            return ssi1.menuTitle.compareTo(ssi2.menuTitle)
         }
     }
 }

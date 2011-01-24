@@ -26,9 +26,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
-    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-menu">
-<!-- TODO render menu -->
-    </div>
+    <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
+    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+        <!-- TODO add highlighting class for active item -->
+        <li><a href="${sri.buildUrl(subscreensItem.name)}">${subscreensItem.menuTitle}</a></li>
+    </#if></#list>
+    </ul>
 </#macro>
 
 <#macro "subscreens-active">
@@ -38,21 +41,23 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "subscreens-panel">
-<!-- TODO handle type:
-    <xs:attribute name="type" default="tab">
-                <xs:enumeration value="tab"/>
-                <xs:enumeration value="stack"/>
-                <xs:enumeration value="wizard"/>
-    </xs:attribute>
--->
+    <#if !(.node["@type"]?has_content) || .node["@type"][0] == "tab">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
-<!-- TODO render menu -->
-        </div>
+        <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
+        <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+            <!-- TODO add highlighting class for active item -->
+            <li><a href="${sri.buildUrl(subscreensItem.name)}">${subscreensItem.menuTitle}</a></li>
+        </#if></#list>
+        </ul>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
         ${sri.renderSubscreen()}
         </div>
     </div>
+    <#elseif .node["@type"][0] == "stack"/>
+    <h1>TODO stack type subscreens-panel not yet supported.</h1>
+    <#elseif .node["@type"][0] == "wizard"/>
+    <h1>TODO wizard type subscreens-panel not yet supported.</h1>
+    </#if>
 </#macro>
 
 <#-- ================ Section ================ -->
