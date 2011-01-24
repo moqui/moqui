@@ -17,12 +17,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleFeatureId"/>
 
     <transition name="createExampleFeature">
-        <actions><call-service name="create#ExampleFeature" in-map="true"/></actions>
-        <default-response url="EditExampleFeature"/>
+        <call-service name="create#ExampleFeature"/>
+        <default-response url="."/>
     </transition>
     <transition name="updateExampleFeature">
-        <actions><call-service name="update#ExampleFeature" in-map="true"/></actions>
-        <default-response url="EditExampleFeature"/>
+        <call-service name="update#ExampleFeature"/>
+        <default-response url="."/>
     </transition>
 
     <actions>

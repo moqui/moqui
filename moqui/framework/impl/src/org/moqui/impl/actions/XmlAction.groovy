@@ -58,19 +58,22 @@ class XmlAction {
 
     /** The Groovy class compiled from the script transformed from the XML actions text using the FTL template. */
     protected final Class groovyClass
+    protected final String groovyString
 
     XmlAction(ExecutionContextFactoryImpl ecfi, Node xmlNode, String location) {
         StringWriter sw = new StringWriter()
         XmlNodePrinter xnp = new XmlNodePrinter(new PrintWriter(sw))
         xnp.print(xmlNode)
-        groovyClass = makeGroovyClass(ecfi, sw.toString(), location)
+        groovyString = makeGroovyString(ecfi, sw.toString(), location)
+        groovyClass = makeGroovyClass(ecfi, groovyString, location)
     }
 
     XmlAction(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
-        groovyClass = makeGroovyClass(ecfi, xmlText, location)
+        groovyString = makeGroovyString(ecfi, xmlText, location)
+        groovyClass = makeGroovyClass(ecfi, groovyString, location)
     }
 
-    protected Class makeGroovyClass(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
+    protected String makeGroovyString(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
         // transform XML to groovy
         String groovyText = null
         InputStream xmlStream = null
@@ -98,7 +101,10 @@ class XmlAction {
         }
 
         if (logger.debugEnabled) logger.debug("xml-actions at [${location}] produced groovy script:\n${groovyText}")
+        return groovyText
+    }
 
+    protected Class makeGroovyClass(ExecutionContextFactoryImpl ecfi, String groovyText, String location) {
         // parse groovy
         return new GroovyClassLoader().parseClass(groovyText, location)
     }
@@ -108,14 +114,24 @@ class XmlAction {
         if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
 
         Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
-        return script.run()
+        try {
+            return script.run()
+        } catch (Exception e) {
+            logger.error("Error running groovy script [${groovyString}]", e)
+            throw e
+        }
     }
 
     boolean checkCondition(ExecutionContext ec) {
         if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
 
         Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
-        // NOTE: not sure if this is the proper way to evaluate the compiled expression... will see
-        return script.run() as boolean
+        try {
+            // NOTE: not sure if this is the proper way to evaluate the compiled expression... will see
+            return script.run() as boolean
+        } catch (Exception e) {
+            logger.error("Error running groovy script [${groovyString}]", e)
+            throw e
+        }
     }
 }

@@ -34,8 +34,8 @@
         <!-- The webapp.@moqui-name attribute value is looked up based on the value of the moqui-name context-param in
         the web.xml file. This configuration will allow the framework to do various things for that webapp. -->
         <webapp name="webroot" root-screen-location="webroot/MoquiRoot.xml"
-                http-port="8080" http-force-host=""
-                https-port="8443" https-force-host="" https-enabled="true"
+                http-port="8080" http-host=""
+                https-port="8443" https-host="" https-enabled="true"
                 content-prefix-secure="" content-prefix-standard=""
                 cookie-domain="">
 

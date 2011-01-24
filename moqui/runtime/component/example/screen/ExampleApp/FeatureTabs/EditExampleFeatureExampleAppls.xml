@@ -16,18 +16,18 @@ This Work includes contributions authored by David E. Jones, not as a
     
     <parameter name="exampleFeatureId"/>
 
-    <transition name="editExample"><default-response url="/ExampleApp/ExampleTabs/EditExample"/></transition>
+    <transition name="editExample"><default-response url="../../ExampleTabs/EditExample"/></transition>
     <transition name="createExampleFeatureAppl">
-        <actions><call-service name="create#ExampleFeatureAppl" in-map="true"/></actions>
-        <default-response url="EditExampleFeatureAppl"/>
+        <call-service name="create#ExampleFeatureAppl"/>
+        <default-response url="."/>
     </transition>
     <transition name="updateExampleFeatureAppl">
-        <actions><call-service name="update#ExampleFeatureAppl" in-map="true"/></actions>
-        <default-response url="EditExampleFeatureAppl"/>
+        <call-service name="update#ExampleFeatureAppl"/>
+        <default-response url="."/>
     </transition>
     <transition name="deleteExampleFeatureAppl">
-        <actions><call-service name="delete#ExampleFeatureAppl" in-map="true"/></actions>
-        <default-response url="EditExampleFeatureAppl"/>
+        <call-service name="delete#ExampleFeatureAppl"/>
+        <default-response url="."/>
     </transition>
 
     <actions>

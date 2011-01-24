@@ -17,18 +17,18 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
     
     <transition name="createExample">
-        <actions><call-service name="create#Example" in-map="true"/></actions>
-        <default-response url="EditExample"/>
+        <call-service name="create#Example"/>
+        <default-response url="."/>
     </transition>
     <transition name="updateExample">
-        <actions><call-service name="update#Example" in-map="true"/></actions>
-        <default-response url="EditExample"/>
+        <call-service name="update#Example"/>
+        <default-response url="."/>
     </transition>
 
     <actions>
         <entity-find-one entity-name="Example" value-field="fieldValues"/>
         <entity-find-one entity-name="StatusItem" value-field="currentStatus">
-            <field-map field-name="statusId" from-field="fieldValues.statusId"/>
+            <field-map field-name="statusId" from-field="fieldValues?.statusId"/>
         </entity-find-one>
     </actions>
     <widgets>

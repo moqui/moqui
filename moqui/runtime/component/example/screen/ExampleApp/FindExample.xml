@@ -14,9 +14,9 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Example" default-menu-index="1">
 
-    <transition name="newExample"><default-response url="ExampleTabs/EditExample"/></transition>
-    <transition name="findExample"><default-response url="FindExample"/></transition>
-    <transition name="editExample"><default-response url="ExampleTabs/EditExample"/></transition>
+    <transition name="newExample"><default-response url="../ExampleTabs/EditExample"/></transition>
+    <transition name="findExample"><default-response url="."/></transition>
+    <transition name="editExample"><default-response url="../ExampleTabs/EditExample"/></transition>
 
     <actions>
         <entity-find entity-name="Example" list="exampleList">

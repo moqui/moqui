@@ -25,6 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <label text="Welcome to Moqui"/>
             </panel-header>
             <panel-center>
+                <!-- TODO if ec.message.errors display them -->
                 <subscreens-panel id="WebrootSubsPanel" type="tab"/>
             </panel-center>
             <panel-footer>

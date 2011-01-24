@@ -11,6 +11,7 @@
  */
 package org.moqui.context;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.Writer;
 import java.util.List;
 
@@ -51,6 +52,35 @@ public interface ScreenRender {
      * @return Reference to this ScreenRender for convenience
      */
     ScreenRender macroTemplate(String macroTemplateLocation);
+
+    /** If specified will be used as the base URL for links. If not specified the base URL will come from configuration
+     * on the webapp-list.webapp element and the servletContextPath.
+     *
+     * @return Reference to this ScreenRender for convenience
+     */
+    ScreenRender baseLinkUrl(String baseLinkUrl);
+
+    /** If baseLinkUrl is not specified then this is used along with the webapp-list.webapp configuration to create
+     * a base URL. If this is not specified and the active ExecutionContext is a WebExecutionContext then it will get
+     * it from that (meaning in a WebExecutionContext this is not necessary to get a correct result).
+     *
+     * @param scp The servletContext.contextPath
+     * @return Reference to this ScreenRender for convenience
+     */
+    ScreenRender servletContextPath(String scp);
+
+    /** The webapp name to use to look up webapp (webapp-list.webapp.@name) settings for URL building, request actions
+     * running, etc.
+     *
+     * @param wan The webapp name
+     * @return Reference to this ScreenRender for convenience
+     */
+    ScreenRender webappName(String wan);
+
+    /** Render a screen to a response using the current context. The screen will run in a sub-context so the original
+     * context will not be changed.
+     */
+    void render(HttpServletResponse response);
 
     /** Render a screen to a writer using the current context. The screen will run in a sub-context so the original
      * context will not be changed.

@@ -168,4 +168,7 @@ class EntityListImpl implements EntityList {
 
     @Override
     List<EntityValue> subList(int start, int end) { return this.valueList.subList(start, end) }
+
+    @Override
+    String toString() { this.valueList.toString() }
 }

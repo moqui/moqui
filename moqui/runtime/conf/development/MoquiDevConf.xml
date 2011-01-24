@@ -30,6 +30,8 @@
         <artifact-stats type="entity" track-bin="true" persist-bin="true" persist-hit="true"/>
     </server-stats>
 
+    <webapp-list><webapp name="webroot" https-enabled="false"/></webapp-list>
+
     <screen-facade boundary-comments="true"/>
 
     <repository-list>

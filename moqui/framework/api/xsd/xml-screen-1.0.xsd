@@ -109,9 +109,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element ref="call-service">
                         <xs:annotation><xs:documentation>
                             In most cases the best way to handle input for a transition is with a single service. To do
-                            that use this element instead of an actions element. If you want the automatic parameter
-                            mapping for the transition or the client-side input validation then you must use this
-                            call-service element.
+                            that use this element instead of an actions element.
+
+                            This will automatically have an in-map=true. To get the same effect inside the actions
+                            element just use in-map=true.
                         </xs:documentation></xs:annotation>
                     </xs:element>
                     <xs:element ref="actions">
@@ -236,7 +237,6 @@ This Work includes contributions authored by David E. Jones, not as a
                             URI to another screen, either relative or from server root.
                         </xs:documentation></xs:annotation>
                     </xs:enumeration>
-                    <xs:enumeration value="content"/>
                     <xs:enumeration value="plain"/>
                 </xs:restriction>
             </xs:simpleType>

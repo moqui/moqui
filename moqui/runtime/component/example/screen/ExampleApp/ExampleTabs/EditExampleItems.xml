@@ -17,16 +17,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
 
     <transition name="createExampleItem">
-        <actions><call-service name="create#ExampleItem" in-map="true"/></actions>
-        <default-response url="EditExampleItems"/>
+        <call-service name="create#ExampleItem"/>
+        <default-response url="."/>
     </transition>
     <transition name="updateExampleItem">
-        <actions><call-service name="update#ExampleItem" in-map="true"/></actions>
-        <default-response url="EditExampleItems"/>
+        <call-service name="update#ExampleItem"/>
+        <default-response url="."/>
     </transition>
     <transition name="deleteExampleItem">
-        <actions><call-service name="delete#ExampleItem" in-map="true"/></actions>
-        <default-response url="EditExampleItems"/>
+        <call-service name="delete#ExampleItem"/>
+        <default-response url="."/>
     </transition>
 
     <actions>

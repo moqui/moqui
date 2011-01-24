@@ -16,6 +16,8 @@ import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import groovy.util.slurpersupport.GPathResult
+import org.moqui.impl.actions.XmlAction
+import org.moqui.context.WebExecutionContext
 
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
@@ -24,7 +26,11 @@ class ScreenDefinition {
     protected final Node screenNode
     final String location
 
-    protected Map subscreensByName = new HashMap()
+    protected Map<String, ParameterItem> parameterByName = new HashMap()
+
+    protected Map<String, TransitionItem> transitionByName = new HashMap()
+
+    protected Map<String, SubscreensItem> subscreensByName = new HashMap()
 
     protected ScreenSection rootSection = null
     protected Map<String, ScreenSection> sectionByName = new HashMap()
@@ -35,9 +41,12 @@ class ScreenDefinition {
         this.screenNode = screenNode
         this.location = location
 
-        // TODO web-settings
-        // TODO parameter
-        // TODO transition
+        // parameter
+        for (Node parameterNode in screenNode."parameter")
+            parameterByName.put(parameterNode."@name", new ParameterItem(parameterNode, location))
+        // transition
+        for (Node transitionNode in screenNode."transition")
+            transitionByName.put(transitionNode."@name", new TransitionItem(transitionNode, this))
         // subscreens
         populateSubscreens()
 
@@ -48,13 +57,13 @@ class ScreenDefinition {
             // get all of the other sections by name
             for (Node sectionNode in rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it.name() == "section" || it.name() == "section-iterate" })) {
-                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name()}[${sectionNode["@name"]}]"))
+                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"]}"))
             }
 
             // get all forms by name
             for (Node formNode in rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it.name() == "form-single" || it.name() == "form-list" })) {
-                formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, formNode, "${location}.${formNode.name()}[${formNode["@name"]}]"))
+                formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"]}"))
             }
         }
     }
@@ -114,13 +123,156 @@ class ScreenDefinition {
 
     Node getScreenNode() { return screenNode }
 
-    SubscreensItem getSubscreensItem(String subscreenName) { return (SubscreensItem) subscreensByName.get(subscreenName) }
+    Node getWebSettingsNode() { return screenNode."web-settings"[0] }
+
+    Map<String, ParameterItem> getParameterMap() { return parameterByName }
+
+    TransitionItem getTransitionItem(String name) { return (TransitionItem) transitionByName.get(name) }
+
+    SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
     ScreenSection getRootSection() { return rootSection }
 
     ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
 
     ScreenForm getForm(String formName) { return (ScreenForm) formByName.get(formName) }
+
+    static class ParameterItem {
+        protected String name
+        protected Class fromFieldGroovy = null
+        protected Class valueGroovy = null
+        ParameterItem(Node parameterNode, String location) {
+            this.name = parameterNode."@name"
+
+            if (parameterNode."@from-field") fromFieldGroovy = new GroovyClassLoader().parseClass(
+                    (String) parameterNode."@from-field", "${location}.parameter_${name}.from_field")
+            if (parameterNode."@value") fromFieldGroovy = new GroovyClassLoader().parseClass(
+                    ('"""' + (String) parameterNode."@value" + '"""'), "${location}.parameter_${name}.value")
+        }
+        String getName() { return name }
+        Object getValue(Map context) {
+            Object value = null
+            if (fromFieldGroovy) {
+                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(context))
+            }
+            if (valueGroovy && !value) {
+                value = InvokerHelper.createScript(valueGroovy, new Binding(context))
+            }
+            return value
+        }
+    }
+
+    static class TransitionItem {
+        protected ScreenDefinition parentScreen
+
+        protected String name
+        protected String location
+        protected XmlAction condition = null
+        protected XmlAction actions = null
+
+        protected List<ResponseItem> conditionalResponseList = new ArrayList<ResponseItem>()
+        protected ResponseItem defaultResponse = null
+        protected ResponseItem errorResponse = null
+
+        TransitionItem(Node transitionNode, ScreenDefinition parentScreen) {
+            this.parentScreen = parentScreen
+            name = transitionNode."@name"
+            location = "${parentScreen.location}.transition_${name}"
+            // condition
+            if (transitionNode.condition?.getAt(0)?.children()) {
+                // the script is effectively the first child of the condition element
+                condition = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode.condition[0].children()[0], location + ".condition")
+            }
+            // call-service OR actions
+            if (transitionNode."call-service") {
+                Node callServiceNode = (Node) transitionNode."call-service"[0]
+                if (!callServiceNode."@in-map") callServiceNode.attributes().put("in-map", "true")
+                actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".call_service")
+            } else if (transitionNode.actions) {
+                actions = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode.actions[0], location + ".actions")
+            }
+
+            // conditional-response*
+            for (Node condResponseNode in transitionNode."conditional-response")
+                conditionalResponseList.add(new ResponseItem(condResponseNode, this, parentScreen))
+            // default-response
+            defaultResponse = new ResponseItem(transitionNode."default-response"[0], this, parentScreen)
+            // error-response
+            if (transitionNode."error-response")
+                errorResponse = new ResponseItem(transitionNode."error-response"[0], this, parentScreen)
+        }
+        String getName() { return name }
+
+        // TODO check this when rendering menu, disable menu item if false
+        boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
+
+        ResponseItem run(ScreenRenderImpl sri) {
+            // put parameters in the context
+            if (sri.ec instanceof WebExecutionContext) {
+                WebExecutionContext wec = (WebExecutionContext) sri.ec
+                for (ParameterItem pi in parentScreen.parameterMap.values()) {
+                    Object value = pi.getValue(wec.parameters)
+                    if (value) sri.ec.context.put(pi.getName(), value)
+                }
+            }
+
+            if (!checkCondition(sri.ec)) {
+                sri.ec.message.addError("Condition failed for transition [${location}], not running actions or redirecting")
+                if (errorResponse) return errorResponse
+                return defaultResponse
+            }
+
+            if (actions) actions.run(sri.ec)
+
+            // if there is an error-response and there are errors, we have a winner
+            if (errorResponse && sri.ec.message.errors) return errorResponse
+            // check all conditional-response, if condition then return that response
+            for (ResponseItem condResp in conditionalResponseList) {
+                if (condResp.checkCondition(sri.ec)) return condResp
+            }
+            // no errors, no conditionals, return default
+            return defaultResponse
+        }
+    }
+
+    static class ResponseItem {
+        protected XmlAction condition = null
+        protected Map<String, ParameterItem> parameterMap = new HashMap()
+
+        protected String type
+        protected String url
+        protected String urlType
+        protected boolean saveLastScreen
+        protected boolean saveCurrentScreen
+
+        ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
+            String location = "${parentScreen.location}.transition[${ti.name}].${responseNode.name()}"
+            if (responseNode.condition && responseNode.condition[0].children()) {
+                // the script is effectively the first child of the condition element
+                condition = new XmlAction(parentScreen.sfi.ecfi, (Node) responseNode.condition[0].children()[0],
+                        location + ".condition")
+            }
+
+            // TODO before adding explicit parameters, auto-add the parameters of the target screen
+
+            for (Node parameterNode in responseNode."parameter")
+                parameterMap.put(parameterNode."@name", new ParameterItem(parameterNode, location))
+
+            type = responseNode."@type" ?: "url"
+            url = responseNode."@url"
+            urlType = responseNode."@url-type" ?: "screen-path"
+            saveLastScreen = responseNode."@save-last-screen" == "true"
+            saveCurrentScreen = responseNode."@save-current-screen" == "true"
+        }
+
+        boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
+
+        String getType() { return type }
+        String getUrl() { return url }
+        String getUrlType() { return urlType }
+        boolean getSaveLastScreen() { return saveLastScreen }
+        boolean getSaveCurrentScreen() { return saveCurrentScreen }
+    }
 
     static class SubscreensItem {
         protected String name
@@ -146,7 +298,7 @@ class ScreenDefinition {
             menuInclude = true
 
             if (subscreensItem."@disable-when") disableWhenGroovy = new GroovyClassLoader().parseClass(
-                    (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens-item[${name}].disable-when")
+                    (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens-item[${name}].@disable-when")
         }
 
         SubscreensItem(EntityValue subscreensItem) {

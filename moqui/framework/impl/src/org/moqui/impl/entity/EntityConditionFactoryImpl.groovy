@@ -243,7 +243,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         String toString() {
-            return field + " " + getComparisonOperatorString(this.operator) + " " + this.value
+            return (field as String) + " " + getComparisonOperatorString(this.operator) + " " + (value as String)
         }
 
         @Override

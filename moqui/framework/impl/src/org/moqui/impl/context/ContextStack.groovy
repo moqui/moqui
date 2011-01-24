@@ -12,6 +12,8 @@
 package org.moqui.impl.context
 
 class ContextStack implements Map<String, Object> {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class)
+
     protected Deque<Map<String, Object>> stackList = new LinkedList()
 
     public ContextStack() {
@@ -111,7 +113,12 @@ class ContextStack implements Map<String, Object> {
         // the "context" key always gets a self-reference, effectively the top of the stack
         if (key == "context") return this
         for (Map<String, Object> curMap in stackList) {
-            if (curMap.containsKey(key)) return curMap.get(key)
+            try {
+                if (curMap.containsKey(key)) return curMap.get(key)
+            } catch (Exception e) {
+                logger.error("Error getting value for key [${key}], returning null", e)
+                return null
+            }
         }
         return null
     }

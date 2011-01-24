@@ -12,21 +12,19 @@
 package org.moqui.impl.webapp
 
 import javax.servlet.http.HttpServlet
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
 import javax.servlet.ServletException
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.ServletConfig
+
 import org.moqui.Moqui
 import org.moqui.context.WebExecutionContext
-import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ScreenRender
-import org.moqui.impl.context.ContextStack
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class MoquiServlet extends HttpServlet {
-    protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiServlet.class)
 
     protected String webappId = null
     protected String webappMoquiName = null
@@ -89,13 +87,14 @@ class MoquiServlet extends HttpServlet {
         // render screens based on path in URL
         List<String> pathElements = pathInfo.split("/") as List
         ScreenRender render = wec.screen.makeRender().rootScreen(webappDef.webappNode."@root-screen-location")
-                .screenPath(pathElements).renderMode("html")
+                .screenPath(pathElements).renderMode("html").webappName(webappMoquiName)
         if (request.getCharacterEncoding()) render.encoding(request.getCharacterEncoding())
+
         // NOTE: not creating a protected context for now for the screen, it is the only thing now, nothing to muck up
         // ContextStack cs = (ContextStack) wec.context
         try {
             //cs.push()
-            render.render(response.getWriter())
+            render.render(response)
         } finally {
             //cs.pop()
         }

@@ -163,31 +163,31 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Standalone Fields ==================== -->
 <#macro "link">
+<#assign parameterMap = ec.getContext().get(.node["@parameter-map"][0]?if_exists)?if_exists/>
 <#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
     ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") && .node["@url-type"]?has_content && .node["@url-type"] != "transition")>
-    <#assign parameterMap = ec.getContext().get(.node["@parameter-map"]?if_exists)?if_exists/>
     <#assign parameterString><#t>
         <#t><#list .node["parameter"] as parameterNode>${parameterNode["@name"][0]?url}=${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?url}<#if parameterNode_has_next>&amp;</#if></#list>
         <#t><#if .node["parameter"]?has_content && .node["@parameter-map"]?has_content && ec.getContext().get(.node["@parameter-map"])?has_content>&amp;</#if>
         <#t><#list parameterMap?keys as pKey>${pKey?url}=${parameterMap[pKey]?url}<#if pKey_has_next>&amp;</#if></#list>
     <#t></#assign>
-    <a href="${sri.makeUrl((.node["@url"][0] + "?" + parameterString), .node["@url-type"][0]!"transition")}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
+    <a href="${sri.makeUrlByType((.node["@url"][0] + "?" + parameterString), .node["@url-type"][0]!"transition")}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
     <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${.node["@text"]}</#if>
     </a>
 <#else/>
-    <form method="post" action="${sri.makeUrl(.node["@url"][0], .node["@url-type"][0]!"transition")}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
+    <form method="post" action="${sri.makeUrlByType(.node["@url"][0], .node["@url-type"][0]!"transition")}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
         <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"][0]?html}" value="${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?html}" type="hidden"/></#list>
-        <#list parameterMap?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
-    </form>
+        <#list parameterMap?if_exists?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
-    <input type="image" src="${sri.makeUrl(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
+    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
     <#else/>
-    <input type="submit" value="${.node["@text"]}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>
+    <input type="submit" value="${.node["@text"]}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
     </#if>
+    </form>
     <#-- NOTE: consider using a link instead of submit buttons/image, would look something like this (would require id attribute, or add a name attribute):
         <a href="javascript:document.${.node["@id"]}.submit()">
             <#if .node["image"]?has_content>
-            <img src="${sri.makeUrl(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
+            <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
             <#else/>
             ${.node["@text"]}
             <#/if>
@@ -195,7 +195,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     -->
 </#if>
 </#macro>
-<#macro "image"><img src="${sri.makeUrl(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+<#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro "label"><span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span></#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
 

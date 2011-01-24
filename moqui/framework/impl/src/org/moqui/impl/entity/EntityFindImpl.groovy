@@ -272,6 +272,9 @@ class EntityFindImpl implements EntityFind {
         }
 
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        // no condition means no condition/parameter set, so return null for find.one()
+        if (!whereCondition) return null
+
         Cache entityOneCache = null
         if (this.shouldCache()) {
             entityOneCache = this.efi.ecfi.getCacheFacade().getCache("entity.one.${this.entityName}")
