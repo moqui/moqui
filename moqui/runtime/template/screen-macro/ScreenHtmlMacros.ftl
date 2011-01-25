@@ -28,8 +28,9 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-menu">
     <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-        <!-- TODO add highlighting class for active item -->
-        <li><a href="${sri.buildUrl(subscreensItem.name)}">${subscreensItem.menuTitle}</a></li>
+        <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
+        <!-- TODO add parameters from the target screen, if applicable -->
+        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></li>
     </#if></#list>
     </ul>
 </#macro>
@@ -45,8 +46,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-            <!-- TODO add highlighting class for active item -->
-            <li><a href="${sri.buildUrl(subscreensItem.name)}">${subscreensItem.menuTitle}</a></li>
+            <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
+            <!-- TODO add parameters from the target screen, if applicable -->
+            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></li>
         </#if></#list>
         </ul>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
@@ -168,19 +170,23 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Standalone Fields ==================== -->
 <#macro "link">
+<#assign urlInfo = sri.makeUrlByType(.node["@url"][0], .node["@url-type"][0]!"transition")/>
 <#assign parameterMap = ec.getContext().get(.node["@parameter-map"][0]?if_exists)?if_exists/>
+<!-- TODO get parameters from the urlInfo, extend method there to accept parameter parent element, name of parameterMap in context -->
 <#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
-    ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") && .node["@url-type"]?has_content && .node["@url-type"] != "transition")>
+    ((!.node["@link-type"]?has_content || .node["@link-type"][0] == "auto") &&
+     ((.node["@url-type"]?has_content && .node["@url-type"][0] != "transition") ||
+      (!urlInfo.hasActions)))>
     <#assign parameterString><#t>
         <#t><#list .node["parameter"] as parameterNode>${parameterNode["@name"][0]?url}=${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?url}<#if parameterNode_has_next>&amp;</#if></#list>
         <#t><#if .node["parameter"]?has_content && .node["@parameter-map"]?has_content && ec.getContext().get(.node["@parameter-map"])?has_content>&amp;</#if>
         <#t><#list parameterMap?keys as pKey>${pKey?url}=${parameterMap[pKey]?url}<#if pKey_has_next>&amp;</#if></#list>
     <#t></#assign>
-    <a href="${sri.makeUrlByType((.node["@url"][0] + "?" + parameterString), .node["@url-type"][0]!"transition")}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
+    <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
     <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${.node["@text"]}</#if>
     </a>
 <#else/>
-    <form method="post" action="${sri.makeUrlByType(.node["@url"][0], .node["@url-type"][0]!"transition")}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
+    <form method="post" action="${urlInfo.url}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
         <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"][0]?html}" value="${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?html}" type="hidden"/></#list>
         <#list parameterMap?if_exists?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>

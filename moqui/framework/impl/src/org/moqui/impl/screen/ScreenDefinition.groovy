@@ -209,6 +209,7 @@ class ScreenDefinition {
             if (transitionNode."error-response")
                 errorResponse = new ResponseItem(transitionNode."error-response"[0], this, parentScreen)
         }
+
         String getName() { return name }
 
         // TODO check this when rendering menu, disable menu item if false
@@ -261,16 +262,14 @@ class ScreenDefinition {
                         location + ".condition")
             }
 
-            // TODO before adding explicit parameters, auto-add the parameters of the target screen
-
-            for (Node parameterNode in responseNode."parameter")
-                parameterMap.put(parameterNode."@name", new ParameterItem(parameterNode, location))
-
             type = responseNode."@type" ?: "url"
             url = responseNode."@url"
             urlType = responseNode."@url-type" ?: "screen-path"
             saveLastScreen = responseNode."@save-last-screen" == "true"
             saveCurrentScreen = responseNode."@save-current-screen" == "true"
+
+            for (Node parameterNode in responseNode."parameter")
+                parameterMap.put(parameterNode."@name", new ParameterItem(parameterNode, location))
         }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }

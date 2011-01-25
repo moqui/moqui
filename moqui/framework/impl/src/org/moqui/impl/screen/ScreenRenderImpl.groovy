@@ -20,6 +20,7 @@ import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import javax.servlet.http.HttpServletResponse
 import org.moqui.context.WebExecutionContext
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
+import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -109,7 +110,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
         // clean up the screenPathNameList, remove null/empty entries, etc, etc
-        screenPathNameList = cleanupPathNameList(screenPathNameList)
+        screenPathNameList = cleanupPathNameList(screenPathNameList, null)
 
         logger.info("Rendering screen [${rootScreenLocation}] with path list [${screenPathNameList}]")
 
@@ -149,6 +150,8 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         if (transitionItem) {
+            // TODO if this transition has actions and any parameters were not in the body return an error, helps prevent XSRF attacks
+
             // if there is a transition run that INSTEAD of the screen to render
             ResponseItem ri = transitionItem.run(this)
 
@@ -156,6 +159,10 @@ class ScreenRenderImpl implements ScreenRender {
 
             String url = ri.url ?: ""
             String urlType = ri.urlType ?: "screen-path"
+
+            // TODO auto-add the parameters of the target screen at run time (before the explicit ones so they can override)
+            // TODO add the ri.parameters
+            Map<String, String> parameterMap = new HashMap()
 
             if (ri.type == "screen-last") {
                 /* TODO
@@ -199,115 +206,6 @@ class ScreenRenderImpl implements ScreenRender {
                 throw new RuntimeException("Error rendering screen [${getActiveScreenDef().location}]", t)
             }
         }
-    }
-
-    List<String> cleanupPathNameList(List<String> inputPathNameList) {
-        // filter the list: remove empty, remove ".", remove ".." and previous
-        List<String> cleanList = new ArrayList<String>(inputPathNameList.size())
-        for (String pathName in inputPathNameList) {
-            if (!pathName) continue
-            if (pathName == ".") continue
-            // .. means go up a level, ie drop the last in the list
-            if (pathName == "..") { if (cleanList.size()) cleanList.remove(cleanList.size()-1); continue }
-            // if it has a tilde it is a parameter, so skip it
-            if (pathName.startsWith("~")) continue
-            cleanList.add(pathName)
-        }
-        return cleanList
-    }
-
-    String buildUrl(String subscreenPath) {
-        // TODO if subscreenPath is a transition on the active screen, and that transition has no
-        // condition,call-service,actions then use the default-response.url instead of the name
-        // (if type is screen-path or empty, url-type is url or empty)
-        buildUrl(getActiveScreenDef(), screenPathIndex >= 0 ? screenPathNameList[0..screenPathIndex] : [], subscreenPath)
-    }
-
-    String buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPath) {
-        if (subscreenPath.startsWith("/")) {
-            fromSd = rootScreenDef
-            fromPathList = []
-        }
-
-        List<String> tempPathNameList = []
-        tempPathNameList.addAll(fromPathList)
-        if (subscreenPath) tempPathNameList.addAll(subscreenPath.split("/") as List)
-        List<String> fullPathNameList = cleanupPathNameList(tempPathNameList)
-
-        StringBuilder url = new StringBuilder()
-        if (baseLinkUrl != null) {
-            url.append(baseLinkUrl)
-        } else {
-            // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
-            boolean anyRequireEncryption = false
-            if (rootScreenDef.getWebSettingsNode()?."require-encryption" == "false") {
-                ScreenDefinition lastSd = rootScreenDef
-                for (String pathName in fullPathNameList) {
-                    // NOTE: don't blow up in here, just skip if anything is missing, partly because could be a transition
-                    String nextLoc = lastSd.getSubscreensItem(pathName)?.location
-                    if (!nextLoc) continue
-                    ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
-                    if (nextSd) {
-                        if (nextSd.getWebSettingsNode()?."require-encryption" != "false") {
-                            anyRequireEncryption = true
-                            break
-                        }
-                        lastSd = nextSd
-                    }
-                }
-            } else {
-                anyRequireEncryption = true
-            }
-
-            // build base from conf
-            Node webappNode = getWebappNode()
-            if (webappNode) {
-                if (anyRequireEncryption && webappNode."@https-enabled" != "false") {
-                    url.append("https://")
-                    if (webappNode."@https-host") {
-                        url.append(webappNode."@https-host")
-                    } else {
-                        if (getEc() instanceof WebExecutionContext) {
-                            url.append(((WebExecutionContext) getEc()).getRequest().getServerName())
-                        } else {
-                            // uh-oh, no web context, default to localhost
-                            url.append("localhost")
-                        }
-                    }
-                    if (webappNode."@https-port") url.append(":").append(webappNode."@https-port")
-                } else {
-                    url.append("http://")
-                    if (webappNode."@http-host") {
-                        url.append(webappNode."@http-host")
-                    } else {
-                        if (getEc() instanceof WebExecutionContext) {
-                            url.append(((WebExecutionContext) getEc()).getRequest().getServerName())
-                        } else {
-                            // uh-oh, no web context, default to localhost
-                            url.append("localhost")
-                        }
-                    }
-                    if (webappNode."@http-port") url.append(":").append(webappNode."@http-port")
-                }
-                url.append("/")
-            } else {
-                // can't get these settings, hopefully a URL from the root will do
-                url.append("/")
-            }
-
-            // add servletContext.contextPath
-            if (!servletContextPath && getEc() instanceof WebExecutionContext)
-                servletContextPath = ((WebExecutionContext) getEc()).getServletContext().getContextPath()
-            if (servletContextPath) {
-                if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
-                url.append(servletContextPath)
-            }
-        }
-
-        if (url.charAt(url.length()-1) != '/') url.append('/')
-        for (String pathName in fullPathNameList) url.append(pathName).append('/')
-
-        return url.toString()
     }
 
     Node getWebappNode() {
@@ -425,7 +323,17 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
-    String makeUrlByType(String url, String urlType) {
+    ScreenUrlInfo buildUrl(String subscreenPath) {
+        ScreenUrlInfo ui = new ScreenUrlInfo(this, null, null, subscreenPath)
+        return ui
+    }
+
+    ScreenUrlInfo buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPath) {
+        ScreenUrlInfo ui = new ScreenUrlInfo(this, fromSd, fromPathList, subscreenPath)
+        return ui
+    }
+
+    ScreenUrlInfo makeUrlByType(String url, String urlType) {
         /* TODO handle urlType:
             <xs:enumeration value="content">
                 <xs:annotation><xs:documentation>A content location (without the content://). URL will be one that can access that content.</xs:documentation></xs:annotation>
@@ -434,7 +342,7 @@ class ScreenRenderImpl implements ScreenRender {
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
             case "transition": return buildUrl(url)
-            case "content": throw new IllegalArgumentException("The url-type content is not yet supported")
+            case "content": throw new IllegalArgumentException("The url-type of content is not yet supported")
             case "plain":
             default: return url
         }
@@ -448,5 +356,230 @@ class ScreenRenderImpl implements ScreenRender {
         } else {
             return ""
         }
+    }
+
+    boolean isInCurrentScreenPath(List<String> pathNameList) {
+        if (pathNameList.size() > this.screenPathNameList.size()) return false
+        for (int i=0; i<pathNameList.size(); i++) {
+            if (pathNameList.get(i) != this.screenPathNameList.get(i)) return false
+        }
+        return true
+    }
+
+    static class ScreenUrlInfo {
+        ScreenRenderImpl sri
+
+        ScreenDefinition fromSd
+        List<String> fromPathList
+        String subscreenPath
+
+        String url
+        Map<String, String> pathParameterMap = new HashMap()
+        boolean requireEncryption
+        boolean hasActions
+        boolean inCurrentScreenPath
+
+        List<String> fullPathNameList
+        ScreenDefinition targetScreen
+        TransitionItem targetTransition
+
+        ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fs, List<String> fpnl, String ssp) {
+            this.sri = sri
+
+            fromSd = fs
+            if (fromSd == null) fromSd = sri.getActiveScreenDef()
+
+            fromPathList = fpnl
+            if (fromPathList == null)
+                fromPathList = (sri.screenPathIndex >= 0 ? sri.screenPathNameList[0..sri.screenPathIndex] : [])
+
+            subscreenPath = ssp
+
+            initUrl()
+
+            hasActions = (targetTransition && targetTransition.actions)
+
+            inCurrentScreenPath = sri.isInCurrentScreenPath(fullPathNameList)
+        }
+
+        Map<String, String> getParameterMap() {
+            Map<String, String> pm = new HashMap()
+            // get default parameters for the target screen
+            if (targetScreen) {
+                for (ParameterItem pi in targetScreen.getParameterMap().values()) {
+                    Object value = pi.getValue(sri.ec.context)
+                    if (value) pm.put(pi.name, value as String)
+                }
+            }
+            // add all of the parameters specified inline in the screen path
+            if (pathParameterMap) pm.putAll(pathParameterMap)
+            return pm
+        }
+
+        String getParameterString() {
+            StringBuilder ps = new StringBuilder()
+            Map<String, String> pm = this.getParameterMap()
+            boolean isFirst = true
+            for (Map.Entry<String, String> pme in pm) {
+                if (isFirst) isFirst = false else ps.append("&")
+                // TODO: should we do any URL encoding here?
+                ps.append(pme.key).append("=").append(pme.value)
+            }
+            return ps.toString()
+        }
+
+        void initUrl() {
+            if (this.subscreenPath.startsWith("/")) {
+                this.fromSd = sri.rootScreenDef
+                this.fromPathList = []
+            }
+
+            // if there are any ?... parameters parse them off and remove them from the string
+            if (this.subscreenPath.contains("?")) {
+                String pathParmString = this.subscreenPath.substring(this.subscreenPath.indexOf("?")+1)
+                if (pathParmString) {
+                    List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
+                    for (String nameValuePair in nameValuePairs) {
+                        String[] nameValue = nameValuePair.substring(1).split("=")
+                        if (nameValue.length == 2) this.pathParameterMap.put(nameValue[0], nameValue[1])
+                    }
+                }
+                this.subscreenPath = this.subscreenPath.substring(0, this.subscreenPath.indexOf("?"))
+            }
+
+            List<String> tempPathNameList = []
+            tempPathNameList.addAll(this.fromPathList)
+            if (this.subscreenPath) tempPathNameList.addAll(this.subscreenPath.split("/") as List)
+            this.fullPathNameList = cleanupPathNameList(tempPathNameList, this.pathParameterMap)
+
+            // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
+            this.requireEncryption = false
+            if (sri.rootScreenDef.getWebSettingsNode()?."require-encryption" != "false") {
+                this.requireEncryption = true
+            }
+            // also loop through path to check validity, and see if we can do a transition short-cut and go right to its response url
+            ScreenDefinition lastSd = sri.rootScreenDef
+            for (String pathName in this.fullPathNameList) {
+                String nextLoc = lastSd.getSubscreensItem(pathName)?.location
+                if (!nextLoc) {
+                    // handle case where last one may be a transition name, and not a subscreen name
+                    TransitionItem ti = lastSd.getTransitionItem(pathName)
+                    if (ti) {
+                        // if subscreenPath is a transition, and that transition has no condition,
+                        // call-service/actions or conditional-response then use the default-response.url instead
+                        // of the name (if type is screen-path or empty, url-type is url or empty)
+                        if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
+                                ti.defaultResponse && ti.defaultResponse.type == "url" &&
+                                ti.defaultResponse.urlType == "screen-path") {
+                            String newSubPath = this.subscreenPath + "/../" + ti.defaultResponse.url
+                            // call this method again, transition will get cleaned out in the cleanupPathNameList()
+                            this.subscreenPath = newSubPath
+                            initUrl()
+                            return
+                        } else {
+                            this.targetTransition = ti
+                        }
+                        // if nothing happened there, just break out a transition means we're at the end
+                        break
+                    } else {
+                        throw new IllegalArgumentException("Could not find subscreen or transition [${pathName}] in relative screen reference [${subscreenPath}] in screen [${lastSd.location}]")
+                    }
+                }
+                ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
+                if (nextSd) {
+                    if (nextSd.getWebSettingsNode()?."require-encryption" != "false") {
+                        this.requireEncryption = true
+                    }
+                    lastSd = nextSd
+                } else {
+                    throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${subscreenPath}] in screen [${lastSd.location}]")
+                }
+            }
+
+            this.targetScreen = lastSd
+
+            StringBuilder urlBuilder = new StringBuilder()
+            if (sri.baseLinkUrl != null) {
+                urlBuilder.append(sri.baseLinkUrl)
+            } else {
+                // build base from conf
+                Node webappNode = sri.getWebappNode()
+                if (webappNode) {
+                    if (this.requireEncryption && webappNode."@https-enabled" != "false") {
+                        urlBuilder.append("https://")
+                        if (webappNode."@https-host") {
+                            urlBuilder.append(webappNode."@https-host")
+                        } else {
+                            if (sri.getEc() instanceof WebExecutionContext) {
+                                urlBuilder.append(((WebExecutionContext) sri.getEc()).getRequest().getServerName())
+                            } else {
+                                // uh-oh, no web context, default to localhost
+                                urlBuilder.append("localhost")
+                            }
+                        }
+                        if (webappNode."@https-port") urlBuilder.append(":").append(webappNode."@https-port")
+                    } else {
+                        urlBuilder.append("http://")
+                        if (webappNode."@http-host") {
+                            urlBuilder.append(webappNode."@http-host")
+                        } else {
+                            if (sri.getEc() instanceof WebExecutionContext) {
+                                urlBuilder.append(((WebExecutionContext) sri.getEc()).getRequest().getServerName())
+                            } else {
+                                // uh-oh, no web context, default to localhost
+                                urlBuilder.append("localhost")
+                            }
+                        }
+                        if (webappNode."@http-port") urlBuilder.append(":").append(webappNode."@http-port")
+                    }
+                    urlBuilder.append("/")
+                } else {
+                    // can't get these settings, hopefully a URL from the root will do
+                    urlBuilder.append("/")
+                }
+
+                // add servletContext.contextPath
+                String servletContextPath = sri.servletContextPath
+                if (!servletContextPath && sri.getEc() instanceof WebExecutionContext)
+                    servletContextPath = ((WebExecutionContext) sri.getEc()).getServletContext().getContextPath()
+                if (servletContextPath) {
+                    if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
+                    urlBuilder.append(servletContextPath)
+                }
+            }
+
+            if (urlBuilder.charAt(urlBuilder.length()-1) != '/') urlBuilder.append('/')
+            for (String pathName in this.fullPathNameList) urlBuilder.append(pathName).append('/')
+            if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
+
+            this.url = urlBuilder.toString()
+        }
+
+        @Override
+        String toString() {
+            // return ONLY the url built from the inputs; that is the most basic possible value
+            return this.url
+        }
+    }
+
+    static List<String> cleanupPathNameList(List<String> inputPathNameList, Map inlineParameters) {
+        // filter the list: remove empty, remove ".", remove ".." and previous
+        List<String> cleanList = new ArrayList<String>(inputPathNameList.size())
+        for (String pathName in inputPathNameList) {
+            if (!pathName) continue
+            if (pathName == ".") continue
+            // .. means go up a level, ie drop the last in the list
+            if (pathName == "..") { if (cleanList.size()) cleanList.remove(cleanList.size()-1); continue }
+            // if it has a tilde it is a parameter, so skip it but remember it
+            if (pathName.startsWith("~")) {
+                if (inlineParameters != null) {
+                    String[] nameValue = pathName.substring(1).split("=")
+                    if (nameValue.length == 2) inlineParameters.put(nameValue[0], nameValue[1])
+                }
+                continue
+            }
+            cleanList.add(pathName)
+        }
+        return cleanList
     }
 }
