@@ -12,11 +12,11 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-title="Feature" default-menu-index="2">
+        default-menu-include="false">
 
-    <transition name="newExampleFeature"><default-response url="../FeatureTabs/EditExampleFeature"/></transition>
+    <transition name="newExampleFeature"><default-response url="../EditExampleFeature"/></transition>
     <transition name="findExampleFeature"><default-response url="."/></transition>
-    <transition name="editExampleFeature"><default-response url="../FeatureTabs/EditExampleFeature"/></transition>
+    <transition name="editExampleFeature"><default-response url="../EditExampleFeature"/></transition>
 
     <actions>
         <entity-find entity-name="ExampleFeature" list="exampleFeatureList">

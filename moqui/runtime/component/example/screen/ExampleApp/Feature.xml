@@ -12,9 +12,13 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-include="false">
-    <subscreens default-item="EditExample"/>
+        default-menu-title="Feature" default-menu-index="2">
+    <subscreens default-item="FindExampleFeature"/>
     <widgets>
-        <subscreens-panel id="ExampleTabsPanel" type="tab"/>
+        <section name="menu">
+            <condition><expression>ec.parameters.exampleFeatureId</expression></condition>
+            <widgets><subscreens-menu id="FeatureMenu"/></widgets>
+        </section>
+        <subscreens-active id="FeatureSubscreen"/>
     </widgets>
 </screen>

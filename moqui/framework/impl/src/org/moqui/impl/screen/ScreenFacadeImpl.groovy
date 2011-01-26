@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.context.ResourceFacadeImpl
 
 public class ScreenFacadeImpl implements ScreenFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenFacadeImpl.class)
@@ -95,7 +96,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, makeConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, ResourceFacadeImpl.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {
@@ -104,13 +105,6 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         if (newTemplate) screenTemplateModeCache.put(renderMode, newTemplate)
         return newTemplate
-    }
-    protected static Configuration makeConfiguration() {
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        Configuration newConfig = new Configuration()
-        newConfig.setObjectWrapper(defaultWrapper)
-        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
-        return newConfig
     }
 
     Template getTemplateByLocation(String templateLocation) {
@@ -127,7 +121,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, makeConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, ResourceFacadeImpl.getFtlConfiguration())
         } catch (Exception e) {
             logger.error("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {

@@ -26,9 +26,15 @@ import org.moqui.impl.actions.XmlAction
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import freemarker.template.TemplateException
+import freemarker.core.Environment
+import freemarker.template.TemplateExceptionHandler
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
+
+    protected final static Configuration defaultFtlConfiguration = makeFtlConfiguration()
+    public static Configuration getFtlConfiguration() { return defaultFtlConfiguration }
 
     protected final ExecutionContextFactoryImpl ecfi
 
@@ -157,7 +163,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(getLocationStream(location))
-            newTemplate = new Template(location, templateReader, makeConfiguration())
+            newTemplate = new Template(location, templateReader, getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
         } finally {
@@ -166,14 +172,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         if (newTemplate) templateFtlLocationCache.put(location, newTemplate)
         return newTemplate
-    }
-
-    protected static Configuration makeConfiguration() {
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        Configuration newConfig = new Configuration()
-        newConfig.setObjectWrapper(defaultWrapper)
-        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
-        return newConfig
     }
 
     /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */
@@ -242,5 +240,31 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (localGroovyShell) return localGroovyShell
         localGroovyShell = new GroovyShell(new Binding(ecfi.executionContext.context))
         return localGroovyShell
+    }
+
+    protected static Configuration makeFtlConfiguration() {
+        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
+        Configuration newConfig = new Configuration()
+        newConfig.setObjectWrapper(defaultWrapper)
+        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
+        newConfig.setTemplateExceptionHandler(new MoquiTemplateExceptionHandler())
+        return newConfig
+    }
+
+    static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
+        public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
+                throws TemplateException {
+            try {
+                if (te.cause) {
+                    logger.error("Error in FTL render", te.cause)
+                    out.write("[Error: ${te.cause.message}]")
+                } else {
+                    logger.error("Error in FTL render", te)
+                    out.write("[Template Error: ${te.message}]")
+                }
+            } catch (IOException e) {
+                throw new TemplateException("Failed to print error message. Cause: " + e, env)
+            }
+        }
     }
 }
