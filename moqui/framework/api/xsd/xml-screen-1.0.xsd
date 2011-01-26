@@ -78,7 +78,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="character-encoding" type="xs:string" default="UTF-8"/>
             <!-- TODO support this in code -->
             <xs:attribute name="require-encryption" default="true" type="boolean"/>
-            <!-- TODO support this in code -->
             <xs:attribute name="require-authentication" default="true" type="boolean"/>
             <!-- TODO support this in code -->
             <xs:attribute name="require-certificate" default="false" type="boolean"/>
@@ -219,8 +218,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:enumeration value="screen-last">
                         <xs:annotation><xs:documentation>
                             Will use the screen from the last request unless there is a saved from some previous
-                            request (using the save-last-screen attribute).
-                            If no last screen is found the value in the url will be used.
+                            request (using the save-last-screen attribute, done automatically for login).
+
+                            If no last screen is found the value in the url will be used, and if nothing there will go
+                            to the default screen (just to root with whatever defaults are setup for each subscreen).
                         </xs:documentation></xs:annotation>
                     </xs:enumeration>
                     <xs:enumeration value="screen-last-noparam"/>
@@ -228,28 +229,44 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="url" type="xs:string"/>
+        <xs:attribute name="url" type="xs:string">
+            <xs:annotation><xs:documentation>
+                The URL to follow in response, based on the url-type. The default url-type is "screen-path" which means
+                the value here is a path from the current screen to the desired screen (or transition).
+
+                You can use "." to represent the current screen, and ".." to represent the parent screen on the runtime
+                screen path. The ".." can be used multiple times, such as "../.." to get to the parent screen of the
+                parent screen (the grand-parent screen).
+
+                If the screen-path type url starts with a "/" it will be relative to the root screen instead of relative
+                to the current screen.
+
+                If the url-type is "plain" then this can be any valid URL (relative on current server or absolute).
+            </xs:documentation></xs:annotation>
+        </xs:attribute>
         <xs:attribute name="url-type" default="screen-path">
             <xs:simpleType>
                 <xs:restriction base="xs:token">
                     <xs:enumeration value="screen-path">
                         <xs:annotation><xs:documentation>
-                            URI to another screen, either relative or from server root.
+                            URI to another screen, either relative or from server root. See documentation on url
+                            attribute for more details.
                         </xs:documentation></xs:annotation>
                     </xs:enumeration>
                     <xs:enumeration value="plain"/>
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <!-- deferred for future version, pending finding a good reason that it is needed:
         <xs:attribute name="save-last-screen" default="false" type="boolean">
             <xs:annotation><xs:documentation>
-                Saves the last (previous) request's view for future use, generally with the screen-last type of
+                Saves the last (previous) screen's path and parameters for future use, generally with the screen-last type of
                 response.
             </xs:documentation></xs:annotation>
-        </xs:attribute>
+        </xs:attribute> -->
         <xs:attribute name="save-current-screen" default="false" type="boolean">
             <xs:annotation><xs:documentation>
-                Saves the current screen for future use, generally with the screen-last type of response.
+                Saves the current screen's path and parameters for future use, generally with the screen-last type of response.
             </xs:documentation></xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>

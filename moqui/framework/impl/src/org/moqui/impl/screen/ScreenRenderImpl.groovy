@@ -11,16 +11,20 @@
  */
 package org.moqui.impl.screen
 
-import org.moqui.context.ScreenRender
+import freemarker.template.Template
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+import org.apache.commons.codec.net.URLCodec
 
 import org.moqui.context.ExecutionContext
-import freemarker.template.Template
-import org.moqui.impl.context.ContextStack
-import org.moqui.impl.screen.ScreenDefinition.TransitionItem
-import javax.servlet.http.HttpServletResponse
+import org.moqui.context.ScreenRender
 import org.moqui.context.WebExecutionContext
+import org.moqui.impl.context.ContextStack
+import org.moqui.impl.context.WebExecutionContextImpl
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
-import org.moqui.impl.screen.ScreenDefinition.ParameterItem
+import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -40,12 +44,15 @@ class ScreenRenderImpl implements ScreenRender {
     protected String servletContextPath = null
     protected String webappName = null
 
-    protected String renderMode = "html"
-    protected String characterEncoding = "UTF-8"
+    protected String renderMode = null
+    protected String characterEncoding = null
     protected String macroTemplateLocation = null
 
+    protected HttpServletRequest request = null
     protected HttpServletResponse response = null
     protected Writer writer = null
+
+    protected URLCodec urlCodec = new URLCodec()
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
@@ -83,10 +90,18 @@ class ScreenRenderImpl implements ScreenRender {
     ScreenRender webappName(String wan) { this.webappName = wan; return this }
 
     @Override
-    void render(HttpServletResponse response) {
+    void render(HttpServletRequest request, HttpServletResponse response) {
         if (this.writer) throw new IllegalStateException("This screen render has already been used")
         this.writer = response.getWriter()
+        this.request = request
         this.response = response
+        // we know this is a web request, set defaults if missing
+        if (!renderMode) renderMode = "html"
+        if (!webappName) webappName(request.getServletContext().getInitParameter("moqui-name"))
+        if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
+        if (!characterEncoding && request.getCharacterEncoding()) encoding(request.getCharacterEncoding())
+        if (!screenPathNameList) screenPath(request.getPathInfo().split("/") as List)
+        // now render
         internalRender()
     }
 
@@ -106,11 +121,15 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     protected void internalRender() {
+        // make sure we have at least these defaults
+        if (!characterEncoding) characterEncoding = "UTF-8"
+        if (!renderMode) renderMode = "html"
+
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
         // clean up the screenPathNameList, remove null/empty entries, etc, etc
-        screenPathNameList = cleanupPathNameList(screenPathNameList, null)
+        screenPathNameList = ScreenUrlInfo.cleanupPathNameList(screenPathNameList, null)
 
         logger.info("Rendering screen [${rootScreenLocation}] with path list [${screenPathNameList}]")
 
@@ -130,6 +149,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
             ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
             if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in screen [${lastSd.location}]")
+            if (!checkWebappSettings(nextSd, pathName, lastSd)) return
             screenPathDefList.add(nextSd)
             lastSd = nextSd
             // add this to the list of path names to use for transition redirect
@@ -140,9 +160,18 @@ class ScreenRenderImpl implements ScreenRender {
         while (!transitionItem && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
             String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
-            if (!nextLoc) throw new IllegalArgumentException("Could not find subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            if (!nextLoc) {
+                // handle case where last one may be a transition name, and not a subscreen name
+                transitionItem = lastSd.getTransitionItem(pathName)
+                if (transitionItem) {
+                    break
+                } else {
+                    throw new IllegalArgumentException("Could not find subscreen or transition [${pathName}] in screen [${lastSd.location}]")
+                }
+            }
             ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
             if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            if (!checkWebappSettings(nextSd, subscreenName, lastSd)) return
             screenPathDefList.add(nextSd)
             lastSd = nextSd
             // for use in URL writing and such add the subscreenName we found to the main path name list
@@ -155,6 +184,12 @@ class ScreenRenderImpl implements ScreenRender {
             // if there is a transition run that INSTEAD of the screen to render
             ResponseItem ri = transitionItem.run(this)
 
+            if (ri.saveCurrentScreen && ec instanceof WebExecutionContextImpl) {
+                StringBuilder screenPath = new StringBuilder()
+                for (String pn in screenPathNameList) screenPath.append("/").append(pn)
+                ((WebExecutionContextImpl) ec).saveScreenLastInfo(screenPath.toString(), null)
+            }
+
             if (ri.type == "none") return
 
             String url = ri.url ?: ""
@@ -164,15 +199,20 @@ class ScreenRenderImpl implements ScreenRender {
             // TODO add the ri.parameters
             Map<String, String> parameterMap = new HashMap()
 
-            if (ri.type == "screen-last") {
-                /* TODO
-                Will use the screen from the last request unless there is a saved from some previous
-                request (using the save-last-screen attribute).
-                If no last screen is found the value in the url will be used.
-                 */
-                throw new IllegalArgumentException("The response type screen-last is not yet supported")
-            } else if (ri.type == "screen-last-noparam") {
-                throw new IllegalArgumentException("The response type screen-last-noparam is not yet supported")
+            if (ec instanceof WebExecutionContextImpl) {
+                WebExecutionContextImpl weci = (WebExecutionContextImpl) ec
+                if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
+                    String savedUrl = weci.getRemoveScreenLastPath()
+                    if (savedUrl) {
+                        urlType = "screen-path"
+                        url = savedUrl
+                    }
+                }
+                if (ri.type == "screen-last") {
+                    weci.removeScreenLastParameters(true)
+                } else if (ri.type == "screen-last-noparam") {
+                    weci.removeScreenLastParameters(false)
+                }
             }
 
             // either send a redirect for the response, if possible, or just render the response now
@@ -199,13 +239,43 @@ class ScreenRenderImpl implements ScreenRender {
         } else {
             // start rendering at the root section of the root screen
             try {
-                // TODO if request not secure and screens requires secure redirect to https
-                // TODO if screen requires auth and there is not active user redirect to login screen, save this request
                 rootScreenDef.getRootSection().render(this)
             } catch (Throwable t) {
                 throw new RuntimeException("Error rendering screen [${getActiveScreenDef().location}]", t)
             }
         }
+    }
+
+    boolean checkWebappSettings(ScreenDefinition nextSd, String pathName, ScreenDefinition lastSd) {
+        if (!request) return true
+        // if request not secure and screens requires secure redirect to https
+        if (nextSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
+                !request.isSecure()) {
+            logger.info("Screen at location [${nextSd.location}], which is subscreen [${pathName}] in screen [${lastSd.location}] requires an encrypted/secure connection but the request is not secure.")
+            // redirect to the same URL this came to
+            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, screenPathNameList, null)
+            // add URL parameters, if there were any in the URL (in path info or after ?)
+            sui.addParameters(((WebExecutionContext) ec).requestParameters)
+            response.sendRedirect(sui.getFullUrl())
+            return false
+        }
+        // if screen requires auth and there is not active user redirect to login screen, save this request
+        // TODO: remove the "false && " below to enable authentication checking again; commented for now until data loading, etc is implemented, otherwise cannot really test
+        if (false && nextSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
+            logger.info("Screen at location [${nextSd.location}], which is subscreen [${pathName}] in screen [${lastSd.location}] requires authentication but no user is currently logged in.")
+            // save the request as a save-last to use after login
+            if (ec instanceof WebExecutionContextImpl) {
+                StringBuilder screenPath = new StringBuilder()
+                for (String pn in screenPathNameList) screenPath.append("/").append(pn)
+                ((WebExecutionContextImpl) ec).saveScreenLastInfo(screenPath.toString(), null)
+            }
+            // now prepare and send the redirect
+            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, null, "Login")
+            response.sendRedirect(sui.url)
+            return false
+        }
+
+        return true
     }
 
     Node getWebappNode() {
@@ -234,8 +304,6 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition screenDef = screenPathDefList[screenPathIndex]
         try {
             writer.flush()
-            // TODO if request not secure and screens requires secure redirect to https
-            // TODO if screen requires auth and there is not active user redirect to login screen, save this request
             screenDef.getRootSection().render(this)
             writer.flush()
         } catch (Throwable t) {
@@ -334,17 +402,15 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenUrlInfo makeUrlByType(String url, String urlType) {
-        /* TODO handle urlType:
-            <xs:enumeration value="content">
-                <xs:annotation><xs:documentation>A content location (without the content://). URL will be one that can access that content.</xs:documentation></xs:annotation>
-            </xs:enumeration>
+        /* TODO handle urlType=content
+            A content location (without the content://). URL will be one that can access that content.
          */
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
             case "transition": return buildUrl(url)
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported")
             case "plain":
-            default: return url
+            default: return new ScreenUrlInfo(this, url)
         }
     }
 
@@ -364,222 +430,5 @@ class ScreenRenderImpl implements ScreenRender {
             if (pathNameList.get(i) != this.screenPathNameList.get(i)) return false
         }
         return true
-    }
-
-    static class ScreenUrlInfo {
-        ScreenRenderImpl sri
-
-        ScreenDefinition fromSd
-        List<String> fromPathList
-        String subscreenPath
-
-        String url
-        Map<String, String> pathParameterMap = new HashMap()
-        boolean requireEncryption
-        boolean hasActions
-        boolean inCurrentScreenPath
-
-        List<String> fullPathNameList
-        ScreenDefinition targetScreen
-        TransitionItem targetTransition
-
-        ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fs, List<String> fpnl, String ssp) {
-            this.sri = sri
-
-            fromSd = fs
-            if (fromSd == null) fromSd = sri.getActiveScreenDef()
-
-            fromPathList = fpnl
-            if (fromPathList == null)
-                fromPathList = (sri.screenPathIndex >= 0 ? sri.screenPathNameList[0..sri.screenPathIndex] : [])
-
-            subscreenPath = ssp
-
-            initUrl()
-
-            hasActions = (targetTransition && targetTransition.actions)
-
-            inCurrentScreenPath = sri.isInCurrentScreenPath(fullPathNameList)
-        }
-
-        Map<String, String> getParameterMap() {
-            Map<String, String> pm = new HashMap()
-            // get default parameters for the target screen
-            if (targetScreen) {
-                for (ParameterItem pi in targetScreen.getParameterMap().values()) {
-                    Object value = pi.getValue(sri.ec.context)
-                    if (value) pm.put(pi.name, value as String)
-                }
-            }
-            // add all of the parameters specified inline in the screen path
-            if (pathParameterMap) pm.putAll(pathParameterMap)
-            return pm
-        }
-
-        String getParameterString() {
-            StringBuilder ps = new StringBuilder()
-            Map<String, String> pm = this.getParameterMap()
-            boolean isFirst = true
-            for (Map.Entry<String, String> pme in pm) {
-                if (isFirst) isFirst = false else ps.append("&")
-                // TODO: should we do any URL encoding here?
-                ps.append(pme.key).append("=").append(pme.value)
-            }
-            return ps.toString()
-        }
-
-        void initUrl() {
-            if (this.subscreenPath.startsWith("/")) {
-                this.fromSd = sri.rootScreenDef
-                this.fromPathList = []
-            }
-
-            // if there are any ?... parameters parse them off and remove them from the string
-            if (this.subscreenPath.contains("?")) {
-                String pathParmString = this.subscreenPath.substring(this.subscreenPath.indexOf("?")+1)
-                if (pathParmString) {
-                    List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
-                    for (String nameValuePair in nameValuePairs) {
-                        String[] nameValue = nameValuePair.substring(1).split("=")
-                        if (nameValue.length == 2) this.pathParameterMap.put(nameValue[0], nameValue[1])
-                    }
-                }
-                this.subscreenPath = this.subscreenPath.substring(0, this.subscreenPath.indexOf("?"))
-            }
-
-            List<String> tempPathNameList = []
-            tempPathNameList.addAll(this.fromPathList)
-            if (this.subscreenPath) tempPathNameList.addAll(this.subscreenPath.split("/") as List)
-            this.fullPathNameList = cleanupPathNameList(tempPathNameList, this.pathParameterMap)
-
-            // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
-            this.requireEncryption = false
-            if (sri.rootScreenDef.getWebSettingsNode()?."require-encryption" != "false") {
-                this.requireEncryption = true
-            }
-            // also loop through path to check validity, and see if we can do a transition short-cut and go right to its response url
-            ScreenDefinition lastSd = sri.rootScreenDef
-            for (String pathName in this.fullPathNameList) {
-                String nextLoc = lastSd.getSubscreensItem(pathName)?.location
-                if (!nextLoc) {
-                    // handle case where last one may be a transition name, and not a subscreen name
-                    TransitionItem ti = lastSd.getTransitionItem(pathName)
-                    if (ti) {
-                        // if subscreenPath is a transition, and that transition has no condition,
-                        // call-service/actions or conditional-response then use the default-response.url instead
-                        // of the name (if type is screen-path or empty, url-type is url or empty)
-                        if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
-                                ti.defaultResponse && ti.defaultResponse.type == "url" &&
-                                ti.defaultResponse.urlType == "screen-path") {
-                            String newSubPath = this.subscreenPath + "/../" + ti.defaultResponse.url
-                            // call this method again, transition will get cleaned out in the cleanupPathNameList()
-                            this.subscreenPath = newSubPath
-                            initUrl()
-                            return
-                        } else {
-                            this.targetTransition = ti
-                        }
-                        // if nothing happened there, just break out a transition means we're at the end
-                        break
-                    } else {
-                        throw new IllegalArgumentException("Could not find subscreen or transition [${pathName}] in relative screen reference [${subscreenPath}] in screen [${lastSd.location}]")
-                    }
-                }
-                ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
-                if (nextSd) {
-                    if (nextSd.getWebSettingsNode()?."require-encryption" != "false") {
-                        this.requireEncryption = true
-                    }
-                    lastSd = nextSd
-                } else {
-                    throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${subscreenPath}] in screen [${lastSd.location}]")
-                }
-            }
-
-            this.targetScreen = lastSd
-
-            StringBuilder urlBuilder = new StringBuilder()
-            if (sri.baseLinkUrl != null) {
-                urlBuilder.append(sri.baseLinkUrl)
-            } else {
-                // build base from conf
-                Node webappNode = sri.getWebappNode()
-                if (webappNode) {
-                    if (this.requireEncryption && webappNode."@https-enabled" != "false") {
-                        urlBuilder.append("https://")
-                        if (webappNode."@https-host") {
-                            urlBuilder.append(webappNode."@https-host")
-                        } else {
-                            if (sri.getEc() instanceof WebExecutionContext) {
-                                urlBuilder.append(((WebExecutionContext) sri.getEc()).getRequest().getServerName())
-                            } else {
-                                // uh-oh, no web context, default to localhost
-                                urlBuilder.append("localhost")
-                            }
-                        }
-                        if (webappNode."@https-port") urlBuilder.append(":").append(webappNode."@https-port")
-                    } else {
-                        urlBuilder.append("http://")
-                        if (webappNode."@http-host") {
-                            urlBuilder.append(webappNode."@http-host")
-                        } else {
-                            if (sri.getEc() instanceof WebExecutionContext) {
-                                urlBuilder.append(((WebExecutionContext) sri.getEc()).getRequest().getServerName())
-                            } else {
-                                // uh-oh, no web context, default to localhost
-                                urlBuilder.append("localhost")
-                            }
-                        }
-                        if (webappNode."@http-port") urlBuilder.append(":").append(webappNode."@http-port")
-                    }
-                    urlBuilder.append("/")
-                } else {
-                    // can't get these settings, hopefully a URL from the root will do
-                    urlBuilder.append("/")
-                }
-
-                // add servletContext.contextPath
-                String servletContextPath = sri.servletContextPath
-                if (!servletContextPath && sri.getEc() instanceof WebExecutionContext)
-                    servletContextPath = ((WebExecutionContext) sri.getEc()).getServletContext().getContextPath()
-                if (servletContextPath) {
-                    if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
-                    urlBuilder.append(servletContextPath)
-                }
-            }
-
-            if (urlBuilder.charAt(urlBuilder.length()-1) != '/') urlBuilder.append('/')
-            for (String pathName in this.fullPathNameList) urlBuilder.append(pathName).append('/')
-            if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
-
-            this.url = urlBuilder.toString()
-        }
-
-        @Override
-        String toString() {
-            // return ONLY the url built from the inputs; that is the most basic possible value
-            return this.url
-        }
-    }
-
-    static List<String> cleanupPathNameList(List<String> inputPathNameList, Map inlineParameters) {
-        // filter the list: remove empty, remove ".", remove ".." and previous
-        List<String> cleanList = new ArrayList<String>(inputPathNameList.size())
-        for (String pathName in inputPathNameList) {
-            if (!pathName) continue
-            if (pathName == ".") continue
-            // .. means go up a level, ie drop the last in the list
-            if (pathName == "..") { if (cleanList.size()) cleanList.remove(cleanList.size()-1); continue }
-            // if it has a tilde it is a parameter, so skip it but remember it
-            if (pathName.startsWith("~")) {
-                if (inlineParameters != null) {
-                    String[] nameValue = pathName.substring(1).split("=")
-                    if (nameValue.length == 2) inlineParameters.put(nameValue[0], nameValue[1])
-                }
-                continue
-            }
-            cleanList.add(pathName)
-        }
-        return cleanList
     }
 }

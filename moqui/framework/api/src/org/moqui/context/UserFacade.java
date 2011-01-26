@@ -53,7 +53,7 @@ public interface UserFacade {
     /** Authenticate a user and make active in this ExecutionContext (and session of WebExecutionContext if applicable).
      * @return true if user was logged in, otherwise false
      */
-    boolean loginUser(String userId, String password);
+    boolean loginUser(String userId, String password, String tenantId);
 
     /** Only authenticate the user, do not make active in current context.
      * @return true if user was authenticated successfully, otherwise false

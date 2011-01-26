@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
         <!-- TODO add parameters from the target screen, if applicable -->
-        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></li>
+        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></#if></li>
     </#if></#list>
     </ul>
 </#macro>
@@ -48,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
             <!-- TODO add parameters from the target screen, if applicable -->
-            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></li>
+            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
@@ -172,6 +172,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "link">
 <#assign urlInfo = sri.makeUrlByType(.node["@url"][0], .node["@url-type"][0]!"transition")/>
 <#assign parameterMap = ec.getContext().get(.node["@parameter-map"][0]?if_exists)?if_exists/>
+<#if urlInfo.disableLink>
+<span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span>
+<#else/>
 <!-- TODO get parameters from the urlInfo, extend method there to accept parameter parent element, name of parameterMap in context -->
 <#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
     ((!.node["@link-type"]?has_content || .node["@link-type"][0] == "auto") &&
@@ -204,6 +207,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#/if>
         </a>
     -->
+</#if>
 </#if>
 </#macro>
 <#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>

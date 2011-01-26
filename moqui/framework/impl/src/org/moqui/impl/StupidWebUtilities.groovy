@@ -19,6 +19,7 @@ import org.owasp.esapi.codecs.Codec
 import org.owasp.esapi.codecs.HTMLEntityCodec
 import org.owasp.esapi.codecs.PercentCodec
 import org.owasp.esapi.reference.DefaultEncoder
+import org.owasp.esapi.Encoder
 
 class StupidWebUtilities {
     public static Map<String, Object> getPathInfoParameterMap(String pathInfoStr) {
@@ -131,8 +132,7 @@ class StupidWebUtilities {
         }
     }
     
-    static final List<Codec> codecList = [new HTMLEntityCodec(), new PercentCodec()]
-    static final DefaultEncoder defaultWebEncoder = new DefaultEncoder(codecList)
+    static final Encoder defaultWebEncoder = DefaultEncoder.getInstance()
 
     static class CanonicalizeMap implements Map<String, Object> {
         protected Map mp

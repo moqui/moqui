@@ -11,6 +11,7 @@
  */
 package org.moqui.context;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Writer;
 import java.util.List;
@@ -78,9 +79,9 @@ public interface ScreenRender {
     ScreenRender webappName(String wan);
 
     /** Render a screen to a response using the current context. The screen will run in a sub-context so the original
-     * context will not be changed.
+     * context will not be changed. The request will be used to check web settings such as secure connection, etc.
      */
-    void render(HttpServletResponse response);
+    void render(HttpServletRequest request, HttpServletResponse response);
 
     /** Render a screen to a writer using the current context. The screen will run in a sub-context so the original
      * context will not be changed.

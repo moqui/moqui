@@ -20,7 +20,6 @@ import javax.servlet.ServletConfig
 import org.moqui.Moqui
 import org.moqui.context.WebExecutionContext
 import org.moqui.context.ExecutionContextFactory
-import org.moqui.context.ScreenRender
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class MoquiServlet extends HttpServlet {
@@ -79,22 +78,23 @@ class MoquiServlet extends HttpServlet {
 
         String pathInfo = request.getPathInfo()
         long startTime = System.currentTimeMillis()
-        if (logger.infoEnabled) logger.info("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
+        if (logger.infoEnabled) logger.info("Start request in webapp [${webappId}], moqui-name [${webappMoquiName}] to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
 
         // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
         WebExecutionContext wec = executionContextFactory.getWebExecutionContext(webappMoquiName, request, response)
 
-        // render screens based on path in URL
-        List<String> pathElements = pathInfo.split("/") as List
-        ScreenRender render = wec.screen.makeRender().rootScreen(webappDef.webappNode."@root-screen-location")
-                .screenPath(pathElements).renderMode("html").webappName(webappMoquiName)
-        if (request.getCharacterEncoding()) render.encoding(request.getCharacterEncoding())
+        /** NOTE to set render settings manually do something like this, but it is not necessary to set these things
+         * for a web page render because if we call render(request, response) it can figure all of this out as defaults
+         *
+         * ScreenRender render = wec.screen.makeRender().webappName(webappMoquiName).renderMode("html")
+         *         .rootScreen(webappDef.webappNode."@root-screen-location").screenPath(pathInfo.split("/") as List)
+         */
 
         // NOTE: not creating a protected context for now for the screen, it is the only thing now, nothing to muck up
         // ContextStack cs = (ContextStack) wec.context
         try {
             //cs.push()
-            render.render(response)
+            wec.screen.makeRender().render(request, response)
         } finally {
             //cs.pop()
         }

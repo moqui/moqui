@@ -137,7 +137,7 @@ class UserFacadeImpl implements UserFacade {
     /** @see org.moqui.context.UserFacade#setEffectiveTime(Timestamp) */
     void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
-    boolean loginUser(String userId, String password) {
+    boolean loginUser(String userId, String password, String tenantId) {
         boolean successful = false
         if (authenticateUser(userId, password)) {
             successful = true
@@ -165,6 +165,8 @@ class UserFacadeImpl implements UserFacade {
 
             // just in case there is already a user authenticated push onto a stack to remember
             this.userIdStack.push((String) newUserAccount.userId)
+
+            // TODO handle tenantId for active tenant
         }
 
         Node loginNode = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]
@@ -195,12 +197,14 @@ class UserFacadeImpl implements UserFacade {
             // only if failed on password, increment in new transaction to make sure it sticks
             eci.service.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
                     .parameters((Map<String, Object>) [userId:userId]).requireNewTransaction(true).call()
+            eci.message.addError("Login failed. Username and/or password incorrect.")
             return false
         }
 
         Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0]
         if (newUserAccount.requirePasswordChange == "Y") {
-            throw new IllegalStateException("Authenticate failed for user [${userId}] because account requires password change [PWDCHG].")
+            eci.message.addError("Authenticate failed for user [${userId}] because account requires password change [PWDCHG].")
+            return false
         }
         if (newUserAccount.disabled == "Y") {
             Timestamp reEnableTime = null
@@ -209,7 +213,8 @@ class UserFacadeImpl implements UserFacade {
                 reEnableTime = new Timestamp(newUserAccount.getTimestamp("disabledDateTime").getTime() + (disabledMinutes*60*1000))
             }
             if (!reEnableTime || reEnableTime < getNowTimestamp()) {
-                throw new IllegalStateException("Authenticate failed for user [${userId}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
+                eci.message.addError("Authenticate failed for user [${userId}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
+                return false
             } else {
                 uaParameters.disabled = "N"
                 uaParameters.disabledDateTime = null
@@ -221,7 +226,8 @@ class UserFacadeImpl implements UserFacade {
             int changeWeeks = eci.ecfi.confXmlRoot."user-facade"[0]."password"[0]."@change-weeks" ?: 12 as int
             int wksSinceChange = (eci.user.nowTimestamp.time - newUserAccount.passwordSetDate.time) / (7*24*60*60*1000)
             if (wksSinceChange > changeWeeks) {
-                throw new IllegalStateException("Authenticate failed for user [${userId}] because password was changed [${wksSinceChange}] weeks ago and should be changed every [${changeWeeks}] weeks [PWDTIM].")
+                eci.message.addError("Authenticate failed for user [${userId}] because password was changed [${wksSinceChange}] weeks ago and should be changed every [${changeWeeks}] weeks [PWDTIM].")
+                return false
             }
         }
 

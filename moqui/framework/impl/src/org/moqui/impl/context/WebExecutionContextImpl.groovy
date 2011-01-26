@@ -42,6 +42,8 @@ class WebExecutionContextImpl implements WebExecutionContext {
     protected HttpServletRequest request
     protected HttpServletResponse response
 
+    protected Map<String, Object> savedParameters = null
+
     protected Map<String, Object> parameters = null
     protected Map<String, Object> requestAttributes = null
     protected Map<String, Object> requestParameters = null
@@ -56,8 +58,12 @@ class WebExecutionContextImpl implements WebExecutionContext {
         this.response = response
 
         // NOTE: the Visit is not setup here but rather in the MoquiEventListener (for init and destroy)
-        request.setAttribute("executionContext", this)
+        request.setAttribute("ec", this)
         this.eci.userFacade.initFromHttpRequest(request)
+
+        // get any parameters saved to the session from the last request, and clear that session attribute if there
+        savedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
+        if (savedParameters != null) request.session.removeAttribute("moqui.saved.parameters")
     }
 
     // ========== Web EC Methods
@@ -171,5 +177,21 @@ class WebExecutionContextImpl implements WebExecutionContext {
     /** @see org.moqui.context.ExecutionContext#destroy() */
     void destroy() {
         eci.destroy()
+    }
+
+    void saveScreenLastInfo(String screenPath, Map parameters) {
+        session.setAttribute("moqui.screen.last.path", screenPath ?: request.getPathInfo())
+        session.setAttribute("moqui.screen.last.parameters", parameters ?: getRequestParameters())
+    }
+
+    String getRemoveScreenLastPath() {
+        String path = session.getAttribute("moqui.screen.last.path")
+        session.removeAttribute("moqui.screen.last.path")
+        return path
+    }
+    void removeScreenLastParameters(boolean moveToSaved) {
+        if (moveToSaved)
+            session.setAttribute("moqui.saved.parameters", session.getAttribute("moqui.screen.last.parameters"))
+        session.removeAttribute("moqui.screen.last.parameters")
     }
 }

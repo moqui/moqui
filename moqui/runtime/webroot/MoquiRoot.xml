@@ -25,7 +25,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 <label text="Welcome to Moqui"/>
             </panel-header>
             <panel-center>
-                <!-- TODO if ec.message.errors display them -->
+                <section-iterate name="message" list="ec.message.messages" entry="message">
+                    <widgets><container style="message"><label text="${message}"/></container></widgets>
+                </section-iterate>
+                <section-iterate name="error" list="ec.message.errors" entry="errorMessage">
+                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
+                </section-iterate>
+
                 <subscreens-panel id="WebrootSubsPanel" type="tab"/>
             </panel-center>
             <panel-footer>

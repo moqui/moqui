@@ -212,7 +212,6 @@ class ScreenDefinition {
 
         String getName() { return name }
 
-        // TODO check this when rendering menu, disable menu item if false
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
         ResponseItem run(ScreenRenderImpl sri) {
@@ -251,7 +250,7 @@ class ScreenDefinition {
         protected String type
         protected String url
         protected String urlType
-        protected boolean saveLastScreen
+        // deferred for future version: protected boolean saveLastScreen
         protected boolean saveCurrentScreen
 
         ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
@@ -265,7 +264,7 @@ class ScreenDefinition {
             type = responseNode."@type" ?: "url"
             url = responseNode."@url"
             urlType = responseNode."@url-type" ?: "screen-path"
-            saveLastScreen = responseNode."@save-last-screen" == "true"
+            // deferred for future version: saveLastScreen = responseNode."@save-last-screen" == "true"
             saveCurrentScreen = responseNode."@save-current-screen" == "true"
 
             for (Node parameterNode in responseNode."parameter")
