@@ -19,14 +19,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="ServerHit" package-name="org.moqui.server.stats" cache="never" sequence-bank-size="100">
         <field name="serverHitId" type="id" is-pk="true"/>
         <field name="visitId" type="id"/>
-        <field name="targetResource" type="id-vlong">
+        <field name="targetResource" type="id-very-long">
             <description>The ID of the resource hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
         </field>
         <field name="hitStartDateTime" type="date-time"/>
         <field name="serverHitTypeEnumId" type="id"/>
         <field name="numOfBytes" type="number-integer"/>
         <field name="runningTimeMillis" type="number-integer"/>
-        <field name="userId" type="id-vlong"/>
+        <field name="userId" type="id-very-long"/>
         <field name="statusId" type="id"/>
         <field name="requestUrl" type="text-long"/>
         <field name="referrerUrl" type="text-long"/>
@@ -42,7 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="ServerHitBin" package-name="org.moqui.server.stats" cache="never">
         <field name="serverHitBinId" type="id" is-pk="true"/>
-        <field name="contentId" type="id-vlong"/>
+        <field name="contentId" type="id-very-long"/>
         <field name="hitTypeId" type="id"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>
@@ -62,9 +62,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="Visit" package-name="org.moqui.server.visit" cache="never" sequence-bank-size="100">
         <field name="visitId" type="id" is-pk="true"/>
         <field name="visitorId" type="id"/>
-        <field name="userId" type="id-vlong"/>
+        <field name="userId" type="id-very-long"/>
         <field name="userCreated" type="text-indicator"/>
-        <field name="sessionId" type="id-vlong"/>
+        <field name="sessionId" type="id-very-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>
         <field name="webappName" type="text-medium"/>
@@ -95,7 +95,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="Visitor" package-name="org.moqui.server.visit" sequence-bank-size="100">
         <field name="visitorId" type="id" is-pk="true"/>
-        <field name="userId" type="id-vlong"/>
+        <field name="userId" type="id-very-long"/>
         <relationship type="one" related-entity-name="UserAccount"/>
     </entity>
 </entities>

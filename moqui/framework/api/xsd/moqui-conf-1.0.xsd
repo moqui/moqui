@@ -494,6 +494,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="database-list">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="dictionary-type"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="database"/>
             </xs:sequence>
         </xs:complexType>
@@ -501,7 +502,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="database">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-type-def"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="database-type"/>
             </xs:sequence>
 
             <xs:attribute name="name" type="xs:string" use="required"/>
@@ -565,31 +566,16 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="table-missing-pattern" type="xs:string"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="field-type-def">
+    <xs:element name="dictionary-type">
         <xs:complexType>
-            <xs:attribute name="type" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="id"/>
-                        <xs:enumeration value="id-long"/>
-                        <xs:enumeration value="id-vlong"/>
-                        <xs:enumeration value="date"/>
-                        <xs:enumeration value="time"/>
-                        <xs:enumeration value="date-time"/>
-                        <xs:enumeration value="number-integer"/>
-                        <xs:enumeration value="number-decimal"/>
-                        <xs:enumeration value="number-float"/>
-                        <xs:enumeration value="currency-amount"/>
-                        <xs:enumeration value="currency-precise"/>
-                        <xs:enumeration value="text-indicator"/>
-                        <xs:enumeration value="text-short"/>
-                        <xs:enumeration value="text-medium"/>
-                        <xs:enumeration value="text-long"/>
-                        <xs:enumeration value="text-very-long"/>
-                        <xs:enumeration value="binary-very-long"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="type" type="xs:string" use="required"/>
+            <xs:attribute name="java-type" type="xs:string" use="required"/>
+            <xs:attribute name="default-sql-type" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="database-type">
+        <xs:complexType>
+            <xs:attribute name="type" type="xs:string" use="required"/>
             <xs:attribute name="sql-type" type="xs:string" use="required"/>
             <xs:attribute name="sql-type-alias" type="xs:string"/>
             <xs:attribute name="java-type" type="xs:string"/>

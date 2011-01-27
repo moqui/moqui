@@ -73,7 +73,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="id"/>
                         <xs:enumeration value="id-long"/>
-                        <xs:enumeration value="id-vlong"/>
+                        <xs:enumeration value="id-very-long"/>
                         <xs:enumeration value="date"/>
                         <xs:enumeration value="time"/>
                         <xs:enumeration value="date-time"/>

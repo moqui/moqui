@@ -234,25 +234,28 @@
         <load-data location="classpath://data/UnitTypeData.xml"/>
     </entity-facade>
     <database-list>
-        <!-- Data Type Dictionary Types Available:
-            id                String
-            id-long           String
-            id-vlong          String
-            date              Date
-            time              Time
-            date-time         Timestamp
-            number-integer    Long
-            number-decimal    BigDecimal
-            number-float      Double
-            currency-amount   BigDecimal
-            currency-precise  BigDecimal
-            text-indicator    String
-            text-short        String
-            text-medium       String
-            text-long         String
-            text-very-long    String
-            binary-very-long  Blob
-        -->
+        <dictionary-type type="id" java-type="java.lang.String" default-sql-type="VARCHAR(20)"/>
+        <dictionary-type type="id-long" java-type="java.lang.String" default-sql-type="VARCHAR(60)"/>
+        <dictionary-type type="id-very-long" java-type="java.lang.String" default-sql-type="VARCHAR(255)"/>
+
+        <dictionary-type type="date" java-type="java.sql.Date" default-sql-type="DATE"/>
+        <dictionary-type type="time" java-type="java.sql.Time" default-sql-type="TIME"/>
+        <dictionary-type type="date-time" java-type="java.sql.Timestamp" default-sql-type="TIMESTAMP"/>
+
+        <dictionary-type type="number-integer" java-type="java.lang.Long" default-sql-type="NUMERIC(20,0)"/>
+        <dictionary-type type="number-decimal" java-type="java.math.BigDecimal" default-sql-type="NUMERIC(26,6)"/>
+        <dictionary-type type="number-float" java-type="java.lang.Double" default-sql-type="DOUBLE"/>
+
+        <dictionary-type type="currency-amount" java-type="java.math.BigDecimal" default-sql-type="NUMERIC(22,2)"/>
+        <dictionary-type type="currency-precise" java-type="java.math.BigDecimal" default-sql-type="NUMERIC(23,3)"/>
+
+        <dictionary-type type="text-indicator" java-type="java.lang.String" default-sql-type="CHAR(1)"/>
+        <dictionary-type type="text-short" java-type="java.lang.String" default-sql-type="VARCHAR(10)"/>
+        <dictionary-type type="text-medium" java-type="java.lang.String" default-sql-type="VARCHAR(100)"/>
+        <dictionary-type type="text-long" java-type="java.lang.String" default-sql-type="VARCHAR(255)"/>
+        <dictionary-type type="text-very-long" java-type="java.lang.String" default-sql-type="CLOB"/>
+
+        <dictionary-type type="binary-very-long" java-type="java.sql.Blob" default-sql-type="BLOB"/>
 
         <database name="derby"
                   use-pk-constraint-names="false"
@@ -261,61 +264,32 @@
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
                   default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource"
                   table-missing-pattern="Table.*does not exist.">
-            <field-type-def type="id" sql-type="VARCHAR(20)"/>
-            <field-type-def type="id-long" sql-type="VARCHAR(60)"/>
-            <field-type-def type="id-vlong" sql-type="VARCHAR(255)"/>
-
-            <field-type-def type="date" sql-type="DATE"/>
-            <field-type-def type="time" sql-type="TIME"/>
-            <field-type-def type="date-time" sql-type="TIMESTAMP"/>
-
-            <field-type-def type="number-integer" sql-type="NUMERIC(20,0)"/>
-            <field-type-def type="number-decimal" sql-type="NUMERIC(20,6)"/>
-            <field-type-def type="number-float" sql-type="DOUBLE"/>
-
-            <field-type-def type="currency-amount" sql-type="NUMERIC(20,2)"/>
-            <field-type-def type="currency-precise" sql-type="NUMERIC(20,3)"/>
-
-            <field-type-def type="text-indicator" sql-type="CHAR(1)"/>
-            <field-type-def type="text-short" sql-type="VARCHAR(10)"/>
-            <field-type-def type="text-medium" sql-type="VARCHAR(100)"/>
-            <field-type-def type="text-long" sql-type="VARCHAR(255)"/>
-            <field-type-def type="text-very-long" sql-type="CLOB"/>
-
-            <field-type-def type="binary-very-long" sql-type="BLOB"/>
         </database>
         <database name="hsql"
-                  use-foreign-keys="true"
-                  use-foreign-key-indices="true"
                   use-fk-initially-deferred="false"
                   join-style="ansi-no-parenthesis"
                   default-isolation-level="ReadUncommitted"
                   default-jdbc-driver="org.hsqldb.jdbcDriver">
-            <field-type-def type="id" sql-type="VARCHAR"/>
-            <field-type-def type="id-long" sql-type="VARCHAR"/>
-            <field-type-def type="id-vlong" sql-type="VARCHAR"/>
+            <database-type type="id" sql-type="VARCHAR"/>
+            <database-type type="id-long" sql-type="VARCHAR"/>
+            <database-type type="id-very-long" sql-type="VARCHAR"/>
 
-            <field-type-def type="date" sql-type="DATE"/>
-            <field-type-def type="time" sql-type="TIME"/>
-            <field-type-def type="date-time" sql-type="TIMESTAMP"/>
+            <database-type type="number-integer" sql-type="BIGINT"/>
+            <database-type type="number-decimal" sql-type="DOUBLE"/>
+            <database-type type="number-float" sql-type="DOUBLE"/>
 
-            <field-type-def type="number-integer" sql-type="BIGINT"/>
-            <field-type-def type="number-decimal" sql-type="DOUBLE"/>
-            <field-type-def type="number-float" sql-type="DOUBLE"/>
+            <database-type type="currency-amount" sql-type="DOUBLE"/>
+            <database-type type="currency-precise" sql-type="DOUBLE"/>
 
-            <field-type-def type="currency-amount" sql-type="DOUBLE"/>
-            <field-type-def type="currency-precise" sql-type="DOUBLE"/>
+            <database-type type="text-indicator" sql-type="CHAR"/>
+            <database-type type="text-short" sql-type="VARCHAR"/>
+            <database-type type="text-medium" sql-type="VARCHAR"/>
+            <database-type type="text-long" sql-type="VARCHAR"/>
+            <database-type type="text-very-long" sql-type="VARCHAR"/>
 
-            <field-type-def type="text-indicator" sql-type="CHAR"/>
-            <field-type-def type="text-short" sql-type="VARCHAR"/>
-            <field-type-def type="text-medium" sql-type="VARCHAR"/>
-            <field-type-def type="text-long" sql-type="VARCHAR"/>
-            <field-type-def type="text-very-long" sql-type="VARCHAR"/>
-
-            <field-type-def type="binary-very-long" sql-type="OBJECT" sql-type-alias="OTHER"/>
+            <database-type type="binary-very-long" sql-type="OBJECT" sql-type-alias="OTHER"/>
         </database>
         <database name="mysql"
-                  use-foreign-keys="true"
                   join-style="ansi-no-parenthesis"
                   drop-fk-use-foreign-key-keyword="true"
                   table-engine="InnoDB"
@@ -323,87 +297,56 @@
                   collate="latin1_general_cs"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="com.mysql.jdbc.Driver">
-            <field-type-def type="id" sql-type="VARCHAR(20)"/>
-            <field-type-def type="id-long" sql-type="VARCHAR(60)"/>
-            <field-type-def type="id-vlong" sql-type="VARCHAR(255)"/>
+            <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
+            <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
+            <database-type type="number-float" sql-type="DECIMAL(32,12)"/>
 
-            <field-type-def type="date" sql-type="DATE"/>
-            <field-type-def type="time" sql-type="TIME"/>
-            <field-type-def type="date-time" sql-type="TIMESTAMP"/>
+            <database-type type="currency-amount" sql-type="DECIMAL(22,2)"/>
+            <database-type type="currency-precise" sql-type="DECIMAL(23,3)"/>
 
-            <field-type-def type="number-integer" sql-type="DECIMAL(20,0)"/>
-            <field-type-def type="number-decimal" sql-type="DECIMAL(20,6)"/>
-            <field-type-def type="number-float" sql-type="DECIMAL(20,12)"/>
+            <database-type type="text-very-long" sql-type="LONGTEXT"/>
 
-            <field-type-def type="currency-amount" sql-type="DECIMAL(20,2)"/>
-            <field-type-def type="currency-precise" sql-type="DECIMAL(20,3)"/>
-
-            <field-type-def type="text-indicator" sql-type="CHAR(1)"/>
-            <field-type-def type="text-short" sql-type="VARCHAR(10)"/>
-            <field-type-def type="text-medium" sql-type="VARCHAR(100)"/>
-            <field-type-def type="text-long" sql-type="VARCHAR(255)"/>
-            <field-type-def type="text-very-long" sql-type="LONGTEXT"/>
-
-            <field-type-def type="binary-very-long" sql-type="LONGBLOB"/>
+            <database-type type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
         <database name="oracle"
                   join-style="ansi"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
                   default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource">
-            <field-type-def type="id" sql-type="VARCHAR2(20)"/>
-            <field-type-def type="id-long" sql-type="VARCHAR2(60)"/>
-            <field-type-def type="id-vlong" sql-type="VARCHAR2(255)"/>
+            <database-type type="id" sql-type="VARCHAR2(20)"/>
+            <database-type type="id-long" sql-type="VARCHAR2(60)"/>
+            <database-type type="id-very-long" sql-type="VARCHAR2(255)"/>
 
-            <field-type-def type="date" sql-type="DATE"/>
-            <field-type-def type="time" sql-type="TIME"/>
-            <field-type-def type="date-time" sql-type="TIMESTAMP"/>
+            <database-type type="number-integer" sql-type="NUMBER(20,0)"/>
+            <database-type type="number-decimal" sql-type="NUMBER(26,6)"/>
+            <database-type type="number-float" sql-type="NUMBER(32,12)"/>
 
-            <field-type-def type="number-integer" sql-type="NUMBER(20,0)"/>
-            <field-type-def type="number-decimal" sql-type="NUMBER(20,6)"/>
-            <field-type-def type="number-float" sql-type="NUMBER(20,12)"/>
+            <database-type type="currency-amount" sql-type="NUMBER(22,2)"/>
+            <database-type type="currency-precise" sql-type="NUMBER(23,3)"/>
 
-            <field-type-def type="currency-amount" sql-type="NUMBER(20,2)"/>
-            <field-type-def type="currency-precise" sql-type="NUMBER(20,3)"/>
-
-            <field-type-def type="text-indicator" sql-type="CHAR(1)"/>
-            <field-type-def type="text-short" sql-type="VARCHAR2(10)"/>
-            <field-type-def type="text-medium" sql-type="VARCHAR2(100)"/>
-            <field-type-def type="text-long" sql-type="VARCHAR2(255)"/>
-            <field-type-def type="text-very-long" sql-type="CLOB"/>
-
-            <field-type-def type="binary-very-long" sql-type="BLOB"/>
+            <database-type type="text-short" sql-type="VARCHAR2(10)"/>
+            <database-type type="text-medium" sql-type="VARCHAR2(100)"/>
+            <database-type type="text-long" sql-type="VARCHAR2(255)"/>
         </database>
         <database name="postgres"
                   use-fk-initially-deferred="false"
                   join-style="ansi"
                   result-fetch-size="50"
-                  use-binary-type-for-blob="true"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.postgresql.Driver"
                   default-xa-ds-class="org.postgresql.xa.PGXADataSource">
-            <field-type-def type="id" sql-type="TEXT"/>
-            <field-type-def type="id-long" sql-type="TEXT"/>
-            <field-type-def type="id-vlong" sql-type="TEXT"/>
+            <database-type type="id" sql-type="TEXT"/>
+            <database-type type="id-long" sql-type="TEXT"/>
+            <database-type type="id-very-long" sql-type="TEXT"/>
 
-            <field-type-def type="date" sql-type="DATE"/>
-            <field-type-def type="time" sql-type="TIME"/>
-            <field-type-def type="date-time" sql-type="TIMESTAMP"/>
+            <database-type type="number-float" sql-type="FLOAT8"/>
 
-            <field-type-def type="number-integer" sql-type="NUMERIC(20,0)"/>
-            <field-type-def type="number-decimal" sql-type="NUMERIC(20,6)"/>
-            <field-type-def type="number-float" sql-type="FLOAT8"/>
+            <database-type type="text-short" sql-type="TEXT"/>
+            <database-type type="text-medium" sql-type="TEXT"/>
+            <database-type type="text-long" sql-type="TEXT"/>
+            <database-type type="text-very-long" sql-type="TEXT"/>
 
-            <field-type-def type="currency-amount" sql-type="NUMERIC(20,2)"/>
-            <field-type-def type="currency-precise" sql-type="NUMERIC(20,3)"/>
-
-            <field-type-def type="text-indicator" sql-type="CHAR(1)"/>
-            <field-type-def type="text-short" sql-type="TEXT"/>
-            <field-type-def type="text-medium" sql-type="TEXT"/>
-            <field-type-def type="text-long" sql-type="TEXT"/>
-            <field-type-def type="text-very-long" sql-type="TEXT"/>
-
-            <field-type-def type="binary-very-long" sql-type="BYTEA"/>
+            <database-type type="binary-very-long" sql-type="BYTEA"/>
         </database>
     </database-list>
     <repository-list>

@@ -364,6 +364,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."database-list") {
+            mergeNodeWithChildKey(baseNode."database-list"[0], overrideNode."database-list"[0], "dictionary-type", "type")
             mergeNodeWithChildKey(baseNode."database-list"[0], overrideNode."database-list"[0], "database", "name")
         }
 
@@ -400,8 +401,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 if ("webapp" == childNodesName) {
                     mergeWebappChildNodes(childBaseNode, childOverrideNode)
                 } else if ("database" == childNodesName) {
-                    // handle database -> field-type-def@type
-                    mergeNodeWithChildKey(childBaseNode, childOverrideNode, "field-type-def", "type")
+                    // handle database -> database-type@type
+                    mergeNodeWithChildKey(childBaseNode, childOverrideNode, "database-type", "type")
                 } else if ("datasource" == childNodesName) {
                     // handle the jndi-jdbc and inline-jdbc nodes: if either exist in override have it totally remove both from base, then copy over
                     if (childOverrideNode."jndi-jdbc" || childOverrideNode."inline-jdbc") {

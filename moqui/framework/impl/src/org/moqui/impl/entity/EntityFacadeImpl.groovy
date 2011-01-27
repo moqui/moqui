@@ -459,7 +459,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected static final Map<String, String> fieldTypeMap = [
             "id":"java.lang.String",
             "id-long":"java.lang.String",
-            "id-vlong":"java.lang.String",
+            "id-very-long":"java.lang.String",
             "date":"java.sql.Date",
             "time":"java.sql.Time",
             "date-time":"java.sql.Timestamp",
@@ -476,14 +476,35 @@ class EntityFacadeImpl implements EntityFacade {
             "binary-very-long":"java.sql.Blob"]
     protected String getFieldJavaType(String fieldType, String entityName) {
         Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
-        String javaType = databaseNode ? databaseNode."field-type-def".find({ it.@type == fieldType })."@java-type" : null
+        String javaType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })."@java-type" : null
         if (javaType) {
             return javaType
         } else {
-            // get the default field java type
-            String defaultJavaType = fieldTypeMap[fieldType]
-            if (!defaultJavaType) throw new IllegalArgumentException("Field type " + fieldType + " not supported for entity fields")
-            return defaultJavaType
+            Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
+            javaType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })."@java-type" : null
+            if (javaType) {
+                return javaType
+            } else {
+                // get the default field java type
+                String defaultJavaType = fieldTypeMap[fieldType]
+                if (!defaultJavaType) throw new IllegalArgumentException("Could not find Java type for field type [${fieldType}] on entity [${entityName}]")
+                return defaultJavaType
+            }
+        }
+    }
+    protected String getFieldSqlType(String fieldType, String entityName) {
+        Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
+        String sqlType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })."@sql-type" : null
+        if (sqlType) {
+            return sqlType
+        } else {
+            Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
+            sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })."@default-sql-type" : null
+            if (sqlType) {
+                return sqlType
+            } else {
+                throw new IllegalArgumentException("Could not find SQL type for field type [${fieldType}] on entity [${entityName}]")
+            }
         }
     }
 

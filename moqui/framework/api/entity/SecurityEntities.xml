@@ -135,7 +135,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
 
     <entity entity-name="UserAccount" package-name="org.moqui.security.user">
-        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="userName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
         <field name="currentPassword" type="text-medium">
             <description>This is not two-way encrypted by the Entity Facade, and should one one-way encrypted with the
@@ -153,7 +153,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="currencyUomId" type="id"/>
         <field name="locale" type="text-short"/>
         <field name="timeZone" type="id-long"/>
-        <field name="externalUserId" type="id-vlong"/>
+        <field name="externalUserId" type="id-very-long"/>
         <field name="emailAddress" type="text-long">
             <description>The email address to use for forgot password emails and other system messages.</description>
         </field>
@@ -167,7 +167,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="UserGroupMember" package-name="org.moqui.security.user">
         <field name="userGroupId" type="id" is-pk="true"/>
-        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
         <relationship type="one" related-entity-name="UserGroup"/>
@@ -176,7 +176,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="UserLoginHistory" package-name="org.moqui.security.user" cache="never">
-        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
         <field name="visitId" type="id"/>
@@ -187,7 +187,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="UserPasswordHistory" package-name="org.moqui.security.user" cache="never">
-        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="password" type="text-medium" encrypt="true"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">
@@ -195,7 +195,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="UserPreference" package-name="org.moqui.security.user">
-        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="preferenceTypeEnumId" type="id" is-pk="true"/>
         <field name="userPrefValue" type="text-long"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">
@@ -207,7 +207,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="UserScreenTheme" package-name="org.moqui.screen.theme">
-        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id" is-pk="true"/>
         <field name="screenThemeId" type="id"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">

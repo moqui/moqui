@@ -29,6 +29,7 @@ class EntityDbMeta {
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot create table for a view entity")
 
         String groupName = efi.getEntityGroupName(ed.entityName)
+        Node databaseListNode = efi.ecfi.confXmlRoot."database-list"[0]
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ")
@@ -37,14 +38,12 @@ class EntityDbMeta {
 
         for (String fieldName in ed.getFieldNames(true, true)) {
             Node fieldNode = ed.getFieldNode(fieldName)
-            Node fieldTypeDef = (Node) databaseNode."field-type-def".find({ it."@type" == fieldNode."@type" })
-            if (!fieldTypeDef) throw new IllegalArgumentException("In entity field [${ed.entityName}.${fieldName}] could not find conf for type [${fieldNode."@type"}]")
-
+            String sqlType = efi.getFieldSqlType(fieldNode."@type", ed.entityName)
             String javaType = efi.getFieldJavaType(fieldNode."@type", ed.entityName)
 
             sql.append(ed.getColumnName(fieldName, false))
             sql.append(" ")
-            sql.append(fieldTypeDef."@sql-type")
+            sql.append(sqlType)
 
             if ("String" == javaType || "java.lang.String" == javaType) {
                 if (databaseNode."@character-set") {
