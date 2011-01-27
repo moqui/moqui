@@ -41,5 +41,5 @@ This Work includes contributions authored by David E. Jones, not as a
     <UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
 
     <EnumerationType description="User Preference Types" enumTypeId="USER_PREF_TYPE" parentTypeId=""/>
-    <Enumeration description="Screen Theme Preference" enumId="UPT_SCREEN_THEME" enumTypeId="USER_PREF_TYPE"/>
+    <!-- <Enumeration description="My Preference" enumId="UPT_MY_PREF" enumTypeId="USER_PREF_TYPE"/> -->
 </entity-facade-xml>

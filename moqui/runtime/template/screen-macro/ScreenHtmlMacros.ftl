@@ -211,7 +211,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#if>
 </#macro>
 <#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
-<#macro "label"><span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span></#macro>
+<#macro "label">
+<#assign labelType = .node["@type"][0]?default("span")/>
+<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</${labelType}>
+</#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
 
 <#-- ============================================ -->

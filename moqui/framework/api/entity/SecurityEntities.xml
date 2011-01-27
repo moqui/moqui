@@ -206,4 +206,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="preferenceTypeEnumId"/>
         </relationship>
     </entity>
+    <entity entity-name="UserScreenTheme" package-name="org.moqui.screen.theme">
+        <field name="userId" type="id-vlong" is-pk="true"/>
+        <field name="screenThemeTypeEnumId" type="id" is-pk="true"/>
+        <field name="screenThemeId" type="id"/>
+        <relationship type="one-nofk" related-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+        <relationship type="one" title="ScreenThemeType" related-entity-name="Enumeration">
+            <description>(enumTypeId = SCREEN_THEME_TYPE)</description>
+            <key-map field-name="screenThemeTypeEnumId"/>
+        </relationship>
+        <relationship type="one" related-entity-name="ScreenTheme"/>
+    </entity>
 </entities>

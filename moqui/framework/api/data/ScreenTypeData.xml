@@ -44,8 +44,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="10"/>
     <Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="11"/>
 
-    <ScreenTheme screenThemeId="MOQUI" screenThemeTypeEnumId="STT_INTERNAL" description="Moqui Plain Theme: simple, flat, default"/>
-    <ScreenThemeResource screenThemeId="MOQUI" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET" resourceValue="/moquitheme/style.css"/>
-    <!-- <ScreenThemeResource screenThemeId="MOQUI" sequenceNum="2" resourceTypeEnumId="STRT_SHORTCUT_ICON" resourceValue="/moquitheme/moqui.ico"/> -->
-    <!-- <ScreenThemeResource screenThemeId="MOQUI" sequenceNum="3" resourceTypeEnumId="STRT_SCREENSHOT" resourceValue="/moquitheme/screenshot.jpg"/> -->        
+    <!-- Default Theme -->
+    <ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL" description="Moqui Plain Theme: simple, flat, default"/>
+    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET" resourceValue="/theme/default.css"/>
+    <!-- <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_SHORTCUT_ICON" resourceValue="/theme/moqui.ico"/> -->
+    <!-- <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="3" resourceTypeEnumId="STRT_SCREENSHOT" resourceValue="/theme/screenshot.jpg"/> -->
 </entity-facade-xml>

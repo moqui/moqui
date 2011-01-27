@@ -25,6 +25,8 @@ import org.moqui.impl.context.ContextStack
 import org.moqui.impl.context.WebExecutionContextImpl
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
+import org.moqui.entity.EntityList
+import org.moqui.entity.EntityValue
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -430,5 +432,32 @@ class ScreenRenderImpl implements ScreenRender {
             if (pathNameList.get(i) != this.screenPathNameList.get(i)) return false
         }
         return true
+    }
+
+    String getCurrentThemeId() {
+        // get the screen's theme type; try second level
+        String stteId = null
+        if (screenPathDefList) stteId = screenPathDefList[0].webSettingsNode?."@screen-theme-type-enum-id"
+        // if no setting try first level (root)
+        if (!stteId) stteId = rootScreenDef.webSettingsNode?."@screen-theme-type-enum-id"
+        // if no setting default to STT_INTERNAL
+        if (!stteId) stteId = "STT_INTERNAL"
+
+        // see if there is a user setting for the theme
+        String themeId = sfi.ecfi.entityFacade.makeFind("UserScreenTheme")
+                .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId]).useCache(true)
+                .one()?.screenThemeId
+        // default theme
+        if (!themeId) themeId = "DEFAULT"
+        return themeId
+    }
+
+    List<String> getThemeValues(String resourceTypeEnumId) {
+        EntityList strList = sfi.ecfi.entityFacade.makeFind("ScreenThemeResource")
+                .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId])
+                .orderBy("sequenceNum").useCache(true).list()
+        List<String> values = new LinkedList()
+        for (EntityValue str in strList) values.add(str.resourceValue as String)
+        return values
     }
 }

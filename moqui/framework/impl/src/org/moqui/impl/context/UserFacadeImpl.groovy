@@ -128,6 +128,15 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
+    String getPreference(String preferenceTypeEnumId) {
+        // TODO implement
+        return null
+    }
+
+    void setPreference(String preferenceTypeEnumId, String userPrefValue) {
+        // TODO implement
+    }
+
     /** @see org.moqui.context.UserFacade#getNowTimestamp() */
     Timestamp getNowTimestamp() {
         // TODO: review Timestamp and nowTimestamp use, have things use this by default

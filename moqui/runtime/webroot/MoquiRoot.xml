@@ -22,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <container-panel id="WebrootPanel">
             <panel-header>
-                <label text="Welcome to Moqui"/>
+                <label text="Welcome to Moqui" type="h1"/>
             </panel-header>
             <panel-center>
                 <section-iterate name="message" list="ec.message.messages" entry="message">
@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <subscreens-panel id="WebrootSubsPanel" type="tab"/>
             </panel-center>
             <panel-footer>
-                <label text="Built on Moqui"/>
+                <label text="Built on Moqui" id="built-on"/>
             </panel-footer>
         </container-panel>
 
