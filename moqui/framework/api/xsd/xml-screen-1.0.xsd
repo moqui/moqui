@@ -584,24 +584,28 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ============== Text Specific Elements =============== -->
     <xs:element name="text">
         <xs:complexType>
-            <xs:attribute name="type" type="xs:string" default="any">
-                <xs:annotation><xs:documentation>
-                    Can be anything. Default supported values include: text, cwiki, html, xsl-fo, xml, and csv.
-                    A value of "any" will cause it to be used if no other element matches the current output type.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="location" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    Template location can include various prefixes to support including from a file, http, component,
-                    or a content repository.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="template" type="boolean" default="true">
-                <xs:annotation><xs:documentation>
-                    Interpret the text at the location as an FTL template?
-                    Defaults to true, set to false if you want the text included literally.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="type" type="xs:string" default="any">
+                        <xs:annotation><xs:documentation>
+                            Can be anything. Default supported values include: text, cwiki, html, xsl-fo, xml, and csv.
+                            A value of "any" will cause it to be used if no other element matches the current output type.
+                        </xs:documentation></xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="location" type="xs:string">
+                        <xs:annotation><xs:documentation>
+                            Template location can include various prefixes to support including from a file, http, component,
+                            or a content repository.
+                        </xs:documentation></xs:annotation>
+                    </xs:attribute>
+                    <xs:attribute name="template" type="boolean" default="true">
+                        <xs:annotation><xs:documentation>
+                            Interpret the text at the location as an FTL template?
+                            Defaults to true, set to false if you want the text included literally.
+                        </xs:documentation></xs:annotation>
+                    </xs:attribute>
+                </xs:extension>
+            </xs:simpleContent>
         </xs:complexType>
     </xs:element>
 

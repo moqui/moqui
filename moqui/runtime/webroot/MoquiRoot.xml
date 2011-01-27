@@ -39,6 +39,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </panel-footer>
         </container-panel>
 
-        <render-mode><text type="html" location="webroot/includes/HtmlFooter.html.ftl"/></render-mode>
+        <render-mode><text type="html"><![CDATA[</body></html>]]></text></render-mode>
     </widgets>
 </screen>

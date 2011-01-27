@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container-panel id="ExampleAppPanel">
             <panel-header>
-                <label text="Moqui Example App" id="ExampleHeader"/>
+                <label text="Moqui Example App" type="h2"/>
             </panel-header>
             <panel-center>
                 <subscreens-panel id="ExampleAppSubsPanel" type="tab"/>

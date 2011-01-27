@@ -159,9 +159,22 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#list .node["text"] as textNode><#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode/></#if></#list>
     <#if !textToUse?has_content><#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list></#if>
     <#if textToUse?has_content>
-<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?if_exists}] --></#if>
+        <#if textToUse["@location"]?has_content>
+<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?default("true")}] --></#if>
     ${sri.renderText(textToUse["@location"], textToUse["@template"][0]?if_exists)}
-<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?if_exists}] --></#if>
+<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?default("true")}] --></#if>
+        </#if>
+        <#assign inlineTemplateSource = textToUse?string/>
+        <#if inlineTemplateSource?has_content>
+<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[inline][@template=${textToUse["@template"][0]?default("true")}] --></#if>
+          <#if !textToUse["@template"]?has_content || textToUse["@template"][0] == "true">
+            <#assign inlineTemplate = [inlineTemplateSource, sri.getActiveScreenDef().location + ".render_mode.text"]?interpret>
+            <@inlineTemplate/>
+          <#else/>
+            ${inlineTemplateSource}
+          </#if>
+<#if sri.doBoundaryComments()><!-- END   render-mode.text[inline][@template=${textToUse["@template"][0]?default("true")}] --></#if>
+        </#if>
     </#if>
 </#if>
 </#macro>

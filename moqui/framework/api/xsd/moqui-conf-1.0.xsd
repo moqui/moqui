@@ -62,6 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <xs:element name="server-stats">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="artifact-stats"/>
@@ -77,6 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="artifact-stats">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:attribute name="type" use="required">
                 <xs:simpleType>
@@ -138,6 +140,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="first-hit-in-visit">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="actions"/>
@@ -145,6 +148,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="after-request">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="actions"/>
@@ -152,6 +156,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="before-request">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="actions"/>
@@ -159,6 +164,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="after-login">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="actions"/>
@@ -166,6 +172,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="before-logout">
+        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="actions"/>

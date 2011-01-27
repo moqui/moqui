@@ -476,12 +476,12 @@ class EntityFacadeImpl implements EntityFacade {
             "binary-very-long":"java.sql.Blob"]
     protected String getFieldJavaType(String fieldType, String entityName) {
         Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
-        String javaType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })."@java-type" : null
+        String javaType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@java-type" : null
         if (javaType) {
             return javaType
         } else {
             Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
-            javaType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })."@java-type" : null
+            javaType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@java-type" : null
             if (javaType) {
                 return javaType
             } else {
@@ -494,12 +494,12 @@ class EntityFacadeImpl implements EntityFacade {
     }
     protected String getFieldSqlType(String fieldType, String entityName) {
         Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
-        String sqlType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })."@sql-type" : null
+        String sqlType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@sql-type" : null
         if (sqlType) {
             return sqlType
         } else {
             Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
-            sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })."@default-sql-type" : null
+            sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@default-sql-type" : null
             if (sqlType) {
                 return sqlType
             } else {
