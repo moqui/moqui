@@ -38,17 +38,22 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     protected final ExecutionContextFactoryImpl ecfi
 
-    protected final Cache templateFtlLocationCache
     protected final Cache scriptGroovyLocationCache
     protected final Cache scriptXmlActionLocationCache
+    protected final Cache templateFtlLocationCache
+    protected final Cache templateCwikiLocationCache
+    protected final Cache textLocationCache
 
     protected GroovyShell localGroovyShell = null
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
-        this.templateFtlLocationCache = ecfi.getCacheFacade().getCache("template.ftl.location")
-        this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("script.groovy.location")
-        this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("script.xml-actions.location")
+        this.templateFtlLocationCache = ecfi.getCacheFacade().getCache("resource.ftl.location")
+        this.templateCwikiLocationCache = ecfi.getCacheFacade().getCache("resource.cwiki.location")
+        this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
+
+        this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
+        this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("resource.xml-actions.location")
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
@@ -104,11 +109,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return lu.newInputStream()
     }
 
-    String getLocationText(String location) {
-        InputStream is = null
+    String getLocationText(String location, boolean cache) {
+        String text = cache ? (String) textLocationCache.get(location) : null
+        if (text != null) return text
+
         Reader r = null
         try {
-            is = getLocationStream(location)
+            InputStream is = getLocationStream(location)
             if (!is) return null
 
             r = new InputStreamReader(new BufferedInputStream(is), Charset.forName("UTF-8"))
@@ -119,7 +126,9 @@ public class ResourceFacadeImpl implements ResourceFacade {
             while ((i = r.read(buf, 0, 4096)) > 0) {
                 sb.append(buf, 0, i)
             }
-            return sb.toString()
+            text = sb.toString()
+            if (cache) textLocationCache.put(location, text)
+            return text
         } finally {
             // closing r should close is, if not add that here
             try { if (r) r.close() } catch (IOException e) { logger.warn("Error in close after reading text", e) }
@@ -146,16 +155,20 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
     void renderTemplateInCurrentContext(String location, Writer writer) {
-        Template theTemplate = (Template) templateFtlLocationCache.get(location)
-        if (!theTemplate) theTemplate = makeTemplate(location)
+        if (location.endsWith(".ftl")) {
+            Template theTemplate = (Template) templateFtlLocationCache.get(location)
+            if (!theTemplate) theTemplate = makeTemplate(location)
 
-        if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
+            if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
 
-        Map root = ecfi.executionContext.context
-        theTemplate.createProcessingEnvironment(root, writer).process()
+            Map root = ecfi.executionContext.context
+            theTemplate.createProcessingEnvironment(root, writer).process()
+        } else if (location.endsWith(".cwiki")) {
+            // TODO support cwiki
+        }
     }
 
-    protected synchronized Template makeTemplate(String location) {
+    protected Template makeTemplate(String location) {
         Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (theTemplate) return theTemplate
 
@@ -167,7 +180,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
         } finally {
-            if (templateReader) templateReader.close()
+            if (templateReader != null) templateReader.close()
         }
 
         if (newTemplate) templateFtlLocationCache.put(location, newTemplate)
@@ -199,7 +212,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (!gc) gc = loadGroovy(location)
         return gc
     }
-    protected synchronized Class loadGroovy(String location) {
+    protected Class loadGroovy(String location) {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) {
             gc = new GroovyClassLoader().parseClass(getLocationText(location), location)
@@ -213,7 +226,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (!xa) loadXmlAction(location)
         return xa
     }
-    protected synchronized XmlAction loadXmlAction(String location) {
+    protected XmlAction loadXmlAction(String location) {
         XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
         if (!xa) {
             xa = new XmlAction(ecfi, getLocationText(location), location)

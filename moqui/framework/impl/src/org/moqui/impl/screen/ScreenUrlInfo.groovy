@@ -9,7 +9,7 @@ class ScreenUrlInfo {
 
     ScreenDefinition fromSd = null
     List<String> fromPathList = null
-    String subscreenPath = null
+    String fromScreenPath = null
 
     String url = null
     Map<String, String> pathParameterMap = new HashMap()
@@ -18,33 +18,43 @@ class ScreenUrlInfo {
     boolean inCurrentScreenPath = false
     boolean disableLink = false
 
+    /** The full path name list for the URL */
     List<String> fullPathNameList = null
+    /** The path for a file resource (template or static), relative to the targetScreen.location */
+    List<String> fileResourcePathList = null
+    /** If the full path led to a file resource that is verified to exist, the URL goes here; the URL for access on the
+     * server, the client will get the resource from the url field as normal */
+    URL fileResourceUrl = null
+    /** All screens found in the path list */
+    List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
+    /** The last screen found in the path list */
     ScreenDefinition targetScreen = null
+    /** If a transition is specified, the target transition within the targetScreen */
     TransitionItem targetTransition = null
+    List<String> preTransitionPathNameList = new ArrayList<String>()
 
     ScreenUrlInfo(ScreenRenderImpl sri, String url) {
         this.sri = sri
         this.url = url
     }
 
-    ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fs, List<String> fpnl, String ssp) {
+    ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl, String ssp) {
         this.sri = sri
 
-        fromSd = fs
+        fromSd = fromScreenDef
         if (fromSd == null) fromSd = sri.getActiveScreenDef()
 
         fromPathList = fpnl
         if (fromPathList == null)
-            fromPathList = (sri.screenPathIndex >= 0 ? sri.screenPathNameList[0..sri.screenPathIndex] : [])
+            fromPathList = sri.getActiveScreenPath()
 
-        subscreenPath = ssp ?: ""
+        fromScreenPath = ssp ?: ""
 
         initUrl()
 
         hasActions = (targetTransition && targetTransition.actions)
-
-        inCurrentScreenPath = sri.isInCurrentScreenPath(fullPathNameList)
-
+        // if sri.screenUrlInfo is null it is because this object is not yet set to it, so set this to true as it "is" the current screen path
+        inCurrentScreenPath = sri.screenUrlInfo ? sri.isInCurrentScreenPath(fullPathNameList) : true
         disableLink = targetTransition ? !targetTransition.checkCondition(sri.ec) : false
     }
 
@@ -94,14 +104,14 @@ class ScreenUrlInfo {
     }
 
     void initUrl() {
-        if (this.subscreenPath.startsWith("/")) {
+        if (this.fromScreenPath.startsWith("/")) {
             this.fromSd = sri.rootScreenDef
             this.fromPathList = []
         }
 
         // if there are any ?... parameters parse them off and remove them from the string
-        if (this.subscreenPath.contains("?")) {
-            String pathParmString = this.subscreenPath.substring(this.subscreenPath.indexOf("?")+1)
+        if (this.fromScreenPath.contains("?")) {
+            String pathParmString = this.fromScreenPath.substring(this.fromScreenPath.indexOf("?")+1)
             if (pathParmString) {
                 List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
                 for (String nameValuePair in nameValuePairs) {
@@ -109,12 +119,12 @@ class ScreenUrlInfo {
                     if (nameValue.length == 2) this.pathParameterMap.put(nameValue[0], nameValue[1])
                 }
             }
-            this.subscreenPath = this.subscreenPath.substring(0, this.subscreenPath.indexOf("?"))
+            this.fromScreenPath = this.fromScreenPath.substring(0, this.fromScreenPath.indexOf("?"))
         }
 
         List<String> tempPathNameList = []
         tempPathNameList.addAll(this.fromPathList)
-        if (this.subscreenPath) tempPathNameList.addAll(this.subscreenPath.split("/") as List)
+        if (this.fromScreenPath) tempPathNameList.addAll(this.fromScreenPath.split("/") as List)
         this.fullPathNameList = cleanupPathNameList(tempPathNameList, this.pathParameterMap)
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
@@ -122,43 +132,88 @@ class ScreenUrlInfo {
         if (sri.rootScreenDef.getWebSettingsNode()?."require-encryption" != "false") {
             this.requireEncryption = true
         }
-        // also loop through path to check validity, and see if we can do a transition short-cut and go right to its response url
+
+        // loop through path for various things: check validity, see if we can do a transition short-cut and go right to its response url, etc
         ScreenDefinition lastSd = sri.rootScreenDef
+        List<String> remainingPathList = new ArrayList<String>(fullPathNameList)
         for (String pathName in this.fullPathNameList) {
             String nextLoc = lastSd.getSubscreensItem(pathName)?.location
             if (!nextLoc) {
                 // handle case where last one may be a transition name, and not a subscreen name
                 TransitionItem ti = lastSd.getTransitionItem(pathName)
                 if (ti) {
-                    // if subscreenPath is a transition, and that transition has no condition,
+                    // if fromScreenPath is a transition, and that transition has no condition,
                     // call-service/actions or conditional-response then use the default-response.url instead
                     // of the name (if type is screen-path or empty, url-type is url or empty)
                     if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&
                             ti.defaultResponse.urlType == "screen-path") {
-                        String newSubPath = this.subscreenPath + "/../" + ti.defaultResponse.url
+                        String newSubPath = this.fromScreenPath + "/../" + ti.defaultResponse.url
                         // call this method again, transition will get cleaned out in the cleanupPathNameList()
-                        this.subscreenPath = newSubPath
+                        this.fromScreenPath = newSubPath
                         initUrl()
                         return
-                    } else {
-                        this.targetTransition = ti
                     }
-                    // if nothing happened there, just break out a transition means we're at the end
+                    this.targetTransition = ti
+                    // if return above, just break out; a transition means we're at the end
                     break
-                } else {
-                    throw new IllegalArgumentException("Could not find subscreen or transition [${pathName}] in relative screen reference [${subscreenPath}] in screen [${lastSd.location}]")
                 }
+
+                // is this a file under the screen?
+                URL lastScreenUrl = sri.sfi.ecfi.resourceFacade.getLocationUrl(lastSd.location)
+                if (lastScreenUrl.protocol == "file") {
+                    StringBuilder fileLoc = new StringBuilder(lastScreenUrl.toString())
+                    // get rid of the "file:" prefix
+                    fileLoc.delete(0, 5)
+                    // get rid of the suffix, probably .xml but use .*
+                    if (fileLoc.indexOf(".") > 0) fileLoc.delete(fileLoc.indexOf("."), fileLoc.length())
+                    // add the path elements that remain
+                    for (String rp in remainingPathList) fileLoc.append("/").append(rp)
+
+                    File theFile = new File(fileLoc.toString())
+                    if (theFile.exists() && theFile.isFile()) {
+                        fileResourceUrl = theFile.toURI().toURL()
+                        break
+                    }
+                }
+
+                throw new IllegalArgumentException("Could not find subscreen or transition or file/content [${pathName}] in screen [${lastSd.location}] while finding url for path [${fullPathNameList}] based on [${fromPathList}]:[${fromScreenPath}] relative to screen [${fromSd.location}]")
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd) {
-                if (nextSd.getWebSettingsNode()?."require-encryption" != "false") {
-                    this.requireEncryption = true
-                }
+                if (nextSd.getWebSettingsNode()?."require-encryption" != "false") this.requireEncryption = true
+                screenPathDefList.add(nextSd)
                 lastSd = nextSd
+                // add this to the list of path names to use for transition redirect
+                preTransitionPathNameList.add(pathName)
             } else {
-                throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${subscreenPath}] in screen [${lastSd.location}]")
+                throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
             }
+            // made it all the way to here so this was a screen or transition
+            remainingPathList.remove(0)
+        }
+
+        // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
+        while (!targetTransition && !fileResourceUrl && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
+            String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
+            String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
+            if (!nextLoc) {
+                // handle case where last one may be a transition name, and not a subscreen name
+                targetTransition = lastSd.getTransitionItem(subscreenName)
+                if (targetTransition) {
+                    break
+                } else {
+                    throw new IllegalArgumentException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
+                }
+            }
+            ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
+            if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            screenPathDefList.add(nextSd)
+            lastSd = nextSd
+            // for use in URL writing and such add the subscreenName we found to the main path name list
+            fullPathNameList.add(subscreenName)
+            // add this to the list of path names to use for transition redirect, just in case a default is a transition
+            preTransitionPathNameList.add(subscreenName)
         }
 
         this.targetScreen = lastSd

@@ -113,6 +113,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         return makeTemplateByLocation(templateLocation)
     }
+
     protected synchronized Template makeTemplateByLocation(String templateLocation) {
         Template template = (Template) screenTemplateLocationCache.get(templateLocation)
         if (template) return template

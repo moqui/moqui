@@ -24,23 +24,24 @@ import org.moqui.context.WebExecutionContext
 import org.moqui.impl.context.ContextStack
 import org.moqui.impl.context.WebExecutionContextImpl
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
-import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
+    protected final static URLCodec urlCodec = new URLCodec()
+
+    // TODO: should research and add more of these
+    public final static Set<String> binaryExtensions = new HashSet(["gif","ico","jpg","pdf","png"])
 
     protected final ScreenFacadeImpl sfi
 
     protected String rootScreenLocation = null
     protected ScreenDefinition rootScreenDef = null
 
-    protected List<String> screenPathNameList = new ArrayList<String>()
-    protected List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
+    protected List<String> originalScreenPathNameList = new ArrayList<String>()
+    protected ScreenUrlInfo screenUrlInfo = null
     protected int screenPathIndex = -1
-    /** If set this represents the transition after the last screen in the path */
-    protected TransitionItem transitionItem = null
 
     protected String baseLinkUrl = null
     protected String servletContextPath = null
@@ -53,8 +54,6 @@ class ScreenRenderImpl implements ScreenRender {
     protected HttpServletRequest request = null
     protected HttpServletResponse response = null
     protected Writer writer = null
-
-    protected URLCodec urlCodec = new URLCodec()
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
@@ -69,7 +68,7 @@ class ScreenRenderImpl implements ScreenRender {
     ScreenRender rootScreen(String rootScreenLocation) { this.rootScreenLocation = rootScreenLocation; return this }
 
     @Override
-    ScreenRender screenPath(List<String> screenNameList) { this.screenPathNameList.addAll(screenNameList); return this }
+    ScreenRender screenPath(List<String> screenNameList) { this.originalScreenPathNameList.addAll(screenNameList); return this }
 
     @Override
     ScreenRender renderMode(String renderMode) { this.renderMode = renderMode; return this }
@@ -102,7 +101,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (!webappName) webappName(request.getServletContext().getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
         if (!characterEncoding && request.getCharacterEncoding()) encoding(request.getCharacterEncoding())
-        if (!screenPathNameList) screenPath(request.getPathInfo().split("/") as List)
+        if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
         // now render
         internalRender()
     }
@@ -130,65 +129,29 @@ class ScreenRenderImpl implements ScreenRender {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
-        // clean up the screenPathNameList, remove null/empty entries, etc, etc
-        screenPathNameList = ScreenUrlInfo.cleanupPathNameList(screenPathNameList, null)
+        logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
-        logger.info("Rendering screen [${rootScreenLocation}] with path list [${screenPathNameList}]")
-
-        // get screen defs for each screen in path to use for subscreens
-        List<String> preTransitionPathNameList = new ArrayList<String>()
-        ScreenDefinition lastSd = rootScreenDef
-        for (String pathName in screenPathNameList) {
-            String nextLoc = lastSd.getSubscreensItem(pathName)?.location
-            if (!nextLoc) {
-                // handle case where last one may be a transition name, and not a subscreen name
-                transitionItem = lastSd.getTransitionItem(pathName)
-                if (transitionItem) {
-                    break
-                } else {
-                    throw new IllegalArgumentException("Could not find subscreen or transition [${pathName}] in screen [${lastSd.location}]")
-                }
-            }
-            ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
-            if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in screen [${lastSd.location}]")
-            if (!checkWebappSettings(nextSd, pathName, lastSd)) return
-            screenPathDefList.add(nextSd)
-            lastSd = nextSd
-            // add this to the list of path names to use for transition redirect
-            preTransitionPathNameList.add(pathName)
+        this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null)
+        if (ec instanceof WebExecutionContext) {
+            // add URL parameters, if there were any in the URL (in path info or after ?)
+            this.screenUrlInfo.addParameters(((WebExecutionContext) ec).requestParameters)
         }
 
-        // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
-        while (!transitionItem && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
-            String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
-            String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
-            if (!nextLoc) {
-                // handle case where last one may be a transition name, and not a subscreen name
-                transitionItem = lastSd.getTransitionItem(pathName)
-                if (transitionItem) {
-                    break
-                } else {
-                    throw new IllegalArgumentException("Could not find subscreen or transition [${pathName}] in screen [${lastSd.location}]")
-                }
-            }
-            ScreenDefinition nextSd = sfi.getScreenDefinition(nextLoc)
-            if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${subscreenName}] in screen [${lastSd.location}]")
-            if (!checkWebappSettings(nextSd, subscreenName, lastSd)) return
-            screenPathDefList.add(nextSd)
-            lastSd = nextSd
-            // for use in URL writing and such add the subscreenName we found to the main path name list
-            screenPathNameList.add(subscreenName)
+        // check webapp settings for each screen in the path
+        if (!checkWebappSettings(rootScreenDef)) return
+        for (ScreenDefinition nextSd in screenUrlInfo.screenPathDefList) {
+            if (!checkWebappSettings(nextSd)) return
         }
 
-        if (transitionItem) {
-            // TODO if this transition has actions and any parameters were not in the body return an error, helps prevent XSRF attacks
+        if (screenUrlInfo.targetTransition) {
+            // TODO if this transition has actions and request was not secure or any parameters were not in the body return an error, helps prevent XSRF attacks
 
             // if there is a transition run that INSTEAD of the screen to render
-            ResponseItem ri = transitionItem.run(this)
+            ResponseItem ri = screenUrlInfo.targetTransition.run(this)
 
             if (ri.saveCurrentScreen && ec instanceof WebExecutionContextImpl) {
                 StringBuilder screenPath = new StringBuilder()
-                for (String pn in screenPathNameList) screenPath.append("/").append(pn)
+                for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
                 ((WebExecutionContextImpl) ec).saveScreenLastInfo(screenPath.toString(), null)
             }
 
@@ -223,20 +186,57 @@ class ScreenRenderImpl implements ScreenRender {
                     response.sendRedirect(url)
                 } else {
                     // default is screen-path
-                    String fullUrl = buildUrl(lastSd, preTransitionPathNameList, url)
-                    response.sendRedirect(fullUrl)
+                    ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
+                    response.sendRedirect(fullUrl.url)
                 }
             } else {
                 List<String> pathElements = url.split("/") as List
                 if (url.startsWith("/")) {
-                    this.screenPathNameList = pathElements
+                    this.originalScreenPathNameList = pathElements
                 } else {
-                    this.screenPathNameList = preTransitionPathNameList
-                    this.screenPathNameList.addAll(pathElements)
+                    this.originalScreenPathNameList = screenUrlInfo.preTransitionPathNameList
+                    this.originalScreenPathNameList.addAll(pathElements)
                 }
-                screenPathDefList = new ArrayList<ScreenDefinition>()
-                transitionItem = null
+                screenUrlInfo = null
                 internalRender()
+            }
+        } else if (screenUrlInfo.fileResourceUrl) {
+            // in some cases we'll want to include the target content in another screen, in other cases not
+            String fileName = screenUrlInfo.fileResourceUrl.file
+            String extension = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")+1) : ""
+
+            if (binaryExtensions.contains(extension)) {
+                if (response) {
+                    InputStream is = null
+                    OutputStream os = null
+                    try {
+                        is = screenUrlInfo.fileResourceUrl.openStream()
+                        os = response.outputStream
+                        byte[] buffer = new byte[1024]
+                        int len = is.read(buffer)
+                        while (len != -1) {
+                            os.write(buffer, 0, len)
+                            len = is.read(buffer)
+                            if (Thread.interrupted()) throw new InterruptedException()
+                        }
+                        return
+                    } finally {
+                        if (is != null) is.close()
+                    }
+                } else {
+                    throw new IllegalArgumentException("Tried to get content at [${screenUrlInfo.fileResourcePathList}] under screen [${screenUrlInfo.targetScreen.location}]")
+                }
+            }
+            if (screenUrlInfo.targetScreen.screenNode."@include-child-content" != "true") {
+                // not a binary object (hopefully), read it and write it to the writer
+                internalRenderTargetContent()
+            } else {
+                // render the root screen as normal, and when that is to the targetScreen include the content
+                try {
+                    rootScreenDef.getRootSection().render(this)
+                } catch (Throwable t) {
+                    throw new RuntimeException("Error rendering screen [${getActiveScreenDef().location}]", t)
+                }
             }
         } else {
             // start rendering at the root section of the root screen
@@ -248,27 +248,49 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
-    boolean checkWebappSettings(ScreenDefinition nextSd, String pathName, ScreenDefinition lastSd) {
+    void internalRenderTargetContent() {
+        String fileName = screenUrlInfo.fileResourceUrl.file
+        if (fileName.endsWith(".ftl") || fileName.endsWith(".cwiki")) {
+            sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceUrl.toString(), writer)
+        } else {
+            writer.write(sfi.ecfi.resourceFacade.getLocationText(screenUrlInfo.fileResourceUrl.toString(), true))
+        }
+
+        /* using cache by default, but if we didn't want to cache and stream instead:
+        BufferedReader br = null
+        try {
+            br = new BufferedReader(new InputStreamReader(screenUrlInfo.fileResourceUrl.openStream()))
+            char[] buffer = new char[1024]
+            int len = br.read(buffer)
+            while (len != -1) {
+                writer.write(buffer, 0, len)
+                len = br.read(buffer)
+                if (Thread.interrupted()) throw new InterruptedException()
+            }
+        } finally {
+            if (br != null) br.close()
+        }
+         */
+    }
+
+    boolean checkWebappSettings(ScreenDefinition currentSd) {
         if (!request) return true
         // if request not secure and screens requires secure redirect to https
-        if (nextSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
+        if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
                 !request.isSecure()) {
-            logger.info("Screen at location [${nextSd.location}], which is subscreen [${pathName}] in screen [${lastSd.location}] requires an encrypted/secure connection but the request is not secure.")
+            logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure.")
             // redirect to the same URL this came to
-            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, screenPathNameList, null)
-            // add URL parameters, if there were any in the URL (in path info or after ?)
-            sui.addParameters(((WebExecutionContext) ec).requestParameters)
-            response.sendRedirect(sui.getFullUrl())
+            response.sendRedirect(screenUrlInfo.getFullUrl())
             return false
         }
         // if screen requires auth and there is not active user redirect to login screen, save this request
         // TODO: remove the "false && " below to enable authentication checking again; commented for now until data loading, etc is implemented, otherwise cannot really test
-        if (false && nextSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
-            logger.info("Screen at location [${nextSd.location}], which is subscreen [${pathName}] in screen [${lastSd.location}] requires authentication but no user is currently logged in.")
+        if (false && currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
+            logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
             if (ec instanceof WebExecutionContextImpl) {
                 StringBuilder screenPath = new StringBuilder()
-                for (String pn in screenPathNameList) screenPath.append("/").append(pn)
+                for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
                 ((WebExecutionContextImpl) ec).saveScreenLastInfo(screenPath.toString(), null)
             }
             // now prepare and send the redirect
@@ -292,18 +314,28 @@ class ScreenRenderImpl implements ScreenRender {
     ScreenDefinition getActiveScreenDef() {
         ScreenDefinition screenDef = rootScreenDef
         if (screenPathIndex >= 0) {
-            screenDef = screenPathDefList[screenPathIndex]
+            screenDef = screenUrlInfo.screenPathDefList[screenPathIndex]
         }
         return screenDef
     }
 
+    List<String> getActiveScreenPath() {
+        return (screenPathIndex >= 0 ? screenUrlInfo.fullPathNameList[0..screenPathIndex] : [])
+    }
+
     String renderSubscreen() {
         // first see if there is another screen def in the list
-        if ((screenPathIndex+1) >= screenPathDefList.size())
-            return "Tried to render subscreen in screen [${getActiveScreenDef()?.location}] but there is no subscreens.@default-item, and no more subscreen names in the screen path"
+        if ((screenPathIndex+1) >= screenUrlInfo.screenPathDefList.size()) {
+            if (screenUrlInfo.fileResourceUrl) {
+                internalRenderTargetContent()
+                return ""
+            } else {
+                return "Tried to render subscreen in screen [${getActiveScreenDef()?.location}] but there is no subscreens.@default-item, and no more valid subscreen names in the screen path [${screenUrlInfo.fullPathNameList}]"
+            }
+        }
 
         screenPathIndex++
-        ScreenDefinition screenDef = screenPathDefList[screenPathIndex]
+        ScreenDefinition screenDef = screenUrlInfo.screenPathDefList[screenPathIndex]
         try {
             writer.flush()
             screenDef.getRootSection().render(this)
@@ -409,7 +441,7 @@ class ScreenRenderImpl implements ScreenRender {
          */
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
-            case "transition": return buildUrl(url)
+            case "transition": return new ScreenUrlInfo(this, null, null, url)
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported")
             case "plain":
             default: return new ScreenUrlInfo(this, url)
@@ -427,9 +459,9 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     boolean isInCurrentScreenPath(List<String> pathNameList) {
-        if (pathNameList.size() > this.screenPathNameList.size()) return false
-        for (int i=0; i<pathNameList.size(); i++) {
-            if (pathNameList.get(i) != this.screenPathNameList.get(i)) return false
+        if (pathNameList.size() > screenUrlInfo.fullPathNameList.size()) return false
+        for (int i = 0; i < pathNameList.size(); i++) {
+            if (pathNameList.get(i) != screenUrlInfo.fullPathNameList.get(i)) return false
         }
         return true
     }
@@ -437,7 +469,7 @@ class ScreenRenderImpl implements ScreenRender {
     String getCurrentThemeId() {
         // get the screen's theme type; try second level
         String stteId = null
-        if (screenPathDefList) stteId = screenPathDefList[0].webSettingsNode?."@screen-theme-type-enum-id"
+        if (screenUrlInfo.screenPathDefList) stteId = screenUrlInfo.screenPathDefList[0].webSettingsNode?."@screen-theme-type-enum-id"
         // if no setting try first level (root)
         if (!stteId) stteId = rootScreenDef.webSettingsNode?."@screen-theme-type-enum-id"
         // if no setting default to STT_INTERNAL

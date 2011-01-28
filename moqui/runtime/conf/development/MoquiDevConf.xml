@@ -16,10 +16,12 @@
         <cache name="screen.template.mode" expire-time-live="10"/>
         <cache name="screen.template.location" expire-time-live="10"/>
 
-        <cache name="script.xml-actions.location" expire-time-live="10"/>
-        <cache name="script.groovy.location" expire-time-live="10"/>
+        <cache name="resource.xml-actions.location" expire-time-live="10"/>
+        <cache name="resource.groovy.location" expire-time-live="10"/>
 
-        <cache name="template.ftl.location" expire-time-live="10"/>
+        <cache name="resource.ftl.location" expire-time-live="10"/>
+        <cache name="resource.cwiki.location" expire-time-live="10"/>
+        <cache name="resource.text.location" expire-time-live="10"/>
     </cache-list>
     
     <server-stats bin-length-seconds="900" proxy-enabled="false" visit-persist="true" visitor-persist="true">

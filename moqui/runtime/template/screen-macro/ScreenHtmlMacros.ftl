@@ -26,6 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
+  <div>
     <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
@@ -33,6 +34,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></#if></li>
     </#if></#list>
     </ul>
+  </div>
 </#macro>
 
 <#macro "subscreens-active">
@@ -44,6 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-panel">
     <#if !(.node["@type"]?has_content) || .node["@type"][0] == "tab">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
+        <div>
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
@@ -51,6 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
+        </div>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
         ${sri.renderSubscreen()}
         </div>

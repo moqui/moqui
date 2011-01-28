@@ -32,6 +32,9 @@ public interface ResourceFacade {
      */
     InputStream getLocationStream(String location);
 
+    /** Get the text at the given location, optionally from the cache (resource.text.location). */
+    String getLocationText(String location, boolean cache);
+
     /** Render a template at the given location using the current context and write the output to the given writer. */
     void renderTemplateInCurrentContext(String location, Writer writer);
 
