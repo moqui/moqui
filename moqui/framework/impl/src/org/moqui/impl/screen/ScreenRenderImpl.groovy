@@ -197,7 +197,7 @@ class ScreenRenderImpl implements ScreenRender {
                 } else {
                     // default is screen-path
                     ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
-                    response.sendRedirect(fullUrl.url)
+                    response.sendRedirect(fullUrl.getUrlWithParams())
                 }
             } else {
                 List<String> pathElements = url.split("/") as List
@@ -215,7 +215,7 @@ class ScreenRenderImpl implements ScreenRender {
             String fileName = screenUrlInfo.fileResourceUrl.file
             String extension = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")+1) : ""
 
-            if (binaryExtensions.contains(extension)) {
+            if (binaryExtensions.contains(extension.toLowerCase())) {
                 if (response) {
                     InputStream is = null
                     OutputStream os = null
@@ -300,7 +300,7 @@ class ScreenRenderImpl implements ScreenRender {
                 !request.isSecure()) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure.")
             // redirect to the same URL this came to
-            response.sendRedirect(screenUrlInfo.getFullUrl())
+            response.sendRedirect(screenUrlInfo.getUrlWithParams())
             return false
         }
         // if screen requires auth and there is not active user redirect to login screen, save this request

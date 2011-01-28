@@ -68,13 +68,18 @@ class ScreenUrlInfo {
             this.pathParameterMap.put(p.getKey(), p.getValue() as String)
     }
 
+    String getMinimalPathUrlWithParams() {
+        String ps = getParameterString()
+        return getMinimalPathUrl() + (ps ? "?" + ps : "")
+    }
+
     String getMinimalPathUrl() {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
         for (String pathName in this.minimalPathNameList) urlBuilder.append('/').append(pathName)
         return urlBuilder.toString()
     }
 
-    String getFullUrl() {
+    String getUrlWithParams() {
         String ps = getParameterString()
         return getUrl() + (ps ? "?" + ps : "")
     }
@@ -90,7 +95,7 @@ class ScreenUrlInfo {
         // get default parameters for the target screen
         if (targetScreen) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
-                Object value = pi.getValue(sri.ec.context)
+                Object value = pi.getValue(sri.ec)
                 if (value) pm.put(pi.name, value as String)
             }
         }

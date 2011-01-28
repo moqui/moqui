@@ -158,14 +158,16 @@ class ScreenDefinition {
                     ('"""' + (String) parameterNode."@value" + '"""'), "${location}.parameter_${name}.value")
         }
         String getName() { return name }
-        Object getValue(Map context) {
+        Object getValue(ExecutionContext ec) {
             Object value = null
             if (fromFieldGroovy) {
-                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(context))
+                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(ec.context))
             }
             if (valueGroovy && !value) {
-                value = InvokerHelper.createScript(valueGroovy, new Binding(context))
+                value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context))
             }
+            if (!value) value = ec.context.get(name)
+            if (!value && ec instanceof WebExecutionContext) value = ((WebExecutionContext) ec).parameters.get(name)
             return value
         }
     }

@@ -142,29 +142,20 @@ class StupidWebUtilities {
         boolean containsKey(Object o) { return mp.containsKey(o) }
         boolean containsValue(Object o) { return mp.containsValue(o) }
         Object get(Object o) {
-            Object orig = mp.get(o)
-            if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
-            return orig
+            return StupidWebUtilities.canonicalizeValue(mp.get(o))
         }
         Object put(String k, Object v) {
-            Object orig = mp.put(k, v)
-            if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
-            return orig
+            return StupidWebUtilities.canonicalizeValue(mp.put(k, v))
         }
         Object remove(Object o) {
-            Object orig = mp.remove(o)
-            if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
-            return orig
+            return StupidWebUtilities.canonicalizeValue(mp.remove(o))
         }
         void putAll(Map<? extends String, ? extends Object> map) { mp.putAll(map) }
         void clear() { mp.clear() }
         Set<String> keySet() { return mp.keySet() }
         Collection<Object> values() {
-            List<Object> values = new LinkedList<Object>()
-            for (Object orig in mp.values()) {
-                if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
-                values.add(orig)
-            }
+            List<Object> values = new ArrayList<Object>(mp.size())
+            for (Object orig in mp.values()) values.add(canonicalizeValue(orig))
             return values
         }
         Set<Map.Entry<String, Object>> entrySet() {
@@ -181,10 +172,24 @@ class StupidWebUtilities {
         CanonicalizeEntry(Map.Entry<String, Object> entry) { this.key = entry.getKey(); this.value = entry.getValue(); }
         String getKey() { return key }
         Object getValue() {
-            Object orig = value
-            if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
-            return orig
+            return StupidWebUtilities.canonicalizeValue(value)
         }
         Object setValue(Object v) { Object orig = value; value = v; return orig; }
+    }
+
+    protected static Object canonicalizeValue(Object orig) {
+        if (orig instanceof List || orig instanceof String[] || orig instanceof Object[]) {
+            List lst = orig as List
+            if (lst.size() == 1) {
+                orig = lst.get(0)
+            } else if (lst.size() > 1) {
+                orig = new ArrayList(lst.size())
+                for (Object obj in lst) {
+                    if (obj instanceof String) orig.add(defaultWebEncoder.canonicalize(obj, false))
+                }
+            }
+        }
+        if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
+        return orig
     }
 }

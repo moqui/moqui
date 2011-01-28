@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
         <!-- TODO add parameters from the target screen, if applicable -->
-        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrl}">${subscreensItem.menuTitle}</a></#if></li>
+        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
     </#if></#list>
     </ul>
     <div class="clear"></div>
@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
             <!-- TODO add parameters from the target screen, if applicable -->
-            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrl}">${subscreensItem.menuTitle}</a></#if></li>
+            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
         <div class="clear"></div>
