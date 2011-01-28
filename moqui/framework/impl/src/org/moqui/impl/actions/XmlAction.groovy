@@ -100,7 +100,7 @@ class XmlAction {
             if (xmlStream) xmlStream.close()
         }
 
-        if (logger.debugEnabled) logger.debug("xml-actions at [${location}] produced groovy script:\n${groovyText}")
+        if (logger.traceEnabled) logger.trace("xml-actions at [${location}] produced groovy script:\n${groovyText}")
         return groovyText
     }
 

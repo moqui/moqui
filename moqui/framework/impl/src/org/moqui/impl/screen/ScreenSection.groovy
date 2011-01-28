@@ -76,7 +76,7 @@ class ScreenSection {
     }
 
     protected void renderSingle(ScreenRenderImpl sri) {
-        logger.info("Begin rendering screen section at [${location}]")
+        if (logger.traceEnabled) logger.trace("Begin rendering screen section at [${location}]")
         boolean conditionPassed = true
         if (condition) conditionPassed = condition.checkCondition(sri.ec)
 
@@ -86,6 +86,6 @@ class ScreenSection {
         } else {
             if (failWidgets) failWidgets.render(sri)
         }
-        logger.info("End rendering screen section at [${location}]")
+        if (logger.traceEnabled) logger.trace("End rendering screen section at [${location}]")
     }
 }

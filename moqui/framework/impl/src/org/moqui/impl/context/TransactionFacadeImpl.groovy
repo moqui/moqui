@@ -73,6 +73,10 @@ class TransactionFacadeImpl implements TransactionFacade {
             this.tm = null
             this.ut = null
         }
+
+        transactionBeginStackList.remove()
+        rollbackOnlyInfoStackList.remove()
+        suspendedTxStackList.remove()
     }
 
     /** This is called to make sure all transactions, etc are closed for the thread.

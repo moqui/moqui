@@ -177,6 +177,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             if (this.transactionFacade) { this.transactionFacade.destroy(); this.transactionFacade = null }
             if (this.cacheFacade) { this.cacheFacade.destroy(); this.cacheFacade = null }
 
+            activeContext.remove()
+
             this.destroyed = true
         }
     }

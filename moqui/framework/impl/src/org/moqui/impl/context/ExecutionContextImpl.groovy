@@ -95,5 +95,8 @@ class ExecutionContextImpl implements ExecutionContext {
         // TODO?: make sure there are no db connections open, if so close them
         // make sure there are no transactions open, if any commit them all now
         this.ecfi.transactionFacade.destroyAllInThread()
+
+        // clear out the ECFI's reference to this as well
+        this.ecfi.activeContext.remove()
     }
 }

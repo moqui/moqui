@@ -146,8 +146,18 @@ class ScreenRenderImpl implements ScreenRender {
         if (screenUrlInfo.targetTransition) {
             // TODO if this transition has actions and request was not secure or any parameters were not in the body return an error, helps prevent XSRF attacks
 
-            // if there is a transition run that INSTEAD of the screen to render
-            ResponseItem ri = screenUrlInfo.targetTransition.run(this)
+            boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
+            ResponseItem ri = null
+            try {
+                // if there is a transition run that INSTEAD of the screen to render
+                ri = screenUrlInfo.targetTransition.run(this)
+            } catch (Throwable t) {
+                sfi.ecfi.transactionFacade.rollback(beganTransaction, "Error running transition in [${screenUrlInfo.url}]", t)
+            } finally {
+                if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
+                    sfi.ecfi.transactionFacade.commit(beganTransaction)
+                }
+            }
 
             if (ri.saveCurrentScreen && ec instanceof WebExecutionContextImpl) {
                 StringBuilder screenPath = new StringBuilder()
@@ -212,7 +222,7 @@ class ScreenRenderImpl implements ScreenRender {
                     try {
                         is = screenUrlInfo.fileResourceUrl.openStream()
                         os = response.outputStream
-                        byte[] buffer = new byte[1024]
+                        byte[] buffer = new byte[4096]
                         int len = is.read(buffer)
                         while (len != -1) {
                             os.write(buffer, 0, len)
@@ -232,18 +242,28 @@ class ScreenRenderImpl implements ScreenRender {
                 internalRenderTargetContent()
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
+                boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
                 try {
                     rootScreenDef.getRootSection().render(this)
                 } catch (Throwable t) {
-                    throw new RuntimeException("Error rendering screen [${getActiveScreenDef().location}]", t)
+                    String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
+                    sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
+                    throw new RuntimeException(errMsg, t)
+                } finally {
+                    if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
                 }
             }
         } else {
             // start rendering at the root section of the root screen
+            boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
             try {
                 rootScreenDef.getRootSection().render(this)
             } catch (Throwable t) {
-                throw new RuntimeException("Error rendering screen [${getActiveScreenDef().location}]", t)
+                String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
+                sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
+                throw new RuntimeException(errMsg, t)
+            } finally {
+                if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
             }
         }
     }
