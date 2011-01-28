@@ -1,36 +1,84 @@
-
-#WebrootPanel_header h1 {
-margin: 0px;
-padding: 4px 0px 8px 0px;
-font-size: 1.5em;
+/* defaults */
+* {
 color: black;
+margin: 0px;
+padding: 0px;
 text-decoration: none;
+font-weight: normal;
+}
+
+/* ========================== body, etc ========================== */
+
+body {
+background: #DDDDDF;
+margin: 0px;
+font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+}
+
+#WebrootPanel {
+background: white;
+margin: 0px auto 0px auto;
+border: 10px solid #DDDDDF;
+padding: 10px;
+width: 780px;
+}
+
+#WebrootPanel_header {
+border-bottom: 1px solid #DDDDDF;
+}
+#header-logo {
+float: left;
+width: 300px;
+height: 30px;
+}
+#header-menu {
+float: right;
+}
+
+#WebrootPanel_footer {
+margin: 0px auto 0px auto;
+border-top:  1px solid #DDDDDF;
+padding: 2px;
+width: 200px;
+}
+
+/* ====================== headings, general ====================== */
+
+h1 {
+font-size: 1.5em;
 font-family: "Courier New", Courier, monospace;
 font-weight: bold;
 }
 
-.panel-header h2 {
-margin: 0px;
-padding: 4px 0px 8px 0px;
+h2 {
 font-size: 1em;
-color: black;
-text-decoration: none;
-font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
 font-weight: bold;
 }
 
+h6 {
+text-align: center;
+font-size: 0.6em;
+}
+
+a {
+font-size: 0.9em;
+fond-weight: bold;
+}
+
+/* ======================= subscreens-menu ======================= */
+
 ul.subscreens-menu {
 margin: 0px;
-padding: 0px;
+/* border-top: 1px solid #DDDDDF; */
+padding: 0px 4px 0px 4px;
 list-style-type: none;
-margin: auto;
 }
 
 ul.subscreens-menu li {
 float: left;
 display: block;
-margin: 4px;
-font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+padding: 0px 4px 0px 4px;
+font-size: 0.9em;
 fond-weight: bold;
 }
 
@@ -38,6 +86,14 @@ ul.subscreens-menu li a {
 text-decoration: none;
 }
 
-ul.subscreens-menu li.selected a {
+ul.subscreens-menu li a:hover, ul.subscreens-menu li.selected a {
 text-decoration: underline;
+}
+
+/* ========================= misc styles ========================= */
+
+.clear {
+clear: both;
+height: 0;
+visibility: hidden;
 }

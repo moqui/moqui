@@ -11,7 +11,7 @@ class ScreenUrlInfo {
     List<String> fromPathList = null
     String fromScreenPath = null
 
-    String url = null
+    String baseUrl = null
     Map<String, String> pathParameterMap = new HashMap()
     boolean requireEncryption = false
     boolean hasActions = false
@@ -20,11 +20,16 @@ class ScreenUrlInfo {
 
     /** The full path name list for the URL */
     List<String> fullPathNameList = null
+
+    /** The minimal path name list for the URL, basically without following the defaults */
+    List<String> minimalPathNameList = null
+
     /** The path for a file resource (template or static), relative to the targetScreen.location */
     List<String> fileResourcePathList = null
     /** If the full path led to a file resource that is verified to exist, the URL goes here; the URL for access on the
      * server, the client will get the resource from the url field as normal */
     URL fileResourceUrl = null
+
     /** All screens found in the path list */
     List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
     /** The last screen found in the path list */
@@ -35,7 +40,7 @@ class ScreenUrlInfo {
 
     ScreenUrlInfo(ScreenRenderImpl sri, String url) {
         this.sri = sri
-        this.url = url
+        this.baseUrl = url
     }
 
     ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl, String ssp) {
@@ -54,7 +59,7 @@ class ScreenUrlInfo {
 
         hasActions = (targetTransition && targetTransition.actions)
         // if sri.screenUrlInfo is null it is because this object is not yet set to it, so set this to true as it "is" the current screen path
-        inCurrentScreenPath = sri.screenUrlInfo ? sri.isInCurrentScreenPath(fullPathNameList) : true
+        inCurrentScreenPath = sri.screenUrlInfo ? sri.isInCurrentScreenPath(minimalPathNameList) : true
         disableLink = targetTransition ? !targetTransition.checkCondition(sri.ec) : false
     }
 
@@ -63,9 +68,21 @@ class ScreenUrlInfo {
             this.pathParameterMap.put(p.getKey(), p.getValue() as String)
     }
 
+    String getMinimalPathUrl() {
+        StringBuilder urlBuilder = new StringBuilder(baseUrl)
+        for (String pathName in this.minimalPathNameList) urlBuilder.append('/').append(pathName)
+        return urlBuilder.toString()
+    }
+
     String getFullUrl() {
         String ps = getParameterString()
-        return url + (ps ? "?" + ps : "")
+        return getUrl() + (ps ? "?" + ps : "")
+    }
+
+    String getUrl() {
+        StringBuilder urlBuilder = new StringBuilder(baseUrl)
+        for (String pathName in this.fullPathNameList) urlBuilder.append('/').append(pathName)
+        return urlBuilder.toString()
     }
 
     Map<String, String> getParameterMap() {
@@ -193,6 +210,9 @@ class ScreenUrlInfo {
             remainingPathList.remove(0)
         }
 
+        // save the path so far for minimal URLs
+        minimalPathNameList = new ArrayList(fullPathNameList)
+
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
         while (!targetTransition && !fileResourceUrl && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
             String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
@@ -268,11 +288,9 @@ class ScreenUrlInfo {
             }
         }
 
-        if (urlBuilder.charAt(urlBuilder.length()-1) != '/') urlBuilder.append('/')
-        for (String pathName in this.fullPathNameList) urlBuilder.append(pathName).append('/')
         if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
 
-        this.url = urlBuilder.toString()
+        baseUrl = urlBuilder.toString()
     }
 
     @Override

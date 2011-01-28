@@ -26,15 +26,14 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
-  <div>
     <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
         <!-- TODO add parameters from the target screen, if applicable -->
-        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></#if></li>
+        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrl}">${subscreensItem.menuTitle}</a></#if></li>
     </#if></#list>
     </ul>
-  </div>
+    <div class="clear"></div>
 </#macro>
 
 <#macro "subscreens-active">
@@ -46,15 +45,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-panel">
     <#if !(.node["@type"]?has_content) || .node["@type"][0] == "tab">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
-        <div>
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
             <!-- TODO add parameters from the target screen, if applicable -->
-            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.url}">${subscreensItem.menuTitle}</a></#if></li>
+            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrl}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
-        </div>
+        <div class="clear"></div>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
         ${sri.renderSubscreen()}
         </div>
@@ -89,6 +87,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>
         <#if .node["panel-header"]?has_content>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_header"</#if> class="panel-header"><#recurse .node["panel-header"][0]/>
+            <div class="clear"></div>
         </div></#if>
         <#if .node["panel-left"]?has_content>
         <#-- TODO <xs:attribute name="draggable" default="false" type="boolean"/> -->
@@ -100,6 +99,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_center"</#if> class="panel-center"><#recurse .node["panel-center"][0]/>
         </div>
         <#if .node["panel-footer"]?has_content>
+        <div class="clear"></div>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}_footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]/>
         </div></#if>
     </div>
