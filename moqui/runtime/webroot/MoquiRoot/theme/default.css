@@ -101,6 +101,7 @@ list-style-type: none;
 ul.subscreens-menu li {
 float: left;
 display: block;
+margin: 0px;
 padding: 0px 4px 0px 4px;
 font-size: 0.9em;
 fond-weight: bold;

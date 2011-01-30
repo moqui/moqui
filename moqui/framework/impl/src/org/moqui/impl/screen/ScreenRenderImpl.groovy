@@ -270,12 +270,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     void internalRenderTargetContent() {
-        String fileName = screenUrlInfo.fileResourceUrl.file
-        if (fileName.endsWith(".ftl") || fileName.endsWith(".cwiki")) {
-            sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceUrl.toString(), writer)
-        } else {
-            writer.write(sfi.ecfi.resourceFacade.getLocationText(screenUrlInfo.fileResourceUrl.toString(), true))
-        }
+        sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceUrl.toString(), writer)
 
         /* using cache by default, but if we didn't want to cache and stream instead:
         BufferedReader br = null

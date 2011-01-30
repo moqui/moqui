@@ -11,10 +11,6 @@
  */
 package org.moqui.impl.context
 
-import freemarker.template.Template
-import freemarker.template.Configuration
-import freemarker.ext.beans.BeansWrapper
-
 import java.nio.charset.Charset
 
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -23,41 +19,42 @@ import org.moqui.context.ResourceFacade
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.actions.XmlAction
+import org.moqui.impl.context.renderer.FtlTemplateRenderer
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import freemarker.template.TemplateException
-import freemarker.core.Environment
-import freemarker.template.TemplateExceptionHandler
-import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
-import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
-import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
+import org.moqui.impl.StupidUtilities
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
-
-    protected final static Configuration defaultFtlConfiguration = makeFtlConfiguration()
-    public static Configuration getFtlConfiguration() { return defaultFtlConfiguration }
 
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache scriptGroovyLocationCache
     protected final Cache scriptXmlActionLocationCache
-    protected final Cache templateFtlLocationCache
-    protected final Cache templateCwikiLocationCache
     protected final Cache textLocationCache
+
+    protected final Map<String, TemplateRenderer> templateRenderers = new HashMap()
 
     protected GroovyShell localGroovyShell = null
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
-        this.templateFtlLocationCache = ecfi.getCacheFacade().getCache("resource.ftl.location")
-        this.templateCwikiLocationCache = ecfi.getCacheFacade().getCache("resource.cwiki.location")
         this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
 
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
         this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("resource.xml-actions.location")
+
+        templateRenderers.put(".ftl", new FtlTemplateRenderer().init(this))
+        // load other template renderers from configuration
+        for (Node templateRendererNode in ecfi.confXmlRoot."resource-facade"[0]."template-renderer") {
+            TemplateRenderer tr = (TemplateRenderer) this.getClass().getClassLoader().loadClass(templateRendererNode."@class").newInstance()
+            templateRenderers.put(templateRendererNode."@extension", tr.init(this))
+        }
     }
+
+    ExecutionContextFactoryImpl getEcfi() { return ecfi }
+    Map<String, TemplateRenderer> getTemplateRenderers() { return templateRenderers }
 
     /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
     URL getLocationUrl(String location) {
@@ -158,54 +155,27 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
     void renderTemplateInCurrentContext(String location, Writer writer) {
-        if (location.endsWith(".cwiki.ftl")) {
-            // NOTE: check this first so we catch ftl + cwiki before trying just ftl at the end
-            // first FTL
-            Template theTemplate = (Template) templateFtlLocationCache.get(location)
-            if (!theTemplate) theTemplate = makeTemplate(location)
-            if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
-            StringWriter ftlWriter = new StringWriter()
-            theTemplate.createProcessingEnvironment(ecfi.executionContext.context, ftlWriter).process()
-
-            // run the output through WikiText
-            HtmlDocumentBuilder builder = new HtmlDocumentBuilder(writer)
-            // avoid the <html> and <body> tags
-            builder.setEmitAsDocument(false)
-            MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
-            parser.setBuilder(builder)
-            parser.parse(ftlWriter.toString())
-        } else if (location.endsWith(".ftl")) {
-            Template theTemplate = (Template) templateFtlLocationCache.get(location)
-            if (!theTemplate) theTemplate = makeTemplate(location)
-            if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
-            theTemplate.createProcessingEnvironment(ecfi.executionContext.context, writer).process()
-        } else if (location.endsWith(".cwiki")) {
-            HtmlDocumentBuilder builder = new HtmlDocumentBuilder(writer)
-            // avoid the <html> and <body> tags
-            builder.setEmitAsDocument(false)
-            MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
-            parser.setBuilder(builder)
-            parser.parse(getLocationText(location, true))
-        }
-    }
-
-    protected Template makeTemplate(String location) {
-        Template theTemplate = (Template) templateFtlLocationCache.get(location)
-        if (theTemplate) return theTemplate
-
-        Template newTemplate = null
-        Reader templateReader = null
-        try {
-            templateReader = new InputStreamReader(getLocationStream(location))
-            newTemplate = new Template(location, templateReader, getFtlConfiguration())
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
-        } finally {
-            if (templateReader != null) templateReader.close()
+        // match against extension for template renderer, with as many dots that match as possible (most specific match)
+        int mostDots = 0
+        TemplateRenderer tr = null
+        for (Map.Entry<String, TemplateRenderer> trEntry in templateRenderers.entrySet()) {
+            String ext = trEntry.getKey()
+            if (location.endsWith(ext)) {
+                int dots = StupidUtilities.countChars(ext, (char) '.')
+                if (dots > mostDots) {
+                    mostDots = dots
+                    tr = trEntry.getValue()
+                }
+            }
         }
 
-        if (newTemplate) templateFtlLocationCache.put(location, newTemplate)
-        return newTemplate
+        if (tr != null) {
+            tr.render(location, writer)
+        } else {
+            // no renderer found, just grab the text and throw it to the writer
+            String text = getLocationText(location, true)
+            if (text) writer.write(text)
+        }
     }
 
     /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */
@@ -256,14 +226,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return xa
     }
 
+    /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
         return getGroovyShell().evaluate(expression, debugLocation) as boolean
     }
 
+    /** @see org.moqui.context.ResourceFacade#evaluateContextField(String, String) */
     Object evaluateContextField(String expression, String debugLocation) {
         return getGroovyShell().evaluate(expression, debugLocation)
     }
 
+    /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
     String evaluateStringExpand(String inputString, String debugLocation) {
         return getGroovyShell().evaluate('"""' + inputString + '"""', debugLocation) as String
     }
@@ -274,31 +247,5 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (localGroovyShell) return localGroovyShell
         localGroovyShell = new GroovyShell(new Binding(ecfi.executionContext.context))
         return localGroovyShell
-    }
-
-    protected static Configuration makeFtlConfiguration() {
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        Configuration newConfig = new Configuration()
-        newConfig.setObjectWrapper(defaultWrapper)
-        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
-        newConfig.setTemplateExceptionHandler(new MoquiTemplateExceptionHandler())
-        return newConfig
-    }
-
-    static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
-        public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
-                throws TemplateException {
-            try {
-                if (te.cause) {
-                    logger.error("Error in FTL render", te.cause)
-                    out.write("[Error: ${te.cause.message}]")
-                } else {
-                    logger.error("Error in FTL render", te)
-                    out.write("[Template Error: ${te.message}]")
-                }
-            } catch (IOException e) {
-                throw new TemplateException("Failed to print error message. Cause: " + e, env)
-            }
-        }
     }
 }

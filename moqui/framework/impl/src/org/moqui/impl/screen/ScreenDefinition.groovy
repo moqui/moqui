@@ -22,8 +22,6 @@ import org.moqui.context.WebExecutionContext
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
 
-    protected static final List<String> defaultExtensions = [".ftl", ".cwiki", ".cwiki.ftl", ".html", ".html.ftl"]
-
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
     final String location
@@ -170,7 +168,7 @@ class ScreenDefinition {
             File theFile = new File(fileLoc.toString())
             if (theFile.exists() && theFile.isFile()) contentUrl = theFile.toURI().toURL()
 
-            for (String extToTry in defaultExtensions) {
+            for (String extToTry in sfi.ecfi.resourceFacade.templateRenderers.keySet()) {
                 if (contentUrl != null) break
                 theFile = new File(fileLoc.toString() + extToTry)
                 if (theFile.exists() && theFile.isFile()) contentUrl = theFile.toURI().toURL()

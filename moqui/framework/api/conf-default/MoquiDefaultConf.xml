@@ -83,6 +83,17 @@
         -->
     </transaction-facade>
 
+    <resource-facade>
+        <!-- renderer class needs to implement the org.moqui.impl.context.TemplateRenderer interface -->
+        <!-- this is there by default: <template-renderer extension=".ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/> -->
+        <template-renderer extension=".html.ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
+        <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.CwikiTemplateRenderer"/>
+        <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
+        <!-- a renderer for .html isn't necessary because the default is to write the text as-is, however this is useful
+            so that the extension becomes a default extension and doesn't ahve to be in the URL -->
+        <template-renderer extension=".html" class="org.moqui.impl.context.renderer.NoTemplateRenderer"/>
+    </resource-facade>
+
     <screen-facade boundary-comments="true" default-autocomplete-rows="20" default-paginate-rows="20">
         <screen-text-output type="text" mime-type="text/plain"
                             macro-template-location="template/screen-macro/ScreenTextMacros.ftl"/>

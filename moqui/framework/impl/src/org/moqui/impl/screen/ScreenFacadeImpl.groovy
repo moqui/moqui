@@ -24,6 +24,7 @@ import org.slf4j.Logger
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ResourceFacadeImpl
+import org.moqui.impl.context.renderer.FtlTemplateRenderer
 
 public class ScreenFacadeImpl implements ScreenFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenFacadeImpl.class)
@@ -96,7 +97,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, ResourceFacadeImpl.getFtlConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, FtlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {
@@ -122,7 +123,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, ResourceFacadeImpl.getFtlConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, FtlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             logger.error("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {

@@ -22,6 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="webapp-list"/>
                 <xs:element minOccurs="0" ref="user-facade"/>
                 <xs:element minOccurs="0" ref="transaction-facade"/>
+                <xs:element minOccurs="0" ref="resource-facade"/>
                 <xs:element minOccurs="0" ref="screen-facade"/>
                 <xs:element minOccurs="0" ref="service-facade"/>
                 <xs:element minOccurs="0" ref="entity-facade"/>
@@ -267,7 +268,22 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <!-- ====================== Screen Facade Conf Root ======================= -->
+    <!-- ====================== Resource Facade Conf Root ================= -->
+    <xs:element name="resource-facade">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="template-renderer"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="template-renderer">
+        <xs:complexType>
+            <xs:attribute name="extension" type="xs:string" use="required"/>
+            <xs:attribute name="class" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ====================== Screen Facade Conf Root =================== -->
     <xs:element name="screen-facade">
         <xs:complexType>
             <xs:sequence>

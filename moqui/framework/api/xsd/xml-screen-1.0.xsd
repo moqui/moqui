@@ -342,10 +342,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     filenames start with a upper-case letter).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="location" type="xs:string" use="required">
+            <xs:attribute name="location" type="xs:string">
                 <xs:annotation><xs:documentation>
                     Subscreen location can include various prefixes to support including from a file, http, component,
                     or a content repository.
+
+                    If empty defaults to the value of the name attribute under the current screen (in the directory
+                    with the same name as the current screen), and can be a screen or sub-content.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="menu-title" type="xs:string"/>

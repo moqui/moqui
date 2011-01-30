@@ -327,6 +327,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             mergeSingleChild(tfBaseNode, tfOverrideNode, "transaction-factory")
         }
 
+        if (overrideNode."resource-facade") {
+            mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "template-renderer", "extension")
+        }
+
         if (overrideNode."screen-facade") {
             mergeNodeWithChildKey(baseNode."screen-facade"[0], overrideNode."screen-facade"[0], "screen-text-output", "type")
         }

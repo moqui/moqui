@@ -238,7 +238,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
-    <h3>TODO: implement form-single</h3>
+    <h3>TODO: implement form-single (form ${.node["@name"]})</h3>
     ${sri.renderFormSingle(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
@@ -247,7 +247,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
-    <h3>TODO: implement form-list</h3>
+    <h3>TODO: implement form-list (form ${.node["@name"]})</h3>
     ${sri.renderFormList(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>

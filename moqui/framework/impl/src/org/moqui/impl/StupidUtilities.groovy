@@ -198,7 +198,6 @@ class StupidUtilities {
         public String toString() { return this.fieldNameList.toString() }
     }
 
-
     static int countChars(String s, boolean countDigits, boolean countLetters, boolean countOthers) {
         // this seems like it should be part of some standard Java API, but I haven't found it
         // (can use Pattern/Matcher, but that is even uglier and probably a lot slower)
@@ -212,6 +211,12 @@ class StupidUtilities {
                 if (countOthers) count++
             }
         }
+        return count
+    }
+
+    static int countChars(String s, char cMatch) {
+        int count = 0
+        for (char c in s) if (c == cMatch) count++
         return count
     }
 

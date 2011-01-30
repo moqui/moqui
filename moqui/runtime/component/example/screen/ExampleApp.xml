@@ -13,7 +13,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         include-child-content="true">
-    <subscreens default-item="Example"/>
+    <subscreens default-item="Example">
+        <subscreens-item name="ExamplePolicies" menu-index="5" menu-title="Policies"/>
+        <subscreens-item name="ExampleWiki" menu-index="6" menu-title="Wiki"/>
+    </subscreens>
     <widgets>
         <container-panel id="ExampleAppPanel">
             <panel-header>
