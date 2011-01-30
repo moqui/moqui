@@ -29,7 +29,7 @@ h2. FTL Markup Supported
 
 This content is also dynamic and the normal context is available here.
 
-For example, here is your userId: ${ec.getUser().getUserId()}
+For example, here is your userId: ${ec.user.userId?default("(No User Logged In)")}
 
 h2. Child Pages
 

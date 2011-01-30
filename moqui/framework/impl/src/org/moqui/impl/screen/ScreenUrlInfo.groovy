@@ -17,6 +17,7 @@ class ScreenUrlInfo {
     boolean hasActions = false
     boolean inCurrentScreenPath = false
     boolean disableLink = false
+    boolean beginTransaction = false
 
     /** The full path name list for the URL */
     List<String> fullPathNameList = null
@@ -151,9 +152,8 @@ class ScreenUrlInfo {
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
         this.requireEncryption = false
-        if (sri.rootScreenDef.getWebSettingsNode()?."require-encryption" != "false") {
-            this.requireEncryption = true
-        }
+        if (sri.rootScreenDef.webSettingsNode?."require-encryption" != "false") this.requireEncryption = true
+        if (sri.rootScreenDef.screenNode?."begin-transaction" == "true") this.beginTransaction = true
 
         // loop through path for various things: check validity, see if we can do a transition short-cut and go right to its response url, etc
         ScreenDefinition lastSd = sri.rootScreenDef
@@ -182,28 +182,18 @@ class ScreenUrlInfo {
                 }
 
                 // is this a file under the screen?
-                URL lastScreenUrl = sri.sfi.ecfi.resourceFacade.getLocationUrl(lastSd.location)
-                if (lastScreenUrl.protocol == "file") {
-                    StringBuilder fileLoc = new StringBuilder(lastScreenUrl.toString())
-                    // get rid of the "file:" prefix
-                    fileLoc.delete(0, 5)
-                    // get rid of the suffix, probably .xml but use .*
-                    if (fileLoc.indexOf(".") > 0) fileLoc.delete(fileLoc.indexOf("."), fileLoc.length())
-                    // add the path elements that remain
-                    for (String rp in remainingPathList) fileLoc.append("/").append(rp)
-
-                    File theFile = new File(fileLoc.toString())
-                    if (theFile.exists() && theFile.isFile()) {
-                        fileResourceUrl = theFile.toURI().toURL()
-                        break
-                    }
+                URL existingFileUrl = lastSd.getSubContentUrl(remainingPathList)
+                if (existingFileUrl != null) {
+                    fileResourceUrl = existingFileUrl
+                    break
                 }
 
                 throw new IllegalArgumentException("Could not find subscreen or transition or file/content [${pathName}] in screen [${lastSd.location}] while finding url for path [${fullPathNameList}] based on [${fromPathList}]:[${fromScreenPath}] relative to screen [${fromSd.location}]")
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd) {
-                if (nextSd.getWebSettingsNode()?."require-encryption" != "false") this.requireEncryption = true
+                if (nextSd.webSettingsNode?."require-encryption" != "false") this.requireEncryption = true
+                if (nextSd.screenNode?."begin-transaction" == "true") this.beginTransaction = true
                 screenPathDefList.add(nextSd)
                 lastSd = nextSd
                 // add this to the list of path names to use for transition redirect

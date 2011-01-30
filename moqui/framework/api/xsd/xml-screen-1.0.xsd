@@ -72,6 +72,12 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <!-- TODO support this in code -->
             <xs:attribute name="track-serverhit" type="boolean" default="true"/>
+            <xs:attribute name="begin-transaction" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    Begin a transaction for the screen render if there is not one already in place.
+                    Most screens don't need this, but it is useful for greater data consistency in certain cases.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="web-settings">

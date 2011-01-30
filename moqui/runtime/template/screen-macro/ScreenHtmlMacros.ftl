@@ -29,7 +29,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
-        <!-- TODO add parameters from the target screen, if applicable -->
         <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
     </#if></#list>
     </ul>
@@ -48,7 +47,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
-            <!-- TODO add parameters from the target screen, if applicable -->
             <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
@@ -240,6 +238,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
+    <h3>TODO: implement form-single</h3>
     ${sri.renderFormSingle(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
@@ -248,6 +247,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <!-- TODO: make form markup -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
+    <h3>TODO: implement form-list</h3>
     ${sri.renderFormList(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>

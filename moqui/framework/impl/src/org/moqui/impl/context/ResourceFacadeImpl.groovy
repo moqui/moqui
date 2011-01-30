@@ -29,6 +29,9 @@ import org.slf4j.Logger
 import freemarker.template.TemplateException
 import freemarker.core.Environment
 import freemarker.template.TemplateExceptionHandler
+import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
+import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
+import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -155,16 +158,34 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
     void renderTemplateInCurrentContext(String location, Writer writer) {
-        if (location.endsWith(".ftl")) {
+        if (location.endsWith(".cwiki.ftl")) {
+            // NOTE: check this first so we catch ftl + cwiki before trying just ftl at the end
+            // first FTL
             Template theTemplate = (Template) templateFtlLocationCache.get(location)
             if (!theTemplate) theTemplate = makeTemplate(location)
-
             if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
+            StringWriter ftlWriter = new StringWriter()
+            theTemplate.createProcessingEnvironment(ecfi.executionContext.context, ftlWriter).process()
 
-            Map root = ecfi.executionContext.context
-            theTemplate.createProcessingEnvironment(root, writer).process()
+            // run the output through WikiText
+            HtmlDocumentBuilder builder = new HtmlDocumentBuilder(writer)
+            // avoid the <html> and <body> tags
+            builder.setEmitAsDocument(false)
+            MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
+            parser.setBuilder(builder)
+            parser.parse(ftlWriter.toString())
+        } else if (location.endsWith(".ftl")) {
+            Template theTemplate = (Template) templateFtlLocationCache.get(location)
+            if (!theTemplate) theTemplate = makeTemplate(location)
+            if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
+            theTemplate.createProcessingEnvironment(ecfi.executionContext.context, writer).process()
         } else if (location.endsWith(".cwiki")) {
-            // TODO support cwiki
+            HtmlDocumentBuilder builder = new HtmlDocumentBuilder(writer)
+            // avoid the <html> and <body> tags
+            builder.setEmitAsDocument(false)
+            MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
+            parser.setBuilder(builder)
+            parser.parse(getLocationText(location, true))
         }
     }
 

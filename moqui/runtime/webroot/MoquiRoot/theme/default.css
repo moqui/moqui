@@ -31,6 +31,11 @@ float: left;
 width: 300px;
 height: 30px;
 }
+#header-logo h1 {
+font-size: 1.5em;
+font-family: "Courier New", Courier, monospace;
+font-weight: bold;
+}
 #header-menu {
 float: right;
 }
@@ -46,12 +51,26 @@ width: 200px;
 
 h1 {
 font-size: 1.5em;
-font-family: "Courier New", Courier, monospace;
 font-weight: bold;
 }
 
 h2 {
-font-size: 1em;
+font-size: 1.2em;
+font-weight: bold;
+}
+
+h3 {
+font-size: 1.0em;
+font-weight: bold;
+}
+
+h4 {
+font-size: 0.9em;
+font-weight: bold;
+}
+
+h5 {
+font-size: 0.8em;
 font-weight: bold;
 }
 
@@ -63,6 +82,11 @@ font-size: 0.6em;
 a {
 font-size: 0.9em;
 fond-weight: bold;
+}
+
+li {
+margin: 0px 0px 0px 16px;
+padding: 0px 0px 0px 8px;
 }
 
 /* ======================= subscreens-menu ======================= */

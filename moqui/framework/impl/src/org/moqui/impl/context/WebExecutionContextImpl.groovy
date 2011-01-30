@@ -103,6 +103,7 @@ class WebExecutionContextImpl implements WebExecutionContext {
         ContextStack cs = new ContextStack()
         cs.push((Map<String, Object>) request.getParameterMap())
         cs.push(StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))
+        // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
         requestParameters = new StupidWebUtilities.CanonicalizeMap(cs)
         return requestParameters
     }

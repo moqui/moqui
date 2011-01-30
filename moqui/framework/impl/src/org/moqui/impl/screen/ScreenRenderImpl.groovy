@@ -146,6 +146,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (screenUrlInfo.targetTransition) {
             // TODO if this transition has actions and request was not secure or any parameters were not in the body return an error, helps prevent XSRF attacks
 
+            // NOTE: always use a transaction for transition run (actions, etc)
             boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
             ResponseItem ri = null
             try {
@@ -242,7 +243,7 @@ class ScreenRenderImpl implements ScreenRender {
                 internalRenderTargetContent()
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
-                boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
+                boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
                 try {
                     rootScreenDef.getRootSection().render(this)
                 } catch (Throwable t) {
@@ -255,7 +256,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
         } else {
             // start rendering at the root section of the root screen
-            boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
+            boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
             try {
                 rootScreenDef.getRootSection().render(this)
             } catch (Throwable t) {

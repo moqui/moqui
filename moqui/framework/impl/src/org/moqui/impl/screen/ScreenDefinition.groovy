@@ -22,6 +22,8 @@ import org.moqui.context.WebExecutionContext
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
 
+    protected static final List<String> defaultExtensions = [".ftl", ".cwiki", ".cwiki.ftl", ".html", ".html.ftl"]
+
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
     final String location
@@ -35,6 +37,8 @@ class ScreenDefinition {
     protected ScreenSection rootSection = null
     protected Map<String, ScreenSection> sectionByName = new HashMap()
     protected Map<String, ScreenForm> formByName = new HashMap()
+
+    protected Map<String, URL> subContentUrlByPath = new HashMap()
 
     ScreenDefinition(ScreenFacadeImpl sfi, Node screenNode, String location) {
         this.sfi = sfi
@@ -144,6 +148,38 @@ class ScreenDefinition {
     ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
 
     ScreenForm getForm(String formName) { return (ScreenForm) formByName.get(formName) }
+
+    URL getSubContentUrl(List<String> pathNameList) {
+        StringBuilder pathNameBldr = new StringBuilder()
+        // add the path elements that remain
+        for (String rp in pathNameList) pathNameBldr.append("/").append(rp)
+        String pathName = pathNameBldr.toString()
+
+        URL contentUrl = subContentUrlByPath.get(pathName)
+        if (contentUrl) return contentUrl
+
+        URL lastScreenUrl = sfi.ecfi.resourceFacade.getLocationUrl(location)
+        if (lastScreenUrl.protocol == "file") {
+            StringBuilder fileLoc = new StringBuilder(lastScreenUrl.toString())
+            // get rid of the "file:" prefix
+            fileLoc.delete(0, 5)
+            // get rid of the suffix, probably .xml but use .*
+            if (fileLoc.indexOf(".") > 0) fileLoc.delete(fileLoc.indexOf("."), fileLoc.length())
+            fileLoc.append(pathName)
+
+            File theFile = new File(fileLoc.toString())
+            if (theFile.exists() && theFile.isFile()) contentUrl = theFile.toURI().toURL()
+
+            for (String extToTry in defaultExtensions) {
+                if (contentUrl != null) break
+                theFile = new File(fileLoc.toString() + extToTry)
+                if (theFile.exists() && theFile.isFile()) contentUrl = theFile.toURI().toURL()
+            }
+        }
+
+        if (contentUrl) subContentUrlByPath.put(pathName, contentUrl)
+        return contentUrl
+    }
 
     static class ParameterItem {
         protected String name
