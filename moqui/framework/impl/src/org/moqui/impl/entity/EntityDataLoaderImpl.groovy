@@ -31,6 +31,7 @@ import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityException
 import org.xml.sax.SAXException
 import org.apache.commons.codec.binary.Base64
+import org.moqui.context.ResourceReference
 
 class EntityDataLoaderImpl implements EntityDataLoader {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -93,20 +94,19 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 locationList.add(loadData."@location")
             }
 
-            // loop through components look for XML files in the entity directory, check each for "<entities>" root element
             for (String location in efi.ecfi.getComponentBaseLocations().values()) {
-                URL dataDirUrl = efi.ecfi.resourceFacade.getLocationUrl(location + "/data")
-                if ("file" == dataDirUrl.getProtocol()) {
-                    File dataDir = new File(dataDirUrl.toURI())
+                ResourceReference dataDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/data")
+                if (dataDirRr.supportsAll()) {
                     // if directory doesn't exist skip it, component doesn't have a data directory
-                    if (!dataDir.exists() || !dataDir.isDirectory()) continue
-                    for (File dataFile in dataDir.listFiles()) {
-                        if (!dataFile.isFile() || !dataFile.getName().endsWith(".xml")) continue
-                        locationList.add(dataFile.toURI().toString())
+                    if (!dataDirRr.exists || !dataDirRr.isDirectory()) continue
+                    // get all files in the directory
+                    for (ResourceReference dataRr in dataDirRr.directoryEntries) {
+                        if (!dataRr.isFile() || !dataRr.location.endsWith(".xml")) continue
+                        locationList.add(dataRr.location)
                     }
                 } else {
                     // just warn here, no exception because any non-file component location would blow everything up
-                    logger.warn("Cannot load entity data file in component location [${location}] because protocol [${dataDirUrl.getProtocol()}] is not yet supported.")
+                    logger.warn("Cannot load entity data file in component location [${location}] because protocol [${dataDirRr.uri.scheme}] is not yet supported.")
                 }
             }
         }

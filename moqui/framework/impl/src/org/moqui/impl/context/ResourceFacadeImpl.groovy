@@ -13,6 +13,12 @@ package org.moqui.impl.context
 
 import java.nio.charset.Charset
 
+import javax.jcr.Repository
+import javax.jcr.Session
+import javax.naming.InitialContext
+
+import org.apache.jackrabbit.commons.JcrUtils
+
 import org.codehaus.groovy.runtime.InvokerHelper
 
 import org.moqui.context.ResourceFacade
@@ -20,10 +26,12 @@ import org.moqui.context.Cache
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
+import org.moqui.impl.StupidUtilities
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.moqui.impl.StupidUtilities
+import org.moqui.context.TemplateRenderer
+import org.moqui.context.ResourceReference
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -34,7 +42,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Cache scriptXmlActionLocationCache
     protected final Cache textLocationCache
 
+    protected final Map<String, Class> resourceReferenceClasses = new HashMap()
     protected final Map<String, TemplateRenderer> templateRenderers = new HashMap()
+
+    protected final Map<String, Repository> contentRepositories = new HashMap()
+    protected final Map<String, String> contentRepositoryWorkspaces = new HashMap()
+
+    protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
     protected GroovyShell localGroovyShell = null
 
@@ -45,112 +59,103 @@ public class ResourceFacadeImpl implements ResourceFacade {
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
         this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("resource.xml-actions.location")
 
-        templateRenderers.put(".ftl", new FtlTemplateRenderer().init(this))
-        // load other template renderers from configuration
+        // Setup resource reference classes
+        for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
+            Class rrClass = this.getClass().getClassLoader().loadClass(rrNode."@class")
+            resourceReferenceClasses.put(rrNode."@scheme", rrClass)
+        }
+
+        // Setup template renderers
         for (Node templateRendererNode in ecfi.confXmlRoot."resource-facade"[0]."template-renderer") {
             TemplateRenderer tr = (TemplateRenderer) this.getClass().getClassLoader().loadClass(templateRendererNode."@class").newInstance()
-            templateRenderers.put(templateRendererNode."@extension", tr.init(this))
+            templateRenderers.put(templateRendererNode."@extension", tr.init(ecfi))
         }
+
+        // Setup content repositories
+        for (Node repositoryNode in ecfi.confXmlRoot."repository-list"[0]."repository") {
+            try {
+                if (repositoryNode."@type" == "davex" || repositoryNode."@type" == "rmi") {
+                    Repository repository = JcrUtils.getRepository((String) repositoryNode."@location")
+                    contentRepositories.put(repositoryNode."@name", repository)
+                } else if (repositoryNode."@type" == "jndi") {
+                    InitialContext ic = new InitialContext()
+                    Repository repository = (Repository) ic.lookup((String) repositoryNode."@location")
+                    contentRepositories.put(repositoryNode."@name", repository)
+                } else if (repositoryNode."@type" == "local") {
+                    throw new IllegalArgumentException("The local type content repository is not yet supported, pending research into API support for the concept")
+                }
+                if (repositoryNode."@workspace") contentRepositoryWorkspaces.put(repositoryNode."@name", repositoryNode."@workspace")
+            } catch (Exception e) {
+                logger.error("Error getting JCR content repository with name [${repositoryNode."@name"}], is of type [${repositoryNode."@type"}] at location [${repositoryNode."@location"}]", e)
+            }
+        }
+    }
+
+    void destroyAllInThread() {
+        Map<String, Session> sessionMap = contentSessions.get()
+        if (sessionMap) for (Session openSession in sessionMap.values()) openSession.logout()
+        contentSessions.remove()
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
     Map<String, TemplateRenderer> getTemplateRenderers() { return templateRenderers }
 
-    /** @see org.moqui.context.ResourceFacade#getLocationUrl(String) */
-    URL getLocationUrl(String location) {
-        String strippedLocation = stripLocationPrefix(location)
+    Repository getContentRepository(String name) { return contentRepositories.get(name) }
 
-        if (location.startsWith("component://")) {
-            // turn this into another URL using the component location
-            StringBuffer baseLocation = new StringBuffer(strippedLocation)
-
-            // componentName is everything before the first slash
-            String componentName;
-            int firstSlash = baseLocation.indexOf("/")
-            if (firstSlash > 0) {
-                componentName = baseLocation.substring(0, firstSlash)
-                // got the componentName, now remove it from the baseLocation
-                baseLocation.delete(0, firstSlash + 1)
+    /** Get the active JCR Session for the context/thread, making sure it is live, and make one if needed. */
+    Session getContentRepositorySession(String name) {
+        Map<String, Session> sessionMap = contentSessions.get()
+        if (sessionMap == null) {
+            sessionMap = new HashMap()
+            contentSessions.set(sessionMap)
+        }
+        Session newSession = sessionMap[name]
+        if (newSession != null) {
+            if (newSession.isLive()) {
+                return newSession
             } else {
-                componentName = baseLocation
-                baseLocation.delete(0, baseLocation.length())
+                sessionMap.remove(name)
+                newSession = null
             }
-
-            baseLocation.insert(0, '/')
-            baseLocation.insert(0, this.ecfi.getComponentBaseLocations().get(componentName))
-            location = baseLocation.toString()
         }
 
-        URL locationUrl
-        if (location.startsWith("classpath://")) {
-            // first try the ClassLoader that loaded this class
-            locationUrl = this.getClass().getClassLoader().getResource(strippedLocation)
-            // no luck? try the system ClassLoader
-            if (!locationUrl) locationUrl = ClassLoader.getSystemResource(strippedLocation)
-        } else if (location.startsWith("https://") || location.startsWith("http://") ||
-                   location.startsWith("ftp://") || location.startsWith("file:") ||
-                   location.startsWith("jar:")) {
-            locationUrl = new URL(location)
-        } else if (location.indexOf(":/") < 0) {
-            // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
-            if (location.charAt(0) != '/') location = this.ecfi.runtimePath + '/' + location
-            locationUrl = new File(location).toURI().toURL()
+        Repository rep = contentRepositories[name]
+        if (!rep) return null
+        if (contentRepositoryWorkspaces[name]) {
+            newSession = rep.login(contentRepositoryWorkspaces[name])
         } else {
-            throw new IllegalArgumentException("Prefix (scheme) not supported for location [${location}")
+            newSession = rep.login()
         }
 
-        return locationUrl
+        if (newSession != null) sessionMap.put(name, newSession)
+        return newSession
+    }
+
+    /** @see org.moqui.context.ResourceFacade#getLocationReference(String) */
+    ResourceReference getLocationReference(String location) {
+        String scheme = "file"
+        if (location.contains(":")) scheme = location.substring(0, location.indexOf(":"))
+
+        Class rrClass = resourceReferenceClasses.get(scheme)
+        if (!rrClass) throw new IllegalArgumentException("Prefix (scheme) not supported for location [${location}")
+
+        ResourceReference rr = (ResourceReference) rrClass.newInstance()
+        return rr.init(location, ecfi.executionContext)
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */
     InputStream getLocationStream(String location) {
-        URL lu = getLocationUrl(location)
-        if (!lu) return null
-        return lu.newInputStream()
+        ResourceReference rr = getLocationReference(location)
+        if (!rr) return null
+        return rr.openStream()
     }
 
     String getLocationText(String location, boolean cache) {
         String text = cache ? (String) textLocationCache.get(location) : null
         if (text != null) return text
-
-        Reader r = null
-        try {
-            InputStream is = getLocationStream(location)
-            if (!is) return null
-
-            r = new InputStreamReader(new BufferedInputStream(is), Charset.forName("UTF-8"))
-
-            StringBuilder sb = new StringBuilder()
-            char[] buf = new char[4096]
-            int i
-            while ((i = r.read(buf, 0, 4096)) > 0) {
-                sb.append(buf, 0, i)
-            }
-            text = sb.toString()
-            if (cache) textLocationCache.put(location, text)
-            return text
-        } finally {
-            // closing r should close is, if not add that here
-            try { if (r) r.close() } catch (IOException e) { logger.warn("Error in close after reading text", e) }
-        }
-    }
-
-    protected static String stripLocationPrefix(String location) {
-        if (!location) return ""
-
-        // first remove colon (:) and everything before it
-        StringBuilder strippedLocation = new StringBuilder(location)
-        int colonIndex = strippedLocation.indexOf(":")
-        if (colonIndex == 0) {
-            strippedLocation.deleteCharAt(0)
-        } else if (colonIndex > 0) {
-            strippedLocation.delete(0, colonIndex+1)
-        }
-
-        // delete all leading forward slashes
-        while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
-
-        return strippedLocation.toString()
+        text = StupidUtilities.getStreamText(getLocationStream(location))
+        if (cache) textLocationCache.put(location, text)
+        return text
     }
 
     /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
@@ -247,5 +252,23 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (localGroovyShell) return localGroovyShell
         localGroovyShell = new GroovyShell(new Binding(ecfi.executionContext.context))
         return localGroovyShell
+    }
+
+    static String stripLocationPrefix(String location) {
+        if (!location) return ""
+
+        // first remove colon (:) and everything before it
+        StringBuilder strippedLocation = new StringBuilder(location)
+        int colonIndex = strippedLocation.indexOf(":")
+        if (colonIndex == 0) {
+            strippedLocation.deleteCharAt(0)
+        } else if (colonIndex > 0) {
+            strippedLocation.delete(0, colonIndex+1)
+        }
+
+        // delete all leading forward slashes
+        while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
+
+        return strippedLocation.toString()
     }
 }

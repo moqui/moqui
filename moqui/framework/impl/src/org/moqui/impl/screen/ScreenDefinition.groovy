@@ -18,6 +18,7 @@ import org.moqui.entity.EntityValue
 import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.actions.XmlAction
 import org.moqui.context.WebExecutionContext
+import org.moqui.context.ResourceReference
 
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
@@ -36,7 +37,7 @@ class ScreenDefinition {
     protected Map<String, ScreenSection> sectionByName = new HashMap()
     protected Map<String, ScreenForm> formByName = new HashMap()
 
-    protected Map<String, URL> subContentUrlByPath = new HashMap()
+    protected Map<String, ResourceReference> subContentRefByPath = new HashMap()
 
     ScreenDefinition(ScreenFacadeImpl sfi, Node screenNode, String location) {
         this.sfi = sfi
@@ -72,35 +73,40 @@ class ScreenDefinition {
 
     void populateSubscreens() {
         // start with file/directory structure
-        URL locationUrl = sfi.ecfi.resourceFacade.getLocationUrl(location)
-        logger.info("Finding subscreens for screen at [${locationUrl}]")
-        if (locationUrl.getProtocol() == "file") {
-            String subscreensDirStr = locationUrl.toString()
-            subscreensDirStr = subscreensDirStr.substring(subscreensDirStr.indexOf(":")+1, subscreensDirStr.lastIndexOf("."))
-            File subscreensDir = new File(subscreensDirStr)
-            if (subscreensDir.exists() && subscreensDir.isDirectory()) {
-                logger.info("Looking for subscreens in directory [${subscreensDir.toURI()}]")
-                for (File subscreenFile in subscreensDir.listFiles()) {
-                    if (!subscreenFile.isFile() || !subscreenFile.getName().endsWith(".xml")) continue
-                    GPathResult subscreenRoot = new XmlSlurper().parse(subscreenFile)
-                    if (subscreenRoot.name() == "screen") {
-                        String ssName = subscreenFile.getName()
-                        ssName = ssName.substring(0, ssName.lastIndexOf("."))
-                        SubscreensItem si = new SubscreensItem(ssName, subscreenFile.toURI().toString(), subscreenRoot)
-                        subscreensByName.put(si.name, si)
-                        logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
+        ResourceReference locationRef = sfi.ecfi.resourceFacade.getLocationReference(location)
+        logger.info("Finding subscreens for screen at [${locationRef}]")
+        if (locationRef.supportsAll()) {
+            String subscreensDirStr = locationRef.location
+            subscreensDirStr = subscreensDirStr.substring(0, subscreensDirStr.lastIndexOf("."))
+            ResourceReference subscreensDirRef = sfi.ecfi.resourceFacade.getLocationReference(subscreensDirStr)
+            if (subscreensDirRef.exists && subscreensDirRef.isDirectory()) {
+                logger.info("Looking for subscreens in directory [${subscreensDirRef}]")
+                for (ResourceReference subscreenRef in subscreensDirRef.directoryEntries) {
+                    if (!subscreenRef.isFile() || !subscreenRef.location.endsWith(".xml")) continue
+                    InputStream subscreenIs = subscreenRef.openStream()
+                    try {
+                        GPathResult subscreenRoot = new XmlSlurper().parse(subscreenIs)
+                        if (subscreenRoot.name() == "screen") {
+                            String ssName = subscreenRef.getFileName()
+                            ssName = ssName.substring(0, ssName.lastIndexOf("."))
+                            SubscreensItem si = new SubscreensItem(ssName, subscreenRef.location, subscreenRoot)
+                            subscreensByName.put(si.name, si)
+                            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
+                        }
+                    } finally {
+                        if (subscreenIs != null) subscreenIs.close()
                     }
                 }
             }
         } else {
-            logger.warn("Not getting subscreens by file/directory structure for screen [${location}] because it is not a file location")
+            logger.warn("Not getting subscreens by file/directory structure for screen [${location}] because it is not a location that supports directories")
         }
 
         // override dir structure with subscreens.subscreens-item elements
         for (Node subscreensItem in screenNode."subscreens"?."subscreens-item") {
             SubscreensItem si = new SubscreensItem(subscreensItem, this)
             subscreensByName.put(si.name, si)
-            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
+            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
         }
 
         // override dir structure and subscreens-item elements with SubscreensItem entity
@@ -109,7 +115,7 @@ class ScreenDefinition {
         for (EntityValue subscreensItem in subscreensItemList) {
             SubscreensItem si = new SubscreensItem(subscreensItem)
             subscreensByName.put(si.name, si)
-            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
+            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
         }
         // override rest with SubscreensItem entity with userId of current user
         if (sfi.ecfi.executionContext.user.userId) {
@@ -118,7 +124,7 @@ class ScreenDefinition {
             for (EntityValue subscreensItem in userSubscreensItemList) {
                 SubscreensItem si = new SubscreensItem(subscreensItem)
                 subscreensByName.put(si.name, si)
-                logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationUrl}]")
+                logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
             }
         }
     }
@@ -147,36 +153,36 @@ class ScreenDefinition {
 
     ScreenForm getForm(String formName) { return (ScreenForm) formByName.get(formName) }
 
-    URL getSubContentUrl(List<String> pathNameList) {
+    ResourceReference getSubContentRef(List<String> pathNameList) {
         StringBuilder pathNameBldr = new StringBuilder()
         // add the path elements that remain
         for (String rp in pathNameList) pathNameBldr.append("/").append(rp)
         String pathName = pathNameBldr.toString()
 
-        URL contentUrl = subContentUrlByPath.get(pathName)
-        if (contentUrl) return contentUrl
+        ResourceReference contentRef = subContentRefByPath.get(pathName)
+        if (contentRef) return contentRef
 
-        URL lastScreenUrl = sfi.ecfi.resourceFacade.getLocationUrl(location)
-        if (lastScreenUrl.protocol == "file") {
-            StringBuilder fileLoc = new StringBuilder(lastScreenUrl.toString())
-            // get rid of the "file:" prefix
-            fileLoc.delete(0, 5)
+        ResourceReference lastScreenRef = sfi.ecfi.resourceFacade.getLocationReference(location)
+        if (lastScreenRef.supportsAll()) {
+            StringBuilder fileLoc = new StringBuilder(lastScreenRef.location)
+            // get rid of the prefix, before the ":"
+            fileLoc.delete(0, fileLoc.indexOf(":")+1)
             // get rid of the suffix, probably .xml but use .*
             if (fileLoc.indexOf(".") > 0) fileLoc.delete(fileLoc.indexOf("."), fileLoc.length())
             fileLoc.append(pathName)
 
-            File theFile = new File(fileLoc.toString())
-            if (theFile.exists() && theFile.isFile()) contentUrl = theFile.toURI().toURL()
+            ResourceReference theFile = sfi.ecfi.resourceFacade.getLocationReference(fileLoc.toString())
+            if (theFile.exists && theFile.isFile()) contentRef = theFile
 
             for (String extToTry in sfi.ecfi.resourceFacade.templateRenderers.keySet()) {
-                if (contentUrl != null) break
-                theFile = new File(fileLoc.toString() + extToTry)
-                if (theFile.exists() && theFile.isFile()) contentUrl = theFile.toURI().toURL()
+                if (contentRef != null) break
+                theFile = sfi.ecfi.resourceFacade.getLocationReference(fileLoc.toString() + extToTry)
+                if (theFile.exists && theFile.isFile()) contentRef = theFile
             }
         }
 
-        if (contentUrl) subContentUrlByPath.put(pathName, contentUrl)
-        return contentUrl
+        if (contentRef) subContentRefByPath.put(pathName, contentRef)
+        return contentRef
     }
 
     static class ParameterItem {

@@ -14,6 +14,6 @@
     <screen-facade boundary-comments="true"/>
 
     <repository-list>
-        <repository name="default" location="http://localhost:8081/rmi" type="rmi" workspace="staging"/>
+        <repository name="main" location="http://localhost:8081/server" type="davex" workspace="staging"/>
     </repository-list>
 </moqui-conf>

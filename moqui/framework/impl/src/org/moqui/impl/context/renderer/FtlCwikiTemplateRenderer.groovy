@@ -15,24 +15,25 @@ import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
 import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
 import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
 import org.moqui.context.Cache
-import org.moqui.impl.context.ResourceFacadeImpl
-import org.moqui.impl.context.TemplateRenderer
+import org.moqui.context.TemplateRenderer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import freemarker.template.Template
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.context.ExecutionContextFactory
 
 class FtlCwikiTemplateRenderer implements TemplateRenderer {
     protected final static Logger logger = LoggerFactory.getLogger(FtlCwikiTemplateRenderer.class)
 
-    protected ResourceFacadeImpl rfi
+    protected ExecutionContextFactoryImpl ecfi
 
     protected final Cache templateFtlLocationCache
 
     FtlCwikiTemplateRenderer() { }
 
-    TemplateRenderer init(ResourceFacadeImpl rfi) {
-        this.rfi = rfi
-        this.templateFtlLocationCache = rfi.ecfi.getCacheFacade().getCache("resource.ftl.location")
+    TemplateRenderer init(ExecutionContextFactory ecf) {
+        this.ecfi = (ExecutionContextFactoryImpl) ecf
+        this.templateFtlLocationCache = ecfi.cacheFacade.getCache("resource.ftl.location")
         return this
     }
 
@@ -40,7 +41,7 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
         Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (!theTemplate) theTemplate = makeTemplate(location)
         if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
-        theTemplate.createProcessingEnvironment(rfi.ecfi.executionContext.context, writer).process()
+        theTemplate.createProcessingEnvironment(ecfi.executionContext.context, writer).process()
     }
 
     protected Template makeTemplate(String location) {
@@ -55,7 +56,7 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
             builder.setEmitAsDocument(false)
             MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
             parser.setBuilder(builder)
-            parser.parse(rfi.getLocationText(location, false))
+            parser.parse(ecfi.resourceFacade.getLocationText(location, false))
 
             Reader templateReader = new StringReader(cwikiWriter.toString())
             newTemplate = new Template(location, templateReader, FtlTemplateRenderer.getFtlConfiguration())

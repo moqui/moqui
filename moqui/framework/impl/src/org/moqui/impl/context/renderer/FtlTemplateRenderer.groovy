@@ -11,8 +11,7 @@
  */
 package org.moqui.impl.context.renderer
 
-import org.moqui.impl.context.TemplateRenderer
-import org.moqui.impl.context.ResourceFacadeImpl
+import org.moqui.context.TemplateRenderer
 import freemarker.template.Template
 import freemarker.template.Configuration
 import freemarker.ext.beans.BeansWrapper
@@ -22,6 +21,8 @@ import freemarker.core.Environment
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.moqui.context.Cache
+import org.moqui.context.ExecutionContextFactory
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class FtlTemplateRenderer implements TemplateRenderer {
     protected final static Logger logger = LoggerFactory.getLogger(FtlTemplateRenderer.class)
@@ -29,23 +30,23 @@ class FtlTemplateRenderer implements TemplateRenderer {
     protected final static Configuration defaultFtlConfiguration = makeFtlConfiguration()
     public static Configuration getFtlConfiguration() { return defaultFtlConfiguration }
 
-    protected ResourceFacadeImpl rfi
+    protected ExecutionContextFactoryImpl ecfi
 
     protected final Cache templateFtlLocationCache
 
     FtlTemplateRenderer() { }
 
-    TemplateRenderer init(ResourceFacadeImpl rfi) {
-        this.rfi = rfi
-        this.templateFtlLocationCache = rfi.ecfi.getCacheFacade().getCache("resource.ftl.location")
+    TemplateRenderer init(ExecutionContextFactory ecf) {
+        this.ecfi = (ExecutionContextFactoryImpl) ecf
+        this.templateFtlLocationCache = ecfi.cacheFacade.getCache("resource.ftl.location")
         return this
     }
 
     void render(String location, Writer writer) {
         Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (!theTemplate) theTemplate = makeTemplate(location)
-        if (!theTemplate) throw new IllegalArgumentException("Could not find template at ${location}")
-        theTemplate.createProcessingEnvironment(rfi.ecfi.executionContext.context, writer).process()
+        if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
+        theTemplate.createProcessingEnvironment(ecfi.executionContext.context, writer).process()
     }
 
     void destroy() { }
@@ -58,7 +59,7 @@ class FtlTemplateRenderer implements TemplateRenderer {
         Template newTemplate = null
         Reader templateReader = null
         try {
-            templateReader = new InputStreamReader(rfi.getLocationStream(location))
+            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
             newTemplate = new Template(location, templateReader, getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)

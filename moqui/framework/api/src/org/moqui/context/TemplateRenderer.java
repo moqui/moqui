@@ -9,12 +9,14 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.impl.context
+package org.moqui.context;
 
-import org.moqui.BaseException
+import org.moqui.BaseException;
 
-interface TemplateRenderer {
-    TemplateRenderer init(ResourceFacadeImpl rfi);
+import java.io.Writer;
+
+public interface TemplateRenderer {
+    TemplateRenderer init(ExecutionContextFactory ecf);
     void render(String location, Writer writer) throws BaseException;
     void destroy();
 }

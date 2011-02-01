@@ -84,8 +84,18 @@
     </transaction-facade>
 
     <resource-facade>
-        <!-- renderer class needs to implement the org.moqui.impl.context.TemplateRenderer interface -->
-        <!-- this is there by default: <template-renderer extension=".ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/> -->
+        <!-- resource reference class needs to implement the org.moqui.context.ResourceReference interface -->
+        <resource-reference scheme="http" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="https" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="file" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="ftp" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="jar" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="classpath" class="org.moqui.impl.context.reference.ClasspathResourceReference"/>
+        <resource-reference scheme="component" class="org.moqui.impl.context.reference.ComponentResourceReference"/>
+        <resource-reference scheme="content" class="org.moqui.impl.context.reference.ContentResourceReference"/>
+
+        <!-- renderer class needs to implement the org.moqui.context.TemplateRenderer interface -->
+        <template-renderer extension=".ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
         <template-renderer extension=".html.ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
         <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.CwikiTemplateRenderer"/>
         <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
@@ -363,10 +373,9 @@
         </database>
     </database-list>
     <repository-list>
-        <!-- this path is relative to the active Moqui runtime directory; start with a forward-slash for an absolute path -->
-        <repository name="default" location="rep/jackrabbit" type="local" workspace="default"/>
+        <repository name="main" location="http://localhost:8081/server" type="davex" workspace="default"/>
 
-        <!-- <repository name="default" location="http://localhost:8081/rmi" type="rmi" workspace="default"/> -->
-        <!-- <repository name="default" location="java:comp/env/jcr/repository" type="jndi" workspace="default"/> -->
+        <!-- <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"/> -->
+        <!-- <repository name="main" location="java:comp/env/jcr/repository" type="jndi" workspace="default"/> -->
     </repository-list>
 </moqui-conf>

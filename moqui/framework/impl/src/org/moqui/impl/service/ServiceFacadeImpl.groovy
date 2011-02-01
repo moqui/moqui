@@ -33,6 +33,8 @@ import org.quartz.impl.StdSchedulerFactory
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.moqui.context.ResourceReference
+import org.moqui.impl.context.reference.ClasspathResourceReference
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -126,27 +128,20 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         // search for the service def XML file in the components
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
-            URL serviceComponentUrl = this.ecfi.resourceFacade.getLocationUrl(location + "/" + servicePathLocation)
-            if (serviceComponentUrl.getProtocol() == "file") {
-                File serviceComponentFile = new File(serviceComponentUrl.toURI())
-                if (serviceComponentFile.exists()) serviceNode = findServiceNode(serviceComponentUrl, verb, noun)
+            ResourceReference serviceComponentRr = this.ecfi.resourceFacade.getLocationReference(location + "/" + servicePathLocation)
+            if (serviceComponentRr.supportsExists()) {
+                if (serviceComponentRr.exists) serviceNode = findServiceNode(serviceComponentRr, verb, noun)
             } else {
                 // only way to see if it is a valid location is to try opening the stream, so no extra conditions here
-                serviceNode = findServiceNode(serviceComponentUrl, verb, noun)
+                serviceNode = findServiceNode(serviceComponentRr, verb, noun)
             }
             if (serviceNode) break
         }
 
         // search for the service def XML file in the classpath LAST (allow components to override, same as in entity defs)
-        // first try the ClassLoader that loaded this class
         if (serviceNode == null) {
-            URL serviceFileUrl = this.getClass().getClassLoader().getResource(servicePathLocation)
-            if (serviceFileUrl) serviceNode = findServiceNode(serviceFileUrl, verb, noun)
-        }
-        // no luck? try the system ClassLoader
-        if (serviceNode == null) {
-            URL serviceFileUrl = ClassLoader.getSystemResource(servicePathLocation)
-            if (serviceFileUrl) serviceNode = findServiceNode(serviceFileUrl, verb, noun)
+            ResourceReference serviceComponentRr = new ClasspathResourceReference().init(servicePathLocation, ecfi.executionContext)
+            if (serviceComponentRr.exists) serviceNode = findServiceNode(serviceComponentRr, verb, noun)
         }
 
         if (serviceNode == null) logger.info("Service ${path}.${verb}#${noun} not found; used relative location [${servicePathLocation}]")
@@ -154,14 +149,14 @@ class ServiceFacadeImpl implements ServiceFacade {
         return serviceNode
     }
 
-    protected Node findServiceNode(URL serviceFileUrl, String verb, String noun) {
-        if (!serviceFileUrl) return null
+    protected Node findServiceNode(ResourceReference serviceComponentRr, String verb, String noun) {
+        if (!serviceComponentRr) return null
 
         Node serviceNode = null
         InputStream serviceFileIs = null
 
         try {
-            serviceFileIs = serviceFileUrl.openStream()
+            serviceFileIs = serviceComponentRr.openStream()
             Node serviceRoot = new XmlParser().parse(serviceFileIs)
             if (noun) {
                 // only accept the separated names
@@ -175,7 +170,7 @@ class ServiceFacadeImpl implements ServiceFacade {
             }
         } catch (IOException e) {
             // probably because there is no resource at that location, so do nothing
-            logger.trace("Error finding service in URL ${serviceFileUrl.toString()}", e)
+            logger.trace("Error finding service in URL ${serviceComponentRr.location}", e)
             return null
         } finally {
             if (serviceFileIs != null) serviceFileIs.close()

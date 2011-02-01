@@ -3,6 +3,7 @@ package org.moqui.impl.screen
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.context.WebExecutionContext
+import org.moqui.context.ResourceReference
 
 class ScreenUrlInfo {
     ScreenRenderImpl sri
@@ -29,7 +30,7 @@ class ScreenUrlInfo {
     List<String> fileResourcePathList = null
     /** If the full path led to a file resource that is verified to exist, the URL goes here; the URL for access on the
      * server, the client will get the resource from the url field as normal */
-    URL fileResourceUrl = null
+    ResourceReference fileResourceRef = null
 
     /** All screens found in the path list */
     List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
@@ -182,9 +183,9 @@ class ScreenUrlInfo {
                 }
 
                 // is this a file under the screen?
-                URL existingFileUrl = lastSd.getSubContentUrl(remainingPathList)
-                if (existingFileUrl != null) {
-                    fileResourceUrl = existingFileUrl
+                ResourceReference existingFileRef = lastSd.getSubContentRef(remainingPathList)
+                if (existingFileRef.supportsExists() && existingFileRef.exists) {
+                    fileResourceRef = existingFileRef
                     break
                 }
 
@@ -209,7 +210,7 @@ class ScreenUrlInfo {
         minimalPathNameList = new ArrayList(fullPathNameList)
 
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
-        while (!targetTransition && !fileResourceUrl && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
+        while (targetTransition == null && fileResourceRef == null && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
             String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
             if (!nextLoc) {

@@ -211,9 +211,9 @@ class ScreenRenderImpl implements ScreenRender {
                 screenUrlInfo = null
                 internalRender()
             }
-        } else if (screenUrlInfo.fileResourceUrl) {
+        } else if (screenUrlInfo.fileResourceRef != null) {
             // in some cases we'll want to include the target content in another screen, in other cases not
-            String fileName = screenUrlInfo.fileResourceUrl.file
+            String fileName = screenUrlInfo.fileResourceRef.fileName
             String extension = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")+1) : ""
 
             if (binaryExtensions.contains(extension.toLowerCase())) {
@@ -221,7 +221,7 @@ class ScreenRenderImpl implements ScreenRender {
                     InputStream is = null
                     OutputStream os = null
                     try {
-                        is = screenUrlInfo.fileResourceUrl.openStream()
+                        is = screenUrlInfo.fileResourceRef.openStream()
                         os = response.outputStream
                         byte[] buffer = new byte[4096]
                         int len = is.read(buffer)
@@ -270,12 +270,12 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     void internalRenderTargetContent() {
-        sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceUrl.toString(), writer)
+        sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
 
         /* using cache by default, but if we didn't want to cache and stream instead:
         BufferedReader br = null
         try {
-            br = new BufferedReader(new InputStreamReader(screenUrlInfo.fileResourceUrl.openStream()))
+            br = new BufferedReader(new InputStreamReader(screenUrlInfo.fileResourceRef.openStream()))
             char[] buffer = new char[1024]
             int len = br.read(buffer)
             while (len != -1) {
@@ -342,7 +342,7 @@ class ScreenRenderImpl implements ScreenRender {
     String renderSubscreen() {
         // first see if there is another screen def in the list
         if ((screenPathIndex+1) >= screenUrlInfo.screenPathDefList.size()) {
-            if (screenUrlInfo.fileResourceUrl) {
+            if (screenUrlInfo.fileResourceRef) {
                 internalRenderTargetContent()
                 return ""
             } else {
@@ -432,12 +432,17 @@ class ScreenRenderImpl implements ScreenRender {
 
         if (isTemplate) {
             writer.flush()
+            // NOTE: run templates with their own variable space so we can add sri, and avoid getting anything added from within
+            ContextStack cs = (ContextStack) ec.context
+            cs.push()
+            cs.put("sri", this)
             sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(location, writer)
+            cs.pop()
             writer.flush()
             // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
             return ""
         } else {
-            return sfi.ecfi.resourceFacade.getLocationText(location)
+            return sfi.ecfi.resourceFacade.getLocationText(location, true)
         }
     }
 

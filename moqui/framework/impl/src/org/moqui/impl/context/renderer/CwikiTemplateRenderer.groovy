@@ -11,27 +11,29 @@
  */
 package org.moqui.impl.context.renderer
 
-import org.moqui.impl.context.TemplateRenderer
-import org.moqui.impl.context.ResourceFacadeImpl
+import org.moqui.context.TemplateRenderer
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.moqui.context.Cache
 import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
 import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
 import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
+import org.moqui.context.ExecutionContext
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.context.ExecutionContextFactory
 
 class CwikiTemplateRenderer implements TemplateRenderer {
     protected final static Logger logger = LoggerFactory.getLogger(CwikiTemplateRenderer.class)
 
-    protected ResourceFacadeImpl rfi
+    protected ExecutionContextFactoryImpl ecfi
 
     protected final Cache templateCwikiLocationCache
 
     CwikiTemplateRenderer() { }
 
-    TemplateRenderer init(ResourceFacadeImpl rfi) {
-        this.rfi = rfi
-        this.templateCwikiLocationCache = rfi.ecfi.getCacheFacade().getCache("resource.cwiki.location")
+    TemplateRenderer init(ExecutionContextFactory ecf) {
+        this.ecfi = (ExecutionContextFactoryImpl) ecf
+        this.templateCwikiLocationCache = ecfi.cacheFacade.getCache("resource.cwiki.location")
         return this
     }
 
@@ -45,7 +47,7 @@ class CwikiTemplateRenderer implements TemplateRenderer {
         builder.setEmitAsDocument(false)
         MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
         parser.setBuilder(builder)
-        parser.parse(rfi.getLocationText(location, false))
+        parser.parse(ecfi.resourceFacade.getLocationText(location, false))
 
         cwikiText = localWriter.toString()
         if (cwikiText) {

@@ -17,14 +17,14 @@ import java.net.URL;
 
 /** For accessing resources by location string (http://, jar://, component://, content://, classpath://, etc). */
 public interface ResourceFacade {
-    /** Get a URL representing the Moqui location string passed.
+    /** Get a ResourceReference representing the Moqui location string passed.
      *
      * @param location A URL-style location string. In addition to the standard URL protocols (http, https, ftp, jar,
      * and file) can also have the special Moqui protocols of "component://" for a resource location relative to a
      * component base location, "content://" for a resource in the content repository, and "classpath://" to get a
      * resource from the Java classpath.
      */
-    URL getLocationUrl(String location);
+    ResourceReference getLocationReference(String location);
 
     /** Open an InputStream to read the contents of a file/document at a location.
      *

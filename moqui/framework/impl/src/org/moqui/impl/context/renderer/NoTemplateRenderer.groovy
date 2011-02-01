@@ -11,27 +11,24 @@
  */
 package org.moqui.impl.context.renderer
 
-import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
-import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
-import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
-import org.moqui.context.Cache
 import org.moqui.impl.context.ResourceFacadeImpl
-import org.moqui.impl.context.TemplateRenderer
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import org.moqui.context.TemplateRenderer
+import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class NoTemplateRenderer implements TemplateRenderer {
-    protected ResourceFacadeImpl rfi
+    protected ExecutionContextFactoryImpl ecfi
 
     NoTemplateRenderer() { }
 
-    TemplateRenderer init(ResourceFacadeImpl rfi) {
-        this.rfi = rfi
+    TemplateRenderer init(ExecutionContextFactory ecf) {
+        this.ecfi = (ExecutionContextFactoryImpl) ecf
         return this
     }
 
     void render(String location, Writer writer) {
-        String text = rfi.getLocationText(location, true)
+        String text = ecfi.resourceFacade.getLocationText(location, true)
         if (text) writer.write(text)
     }
 

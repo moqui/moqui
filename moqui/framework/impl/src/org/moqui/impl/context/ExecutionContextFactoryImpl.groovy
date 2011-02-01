@@ -196,6 +196,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         super.finalize()
     }
 
+    String getRuntimePath() { return runtimePath }
+
     Node getConfXmlRoot() {
         return this.confXmlRoot
     }

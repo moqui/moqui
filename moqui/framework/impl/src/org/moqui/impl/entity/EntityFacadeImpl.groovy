@@ -43,6 +43,7 @@ import org.slf4j.Logger
 
 import org.w3c.dom.Element
 import org.moqui.entity.EntityDataLoader
+import org.moqui.context.ResourceReference
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -178,31 +179,30 @@ class EntityFacadeImpl implements EntityFacade {
     protected synchronized void loadAllEntityLocations() {
         // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
         for (Node loadEntity in this.ecfi.getConfXmlRoot()."entity-facade"[0]."load-entity") {
-            this.loadEntityFileLocations(loadEntity."@location")
+            this.loadEntityFileLocations(this.ecfi.resourceFacade.getLocationReference(loadEntity."@location"))
         }
 
         // loop through components look for XML files in the entity directory, check each for "<entities>" root element
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
-            URL entityDirUrl = this.ecfi.resourceFacade.getLocationUrl(location + "/entity")
-            if ("file" == entityDirUrl.getProtocol()) {
-                File entityDir = new File(entityDirUrl.toURI())
+            ResourceReference entityDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/entity")
+            if (entityDirRr.supportsAll()) {
                 // if directory doesn't exist skip it, component doesn't have an entity directory
-                if (!entityDir.exists() || !entityDir.isDirectory()) continue
+                if (!entityDirRr.exists || !entityDirRr.isDirectory()) continue
                 // get all files in the directory
-                for (File entityFile in entityDir.listFiles()) {
-                    if (!entityFile.isFile() || !entityFile.getName().endsWith(".xml")) continue
-                    this.loadEntityFileLocations(entityFile.toURI().toString())
+                for (ResourceReference entityRr in entityDirRr.directoryEntries) {
+                    if (!entityRr.isFile() || !entityRr.location.endsWith(".xml")) continue
+                    this.loadEntityFileLocations(entityRr)
                 }
             } else {
                 // just warn here, no exception because any non-file component location would blow everything up
-                logger.warn("Cannot load entity file in component location [${location}] because protocol [${entityDirUrl.getProtocol()}] is not yet supported.")
+                logger.warn("Cannot load entity directory in component location [${location}] because protocol [${entityDirRr.uri.scheme}] is not supported.")
             }
         }
     }
 
-    protected synchronized void loadEntityFileLocations(String location) {
+    protected synchronized void loadEntityFileLocations(ResourceReference entityRr) {
         // NOTE: using XmlSlurper here instead of XmlParser because it should be faster since it won't parse through the whole file right away
-        InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
+        InputStream entityStream = entityRr.openStream()
         GPathResult entityRoot = new XmlSlurper().parse(entityStream)
         entityStream.close()
         if (entityRoot.name() == "entities") {
@@ -214,10 +214,10 @@ class EntityFacadeImpl implements EntityFacade {
                     theList = new ArrayList()
                     this.entityLocationCache.put((String) entity."@entity-name", theList)
                 }
-                theList.add(location)
+                theList.add(entityRr.location)
                 numEntities++
             }
-            logger.info("Found [${numEntities}] entity definitions in [${location}]")
+            logger.info("Found [${numEntities}] entity definitions in [${entityRr.location}]")
         }
     }
 

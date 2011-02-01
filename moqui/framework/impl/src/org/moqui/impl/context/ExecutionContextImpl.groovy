@@ -26,7 +26,7 @@ import org.moqui.context.ArtifactExecutionFacade
 
 class ExecutionContextImpl implements ExecutionContext {
 
-    ExecutionContextFactoryImpl ecfi
+    protected ExecutionContextFactoryImpl ecfi
 
     protected ContextStack context = new ContextStack()
     protected String tenantId = null
@@ -43,59 +43,63 @@ class ExecutionContextImpl implements ExecutionContext {
         this.l10nFacade = new L10nFacadeImpl(this)
         this.artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this)
 
-        context.put("ec", this)
+        // put reference to this in the context root
+        contextRoot.put("ec", this)
     }
 
+    ExecutionContextFactoryImpl getEcfi() { ecfi }
+
     /** @see org.moqui.context.ExecutionContext#getContext() */
-    Map<String, Object> getContext() { return this.context }
+    Map<String, Object> getContext() { this.context }
 
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
-    Map<String, Object> getContextRoot() { return this.context.getRootMap() }
+    Map<String, Object> getContextRoot() { this.context.getRootMap() }
 
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
-    String getTenantId() { return this.tenantId }
+    String getTenantId() { this.tenantId }
 
     /** @see org.moqui.context.ExecutionContext#getUser() */
-    UserFacade getUser() { return this.userFacade }
+    UserFacade getUser() { this.userFacade }
 
     /** @see org.moqui.context.ExecutionContext#getMessage() */
-    MessageFacade getMessage() { return this.messageFacade }
+    MessageFacade getMessage() { this.messageFacade }
 
     /** @see org.moqui.context.ExecutionContext#getL10n() */
-    L10nFacade getL10n() { return this.l10nFacade }
+    L10nFacade getL10n() { this.l10nFacade }
 
     /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
-    ArtifactExecutionFacade getArtifactExecution() { return this.artifactExecutionFacade }
+    ArtifactExecutionFacade getArtifactExecution() { this.artifactExecutionFacade }
 
     // ==== More Permanent Objects (get from the factory instead of locally) ===
 
     /** @see org.moqui.context.ExecutionContext#getResource() */
-    ResourceFacade getResource() { return this.ecfi.getResourceFacade() }
+    ResourceFacade getResource() { this.ecfi.getResourceFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getLogger() */
-    LoggerFacade getLogger() { return this.ecfi.getLoggerFacade() }
+    LoggerFacade getLogger() { this.ecfi.getLoggerFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getCache() */
-    CacheFacade getCache() { return this.ecfi.getCacheFacade() }
+    CacheFacade getCache() { this.ecfi.getCacheFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getTransaction() */
-    TransactionFacade getTransaction() { return this.ecfi.getTransactionFacade() }
+    TransactionFacade getTransaction() { this.ecfi.getTransactionFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getEntity() */
-    EntityFacade getEntity() { return this.ecfi.getEntityFacade() }
+    EntityFacade getEntity() { this.ecfi.getEntityFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getService() */
-    ServiceFacade getService() { return this.ecfi.getServiceFacade() }
+    ServiceFacade getService() { this.ecfi.getServiceFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
-    ScreenFacade getScreen() { return this.ecfi.getScreenFacade() }
+    ScreenFacade getScreen() { this.ecfi.getScreenFacade() }
 
     /** @see org.moqui.context.ExecutionContext#destroy() */
     void destroy() {
         // TODO?: make sure there are no db connections open, if so close them
         // make sure there are no transactions open, if any commit them all now
         this.ecfi.transactionFacade.destroyAllInThread()
-
+        // clean up resources, like JCR session
+        this.ecfi.resourceFacade.destroyAllInThread()
         // clear out the ECFI's reference to this as well
         this.ecfi.activeContext.remove()
     }

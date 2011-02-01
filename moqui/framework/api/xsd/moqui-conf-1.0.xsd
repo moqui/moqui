@@ -272,8 +272,15 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="resource-facade">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource-reference"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="template-renderer"/>
             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="resource-reference">
+        <xs:complexType>
+            <xs:attribute name="scheme" type="xs:string" use="required"/>
+            <xs:attribute name="class" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="template-renderer">
@@ -624,9 +631,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="type" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
-                        <xs:enumeration value="local"/>
+                        <!-- this path is relative to the active Moqui runtime directory; start with a forward-slash for an absolute path -->
+                        <!-- TODO: how to support this type? <repository name="default" location="rep/jackrabbit" type="local" workspace="default"/> -->
+                        <!-- <xs:enumeration value="local"/> -->
                         <xs:enumeration value="jndi"/>
                         <xs:enumeration value="rmi"/>
+                        <xs:enumeration value="davex"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>

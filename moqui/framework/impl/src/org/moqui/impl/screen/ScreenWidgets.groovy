@@ -38,7 +38,7 @@ class ScreenWidgets {
     }
 
     void render(ScreenRenderImpl sri) {
-        Map root = sri.ec.context
+        Map root = new HashMap(sri.ec.context)
         root.sri = sri
         root.ec = sri.ec
         root.widgetsNode = widgetsNodeModel

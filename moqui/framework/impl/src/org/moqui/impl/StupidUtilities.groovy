@@ -17,11 +17,15 @@ import java.util.regex.Pattern
 
 import org.apache.commons.codec.binary.Hex
 import org.w3c.dom.Element
+import java.nio.charset.Charset
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
  */
 class StupidUtilities {
+    protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
     protected static final Map<String, Class<?>> commonJavaClassesMap = [
             "java.lang.String":java.lang.String.class, "String":java.lang.String.class,
@@ -218,6 +222,26 @@ class StupidUtilities {
         int count = 0
         for (char c in s) if (c == cMatch) count++
         return count
+    }
+
+    static String getStreamText(InputStream is) {
+        if (!is) return null
+
+        Reader r = null
+        try {
+            r = new InputStreamReader(new BufferedInputStream(is), Charset.forName("UTF-8"))
+
+            StringBuilder sb = new StringBuilder()
+            char[] buf = new char[4096]
+            int i
+            while ((i = r.read(buf, 0, 4096)) > 0) {
+                sb.append(buf, 0, i)
+            }
+            return sb.toString()
+        } finally {
+            // closing r should close is, if not add that here
+            try { if (r) r.close() } catch (IOException e) { logger.warn("Error in close after reading text", e) }
+        }
     }
 
     static void addToListInMap(String key, Object value, Map theMap) {

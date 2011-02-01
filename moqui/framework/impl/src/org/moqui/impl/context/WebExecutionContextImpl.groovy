@@ -64,7 +64,12 @@ class WebExecutionContextImpl implements WebExecutionContext {
         // get any parameters saved to the session from the last request, and clear that session attribute if there
         savedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
         if (savedParameters != null) request.session.removeAttribute("moqui.saved.parameters")
+
+        // put reference to this in the context root, may replace value set there by the non-web ECI
+        contextRoot.put("ec", this)
     }
+
+    ExecutionContextFactoryImpl getEcfi() { ecfi }
 
     // ========== Web EC Methods
 
