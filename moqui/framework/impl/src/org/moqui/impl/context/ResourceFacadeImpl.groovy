@@ -11,8 +11,6 @@
  */
 package org.moqui.impl.context
 
-import java.nio.charset.Charset
-
 import javax.jcr.Repository
 import javax.jcr.Session
 import javax.naming.InitialContext
@@ -21,17 +19,16 @@ import org.apache.jackrabbit.commons.JcrUtils
 
 import org.codehaus.groovy.runtime.InvokerHelper
 
-import org.moqui.context.ResourceFacade
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContext
+import org.moqui.context.TemplateRenderer
+import org.moqui.context.ResourceFacade
+import org.moqui.context.ResourceReference
 import org.moqui.impl.actions.XmlAction
-import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.StupidUtilities
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.moqui.context.TemplateRenderer
-import org.moqui.context.ResourceReference
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
