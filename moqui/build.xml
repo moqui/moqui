@@ -80,6 +80,16 @@ This Work includes contributions authored by David E. Jones, not as a
             <lib dir="framework/impl/lib"/>
             <lib dir="framework/build/lib"/>
             <classes file="MoquiInit.properties"/>
+
+            <!-- copy the start files, setup the manifest for war acting like executable jar -->
+            <fileset dir="framework/build/start/classes"/>
+            <fileset dir="framework/start/conf"/>
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0"/>
+                <attribute name="Implementation-Title" value="Moqui Start"/>
+                <attribute name="Implementation-Vendor" value="Moqui Framework"/>
+                <attribute name="Main-Class" value="MoquiStart"/>
+            </manifest>
         </war>
     </target>
     <target name="war-tomcat" depends="war">

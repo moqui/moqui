@@ -84,6 +84,8 @@ class FtlTemplateRenderer implements TemplateRenderer {
         public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
                 throws TemplateException {
             try {
+                // TODO: encode error, something like: StringUtil.SimpleEncoder simpleEncoder = FreeMarkerWorker.getWrappedObject("simpleEncoder", env);
+                // stackTrace = simpleEncoder.encode(stackTrace);
                 if (te.cause) {
                     logger.error("Error in FTL render", te.cause)
                     out.write("[Error: ${te.cause.message}]")

@@ -40,9 +40,17 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========== build targets ========== -->
     <target name="build" depends="init">
+        <mkdir dir="build/start/classes"/>
         <mkdir dir="build/api/classes"/>
         <mkdir dir="build/impl/classes"/>
         <mkdir dir="build/lib"/>
+
+        <!-- make the API classes -->
+        <echo message="===== Building start classes"/>
+        <javac destdir="build/start/classes" srcdir="start/src" includeantruntime="false"
+                debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
+            <include name="**/*.java"/>
+        </javac>
 
         <!-- make the API classes -->
         <echo message="===== Building api classes"/>
