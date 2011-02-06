@@ -119,10 +119,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
     boolean containsPrimaryKey() {
-        for (String fieldName in this.getEntityDefinition().getFieldNames(true, false)) {
-            if (!valueMap[fieldName]) return false
-        }
-        return true
+        return this.getEntityDefinition().containsPrimaryKey(valueMap)
     }
 
     /** @see org.moqui.entity.EntityValue#getPrimaryKeys() */

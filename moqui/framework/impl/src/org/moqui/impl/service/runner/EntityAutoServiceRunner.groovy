@@ -21,6 +21,7 @@ import org.moqui.service.ServiceException
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.apache.commons.collections.set.ListOrderedSet
 
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
@@ -43,7 +44,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         try {
             boolean allPksInOnly = true
-            List<String> pkFieldNames = ed.getFieldNames(true, false)
+            ListOrderedSet pkFieldNames = ed.getFieldNames(true, false)
             for (String pkFieldName in pkFieldNames) {
                 if (!sd.getInParameter(pkFieldName) || sd.getOutParameter(pkFieldName)) { allPksInOnly = false; break }
             }
@@ -69,7 +70,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
         EntityValue newEntity = sfi.ecfi.entityFacade.makeValue(ed.entityName)
 
-        List<String> pkFieldNames = ed.getFieldNames(true, false)
+        ListOrderedSet pkFieldNames = ed.getFieldNames(true, false)
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
         if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {
@@ -118,7 +119,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
         EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
-            throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] no value not found, cannot update")
+            throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] value not found, cannot update; using parameters [${parameters}]")
         }
 
         // populate the oldStatusId out if there is a service parameter for it, and before we do the set non-pk fields

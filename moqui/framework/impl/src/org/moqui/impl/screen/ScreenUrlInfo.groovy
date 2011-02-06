@@ -184,7 +184,7 @@ class ScreenUrlInfo {
 
                 // is this a file under the screen?
                 ResourceReference existingFileRef = lastSd.getSubContentRef(remainingPathList)
-                if (existingFileRef.supportsExists() && existingFileRef.exists) {
+                if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
                     fileResourceRef = existingFileRef
                     break
                 }

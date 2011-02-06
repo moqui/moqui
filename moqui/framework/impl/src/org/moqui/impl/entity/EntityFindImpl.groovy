@@ -271,7 +271,16 @@ class EntityFindImpl implements EntityFind {
             throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
         }
 
-        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        EntityDefinition ed = this.getEntityDef()
+
+        // if over-constrained (anything in addition to a full PK), just use the full PK
+        EntityConditionImplBase whereCondition
+        if (ed.containsPrimaryKey(simpleAndMap)) {
+            whereCondition = this.efi.conditionFactory.makeCondition(ed.getPrimaryKeys(simpleAndMap))
+        } else {
+            whereCondition = this.getWhereEntityCondition()
+        }
+
         // no condition means no condition/parameter set, so return null for find.one()
         if (!whereCondition) return null
 
@@ -285,11 +294,10 @@ class EntityFindImpl implements EntityFind {
         this.resultSetType(ResultSet.TYPE_FORWARD_ONLY)
         this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
 
-        EntityDefinition entityDefinition = this.getEntityDef()
-        EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
+        EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(true, true))
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true))
         // SELECT fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         // FROM Clause
@@ -297,7 +305,7 @@ class EntityFindImpl implements EntityFind {
 
         // WHERE clause only for one/pk query
         // NOTE: do this here after caching because this will always be added on and isn't a part of the original where
-        EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
+        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (viewWhere) whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         efb.startWhereClause()
         whereCondition.makeSqlWhere(efb)
@@ -307,7 +315,7 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         EntityValueImpl newEntityValue = null
         try {
-            efi.entityDbMeta.checkTableRuntime(entityDefinition)
+            efi.entityDbMeta.checkTableRuntime(ed)
 
             newEntityValue = internalOne(efb, whereCondition.toString())
         } catch (SQLException e) {

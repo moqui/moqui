@@ -151,6 +151,21 @@ public class EntityDefinition {
         return (this.getFieldNode(fieldName)) ? true : false
     }
 
+    boolean containsPrimaryKey(Map fields) {
+        for (String fieldName in this.getFieldNames(true, false)) {
+            if (!fields[fieldName]) return false
+        }
+        return true
+    }
+
+    Map<String, Object> getPrimaryKeys(Map fields) {
+        Map<String, Object> pks = new HashMap()
+        for (String fieldName in this.getFieldNames(true, false)) {
+            pks.put(fieldName, fields[fieldName])
+        }
+        return pks
+    }
+
     ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk) {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
         ListOrderedSet nameSet = new ListOrderedSet()

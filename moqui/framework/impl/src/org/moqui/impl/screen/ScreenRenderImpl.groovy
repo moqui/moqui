@@ -154,11 +154,14 @@ class ScreenRenderImpl implements ScreenRender {
                 ri = screenUrlInfo.targetTransition.run(this)
             } catch (Throwable t) {
                 sfi.ecfi.transactionFacade.rollback(beganTransaction, "Error running transition in [${screenUrlInfo.url}]", t)
+                throw t
             } finally {
                 if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
                     sfi.ecfi.transactionFacade.commit(beganTransaction)
                 }
             }
+
+            if (ri == null) throw new IllegalArgumentException("No response found for transition [${screenUrlInfo.targetTransition.name}] on screen [${screenUrlInfo.targetScreen.location}]")
 
             if (ri.saveCurrentScreen && ec instanceof WebExecutionContextImpl) {
                 StringBuilder screenPath = new StringBuilder()
@@ -300,8 +303,7 @@ class ScreenRenderImpl implements ScreenRender {
             return false
         }
         // if screen requires auth and there is not active user redirect to login screen, save this request
-        // TODO: remove the "false && " below to enable authentication checking again; commented for now until data loading, etc is implemented, otherwise cannot really test
-        if (false && currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
+        if (currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
             if (ec instanceof WebExecutionContextImpl) {
