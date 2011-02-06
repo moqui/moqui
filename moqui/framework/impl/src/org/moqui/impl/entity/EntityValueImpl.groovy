@@ -16,21 +16,20 @@ import java.sql.Time
 import java.sql.Date
 import java.sql.ResultSet
 
+import org.apache.commons.codec.binary.Base64
 import org.apache.commons.collections.set.ListOrderedSet
 
-import org.moqui.entity.EntityValue
-import org.moqui.entity.EntityList
+import org.moqui.Moqui
 import org.moqui.entity.EntityException
-import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.moqui.entity.EntityFind
+import org.moqui.entity.EntityList
+import org.moqui.entity.EntityValue
+import org.moqui.impl.StupidUtilities
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 
 import org.w3c.dom.Element
 import org.w3c.dom.Document
-import org.apache.commons.codec.binary.Base64
-import org.moqui.impl.StupidUtilities
-import org.moqui.Moqui
-import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.impl.entity.EntityFindImpl.TableMissingException
 
 class EntityValueImpl implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -236,7 +235,7 @@ class EntityValueImpl implements EntityValue {
 
             EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("INSERT INTO ").append(getEntityDefinition().getTableName())
+            sql.append("INSERT INTO ").append(getEntityDefinition().getFullTableName())
 
             sql.append(" (")
             boolean isFirstField = true
@@ -254,21 +253,9 @@ class EntityValueImpl implements EntityValue {
             sql.append(") VALUES (").append(values.toString()).append(')')
 
             try {
-                internalCreate(eqb, fieldList)
-            } catch (TableMissingException e) {
-                eqb.closeAll()
-                if (getEntityDefinition().isViewEntity() ||
-                        efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
-                    throw e
-                } else {
-                    efi.entityDbMeta.createTable(getEntityDefinition())
+                efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
 
-                    try {
-                        internalCreate(eqb, fieldList)
-                    } finally {
-                        eqb.closeAll()
-                    }
-                }
+                internalCreate(eqb, fieldList)
             } catch (EntityException e) {
                 throw new EntityException("Error in create of [${this.toString()}]", e)
             } finally {
@@ -333,7 +320,7 @@ class EntityValueImpl implements EntityValue {
 
             EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("UPDATE ").append(getEntityDefinition().getTableName()).append(" SET ")
+            sql.append("UPDATE ").append(getEntityDefinition().getFullTableName()).append(" SET ")
 
             boolean isFirstField = true
             for (String fieldName in nonPkFieldList) {
@@ -352,21 +339,9 @@ class EntityValueImpl implements EntityValue {
             }
 
             try {
-                internalUpdate(eqb)
-            } catch (TableMissingException e) {
-                eqb.closeAll()
-                if (getEntityDefinition().isViewEntity() ||
-                        efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
-                    throw e
-                } else {
-                    efi.entityDbMeta.createTable(getEntityDefinition())
+                efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
 
-                    try {
-                        internalUpdate(eqb)
-                    } finally {
-                        eqb.closeAll()
-                    }
-                }
+                internalUpdate(eqb)
             } catch (EntityException e) {
                 throw new EntityException("Error in update of [${this.toString()}]", e)
             } finally {
@@ -380,7 +355,7 @@ class EntityValueImpl implements EntityValue {
         eqb.makePreparedStatement()
         eqb.setPreparedStatementValues()
         if (eqb.executeUpdate() == 0)
-            throw new EntityException("Tried to update a value that does not exist [${this.toString()}].")
+            throw new EntityException("Tried to update a value that does not exist [${this.toString()}]. SQL used was [${eqb.sqlTopLevel}], parameters were [${eqb.parameters}]")
         setSyncedWithDb()
         // TODO: notify cache clear
     }
@@ -395,7 +370,7 @@ class EntityValueImpl implements EntityValue {
 
             EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("DELETE FROM ").append(getEntityDefinition().getTableName()).append(" WHERE ")
+            sql.append("DELETE FROM ").append(getEntityDefinition().getFullTableName()).append(" WHERE ")
 
             boolean isFirstPk = true
             for (String fieldName in pkFieldList) {
@@ -406,21 +381,9 @@ class EntityValueImpl implements EntityValue {
             }
 
             try {
-                internalDelete(eqb)
-            } catch (TableMissingException e) {
-                eqb.closeAll()
-                if (getEntityDefinition().isViewEntity() ||
-                        efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
-                    throw e
-                } else {
-                    efi.entityDbMeta.createTable(getEntityDefinition())
+                efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
 
-                    try {
-                        internalDelete(eqb)
-                    } finally {
-                        eqb.closeAll()
-                    }
-                }
+                internalDelete(eqb)
             } catch (EntityException e) {
                 throw new EntityException("Error in delete of [${this.toString()}]", e)
             } finally {
@@ -444,21 +407,22 @@ class EntityValueImpl implements EntityValue {
         ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
         if (!pkFieldList) throw new IllegalArgumentException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
         ListOrderedSet nonPkFieldList = getEntityDefinition().getFieldNames(false, true)
-        if (!nonPkFieldList) {
-            logger.trace("Not doing refresh on entity with no non-PK fields; entity=" + this.toString())
-            return
-        }
+        // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
         EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
         StringBuilder sql = eqb.getSqlTopLevel()
         sql.append("SELECT ")
         boolean isFirstField = true
-        for (String fieldName in nonPkFieldList) {
-            if (isFirstField) isFirstField = false else sql.append(", ")
-            sql.append(getEntityDefinition().getColumnName(fieldName, false))
+        if (nonPkFieldList) {
+            for (String fieldName in nonPkFieldList) {
+                if (isFirstField) isFirstField = false else sql.append(", ")
+                sql.append(getEntityDefinition().getColumnName(fieldName, false))
+            }
+        } else {
+            sql.append("*")
         }
 
-        sql.append(" FROM ").append(getEntityDefinition().getTableName()).append(" WHERE ")
+        sql.append(" FROM ").append(getEntityDefinition().getFullTableName()).append(" WHERE ")
 
         boolean isFirstPk = true
         for (String fieldName in pkFieldList) {
@@ -470,21 +434,9 @@ class EntityValueImpl implements EntityValue {
 
         boolean retVal = false
         try {
-            retVal = internalRefresh(eqb, nonPkFieldList)
-        } catch (TableMissingException e) {
-            eqb.closeAll()
-            if (getEntityDefinition().isViewEntity() ||
-                    efi.getDatasourceNode(efi.getEntityGroupName(getEntityDefinition().entityName))?."@add-missing-runtime" == "false") {
-                throw e
-            } else {
-                efi.entityDbMeta.createTable(getEntityDefinition())
+            efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
 
-                try {
-                    retVal = internalRefresh(eqb, nonPkFieldList)
-                } finally {
-                    eqb.closeAll()
-                }
-            }
+            retVal = internalRefresh(eqb, nonPkFieldList)
         } catch (EntityException e) {
             throw new EntityException("Error in refresh of [${this.toString()}]", e)
         } finally {

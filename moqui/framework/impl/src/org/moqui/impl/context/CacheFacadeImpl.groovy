@@ -77,14 +77,17 @@ public class CacheFacadeImpl implements CacheFacade {
         Node confXmlRoot = this.ecfi.getConfXmlRoot()
         Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
 
+        boolean eternal = true
         if (cacheElement?."@expire-time-idle") {
             newCacheConf.setTimeToIdleSeconds(Long.valueOf((String) cacheElement."@expire-time-idle"))
-            newCacheConf.setEternal(false)
+            eternal = false
         }
         if (cacheElement?."@expire-time-live") {
             newCacheConf.setTimeToLiveSeconds(Long.valueOf((String) cacheElement."@expire-time-live"))
-            newCacheConf.setEternal(false)
+            eternal = false
         }
+        newCacheConf.setEternal(eternal)
+
         if (cacheElement?."@max-elements") {
             newCacheConf.setMaxElementsInMemory(Integer.valueOf((String) cacheElement."@max-elements"))
         }

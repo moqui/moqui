@@ -54,7 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- =========================== Geo Type Data ============================ -->
     <!-- A placeholder for when there is no Geo -->
-    <Geo abbreviation="NA" geoCode="_NA_" geoId="_NA_" geoName="Not Applicable"/>
+    <Geo geoId="_NA_" geoName="Not Applicable" geoCodeAlpha3="_NA" geoCodeAlpha2="_N"/>
 
     <EnumerationType description="Geo Type" enumTypeId="GEO_TYPE"/>
 

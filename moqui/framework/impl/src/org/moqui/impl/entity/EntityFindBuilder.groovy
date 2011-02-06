@@ -12,18 +12,7 @@
 package org.moqui.impl.entity
 
 import java.sql.PreparedStatement
-import org.moqui.entity.EntityException
-import java.sql.Types
 import java.sql.SQLException
-import java.sql.ResultSet
-import java.sql.ResultSetMetaData
-import java.sql.Clob
-import java.sql.Blob
-import javax.sql.rowset.serial.SerialBlob
-import javax.sql.rowset.serial.SerialClob
-import org.moqui.impl.StupidUtilities
-import java.sql.Connection
-import org.moqui.impl.entity.EntityFindImpl.TableMissingException
 
 class EntityFindBuilder extends EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
@@ -215,7 +204,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 }
             }
         } else {
-            localBuilder.append(localEntityDefinition.getTableName())
+            localBuilder.append(localEntityDefinition.getFullTableName())
         }
     }
 
@@ -249,7 +238,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
             localBuilder.append(")");
         } else {
-            localBuilder.append(localEntityDefinition.getTableName())
+            localBuilder.append(localEntityDefinition.getFullTableName())
         }
     }
 
@@ -350,7 +339,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
             if (this.entityFindImpl.maxRows > 0) this.ps.setMaxRows(this.entityFindImpl.maxRows)
             if (this.entityFindImpl.fetchSize > 0) this.ps.setFetchSize(this.entityFindImpl.fetchSize)
         } catch (SQLException e) {
-            handleSqlExeption(e, sql)
+            handleSqlException(e, sql)
         }
         return this.ps
     }

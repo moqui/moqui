@@ -16,14 +16,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Exclude" enumCode="EXCLUDE" enumId="ESIA_EXCLUDE" sequenceNum="2" enumTypeId="ENTGRP_ENTRY_APPL"/>
     <Enumeration description="Always Include" enumCode="ALWAYS" enumId="ESIA_ALWAYS" sequenceNum="3" enumTypeId="ENTGRP_ENTRY_APPL"/>
 
-    <StatusType description="Entity Sync Run Status" hasTable="N" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Not Started" sequenceId="01" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Running" sequenceId="02" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Offline Pending" sequenceId="03" statusCode="PENDING" statusId="ESR_PENDING" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Complete" sequenceId="04" statusCode="COMPLETE" statusId="ESR_COMPLETE" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Other Error" sequenceId="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Service Call Error" sequenceId="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Data Error" sequenceId="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <StatusType description="Entity Sync Run Status" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Not Started" sequenceNum="1" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Running" sequenceNum="2" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Offline Pending" sequenceNum="3" statusCode="PENDING" statusId="ESR_PENDING" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Complete" sequenceNum="4" statusCode="COMPLETE" statusId="ESR_COMPLETE" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Other Error" sequenceNum="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Service Call Error" sequenceNum="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <StatusItem description="Data Error" sequenceNum="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
 
     <EnumerationType description="Entity Condition Operator" enumTypeId="ENTITY_COND_OP"/>
     <Enumeration description="less" enumCode="LESS" enumId="ENTCO_LESS" enumTypeId="ENTITY_COND_OP"/>

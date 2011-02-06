@@ -289,7 +289,7 @@ class EntityFindImpl implements EntityFind {
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
+        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(true, true))
         // SELECT fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         // FROM Clause
@@ -307,23 +307,9 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         EntityValueImpl newEntityValue = null
         try {
-            newEntityValue = internalOne(efb, whereCondition.toString())
-        } catch (TableMissingException e) {
-            efb.closeAll()
-            if (entityDefinition.isViewEntity() ||
-                    efi.getDatasourceNode(efi.getEntityGroupName(entityDefinition.entityName))?."@add-missing-runtime" == "false") {
-                throw e
-            } else {
-                efi.entityDbMeta.createTable(entityDefinition)
+            efi.entityDbMeta.checkTableRuntime(entityDefinition)
 
-                try {
-                    newEntityValue = internalOne(efb, whereCondition.toString())
-                } catch (SQLException e2) {
-                    throw new EntityException("Error finding value", e2)
-                } finally {
-                    efb.closeAll()
-                }
-            }
+            newEntityValue = internalOne(efb, whereCondition.toString())
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)
         } finally {
@@ -446,22 +432,9 @@ class EntityFindImpl implements EntityFind {
 
         // run the SQL now that it is built
         try {
-            return internalIterator(efb)
-        } catch (TableMissingException e) {
-            efb.closeAll()
-            if (entityDefinition.isViewEntity() ||
-                    efi.getDatasourceNode(efi.getEntityGroupName(entityDefinition.entityName))?."@add-missing-runtime" == "false") {
-                throw e
-            } else {
-                try {
-                    efi.entityDbMeta.createTable(entityDefinition)
+            efi.entityDbMeta.checkTableRuntime(entityDefinition)
 
-                    return internalIterator(efb)
-                } catch (Throwable t) {
-                    efb.closeAll()
-                    throw new EntityException("Error in find", t)
-                }
-            }
+            return internalIterator(efb)
         } catch (EntityException e) {
             efb.closeAll()
             throw e
@@ -536,23 +509,9 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         long count = 0
         try {
-            count = internalCount(efb)
-        } catch (TableMissingException e) {
-            efb.closeAll()
-            if (entityDefinition.isViewEntity() ||
-                    efi.getDatasourceNode(efi.getEntityGroupName(entityDefinition.entityName))?."@add-missing-runtime" == "false") {
-                throw e
-            } else {
-                efi.entityDbMeta.createTable(entityDefinition)
+            efi.entityDbMeta.checkTableRuntime(entityDefinition)
 
-                try {
-                    count = internalCount(efb)
-                } catch (SQLException e2) {
-                    throw new EntityException("Error finding count", e2)
-                } finally {
-                    efb.closeAll()
-                }
-            }
+            count = internalCount(efb)
         } catch (SQLException e) {
             throw new EntityException("Error finding count", e)
         } finally {
@@ -633,10 +592,5 @@ class EntityFindImpl implements EntityFind {
         if (this.dynamicView) return false
         String entityCache = this.getEntityDef().getEntityNode()."@use-cache" == "true"
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
-    }
-
-    static class TableMissingException extends EntityException {
-        TableMissingException(String m) { super(m) }
-        TableMissingException(String m, Throwable t) { super(m, t) }
     }
 }

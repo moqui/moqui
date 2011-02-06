@@ -132,6 +132,20 @@ public class EntityDefinition {
         }
     }
 
+    String getFullTableName() {
+        if (efi.getDatabaseNode(efi.getEntityGroupName(entityName))?."@use-schemas" != "false") {
+            String schemaName = getSchemaName()
+            return schemaName ? schemaName + "." + getTableName() : getTableName()
+        } else {
+            return getTableName()
+        }
+    }
+
+    String getSchemaName() {
+        String schemaName = efi.getDatasourceNode(efi.getEntityGroupName(entityName))?."@schema-name"
+        return schemaName ?: null
+    }
+
     boolean isField(String fieldName) {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
         return (this.getFieldNode(fieldName)) ? true : false

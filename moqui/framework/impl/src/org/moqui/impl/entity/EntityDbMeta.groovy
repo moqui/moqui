@@ -14,14 +14,42 @@ package org.moqui.impl.entity
 import java.sql.SQLException
 import java.sql.Connection
 import java.sql.Statement
+import java.sql.DatabaseMetaData
+import java.sql.ResultSet
+
 import org.moqui.entity.EntityException
+import javax.transaction.Transaction
 
 class EntityDbMeta {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
 
+    protected Set<String> existingTableEntityNames = new HashSet<String>()
+
     protected EntityFacadeImpl efi
     EntityDbMeta(EntityFacadeImpl efi) {
         this.efi = efi
+    }
+
+    void checkTableRuntime(EntityDefinition ed) {
+        boolean addMissingRuntime = !ed.isViewEntity() &&
+                efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" != "false"
+        if (!addMissingRuntime) return
+
+        // if it's in this table we've already checked it
+        if (existingTableEntityNames.contains(ed.entityName)) return
+
+        Transaction parentTransaction = null
+        try {
+            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                parentTransaction = efi.ecfi.transactionFacade.suspend()
+            }
+            // transaction out of the way, check/create
+            if (!tableExists(ed)) createTable(ed)
+        } finally {
+            if (parentTransaction != null) {
+                efi.ecfi.transactionFacade.resume(parentTransaction)
+            }
+        }
     }
 
     void createTable(EntityDefinition ed) {
@@ -33,7 +61,7 @@ class EntityDbMeta {
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ")
-        sql.append(ed.getTableName())
+        sql.append(ed.getFullTableName())
         sql.append(" (")
 
         for (String fieldName in ed.getFieldNames(true, true)) {
@@ -105,6 +133,8 @@ class EntityDbMeta {
         Statement stmt = null
         boolean beganTransaction = efi.ecfi.transactionFacade.begin(null)
         try {
+            if (logger.infoEnabled) logger.info("Creating table [${ed.tableName}] for entity [${ed.entityName}]")
+
             con = efi.getConnection(groupName)
             stmt = con.createStatement()
             stmt.executeUpdate(sql.toString())
@@ -118,6 +148,33 @@ class EntityDbMeta {
             if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
                 efi.ecfi.transactionFacade.commit(beganTransaction)
             }
+        }
+    }
+
+    boolean tableExists(EntityDefinition ed) {
+        if (existingTableEntityNames.contains(ed.entityName)) return true
+
+        String groupName = efi.getEntityGroupName(ed.entityName)
+        Connection con = null
+        ResultSet tableSet = null
+        try {
+            con = efi.getConnection(groupName)
+            DatabaseMetaData dbData = con.getMetaData()
+
+            String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
+            tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
+            if (tableSet.next()) {
+                existingTableEntityNames.add(ed.entityName)
+                return true
+            } else {
+                logger.info("Table for entity [${ed.entityName}] does NOT exist")
+                return false
+            }
+        } catch (Exception e) {
+            throw new EntityException("Exception checking to see if table [${ed.getTableName()}] exists", e)
+        } finally {
+            if (tableSet != null) tableSet.close()
+            if (con != null) con.close()
         }
     }
 }

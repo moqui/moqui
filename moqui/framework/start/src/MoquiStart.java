@@ -45,7 +45,7 @@ public class MoquiStart extends ClassLoader {
             System.out.println("-load -------- Run data loader");
             System.out.println("    -types=<type>[,<type>] -- Data types to load (can be anything, common are: seed, seed-initial, demo, ...)");
             System.out.println("    -location=<location> ---- Location of data file to load");
-            System.out.println("    -timeout=<seconds> ------ Transaction timeout for each file");
+            System.out.println("    -timeout=<seconds> ------ Transaction timeout for each file, defaults to 600 seconds (10 minutes)");
             System.out.println("    -dummy-fks -------------- Use dummy foreign-keys to avoid referential integrity errors");
             System.out.println("    -use-try-insert --------- Try insert and update on error instead of checking for record first");
             System.out.println("  If no -types or -location argument is used all known data files of all types will be loaded.");
@@ -80,8 +80,8 @@ public class MoquiStart extends ClassLoader {
             } catch (Exception e) {
                 System.out.println("Error loading or running Moqui.loadData with args [" + argMap + "]: " + e.toString());
                 e.printStackTrace();
-                System.exit(0);
             }
+            System.exit(0);
         } else {
             // TODO
             System.out.println("The simple server is not yet implemented");

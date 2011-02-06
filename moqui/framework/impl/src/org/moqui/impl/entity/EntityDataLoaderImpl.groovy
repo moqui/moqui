@@ -33,6 +33,7 @@ import org.xml.sax.XMLReader
 import org.xml.sax.InputSource
 import org.xml.sax.Locator
 import org.xml.sax.SAXException
+import org.apache.commons.collections.set.ListOrderedSet
 
 class EntityDataLoaderImpl implements EntityDataLoader {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -44,7 +45,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     String xmlText = null
     Set<String> dataTypes = new HashSet<String>()
 
-    int transactionTimeout = 3600
+    int transactionTimeout = 600
     boolean useTryInsert = false
     boolean dummyFks = false
 
@@ -149,11 +150,16 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         try {
             InputStream inputStream = null
             try {
+                logger.info("Loading entity XML data from [${location}]")
+                long beforeRecords = exh.valuesRead ?: 0
+                long beforeTime = System.currentTimeMillis()
+
                 inputStream = efi.ecfi.resourceFacade.getLocationStream(location)
                 XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
                 reader.setContentHandler(exh)
                 reader.parse(new InputSource(inputStream))
-                logger.info("Loaded entity XML data from [${location}]")
+
+                logger.info("Loaded ${(exh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
             } finally {
@@ -230,7 +236,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         List<String> getMessageList() { return messageList }
 
         void startElement(String ns, String localName, String qName, Attributes attributes) {
-            logger.info("startElement ns [${ns}], localName [${localName}] qName [${qName}]")
+            // logger.info("startElement ns [${ns}], localName [${localName}] qName [${qName}]")
             if (qName == "entity-facade-xml") {
                 String type = attributes.getValue("type")
                 if (type && edli.dataTypes && !edli.dataTypes.contains(type)) throw new TypeToSkipException()
@@ -304,10 +310,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 } else {
                     // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name
                     if (!currentValue.containsPrimaryKey()) {
-                        List<String> pkFieldList = currentValue.getEntityDefinition().getFieldNames(true, false)
+                        ListOrderedSet pkFieldList = currentValue.getEntityDefinition().getFieldNames(true, false)
                         if (pkFieldList.size() == 1) {
                             String newSeq = edli.efi.sequencedIdPrimary(currentValue.getEntityName(), null)
-                            currentValue.setString(pkFieldList.get(0), newSeq)
+                            currentValue.setString((String) pkFieldList.get(0), newSeq)
                         } else {
                             throw new SAXException("Cannot store value with incomplete primary key with more than 1 primary key field: " + currentValue)
                         }

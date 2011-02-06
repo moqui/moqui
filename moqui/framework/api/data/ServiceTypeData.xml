@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <!-- ScheduledService Statuses -->
-    <StatusType description="Scheduled Service" hasTable="N" parentTypeId="" statusTypeId="SCHED_SERVICE"/>
+    <StatusType description="Scheduled Service" parentTypeId="" statusTypeId="SCHED_SERVICE"/>
     <StatusItem description="Pending" sequenceNum="01" statusCode="PENDING" statusId="SCHSER_PENDING" statusTypeId="SCHED_SERVICE"/>
     <StatusItem description="Memory Queued" sequenceNum="02" statusCode="QUEUED" statusId="SCHSER_QUEUED" statusTypeId="SCHED_SERVICE"/>
     <StatusItem description="Running" sequenceNum="05" statusCode="RUNNING" statusId="SCHSER_RUNNING" statusTypeId="SCHED_SERVICE"/>

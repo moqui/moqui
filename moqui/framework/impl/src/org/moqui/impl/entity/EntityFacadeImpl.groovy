@@ -59,6 +59,8 @@ class EntityFacadeImpl implements EntityFacade {
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
     protected final Cache entityLocationCache
 
+    protected EntityDbMeta dbMeta = null
+
     EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
@@ -150,7 +152,11 @@ class EntityFacadeImpl implements EntityFacade {
                 if (inlineJdbc."@pool-time-maint") ads.setMaintenanceInterval(inlineJdbc."@pool-time-maint" as int)
                 if (inlineJdbc."@pool-time-wait") ads.setBorrowConnectionTimeout(inlineJdbc."@pool-time-wait" as int)
 
-                if (inlineJdbc."@pool-test-query") ads.setTestQuery(inlineJdbc."@pool-test-query")
+                if (inlineJdbc."@pool-test-query") {
+                    ads.setTestQuery(inlineJdbc."@pool-test-query")
+                } else if (database."@default-test-query") {
+                    ads.setTestQuery(database."@default-test-query")
+                }
 
                 this.dataSourceByGroupMap.put(datasource."@group-name", ads)
             } else {
@@ -214,7 +220,7 @@ class EntityFacadeImpl implements EntityFacade {
                     theList = new ArrayList()
                     this.entityLocationCache.put((String) entity."@entity-name", theList)
                 }
-                theList.add(entityRr.location)
+                if (!theList.contains(entityRr.location)) theList.add(entityRr.location)
                 numEntities++
             }
             logger.info("Found [${numEntities}] entity definitions in [${entityRr.location}]")
@@ -227,6 +233,7 @@ class EntityFacadeImpl implements EntityFacade {
 
         List<String> entityLocationList = (List<String>) this.entityLocationCache.get(entityName)
         if (!entityLocationList) {
+            if (logger.warnEnabled) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
             this.loadAllEntityLocations()
             entityLocationList = (List<String>) this.entityLocationCache.get(entityName)
             // no locations found for this entity, entity probably doesn't exist
@@ -311,7 +318,7 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     EntityDbMeta getEntityDbMeta() {
-        return new EntityDbMeta(this)
+        return dbMeta ? dbMeta : (dbMeta = new EntityDbMeta(this))
     }
 
     // ========== Interface Implementations ==========
@@ -347,24 +354,27 @@ class EntityFacadeImpl implements EntityFacade {
             if (tf.isTransactionInPlace()) parentTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(null)
             try {
-                EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName).useCache(false).forUpdate(true).one()
-                if (!svi) {
+                EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName)
+                        .useCache(false).forUpdate(true).one()
+                if (svi == null) {
                     svi = makeValue("SequenceValueItem")
                     svi.set("seqName", seqName)
                     // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
-                    svi.set("seqNum", 100000)
+                    seqNum = 100000
+                    svi.set("seqNum", seqNum)
                     svi.create()
-                }
-                seqNum = svi.getLong("seqNum")
-                if (staggerMax) {
-                    long stagger = Math.round(Math.random() * staggerMax)
-                    if (stagger == 0) stagger = 1
-                    seqNum += stagger
                 } else {
-                    seqNum += 1
+                    seqNum = svi.getLong("seqNum")
+                    if (staggerMax) {
+                        long stagger = Math.round(Math.random() * staggerMax)
+                        if (stagger == 0) stagger = 1
+                        seqNum += stagger
+                    } else {
+                        seqNum += 1
+                    }
+                    svi.set("seqNum", seqNum)
+                    svi.update()
                 }
-                svi.set("seqNum", seqNum)
-                svi.update()
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
             } finally {
@@ -377,7 +387,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"
-        return (prefix ? prefix : "") + seqNum.toString()
+        return (prefix?:"") + seqNum.toString()
     }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdSecondary(EntityValue, String, int, int) */

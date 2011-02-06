@@ -249,12 +249,13 @@
         <load-data location="classpath://data/BasicTypeData.xml"/>
         <load-data location="classpath://data/CommonL10nData.xml"/>
         <load-data location="classpath://data/EntityTypeData.xml"/>
+        <load-data location="classpath://data/GeoCountryData.xml"/>
         <load-data location="classpath://data/ScreenTypeData.xml"/>
         <load-data location="classpath://data/SecurityTypeData.xml"/>
         <load-data location="classpath://data/ServerTypeData.xml"/>
         <load-data location="classpath://data/ServiceTypeData.xml"/>
-        <load-data location="classpath://data/TenantTypeData.xml"/>
-        <load-data location="classpath://data/UnitTypeData.xml"/>
+        <load-data location="classpath://data/TenantDefaultData.xml"/>
+        <load-data location="classpath://data/UnitData.xml"/>
     </entity-facade>
     <database-list>
         <dictionary-type type="id" java-type="java.lang.String" default-sql-type="VARCHAR(20)"/>
@@ -285,14 +286,15 @@
                   use-indices-unique="false"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
-                  default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource"
-                  table-missing-pattern="Table.*does not exist.">
+                  default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">
+            <!-- TODO default-test-query="???" maybe like SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0 -->
         </database>
         <database name="hsql"
                   use-fk-initially-deferred="false"
                   join-style="ansi-no-parenthesis"
                   default-isolation-level="ReadUncommitted"
-                  default-jdbc-driver="org.hsqldb.jdbcDriver">
+                  default-jdbc-driver="org.hsqldb.jdbcDriver"
+                  default-test-query="SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0">
             <database-type type="id" sql-type="VARCHAR"/>
             <database-type type="id-long" sql-type="VARCHAR"/>
             <database-type type="id-very-long" sql-type="VARCHAR"/>
@@ -319,7 +321,8 @@
                   character-set="latin1"
                   collate="latin1_general_cs"
                   default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="com.mysql.jdbc.Driver">
+                  default-jdbc-driver="com.mysql.jdbc.Driver"
+                  default-test-query="SELECT 1">
             <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
             <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
             <database-type type="number-float" sql-type="DECIMAL(32,12)"/>
@@ -335,7 +338,8 @@
                   join-style="ansi"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
-                  default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource">
+                  default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource"
+                  default-test-query="SELECT 1 FROM DUAL">
             <database-type type="id" sql-type="VARCHAR2(20)"/>
             <database-type type="id-long" sql-type="VARCHAR2(60)"/>
             <database-type type="id-very-long" sql-type="VARCHAR2(255)"/>
@@ -357,7 +361,8 @@
                   result-fetch-size="50"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.postgresql.Driver"
-                  default-xa-ds-class="org.postgresql.xa.PGXADataSource">
+                  default-xa-ds-class="org.postgresql.xa.PGXADataSource"
+                  default-test-query="SELECT 1">
             <database-type type="id" sql-type="TEXT"/>
             <database-type type="id-long" sql-type="TEXT"/>
             <database-type type="id-very-long" sql-type="TEXT"/>

@@ -34,26 +34,27 @@ class UrlResourceReference implements ResourceReference {
         return this
     }
 
-    String getLocation() { return locationUrl.toString() }
+    String getLocation() { return locationUrl?.toString() }
 
-    URI getUri() { return locationUrl.toURI() }
+    URI getUri() { return locationUrl?.toURI() }
     String getFileName() {
+        if (!locationUrl) return null
         String path = locationUrl.getPath()
         return path.contains("/") ? path.substring(path.lastIndexOf("/")+1) : path
     }
 
-    InputStream openStream() { return locationUrl.openStream() }
+    InputStream openStream() { return locationUrl?.openStream() }
 
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
-    boolean supportsAll() { locationUrl.protocol == "file" }
+    boolean supportsAll() { locationUrl?.protocol == "file" }
 
     boolean supportsUrl() { return true }
     URL getUrl() { return locationUrl }
 
-    boolean supportsDirectory() { return locationUrl.protocol == "file" }
+    boolean supportsDirectory() { return locationUrl?.protocol == "file" }
     boolean isFile() {
-        if (locationUrl.protocol == "file") {
+        if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
             return f.isFile()
         } else {
@@ -61,7 +62,7 @@ class UrlResourceReference implements ResourceReference {
         }
     }
     boolean isDirectory() {
-        if (locationUrl.protocol == "file") {
+        if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
             return f.isDirectory()
         } else {
@@ -69,7 +70,7 @@ class UrlResourceReference implements ResourceReference {
         }
     }
     List<ResourceReference> getDirectoryEntries() {
-        if (locationUrl.protocol == "file") {
+        if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
@@ -81,11 +82,11 @@ class UrlResourceReference implements ResourceReference {
         }
     }
 
-    boolean supportsExists() { return locationUrl.protocol == "file" || exists != null }
+    boolean supportsExists() { return locationUrl?.protocol == "file" || exists != null }
     boolean getExists() {
         if (exists != null) return exists
 
-        if (locationUrl.protocol == "file") {
+        if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
             exists = f.exists()
             return exists

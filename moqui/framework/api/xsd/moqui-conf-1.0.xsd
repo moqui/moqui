@@ -593,7 +593,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="default-jdbc-driver" type="xs:string"/>
             <xs:attribute name="default-xa-ds-class" type="xs:string"/>
-            <xs:attribute name="table-missing-pattern" type="xs:string"/>
+            <xs:attribute name="default-test-query" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="dictionary-type">

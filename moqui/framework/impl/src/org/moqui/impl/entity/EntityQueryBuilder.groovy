@@ -24,7 +24,6 @@ import javax.sql.rowset.serial.SerialBlob
 
 import org.moqui.entity.EntityException
 import org.moqui.impl.StupidUtilities
-import org.moqui.impl.entity.EntityFindImpl.TableMissingException
 
 class EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityQueryBuilder.class)
@@ -58,14 +57,8 @@ class EntityQueryBuilder {
         return this.connection
     }
 
-    protected void handleSqlExeption(Exception e, String sql) {
-        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(this.mainEntityDefinition.getEntityName()))
-        String tableMissingPattern = databaseNode ? databaseNode."@table-missing-pattern" : null
-        if (tableMissingPattern && e.message.matches(tableMissingPattern)) {
-            throw new TableMissingException("Table missing error with statement:" + sql, e)
-        } else {
-            throw new EntityException("SQL Exception with statement:" + sql, e)
-        }
+    protected void handleSqlException(Exception e, String sql) {
+        throw new EntityException("SQL Exception with statement:" + sql, e)
     }
 
     PreparedStatement makePreparedStatement() {
@@ -74,7 +67,7 @@ class EntityQueryBuilder {
         try {
             this.ps = connection.prepareStatement(sql)
         } catch (SQLException sqle) {
-            handleSqlExeption(sqle, sql)
+            handleSqlException(sqle, sql)
         }
         return this.ps
     }
@@ -165,6 +158,9 @@ class EntityQueryBuilder {
             setPreparedStatementValue(this.eqb.ps, index, this.value, this.fieldNode,
                     this.eqb.mainEntityDefinition.getEntityName(), this.eqb.efi)
         }
+
+        @Override
+        String toString() { return fieldNode."@name" + ":" + value }
     }
 
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
@@ -200,79 +196,79 @@ class EntityQueryBuilder {
                         } catch (IOException e) {
                             throw new EntityException("Error reading long character stream for field [${fieldNode."@name"}] of entity [${entityValueImpl.getEntityName()}]", e)
                         }
-                        entityValueImpl.valueMap.put(fieldNode."@name", strBuf.toString())
+                        entityValueImpl.getValueMap().put(fieldNode."@name", strBuf.toString())
                     } else {
-                        entityValueImpl.valueMap.put(fieldNode."@name", null)
+                        entityValueImpl.getValueMap().put(fieldNode."@name", null)
                     }
                 } else {
                     String value = rs.getString(index)
-                    entityValueImpl.valueMap.put(fieldNode."@name", value)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", value)
                 }
                 break
 
             case 2:
-                entityValueImpl.valueMap.put(fieldNode."@name", rs.getTimestamp(index))
+                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getTimestamp(index))
                 break
 
             case 3:
-                entityValueImpl.valueMap.put(fieldNode."@name", rs.getTime(index))
+                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getTime(index))
                 break
 
             case 4:
-                entityValueImpl.valueMap.put(fieldNode."@name", rs.getDate(index))
+                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getDate(index))
                 break
 
             case 5:
                 int intValue = rs.getInt(index)
                 if (rs.wasNull()) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", null)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", Integer.valueOf(intValue))
+                    entityValueImpl.getValueMap().put(fieldNode."@name", Integer.valueOf(intValue))
                 }
                 break
 
             case 6:
                 long longValue = rs.getLong(index)
                 if (rs.wasNull()) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", null)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", Long.valueOf(longValue))
+                    entityValueImpl.getValueMap().put(fieldNode."@name", Long.valueOf(longValue))
                 }
                 break
 
             case 7:
                 float floatValue = rs.getFloat(index)
                 if (rs.wasNull()) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", null)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", Float.valueOf(floatValue))
+                    entityValueImpl.getValueMap().put(fieldNode."@name", Float.valueOf(floatValue))
                 }
                 break
 
             case 8:
                 double doubleValue = rs.getDouble(index)
                 if (rs.wasNull()) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", null)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", Double.valueOf(doubleValue))
+                    entityValueImpl.getValueMap().put(fieldNode."@name", Double.valueOf(doubleValue))
                 }
                 break
 
             case 9:
                 BigDecimal bigDecimalValue = rs.getBigDecimal(index)
                 if (rs.wasNull()) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", null)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", bigDecimalValue)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", bigDecimalValue)
                 }
                 break
 
             case 10:
                 boolean booleanValue = rs.getBoolean(index)
                 if (rs.wasNull()) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", null)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", Boolean.valueOf(booleanValue))
+                    entityValueImpl.getValueMap().put(fieldNode."@name", Boolean.valueOf(booleanValue))
                 }
                 break
 
@@ -308,9 +304,9 @@ class EntityQueryBuilder {
                 }
 
                 if (obj != null) {
-                    entityValueImpl.valueMap.put(fieldNode."@name", obj)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", obj)
                 } else {
-                    entityValueImpl.valueMap.put(fieldNode."@name", originalBytes)
+                    entityValueImpl.getValueMap().put(fieldNode."@name", originalBytes)
                 }
                 break
             case 12:
@@ -330,24 +326,24 @@ class EntityQueryBuilder {
                     // for backward compatibility, check to see if there is a serialized object and if so return that
                     Object blobObject = deserializeField(fieldBytes, index, fieldNode."@name")
                     if (blobObject != null) {
-                        entityValueImpl.valueMap.put(fieldNode."@name", blobObject)
+                        entityValueImpl.getValueMap().put(fieldNode."@name", blobObject)
                     } else {
                         if (originalObject instanceof Blob) {
                             // NOTE using SerialBlob here instead of the Blob from the database to make sure we can pass it around, serialize it, etc
-                            entityValueImpl.valueMap.put(fieldNode."@name", new SerialBlob((Blob) originalObject))
+                            entityValueImpl.getValueMap().put(fieldNode."@name", new SerialBlob((Blob) originalObject))
                         } else {
-                            entityValueImpl.valueMap.put(fieldNode."@name", originalObject)
+                            entityValueImpl.getValueMap().put(fieldNode."@name", originalObject)
                         }
                     }
                 }
 
                 break
             case 13:
-                entityValueImpl.valueMap.put(fieldNode."@name", new SerialClob(rs.getClob(index)))
+                entityValueImpl.getValueMap().put(fieldNode."@name", new SerialClob(rs.getClob(index)))
                 break
             case 14:
             case 15:
-                entityValueImpl.valueMap.put(fieldNode."@name", rs.getObject(index))
+                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getObject(index))
                 break
             }
         } catch (SQLException sqle) {

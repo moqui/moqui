@@ -11,8 +11,6 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <Geo geoId="_NA_" geoName="Not Applicable" geoCodeAlpha3="_NA" geoCodeAlpha2="_N"/>
-    
     <!--
         Based on ISO 3166: http://www.iso.org/iso/en/prods-services/iso3166ma/index.html
         See also: http://en.wikipedia.org/wiki/ISO_3166-1_alpha-3
