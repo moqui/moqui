@@ -11,6 +11,7 @@
  */
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.CodeSource;
@@ -21,6 +22,13 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+/** This start class implements a ClassLoader and supports loading jars within a jar or war file in order to facilitate
+ * an executable war file. To do this it overrides the findResource, findResources, and loadClass methods of the
+ * ClassLoader class.
+ *
+ * The best source for research on the topic seems to be at http://www.jdotsoft.com, with a lot of good comments in the
+ * JarClassLoader source file there.
+ */
 public class MoquiStart extends ClassLoader {
 
     public static void main(String[] args) throws IOException {
@@ -35,6 +43,12 @@ public class MoquiStart extends ClassLoader {
             System.out.println("Usage: java -jar moqui.war [command] [arguments]");
             System.out.println("-help, -? ---- Help (this text)");
             System.out.println("-load -------- Run data loader");
+            System.out.println("    -types=<type>[,<type>] -- Data types to load (can be anything, common are: seed, seed-initial, demo, ...)");
+            System.out.println("    -location=<location> ---- Location of data file to load");
+            System.out.println("    -timeout=<seconds> ------ Transaction timeout for each file");
+            System.out.println("    -dummy-fks -------------- Use dummy foreign-keys to avoid referential integrity errors");
+            System.out.println("    -use-try-insert --------- Try insert and update on error instead of checking for record first");
+            System.out.println("  If no -types or -location argument is used all known data files of all types will be loaded.");
             System.out.println("[default] ---- Run simple server");
             System.out.println("");
             System.out.println("------------ Internal Class Path ------------");
@@ -47,11 +61,27 @@ public class MoquiStart extends ClassLoader {
         // make a list of arguments, remove the first one (the command)
         List<String> argList = new ArrayList<String>(Arrays.asList(args));
         if (argList.size() > 0) argList.remove(0);
+        Map<String, String> argMap = new HashMap<String, String>();
+        for (String arg: argList) {
+            if (arg.startsWith("-")) arg = arg.substring(1);
+            if (arg.contains("=")) {
+                argMap.put(arg.substring(0, arg.indexOf("=")), arg.substring(arg.indexOf("=")+1));
+            } else {
+                argMap.put(arg, "");
+            }
+        }
 
         // now run the command
         if ("-load".equals(firstArg)) {
-            // TODO
-            System.out.println("The loader is not yet implemented");
+            try {
+                Class c = moquiStartLoader.loadClass("org.moqui.Moqui");
+                Method m = c.getMethod("loadData", new Class<?>[] { Map.class });
+                m.invoke(null, argMap);
+            } catch (Exception e) {
+                System.out.println("Error loading or running Moqui.loadData with args [" + argMap + "]: " + e.toString());
+                e.printStackTrace();
+                System.exit(0);
+            }
         } else {
             // TODO
             System.out.println("The simple server is not yet implemented");
@@ -111,7 +141,7 @@ public class MoquiStart extends ClassLoader {
     }
 
     protected File createTempFile(JarEntry je) throws IOException {
-        byte[] jeBytes = getJarEntryBytes(je);
+        byte[] jeBytes = getJarEntryBytes(outerFile, je);
 
         String tempName = je.getName().replace('/', '_') + ".";
         File file = File.createTempFile(tempName, null);
@@ -126,7 +156,7 @@ public class MoquiStart extends ClassLoader {
         return file;
     }
 
-    protected byte[] getJarEntryBytes(JarEntry je) throws IOException {
+    protected byte[] getJarEntryBytes(JarFile jarFile, JarEntry je) throws IOException {
         DataInputStream dis = null;
         byte[] jeBytes = null;
         try {
@@ -135,7 +165,7 @@ public class MoquiStart extends ClassLoader {
                 throw new IllegalArgumentException("Size [" + lSize + "] not valid for war entry [" + je + "]");
             }
             jeBytes = new byte[(int)lSize];
-            InputStream is = outerFile.getInputStream(je);
+            InputStream is = jarFile.getInputStream(je);
             dis = new DataInputStream(is);
             dis.readFully(jeBytes);
         } finally {
@@ -193,7 +223,8 @@ public class MoquiStart extends ClassLoader {
                 c = findJarClass(className);
                 if (c != null) return c;
             } catch (Exception e) {
-                System.out.println("Error loading class [" + className + "] from jars in war file [" + outerFile + "]: " + e.toString());
+                System.out.println("Error loading class [" + className + "] from jars in war file [" + outerFile.getName() + "]: " + e.toString());
+                e.printStackTrace();
             }
             try {
                 ClassLoader cl = getParent();
@@ -210,9 +241,8 @@ public class MoquiStart extends ClassLoader {
 
     protected Class<?> findJarClass(String className) throws IOException, ClassFormatError {
         Class<?> c = classCache.get(className);
-        if (c != null) {
-            return c;
-        }
+        if (c != null) return c;
+
         String classFileName = className.replace('.', '/') + ".class";
         for (JarFile jarFile: jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(classFileName);
@@ -220,7 +250,12 @@ public class MoquiStart extends ClassLoader {
             if (jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + classFileName);
             if (jarEntry != null) {
                 definePackage(className, jarFile);
-                byte[] jeBytes = getJarEntryBytes(jarEntry);
+                byte[] jeBytes = getJarEntryBytes(jarFile, jarEntry);
+                if (jeBytes == null) {
+                    System.out.println("Could not get bytes for [" + jarEntry.getName() + "] in [" + jarFile.getName() + "]");
+                    continue;
+                }
+                // System.out.println("Class [" + classFileName + "] FOUND in jarFile [" + jarFile.getName() + "], size is " + (jeBytes == null ? "null" : jeBytes.length));
                 c = defineClass(className, jeBytes, 0, jeBytes.length, pd);
                 break;
             }

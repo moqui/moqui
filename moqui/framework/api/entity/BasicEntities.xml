@@ -138,6 +138,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="parentEnumId"/>
         </relationship>
     </entity>
+    <entity entity-name="EnumerationType" package-name="org.moqui.basic.enum" cache="true">
+        <field name="enumTypeId" type="id" is-pk="true"/>
+        <field name="description" type="text-long"/>
+    </entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.basic.geo -->

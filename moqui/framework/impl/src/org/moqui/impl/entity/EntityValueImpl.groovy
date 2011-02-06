@@ -50,10 +50,10 @@ class EntityValueImpl implements EntityValue {
     protected boolean modified = false
     protected boolean mutable = true
 
-    protected EntityValueImpl(EntityDefinition entityDefinition, EntityFacadeImpl efi) {
-        this.efi = efi
-        this.entityName = entityDefinition.getEntityName()
-        this.entityDefinition = entityDefinition
+    EntityValueImpl(EntityDefinition ed, EntityFacadeImpl efip) {
+        efi = efip
+        entityName = ed.getEntityName()
+        entityDefinition = ed
     }
 
     EntityFacadeImpl getEntityFacadeImpl() {
@@ -66,6 +66,10 @@ class EntityValueImpl implements EntityValue {
         if (!entityDefinition) entityDefinition = getEntityFacadeImpl().getEntityDefinition(entityName)
         return entityDefinition
     }
+
+    protected Map<String, Object> getValueMap() { return valueMap }
+    protected Map<String, Object> getDbValueMap() { return dbValueMap }
+    protected void setDbValueMap(Map<String, Object> map) { dbValueMap = map }
 
     void setSyncedWithDb() { dbValueMap = (Map) valueMap.clone(); modified = false }
 
@@ -290,9 +294,9 @@ class EntityValueImpl implements EntityValue {
     void createOrUpdate() {
         EntityValue dbValue = (EntityValue) this.clone()
         if (dbValue.refresh()) {
-            create()
-        } else {
             update()
+        } else {
+            create()
         }
     }
 
@@ -438,6 +442,7 @@ class EntityValueImpl implements EntityValue {
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
+        if (!pkFieldList) throw new IllegalArgumentException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
         ListOrderedSet nonPkFieldList = getEntityDefinition().getFieldNames(false, true)
         if (!nonPkFieldList) {
             logger.trace("Not doing refresh on entity with no non-PK fields; entity=" + this.toString())
@@ -469,7 +474,7 @@ class EntityValueImpl implements EntityValue {
         } catch (TableMissingException e) {
             eqb.closeAll()
             if (getEntityDefinition().isViewEntity() ||
-                    efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" == "false") {
+                    efi.getDatasourceNode(efi.getEntityGroupName(getEntityDefinition().entityName))?."@add-missing-runtime" == "false") {
                 throw e
             } else {
                 efi.entityDbMeta.createTable(getEntityDefinition())
@@ -760,9 +765,9 @@ class EntityValueImpl implements EntityValue {
     }
 
     public EntityValue cloneValue() {
-        EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), entityFacadeImpl)
-        newObj.valueMap.putAll(valueMap)
-        if (dbValueMap) newObj.dbValueMap = dbValueMap.clone()
+        EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), getEntityFacadeImpl())
+        newObj.getValueMap().putAll(getValueMap())
+        if (getDbValueMap()) newObj.setDbValueMap((Map<String, Object>) getDbValueMap().clone())
         // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
         return newObj
     }

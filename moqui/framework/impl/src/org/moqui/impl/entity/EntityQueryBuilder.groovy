@@ -24,6 +24,7 @@ import javax.sql.rowset.serial.SerialBlob
 
 import org.moqui.entity.EntityException
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.entity.EntityFindImpl.TableMissingException
 
 class EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityQueryBuilder.class)
@@ -57,13 +58,23 @@ class EntityQueryBuilder {
         return this.connection
     }
 
+    protected void handleSqlExeption(Exception e, String sql) {
+        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(this.mainEntityDefinition.getEntityName()))
+        String tableMissingPattern = databaseNode ? databaseNode."@table-missing-pattern" : null
+        if (tableMissingPattern && e.message.matches(tableMissingPattern)) {
+            throw new TableMissingException("Table missing error with statement:" + sql, e)
+        } else {
+            throw new EntityException("SQL Exception with statement:" + sql, e)
+        }
+    }
+
     PreparedStatement makePreparedStatement() {
         if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
         String sql = this.getSqlTopLevel().toString()
         try {
             this.ps = connection.prepareStatement(sql)
         } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception preparing statement:" + sql, sqle)
+            handleSqlExeption(sqle, sql)
         }
         return this.ps
     }

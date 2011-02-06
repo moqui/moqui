@@ -350,13 +350,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
             if (this.entityFindImpl.maxRows > 0) this.ps.setMaxRows(this.entityFindImpl.maxRows)
             if (this.entityFindImpl.fetchSize > 0) this.ps.setFetchSize(this.entityFindImpl.fetchSize)
         } catch (SQLException e) {
-            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(this.mainEntityDefinition.getEntityName()))
-            String tableMissingPattern = databaseNode ? databaseNode."@table-missing-pattern" : null
-            if (tableMissingPattern && e.message.matches(tableMissingPattern)) {
-                throw new TableMissingException("Table missing error while preparing statement:" + sql, e)
-            } else {
-                throw new EntityException("SQL Exception preparing statement:" + sql, e)
-            }
+            handleSqlExeption(e, sql)
         }
         return this.ps
     }

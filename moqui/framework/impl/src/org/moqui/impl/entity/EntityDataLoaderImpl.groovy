@@ -11,8 +11,15 @@
  */
 package org.moqui.impl.entity
 
+import javax.transaction.Transaction
 import javax.xml.parsers.SAXParserFactory
 
+import org.apache.commons.codec.binary.Base64
+
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
+import org.moqui.context.ResourceReference
+import org.moqui.entity.EntityException
 import org.moqui.entity.EntityDataLoader
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
@@ -25,13 +32,7 @@ import org.xml.sax.Attributes
 import org.xml.sax.XMLReader
 import org.xml.sax.InputSource
 import org.xml.sax.Locator
-import javax.transaction.Transaction
-import org.moqui.context.TransactionException
-import org.moqui.context.TransactionFacade
-import org.moqui.entity.EntityException
 import org.xml.sax.SAXException
-import org.apache.commons.codec.binary.Base64
-import org.moqui.context.ResourceReference
 
 class EntityDataLoaderImpl implements EntityDataLoader {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -95,7 +96,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
 
             for (String location in efi.ecfi.getComponentBaseLocations().values()) {
-                ResourceReference dataDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/data")
+                ResourceReference dataDirRr = efi.ecfi.resourceFacade.getLocationReference(location + "/data")
                 if (dataDirRr.supportsAll()) {
                     // if directory doesn't exist skip it, component doesn't have a data directory
                     if (!dataDirRr.exists || !dataDirRr.isDirectory()) continue
@@ -152,7 +153,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
                 reader.setContentHandler(exh)
                 reader.parse(new InputSource(inputStream))
-                logger.info("Loaded entity XML data from " + location)
+                logger.info("Loaded entity XML data from [${location}]")
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
             } finally {
@@ -160,25 +161,27 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
         } catch (Throwable t) {
             tf.rollback(beganTransaction, "Error loading XML text", t)
+            throw new IllegalArgumentException("Error loading XML data file [${location}]", t)
         } finally {
             if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
         }
     }
 
-    abstract class ValueHandler {
+    static abstract class ValueHandler {
         protected EntityDataLoaderImpl edli
-        abstract void handleValue(EntityValue value);
+        ValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
+        abstract void handleValue(EntityValue value)
     }
     static class CheckValueHandler extends ValueHandler {
         protected List<String> messageList = new LinkedList()
-        CheckValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
+        CheckValueHandler(EntityDataLoaderImpl edli) { super(edli) }
         List<String> getMessageList() { return messageList }
         void handleValue(EntityValue value) {
             value.checkAgainstDatabase(messageList)
         }
     }
     static class LoadValueHandler extends ValueHandler {
-        LoadValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
+        LoadValueHandler(EntityDataLoaderImpl edli) { super(edli) }
         void handleValue(EntityValue value) {
             if (edli.dummyFks) value.checkFks(true)
             if (edli.useTryInsert) {
@@ -195,7 +198,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
     static class ListValueHandler extends ValueHandler {
         protected EntityList el
-        ListValueHandler(EntityDataLoaderImpl edli) { this.edli = edli; el = new EntityListImpl(edli.efi) }
+        ListValueHandler(EntityDataLoaderImpl edli) { super(edli); el = new EntityListImpl(edli.efi) }
         void handleValue(EntityValue value) {
             el.add(value)
         }
@@ -227,11 +230,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         List<String> getMessageList() { return messageList }
 
         void startElement(String ns, String localName, String qName, Attributes attributes) {
+            logger.info("startElement ns [${ns}], localName [${localName}] qName [${qName}]")
             if (qName == "entity-facade-xml") {
                 String type = attributes.getValue("type")
-                if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
-                    throw new TypeToSkipException()
-                }
+                if (type && edli.dataTypes && !edli.dataTypes.contains(type)) throw new TypeToSkipException()
+                return
             }
 
             if (currentValue != null) {
