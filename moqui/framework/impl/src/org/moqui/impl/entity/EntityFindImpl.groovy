@@ -452,7 +452,7 @@ class EntityFindImpl implements EntityFind {
 
         ResultSet rs = efb.executeQuery()
 
-        eli = new EntityListIteratorImpl(con, rs, this.entityDef, this.fieldsToSelect, this.efi)
+        eli = new EntityListIteratorImpl(con, rs, this.getEntityDef(), this.fieldsToSelect, this.efi)
         // ResultSet will be closed in the EntityListIterator
         efb.releaseAll()
         return eli

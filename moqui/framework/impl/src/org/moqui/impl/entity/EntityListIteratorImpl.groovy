@@ -39,6 +39,8 @@ class EntityListIteratorImpl implements EntityListIterator {
         this.efi = efi
         this.con = con
         this.rs = rs
+        this.entityDefinition = entityDefinition
+        this.fieldsSelected = fieldsSelected
     }
 
     @Override
@@ -102,10 +104,10 @@ class EntityListIteratorImpl implements EntityListIterator {
 
     @Override
     EntityValue currentEntityValue() {
-        EntityValueImpl newEntityValue = new EntityValueImpl(this.entityDefinition, this.efi)
+        EntityValueImpl newEntityValue = new EntityValueImpl(entityDefinition, efi)
         int j = 1
-        for (String fieldName in this.fieldsSelected) {
-            EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, this.efi)
+        for (String fieldName in fieldsSelected) {
+            EntityQueryBuilder.getResultSetValue(rs, j, entityDefinition.getFieldNode(fieldName), newEntityValue, efi)
             j++
         }
         this.haveMadeValue = true
@@ -219,7 +221,7 @@ class EntityListIteratorImpl implements EntityListIterator {
             if (haveMadeValue && !rs.isBeforeFirst()) {
                 rs.beforeFirst()
             }
-            EntityList list = new EntityListImpl(this.efi)
+            EntityList list = new EntityListImpl(efi)
             EntityValue value
             while ((value = this.next()) != null) {
                 list.add(value)
