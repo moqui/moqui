@@ -24,6 +24,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <container-panel id="WebrootPanel">
             <panel-header>
                 <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
+                <section name="HeaderUserInfo">
+                    <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
+                    <widgets>
+                        <container id="header-user">
+                            <label text="${ec.user.userAccount?.userName}"/>
+                            <link text="Logout" url="/Login/logout"/>
+                        </container>
+                    </widgets>
+                </section>
                 <container id="header-menu"><subscreens-menu/></container>
             </panel-header>
             <panel-center>

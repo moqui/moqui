@@ -188,7 +188,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#assign urlInfo = sri.makeUrlByType(.node["@url"][0], .node["@url-type"][0]!"transition")/>
 <#assign parameterMap = ec.getContext().get(.node["@parameter-map"][0]?if_exists)?if_exists/>
 <#if urlInfo.disableLink>
-<span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</span>
+<span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</span>
 <#else/>
 <!-- TODO get parameters from the urlInfo, extend method there to accept parameter parent element, name of parameterMap in context -->
 <#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
@@ -201,7 +201,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#t><#list parameterMap?keys as pKey>${pKey?url}=${parameterMap[pKey]?url}<#if pKey_has_next>&amp;</#if></#list>
     <#t></#assign>
     <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
-    <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${.node["@text"]}</#if>
+    <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if>
     </a>
 <#else/>
     <form method="post" action="${urlInfo.url}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
@@ -210,7 +210,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
     <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
     <#else/>
-    <input type="submit" value="${.node["@text"]}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
+    <input type="submit" value="${ec.resource.evaluateStringExpand(.node["@text"], "")}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
     </#if>
     </form>
     <#-- NOTE: consider using a link instead of submit buttons/image, would look something like this (would require id attribute, or add a name attribute):
@@ -218,7 +218,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#if .node["image"]?has_content>
             <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
             <#else/>
-            ${.node["@text"]}
+            ${ec.resource.evaluateStringExpand(.node["@text"], "")}
             <#/if>
         </a>
     -->
@@ -228,7 +228,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro "label">
 <#assign labelType = .node["@type"][0]?default("span")/>
-<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${.node["@text"]}</${labelType}>
+<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</${labelType}>
 </#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
 

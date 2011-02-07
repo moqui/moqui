@@ -21,6 +21,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response type="screen-last"/>
         <error-response url="."/>
     </transition>
+    <transition name="logout">
+        <actions><call-script>ec.user.logoutUser()</call-script></actions>
+        <default-response url="/"/>
+        <error-response url="."/>
+    </transition>
     <widgets>
         <container id="LoginBox">
             <form-single name="login" transition="login">

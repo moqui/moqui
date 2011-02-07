@@ -19,7 +19,7 @@
     <!-- stdout appender -->
     <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
         <!-- NOTE: this gets info messages, to see all messages look at the rolling-file target -->
-        <param name="threshold" value="info"/>
+        <param name="threshold" value="all"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/>
         </layout>

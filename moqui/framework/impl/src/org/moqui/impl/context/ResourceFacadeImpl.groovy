@@ -230,17 +230,29 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
-        return getGroovyShell().evaluate(expression, debugLocation) as boolean
+        if (debugLocation) {
+            return getGroovyShell().evaluate(expression, debugLocation) as boolean
+        } else {
+            return getGroovyShell().evaluate(expression) as boolean
+        }
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateContextField(String, String) */
     Object evaluateContextField(String expression, String debugLocation) {
-        return getGroovyShell().evaluate(expression, debugLocation)
+        if (debugLocation) {
+            return getGroovyShell().evaluate(expression, debugLocation)
+        } else {
+            return getGroovyShell().evaluate(expression)
+        }
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
     String evaluateStringExpand(String inputString, String debugLocation) {
-        return getGroovyShell().evaluate('"""' + inputString + '"""', debugLocation) as String
+        if (debugLocation) {
+            return getGroovyShell().evaluate('"""' + inputString + '"""', debugLocation) as String
+        } else {
+            return getGroovyShell().evaluate('"""' + inputString + '"""') as String
+        }
     }
     protected GroovyShell getGroovyShell() {
         // consider not caching this; does Binding eval at runtime or when built? if at runtime can just create one

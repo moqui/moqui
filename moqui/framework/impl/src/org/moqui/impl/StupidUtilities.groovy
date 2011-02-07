@@ -113,8 +113,8 @@ class StupidUtilities {
             case "contains": result = (field as String).contains(toField as String); break;
             case "not-contains": result = !(field as String).contains(toField as String); break;
 
-            case "empty": result = (field ? true : false); break;
-            case "not-empty": result = (field ? false : true); break;
+            case "empty": result = (field ? false : true); break;
+            case "not-empty": result = (field ? true : false); break;
 
             case "matches": result = (field as String).matches(toField as String); break;
             case "not-matches": result = !(field as String).matches(toField as String); break;
@@ -124,6 +124,8 @@ class StupidUtilities {
             default: result = (field == toField)
             break;
         }
+
+        if (logger.traceEnabled) logger.trace("Compare result [${result}] for field [${field}] operator [${operator}] value [${value}] toField [${toField}] type [${type}]")
         return result
     }
 

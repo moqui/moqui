@@ -50,6 +50,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected String renderMode = null
     protected String characterEncoding = null
     protected String macroTemplateLocation = null
+    protected Boolean boundaryComments = null
 
     protected HttpServletRequest request = null
     protected HttpServletResponse response = null
@@ -139,8 +140,8 @@ class ScreenRenderImpl implements ScreenRender {
 
         // check webapp settings for each screen in the path
         if (!checkWebappSettings(rootScreenDef)) return
-        for (ScreenDefinition nextSd in screenUrlInfo.screenPathDefList) {
-            if (!checkWebappSettings(nextSd)) return
+        for (ScreenDefinition checkSd in screenUrlInfo.screenPathDefList) {
+            if (!checkWebappSettings(checkSd)) return
         }
 
         if (screenUrlInfo.targetTransition) {
@@ -303,6 +304,7 @@ class ScreenRenderImpl implements ScreenRender {
             return false
         }
         // if screen requires auth and there is not active user redirect to login screen, save this request
+        logger.info("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
         if (currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
@@ -326,7 +328,9 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     boolean doBoundaryComments() {
-        return sfi.ecfi.confXmlRoot."screen-facade"[0]."@boundary-comments" == "true"
+        if (boundaryComments != null) return boundaryComments
+        boundaryComments = sfi.ecfi.confXmlRoot."screen-facade"[0]."@boundary-comments" == "true"
+        return boundaryComments
     }
 
     ScreenDefinition getActiveScreenDef() {

@@ -328,6 +328,9 @@ class EntityFindImpl implements EntityFind {
             // put it in whether null or not
             entityOneCache.put(whereCondition, newEntityValue)
         }
+
+        if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
+
         return newEntityValue
     }
 

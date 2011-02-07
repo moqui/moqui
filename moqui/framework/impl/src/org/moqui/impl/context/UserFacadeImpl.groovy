@@ -48,6 +48,9 @@ class UserFacadeImpl implements UserFacade {
             String userId = (String) request.session.getAttribute("moqui.userId")
             // better not to do this, if there was a user before this init leave it for history/debug: if (this.userIdStack) this.userIdStack.pop()
             if (this.userIdStack.size() == 0 || this.userIdStack.peek() != userId) this.userIdStack.push(userId)
+            if (logger.traceEnabled) logger.trace("For new request found moqui.userId [${userId}] in the session; userIdStack is [${this.userIdStack}]")
+        } else {
+            if (logger.traceEnabled) logger.trace("For new request NO moqui.userId in the session; userIdStack is [${this.userIdStack}]")
         }
         if (request.session.getAttribute("moqui.visitId")) {
             this.visitId = (String) request.session.getAttribute("moqui.visitId")
@@ -167,9 +170,8 @@ class UserFacadeImpl implements UserFacade {
             }
 
             // if WebExecutionContext add to session
-            if (eci.ecfi.getExecutionContext() instanceof WebExecutionContext) {
-                WebExecutionContext wec = (WebExecutionContext) eci.ecfi.getExecutionContext()
-                wec.getSession().setAttribute("moqui.userId", newUserAccount.userId)
+            if (eci.ecfi.executionContext instanceof WebExecutionContext) {
+                ((WebExecutionContext) eci.ecfi.executionContext).session.setAttribute("moqui.userId", newUserAccount.userId)
             }
 
             // just in case there is already a user authenticated push onto a stack to remember
@@ -248,6 +250,9 @@ class UserFacadeImpl implements UserFacade {
 
     void logoutUser() {
         if (this.userIdStack) this.userIdStack.pop()
+        if (eci.ecfi.executionContext instanceof WebExecutionContext) {
+            ((WebExecutionContext) eci.ecfi.executionContext).session.removeAttribute("moqui.userId")
+        }
     }
 
     /* @see org.moqui.context.UserFacade#getUserId() */
