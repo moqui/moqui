@@ -36,7 +36,8 @@ class MoquiServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        webappId = config.getServletContext().getContextPath().substring(1) ?: "ROOT"
+        String contextPath = config.getServletContext().getContextPath()
+        webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
         webappMoquiName = config.getServletContext().getInitParameter("moqui-name")
 
         logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${webappMoquiName}], context name [${config.getServletContext().getServletContextName()}], located at [${config.getServletContext().getRealPath("/")}]")

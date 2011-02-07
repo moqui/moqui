@@ -32,8 +32,9 @@ class MoquiEventListener implements HttpSessionListener {
         }
 
         // create and persist Visit
-        String webappName = session.getServletContext().getContextPath().substring(1) ?: "ROOT"
-        Map parameters = [sessionId:session.id, webappName:webappName, fromDate:new Timestamp(session.getCreationTime())]
+        String contextPath = session.getServletContext().getContextPath()
+        String webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
+        Map parameters = [sessionId:session.id, webappName:webappId, fromDate:new Timestamp(session.getCreationTime())]
         InetAddress address = InetAddress.getLocalHost();
         if (address) {
             parameters.serverIpAddress = address.getHostAddress()

@@ -110,13 +110,14 @@ border: 1px solid;
 border-color: #ddd #bbb #999;
 cursor: pointer;
 color: #333;
-display:inline-block;
+display: inline-block;
 font-size: 0.8em;
 font-weight: bold;
 outline: 0;
 overflow: visible;
+margin: 0px 2px 0px 2px;
 padding: 2px 4px 2px 4px;
-text-decoration:none;
+text-decoration: none;
 text-shadow: #fff 0 1px 1px;
 width: auto;
 }

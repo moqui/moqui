@@ -50,7 +50,8 @@ class WebExecutionContextImpl implements WebExecutionContext {
     protected Map<String, Object> sessionAttributes = null
     protected Map<String, Object> applicationAttributes = null
 
-    WebExecutionContextImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response, ExecutionContextImpl eci) {
+    WebExecutionContextImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
+                            ExecutionContextImpl eci) {
         this.eci = eci
         this.ecfi = eci.ecfi
         this.webappMoquiName = webappMoquiName
@@ -127,12 +128,12 @@ class WebExecutionContextImpl implements WebExecutionContext {
     }
 
     /** @see org.moqui.context.WebExecutionContext#getServletContext() */
-    ServletContext getServletContext() { return request.getServletContext() }
+    ServletContext getServletContext() { return request.session.getServletContext() }
 
     /** @see org.moqui.context.WebExecutionContext#getApplicationAttributes() */
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
-        applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.getServletContext())
+        applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.session.getServletContext())
         return applicationAttributes
     }
 

@@ -11,6 +11,7 @@
  */
 
 import java.io.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -49,30 +50,37 @@ public class MoquiStart extends ClassLoader {
             System.out.println("    -dummy-fks -------------- Use dummy foreign-keys to avoid referential integrity errors");
             System.out.println("    -use-try-insert --------- Try insert and update on error instead of checking for record first");
             System.out.println("  If no -types or -location argument is used all known data files of all types will be loaded.");
-            System.out.println("[default] ---- Run simple server");
+            System.out.println("[default] ---- Run embedded Winstone server.");
+            System.out.println("  See http://winstone.sourceforge.net/#commandLine for all argument details.");
+            System.out.println("  Selected argument details:");
+            System.out.println("    --httpPort               = set the http listening port. -1 to disable, Default is 8080");
+            System.out.println("    --httpListenAddress      = set the http listening address. Default is all interfaces");
+            System.out.println("    --httpDoHostnameLookups  = enable host name lookups on http connections. Default is false");
+            System.out.println("    --httpsPort              = set the https listening port. -1 to disable, Default is disabled");
+            System.out.println("    --ajp13Port              = set the ajp13 listening port. -1 to disable, Default is 8009");
+            System.out.println("    --controlPort            = set the shutdown/control port. -1 to disable, Default disabled");
             System.out.println("");
             System.out.println("------------ Internal Class Path ------------");
             for (JarFile jf: moquiStartLoader.jarFileList)
                 System.out.println("Jar file loaded: " + jf.getName());
-            return;
+            System.exit(0);
         }
-
 
         // make a list of arguments, remove the first one (the command)
         List<String> argList = new ArrayList<String>(Arrays.asList(args));
-        if (argList.size() > 0) argList.remove(0);
-        Map<String, String> argMap = new HashMap<String, String>();
-        for (String arg: argList) {
-            if (arg.startsWith("-")) arg = arg.substring(1);
-            if (arg.contains("=")) {
-                argMap.put(arg.substring(0, arg.indexOf("=")), arg.substring(arg.indexOf("=")+1));
-            } else {
-                argMap.put(arg, "");
-            }
-        }
 
         // now run the command
         if ("-load".equals(firstArg)) {
+            Map<String, String> argMap = new HashMap<String, String>();
+            for (String arg: argList) {
+                if (arg.startsWith("-")) arg = arg.substring(1);
+                if (arg.contains("=")) {
+                    argMap.put(arg.substring(0, arg.indexOf("=")), arg.substring(arg.indexOf("=")+1));
+                } else {
+                    argMap.put(arg, "");
+                }
+            }
+
             try {
                 Class c = moquiStartLoader.loadClass("org.moqui.Moqui");
                 Method m = c.getMethod("loadData", new Class<?>[] { Map.class });
@@ -83,8 +91,43 @@ public class MoquiStart extends ClassLoader {
             }
             System.exit(0);
         } else {
-            // TODO
-            System.out.println("The simple server is not yet implemented");
+            Map<String, String> argMap = new HashMap<String, String>();
+            for (String arg: argList) {
+                if (arg.startsWith("--")) arg = arg.substring(2);
+                if (arg.contains("=")) {
+                    argMap.put(arg.substring(0, arg.indexOf("=")), arg.substring(arg.indexOf("=")+1));
+                } else {
+                    argMap.put(arg, "");
+                }
+            }
+
+            try {
+                argMap.put("warfile", moquiStartLoader.outerFile.getName());
+                System.out.println("Running Winstone embedded server with args [" + argMap + "]");
+
+                Class c = moquiStartLoader.loadClass("winstone.Launcher");
+                Method initLogger = c.getMethod("initLogger", new Class<?>[] { Map.class });
+                initLogger.invoke(null, argMap);
+
+                Constructor wlc = c.getConstructor(new Class<?>[] { Map.class });
+                Object winstone = wlc.newInstance(argMap);
+
+                Method shutdown = c.getMethod("shutdown");
+                Runtime.getRuntime().addShutdownHook(new WinstoneShutdown(shutdown, winstone));
+
+                // NOTE: need to wait there or anything?
+            } catch (Exception e) {
+                System.out.println("Error loading or running Winstone embedded server with args [" + argMap + "]: " + e.toString());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected static class WinstoneShutdown extends Thread {
+        Method shutdown; Object winstone;
+        WinstoneShutdown(Method shutdown, Object winstone) { super(); this.shutdown = shutdown; this.winstone = winstone; }
+        public void run() {
+            try { shutdown.invoke(winstone); } catch (Exception e) { System.out.println("Error in Winstone shutdown: " + e.toString()); }
         }
     }
 
@@ -126,18 +169,23 @@ public class MoquiStart extends ClassLoader {
             System.out.println("Error loading jars in war file [" + wrapperWarUrl + "]: " + e.toString());
             return;
         }
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                // close all jarFiles so they will "deleteOnExit"
-                for (JarFile jarFile : jarFileList) {
-                    try {
-                        jarFile.close();
-                    } catch (IOException e) {
-                        System.out.println("Error closing jar [" + jarFile + "] in war file [" + outerFile + "]: " + e.toString());
-                    }
+
+        Runtime.getRuntime().addShutdownHook(new JarFileCloser(jarFileList));
+    }
+
+    protected static class JarFileCloser extends Thread {
+        List<JarFile> jarFileList;
+        JarFileCloser(List<JarFile> jarFileList) { super(); this.jarFileList = jarFileList; }
+        public void run() {
+            // close all jarFiles so they will "deleteOnExit"
+            for (JarFile jarFile : jarFileList) {
+                try {
+                    jarFile.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing jar [" + jarFile + "]: " + e.toString());
                 }
             }
-        });
+        }
     }
 
     protected File createTempFile(JarEntry je) throws IOException {

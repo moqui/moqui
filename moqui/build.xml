@@ -75,7 +75,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <war destfile="moqui.war" webxml="framework/webapp/WEB-INF/web.xml">
             <!-- no html/etc webapp files for now: <fileset dir="html"/> -->
             <lib dir="framework/api/lib">
-                <exclude name="tomcat-7.0.5-servlet-api-3.0.jar"/>
+                <exclude name="winstone-0.9.10.jar"/>
             </lib>
             <lib dir="framework/impl/lib"/>
             <lib dir="framework/build/lib"/>
@@ -84,7 +84,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- copy the start files, setup the manifest for war acting like executable jar -->
             <fileset dir="framework/build/start/classes"/>
             <fileset dir="framework/start/conf"/>
-            <file file="framework/api/lib/tomcat-7.0.5-servlet-api-3.0.jar"/>
+            <file file="framework/api/lib/winstone-0.9.10.jar"/>
             <manifest>
                 <attribute name="Manifest-Version" value="1.0"/>
                 <attribute name="Implementation-Title" value="Moqui Start"/>

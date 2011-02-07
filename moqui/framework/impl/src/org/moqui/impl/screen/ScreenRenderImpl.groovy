@@ -99,7 +99,7 @@ class ScreenRenderImpl implements ScreenRender {
         this.response = response
         // we know this is a web request, set defaults if missing
         if (!renderMode) renderMode = "html"
-        if (!webappName) webappName(request.getServletContext().getInitParameter("moqui-name"))
+        if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
         if (!characterEncoding && request.getCharacterEncoding()) encoding(request.getCharacterEncoding())
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
