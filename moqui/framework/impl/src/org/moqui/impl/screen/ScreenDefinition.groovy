@@ -69,18 +69,20 @@ class ScreenDefinition {
                 formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"]}"))
             }
         }
+
+        if (logger.infoEnabled) logger.info("Loaded screen at [${location}]")
     }
 
     void populateSubscreens() {
         // start with file/directory structure
         ResourceReference locationRef = sfi.ecfi.resourceFacade.getLocationReference(location)
-        logger.info("Finding subscreens for screen at [${locationRef}]")
+        if (logger.traceEnabled) logger.trace("Finding subscreens for screen at [${locationRef}]")
         if (locationRef.supportsAll()) {
             String subscreensDirStr = locationRef.location
             subscreensDirStr = subscreensDirStr.substring(0, subscreensDirStr.lastIndexOf("."))
             ResourceReference subscreensDirRef = sfi.ecfi.resourceFacade.getLocationReference(subscreensDirStr)
             if (subscreensDirRef.exists && subscreensDirRef.isDirectory()) {
-                logger.info("Looking for subscreens in directory [${subscreensDirRef}]")
+                if (logger.traceEnabled) logger.trace("Looking for subscreens in directory [${subscreensDirRef}]")
                 for (ResourceReference subscreenRef in subscreensDirRef.directoryEntries) {
                     if (!subscreenRef.isFile() || !subscreenRef.location.endsWith(".xml")) continue
                     InputStream subscreenIs = subscreenRef.openStream()
@@ -91,7 +93,7 @@ class ScreenDefinition {
                             ssName = ssName.substring(0, ssName.lastIndexOf("."))
                             SubscreensItem si = new SubscreensItem(ssName, subscreenRef.location, subscreenRoot)
                             subscreensByName.put(si.name, si)
-                            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
+                            if (logger.traceEnabled) logger.trace("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
                         }
                     } finally {
                         if (subscreenIs != null) subscreenIs.close()
@@ -106,7 +108,7 @@ class ScreenDefinition {
         for (Node subscreensItem in screenNode."subscreens"?."subscreens-item") {
             SubscreensItem si = new SubscreensItem(subscreensItem, this)
             subscreensByName.put(si.name, si)
-            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
+            if (logger.traceEnabled) logger.trace("Added XML defined subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
         }
 
         // override dir structure and subscreens-item elements with SubscreensItem entity
@@ -115,7 +117,7 @@ class ScreenDefinition {
         for (EntityValue subscreensItem in subscreensItemList) {
             SubscreensItem si = new SubscreensItem(subscreensItem)
             subscreensByName.put(si.name, si)
-            logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
+            if (logger.traceEnabled) logger.trace("Added database subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
         }
         // override rest with SubscreensItem entity with userId of current user
         if (sfi.ecfi.executionContext.user.userId) {
@@ -124,7 +126,7 @@ class ScreenDefinition {
             for (EntityValue subscreensItem in userSubscreensItemList) {
                 SubscreensItem si = new SubscreensItem(subscreensItem)
                 subscreensByName.put(si.name, si)
-                logger.info("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
+                if (logger.traceEnabled) logger.trace("Added user-specific database subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
             }
         }
     }

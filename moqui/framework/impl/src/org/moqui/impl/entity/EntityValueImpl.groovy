@@ -458,7 +458,7 @@ class EntityValueImpl implements EntityValue {
             retVal = true
             setSyncedWithDb()
         } else {
-            logger.trace("No record found in refresh for entity [${entityName}] with values [${valueMap}]")
+            if (logger.traceEnabled) logger.trace("No record found in refresh for entity [${entityName}] with values [${valueMap}]")
         }
         return retVal
     }

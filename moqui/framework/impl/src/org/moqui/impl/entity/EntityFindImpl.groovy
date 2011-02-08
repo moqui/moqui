@@ -287,7 +287,11 @@ class EntityFindImpl implements EntityFind {
         Cache entityOneCache = null
         if (this.shouldCache()) {
             entityOneCache = this.efi.ecfi.getCacheFacade().getCache("entity.one.${this.entityName}")
-            if (entityOneCache.containsKey(whereCondition)) return (EntityValue) entityOneCache.get(whereCondition)
+            if (entityOneCache.containsKey(whereCondition)) {
+                EntityValue cacheHit = (EntityValue) entityOneCache.get(whereCondition)
+                if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
+                return cacheHit
+            }
         }
 
         // for find one we'll always use the basic result set type and concurrency:

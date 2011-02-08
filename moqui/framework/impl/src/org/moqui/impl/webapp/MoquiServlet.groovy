@@ -79,7 +79,9 @@ class MoquiServlet extends HttpServlet {
 
         String pathInfo = request.getPathInfo()
         long startTime = System.currentTimeMillis()
-        if (logger.infoEnabled) logger.info("Start request in webapp [${webappId}], moqui-name [${webappMoquiName}] to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
+
+        if (logger.traceEnabled) logger.trace("=-=-=-=-=-= Start request in webapp [${webappId}], moqui-name [${webappMoquiName}] to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
+        if (logger.infoEnabled) logger.info("=-=-=-=-=-= Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
 
         WebExecutionContext wec = executionContextFactory.getWebExecutionContext(webappMoquiName, request, response)
 
@@ -101,6 +103,6 @@ class MoquiServlet extends HttpServlet {
         executionContextFactory.destroyActiveExecutionContext()
 
         double runningTime = (System.currentTimeMillis() - startTime) / 1000
-        if (logger.infoEnabled) logger.info("=-=-=-=-=-= End request to [${pathInfo}] of type [${response.getContentType()}] in [${runningTime}] seconds, in session [${request.session.id}]")
+        if (logger.infoEnabled) logger.info("=-=-=-=-=-= End request to [${pathInfo}] of type [${response.getContentType()}] in [${runningTime}] seconds in session [${request.session.id}]")
     }
 }

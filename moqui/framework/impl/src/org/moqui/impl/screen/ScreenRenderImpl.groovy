@@ -304,13 +304,13 @@ class ScreenRenderImpl implements ScreenRender {
         // if request not secure and screens requires secure redirect to https
         if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
                 !request.isSecure()) {
-            logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure.")
+            logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure, sending redirect to secure.")
             // redirect to the same URL this came to
             response.sendRedirect(screenUrlInfo.getUrlWithParams())
             return false
         }
         // if screen requires auth and there is not active user redirect to login screen, save this request
-        logger.info("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
+        if (logger.traceEnabled) logger.trace("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
         if (currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login

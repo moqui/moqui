@@ -256,12 +256,20 @@ class UserFacadeImpl implements UserFacade {
     }
 
     /* @see org.moqui.context.UserFacade#getUserId() */
-    String getUserId() { return this.userIdStack ? this.userIdStack.peek() : null }
+    String getUserId() {
+        logger.info("Getting UserId before userIdStack is [${userIdStack}]")
+        String uid = this.userIdStack ? this.userIdStack.peek() : null
+        logger.info("Getting UserId after userIdStack is [${userIdStack}]")
+        return uid
+    }
 
     /* @see org.moqui.context.UserFacade#getUserAccount() */
     EntityValue getUserAccount() {
+        logger.info("Getting UserAccount current userIdStack is [${userIdStack}]")
         if (!userIdStack) return null
-        return eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peek()).useCache(true).one()
+        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peek()).useCache(true).one()
+        logger.info("Got UserAccount [${ua}] with userIdStack [${userIdStack}]")
+        return ua
     }
 
     /** @see org.moqui.context.UserFacade#getVisitUserId() */
