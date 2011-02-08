@@ -237,6 +237,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (ec) {
             return ec
         } else {
+            if (logger.infoEnabled) logger.info("Creating new ExecutionContext in thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
             ec = new ExecutionContextImpl(this)
             this.activeContext.set(ec)
             return ec
