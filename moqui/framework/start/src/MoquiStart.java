@@ -61,9 +61,11 @@ public class MoquiStart extends ClassLoader {
         }
         if (confPath == null || confPath.length() == 0) {
             // this default is for development and is here instead of having a buried properties file that might cause conflicts when trying to override
-            confPath = "conf/development/MoquiDevConf.xml";
+            String defaultConf = "conf/development/MoquiDevConf.xml";
+            File testFile = new File(runtimePath + "/" + defaultConf);
+            if (testFile.exists()) confPath = defaultConf;
         }
-        System.setProperty("moqui.conf", confPath);
+        if (confPath != null) System.setProperty("moqui.conf", confPath);
 
         // now grab the first arg and get on with it...
         String firstArg = args.length > 0 ? args[0] : "";

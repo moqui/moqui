@@ -90,11 +90,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (confPartialPath.startsWith("/")) confPartialPath = confPartialPath.substring(1)
         String confFullPath = this.runtimePath + "/" + confPartialPath
         File confFile = new File(confFullPath)
-        if (!confFile.exists()) {
-            throw new IllegalArgumentException("The moqui.conf path [${confFullPath}] was not found.")
+        if (confFile.exists()) {
+            this.confPath = confFullPath
+        } else {
+            this.confPath = null
+            logger.warn("The moqui.conf path [${confFullPath}] was not found.")
         }
-
-        this.confPath = confFullPath
 
         this.confXmlRoot = this.initConfig()
         initComponents()
@@ -168,11 +169,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (!defaultConfUrl) throw new IllegalArgumentException("Could not find MoquiDefaultConf.xml file on the classpath")
         Node newConfigXmlRoot = new XmlParser().parse(defaultConfUrl.newInputStream())
 
-        File confFile = new File(this.confPath)
-        Node overrideConfXmlRoot = new XmlParser().parse(confFile)
+        if (this.confPath) {
+            File confFile = new File(this.confPath)
+            Node overrideConfXmlRoot = new XmlParser().parse(confFile)
 
-        // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
-        mergeConfigNodes(newConfigXmlRoot, overrideConfXmlRoot)
+            // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
+            mergeConfigNodes(newConfigXmlRoot, overrideConfXmlRoot)
+        }
 
         return newConfigXmlRoot
     }
