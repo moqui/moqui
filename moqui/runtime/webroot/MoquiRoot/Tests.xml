@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ This Work is in the public domain and is provided on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+  ~ including, without limitation, any warranties or conditions of TITLE,
+  ~ NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+  ~ You are solely responsible for determining the appropriateness of using
+  ~ this Work and assume any risks associated with your use of this Work.
+  ~
+  ~ This Work includes contributions authored by David E. Jones, not as a
+  ~ "work for hire", who hereby disclaims any copyright to the same.
+  -->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
+    <web-settings require-authentication="false"/>
+    <widgets>
+        <section name="HeaderUserInfo">
+            <actions>
+                <set field="test1" from-field="ec.user.userId"/>
+                <call-script>
+                    context.put("test1", ec.user.userId);
+                    System.out.println("================== test1=" + test1);
+                    System.out.println("================== context=" + context.toString())
+                </call-script>
+            </actions>
+            <widgets>
+                <label text="Direct userId: ${ec.user.userId}" type="p"/>
+                <label text="Through test1: ${context?.test1}" type="p"/>
+            </widgets>
+        </section>
+
+        <label text="Context: ${ec.context.toString()}" type="p"/>
+        <label text="User ID: ${ec.user.userId}" type="p"/>
+        <label text="User Name: ${ec.user.userAccount?.userName}" type="p"/>
+    </widgets>
+</screen>

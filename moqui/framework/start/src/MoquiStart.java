@@ -33,6 +33,39 @@ import java.util.jar.Manifest;
 public class MoquiStart extends ClassLoader {
 
     public static void main(String[] args) throws IOException {
+        Properties moquiInitProperties = new Properties();
+        URL initProps = ClassLoader.getSystemResource("MoquiInit.properties");
+        if (initProps != null) { InputStream is = initProps.openStream(); moquiInitProperties.load(is); is.close(); }
+
+        // before doing anything else make sure the moqui.runtime system property exists (needed for config of various things)
+        String runtimePath = System.getProperty("moqui.runtime");
+        if (runtimePath == null || runtimePath.length() == 0) {
+            runtimePath = moquiInitProperties.getProperty("moqui.runtime");
+        }
+        if (runtimePath == null || runtimePath.length() == 0) {
+            // see if runtime directory under the current directory exists, if not default to the current directory
+            File testFile = new File("runtime");
+            if (testFile.exists()) runtimePath = "runtime";
+        }
+        if (runtimePath == null || runtimePath.length() == 0) {
+            runtimePath = ".";
+        }
+        runtimePath = new File(runtimePath).getCanonicalPath();
+        if (runtimePath.endsWith("/")) runtimePath = runtimePath.substring(0, runtimePath.length()-1);
+        System.setProperty("moqui.runtime", runtimePath);
+
+        // moqui.conf=conf/development/MoquiDevConf.xml
+        String confPath = System.getProperty("moqui.conf");
+        if (confPath == null || confPath.length() == 0) {
+            confPath = moquiInitProperties.getProperty("moqui.conf");
+        }
+        if (confPath == null || confPath.length() == 0) {
+            // this default is for development and is here instead of having a buried properties file that might cause conflicts when trying to override
+            confPath = "conf/development/MoquiDevConf.xml";
+        }
+        System.setProperty("moqui.conf", confPath);
+
+        // now grab the first arg and get on with it...
         String firstArg = args.length > 0 ? args[0] : "";
 
         if ("-help".equals(firstArg) || "-?".equals(firstArg)) {
@@ -60,6 +93,10 @@ public class MoquiStart extends ClassLoader {
             System.out.println("    --httpsPort              = set the https listening port. -1 to disable, Default is disabled");
             System.out.println("    --ajp13Port              = set the ajp13 listening port. -1 to disable, Default is 8009");
             System.out.println("    --controlPort            = set the shutdown/control port. -1 to disable, Default disabled");
+            System.out.println("");
+            System.out.println("System property moqui.runtime=" + System.getProperty("moqui.runtime"));
+            System.out.println("System property moqui.conf=" + System.getProperty("moqui.conf"));
+            System.out.println("To set these properties use something like: java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml -jar moqui.jar ...");
             System.out.println("");
             System.out.println("------------ Internal Class Path ------------");
             for (JarFile jf: moquiStartLoader.jarFileList)

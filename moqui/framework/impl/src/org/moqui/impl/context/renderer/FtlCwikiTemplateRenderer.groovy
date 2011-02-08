@@ -27,7 +27,7 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
 
     protected ExecutionContextFactoryImpl ecfi
 
-    protected final Cache templateFtlLocationCache
+    protected Cache templateFtlLocationCache
 
     FtlCwikiTemplateRenderer() { }
 

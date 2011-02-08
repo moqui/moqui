@@ -30,7 +30,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final String runtimePath
 
     protected final String confPath
-    final Node confXmlRoot
+    protected final Node confXmlRoot
     
     protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
 
@@ -51,9 +51,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
      * or by init methods in a servlet or context filter or OSGi component or Spring component or whatever.
      */
     ExecutionContextFactoryImpl() {
-        // get the runtime directory path
+        // get the MoquiInit.properties file
         Properties moquiInitProperties = new Properties()
-        moquiInitProperties.load(this.class.getClassLoader().getResourceAsStream("MoquiInit.properties"))
+        URL initProps = this.class.getClassLoader().getResource("MoquiInit.properties")
+        if (initProps != null) { InputStream is = initProps.openStream(); moquiInitProperties.load(is); is.close(); }
 
         // if there is a system property use that, otherwise from the properties file
         this.runtimePath = System.getProperty("moqui.runtime")
@@ -94,7 +95,27 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         this.confPath = confFullPath
-        this.init()
+
+        this.confXmlRoot = this.initConfig()
+        initComponents()
+
+        // this init order is important as some facades will use others
+        this.cacheFacade = new CacheFacadeImpl(this)
+        logger.info("Moqui CacheFacadeImpl Initialized")
+        this.loggerFacade = new LoggerFacadeImpl(this)
+        logger.info("Moqui LoggerFacadeImpl Initialized")
+        this.resourceFacade = new ResourceFacadeImpl(this)
+        logger.info("Moqui ResourceFacadeImpl Initialized")
+        this.transactionFacade = new TransactionFacadeImpl(this)
+        logger.info("Moqui TransactionFacadeImpl Initialized")
+        this.entityFacade = new EntityFacadeImpl(this)
+        logger.info("Moqui EntityFacadeImpl Initialized")
+        this.serviceFacade = new ServiceFacadeImpl(this)
+        logger.info("Moqui ServiceFacadeImpl Initialized")
+        this.screenFacade = new ScreenFacadeImpl(this)
+        logger.info("Moqui ScreenFacadeImpl Initialized")
+
+        logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
 
     /** This constructor takes the runtime directory path and conf file path directly. */
@@ -117,35 +138,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.runtimePath = runtimePath
         this.confPath = confFullPath
 
-        this.init()
-    }
-
-    /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
-    protected void init() {
-        logger.info("Initializing Moqui ExecutionContextFactoryImpl\n - runtime directory [${this.runtimePath}]\n - config file [${this.confPath}]\n - moqui.runtime property [${System.getProperty("moqui.runtime")}]")
-
-        URL defaultConfUrl = this.class.getClassLoader().getResource("MoquiDefaultConf.xml")
-        if (!defaultConfUrl) throw new IllegalArgumentException("Could not find MoquiDefaultConf.xml file on the classpath")
-        this.confXmlRoot = new XmlParser().parse(defaultConfUrl.newInputStream())
-
-        File confFile = new File(this.confPath)
-        Node overrideConfXmlRoot = new XmlParser().parse(confFile)
-
-        // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
-        mergeConfigNodes(this.confXmlRoot, overrideConfXmlRoot)
-
-        // init all components in the runtime/component directory
-        File componentDir = new File(this.runtimePath + "/component")
-        // if directory doesn't exist skip it, component doesn't have an entity directory
-        if (componentDir.exists() && componentDir.isDirectory()) {
-            // get all files in the directory
-            for (File componentSubDir in componentDir.listFiles()) {
-                // if it's a directory and doesn't start with a "." then add it as a component dir
-                if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
-                    this.initComponent(componentSubDir.toURI().toURL().toString())
-                }
-            }
-        }
+        this.confXmlRoot = this.initConfig()
+        initComponents()
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -166,13 +160,45 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
 
+    /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
+    protected Node initConfig() {
+        logger.info("Initializing Moqui ExecutionContextFactoryImpl\n - runtime directory [${this.runtimePath}]\n - config file [${this.confPath}]\n - moqui.runtime property [${System.getProperty("moqui.runtime")}]")
+
+        URL defaultConfUrl = this.class.getClassLoader().getResource("MoquiDefaultConf.xml")
+        if (!defaultConfUrl) throw new IllegalArgumentException("Could not find MoquiDefaultConf.xml file on the classpath")
+        Node newConfigXmlRoot = new XmlParser().parse(defaultConfUrl.newInputStream())
+
+        File confFile = new File(this.confPath)
+        Node overrideConfXmlRoot = new XmlParser().parse(confFile)
+
+        // merge the active/override conf file into the default one to override any settings (they both have the same root node, go from there)
+        mergeConfigNodes(newConfigXmlRoot, overrideConfXmlRoot)
+
+        return newConfigXmlRoot
+    }
+
+    protected void initComponents() {
+        // init all components in the runtime/component directory
+        File componentDir = new File(this.runtimePath + "/component")
+        // if directory doesn't exist skip it, component doesn't have an entity directory
+        if (componentDir.exists() && componentDir.isDirectory()) {
+            // get all files in the directory
+            for (File componentSubDir in componentDir.listFiles()) {
+                // if it's a directory and doesn't start with a "." then add it as a component dir
+                if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
+                    this.initComponent(componentSubDir.toURI().toURL().toString())
+                }
+            }
+        }
+    }
+
     synchronized void destroy() {
         if (!this.destroyed) {
             // this destroy order is important as some use others so must be destroyed first
-            if (this.serviceFacade) { this.serviceFacade.destroy(); this.serviceFacade = null }
-            if (this.entityFacade) { this.entityFacade.destroy(); this.entityFacade = null }
-            if (this.transactionFacade) { this.transactionFacade.destroy(); this.transactionFacade = null }
-            if (this.cacheFacade) { this.cacheFacade.destroy(); this.cacheFacade = null }
+            if (this.serviceFacade) { this.serviceFacade.destroy() }
+            if (this.entityFacade) { this.entityFacade.destroy() }
+            if (this.transactionFacade) { this.transactionFacade.destroy() }
+            if (this.cacheFacade) { this.cacheFacade.destroy() }
 
             activeContext.remove()
 

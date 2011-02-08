@@ -262,11 +262,11 @@ class UserFacadeImpl implements UserFacade {
     /* @see org.moqui.context.UserFacade#getUserAccount() */
     EntityValue getUserAccount() {
         if (!userIdStack) {
-            logger.info("Getting UserAccount no userIdStack", new Exception("Trace"))
+            // logger.info("Getting UserAccount no userIdStack", new Exception("Trace"))
             return null
         }
         EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peek()).useCache(true).one()
-        logger.info("Got UserAccount [${ua}] with userIdStack [${userIdStack}]")
+        // logger.info("Got UserAccount [${ua}] with userIdStack [${userIdStack}]")
         return ua
     }
 

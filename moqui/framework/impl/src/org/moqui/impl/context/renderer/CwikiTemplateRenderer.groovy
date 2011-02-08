@@ -27,7 +27,7 @@ class CwikiTemplateRenderer implements TemplateRenderer {
 
     protected ExecutionContextFactoryImpl ecfi
 
-    protected final Cache templateCwikiLocationCache
+    protected Cache templateCwikiLocationCache
 
     CwikiTemplateRenderer() { }
 

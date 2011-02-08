@@ -84,7 +84,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- copy the start files, setup the manifest for war acting like executable jar -->
             <fileset dir="framework/build/start/classes"/>
-            <fileset dir="framework/start/conf"/>
             <file file="framework/api/lib/winstone-0.9.10.jar"/>
             <manifest>
                 <attribute name="Manifest-Version" value="1.0"/>

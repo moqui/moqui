@@ -20,7 +20,6 @@
     <appender name="stdout" class="org.apache.log4j.ConsoleAppender">
         <param name="threshold" value="all"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <!-- A more complete pattern, but more verbose and slower: <param name="ConversionPattern" value="%d (%t) [%24F:%-3L:%-5p]%x %m%n"/> -->
             <param name="ConversionPattern" value="--- %-8r [%15.15t] %-5p %40.40c %x%n %m%n"/>
         </layout>
     </appender>
@@ -29,8 +28,8 @@
     <appender name="rolling-file" class="org.apache.log4j.RollingFileAppender">
         <param name="maxFileSize" value="1000KB"/>
         <param name="maxBackupIndex" value="10"/>
-        <!-- this should work with the system property, not sure why it isn't: <param name="File" value="${moqui.runtime}/runtime/log/moqui.log"/> -->
-        <param name="File" value="../moqui/runtime/log/moqui.log"/>
+        <!-- this should work with the system property, not sure why it isn't: <param name="File" value="${moqui.runtime}/log/moqui.log"/> -->
+        <param name="File" value="${moqui.runtime}/log/moqui.log"/>
         <param name="threshold" value="all"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%-8r [%15.15t] %-5p %30.30c %x - %m%n"/>
@@ -41,11 +40,11 @@
     <appender name="error" class="org.apache.log4j.RollingFileAppender">
         <param name="maxFileSize" value="10000KB"/>
         <param name="maxBackupIndex" value="10"/>
-        <param name="File" value="../moqui/runtime/log/error.log"/>
+        <param name="File" value="${moqui.runtime}/log/error.log"/>
         <param name="Append" value="false"/>
         <layout class="org.apache.log4j.PatternLayout">
             <!-- for errors we have a really big string -->
-            <param name="ConversionPattern" value="%-8r [%15.15t] %-5p %30.30c [%24F:%-3L:%-5p] %x - %m%n"/>
+            <param name="ConversionPattern" value="%-8r [%15.15t] %-5p %30.30c [%24F:%-3L] %x - %m%n"/>
         </layout>
         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMax" value="fatal"/>
@@ -104,7 +103,7 @@
     <!-- root logger -->
     <root>
         <!-- NOTE: Change the priority here to "info" or "warn" for production to reduce logging overhead. -->
-        <priority value="all"/>
+        <priority value="info"/>
         <appender-ref ref="async"/>
     </root>
 </log4j:configuration>
