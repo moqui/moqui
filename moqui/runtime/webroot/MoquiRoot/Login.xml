@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <web-settings require-authentication="false"/>
     <transition name="login">
         <actions><call-script>
-            ec.user.loginUser(ec.requestParameters.userId, ec.requestParameters.password, ec.requestParameters.tenantId)
+            ec.user.loginUser(ec.web.requestParameters.userId, ec.web.requestParameters.password, ec.web.requestParameters.tenantId)
         </call-script></actions>
         <default-response type="screen-last"/>
         <error-response url="."/>

@@ -1,9 +1,8 @@
 package org.moqui.impl.screen
 
-import org.moqui.impl.screen.ScreenDefinition.TransitionItem
-import org.moqui.impl.screen.ScreenDefinition.ParameterItem
-import org.moqui.context.WebExecutionContext
 import org.moqui.context.ResourceReference
+import org.moqui.impl.screen.ScreenDefinition.ParameterItem
+import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
 
 class ScreenUrlInfo {
@@ -248,8 +247,8 @@ class ScreenUrlInfo {
                     if (webappNode."@https-host") {
                         urlBuilder.append(webappNode."@https-host")
                     } else {
-                        if (sri.getEc() instanceof WebExecutionContext) {
-                            urlBuilder.append(((WebExecutionContext) sri.getEc()).getRequest().getServerName())
+                        if (sri.ec.web) {
+                            urlBuilder.append(sri.ec.web.request.serverName)
                         } else {
                             // uh-oh, no web context, default to localhost
                             urlBuilder.append("localhost")
@@ -261,8 +260,8 @@ class ScreenUrlInfo {
                     if (webappNode."@http-host") {
                         urlBuilder.append(webappNode."@http-host")
                     } else {
-                        if (sri.getEc() instanceof WebExecutionContext) {
-                            urlBuilder.append(((WebExecutionContext) sri.getEc()).getRequest().getServerName())
+                        if (sri.ec.web) {
+                            urlBuilder.append(sri.ec.web.request.serverName)
                         } else {
                             // uh-oh, no web context, default to localhost
                             urlBuilder.append("localhost")
@@ -278,8 +277,8 @@ class ScreenUrlInfo {
 
             // add servletContext.contextPath
             String servletContextPath = sri.servletContextPath
-            if (!servletContextPath && sri.getEc() instanceof WebExecutionContext)
-                servletContextPath = ((WebExecutionContext) sri.getEc()).getServletContext().getContextPath()
+            if (!servletContextPath && sri.ec.web)
+                servletContextPath = sri.ec.web.servletContext.contextPath
             if (servletContextPath) {
                 if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
                 urlBuilder.append(servletContextPath)

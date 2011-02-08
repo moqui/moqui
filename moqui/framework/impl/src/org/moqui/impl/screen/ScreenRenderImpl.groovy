@@ -20,19 +20,15 @@ import org.apache.commons.codec.net.URLCodec
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ScreenRender
-import org.moqui.context.WebExecutionContext
 import org.moqui.impl.context.ContextStack
-import org.moqui.impl.context.WebExecutionContextImpl
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
+import org.moqui.impl.context.WebFacadeImpl
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
     protected final static URLCodec urlCodec = new URLCodec()
-
-    // TODO: should research and add more of these
-    public final static Set<String> binaryExtensions = new HashSet(["gif","ico","jpg","pdf","png"])
 
     protected final ScreenFacadeImpl sfi
 
@@ -110,8 +106,6 @@ class ScreenRenderImpl implements ScreenRender {
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
         // now render
         internalRender()
-        // all done rendering, and all chances to set the content type, so NOW we set it on the response just in case
-        if (!response.getContentType()) response.setContentType(this.outputContentType)
     }
 
     @Override
@@ -138,9 +132,9 @@ class ScreenRenderImpl implements ScreenRender {
         logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
         this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null)
-        if (ec instanceof WebExecutionContext) {
+        if (ec.web) {
             // add URL parameters, if there were any in the URL (in path info or after ?)
-            this.screenUrlInfo.addParameters(((WebExecutionContext) ec).requestParameters)
+            this.screenUrlInfo.addParameters(ec.web.requestParameters)
         }
 
         // check webapp settings for each screen in the path
@@ -176,10 +170,10 @@ class ScreenRenderImpl implements ScreenRender {
 
             if (ri == null) throw new IllegalArgumentException("No response found for transition [${screenUrlInfo.targetTransition.name}] on screen [${screenUrlInfo.targetScreen.location}]")
 
-            if (ri.saveCurrentScreen && ec instanceof WebExecutionContextImpl) {
+            if (ri.saveCurrentScreen && ec.web) {
                 StringBuilder screenPath = new StringBuilder()
                 for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
-                ((WebExecutionContextImpl) ec).saveScreenLastInfo(screenPath.toString(), null)
+                ((WebFacadeImpl) ec.web).saveScreenLastInfo(screenPath.toString(), null)
             }
 
             if (ri.type == "none") return
@@ -191,19 +185,19 @@ class ScreenRenderImpl implements ScreenRender {
             // TODO add the ri.parameters
             Map<String, String> parameterMap = new HashMap()
 
-            if (ec instanceof WebExecutionContextImpl) {
-                WebExecutionContextImpl weci = (WebExecutionContextImpl) ec
+            if (ec.web) {
+                WebFacadeImpl wfi = (WebFacadeImpl) ec.web
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
-                    String savedUrl = weci.getRemoveScreenLastPath()
+                    String savedUrl = wfi.getRemoveScreenLastPath()
                     if (savedUrl) {
                         urlType = "screen-path"
                         url = savedUrl
                     }
                 }
                 if (ri.type == "screen-last") {
-                    weci.removeScreenLastParameters(true)
+                    wfi.removeScreenLastParameters(true)
                 } else if (ri.type == "screen-last-noparam") {
-                    weci.removeScreenLastParameters(false)
+                    wfi.removeScreenLastParameters(false)
                 }
             }
 
@@ -224,16 +218,23 @@ class ScreenRenderImpl implements ScreenRender {
                     this.originalScreenPathNameList = screenUrlInfo.preTransitionPathNameList
                     this.originalScreenPathNameList.addAll(pathElements)
                 }
+                // reset screenUrlInfo and call this again to start over with the new target
                 screenUrlInfo = null
                 internalRender()
             }
         } else if (screenUrlInfo.fileResourceRef != null) {
-            // in some cases we'll want to include the target content in another screen, in other cases not
+            // use the fileName to determine the content/mime type
             String fileName = screenUrlInfo.fileResourceRef.fileName
-            String extension = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")+1) : ""
-
+            // if it contains .ftl or .cwiki remove those to avoid problems with trying to find content types based on them
+            if (fileName.contains(".ftl")) fileName = fileName.replace(".ftl", "")
+            if (fileName.contains(".cwiki")) fileName = fileName.replace(".cwiki", "")
             String fileContentType = sfi.ecfi.resourceFacade.getContentType(fileName)
+
+            if (logger.traceEnabled) logger.trace("Content type for screen sub-content filename [${fileName}] is [${fileContentType}], default [${this.outputContentType}], is binary? ${sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)}")
+
+            // is it binary?
             if (sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)) {
+                if (logger.infoEnabled) logger.info("Streaming binary content from [${screenUrlInfo.fileResourceRef.location}]")
                 if (response) {
                     this.outputContentType = fileContentType
                     response.setContentType(this.outputContentType)
@@ -255,18 +256,21 @@ class ScreenRenderImpl implements ScreenRender {
                         if (is != null) is.close()
                     }
                 } else {
-                    throw new IllegalArgumentException("Tried to get content at [${screenUrlInfo.fileResourcePathList}] under screen [${screenUrlInfo.targetScreen.location}]")
+                    throw new IllegalArgumentException("Tried to get binary content at [${screenUrlInfo.fileResourcePathList}] under screen [${screenUrlInfo.targetScreen.location}], but there is no HTTP response available")
                 }
             }
+
+            // not binary, render as text
             if (screenUrlInfo.targetScreen.screenNode."@include-child-content" != "true") {
+                if (fileContentType) this.outputContentType = fileContentType
+                if (response != null) response.setContentType(this.outputContentType)
                 // not a binary object (hopefully), read it and write it to the writer
                 sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
-                this.outputContentType = fileContentType
-                if (response != null) response.setContentType(this.outputContentType)
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
                 boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
                 try {
+                    if (response != null) response.setContentType(this.outputContentType)
                     rootScreenDef.getRootSection().render(this)
                 } catch (Throwable t) {
                     String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
@@ -280,6 +284,7 @@ class ScreenRenderImpl implements ScreenRender {
             // start rendering at the root section of the root screen
             boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
             try {
+                if (response != null) response.setContentType(this.outputContentType)
                 rootScreenDef.getRootSection().render(this)
             } catch (Throwable t) {
                 String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
@@ -314,10 +319,10 @@ class ScreenRenderImpl implements ScreenRender {
         if (currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
-            if (ec instanceof WebExecutionContextImpl) {
+            if (ec.web) {
                 StringBuilder screenPath = new StringBuilder()
                 for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
-                ((WebExecutionContextImpl) ec).saveScreenLastInfo(screenPath.toString(), null)
+                ((WebFacadeImpl) ec.web).saveScreenLastInfo(screenPath.toString(), null)
             }
             // now prepare and send the redirect
             ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, null, "Login")

@@ -17,7 +17,6 @@ import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.actions.XmlAction
-import org.moqui.context.WebExecutionContext
 import org.moqui.context.ResourceReference
 
 class ScreenDefinition {
@@ -209,7 +208,7 @@ class ScreenDefinition {
                 value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context))
             }
             if (!value) value = ec.context.get(name)
-            if (!value && ec instanceof WebExecutionContext) value = ((WebExecutionContext) ec).parameters.get(name)
+            if (!value && ec.web) value = ec.web.parameters.get(name)
             return value
         }
     }
@@ -260,10 +259,9 @@ class ScreenDefinition {
 
         ResponseItem run(ScreenRenderImpl sri) {
             // put parameters in the context
-            if (sri.ec instanceof WebExecutionContext) {
-                WebExecutionContext wec = (WebExecutionContext) sri.ec
+            if (sri.ec.web) {
                 for (ParameterItem pi in parentScreen.parameterMap.values()) {
-                    Object value = pi.getValue(wec.parameters)
+                    Object value = pi.getValue(sri.ec)
                     if (value) sri.ec.context.put(pi.getName(), value)
                 }
             }

@@ -18,10 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-/**
- * Interface definition for object used throughout the Moqui Framework to manage contextual execution information and tool interfaces.
- */
-public interface WebExecutionContext extends ExecutionContext {
+/** Web Facade for access to HTTP Servlet objects and information. */
+public interface WebFacade {
     Map<String, Object> getParameters();
 
     HttpServletRequest getRequest();

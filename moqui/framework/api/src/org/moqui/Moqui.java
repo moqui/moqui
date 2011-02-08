@@ -13,7 +13,6 @@ package org.moqui;
 
 import org.moqui.context.ExecutionContext;
 import org.moqui.context.ExecutionContextFactory;
-import org.moqui.context.WebExecutionContext;
 import org.moqui.entity.EntityDataLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,14 +58,6 @@ public class Moqui {
     
     public static ExecutionContext getExecutionContext() {
         return activeExecutionContextFactory.getExecutionContext();
-    }
-
-    /** This should be called by a filter or servlet at the beginning of an HTTP request to initialize a web context
-     * for the current thread.
-     */
-    public static WebExecutionContext initWebExecutionContext(String webappMoquiName, HttpServletRequest request,
-                                                              HttpServletResponse response) {
-        return activeExecutionContextFactory.getWebExecutionContext(webappMoquiName, request, response);
     }
 
     /** This should be called when it is known a context won't be used any more, such as at the end of a web request or service execution. */

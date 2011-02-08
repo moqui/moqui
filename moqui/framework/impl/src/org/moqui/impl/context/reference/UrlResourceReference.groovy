@@ -56,7 +56,7 @@ class UrlResourceReference implements ResourceReference {
     @Override
     String getContentType() {
         if (!locationUrl) return null
-        ec.ecfi.resourceFacade.getContentType(getFileName())
+        ec.resource.getContentType(getFileName())
     }
 
     @Override

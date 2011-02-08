@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <subscreens default-item="FindExampleFeature"/>
     <widgets>
         <section name="menu">
-            <condition><expression>ec.parameters.exampleFeatureId</expression></condition>
+            <condition><expression>ec.web.parameters.exampleFeatureId</expression></condition>
             <widgets><subscreens-menu id="FeatureMenu"/></widgets>
         </section>
         <subscreens-active id="FeatureSubscreen"/>

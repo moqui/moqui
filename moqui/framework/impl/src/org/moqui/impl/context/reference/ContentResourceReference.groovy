@@ -82,7 +82,7 @@ class ContentResourceReference implements ResourceReference {
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
     @Override
-    String getContentType() { ec.ecfi.resourceFacade.getContentType(getFileName()) }
+    String getContentType() { ec.resource.getContentType(getFileName()) }
 
     @Override
     boolean supportsAll() { true }

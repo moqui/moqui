@@ -12,13 +12,13 @@
 package org.moqui.impl.webapp
 
 import javax.servlet.http.HttpServlet
-import javax.servlet.ServletException
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.ServletConfig
+import javax.servlet.ServletException
 
 import org.moqui.Moqui
-import org.moqui.context.WebExecutionContext
+import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
@@ -80,20 +80,20 @@ class MoquiServlet extends HttpServlet {
         String pathInfo = request.getPathInfo()
         long startTime = System.currentTimeMillis()
 
-        if (logger.traceEnabled) logger.trace("=-=-=-=-=-= Start request in webapp [${webappId}], moqui-name [${webappMoquiName}] to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
         if (logger.infoEnabled) logger.info("=-=-=-=-=-= Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
 
-        WebExecutionContext wec = executionContextFactory.getWebExecutionContext(webappMoquiName, request, response)
+        ExecutionContext ec = executionContextFactory.getExecutionContext()
+        ec.initWebFacade(webappMoquiName, request, response)
 
         /** NOTE to set render settings manually do something like this, but it is not necessary to set these things
          * for a web page render because if we call render(request, response) it can figure all of this out as defaults
          *
-         * ScreenRender render = wec.screen.makeRender().webappName(webappMoquiName).renderMode("html")
+         * ScreenRender render = ec.screen.makeRender().webappName(webappMoquiName).renderMode("html")
          *         .rootScreen(webappDef.webappNode."@root-screen-location").screenPath(pathInfo.split("/") as List)
          */
 
         try {
-            wec.screen.makeRender().render(request, response)
+            ec.screen.makeRender().render(request, response)
         } catch (ScreenResourceNotFoundException e) {
             logger.warn("Resource Not Found: " + e.message)
             response.sendError(404, e.message)

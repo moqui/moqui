@@ -285,6 +285,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     String getContentType(String filename) {
+        if (!filename || !filename.contains(".")) return null
         String type = mimetypesFileTypeMap.getContentType(filename)
         // strip any parameters, ie after the ;
         if (type.contains(";")) type = type.substring(0, type.indexOf(";"))

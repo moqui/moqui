@@ -23,6 +23,9 @@ import org.moqui.entity.EntityFacade
 import org.moqui.service.ServiceFacade
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ArtifactExecutionFacade
+import org.moqui.context.WebFacade
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpServletRequest
 
 class ExecutionContextImpl implements ExecutionContext {
 
@@ -31,6 +34,7 @@ class ExecutionContextImpl implements ExecutionContext {
     protected ContextStack context = new ContextStack()
     protected String tenantId = null
 
+    protected WebFacadeImpl webFacade = null
     protected UserFacadeImpl userFacade
     protected MessageFacadeImpl messageFacade
     protected L10nFacadeImpl l10nFacade
@@ -38,6 +42,7 @@ class ExecutionContextImpl implements ExecutionContext {
 
     ExecutionContextImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
+        // NOTE: no WebFacade init here, wait for call in to do that
         this.userFacade = new UserFacadeImpl(this)
         this.messageFacade = new MessageFacadeImpl()
         this.l10nFacade = new L10nFacadeImpl(this)
@@ -57,6 +62,9 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
     String getTenantId() { this.tenantId }
+
+    /** @see org.moqui.context.ExecutionContext#getWeb() */
+    WebFacade getWeb() { this.webFacade }
 
     /** @see org.moqui.context.ExecutionContext#getUser() */
     UserFacade getUser() { this.userFacade }
@@ -92,6 +100,11 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
     ScreenFacade getScreen() { this.ecfi.getScreenFacade() }
+
+    /** @see org.moqui.context.ExecutionContext#initWebFacade(String, HttpServletRequest, HttpServletResponse) */
+    void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
+        this.webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
+    }
 
     /** @see org.moqui.context.ExecutionContext#destroy() */
     void destroy() {

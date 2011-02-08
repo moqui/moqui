@@ -14,10 +14,7 @@ package org.moqui.impl.context;
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
-import org.moqui.context.WebExecutionContext
 
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.moqui.impl.entity.EntityFacadeImpl
@@ -241,26 +238,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             return ec
         } else {
             ec = new ExecutionContextImpl(this)
-            this.activeContext.set(ec)
-            return ec
-        }
-    }
-
-    /** @see org.moqui.context.ExecutionContextFactory#getWebExecutionContext(String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
-    WebExecutionContext getWebExecutionContext(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
-        ExecutionContext ec = this.activeContext.get()
-        if (ec) {
-            if (ec instanceof WebExecutionContext) {
-                return ec
-            } else {
-                // make a Web EC based on the plain EC
-                ec = new WebExecutionContextImpl(webappMoquiName, request, response, (ExecutionContextImpl) ec)
-                this.activeContext.set(ec)
-                return ec
-            }
-        } else {
-            // make a Web EC with a new plain EC
-            ec = new WebExecutionContextImpl(webappMoquiName, request, response, new ExecutionContextImpl(this))
             this.activeContext.set(ec)
             return ec
         }

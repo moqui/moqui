@@ -15,7 +15,6 @@ import java.sql.Timestamp
 import javax.servlet.http.HttpServletRequest
 
 import org.moqui.context.UserFacade
-import org.moqui.context.WebExecutionContext
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 
@@ -170,8 +169,8 @@ class UserFacadeImpl implements UserFacade {
             }
 
             // if WebExecutionContext add to session
-            if (eci.ecfi.executionContext instanceof WebExecutionContext) {
-                ((WebExecutionContext) eci.ecfi.executionContext).session.setAttribute("moqui.userId", newUserAccount.userId)
+            if (eci.ecfi.executionContext.web) {
+                eci.ecfi.executionContext.web.session.setAttribute("moqui.userId", newUserAccount.userId)
             }
 
             // just in case there is already a user authenticated push onto a stack to remember
@@ -250,23 +249,22 @@ class UserFacadeImpl implements UserFacade {
 
     void logoutUser() {
         if (this.userIdStack) this.userIdStack.pop()
-        if (eci.ecfi.executionContext instanceof WebExecutionContext) {
-            ((WebExecutionContext) eci.ecfi.executionContext).session.removeAttribute("moqui.userId")
+        if (eci.ecfi.executionContext.web) {
+            eci.ecfi.executionContext.web.session.removeAttribute("moqui.userId")
         }
     }
 
     /* @see org.moqui.context.UserFacade#getUserId() */
     String getUserId() {
-        logger.info("Getting UserId before userIdStack is [${userIdStack}]")
-        String uid = this.userIdStack ? this.userIdStack.peek() : null
-        logger.info("Getting UserId after userIdStack is [${userIdStack}]")
-        return uid
+        return this.userIdStack ? this.userIdStack.peek() : null
     }
 
     /* @see org.moqui.context.UserFacade#getUserAccount() */
     EntityValue getUserAccount() {
-        logger.info("Getting UserAccount current userIdStack is [${userIdStack}]")
-        if (!userIdStack) return null
+        if (!userIdStack) {
+            logger.info("Getting UserAccount no userIdStack", new Exception("Trace"))
+            return null
+        }
         EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peek()).useCache(true).one()
         logger.info("Got UserAccount [${ua}] with userIdStack [${userIdStack}]")
         return ua

@@ -16,6 +16,9 @@ import java.util.Map;
 import org.moqui.entity.EntityFacade;
 import org.moqui.service.ServiceFacade;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Interface definition for object used throughout the Moqui Framework to manage contextual execution information and
  * tool interfaces. One instance of this object will exist for each thread running code and will be applicable for that
@@ -32,6 +35,11 @@ public interface ExecutionContext {
      * each will have its own set of databases (except for the tenant database which is shared among all Tenants).
      */
     String getTenantId();
+
+    /** If running through a web (HTTP servlet) request offers access to the various web objects/information.
+     * If not running in a web context will return null.
+     */
+    WebFacade getWeb();
 
     /** For information about the user and user preferences (including locale, time zone, currency, etc). */
     UserFacade getUser();
@@ -65,6 +73,11 @@ public interface ExecutionContext {
 
     /** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
     ScreenFacade getScreen();
+
+    /** This should be called by a filter or servlet at the beginning of an HTTP request to initialize a web facade
+     * for the current thread.
+     */
+    void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response);
 
     /** This should be called when the ExecutionContext won't be used any more. Implementations should make sure
      * any active transactions, database connections, etc are closed.

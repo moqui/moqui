@@ -17,26 +17,14 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 import javax.servlet.ServletContext
 
-import org.moqui.context.WebExecutionContext
-import org.moqui.context.ScreenFacade
-import org.moqui.service.ServiceFacade
-import org.moqui.entity.EntityFacade
-import org.moqui.context.TransactionFacade
-import org.moqui.context.CacheFacade
-import org.moqui.context.LoggerFacade
-import org.moqui.context.ResourceFacade
-import org.moqui.context.ArtifactExecutionFacade
-import org.moqui.context.L10nFacade
-import org.moqui.context.MessageFacade
-import org.moqui.context.UserFacade
+import org.moqui.context.WebFacade
 import org.moqui.impl.StupidWebUtilities
 
 /** This class is a delegator for the ExecutionContextImpl class so that it can easily be used to extend an existing
  * ExecutionContext.
  */
-class WebExecutionContextImpl implements WebExecutionContext {
+class WebFacadeImpl implements WebFacade {
 
-    protected ExecutionContextFactoryImpl ecfi
     protected ExecutionContextImpl eci
     protected String webappMoquiName
     protected HttpServletRequest request
@@ -50,31 +38,25 @@ class WebExecutionContextImpl implements WebExecutionContext {
     protected Map<String, Object> sessionAttributes = null
     protected Map<String, Object> applicationAttributes = null
 
-    WebExecutionContextImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
-                            ExecutionContextImpl eci) {
+    WebFacadeImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
+                  ExecutionContextImpl eci) {
         this.eci = eci
-        this.ecfi = eci.ecfi
         this.webappMoquiName = webappMoquiName
         this.request = request
         this.response = response
 
         // NOTE: the Visit is not setup here but rather in the MoquiEventListener (for init and destroy)
-        request.setAttribute("ec", this)
+        request.setAttribute("ec", eci)
         this.eci.userFacade.initFromHttpRequest(request)
 
         // get any parameters saved to the session from the last request, and clear that session attribute if there
         savedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
         if (savedParameters != null) request.session.removeAttribute("moqui.saved.parameters")
-
-        // put reference to this in the context root, may replace value set there by the non-web ECI
-        contextRoot.put("ec", this)
     }
 
-    ExecutionContextFactoryImpl getEcfi() { ecfi }
+    ExecutionContextImpl getEci() { eci }
 
-    // ========== Web EC Methods
-
-    /** @see org.moqui.context.WebExecutionContext#getParameters() */
+    /** @see org.moqui.context.WebFacade#getParameters() */
     Map<String, Object> getParameters() {
         // NOTE: no blocking in these methods because the ExecutionContext is created for each thread
 
@@ -93,17 +75,17 @@ class WebExecutionContextImpl implements WebExecutionContext {
         return parameters
     }
 
-    /** @see org.moqui.context.WebExecutionContext#getRequest() */
+    /** @see org.moqui.context.WebFacade#getRequest() */
     HttpServletRequest getRequest() { return request }
 
-    /** @see org.moqui.context.WebExecutionContext#getRequestAttributes() */
+    /** @see org.moqui.context.WebFacade#getRequestAttributes() */
     Map<String, Object> getRequestAttributes() {
         if (requestAttributes) return requestAttributes
         requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
         return requestAttributes
     }
 
-    /** @see org.moqui.context.WebExecutionContext#getRequestParameters() */
+    /** @see org.moqui.context.WebFacade#getRequestParameters() */
     Map<String, Object> getRequestParameters() {
         if (requestParameters) return requestParameters
         ContextStack cs = new ContextStack()
@@ -114,76 +96,27 @@ class WebExecutionContextImpl implements WebExecutionContext {
         return requestParameters
     }
 
-    /** @see org.moqui.context.WebExecutionContext#getResponse() */
+    /** @see org.moqui.context.WebFacade#getResponse() */
     HttpServletResponse getResponse() { return response }
 
-    /** @see org.moqui.context.WebExecutionContext#getSession() */
+    /** @see org.moqui.context.WebFacade#getSession() */
     HttpSession getSession() { return request.getSession() }
 
-    /** @see org.moqui.context.WebExecutionContext#getSessionAttributes() */
+    /** @see org.moqui.context.WebFacade#getSessionAttributes() */
     Map<String, Object> getSessionAttributes() {
         if (sessionAttributes) return sessionAttributes
         sessionAttributes = new StupidWebUtilities.SessionAttributeMap(request.getSession())
         return sessionAttributes
     }
 
-    /** @see org.moqui.context.WebExecutionContext#getServletContext() */
+    /** @see org.moqui.context.WebFacade#getServletContext() */
     ServletContext getServletContext() { return request.session.getServletContext() }
 
-    /** @see org.moqui.context.WebExecutionContext#getApplicationAttributes() */
+    /** @see org.moqui.context.WebFacade#getApplicationAttributes() */
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
         applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.session.getServletContext())
         return applicationAttributes
-    }
-
-    /** @see org.moqui.context.ExecutionContext#getContext() */
-    Map<String, Object> getContext() { return eci.context }
-
-    /** @see org.moqui.context.ExecutionContext#getContextRoot() */
-    Map<String, Object> getContextRoot() { return eci.context.getRootMap() }
-
-    /** @see org.moqui.context.ExecutionContext#getTenantId() */
-    String getTenantId() { return eci.tenantId }
-
-    /** @see org.moqui.context.ExecutionContext#getUser() */
-    UserFacade getUser() { return eci.userFacade }
-
-    /** @see org.moqui.context.ExecutionContext#getMessage() */
-    MessageFacade getMessage() { return eci.messageFacade }
-
-    /** @see org.moqui.context.ExecutionContext#getL10n() */
-    L10nFacade getL10n() { return eci.l10nFacade }
-
-    /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
-    ArtifactExecutionFacade getArtifactExecution() { return eci.artifactExecutionFacade }
-
-    // ==== More Permanent Objects (get from the factory) ===
-
-    /** @see org.moqui.context.ExecutionContext#getResource() */
-    ResourceFacade getResource() { return ecfi.getResourceFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#getLogger() */
-    LoggerFacade getLogger() { return ecfi.getLoggerFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#getCache() */
-    CacheFacade getCache() { return ecfi.getCacheFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#getTransaction() */
-    TransactionFacade getTransaction() { return ecfi.getTransactionFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#getEntity() */
-    EntityFacade getEntity() { return ecfi.getEntityFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#getService() */
-    ServiceFacade getService() { return ecfi.getServiceFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#getScreen() */
-    ScreenFacade getScreen() { return ecfi.getScreenFacade() }
-
-    /** @see org.moqui.context.ExecutionContext#destroy() */
-    void destroy() {
-        eci.destroy()
     }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
