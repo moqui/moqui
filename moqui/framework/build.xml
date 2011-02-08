@@ -13,7 +13,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <project name="Moqui Framework Build" default="build" basedir=".">
     <property environment="env"/>
-    <property name="version" value="1.0"/>
 
     <path id="groovy.class.path">
         <pathelement location="impl/lib/commons-cli-1.2.jar"/>
@@ -21,12 +20,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <pathelement location="impl/lib/asm-3.2.jar"/>
         <pathelement location="impl/lib/groovy-all-1.7.5.jar"/>
     </path>
-    <taskdef name="groovyc"
-             classname="org.codehaus.groovy.ant.Groovyc"
-             classpathref="groovy.class.path"/>
-    <taskdef name="groovydoc"
-             classname="org.codehaus.groovy.ant.Groovydoc"
-             classpathref="groovy.class.path"/>
+    <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="groovy.class.path"/>
+    <taskdef name="groovydoc" classname="org.codehaus.groovy.ant.Groovydoc" classpathref="groovy.class.path"/>
 
     <target name="init">
         <!-- just a place holder for now -->

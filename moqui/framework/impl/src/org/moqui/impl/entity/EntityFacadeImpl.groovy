@@ -108,6 +108,12 @@ class EntityFacadeImpl implements EntityFacade {
                 Node xaProperties = inlineJdbc."xa-properties"[0]
                 Node database = this.getDatabaseNode(datasource."@group-name")
 
+                // special thing for embedded derby, just set an system property; for derby.log, etc
+                if (datasource."@database-conf-name" == "derby") {
+                    System.setProperty("derby.system.home", System.getProperty("moqui.runtime") + "/db/derby")
+                    logger.info("Set property derby.system.home to [${System.getProperty("derby.system.home")}]")
+                }
+
                 AbstractDataSourceBean ads
                 if (xaProperties) {
                     AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
