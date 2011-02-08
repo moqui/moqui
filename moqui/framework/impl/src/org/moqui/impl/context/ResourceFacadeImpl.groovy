@@ -29,9 +29,12 @@ import org.moqui.impl.StupidUtilities
 
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import javax.activation.MimetypesFileTypeMap
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
+
+    protected final MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap()
 
     protected final ExecutionContextFactoryImpl ecfi
 
@@ -279,5 +282,22 @@ public class ResourceFacadeImpl implements ResourceFacade {
         while (strippedLocation.charAt(0) == '/') strippedLocation.deleteCharAt(0)
 
         return strippedLocation.toString()
+    }
+
+    String getContentType(String filename) {
+        String type = mimetypesFileTypeMap.getContentType(filename)
+        // strip any parameters, ie after the ;
+        if (type.contains(";")) type = type.substring(0, type.indexOf(";"))
+        return type
+    }
+    boolean isBinaryContentType(String contentType) {
+        if (!contentType) return false
+        if (contentType.startsWith("text/")) return false
+        // aside from text/*, a few notable exceptions:
+        if (contentType == "application/javascript") return false
+        if (contentType == "application/rtf") return false
+        if (contentType == "application/xml") return false
+        if (contentType == "application/xml-dtd") return false
+        return true
     }
 }

@@ -81,7 +81,6 @@ class MoquiServlet extends HttpServlet {
         long startTime = System.currentTimeMillis()
         if (logger.infoEnabled) logger.info("Start request in webapp [${webappId}], moqui-name [${webappMoquiName}] to [${pathInfo}] at time [${startTime}] in session [${request.session.id}]")
 
-        // TODO: if resource is a static resource do not initialize wec, just stream through the resource (how to determine a static resource?)
         WebExecutionContext wec = executionContextFactory.getWebExecutionContext(webappMoquiName, request, response)
 
         /** NOTE to set render settings manually do something like this, but it is not necessary to set these things
@@ -91,19 +90,17 @@ class MoquiServlet extends HttpServlet {
          *         .rootScreen(webappDef.webappNode."@root-screen-location").screenPath(pathInfo.split("/") as List)
          */
 
-        // NOTE: not creating a protected context for now for the screen, it is the only thing now, nothing to muck up
-        // ContextStack cs = (ContextStack) wec.context
         try {
-            //cs.push()
             wec.screen.makeRender().render(request, response)
-        } finally {
-            //cs.pop()
+        } catch (ScreenResourceNotFoundException e) {
+            logger.warn("Resource Not Found: " + e.message)
+            response.sendError(404, e.message)
         }
 
         // make sure everything is cleaned up
         executionContextFactory.destroyActiveExecutionContext()
 
         double runningTime = (System.currentTimeMillis() - startTime) / 1000
-        if (logger.infoEnabled) logger.info("End request to [${pathInfo}] in [${runningTime}] seconds, in session [${request.session.id}]")
+        if (logger.infoEnabled) logger.info("=-=-=-=-=-= End request to [${pathInfo}] of type [${response.getContentType()}] in [${runningTime}] seconds, in session [${request.session.id}]")
     }
 }

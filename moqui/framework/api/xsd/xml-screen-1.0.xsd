@@ -82,11 +82,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="web-settings">
         <xs:complexType>
-            <!-- TODO support this in code -->
             <xs:attribute name="allow-web-request" default="true" type="boolean"/>
-            <!-- TODO support this in code -->
             <xs:attribute name="mime-type" type="xs:string" default="text/html"/>
-            <!-- TODO support this in code -->
             <xs:attribute name="character-encoding" type="xs:string" default="UTF-8"/>
             <!-- TODO support this in code -->
             <xs:attribute name="require-encryption" default="true" type="boolean"/>

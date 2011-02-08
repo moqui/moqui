@@ -29,6 +29,9 @@ public interface ResourceReference {
     InputStream openStream();
     String getText();
 
+    /** The content (MIME) type for this content, if known or can be determined. */
+    String getContentType();
+
     boolean supportsAll();
 
     boolean supportsUrl();

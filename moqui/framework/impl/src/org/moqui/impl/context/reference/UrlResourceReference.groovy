@@ -22,6 +22,7 @@ class UrlResourceReference implements ResourceReference {
     
     UrlResourceReference() { }
     
+    @Override
     ResourceReference init(String location, ExecutionContext ec) {
         if (location.indexOf(":") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
@@ -34,25 +35,41 @@ class UrlResourceReference implements ResourceReference {
         return this
     }
 
+    @Override
     String getLocation() { return locationUrl?.toString() }
 
+    @Override
     URI getUri() { return locationUrl?.toURI() }
+    @Override
     String getFileName() {
         if (!locationUrl) return null
         String path = locationUrl.getPath()
         return path.contains("/") ? path.substring(path.lastIndexOf("/")+1) : path
     }
 
+    @Override
     InputStream openStream() { return locationUrl?.openStream() }
 
+    @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
+    @Override
+    String getContentType() {
+        if (!locationUrl) return null
+        ec.ecfi.resourceFacade.getContentType(getFileName())
+    }
+
+    @Override
     boolean supportsAll() { locationUrl?.protocol == "file" }
 
+    @Override
     boolean supportsUrl() { return true }
+    @Override
     URL getUrl() { return locationUrl }
 
+    @Override
     boolean supportsDirectory() { return locationUrl?.protocol == "file" }
+    @Override
     boolean isFile() {
         if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
@@ -61,6 +78,7 @@ class UrlResourceReference implements ResourceReference {
             throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl.protocol}]")
         }
     }
+    @Override
     boolean isDirectory() {
         if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
@@ -69,6 +87,7 @@ class UrlResourceReference implements ResourceReference {
             throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl.protocol}]")
         }
     }
+    @Override
     List<ResourceReference> getDirectoryEntries() {
         if (locationUrl?.protocol == "file") {
             File f = new File(locationUrl.toURI())
@@ -82,7 +101,9 @@ class UrlResourceReference implements ResourceReference {
         }
     }
 
+    @Override
     boolean supportsExists() { return locationUrl?.protocol == "file" || exists != null }
+    @Override
     boolean getExists() {
         if (exists != null) return exists
 
@@ -95,6 +116,7 @@ class UrlResourceReference implements ResourceReference {
         }
     }
 
+    @Override
     void destroy() { }
 
     @Override

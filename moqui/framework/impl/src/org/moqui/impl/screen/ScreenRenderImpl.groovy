@@ -49,6 +49,10 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected String renderMode = null
     protected String characterEncoding = null
+    /** For HttpServletRequest/Response renders this will be set on the response either as this default or a value
+     * determined during render, especially for screen sub-content based on the extension of the filename. */
+    protected String outputContentType = null
+
     protected String macroTemplateLocation = null
     protected Boolean boundaryComments = null
 
@@ -101,10 +105,13 @@ class ScreenRenderImpl implements ScreenRender {
         if (!renderMode) renderMode = "html"
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
+        // TODO: should we really use the character encoding of the request, or always go with UTF-8?
         if (!characterEncoding && request.getCharacterEncoding()) encoding(request.getCharacterEncoding())
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
         // now render
         internalRender()
+        // all done rendering, and all chances to set the content type, so NOW we set it on the response just in case
+        if (!response.getContentType()) response.setContentType(this.outputContentType)
     }
 
     @Override
@@ -123,8 +130,6 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     protected void internalRender() {
-        // make sure we have at least these defaults
-        if (!characterEncoding) characterEncoding = "UTF-8"
         if (!renderMode) renderMode = "html"
 
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
@@ -143,6 +148,13 @@ class ScreenRenderImpl implements ScreenRender {
         for (ScreenDefinition checkSd in screenUrlInfo.screenPathDefList) {
             if (!checkWebappSettings(checkSd)) return
         }
+
+        // if these aren't set in any screen (in the checkWebappSettings method), set them here
+        if (!characterEncoding) characterEncoding = "UTF-8"
+        if (!outputContentType) outputContentType = "text/html"
+
+        // before we render, set the character encoding (set the content type later, after we see if there is sub-content with a different type)
+        if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
         if (screenUrlInfo.targetTransition) {
             // TODO if this transition has actions and request was not secure or any parameters were not in the body return an error, helps prevent XSRF attacks
@@ -220,8 +232,12 @@ class ScreenRenderImpl implements ScreenRender {
             String fileName = screenUrlInfo.fileResourceRef.fileName
             String extension = fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".")+1) : ""
 
-            if (binaryExtensions.contains(extension.toLowerCase())) {
+            String fileContentType = sfi.ecfi.resourceFacade.getContentType(fileName)
+            if (sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)) {
                 if (response) {
+                    this.outputContentType = fileContentType
+                    response.setContentType(this.outputContentType)
+
                     InputStream is = null
                     OutputStream os = null
                     try {
@@ -244,7 +260,9 @@ class ScreenRenderImpl implements ScreenRender {
             }
             if (screenUrlInfo.targetScreen.screenNode."@include-child-content" != "true") {
                 // not a binary object (hopefully), read it and write it to the writer
-                internalRenderTargetContent()
+                sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
+                this.outputContentType = fileContentType
+                if (response != null) response.setContentType(this.outputContentType)
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
                 boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
@@ -273,28 +291,16 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
-    void internalRenderTargetContent() {
-        sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
-
-        /* using cache by default, but if we didn't want to cache and stream instead:
-        BufferedReader br = null
-        try {
-            br = new BufferedReader(new InputStreamReader(screenUrlInfo.fileResourceRef.openStream()))
-            char[] buffer = new char[1024]
-            int len = br.read(buffer)
-            while (len != -1) {
-                writer.write(buffer, 0, len)
-                len = br.read(buffer)
-                if (Thread.interrupted()) throw new InterruptedException()
-            }
-        } finally {
-            if (br != null) br.close()
-        }
-         */
-    }
-
     boolean checkWebappSettings(ScreenDefinition currentSd) {
         if (!request) return true
+
+        if (currentSd.webSettingsNode?."@allow-web-request" == "false")
+            throw new IllegalArgumentException("The screen [${currentSd.location}] cannot be used in a web request (allow-web-request=false).")
+
+        if (currentSd.webSettingsNode?."@mime-type") this.outputContentType = currentSd.webSettingsNode?."@mime-type"
+        if (!this.characterEncoding && currentSd.webSettingsNode?."@character-encoding")
+            this.characterEncoding = currentSd.webSettingsNode?."@character-encoding"
+
         // if request not secure and screens requires secure redirect to https
         if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
                 !request.isSecure()) {
@@ -349,7 +355,8 @@ class ScreenRenderImpl implements ScreenRender {
         // first see if there is another screen def in the list
         if ((screenPathIndex+1) >= screenUrlInfo.screenPathDefList.size()) {
             if (screenUrlInfo.fileResourceRef) {
-                internalRenderTargetContent()
+                // NOTE: don't set this.outputContentType, when including in a screen the screen determines the type
+                sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
                 return ""
             } else {
                 return "Tried to render subscreen in screen [${getActiveScreenDef()?.location}] but there is no subscreens.@default-item, and no more valid subscreen names in the screen path [${screenUrlInfo.fullPathNameList}]"

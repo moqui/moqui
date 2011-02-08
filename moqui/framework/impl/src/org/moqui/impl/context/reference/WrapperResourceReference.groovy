@@ -39,6 +39,7 @@ class WrapperResourceReference implements ResourceReference {
 
     InputStream openStream() { return rr.openStream() }
     String getText() { return rr.getText() }
+    String getContentType() { return rr.getContentType() }
 
     boolean supportsAll() { return rr.supportsAll() }
 

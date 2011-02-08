@@ -31,6 +31,7 @@ class ContentResourceReference implements ResourceReference {
 
     ContentResourceReference() { }
     
+    @Override
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
         this.locationUri = new URI(location)
@@ -56,13 +57,17 @@ class ContentResourceReference implements ResourceReference {
         return this
     }
 
+    @Override
     String getLocation() { return locationUri.toString() }
 
+    @Override
     URI getUri() { return locationUri }
+    @Override
     String getFileName() {
         return nodePath.contains("/") ? nodePath.substring(nodePath.lastIndexOf("/")+1) : nodePath
     }
 
+    @Override
     InputStream openStream() {
         javax.jcr.Node node = getNode()
         if (node == null) return null
@@ -73,24 +78,35 @@ class ContentResourceReference implements ResourceReference {
         return dataProperty.binary.stream
     }
 
+    @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
+    @Override
+    String getContentType() { ec.ecfi.resourceFacade.getContentType(getFileName()) }
+
+    @Override
     boolean supportsAll() { true }
 
+    @Override
     boolean supportsUrl() { false }
+    @Override
     URL getUrl() { return null }
 
+    @Override
     boolean supportsDirectory() { return true }
+    @Override
     boolean isFile() {
         javax.jcr.Node node = getNode()
         if (node == null) return false
         return node.isNodeType("nt:file")
     }
+    @Override
     boolean isDirectory() {
         javax.jcr.Node node = getNode()
         if (node == null) return false
         return node.isNodeType("nt:folder")
     }
+    @Override
     List<ResourceReference> getDirectoryEntries() {
         List<ResourceReference> dirEntries = new LinkedList()
         javax.jcr.Node node = getNode()
@@ -102,13 +118,16 @@ class ContentResourceReference implements ResourceReference {
         return dirEntries
     }
 
+    @Override
     boolean supportsExists() { return true }
+    @Override
     boolean getExists() {
         if (theNode != null) return true
         Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
         return session.nodeExists(nodePath)
     }
 
+    @Override
     void destroy() { }
 
     @Override

@@ -86,7 +86,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         if (isSinglePk) {
             /* **** primary sequenced primary key **** */
             /* **** primary sequenced key with optional override passed in **** */
-            String singlePkParamName = pkFieldNames[0]
+            String singlePkParamName = pkFieldNames.get(0)
             Node singlePkField = ed.getFieldNode(singlePkParamName)
 
             Object pkValue = parameters.get(singlePkField."@name")
@@ -95,7 +95,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
-            String doublePkSecondaryName = parameters.get(pkFieldNames[0]) ? pkFieldNames[1] : pkFieldNames[0]
+            String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
             newEntity.setFields(parameters, true, null, true)
             sfi.ecfi.entityFacade.sequencedIdSecondary(newEntity, doublePkSecondaryName, 5, 1)
             if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))

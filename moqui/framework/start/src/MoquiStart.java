@@ -35,11 +35,12 @@ public class MoquiStart extends ClassLoader {
     public static void main(String[] args) throws IOException {
         String firstArg = args.length > 0 ? args[0] : "";
 
-        // setup the class loader
-        MoquiStart moquiStartLoader = new MoquiStart();
-        Thread.currentThread().setContextClassLoader(moquiStartLoader);
-
         if ("-help".equals(firstArg) || "-?".equals(firstArg)) {
+            // setup the class loader
+            MoquiStart moquiStartLoader = new MoquiStart(true);
+            Thread.currentThread().setContextClassLoader(moquiStartLoader);
+            Runtime.getRuntime().addShutdownHook(new MoquiShutdown(null, null, moquiStartLoader.jarFileList));
+
             System.out.println("");
             System.out.println("Usage: java -jar moqui.war [command] [arguments]");
             System.out.println("-help, -? ---- Help (this text)");
@@ -71,6 +72,10 @@ public class MoquiStart extends ClassLoader {
 
         // now run the command
         if ("-load".equals(firstArg)) {
+            MoquiStart moquiStartLoader = new MoquiStart(true);
+            Thread.currentThread().setContextClassLoader(moquiStartLoader);
+            Runtime.getRuntime().addShutdownHook(new MoquiShutdown(null, null, moquiStartLoader.jarFileList));
+
             Map<String, String> argMap = new HashMap<String, String>();
             for (String arg: argList) {
                 if (arg.startsWith("-")) arg = arg.substring(1);
@@ -90,44 +95,70 @@ public class MoquiStart extends ClassLoader {
                 e.printStackTrace();
             }
             System.exit(0);
-        } else {
-            Map<String, String> argMap = new HashMap<String, String>();
-            for (String arg: argList) {
-                if (arg.startsWith("--")) arg = arg.substring(2);
-                if (arg.contains("=")) {
-                    argMap.put(arg.substring(0, arg.indexOf("=")), arg.substring(arg.indexOf("=")+1));
-                } else {
-                    argMap.put(arg, "");
-                }
-            }
+        }
 
-            try {
-                argMap.put("warfile", moquiStartLoader.outerFile.getName());
-                System.out.println("Running Winstone embedded server with args [" + argMap + "]");
+        // ===== Done trying specific commands, so load the embedded server
 
-                Class c = moquiStartLoader.loadClass("winstone.Launcher");
-                Method initLogger = c.getMethod("initLogger", new Class<?>[] { Map.class });
-                initLogger.invoke(null, argMap);
+        // Get a start loader with loadWebInf=false since the container will load those we don't want to here (would be on classpath twice)
+        MoquiStart moquiStartLoader = new MoquiStart(false);
+        Thread.currentThread().setContextClassLoader(moquiStartLoader);
+        // NOTE: the MoquiShutdown hook is not set here because we want to get the winstone Launcher object first, so done below...
 
-                Constructor wlc = c.getConstructor(new Class<?>[] { Map.class });
-                Object winstone = wlc.newInstance(argMap);
-
-                Method shutdown = c.getMethod("shutdown");
-                Runtime.getRuntime().addShutdownHook(new WinstoneShutdown(shutdown, winstone));
-
-                // NOTE: need to wait there or anything?
-            } catch (Exception e) {
-                System.out.println("Error loading or running Winstone embedded server with args [" + argMap + "]: " + e.toString());
-                e.printStackTrace();
+        Map<String, String> argMap = new HashMap<String, String>();
+        for (String arg: argList) {
+            if (arg.startsWith("--")) arg = arg.substring(2);
+            if (arg.contains("=")) {
+                argMap.put(arg.substring(0, arg.indexOf("=")), arg.substring(arg.indexOf("=")+1));
+            } else {
+                argMap.put(arg, "");
             }
         }
+
+        try {
+            argMap.put("warfile", moquiStartLoader.outerFile.getName());
+            System.out.println("Running Winstone embedded server with args [" + argMap + "]");
+
+            Class c = moquiStartLoader.loadClass("winstone.Launcher");
+            Method initLogger = c.getMethod("initLogger", new Class<?>[] { Map.class });
+            Method shutdown = c.getMethod("shutdown");
+            // init the Winstone logger
+            initLogger.invoke(null, argMap);
+            // start Winstone with a new instance of the server
+            Constructor wlc = c.getConstructor(new Class<?>[] { Map.class });
+            Object winstone = wlc.newInstance(argMap);
+
+            // now that we have an object to shutdown, set the hook
+            Runtime.getRuntime().addShutdownHook(new MoquiShutdown(shutdown, winstone, moquiStartLoader.jarFileList));
+        } catch (Exception e) {
+            System.out.println("Error loading or running Winstone embedded server with args [" + argMap + "]: " + e.toString());
+            e.printStackTrace();
+        }
+
+        // now wait for break...
     }
 
-    protected static class WinstoneShutdown extends Thread {
-        Method shutdown; Object winstone;
-        WinstoneShutdown(Method shutdown, Object winstone) { super(); this.shutdown = shutdown; this.winstone = winstone; }
+    protected static class MoquiShutdown extends Thread {
+        Method callMethod; Object callObject;
+        List<JarFile> jarFileList;
+        MoquiShutdown(Method callMethod, Object callObject, List<JarFile> jarFileList) {
+            super();
+            this.callMethod = callMethod; this.callObject = callObject;
+            this.jarFileList = jarFileList;
+        }
         public void run() {
-            try { shutdown.invoke(winstone); } catch (Exception e) { System.out.println("Error in Winstone shutdown: " + e.toString()); }
+            // run this first, ie shutdown the container before closing jarFiles to avoid errors with classes missing
+            if (callMethod != null) {
+                try { callMethod.invoke(callObject); } catch (Exception e) { System.out.println("Error in shutdown: " + e.toString()); }
+            }
+
+            // close all jarFiles so they will "deleteOnExit"
+            for (JarFile jarFile : jarFileList) {
+                try {
+                    jarFile.close();
+                } catch (IOException e) {
+                    System.out.println("Error closing jar [" + jarFile + "]: " + e.toString());
+                }
+            }
         }
     }
 
@@ -135,13 +166,15 @@ public class MoquiStart extends ClassLoader {
     protected List<JarFile> jarFileList = new ArrayList<JarFile>();
     protected Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
     protected ProtectionDomain pd;
+    protected boolean loadWebInf;
 
-    public MoquiStart() {
-        this(ClassLoader.getSystemClassLoader());
+    public MoquiStart(boolean loadWebInf) {
+        this(ClassLoader.getSystemClassLoader(), loadWebInf);
     }
 
-    public MoquiStart(ClassLoader parent) {
+    public MoquiStart(ClassLoader parent, boolean loadWebInf) {
         super(parent);
+        this.loadWebInf = loadWebInf;
 
         URL wrapperWarUrl = null;
         try {
@@ -158,8 +191,10 @@ public class MoquiStart extends ClassLoader {
             while (jarEntries.hasMoreElements()) {
                 JarEntry je = jarEntries.nextElement();
                 if (je.isDirectory()) continue;
+                // if we aren't loading the WEB-INF files and it is one, skip it
+                if (!loadWebInf && je.getName().startsWith("WEB-INF")) continue;
+                // get jars, can be anywhere in the file
                 String jeName = je.getName().toLowerCase();
-                // get jars - mostly in the WEB-INF/lib directory, but can be anywhere
                 if (jeName.lastIndexOf(".jar") == jeName.length() - 4) {
                     File file = createTempFile(je);
                     jarFileList.add(new JarFile(file));
@@ -167,24 +202,6 @@ public class MoquiStart extends ClassLoader {
             }
         } catch (Exception e) {
             System.out.println("Error loading jars in war file [" + wrapperWarUrl + "]: " + e.toString());
-            return;
-        }
-
-        Runtime.getRuntime().addShutdownHook(new JarFileCloser(jarFileList));
-    }
-
-    protected static class JarFileCloser extends Thread {
-        List<JarFile> jarFileList;
-        JarFileCloser(List<JarFile> jarFileList) { super(); this.jarFileList = jarFileList; }
-        public void run() {
-            // close all jarFiles so they will "deleteOnExit"
-            for (JarFile jarFile : jarFileList) {
-                try {
-                    jarFile.close();
-                } catch (IOException e) {
-                    System.out.println("Error closing jar [" + jarFile + "]: " + e.toString());
-                }
-            }
         }
     }
 
@@ -192,7 +209,7 @@ public class MoquiStart extends ClassLoader {
         byte[] jeBytes = getJarEntryBytes(outerFile, je);
 
         String tempName = je.getName().replace('/', '_') + ".";
-        File file = File.createTempFile(tempName, null);
+        File file = File.createTempFile("moqui_temp", tempName);
         file.deleteOnExit();
         BufferedOutputStream os = null;
         try {
@@ -228,7 +245,7 @@ public class MoquiStart extends ClassLoader {
         for (JarFile jarFile : jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
-            if (jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
+            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
             if (jarEntry != null) {
                 try {
                     return new URL("jar:file:" + jarFile.getName() + "!/" + jarEntry);
@@ -248,7 +265,7 @@ public class MoquiStart extends ClassLoader {
         for (JarFile jarFile : jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
-            if (jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
+            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
             if (jarEntry != null) {
                 try {
                     urlList.add(new URL("jar:file:" + jarFile.getName() + "!/" + jarEntry));
@@ -295,7 +312,7 @@ public class MoquiStart extends ClassLoader {
         for (JarFile jarFile: jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(classFileName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
-            if (jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + classFileName);
+            if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + classFileName);
             if (jarEntry != null) {
                 definePackage(className, jarFile);
                 byte[] jeBytes = getJarEntryBytes(jarFile, jarEntry);

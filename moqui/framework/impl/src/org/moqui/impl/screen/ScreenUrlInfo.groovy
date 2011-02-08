@@ -4,6 +4,7 @@ import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.context.WebExecutionContext
 import org.moqui.context.ResourceReference
+import org.moqui.impl.webapp.ScreenResourceNotFoundException
 
 class ScreenUrlInfo {
     ScreenRenderImpl sri
@@ -31,6 +32,7 @@ class ScreenUrlInfo {
     /** If the full path led to a file resource that is verified to exist, the URL goes here; the URL for access on the
      * server, the client will get the resource from the url field as normal */
     ResourceReference fileResourceRef = null
+    String fileResourceContentType = null
 
     /** All screens found in the path list */
     List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
@@ -189,7 +191,7 @@ class ScreenUrlInfo {
                     break
                 }
 
-                throw new IllegalArgumentException("Could not find subscreen or transition or file/content [${pathName}] in screen [${lastSd.location}] while finding url for path [${fullPathNameList}] based on [${fromPathList}]:[${fromScreenPath}] relative to screen [${fromSd.location}]")
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName)
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd) {

@@ -100,7 +100,7 @@
         <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.CwikiTemplateRenderer"/>
         <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
         <!-- a renderer for .html isn't necessary because the default is to write the text as-is, however this is useful
-            so that the extension becomes a default extension and doesn't ahve to be in the URL -->
+            so that the extension becomes a default extension and doesn't have to be in the URL -->
         <template-renderer extension=".html" class="org.moqui.impl.context.renderer.NoTemplateRenderer"/>
     </resource-facade>
 
