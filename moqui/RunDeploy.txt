@@ -1,6 +1,14 @@
 
 Moqui Framework Running and Deployment Instructions
 
+Table of Contents
+
+1. Runtime Directory and Configuration File
+2. Executable WAR File
+3. Examples and Common Approaches
+4. Build and Run From Source
+5. Project Directory Structure
+
 ===========================================================================
 Runtime Directory and Configuration File
 ===========================================================================
@@ -52,7 +60,7 @@ For information about loading only certain files instead of all data files
 in all components, run that to see the help text.
 
 ===========================================================================
-Typical Running
+Examples and Common Approaches
 ===========================================================================
 
 -- Easy Way - Default Settings
