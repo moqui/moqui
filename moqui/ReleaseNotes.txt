@@ -1,0 +1,123 @@
+
+Moqui Framework Release Notes
+
+===========================================================================
+Release 1.0-preview2 - (not yet planned)
+===========================================================================
+
+This release includes:
+
+TODO: add notes here
+
+===========================================================================
+Release 1.0-preview1 - 10 Feb 2011
+===========================================================================
+
+Release 1.0-preview1 is the first preview release of the Moqui Framework.
+
+This first release includes a number of complete tools, implementation of
+most of the Java API, and support for many of the configuration elements
+and the various XML files. There are many things left to do before all 1.0
+features are implemented and you'll see various "TODO" comments scattered
+around, though not every feature yet to be implemented is represented by
+such a comment.
+
+This release includes:
+
+- Flexible deployment
+  - Executable WAR file for command-line data loading and embedded Winstone
+    servlet container (Derby DB, Atomikos JTA&CP, other required JARs)
+  - The same WAR file can be dropped in a servlet container like Tomcat or
+    Jetty, or a more general app server like JBoss or Weblogic
+  - Supports Derby, HSQL, MySQL, Oracle and Postgres OOTB, support for
+    additional databases primarily by configuration
+  - Separate runtime directory with configuration, components, logs,
+    database, JCR repo, etc; is the same no matter how the WAR is deployed
+  - Use the supplied MoquiServlet, or write your own based on that example
+  - Everything runs from an instance of the ExecutionContextFactory, so it
+    is easy to include in custom programs or deploy through OSGi, etc
+  - Specify runtime directory path and conf file location using properties
+    file or System propertiers (java -D arguments)
+- XML Screens
+  - XML Screen rendering for HTML
+  - Screen menus and sub-screens
+    - Hierarchical to any depth, URL is path to screen in hierarchy
+    - URL building based on configuration
+    - Sub-screens by directory structure, XML elements, db record
+  - Screen sub-content (stand-alone, included in screen) including support
+    for FTL and Confluence Wiki templates, and text and binary files
+  - Screens and sub-content can be located in files or in a JCR repo
+  - Can include or inline HTML and other text content
+  - Visit tracking
+- Execution Context & General Facades
+  - WebFacade for access to Servlet objects, parameter maps, etc
+  - UserFacade for current user data, login/logout/authentication, etc
+  - MessageFacade for general and error message management
+  - L10nFacade for localization of text
+  - Resource Facade for access to classpath, file, JCR, etc resources,
+    and for running scripts and rendering templates (with caching for all);
+    - Interface to implement for any type of template rendering desired
+    - Interface to implement for any type of resource reference and access
+  - LoggerFacade for general logging, especially for non-class code
+  - CacheFacade for general caching, backed by ehcache
+  - TransactionFacade for general JTA-type operations and tracking what is
+    currently going on with transactions, where errors originated, etc
+  - ScreenFacade for rendering screens using the ScreenRender interface
+- Service Facade
+  - Service runners for Java, XML Actions, inline actions, Scripts
+  - Entity-auto runner for CrUD ops without even defining the service
+  - Interface for adding your own service runners
+  - Can call sync, async or scheduled (using Quartz Scheduler)
+- Entity Facade
+  - EntityValue with support for create, update, delete, refresh db
+    operations, find related, various get and set options
+  - EntityFind with various conditions, etc supported and results of one,
+    list, iterator, count, updateAll, or deleteAll.
+  - Comprehensive data loader with API and command-line access
+  - Database meta-data support for automatically creating tables at
+    runtime as they are used
+  - Primary and secondary sequenced ID generation
+- Security
+  - ESAPI input canonicalization/filtering
+  - User account and flexible password constraints and mgmt
+  - Authentication in XML Screens
+  - Can require encryption in XML Screens
+  - XSRF protection by requiring encryption of form input in body parms
+- XML Actions
+  - Converts to Groovy code then compiles for good runtime performance
+  - Embeddable in service definitions, screens, etc
+- Example application with screens, sub-content (CSS, html.ftl, cwiki.ftl),
+  entities and services, demo app and security and l10n data, etc
+- Sample configurations for development, staging, and production
+- Configurable "root" screen with sample HTML wrappers, login, menus, etc
+
+Notable features not yet implemented:
+
+- XML Screens
+  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
+  - Screen tree nodes
+  - Screen form elements (for now TODO comments show in rendered output)
+  - Dynamic Screens (database-driven: DynamicScreen*)
+  - Dynamic Forms (database-driven: DynForm*)
+  - ESAPI output encoding
+- Entity Facade
+  - Entity ECA rules
+  - Entity encryption, audit-logging, complex aliases in views
+  - Entity automatic cache clearing
+  - Entity extension
+  - Entity database meta-data support for adding columns, fks, indexes
+  - EntitySync tool
+  - Database-driven dynamic view entity
+- Service Facade
+  - Service ECA rules
+  - Service validation, authentication, semaphores
+  - Service runners for remote service calls (HTTP, JMS, RMI proxies)
+  - Service runners for various web service standards (XML-RPC, REST, etc)
+  - Service expand auto-parameters
+  - Service run on commit and on rollback of current tx (ServiceCallSpecial)
+  - Service async or scheduled max-retry
+- ArtifactExecutionFacade for artifact stack tracking
+- Artifact Authorization, Tar-pitting based on configuration in db
+- ServerHit and ServerHitBin tracking
+- Visitor tracking
+- Multi-tenant support (shared app server, separate databases)
