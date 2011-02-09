@@ -3,11 +3,31 @@ Moqui Framework Running and Deployment Instructions
 
 Table of Contents
 
-1. Runtime Directory and Configuration File
-2. Executable WAR File
-3. Examples and Common Approaches
-4. Build and Run From Source
-5. Project Directory Structure
+1. Quick Start
+2. Runtime Directory and Configuration File
+3. Executable WAR File
+4. Examples and Common Approaches
+5. Build and Run From Source
+6. Project Directory Structure
+
+===========================================================================
+Quick Start
+===========================================================================
+
+1. Make sure you have a Java 6 JDK installed (the Sun/Oracle or Apple
+   version is best, haven't tried on OpenJDK or Harmony yet)
+
+2. Download and unzip the distribution file, creating a moqui directory
+
+3. Load the seed and demo data which will create Derby DB and tables:
+
+$ java -jar moqui.war -load
+
+4. Run the framework (with embedded Servlet, JTA/CP, DB):
+
+$ java -jar moqui.war
+
+For details and other approaches read on...
 
 ===========================================================================
 Runtime Directory and Configuration File
