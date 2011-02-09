@@ -154,7 +154,7 @@ class ScreenUrlInfo {
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
         this.requireEncryption = false
-        if (sri.rootScreenDef.webSettingsNode?."require-encryption" != "false") this.requireEncryption = true
+        if (sri.rootScreenDef?.webSettingsNode?."require-encryption" != "false") this.requireEncryption = true
         if (sri.rootScreenDef.screenNode?."begin-transaction" == "true") this.beginTransaction = true
 
         // loop through path for various things: check validity, see if we can do a transition short-cut and go right to its response url, etc

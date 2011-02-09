@@ -12,8 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-include="false">
-    <web-settings require-authentication="false"/>
+        default-menu-include="false" require-authentication="false">
     <transition name="login">
         <actions><call-script>
             System.out.println("ec.web.requestParameters: " + ec.web.requestParameters.toString())

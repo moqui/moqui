@@ -11,12 +11,13 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
-    <web-settings require-authentication="false"/><!-- NOTE: this is required to allow sub-screens to decide, and because the Login screen is below this. -->
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        require-authentication="false">
+    <!-- NOTE: require-authentication=false is required to allow sub-screens to decide, and because the Login screen is below this. -->
     <subscreens default-item="example">
         <!-- refer to the various app roots here -->
         <subscreens-item name="example" location="component://example/screen/ExampleApp.xml"
-                         menu-title="Example" menu-index="9"/>
+                         menu-title="Example" menu-index="8"/>
     </subscreens>
     <widgets>
         <render-mode><text type="html" location="webroot/includes/HtmlHeader.html.ftl"/></render-mode>

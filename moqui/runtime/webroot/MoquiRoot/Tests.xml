@@ -12,8 +12,7 @@
   -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-title="Tests">
-    <web-settings require-authentication="false"/>
+        default-menu-title="Tests" default-menu-index="9" require-authentication="false">
     <widgets>
         <section name="HeaderUserInfo">
             <condition><compare field="ec.user.userId" operator="not-empty"/></condition>

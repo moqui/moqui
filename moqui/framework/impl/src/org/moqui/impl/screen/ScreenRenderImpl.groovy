@@ -318,9 +318,10 @@ class ScreenRenderImpl implements ScreenRender {
             response.sendRedirect(screenUrlInfo.getUrlWithParams())
             return false
         }
+
         // if screen requires auth and there is not active user redirect to login screen, save this request
         if (logger.traceEnabled) logger.trace("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
-        if (currentSd.webSettingsNode?."@require-authentication" != "false" && !ec.user.userId) {
+        if (currentSd.screenNode?."@require-authentication" != "false" && !ec.user.userId) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
             if (ec.web) {
@@ -512,9 +513,9 @@ class ScreenRenderImpl implements ScreenRender {
     String getCurrentThemeId() {
         // get the screen's theme type; try second level
         String stteId = null
-        if (screenUrlInfo.screenPathDefList) stteId = screenUrlInfo.screenPathDefList[0].webSettingsNode?."@screen-theme-type-enum-id"
+        if (screenUrlInfo.screenPathDefList) stteId = screenUrlInfo.screenPathDefList[0].screenNode?."@screen-theme-type-enum-id"
         // if no setting try first level (root)
-        if (!stteId) stteId = rootScreenDef.webSettingsNode?."@screen-theme-type-enum-id"
+        if (!stteId) stteId = rootScreenDef.screenNode?."@screen-theme-type-enum-id"
         // if no setting default to STT_INTERNAL
         if (!stteId) stteId = "STT_INTERNAL"
 
