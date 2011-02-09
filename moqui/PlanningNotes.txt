@@ -2,19 +2,19 @@
 ================================================================
 Implementation Plans
 
-- Use Groovy Node-based XML parsing with only thin objects when needed wrapping Node
+X Use Groovy Node-based XML parsing with only thin objects when needed wrapping Node
 
-- For groovy string expansion use SimpleTemplateEngine (or maybe GStringTemplateEngine),
-  see: http://groovy.codehaus.org/Groovy+Templates
+X For groovy string expansion use SimpleTemplateEngine (or maybe GStringTemplateEngine),
+  see: http://groovy.codehaus.org/Groovy+Templates; or just surround with triple quotes and run as a script...
 
 - Integrated Artifact Definition Info, not separate classes?
 
 X start with salted hashes for passwords, store salt with each password (use $ crypt(3) format, or a variation on the
   {type}value format?)
 
-- default style sheet very general and context sensitive
+X default style sheet very general and context sensitive
 
-- Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and
+- ? Use Apache Felix and OSGi instead of ofbiz container idea, if we can find a way to load many bundle jars at once, and
   if there is a standard Tomcat OSGi bundle; look at Apache Sling for examples
 
 X Support single/simple war file for deployment in any app server, point to things without using classpath; make so all
@@ -22,21 +22,21 @@ X Support single/simple war file for deployment in any app server, point to thin
 X Single webapp with pluggable modules like apps on paths, ie each app file specifies a mount path for all requests in
   the file
 
-- lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently
+X lazy load everything for quick startup and more efficient large apps (especially where many parts are infrequently
   used), only have Artifact Info and such tools load everything; load screens by path (no controllers any more), load
   services by reference within namespace/filespace, load entities when referenced, also with namespace?; what about ECA
   rules, preload those without preloading services using String/key reference only)
-- everything, even entity and service definitions runtime changeable and reloadable
-- Refer to entities as they are now, but when loaded system will remember the file the entity came from and get that
+X everything, even entity and service definitions runtime changeable and reloadable
+X Refer to entities as they are now, but when loaded system will remember the file the entity came from and get that
   file through the cache to facilitate reloading by file; moving an entity to another file will still require a restart
-  (or maybe just use a second cache for that?...)
+  (or maybe just use a second cache for that?... yep)
 
-- support wiki-style templates (same library as Confluence?)
+X support wiki-style templates (same library as Confluence?)
 - for simplified templating in managed content use the map tree concept (ie simple dot-syntax expressions for
   sub-content, etc) designed for OFBiz
 - consider the web developers: don't use screens, all content driven but with easy interface with screens, mount point
   for content, etc; also need a way to attach actions to JCR content… through screens if there will be actions/etc?
-- allow a mix of HTML templates (perhaps extension .html or .ftl, though always treated as FTL files) and screen defs
+X allow a mix of HTML templates (perhaps extension .html or .ftl, though always treated as FTL files) and screen defs
   in the same directory structure
 
 - integration tools: support for remote services (in/out) like REST, XML/HTTP; perhaps use ServiceMix or something;
@@ -257,13 +257,13 @@ Policies and Principles for Managing Moqui and Moqui-based Apps
 ================================================================
 Other TODO:
 
-- do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc,
+- ? do full stories for development activities (define data, define logic interfaces, implement logic, UI/etc/etc,
   security, theme, etc), refine designs based on each activity
 
-- write up feature list (X), differences from OFBiz list (X), benefits/marketing list (_); post to web site and send to
-  OFBiz after initial interfaces and examples are done (_)
+X write up feature list (X), differences from OFBiz list (X), benefits/marketing list (X); post to web site and send to
+  OFBiz after initial interfaces and examples are done (N)
 
-- create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the
+X create example public app, to be all managed content based; perhaps web site with a simple blog or forum, perhaps the
   moqui site itself
 
 ================================================================
