@@ -25,6 +25,7 @@ import org.moqui.impl.screen.ScreenDefinition.ResponseItem
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.WebFacadeImpl
+import org.moqui.impl.StupidWebUtilities
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -151,7 +152,19 @@ class ScreenRenderImpl implements ScreenRender {
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
         if (screenUrlInfo.targetTransition) {
-            // TODO if this transition has actions and request was not secure or any parameters were not in the body return an error, helps prevent XSRF attacks
+            // if this transition has actions and request was not secure or any parameters were not in the body
+            // return an error, helps prevent XSRF attacks
+            if (request != null && screenUrlInfo.targetTransition.actions != null) {
+                if ((!request.isSecure() && getWebappNode()."@https-enabled" != "false") ||
+                        request.getQueryString() ||
+                        StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo())) {
+                    throw new IllegalArgumentException(
+                        """Cannot run screen transition with actions from non-secure request or with URL
+                        parameters for security reasons (they are not encrypted and need to be for data
+                        protection and source validation). Change the link this came from to be a
+                        form with hidden input fields instead.""")
+                }
+            }
 
             // NOTE: always use a transaction for transition run (actions, etc)
             boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)

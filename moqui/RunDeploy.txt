@@ -21,11 +21,11 @@ Quick Start
 
 3. Load the seed and demo data which will create Derby DB and tables:
 
-$ java -jar moqui.war -load
+   $ java -jar moqui.war -load
 
 4. Run the framework (with embedded Servlet, JTA/CP, DB):
 
-$ java -jar moqui.war
+   $ java -jar moqui.war
 
 For details and other approaches read on...
 

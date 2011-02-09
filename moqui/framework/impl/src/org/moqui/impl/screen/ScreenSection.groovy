@@ -53,15 +53,19 @@ class ScreenSection {
         ContextStack cs = (ContextStack) sri.ec.context
         if (sectionNode.name() == "section-iterate") {
             // if nothing to iterate over, all done
-            if (!cs.get(sectionNode["@list"][0])) return
+            def list = sri.ec.resource.evaluateContextField(sectionNode["@list"] as String, null)
+            if (!list) {
+                if (logger.traceEnabled) logger.trace("Target list [${list}] is empty, not rendering section-iterate at [${location}]")
+                return
+            }
             // TODO: handle paginate, paginate-size (lower priority...)
-            for (Object entry in cs.get(sectionNode["@list"][0] as String)) {
+            for (Object entry in list) {
                 try {
                     cs.push()
 
-                    cs.put(sectionNode["@entry"][0] as String, entry)
+                    cs.put(sectionNode["@entry"], entry)
                     if (sectionNode["@key"] && entry instanceof Map.Entry)
-                        cs.put(sectionNode["@key"][0] as String, entry.getKey())
+                        cs.put(sectionNode["@key"], entry.getKey())
 
                     renderSingle(sri)
                 } finally {

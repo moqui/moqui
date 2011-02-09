@@ -62,6 +62,20 @@ float: right;
 #header-menu {
 }
 
+div.message {
+width: 600px;
+margin: 2px auto 2px auto;
+border: 1px solid #DDDDDF;
+padding: 2px;
+text-align: center;
+}
+div.message span {
+font-size: 0.9em;
+}
+div.error span {
+color: red;
+}
+
 #WebrootPanel_footer {
 margin: 0px auto 0px auto;
 border-top:  1px solid #DDDDDF;

@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0-preview2 - (not yet planned)
+Release 1.0-preview2 - (date not yet planned)
 ===========================================================================
 
 This release includes:
@@ -10,7 +10,7 @@ This release includes:
 TODO: add notes here
 
 ===========================================================================
-Release 1.0-preview1 - 10 Feb 2011
+Release 1.0-preview1 - 09 Feb 2011
 ===========================================================================
 
 Release 1.0-preview1 is the first preview release of the Moqui Framework.
@@ -121,3 +121,4 @@ Notable features not yet implemented:
 - ServerHit and ServerHitBin tracking
 - Visitor tracking
 - Multi-tenant support (shared app server, separate databases)
+- Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc

@@ -225,7 +225,7 @@ class UserFacadeImpl implements UserFacade {
         if (newUserAccount.disabled == "Y") {
             Timestamp reEnableTime = null
             if (newUserAccount.disabledDateTime) {
-                Integer disabledMinutes = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]."@disable-minutes" ?: 30 as Integer
+                Integer disabledMinutes = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]."@disable-minutes" as Integer ?: 30
                 reEnableTime = new Timestamp(newUserAccount.getTimestamp("disabledDateTime").getTime() + (disabledMinutes*60*1000))
             }
             if (!reEnableTime || reEnableTime < getNowTimestamp()) {

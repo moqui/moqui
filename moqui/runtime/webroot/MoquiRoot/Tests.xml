@@ -14,6 +14,10 @@
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Tests" default-menu-index="9" require-authentication="false">
     <widgets>
+        <link url="../Login/login" text="Login as John Doe, wrong password test">
+            <parameter name="userId" value="john.doe"/>
+            <parameter name="password" value="wrong"/>
+        </link>
         <section name="HeaderUserInfo">
             <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
             <actions>
@@ -46,6 +50,8 @@
         <label text="testV: ${context.testV}" type="p"/>
         <label text="User ID: ${ec.user.userId}" type="p"/>
         <label text="User Name: ${ec.user.userAccount?.userName}" type="p"/>
+        <label text="Messages: ${ec.message.messages}" type="p"/>
+        <label text="Errors: ${ec.message.errors}" type="p"/>
         <label text="Context: ${context.toString().replaceAll('\n','&lt;br&gt;')}" type="p"/>
     </widgets>
 </screen>

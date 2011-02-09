@@ -37,10 +37,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <container id="header-menu"><subscreens-menu/></container>
             </panel-header>
             <panel-center>
-                <section-iterate name="message" list="ec.message.messages" entry="message">
+                <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
                     <widgets><container style="message"><label text="${message}"/></container></widgets>
                 </section-iterate>
-                <section-iterate name="error" list="ec.message.errors" entry="errorMessage">
+                <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
                     <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
                 </section-iterate>
 

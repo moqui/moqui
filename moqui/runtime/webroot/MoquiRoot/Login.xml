@@ -15,8 +15,6 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-include="false" require-authentication="false">
     <transition name="login">
         <actions><call-script>
-            System.out.println("ec.web.requestParameters: " + ec.web.requestParameters.toString())
-            System.out.println("ec.web.requestParameters.get('userId'): " + ec.web.requestParameters.get('userId'))
             ec.user.loginUser(ec.web.requestParameters.userId, ec.web.requestParameters.password, ec.web.requestParameters.tenantId)
         </call-script></actions>
         <default-response type="screen-last"/>
@@ -36,6 +34,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field name="submit" title="Login"><submit/></field>
             </form-single>
             <!-- TODO add forgot password, etc -->
+
+            <!-- TODO remove this link when the normal login form is implemented -->
             <link url="login" text="Login as John Doe">
                 <parameter name="userId" value="john.doe"/>
                 <parameter name="password" value="moqui"/>
