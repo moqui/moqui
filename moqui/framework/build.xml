@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the API classes -->
         <echo message="===== Building api classes"/>
-        <javac destdir="build/api/classes" srcdir="api/src" includeantruntime="false"
+        <javac srcdir="api/src" destdir="build/api/classes" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
             <classpath>
@@ -75,13 +75,23 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the framework impl classes -->
         <echo message="===== Building impl classes"/>
-        <groovyc srcdir="impl/src" destdir="build/impl/classes">
+        <javac srcdir="impl/src" destdir="build/impl/classes" includeantruntime="false"
+                debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
+            <include name="**/*.java"/>
             <classpath>
                 <fileset dir="api/lib" includes="*.jar"/>
                 <fileset dir="impl/lib" includes="*.jar"/>
                 <fileset dir="build/lib" includes="*.jar"/>
             </classpath>
-            <javac source="1.6" target="1.6" deprecation="on" debug="on" encoding="UTF-8"/>
+        </javac>
+        <groovyc srcdir="impl/src" destdir="build/impl/classes">
+            <include name="**/*.groovy"/>
+            <classpath>
+                <fileset dir="api/lib" includes="*.jar"/>
+                <fileset dir="impl/lib" includes="*.jar"/>
+                <fileset dir="build/lib" includes="*.jar"/>
+                <pathelement location="build/impl/classes"/>
+            </classpath>
         </groovyc>
 
         <!-- make the framework impl lib -->

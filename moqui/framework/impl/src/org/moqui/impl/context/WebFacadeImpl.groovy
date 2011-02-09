@@ -57,7 +57,6 @@ class WebFacadeImpl implements WebFacade {
         if (savedParameters != null) request.session.removeAttribute("moqui.saved.parameters")
 
         // get any messages saved to the session, and clear them from the session
-        logger.info("TOREMOVE checking saved messages [${session.getAttribute("moqui.message.messages")}] and errors [${session.getAttribute("moqui.message.errors")}] to session")
         if (session.getAttribute("moqui.message.messages")) {
             eci.message.messageList.addAll((Collection) session.getAttribute("moqui.message.messages"))
             session.removeAttribute("moqui.message.messages")
@@ -66,7 +65,6 @@ class WebFacadeImpl implements WebFacade {
             eci.message.errorList.addAll((Collection) session.getAttribute("moqui.message.errors"))
             session.removeAttribute("moqui.message.errors")
         }
-        logger.info("TOREMOVE restored saved messages [${eci.message.messages}] and errors [${eci.message.errors}] to session")
     }
 
     ExecutionContextImpl getEci() { eci }
@@ -151,7 +149,6 @@ class WebFacadeImpl implements WebFacade {
     }
 
     void saveMessagesToSession() {
-        logger.info("TOREMOVE saving messages [${eci.message.messages}] and errors [${eci.message.errors}] to session")
         if (eci.message.messages) session.setAttribute("moqui.message.messages", eci.message.messages)
         if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
     }

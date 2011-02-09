@@ -7,6 +7,7 @@
         <!-- Development Mode - don't use these for production, load testing, etc.
              Cleared by default every 10 seconds from when loaded into cache. -->
         <cache name="entity.definition" expire-time-idle="10"/>
+        <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
         <cache name="entity.location" expire-time-idle="120"/>
 
         <cache name="service.location" expire-time-idle="10"/>
@@ -18,6 +19,8 @@
 
         <cache name="resource.xml-actions.location" expire-time-idle="10"/>
         <cache name="resource.groovy.location" expire-time-idle="10"/>
+        <!-- longer timeout because these are cached by the expression text itself, so changed text is a new entry -->
+        <cache name="resource.groovy.expression" expire-time-idle="600"/>
 
         <cache name="resource.ftl.location" expire-time-idle="10"/>
         <cache name="resource.cwiki.location" expire-time-idle="10"/>

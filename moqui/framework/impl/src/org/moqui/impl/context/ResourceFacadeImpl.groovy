@@ -39,6 +39,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache scriptGroovyLocationCache
+    protected final Cache scriptGroovyExpressionCache
     protected final Cache scriptXmlActionLocationCache
     protected final Cache textLocationCache
 
@@ -50,13 +51,12 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
-    protected GroovyShell localGroovyShell = null
-
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
 
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
+        this.scriptGroovyExpressionCache = ecfi.getCacheFacade().getCache("resource.groovy.expression")
         this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("resource.xml-actions.location")
 
         // Setup resource reference classes
@@ -86,7 +86,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 }
                 if (repositoryNode."@workspace") contentRepositoryWorkspaces.put(repositoryNode."@name", repositoryNode."@workspace")
             } catch (Exception e) {
-                logger.error("Error getting JCR content repository with name [${repositoryNode."@name"}], is of type [${repositoryNode."@type"}] at location [${repositoryNode."@location"}]", e)
+                logger.error("Error getting JCR content repository with name [${repositoryNode."@name"}], is of type [${repositoryNode."@type"}] at location [${repositoryNode."@location"}]: ${e.toString()}")
             }
         }
     }
@@ -211,7 +211,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected Class loadGroovy(String location) {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) {
-            gc = new GroovyClassLoader().parseClass(getLocationText(location), location)
+            gc = new GroovyClassLoader().parseClass(getLocationText(location, false), location)
             scriptGroovyLocationCache.put(location, gc)
         }
         return gc
@@ -225,7 +225,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected XmlAction loadXmlAction(String location) {
         XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
         if (!xa) {
-            xa = new XmlAction(ecfi, getLocationText(location), location)
+            xa = new XmlAction(ecfi, getLocationText(location, false), location)
             scriptXmlActionLocationCache.put(location, xa)
         }
         return xa
@@ -233,51 +233,62 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
-        logger.info("TOREMOVE context _before_ condition [${expression}:${debugLocation}]: ${ecfi.executionContext.context}")
-        boolean result
-        if (debugLocation) {
-            result = getGroovyShell().evaluate(expression, debugLocation) as boolean
-        } else {
-            result = getGroovyShell().evaluate(expression) as boolean
+        try {
+            Script script = getGroovyScript(expression)
+            Object result = script.run()
+            return result as boolean
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error in condition [${expression}] from [${debugLocation}]", e)
         }
-        logger.info("TOREMOVE context _after_ condition [${expression}:${debugLocation}] with result [${result}]: ${ecfi.executionContext.context}")
-        return result
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateContextField(String, String) */
     Object evaluateContextField(String expression, String debugLocation) {
-        logger.info("TOREMOVE context _before_ context field [${expression}:${debugLocation}]: ${ecfi.executionContext.context}")
-        Object result
-        if (debugLocation) {
-            result = getGroovyShell().evaluate(expression, debugLocation)
-        } else {
-            result = getGroovyShell().evaluate(expression)
+        try {
+            Script script = getGroovyScript(expression)
+            Object result = script.run()
+            return result
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error in field expression [${expression}] from [${debugLocation}]", e)
         }
-        logger.info("TOREMOVE context _after_ context field [${expression}:${debugLocation}] with result [${result}]: ${ecfi.executionContext.context}")
-        return result
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
     String evaluateStringExpand(String inputString, String debugLocation) {
         String expression = '"""' + inputString + '"""'
-        logger.info("TOREMOVE context _before_ string expand [${expression}:${debugLocation}]: ${ecfi.executionContext.context}")
-        String result
-        if (debugLocation) {
-            result = getGroovyShell().evaluate(expression, debugLocation) as String
-        } else {
-            result = getGroovyShell().evaluate(expression) as String
+        try {
+            Script script = getGroovyScript(expression)
+            Object result = script.run()
+            return result as String
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error in string expression [${expression}] from [${debugLocation}]", e)
         }
-        logger.info("TOREMOVE context _after_ string expand [${expression}:${debugLocation}] with result [${result}]: ${ecfi.executionContext.context}")
-        return result
     }
+
+    Script getGroovyScript(String expression) {
+        Class groovyClass = (Class) this.scriptGroovyExpressionCache.get(expression)
+        if (groovyClass == null) {
+            groovyClass = new GroovyClassLoader().parseClass(expression)
+            this.scriptGroovyExpressionCache.put(expression, groovyClass)
+        }
+        // NOTE: consider keeping the binding somewhere, like in the ExecutionContext to avoid creating repeatedly
+        Script script = InvokerHelper.createScript(groovyClass, new Binding(ecfi.executionContext.context))
+        return script
+    }
+
+    /*
+    // NOTE: this isn't currently used, but leave it here for now just in case we want to go back to this from the
+    // cached expression approach above
+    protected final ThreadLocal<GroovyShell> localGroovyShell = new ThreadLocal<GroovyShell>()
     protected GroovyShell getGroovyShell() {
-        // consider not caching this; does Binding eval at runtime or when built? if at runtime can just create one
-        // for the context and it will update with the context, if not then would have to be created every time an
-        // expression/script is run
-        if (localGroovyShell) return localGroovyShell
-        localGroovyShell = new GroovyShell(new Binding(ecfi.executionContext.context))
-        return localGroovyShell
+
+        if (localGroovyShell.get()) return localGroovyShell.get()
+        GroovyShell gs = new GroovyShell(new Binding(ecfi.executionContext.context))
+        localGroovyShell.set(gs)
+        return gs
     }
+    // add this to destroyAllInThread() if the GroovyShell stuff is ever used again: localGroovyShell.remove()
+    */
 
     static String stripLocationPrefix(String location) {
         if (!location) return ""

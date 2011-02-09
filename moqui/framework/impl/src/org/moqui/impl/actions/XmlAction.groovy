@@ -111,11 +111,9 @@ class XmlAction {
     Object run(ExecutionContext ec) {
         if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
 
-        logger.info("TOREMOVE context _before_ XML actions [${location}:${groovyString}]: ${ec.context}")
         Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
         try {
             Object result = script.run()
-            logger.info("TOREMOVE context _after_ XML actions [${location}:${groovyString}] with result [${result}]: ${ec.context}")
             return result
         } catch (Exception e) {
             logger.error("Error running groovy script [${groovyString}]", e)
@@ -126,11 +124,9 @@ class XmlAction {
     boolean checkCondition(ExecutionContext ec) {
         if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
 
-        logger.info("TOREMOVE context _before_ XML condition [${location}:${groovyString}]: ${ec.context}")
         Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
         try {
             boolean result = script.run() as boolean
-            logger.info("TOREMOVE context _after_ XML condition [${location}:${groovyString}] with result [${result}]: ${ec.context}")
             return result
         } catch (Exception e) {
             logger.error("Error running groovy script [${groovyString}]", e)
