@@ -15,22 +15,36 @@
     <web-settings require-authentication="false"/>
     <widgets>
         <section name="HeaderUserInfo">
+            <condition><compare field="ec.user.userId" operator="empty"/></condition>
             <actions>
                 <set field="test1" from-field="ec.user.userId"/>
+                <set field="testV" value="VALUE"/>
                 <call-script>
-                    context.put("test1", ec.user.userId);
+                    context.put("test2", ec.user.userId);
+                    System.out.println("================== ec.user.userId=" + ec.user.userId);
+                    System.out.println("================== ec.message.messages=" + ec.message.messages);
+                    System.out.println("================== ec.message.errors=" + ec.message.errors);
                     System.out.println("================== test1=" + test1);
+                    System.out.println("================== test2=" + test2);
+                    System.out.println("================== testV=" + testV);
                     System.out.println("================== context=" + context.toString())
                 </call-script>
             </actions>
             <widgets>
-                <label text="Direct userId: ${ec.user.userId}" type="p"/>
-                <label text="Through test1: ${context?.test1}" type="p"/>
+                <label text="Inner section:" type="h3"/>
+                <label text="Direct user: ${ec.user}" type="p"/>
+                <label text="Direct userId: ${ec.user.getUserId()}" type="p"/>
+                <label text="Through test1: ${context.test1}" type="p"/>
+                <label text="Through test2: ${context.test2}" type="p"/>
+                <label text="testV: ${testV}" type="p"/>
             </widgets>
         </section>
 
-        <label text="Context: ${ec.context.toString()}" type="p"/>
+        <label text="Outer section:" type="h3"/>
+        <label text="test1: ${context.test1}" type="p"/>
+        <label text="testV: ${testV}" type="p"/>
         <label text="User ID: ${ec.user.userId}" type="p"/>
         <label text="User Name: ${ec.user.userAccount?.userName}" type="p"/>
+        <label text="Context: ${context.toString().replaceAll('\n','&lt;br&gt;')}" type="p"/>
     </widgets>
 </screen>

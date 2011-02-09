@@ -32,6 +32,7 @@ class ContextStack implements Map<String, Object> {
 
     /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack) */
     public void push(Map<String, Object> existingMap) {
+        // logger.info("TOREMOVE Pushing map [${existingMap}] onto existing ContextStack [${this}]")
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map")
         stackList.push(existingMap)
     }
@@ -39,10 +40,14 @@ class ContextStack implements Map<String, Object> {
     /** Remove and returns the Map from the top of the stack (the local context).
      * If there is only one Map on the stack it returns null and does not remove it.
      */
-    public Map<String, Object> pop() { return stackList ? stackList.pop() : null }
+    public Map<String, Object> pop() {
+        // logger.info("TOREMOVE Popping map [${stackList.peek()}] from ContextStack [${this}]")
+        return stackList ? stackList.pop() : null
+    }
 
     /** Add an existing Map as the Root Map, ie on the BOTTOM of the stack meaning it will be overridden by other Maps on the stack */
     public void addRootMap(Map<String, Object> existingMap) {
+        // logger.info("TOREMOVE Adding root map [${existingMap}] onto existing ContextStack [${this}]")
         if (existingMap == null) throw new IllegalArgumentException("Cannot add null as an existing Map ")
         stackList.add(existingMap)
     }
@@ -112,15 +117,18 @@ class ContextStack implements Map<String, Object> {
     public Object get(Object key) {
         // the "context" key always gets a self-reference, effectively the top of the stack
         if (key == "context") return this
+        Object value = null
         for (Map<String, Object> curMap in stackList) {
             try {
-                if (curMap.containsKey(key)) return curMap.get(key)
+                if (curMap.containsKey(key)) value = curMap.get(key)
+                break;
             } catch (Exception e) {
                 logger.error("Error getting value for key [${key}], returning null", e)
                 return null
             }
         }
-        return null
+        // logger.info("TOREMOVE get [${key}] from map [${this}] got value [${value}]")
+        return value
     }
 
     /** @see java.util.Map#  */

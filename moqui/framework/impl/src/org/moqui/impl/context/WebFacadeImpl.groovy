@@ -19,11 +19,14 @@ import javax.servlet.ServletContext
 
 import org.moqui.context.WebFacade
 import org.moqui.impl.StupidWebUtilities
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 /** This class is a delegator for the ExecutionContextImpl class so that it can easily be used to extend an existing
  * ExecutionContext.
  */
 class WebFacadeImpl implements WebFacade {
+    protected final static Logger logger = LoggerFactory.getLogger(WebFacadeImpl.class)
 
     protected ExecutionContextImpl eci
     protected String webappMoquiName
@@ -52,6 +55,18 @@ class WebFacadeImpl implements WebFacade {
         // get any parameters saved to the session from the last request, and clear that session attribute if there
         savedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
         if (savedParameters != null) request.session.removeAttribute("moqui.saved.parameters")
+
+        // get any messages saved to the session, and clear them from the session
+        logger.info("TOREMOVE checking saved messages [${session.getAttribute("moqui.message.messages")}] and errors [${session.getAttribute("moqui.message.errors")}] to session")
+        if (session.getAttribute("moqui.message.messages")) {
+            eci.message.messageList.addAll((Collection) session.getAttribute("moqui.message.messages"))
+            session.removeAttribute("moqui.message.messages")
+        }
+        if (session.getAttribute("moqui.message.errors")) {
+            eci.message.errorList.addAll((Collection) session.getAttribute("moqui.message.errors"))
+            session.removeAttribute("moqui.message.errors")
+        }
+        logger.info("TOREMOVE restored saved messages [${eci.message.messages}] and errors [${eci.message.errors}] to session")
     }
 
     ExecutionContextImpl getEci() { eci }
@@ -133,5 +148,11 @@ class WebFacadeImpl implements WebFacade {
         if (moveToSaved)
             session.setAttribute("moqui.saved.parameters", session.getAttribute("moqui.screen.last.parameters"))
         session.removeAttribute("moqui.screen.last.parameters")
+    }
+
+    void saveMessagesToSession() {
+        logger.info("TOREMOVE saving messages [${eci.message.messages}] and errors [${eci.message.errors}] to session")
+        if (eci.message.messages) session.setAttribute("moqui.message.messages", eci.message.messages)
+        if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
     }
 }

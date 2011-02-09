@@ -233,29 +233,42 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
+        logger.info("TOREMOVE context _before_ condition [${expression}:${debugLocation}]: ${ecfi.executionContext.context}")
+        boolean result
         if (debugLocation) {
-            return getGroovyShell().evaluate(expression, debugLocation) as boolean
+            result = getGroovyShell().evaluate(expression, debugLocation) as boolean
         } else {
-            return getGroovyShell().evaluate(expression) as boolean
+            result = getGroovyShell().evaluate(expression) as boolean
         }
+        logger.info("TOREMOVE context _after_ condition [${expression}:${debugLocation}] with result [${result}]: ${ecfi.executionContext.context}")
+        return result
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateContextField(String, String) */
     Object evaluateContextField(String expression, String debugLocation) {
+        logger.info("TOREMOVE context _before_ context field [${expression}:${debugLocation}]: ${ecfi.executionContext.context}")
+        Object result
         if (debugLocation) {
-            return getGroovyShell().evaluate(expression, debugLocation)
+            result = getGroovyShell().evaluate(expression, debugLocation)
         } else {
-            return getGroovyShell().evaluate(expression)
+            result = getGroovyShell().evaluate(expression)
         }
+        logger.info("TOREMOVE context _after_ context field [${expression}:${debugLocation}] with result [${result}]: ${ecfi.executionContext.context}")
+        return result
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
     String evaluateStringExpand(String inputString, String debugLocation) {
+        String expression = '"""' + inputString + '"""'
+        logger.info("TOREMOVE context _before_ string expand [${expression}:${debugLocation}]: ${ecfi.executionContext.context}")
+        String result
         if (debugLocation) {
-            return getGroovyShell().evaluate('"""' + inputString + '"""', debugLocation) as String
+            result = getGroovyShell().evaluate(expression, debugLocation) as String
         } else {
-            return getGroovyShell().evaluate('"""' + inputString + '"""') as String
+            result = getGroovyShell().evaluate(expression) as String
         }
+        logger.info("TOREMOVE context _after_ string expand [${expression}:${debugLocation}] with result [${result}]: ${ecfi.executionContext.context}")
+        return result
     }
     protected GroovyShell getGroovyShell() {
         // consider not caching this; does Binding eval at runtime or when built? if at runtime can just create one

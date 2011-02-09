@@ -185,6 +185,7 @@ class ScreenRenderImpl implements ScreenRender {
             // TODO add the ri.parameters
             Map<String, String> parameterMap = new HashMap()
 
+            // handle screen-last, etc
             if (ec.web) {
                 WebFacadeImpl wfi = (WebFacadeImpl) ec.web
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
@@ -203,6 +204,9 @@ class ScreenRenderImpl implements ScreenRender {
 
             // either send a redirect for the response, if possible, or just render the response now
             if (this.response) {
+                // save messages in session before redirecting so they can be displayed on the next screen
+                if (ec.web) ((WebFacadeImpl) ec.web).saveMessagesToSession()
+
                 if (urlType == "plain") {
                     response.sendRedirect(url)
                 } else {
