@@ -31,6 +31,8 @@ import java.util.jar.Manifest;
  * JarClassLoader source file there.
  */
 public class MoquiStart extends ClassLoader {
+    // this default is for development and is here instead of having a buried properties file that might cause conflicts when trying to override
+    static final String defaultConf = "conf/development/MoquiDevConf.xml";
 
     public static void main(String[] args) throws IOException {
         initSystemProperties();
@@ -173,8 +175,6 @@ public class MoquiStart extends ClassLoader {
             confPath = moquiInitProperties.getProperty("moqui.conf");
         }
         if (confPath == null || confPath.length() == 0) {
-            // this default is for development and is here instead of having a buried properties file that might cause conflicts when trying to override
-            String defaultConf = "conf/development/MoquiDevConf.xml";
             File testFile = new File(runtimePath + "/" + defaultConf);
             if (testFile.exists()) confPath = defaultConf;
         }

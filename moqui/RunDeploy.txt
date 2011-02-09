@@ -1,0 +1,129 @@
+
+Moqui Framework Running and Deployment Instructions
+
+===========================================================================
+Runtime Directory and Configuration File
+===========================================================================
+
+The Moqui Framework has two main parts to deploy:
+
+1. Executable WAR File (see below)
+2. Runtime Directory with Configuration File
+
+However you use the executable WAR file, you must have a runtime directory
+and you may override default settings with a XML configuration file.
+
+The runtime directory is the main place to put components you want to load,
+the root files (root screen) for the web application, and configuration
+files. It is also where the framework will put log files, Derby db files
+(if you are using Derby), JCR repo files, etc. You will eventually want to
+create your own runtime directory and keep it in your own source repository
+and you can use the default project one to get started.
+
+Specify these two properties
+
+1. moqui.runtime : Runtime directory (defaults to "./runtime" if exists or
+                   just "." if there is no runtime sub-directory)
+2. moqui.conf    : Conf XML file (URL or path relative to moqui.runtime)
+
+There are two ways to specify these two properties:
+
+1. MoquiInit.properties file on the classpath
+2. System properties specified on the command line (with java -D arguments)
+
+See below for examples.
+
+===========================================================================
+Executable WAR File
+===========================================================================
+
+Yep, that's right: an executable WAR file. There are 3 main things you can
+do with this (with example commands to demonstrate, modify as needed):
+
+1. Load Data:                 $ java -jar moqui.war -load
+2. Run embedded web server:   $ java -jar moqui.war
+3. Deploy as WAR, for Tomcat: $ cp moqui.war ../tomcat/webapps
+
+You can also display settings and help information with:
+
+java -jar moqui.war -help
+
+For information about loading only certain files instead of all data files
+in all components, run that to see the help text.
+
+===========================================================================
+Typical Running
+===========================================================================
+
+-- Easy Way - Default Settings
+
+The easiest way to run is to have a moqui directory with the moqui.war file
+and the runtime directory in it. With the binary distribution of Moqui when
+you unzip the archive this is what you'll have.
+
+Run the commands below to use the default settings:
+
+- moqui.runtime=runtime
+- moqui.conf=conf/development/MoquiDevConf.xml (related to runtime)
+
+1. Load Data  : $ java -jar moqui.war -load
+2. Run Server : $ java -jar moqui.war
+
+-- Common Alternate - Specify a Configuration File on Command Line
+
+1. Load Data  : $ java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml
+                       -jar moqui.war -load
+2. Run Server : $ java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml
+                       -jar moqui.war
+
+-- Create a Custom WAR File with Settings Inside
+
+To do this requires that you have the source files available.
+
+1. Edit the moqui/MoquiInit.properties file, change as desired
+2. Rebuild the WAR file with: $ ant war
+3. Copy the WAR file to the deployment target
+4. Run server (or kick to deploy live WAR)
+
+===========================================================================
+Build and Run From Source
+===========================================================================
+
+There are various useful ant targets in the top-level build.xml file for
+the Moqui Framework.
+
+- Build JARs only     : $ ant build
+- Build WAR           : $ ant war
+- Load All Data       : $ ant load
+- Run Embedded Server : $ ant run
+- Clean up JARs, WAR  : $ ant clean
+- Clean up ALL built and runtime files (logs, dbs, etc) : $ ant clean-all
+
+Note that the load and run targets depend on the war target. The easiest
+to get a new development system running with a populated database is:
+
+$ ant load run
+
+This will build the war file, run the data loader, then run the server. To
+stop it just press <ctrl-c> (or your preferred alternative).
+
+===========================================================================
+Project Directory Structure
+===========================================================================
+
+- moqui (from https://moqui.svn.sourceforge.net/svnroot/moqui/trunk/moqui)
+  - framework
+    - api       : Java API, standard entities, services, data, XSDs, etc
+    - impl      : Implementation of the framework
+    - start     : Startup code for the executable WAR
+    - webapp    : The WEB-INF/web.xml file lives here
+  - runtime
+    - component : Components to deploy
+    - conf      : Configuration files separated by dev, staging, prod, etc
+    - db        : Database files for Derby, etc will go here
+    - lib       : JAR files to add to classpath
+    - log       : Log files will go here
+    - rep       : JCR Repositories
+    - template  : General Templates
+    - tmp       : Temporary files
+    - webroot   : Root Screen and supporting content

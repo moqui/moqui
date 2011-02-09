@@ -96,24 +96,24 @@ Notable features not yet implemented:
 - XML Screens
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
   - Screen tree nodes
-  - Screen form elements (for now TODO comments show in rendered output)
+  - Screen form elements (for now comments show in rendered output)
   - Dynamic Screens (database-driven: DynamicScreen*)
   - Dynamic Forms (database-driven: DynForm*)
   - ESAPI output encoding
 - Entity Facade
   - Entity ECA rules
   - Entity encryption, audit-logging, complex aliases in views
-  - Entity automatic cache clearing
+  - Automatic cache clearing
   - Entity extension
-  - Entity database meta-data support for adding columns, fks, indexes
+  - Database meta-data support for adding columns, fks, indexes
   - EntitySync tool
   - Database-driven dynamic view entity
 - Service Facade
   - Service ECA rules
   - Service validation, authentication, semaphores
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
-  - Service runners for various web service standards (XML-RPC, REST, etc)
-  - Service expand auto-parameters
+  - Service runners for web service standards (XML-RPC, REST, JSON, etc)
+  - Expand auto-parameters
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async or scheduled max-retry
 - ArtifactExecutionFacade for artifact stack tracking
