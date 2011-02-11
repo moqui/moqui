@@ -102,7 +102,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (!renderMode) renderMode = "html"
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
-        // TODO: should we really use the character encoding of the request, or always go with UTF-8?
+        // NOTE: should we really use the character encoding of the request, or always go with UTF-8 if nothing specified on the screen def?
         if (!characterEncoding && request.getCharacterEncoding()) encoding(request.getCharacterEncoding())
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
         // now render
@@ -256,11 +256,10 @@ class ScreenRenderImpl implements ScreenRender {
                     this.outputContentType = fileContentType
                     response.setContentType(this.outputContentType)
 
-                    InputStream is = null
-                    OutputStream os = null
+                    InputStream is
                     try {
                         is = screenUrlInfo.fileResourceRef.openStream()
-                        os = response.outputStream
+                        OutputStream os = response.outputStream
                         byte[] buffer = new byte[4096]
                         int len = is.read(buffer)
                         while (len != -1) {
@@ -437,6 +436,7 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenForm form = sd.getForm(formName)
         if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
         writer.flush()
+        // TODO: do iteration for all rows, or move that to ScreenForm and call it here
         form.renderListRow(this)
         writer.flush()
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
@@ -463,8 +463,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     String renderText(String location, String isTemplateStr) {
-        boolean isTemplate = true
-        if (isTemplateStr == "false") isTemplate = false
+        boolean isTemplate = (isTemplateStr != "false")
 
         if (isTemplate) {
             writer.flush()

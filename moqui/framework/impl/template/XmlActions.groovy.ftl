@@ -29,7 +29,8 @@ import org.moqui.impl.StupidUtilities
 </#macro>
 
 <#macro set>    <#if .node["@set-if-empty"]?has_content && .node["@set-if-empty"] == "false">${.node["@field"]}_temp_internal = <#if .node["@from-field"]?has_content>${.node["@from-field"]}<#else>"""${.node.@value}"""</#if><#if .node["@default-value"]?has_content> ?: ${.node["@default-value"]}</#if><#if .node["@type"]?has_content> as ${.node["@type"]}</#if>
-if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_temp_internal<#else/>${.node["@field"]} = <#if .node["@from-field"]?has_content>${.node["@from-field"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: ${.node["@default-value"]}</#if><#if .node["@type"]?has_content> as ${.node["@type"]}</#if></#if></#macro>
+if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_temp_internal<#else/>${.node["@field"]} = <#if .node["@from-field"]?has_content>${.node["@from-field"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: ${.node["@default-value"]}</#if><#if .node["@type"]?has_content> as ${.node["@type"]}</#if></#if>
+</#macro>
 
 <#macro "order-map-list">
     StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>'${ob["@field-name"]}'<#if ob_has_next>, </#if></#list>])
@@ -56,7 +57,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
             <#if !.node["@auto-field-map"]?has_content || .node["@auto-field-map"] == "true">.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#else><#if fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else/>${fieldMap["@field-name"]}</#if></#if>)</#list><#list .node["@select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
 </#macro>
 <#macro "entity-find">
-    ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#list .node["@select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["@order-by"] as ob>.orderBy('${ob["@field-name"]}')</#list>
+    ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy('${ob["@field-name"]}')</#list>
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
     <#if .node["search-form-inputs"]?has_content>// TODO handle search-form-inputs
     </#if>
@@ -91,16 +92,22 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "econdition-object">${.node["@field"]}</#macro>
 
 <#-- =================== entity other elements =================== -->
-<#macro "entity-find-related-one">    ${.node["@to-value-field"]} = ${.node["@value-field"]}.findRelatedOne("${.node["@relationship-name"]}", ${.node["@cache"][0]?default("null")}, ${.node["@for-update"][0]?default("null")})</#macro>
-<#macro "entity-find-related">    ${.node["@list"]} = ${.node["@value-field"]}.findRelated("${.node["@relationship-name"]}", ${.node["@map"][0]?default("null")}, ${.node["@order-by-list"][0]?default("null")}, ${.node["@cache"][0]?default("null")}, ${.node["@for-update"][0]?default("null")})</#macro>
+<#macro "entity-find-related-one">    ${.node["@to-value-field"]} = ${.node["@value-field"]}.findRelatedOne("${.node["@relationship-name"]}", ${.node["@cache"][0]?default("null")}, ${.node["@for-update"][0]?default("null")})
+</#macro>
+<#macro "entity-find-related">    ${.node["@list"]} = ${.node["@value-field"]}.findRelated("${.node["@relationship-name"]}", ${.node["@map"][0]?default("null")}, ${.node["@order-by-list"][0]?default("null")}, ${.node["@cache"][0]?default("null")}, ${.node["@for-update"][0]?default("null")})
+</#macro>
 
 <#macro "entity-make-value">    ${.node["@value-field"]} = ec.entity.makeValue(${.node["@entity-name"]})<#if .node["@map"]?has_content>
     ${.node["@value-field"]}.setFields(${.node["@map"]}, true, null, null)</#if>
 </#macro>
-<#macro "entity-create">    ${.node["@value-field"]}<#if .node["@or-update"]?has_content && .node["@or-update"] == "true">.createOrUpdate()<#else/>.create()</#if></#macro>
-<#macro "entity-update">    ${.node["@value-field"]}.update()</#macro>
-<#macro "entity-delete">    ${.node["@value-field"]}.delete()</#macro>
-<#macro "entity-delete-related">    ${.node["@value-field"]}.deleteRelated(${.node["@relationship-name"]})</#macro>
+<#macro "entity-create">    ${.node["@value-field"]}<#if .node["@or-update"]?has_content && .node["@or-update"] == "true">.createOrUpdate()<#else/>.create()</#if>
+</#macro>
+<#macro "entity-update">    ${.node["@value-field"]}.update()
+</#macro>
+<#macro "entity-delete">    ${.node["@value-field"]}.delete()
+</#macro>
+<#macro "entity-delete-related">    ${.node["@value-field"]}.deleteRelated(${.node["@relationship-name"]})
+</#macro>
 <#macro "entity-delete-by-condition">    ec.entity.makeFind("${.node["@entity-name"]}")
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>.deleteAll()
 </#macro>
@@ -126,8 +133,10 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
         if (${.node["@list"]} instanceof EntityListIterator) ${.node["@list"]}.close()
     }
 </#macro>
-<#macro message><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${.node?trim}""")<#else/>    ec.message.addMessage("""${.node?trim}""")</#if></#macro>
-<#macro "check-errors">    if (ec.message.errors) return</#macro>
+<#macro message><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${.node?trim}""")<#else/>    ec.message.addMessage("""${.node?trim}""")</#if>
+</#macro>
+<#macro "check-errors">    if (ec.message.errors) return
+</#macro>
 
 <#-- NOTE: if there is an error message (in ec.messages.errors) then the actions result is an error, otherwise it is not, so we need a default error message here -->
 <#macro return><#assign returnMessage = .node["@message"]?default("Error in actions")/><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${returnMessage?trim}""")<#else/>    ec.message.addMessage(${returnMessage?trim})</#if>
@@ -179,7 +188,9 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     }</#if>
     <#else/>StupidUtilities.compare(${.node["@field"]}, <#if .node["@operator"]?has_content>"${.node["@operator"]}"<#else/>"equals"</#if>, <#if .node["@value"]?has_content>"""${.node["@value"]}"""<#else/>null</#if>, <#if .node["@to-field"]?has_content>${.node["@to-field"]}<#else/>null</#if>, <#if .node["@format"]?has_content>"${.node["@format"]}"<#else/>null</#if>, <#if .node["@type"]?has_content>"${.node["@type"]}"<#else/>"Object"</#if>)</#if>
 </#macro>
-<#macro expression>${.node}</#macro>
+<#macro expression>${.node}
+</#macro>
 
 <#-- =================== other elements =================== -->
-<#macro log>    ec.logger.log(<#if .node["@level"]?has_content>${.node["@level"]}<#else/>"trace"</#if>, """${.node["@message"]}""", null)</#macro>
+<#macro log>    ec.logger.log(<#if .node["@level"]?has_content>${.node["@level"]}<#else/>"trace"</#if>, """${.node["@message"]}""", null)
+</#macro>

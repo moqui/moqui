@@ -122,3 +122,4 @@ Notable features not yet implemented:
 - Visitor tracking
 - Multi-tenant support (shared app server, separate databases)
 - Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
+- I18n (calls to L10nFacade, in String expand, pre-expand) in XML Screens

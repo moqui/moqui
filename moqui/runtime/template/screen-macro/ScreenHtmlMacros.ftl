@@ -42,7 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "subscreens-panel">
-    <#if !(.node["@type"]?has_content) || .node["@type"][0] == "tab">
+    <#if !(.node["@type"]?has_content) || .node["@type"] == "tab">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
@@ -55,9 +55,9 @@ This Work includes contributions authored by David E. Jones, not as a
         ${sri.renderSubscreen()}
         </div>
     </div>
-    <#elseif .node["@type"][0] == "stack"/>
+    <#elseif .node["@type"] == "stack"/>
     <h1>TODO stack type subscreens-panel not yet supported.</h1>
-    <#elseif .node["@type"][0] == "wizard"/>
+    <#elseif .node["@type"] == "wizard"/>
     <h1>TODO wizard type subscreens-panel not yet supported.</h1>
     </#if>
 </#macro>
@@ -158,24 +158,34 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#-- ============== Render Mode Elements =============== -->
 <#macro "render-mode">
 <#if .node["text"]?has_content>
-    <#list .node["text"] as textNode><#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode/></#if></#list>
-    <#if !textToUse?has_content><#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list></#if>
-    <#if textToUse?has_content>
+    <#list .node["text"] as textNode>
+        <#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()>
+            <#assign textToUse = textNode/>
+        </#if>
+    </#list>
+    <#if !textToUse?has_content>
+        <#list .node["text"] as textNode>
+            <#if !textNode["@type"]?has_content || textNode["@type"] == "any">
+                <#assign textToUse = textNode/>
+            </#if>
+        </#list>
+    </#if>
+    <#if textToUse?exists>
         <#if textToUse["@location"]?has_content>
-<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?default("true")}] --></#if>
-    ${sri.renderText(textToUse["@location"], textToUse["@template"][0]?if_exists)}
-<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"][0]?default("true")}] --></#if>
+<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
+    ${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)}
+<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
         <#assign inlineTemplateSource = textToUse?string/>
         <#if inlineTemplateSource?has_content>
-<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[inline][@template=${textToUse["@template"][0]?default("true")}] --></#if>
-          <#if !textToUse["@template"]?has_content || textToUse["@template"][0] == "true">
+<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[inline][@template=${textToUse["@template"]?default("true")}] --></#if>
+          <#if !textToUse["@template"]?has_content || textToUse["@template"] == "true">
             <#assign inlineTemplate = [inlineTemplateSource, sri.getActiveScreenDef().location + ".render_mode.text"]?interpret>
             <@inlineTemplate/>
           <#else/>
             ${inlineTemplateSource}
           </#if>
-<#if sri.doBoundaryComments()><!-- END   render-mode.text[inline][@template=${textToUse["@template"][0]?default("true")}] --></#if>
+<#if sri.doBoundaryComments()><!-- END   render-mode.text[inline][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
     </#if>
 </#if>
@@ -185,38 +195,38 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Standalone Fields ==================== -->
 <#macro "link">
-<#assign urlInfo = sri.makeUrlByType(.node["@url"][0], .node["@url-type"][0]!"transition")/>
-<#assign parameterMap = ec.getContext().get(.node["@parameter-map"][0]?if_exists)?if_exists/>
+<#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition")/>
+<#assign parameterMap = ec.getContext().get(.node["@parameter-map"]?if_exists)?if_exists/>
 <#if urlInfo.disableLink>
 <span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</span>
 <#else/>
 <!-- TODO get parameters from the urlInfo, extend method there to accept parameter parent element, name of parameterMap in context -->
-<#if (.node["@link-type"]?has_content && .node["@link-type"][0] == "anchor") ||
-    ((!.node["@link-type"]?has_content || .node["@link-type"][0] == "auto") &&
-     ((.node["@url-type"]?has_content && .node["@url-type"][0] != "transition") ||
+<#if (.node["@link-type"]?has_content && .node["@link-type"] == "anchor") ||
+    ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") &&
+     ((.node["@url-type"]?has_content && .node["@url-type"] != "transition") ||
       (!urlInfo.hasActions)))>
     <#assign parameterString><#t>
-        <#t><#list .node["parameter"] as parameterNode>${parameterNode["@name"][0]?url}=${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?url}<#if parameterNode_has_next>&amp;</#if></#list>
+        <#t><#list .node["parameter"] as parameterNode>${parameterNode["@name"]?url}=${sri.makeValue(parameterNode["from-field"],parameterNode["value"])?url}<#if parameterNode_has_next>&amp;</#if></#list>
         <#t><#if .node["parameter"]?has_content && .node["@parameter-map"]?has_content && ec.getContext().get(.node["@parameter-map"])?has_content>&amp;</#if>
         <#t><#list parameterMap?keys as pKey>${pKey?url}=${parameterMap[pKey]?url}<#if pKey_has_next>&amp;</#if></#list>
     <#t></#assign>
-    <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>>
+    <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>>
     <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if>
     </a>
 <#else/>
-    <form method="post" action="${urlInfo.url}" name="${.node["@id"][0]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
-        <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"][0]?html}" value="${sri.makeValue(parameterNode["@from-field"][0]?default(""),parameterNode["@value"][0]?default(""))?html}" type="hidden"/></#list>
+    <form method="post" action="${urlInfo.url}" name="${.node["@id"]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
+        <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"]?html}" value="${sri.makeValue(parameterNode["@from-field"]?default(""),parameterNode["@value"]?default(""))?html}" type="hidden"/></#list>
         <#list parameterMap?if_exists?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
-    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
+    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>/>
     <#else/>
-    <input type="submit" value="${ec.resource.evaluateStringExpand(.node["@text"], "")}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"][0]?js_string}')"</#if>/>
+    <input type="submit" value="${ec.resource.evaluateStringExpand(.node["@text"], "")}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>/>
     </#if>
     </form>
     <#-- NOTE: consider using a link instead of submit buttons/image, would look something like this (would require id attribute, or add a name attribute):
         <a href="javascript:document.${.node["@id"]}.submit()">
             <#if .node["image"]?has_content>
-            <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"][0]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
+            <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
             <#else/>
             ${ec.resource.evaluateStringExpand(.node["@text"], "")}
             <#/if>
@@ -225,9 +235,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#if>
 </#if>
 </#macro>
-<#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"][0]!"content")}" alt="${.node["@alt"][0]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+<#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro "label">
-<#assign labelType = .node["@type"][0]?default("span")/>
+<#assign labelType = .node["@type"]?default("span")/>
 <${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</${labelType}>
 </#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.xml.sax.InputSource
 import org.xml.sax.SAXParseException
+import org.moqui.impl.FtlNodeWrapper
 
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
@@ -63,41 +64,37 @@ class XmlAction {
 
     XmlAction(ExecutionContextFactoryImpl ecfi, Node xmlNode, String location) {
         this.location = location
-        StringWriter sw = new StringWriter()
-        XmlNodePrinter xnp = new XmlNodePrinter(new PrintWriter(sw))
-        xnp.print(xmlNode)
-        groovyString = makeGroovyString(ecfi, sw.toString(), location)
+        FtlNodeWrapper ftlNode = FtlNodeWrapper.wrapNode(xmlNode)
+        groovyString = makeGroovyString(ecfi, ftlNode, location)
         groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
     }
 
     XmlAction(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
         this.location = location
-        groovyString = makeGroovyString(ecfi, xmlText, location)
+        FtlNodeWrapper ftlNode
+        if (xmlText) {
+            ftlNode = FtlNodeWrapper.makeFromText(xmlText)
+        } else {
+            ftlNode = FtlNodeWrapper.makeFromText(ecfi.resourceFacade.getLocationText(location, false))
+        }
+        groovyString = makeGroovyString(ecfi, ftlNode, location)
         groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
     }
 
-    protected String makeGroovyString(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
+    protected String makeGroovyString(ExecutionContextFactoryImpl ecfi, FtlNodeWrapper ftlNode, String location) {
         // transform XML to groovy
         String groovyText = null
         InputStream xmlStream = null
         try {
-            Map root = new HashMap()
-            InputSource xmlInputSource
-            if (!xmlText) {
-                xmlStream = ecfi.resourceFacade.getLocationStream(location)
-                xmlInputSource = new InputSource(xmlStream)
-            } else {
-                xmlInputSource = new InputSource(new StringReader(xmlText))
-            }
-            root.put("doc", freemarker.ext.dom.NodeModel.parse(xmlInputSource))
+            Map root = ["doc":ftlNode]
 
             Writer outWriter = new StringWriter()
             Environment env = template.createProcessingEnvironment(root, (Writer) outWriter)
             env.process()
 
             groovyText = outWriter.toString()
-        } catch (SAXParseException e) {
-            logger.error("Error reading XML actions from [${location}], text: ${xmlText}")
+        } catch (Exception e) {
+            logger.error("Error reading XML actions from [${location}], text: ${ftlNode.toString()}")
             throw new BaseException("Error reading XML actions from [${location}]", e)
         } finally {
             if (xmlStream) xmlStream.close()
@@ -121,16 +118,5 @@ class XmlAction {
         }
     }
 
-    boolean checkCondition(ExecutionContext ec) {
-        if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
-
-        Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
-        try {
-            boolean result = script.run() as boolean
-            return result
-        } catch (Exception e) {
-            logger.error("Error running groovy script [${groovyString}]", e)
-            throw e
-        }
-    }
+    boolean checkCondition(ExecutionContext ec) { return run(ec) as boolean }
 }
