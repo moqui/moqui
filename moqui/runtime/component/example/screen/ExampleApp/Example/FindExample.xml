@@ -21,7 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <entity-find entity-name="Example" list="exampleList">
             <search-form-inputs/>
-            <order-by field-name="${sortByField}"/>
+            <order-by field-name="${context.sortByField?:''}"/>
         </entity-find>
     </actions>
     <widgets>

@@ -52,6 +52,6 @@
         <label text="User Name: ${ec.user.userAccount?.userName}" type="p"/>
         <label text="Messages: ${ec.message.messages}" type="p"/>
         <label text="Errors: ${ec.message.errors}" type="p"/>
-        <label text="Context: ${context.toString().replaceAll('\n','&lt;br&gt;')}" type="p"/>
+        <label text="Context: ${context.toString()}" type="p"/>
     </widgets>
 </screen>

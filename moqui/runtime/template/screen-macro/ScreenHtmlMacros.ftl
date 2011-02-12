@@ -159,21 +159,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "render-mode">
 <#if .node["text"]?has_content>
     <#list .node["text"] as textNode>
-        <#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()>
-            <#assign textToUse = textNode/>
-        </#if>
+        <#if textNode["@type"]?has_content && textNode["@type"] == sri.getRenderMode()><#assign textToUse = textNode/></#if>
     </#list>
     <#if !textToUse?has_content>
-        <#list .node["text"] as textNode>
-            <#if !textNode["@type"]?has_content || textNode["@type"] == "any">
-                <#assign textToUse = textNode/>
-            </#if>
-        </#list>
+        <#list .node["text"] as textNode><#if !textNode["@type"]?has_content || textNode["@type"] == "any"><#assign textToUse = textNode/></#if></#list>
     </#if>
     <#if textToUse?exists>
         <#if textToUse["@location"]?has_content>
 <#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
-    ${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)}
+    ${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)?html}
 <#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
         <#assign inlineTemplateSource = textToUse?string/>
@@ -183,7 +177,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#assign inlineTemplate = [inlineTemplateSource, sri.getActiveScreenDef().location + ".render_mode.text"]?interpret>
             <@inlineTemplate/>
           <#else/>
-            ${inlineTemplateSource}
+            ${inlineTemplateSource?html}
           </#if>
 <#if sri.doBoundaryComments()><!-- END   render-mode.text[inline][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
@@ -236,9 +230,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#if>
 </#macro>
 <#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
-<#macro "label">
-<#assign labelType = .node["@type"]?default("span")/>
-<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</${labelType}>
+<#macro "label"><#assign labelType = .node["@type"]?default("span")/>
+<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")?html?replace("\n", "<br>")}</${labelType}>
 </#macro>
 <#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
 

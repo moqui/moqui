@@ -20,12 +20,9 @@ import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
+import org.moqui.impl.FtlNodeWrapper
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.xml.sax.InputSource
-import org.xml.sax.SAXParseException
-import org.moqui.impl.FtlNodeWrapper
 
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
@@ -100,7 +97,7 @@ class XmlAction {
             if (xmlStream) xmlStream.close()
         }
 
-        if (logger.traceEnabled) logger.trace("xml-actions at [${location}] produced groovy script:\n${groovyText}")
+        if (logger.traceEnabled) logger.trace("xml-actions at [${location}] produced groovy script:\n${groovyText}\nFrom ftlNode:${ftlNode}")
         return groovyText
     }
 

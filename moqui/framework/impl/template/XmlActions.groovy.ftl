@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 import org.moqui.impl.StupidUtilities
 // these are in the context by default: ExecutionContext ec, Map<String, Object> context, Map<String, Object> result
-<#recurse doc/>
+<#visit doc/>
 
 <#macro actions>
 <#recurse/>
@@ -54,10 +54,10 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 
 <#-- =================== entity-find elements =================== -->
 <#macro "entity-find-one">    ${.node["@value-field"]} = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if>
-            <#if !.node["@auto-field-map"]?has_content || .node["@auto-field-map"] == "true">.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#else><#if fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else/>${fieldMap["@field-name"]}</#if></#if>)</#list><#list .node["@select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
+            <#if !.node["@auto-field-map"]?has_content || .node["@auto-field-map"] == "true">.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#else><#if fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else/>${fieldMap["@field-name"]}</#if></#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
 </#macro>
 <#macro "entity-find">
-    ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy('${ob["@field-name"]}')</#list>
+    ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
     <#if .node["search-form-inputs"]?has_content>// TODO handle search-form-inputs
     </#if>
@@ -180,17 +180,16 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro and>(<#list .node.children as childNode><#visit childNode/><#if childNode_has_next> && </#if></#list>)</#macro>
 <#macro not>!<#visit .node.children[0]/></#macro>
 
-<#-- NOTE: if the node has children then consider it a stand-alone node, otherwise consider it part of an if.condition -->
-<#macro compare>    <#if (.node["*"]?size > 0)>if (StupidUtilities.compare(${.node["@field"]}, <#if .node["@operator"]?has_content>"${.node["@operator"]}"<#else/>"equals"</#if>, <#if .node["@value"]?has_content>"""${.node["@value"]}"""<#else/>null</#if>, <#if .node["@to-field"]?has_content>${.node["@to-field"]}<#else/>null</#if>, <#if .node["@format"]?has_content>"${.node["@format"]}"<#else/>null</#if>, <#if .node["@type"]?has_content>"${.node["@type"]}"<#else/>"Object"</#if>)) {
+<#macro "compare">    <#if (.node?size > 0)>if (StupidUtilities.compare(${.node["@field"]}, <#if .node["@operator"]?has_content>"${.node["@operator"]}"<#else/>"equals"</#if>, <#if .node["@value"]?has_content>"""${.node["@value"]}"""<#else/>null</#if>, <#if .node["@to-field"]?has_content>${.node["@to-field"]}<#else/>null</#if>, <#if .node["@format"]?has_content>"${.node["@format"]}"<#else/>null</#if>, <#if .node["@type"]?has_content>"${.node["@type"]}"<#else/>"Object"</#if>)) {
         <#recurse .node/>
     }<#if .node.else?has_content> else {
         <#recurse .node.else[0]/>
     }</#if>
     <#else/>StupidUtilities.compare(${.node["@field"]}, <#if .node["@operator"]?has_content>"${.node["@operator"]}"<#else/>"equals"</#if>, <#if .node["@value"]?has_content>"""${.node["@value"]}"""<#else/>null</#if>, <#if .node["@to-field"]?has_content>${.node["@to-field"]}<#else/>null</#if>, <#if .node["@format"]?has_content>"${.node["@format"]}"<#else/>null</#if>, <#if .node["@type"]?has_content>"${.node["@type"]}"<#else/>"Object"</#if>)</#if>
 </#macro>
-<#macro expression>${.node}
+<#macro "expression">${.node}
 </#macro>
 
 <#-- =================== other elements =================== -->
-<#macro log>    ec.logger.log(<#if .node["@level"]?has_content>${.node["@level"]}<#else/>"trace"</#if>, """${.node["@message"]}""", null)
+<#macro "log">    ec.logger.log(<#if .node["@level"]?has_content>${.node["@level"]}<#else/>"trace"</#if>, """${.node["@message"]}""", null)
 </#macro>

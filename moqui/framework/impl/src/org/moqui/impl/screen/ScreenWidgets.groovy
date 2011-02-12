@@ -27,7 +27,6 @@ class ScreenWidgets {
 
     protected Node widgetsNode
     protected FtlNodeWrapper widgetsFtlNode
-
     protected String location
 
     ScreenWidgets(ExecutionContextFactoryImpl ecfi, Node widgetsNode, String location) {
