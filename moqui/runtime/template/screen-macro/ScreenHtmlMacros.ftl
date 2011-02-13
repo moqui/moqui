@@ -167,7 +167,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if textToUse?exists>
         <#if textToUse["@location"]?has_content>
 <#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
-    ${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)?html}
+    <#-- NOTE: this still won't encode templates that are rendered to the writer -->
+    <#if .node["@encode"]!"false" == "true">${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)?html}<#else/>${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)}</#if>
 <#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
         <#assign inlineTemplateSource = textToUse?string/>
@@ -177,7 +178,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#assign inlineTemplate = [inlineTemplateSource, sri.getActiveScreenDef().location + ".render_mode.text"]?interpret>
             <@inlineTemplate/>
           <#else/>
-            ${inlineTemplateSource?html}
+            <#if .node["@encode"]!"false" == "true">${inlineTemplateSource?html}<#else/>${inlineTemplateSource}</#if>
           </#if>
 <#if sri.doBoundaryComments()><!-- END   render-mode.text[inline][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
@@ -188,7 +189,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro "link">
+<#macro link>
 <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition")/>
 <#assign parameterMap = ec.getContext().get(.node["@parameter-map"]?if_exists)?if_exists/>
 <#if urlInfo.disableLink>
@@ -229,29 +230,66 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#if>
 </#if>
 </#macro>
-<#macro "image"><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
-<#macro "label"><#assign labelType = .node["@type"]?default("span")/>
-<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")?html?replace("\n", "<br>")}</${labelType}>
+<#macro image><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+<#macro label><#assign labelType = .node["@type"]?default("span")/>
+<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>><#if .node["@encode"]!"true" == "false">${ec.resource.evaluateStringExpand(.node["@text"], "")}<#else/>${ec.resource.evaluateStringExpand(.node["@text"], "")?html?replace("\n", "<br>")}</#if></${labelType}>
 </#macro>
-<#macro "parameter"><#-- do nothing, used directly in other elements --></#macro>
+<#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
 <#-- ============================================ -->
 <#-- ================== Form ==================== -->
 <#macro "form-single">
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
-    <!-- TODO: make form markup -->
+    <#if .node["auto-fields-service"]?has_content><h3>TODO: form-single auto-fields-service (form ${.node["@name"]})</h3></#if>
+    <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-single auto-fields-entity (form ${.node["@name"]})</h3></#if>
+    <#-- ${sri.renderFormSingle(.node["@name"])} -->
+
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
-    <h3>TODO: implement form-single (form ${.node["@name"]})</h3>
-    ${sri.renderFormSingle(.node["@name"])}
+        <#if .node["field-layout"]?has_content>
+        <h3>TODO: implement form-single (form ${.node["@name"]})</h3>
+        <#else/>
+        <#-- TODO: change to something better than a table, perhaps HTML field label stuff -->
+        <table>
+            <#-- TODO: conditional, visible-when; maybe get list of fields from the form object with conditional checked -->
+            <#list .node["field"] as fieldNode>
+            <tr>
+                <#assign fieldTitle><#if fieldNode["@title"]?has_content>${fieldNode["@title"]}<#else/><#list fieldNode["@name"]?split("[A-Z]", "r") as nameWord>${nameWord?cap_first} </#list></#if></#assign>
+                <td>${ec.l10n.getLocalizedMessage(fieldTitle)}</td>
+                <td><#visit fieldNode/></td>
+            </tr>
+            </#list>
+        </table>
+        </#if>
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro "form-list">
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
-    <!-- TODO: make form markup -->
+    <#if .node["auto-fields-service"]?has_content><h3>TODO: form-list auto-fields-service (form ${.node["@name"]})</h3></#if>
+    <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-list auto-fields-entity (form ${.node["@name"]})</h3></#if>
+<!--            <xs:element minOccurs="0" ref="row-actions"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
+                <xs:element minOccurs="0" ref="field-layout"/>
+-->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
     <h3>TODO: implement form-list (form ${.node["@name"]})</h3>
     ${sri.renderFormList(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
+</#macro>
+
+<#macro field>
+    <#recurse/>
+</#macro>
+
+<#macro "text-line">
+<input type="text" name="${(.node?parent["@name"])?html}" value="${sri.getFieldValue(.node?parent, .node["@default-value"]!"")}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if>/>
+</#macro>
+
+<#macro password>
+<input type="password" name="${(.node?parent["@name"])?html}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if>/>
+</#macro>
+
+<#macro submit>
+TODO SUBMIT
 </#macro>

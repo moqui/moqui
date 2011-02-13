@@ -26,6 +26,7 @@ import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.StupidWebUtilities
+import org.moqui.impl.FtlNodeWrapper
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -512,6 +513,13 @@ class ScreenRenderImpl implements ScreenRender {
         } else {
             return ""
         }
+    }
+
+    String getFieldValue(FtlNodeWrapper fieldNode, String defaultValue) {
+        String key = fieldNode.get("@entry-name") ?: fieldNode.get("@name")
+        Object value = ec.context.get((fieldNode.parentNode?.get("@map-name") ?: "") + key)
+        if (!value && ec.web) value = ec.web.parameters.get(key)
+        return value == null ? "" : (value as String)
     }
 
     boolean isInCurrentScreenPath(List<String> pathNameList) {

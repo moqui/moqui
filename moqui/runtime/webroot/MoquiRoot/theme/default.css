@@ -13,8 +13,8 @@
 /* defaults */
 * {
 margin: 0px;
-border:0px;
-outline:0;
+border: 0px;
+outline: 0px;
 padding: 0px;
 color: black;
 background: transparent;
@@ -156,6 +156,15 @@ text-shadow: #fff 0 1px 1px;
 width: auto;
 }
 
+input[type="text"], input[type="password"] {
+-moz-border-radius: 4px;
+-webkit-border-radius: 4px;
+border-radius: 4px;
+border: 1px solid;
+border-color: #ddd #bbb #999;
+margin: 0px 2px 0px 2px;
+padding: 2px 4px 2px 4px;
+}
 
 /* ======================= subscreens-menu ======================= */
 

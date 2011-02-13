@@ -25,19 +25,19 @@ public class L10nFacadeImpl implements L10nFacade {
 
     /** @see org.moqui.context.L10nFacade#getLocalizedMessage(String) */
     public String getLocalizedMessage(String original) {
-        if (!original) return null
+        if (!original) return ""
         if (original.length() > 255) {
             throw new IllegalArgumentException("Original String cannot be more than 255 characters long, passed in string was [${original.length()}] characters long")
         }
 
         String localeString = this.eci.user.locale.toString()
-        EntityFind find = this.eci.entity.find("LocalizedMessage")
+        EntityFind find = this.eci.entity.makeFind("LocalizedMessage")
         find.condition(["original":original, "locale":localeString]).useCache(true)
         EntityValue localizedMessage = find.one()
         if (!localizedMessage && localeString.contains('_')) {
             localizedMessage = find.condition("locale", localeString.substring(0, localeString.indexOf('_'))).one()
         }
 
-        return localizedMessage ? localizedMessage.localized : null
+        return localizedMessage ? localizedMessage.localized : original
     }
 }

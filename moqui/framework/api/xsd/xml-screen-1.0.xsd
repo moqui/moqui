@@ -615,6 +615,15 @@ This Work includes contributions authored by David E. Jones, not as a
                             Defaults to true, set to false if you want the text included literally.
                         </xs:documentation></xs:annotation>
                     </xs:attribute>
+                    <xs:attribute name="encode" default="false" type="boolean">
+                        <xs:annotation><xs:documentation>
+                            If true text will be encoded so that it does not interfere with markup of the target output.
+                            Templates ignore this setting and are never encoded.
+
+                            For example, if output is HTML then data presented will be HTML encoded so that all
+                            HTML-specific characters are escaped.
+                        </xs:documentation></xs:annotation>
+                    </xs:attribute>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>

@@ -34,12 +34,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field name="submit" title="Login"><submit/></field>
             </form-single>
             <!-- TODO add forgot password, etc -->
-
-            <!-- TODO remove this link when the normal login form is implemented -->
-            <link url="login" text="Login as John Doe">
-                <parameter name="userId" value="john.doe"/>
-                <parameter name="password" value="moqui"/>
-            </link>
         </container>
+
+        <!-- TODO remove this link when the normal login form is implemented -->
+        <link url="login" text="Login as John Doe">
+            <parameter name="userId" value="john.doe"/>
+            <parameter name="password" value="moqui"/>
+        </link>
     </widgets>
 </screen>

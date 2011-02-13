@@ -234,6 +234,14 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="encode" default="true" type="boolean">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+
+                    For example, if output is HTML then data presented will be HTML encoded so that all
+                    HTML-specific characters are escaped.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="parameter">
@@ -286,7 +294,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="encode-output" default="true" type="boolean">
+            <xs:attribute name="encode" default="true" type="boolean">
                 <xs:annotation><xs:documentation>
                     This is for textual output only. If true data shown in fields will be encoded so that it does not
                     interfere with markup of the target output.
