@@ -440,29 +440,19 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Specifies the string to display, can use the ${} syntax to insert
                     context values; if empty the value of the field will be printed for a default.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="type" default="text">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="text"/>
-                        <xs:enumeration value="currency"/>
-                        <xs:enumeration value="date">
-                            <xs:annotation><xs:documentation>Display only the date part of a timestamp field</xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                        <xs:enumeration value="date-time">
-                            <xs:annotation><xs:documentation>Display only the date and hours:minutes part of a timestamp
-                                field</xs:documentation></xs:annotation>
-                        </xs:enumeration>
-                    </xs:restriction>
-                </xs:simpleType>
+            <xs:attribute name="currency-unit-field" type="xs:string">
+                <xs:annotation><xs:documentation>Specifies the currency uomId (ISO code) used to format the value.
+                Will only format as currency if this is specified.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="currency-uom" type="xs:string">
-                <xs:annotation><xs:documentation>Specifies the currencyUomId used to format context value, should
-                    generally use the ${} syntax to retrieve value.</xs:documentation></xs:annotation>
+            <xs:attribute name="encode" default="true" type="boolean">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="display-entity" substitutionGroup="SubFields">
-        <xs:annotation><xs:documentation>This is just like display but looks up a description using the Entity Engine;
+        <xs:annotation><xs:documentation>This is just like display but looks up a description using the Entity Facade;
             note that if also-hidden is true then it uses the key as the value, not the shown description.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
@@ -470,6 +460,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="text" type="xs:string" default="${description}"/>
             <xs:attribute name="use-cache" default="true" type="boolean"/>
             <xs:attribute name="also-hidden" default="true" type="boolean"/>
+            <xs:attribute name="encode" default="true" type="boolean">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="drop-down" substitutionGroup="SubFields">
@@ -508,7 +503,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="hidden" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="value" type="xs:string"/>
+            <xs:attribute name="default-value" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="ignored" substitutionGroup="SubFields">
@@ -572,19 +567,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:element minOccurs="0" ref="image"/>
             </xs:sequence>
-            <xs:attribute name="button-type" default="button">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="button"/>
-                        <xs:enumeration value="text-link"/>
-                        <xs:enumeration value="image"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="confirmation-message" type="xs:string">
-                <xs:annotation><xs:documentation>Message here will be displayed in a popup box before the submit is
-                    processed.</xs:documentation></xs:annotation>
-            </xs:attribute>
+            <xs:attribute name="confirmation" type="xs:string"><xs:annotation><xs:documentation>
+                If there is a message here it will show in a confirmation box when the button is clicked on.
+            </xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="text-line" substitutionGroup="SubFields">

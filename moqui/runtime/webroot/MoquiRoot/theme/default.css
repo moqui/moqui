@@ -19,6 +19,7 @@ padding: 0px;
 color: black;
 background: transparent;
 text-decoration: none;
+font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
 font-weight: normal;
 font-size: 16px; /* set base font size here, all others relative using em */
 vertical-align: baseline;
@@ -29,7 +30,6 @@ vertical-align: baseline;
 body {
 background: #DDDDDF;
 margin: 0px;
-font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
 }
 
 #WebrootPanel {
@@ -147,7 +147,7 @@ color: #333;
 display: inline-block;
 font-size: 0.8em;
 font-weight: bold;
-outline: 0;
+outline: 0px;
 overflow: visible;
 margin: 0px 2px 0px 2px;
 padding: 2px 4px 2px 4px;
@@ -161,9 +161,11 @@ input[type="text"], input[type="password"] {
 -webkit-border-radius: 4px;
 border-radius: 4px;
 border: 1px solid;
-border-color: #ddd #bbb #999;
+border-color: #999 #bbb #ddd;
 margin: 0px 2px 0px 2px;
 padding: 2px 4px 2px 4px;
+font-size: 0.9em;
+font-family: "Courier New", Courier, monospace;
 }
 
 /* ======================= subscreens-menu ======================= */
@@ -198,4 +200,12 @@ text-decoration: underline;
 clear: both;
 height: 0;
 visibility: hidden;
+}
+
+/* ======================= Screen-specific ======================= */
+
+#LoginBox {
+width: 300px;
+margin: 0px auto 0px auto;
+padding: 10px;
 }

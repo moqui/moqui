@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <#recurse widgetsNode/>
 
-<#macro @element><!-- doing nothing for element ${.node?node_name} --></#macro>
+<#macro @element><!-- doing nothing for element ${.node?node_name}, not yet implemented --></#macro>
 
 <#macro widgets>
 <#if sri.doBoundaryComments()><!-- BEGIN screen[@location=${sri.getActiveScreenDef().location}].widgets --></#if>
@@ -231,8 +231,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#if>
 </#macro>
 <#macro image><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
-<#macro label><#assign labelType = .node["@type"]?default("span")/>
-<${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>><#if .node["@encode"]!"true" == "false">${ec.resource.evaluateStringExpand(.node["@text"], "")}<#else/>${ec.resource.evaluateStringExpand(.node["@text"], "")?html?replace("\n", "<br>")}</#if></${labelType}>
+<#macro label>
+    <#assign labelType = .node["@type"]?default("span")/>
+    <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+    <#if (labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
+    <${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>><#if .node["@encode"]!"true" == "false">${labelValue}<#else/>${labelValue?html?replace("\n", "<br>")}</#if></${labelType}>
 </#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
@@ -244,19 +247,21 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-single auto-fields-entity (form ${.node["@name"]})</h3></#if>
     <#-- ${sri.renderFormSingle(.node["@name"])} -->
 
-    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
+    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition")/>
+    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post" action="${urlInfo.url}">
         <#if .node["field-layout"]?has_content>
-        <h3>TODO: implement form-single (form ${.node["@name"]})</h3>
+        <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
         <#else/>
         <#-- TODO: change to something better than a table, perhaps HTML field label stuff -->
         <table>
             <#-- TODO: conditional, visible-when; maybe get list of fields from the form object with conditional checked -->
             <#list .node["field"] as fieldNode>
-            <tr>
-                <#assign fieldTitle><#if fieldNode["@title"]?has_content>${fieldNode["@title"]}<#else/><#list fieldNode["@name"]?split("[A-Z]", "r") as nameWord>${nameWord?cap_first} </#list></#if></#assign>
-                <td>${ec.l10n.getLocalizedMessage(fieldTitle)}</td>
-                <td><#visit fieldNode/></td>
-            </tr>
+                <#if fieldNode?node_name != "ignored">
+                <tr>
+                    <td><#if fieldNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldNode/></#if></td>
+                    <td><#visit fieldNode/></td>
+                </tr>
+                </#if>
             </#list>
         </table>
         </#if>
@@ -272,24 +277,228 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <xs:element minOccurs="0" ref="field-layout"/>
 -->
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
-    <h3>TODO: implement form-list (form ${.node["@name"]})</h3>
+    <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
     ${sri.renderFormList(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
 
-<#macro field>
-    <#recurse/>
+<#macro fieldTitle fieldNode><#assign titleValue><#if fieldNode["@title"]?has_content>${fieldNode["@title"]}<#else/><#list fieldNode["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
+<#-- TODO: use fieldId everywhere! -->
+<#-- TODO: make fieldId handle multi-row stuff -->
+<#macro fieldId fieldNode>${fieldNode?parent["@name"]}_${fieldNode["@name"]}</#macro>
+<#macro field><#recurse/></#macro>
+
+<#macro "display">
+    <#if .node["@text"]?has_content>
+        <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+    <#else/>
+        <#assign fieldValue = sri.getFieldValue(.node?parent, "")/>
+    </#if>
+    <#-- TODO: currency formatting: currency-unit-field attribute -->
+<#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if>
+<#if .node["also-hidden"]!"true" == "true"><input type="hidden" name="${(.node?parent["@name"])?html}" value="${(fieldValue!"")?html}"/></#if>
 </#macro>
 
-<#macro "text-line">
-<input type="text" name="${(.node?parent["@name"])?html}" value="${sri.getFieldValue(.node?parent, .node["@default-value"]!"")}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if>/>
+<#macro "hidden"><input type="hidden" name="${(.node?parent["@name"])?html}" value="${sri.getFieldValue(.node?parent, .node["@default-value"]!"")}"/></#macro>
+<#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
+
+<#macro "password"><input type="password" name="${(.node?parent["@name"])?html}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if>/></#macro>
+
+<#macro "reset"><input type="reset" name="${(.node?parent["@name"])?html}" value="<@fieldTitle .node?parent/>"/></#macro>
+<#macro "submit">
+<#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
+    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else/><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>
+<#else><input type="submit"</#if> name="${(.node?parent["@name"])?html}" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if>/>
 </#macro>
 
-<#macro password>
-<input type="password" name="${(.node?parent["@name"])?html}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if>/>
+<#macro "text-line"><input type="text" name="${(.node?parent["@name"])?html}" value="${sri.getFieldValue(.node?parent, .node["@default-value"]!"")}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if>/></#macro>
+
+<#-- ===============================================================================================
+
+<#macro check>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="entity-options"/>
+                <xs:element ref="list-options"/>
+                <xs:element ref="option"/>
+            </xs:choice>
+            <xs:attribute name="all-checked" type="boolean"/>
 </#macro>
 
-<#macro submit>
-TODO SUBMIT
+<#macro "date-find">
+            <xs:attribute name="type" default="timestamp">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="timestamp"/>
+                        <xs:enumeration value="date"/>
+                        <xs:enumeration value="time"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="default-option-from" default="equals">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="equals"/>
+                        <xs:enumeration value="same-day"/>
+                        <xs:enumeration value="greater-day-start"/>
+                        <xs:enumeration value="greater"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-option-thru" default="less">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="less"/>
+                        <xs:enumeration value="up-to-day-start"/>
+                        <xs:enumeration value="up-to-day-end"/>
+                        <xs:enumeration value="empty"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
 </#macro>
+<#macro "date-time">
+            <xs:attribute name="type" default="timestamp">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="timestamp"/>
+                        <xs:enumeration value="date"/>
+                        <xs:enumeration value="time"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="input-method" default="popup">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="popup"/>
+                        <xs:enumeration value="time-dropdown"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="clock" default="24">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="12"/>
+                        <xs:enumeration value="24"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+</#macro>
+<#macro "display-entity">
+            <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="key-field-name" type="xs:string"/>
+            <xs:attribute name="text" type="xs:string" default="${description}"/>
+            <xs:attribute name="use-cache" default="true" type="boolean"/>
+            <xs:attribute name="also-hidden" default="true" type="boolean"/>
+            <xs:attribute name="encode" default="true" type="boolean">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+</#macro>
+<#macro "drop-down">
+            <xs:sequence>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element ref="entity-options"/>
+                    <xs:element ref="list-options"/>
+                    <xs:element ref="option"/>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="allow-empty" default="false" type="boolean"/>
+            <xs:attribute name="allow-multiple" default="false" type="boolean"/>
+            <xs:attribute name="auto-complete" default="false" type="boolean"/>
+            <xs:attribute name="current" default="first-in-list">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="first-in-list"/>
+                        <xs:enumeration value="selected"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="no-current-selected-key" type="xs:string">
+                <xs:annotation><xs:documentation>The key to mark as selected when there is no current entry value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="size" type="xs:integer" default="1"/>
+            <xs:attribute name="current-description" type="xs:string"/>
+</#macro>
+<#macro "file">
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+</#macro>
+<#macro "lookup">
+            <xs:attribute name="target-screen" type="xs:string" use="required"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="description-field-name" type="xs:string"/>
+            <xs:attribute name="disabled" default="false" type="boolean"/>
+</#macro>
+<#macro "radio">
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element ref="entity-options"/>
+                <xs:element ref="list-options"/>
+                <xs:element ref="option"/>
+            </xs:choice>
+            <xs:attribute name="no-current-selected-key" type="xs:string"/>
+</#macro>
+<#macro "range-find">
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="default-option-from" default="greater-equals">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="equals"/>
+                        <xs:enumeration value="greater"/>
+                        <xs:enumeration value="greater-equals"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="default-option-thru" default="less-equals">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="less"/>
+                        <xs:enumeration value="less-equals"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+</#macro>
+<#macro "text-area">
+            <xs:attribute name="cols" type="xs:positiveInteger" default="60"/>
+            <xs:attribute name="rows" type="xs:positiveInteger" default="3"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="read-only" default="false" type="boolean"/>
+            <xs:attribute name="visual-html-editor" default="false" type="boolean">
+                <xs:annotation><xs:documentation>This will enable the visual html editor on this text area.</xs:documentation></xs:annotation>
+            </xs:attribute>
+</#macro>
+<#macro "text-find">
+            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
+            <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="ignore-case" default="true" type="boolean"/>
+            <xs:attribute name="default-option">
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:enumeration value="equals"/>
+                        <xs:enumeration value="not-equals"/>
+                        <xs:enumeration value="like"/>
+                        <xs:enumeration value="contains"/>
+                        <xs:enumeration value="empty"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="hide-options" default="false">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                        <xs:enumeration value="ignore-case"/>
+                        <xs:enumeration value="options"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+</#macro>
+-->
