@@ -239,8 +239,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
-<#-- ============================================ -->
-<#-- ================== Form ==================== -->
+<#-- ====================================================== -->
+<#-- ======================= Form ========================= -->
 <#macro "form-single">
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <#if .node["auto-fields-service"]?has_content><h3>TODO: form-single auto-fields-service (form ${.node["@name"]})</h3></#if>
@@ -284,7 +284,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <#if .node["auto-fields-service"]?has_content><h3>TODO: form-list auto-fields-service (form ${.node["@name"]})</h3></#if>
     <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-list auto-fields-entity (form ${.node["@name"]})</h3></#if>
-<!-- TODO           <xs:element minOccurs="0" ref="row-actions"/> -->
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition")/>
     <#assign listObject = ec.resource.evaluateContextField(.node["@list"], "")/>
     <form name="${.node["@name"]}" id="${.node["@name"]}" method="post" action="${urlInfo.url}">
@@ -296,10 +295,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#list .node["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
             </tr>
             <#list listObject as listEntry>
-            <tr class="form-row">
-                <#list .node["field"] as fieldNode><@formListSubField fieldNode/></#list>
-            </tr>
+                <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
+                ${sri.startFormListRow(.node["@name"], listEntry)}
+                <tr class="form-row">
+                    <#list .node["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                </tr>
+                ${sri.endFormListRow()}
             </#list>
+            ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         </table>
         </#if>
     ${sri.renderFormList(.node["@name"])}
@@ -337,8 +340,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}</#macro>
 <#-- TODO: use fieldId everywhere! -->
-<#-- TODO: make fieldId handle multi-row stuff -->
-<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}</#macro>
+<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntry_index?has_content>_${listEntry_index}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>

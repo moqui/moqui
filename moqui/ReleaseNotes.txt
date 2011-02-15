@@ -37,7 +37,7 @@ This release includes:
   - Everything runs from an instance of the ExecutionContextFactory, so it
     is easy to include in custom programs or deploy through OSGi, etc
   - Specify runtime directory path and conf file location using properties
-    file or System propertiers (java -D arguments)
+    file or System properties (java -D arguments)
 - XML Screens
   - XML Screen rendering for HTML
   - Screen menus and sub-screens
@@ -46,7 +46,7 @@ This release includes:
     - Sub-screens by directory structure, XML elements, db record
   - Screen sub-content (stand-alone, included in screen) including support
     for FTL and Confluence Wiki templates, and text and binary files
-  - Screens and sub-content can be located in files or in a JCR repo
+  - Screens and sub-content can be located in files or in a JCR repository
   - Can include or inline HTML and other text content
   - Visit tracking
 - Execution Context & General Facades
@@ -79,10 +79,10 @@ This release includes:
   - Primary and secondary sequenced ID generation
 - Security
   - ESAPI input canonicalization/filtering
-  - User account and flexible password constraints and mgmt
+  - User account and flexible password constraints and management
   - Authentication in XML Screens
   - Can require encryption in XML Screens
-  - XSRF protection by requiring encryption of form input in body parms
+  - XSRF protection by requiring encryption of input in body parameters
 - XML Actions
   - Converts to Groovy code then compiles for good runtime performance
   - Embeddable in service definitions, screens, etc

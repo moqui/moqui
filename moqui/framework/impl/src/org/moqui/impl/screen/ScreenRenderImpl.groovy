@@ -27,6 +27,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.FtlNodeWrapper
+import org.moqui.entity.EntityListIterator
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -421,26 +422,21 @@ class ScreenRenderImpl implements ScreenRender {
         return ""
     }
 
-    String renderFormSingle(String formName) {
+    String startFormListRow(String formName, Object listEntry) {
         ScreenDefinition sd = getActiveScreenDef()
         ScreenForm form = sd.getForm(formName)
         if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
-        writer.flush()
-        form.renderSingle(this)
-        writer.flush()
-        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        ((ContextStack) ec.context).push()
+        form.runFormListRowActions(this, listEntry)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
         return ""
     }
-
-    String renderFormList(String formName) {
-        ScreenDefinition sd = getActiveScreenDef()
-        ScreenForm form = sd.getForm(formName)
-        if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
-        writer.flush()
-        // TODO: do iteration for all rows, or move that to ScreenForm and call it here
-        form.renderListRow(this)
-        writer.flush()
-        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+    String endFormListRow(String formName) {
+        ((ContextStack) ec.context).pop()
+    }
+    String safeCloseList(Object listObject) {
+        if (listObject instanceof EntityListIterator) ((EntityListIterator) listObject).close()
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
         return ""
     }
 
