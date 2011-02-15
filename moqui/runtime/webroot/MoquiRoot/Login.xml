@@ -28,10 +28,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container id="LoginBox">
             <form-single name="login" transition="login">
-                <field name="userId" title="Username"><text-line size="20"/></field>
-                <field name="password"><password size="20"/></field>
-                <field name="tenantId"><text-line size="20"/></field>
-                <field name="submit" title="Login"><submit/></field>
+                <field name="userId"><default-field title="Username"><text-line size="20"/></default-field></field>
+                <field name="password"><default-field><password size="20"/></default-field></field>
+                <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
+                <field name="submit"><default-field title="Login"><submit/></default-field></field>
             </form-single>
             <!-- TODO add forgot password, etc -->
         </container>

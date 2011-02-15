@@ -27,35 +27,40 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container><link url="newExample" text="New Example"/></container>
         <form-list name="ListExamples" list="exampleList">
-            <field name="exampleId" title="Example ID">
+            <field name="exampleId">
                 <header-field><text-find/></header-field>
-                <!-- this list will pass an exampleId param, as defined on the EditExample screen as an incoming parameter -->
-                <link url="editExample" text="${exampleId}"/>
+                <default-field>
+                    <!-- this list will pass an exampleId param, as defined on the EditExample screen as an incoming parameter -->
+                    <link url="editExample" text="${exampleId}"/>
+                </default-field>
             </field>
-            <field name="exampleName" title="Name">
+            <field name="exampleName">
                 <header-field show-order-by="true"><text-find/></header-field>
-                <display/>
+                <default-field title="Name"><display/></default-field>
             </field>
-            <field name="exampleTypeId" title="Type">
-                <header-field>
+            <field name="exampleTypeId">
+                <header-field title="Type">
                     <drop-down allow-empty="true">
                         <entity-options text="${description}" entity-name="ExampleType">
                             <order-by field-name="description"/>
                         </entity-options>
                     </drop-down>
                 </header-field>
-                <display-entity entity-name="ExampleType"/>
+                <default-field><display-entity entity-name="ExampleType"/></default-field>
             </field>
-            <field name="statusId" title="Status">
-                <header-field>
+            <field name="statusId">
+                <header-field title="Status">
                     <drop-down allow-empty="true">
                         <entity-options text="${description}" entity-name="ExampleStatusItem"/>
                     </drop-down>
                 </header-field>
-                <display-entity entity-name="StatusItem"/>
+                <default-field><display-entity entity-name="StatusItem"/></default-field>
             </field>
-            <field name="description" title="Description"><header-field show-order-by="true"/><display/></field>
-            <field name="searchButton" title="Find"><header-field><submit button-type="button"/></header-field></field>
+            <field name="description">
+                <header-field show-order-by="true"/>
+                <default-field><display/></default-field>
+            </field>
+            <field name="searchButton"><header-field title="Find"><submit/></header-field></field>
         </form-list>
     </widgets>
 </screen>

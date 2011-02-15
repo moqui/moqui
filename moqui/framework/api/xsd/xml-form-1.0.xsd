@@ -34,8 +34,11 @@ This Work includes contributions authored by David E. Jones, not as a
                     extend.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="transition" type="xs:string"/>
+            <!-- TODO handle this in code -->
             <xs:attribute name="focus-field" type="xs:string"/>
+            <!-- TODO handle this in code -->
             <xs:attribute name="skip-start" default="false" type="boolean"/>
+            <!-- TODO handle this in code -->
             <xs:attribute name="skip-end" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
@@ -65,6 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
                     extend.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <!-- TODO handle this in code -->
             <xs:attribute name="multi" default="false" type="boolean"/>
             <xs:attribute name="transition" type="xs:string"/>
             <xs:attribute name="list" type="xs:string">
@@ -85,6 +89,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <!-- TODO handle this in code -->
             <xs:attribute name="skip-start" default="false" type="boolean"/>
+            <!-- TODO handle this in code -->
             <xs:attribute name="skip-end" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
@@ -257,11 +262,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="field">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="conditional"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="visible-when"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="header-field"/>
-                <xs:element minOccurs="0" ref="SubFields"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="conditional-field"/>
+                <xs:element minOccurs="0" ref="default-field"/>
+                <!-- tabled, not to be part of 1.0: <xs:element minOccurs="0" maxOccurs="unbounded" ref="visible-when"/> -->
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>A unique name for this field. Used for the parameter name, referencing
@@ -273,54 +277,73 @@ This Work includes contributions authored by David E. Jones, not as a
                     context then in a map called "fieldValues" (ie: "fieldValues.${name}"). With this convention when
                     you do an entity find to get a recard to edit, use "fieldValues" for the value-field.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="title" type="xs:string">
-                <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${}
-                    and foo.bar (dot) syntax to insert values from the context for parameterization.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="tooltip" type="xs:string">
-                <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use
-                    the ${} and foo.bar (dot) syntax to insert values from the context for parameterization.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="red-when" default="by-name">
-                <xs:annotation><xs:documentation>The widget/interaction part will be red if the date value is before-now
-                    (for thruDate), after-now (for fromDate), or by-name (if the field's name or entry-name or fromDate
-                    or thruDate the corresponding action will be done); only applicable when the field is a timestamp.</xs:documentation></xs:annotation>
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="never"/>
-                        <xs:enumeration value="before-now"/>
-                        <xs:enumeration value="after-now"/>
-                        <xs:enumeration value="by-name"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="encode" default="true" type="boolean">
-                <xs:annotation><xs:documentation>
-                    This is for textual output only. If true data shown in fields will be encoded so that it does not
-                    interfere with markup of the target output.
-
-                    For example, if output is HTML then data presented will be HTML encoded so that all HTML-specific
-                    characters are escaped.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="conditional">
+    <xs:element name="header-field">
+        <xs:annotation><xs:documentation>
+            Only applicable to fields until a form-list element.
+            Used to show a field to filter the results by (instead of a separate search form), and/or to show the
+            order-by option in the header.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="condition"/>
-                <xs:element ref="SubFields"/>
+                <xs:element ref="SubFields" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="title" type="xs:string">
                 <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${}
-                    and foo.bar (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
+                    and map.key (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="tooltip" type="xs:string">
-                <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use
-                    the ${} and foo.bar (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
+            <xs:attribute name="show-order-by" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Only applicable to multi and list type forms. If true header links for
+                    ordering by this field will be displayed.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
+    <xs:element name="conditional-field">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="SubFields"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+            </xs:sequence>
+            <xs:attribute name="condition" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>A boolean expression in Groovy.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attributeGroup ref="attlist.conditional-field"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="default-field">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="SubFields"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+            </xs:sequence>
+            <xs:attributeGroup ref="attlist.conditional-field"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:attributeGroup name="attlist.conditional-field">
+        <xs:attribute name="title" type="xs:string">
+            <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${}
+                and map.key (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="tooltip" type="xs:string">
+            <xs:annotation><xs:documentation>The text to show on mouse over or help for more information; can use
+                the ${} and map.key (dot) syntax to insert values from the context.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="red-when" default="by-name">
+            <xs:annotation><xs:documentation>The widget/interaction part will be red if the date value is before-now
+                (for thruDate), after-now (for fromDate), or by-name (if the field's name or entry-name or fromDate
+                or thruDate the corresponding action will be done); only applicable when the field is a timestamp.</xs:documentation></xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:token">
+                    <xs:enumeration value="never"/>
+                    <xs:enumeration value="before-now"/>
+                    <xs:enumeration value="after-now"/>
+                    <xs:enumeration value="by-name"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:attributeGroup>
+    <!-- tabled, not to be part of 1.0:
     <xs:element name="visible-when">
         <xs:annotation><xs:documentation>
             Used to dynamically show or hide a field based on the value of another field (usually a drop-down).
@@ -338,22 +361,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="header-field">
-        <xs:annotation><xs:documentation>
-            Only applicable to multi and list type forms.
-            Used to show a field to filter the results by (instead of a separate search form), and/or to show the
-            order-by option in the header.
-        </xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="SubFields" minOccurs="0"/>
-            </xs:sequence>
-            <xs:attribute name="show-order-by" default="false" type="boolean">
-                <xs:annotation><xs:documentation>Only applicable to multi and list type forms. If true header links for
-                    ordering by this field will be displayed.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
+    -->
 
   <!-- ================== Field Sub-Elements ==================== -->
     <xs:element name="check" substitutionGroup="SubFields">
@@ -584,11 +592,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="cols" type="xs:positiveInteger" default="60"/>
             <xs:attribute name="rows" type="xs:positiveInteger" default="3"/>
+            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="read-only" default="false" type="boolean"/>
-            <xs:attribute name="visual-html-editor" default="false" type="boolean">
-                <xs:annotation><xs:documentation>This will enable the visual html editor on this text area.</xs:documentation></xs:annotation>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="text-find" substitutionGroup="SubFields">

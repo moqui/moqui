@@ -136,19 +136,23 @@ class StupidWebUtilities {
 
     static class CanonicalizeMap implements Map<String, Object> {
         protected Map mp
-        CanonicalizeMap(Map map) { mp = map }
+        protected boolean supportsNull = true
+        CanonicalizeMap(Map map) {
+            mp = map
+            if (mp instanceof Hashtable) supportsNull = false
+        }
         int size() { return mp.size() }
         boolean isEmpty() { return mp.isEmpty() }
-        boolean containsKey(Object o) { return mp.containsKey(o) }
+        boolean containsKey(Object o) { return (o == null && !supportsNull) ? null : mp.containsKey(o) }
         boolean containsValue(Object o) { return mp.containsValue(o) }
         Object get(Object o) {
-            return StupidWebUtilities.canonicalizeValue(mp.get(o))
+            return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.get(o))
         }
         Object put(String k, Object v) {
             return StupidWebUtilities.canonicalizeValue(mp.put(k, v))
         }
         Object remove(Object o) {
-            return StupidWebUtilities.canonicalizeValue(mp.remove(o))
+            return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.remove(o))
         }
         void putAll(Map<? extends String, ? extends Object> map) { mp.putAll(map) }
         void clear() { mp.clear() }

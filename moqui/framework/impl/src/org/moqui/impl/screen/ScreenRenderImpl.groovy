@@ -517,7 +517,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     String getFieldValue(FtlNodeWrapper fieldNode, String defaultValue) {
         String key = fieldNode.get("@entry-name") ?: fieldNode.get("@name")
-        Object value = ec.context.get((fieldNode.parentNode?.get("@map-name") ?: "") + key)
+        Object value = ec.context.get((fieldNode.parentNode?.get("@map-name") ?: "") + (key ?: ""))
         if (!value && ec.web) value = ec.web.parameters.get(key)
         return value == null ? "" : (value as String)
     }

@@ -117,7 +117,7 @@ font-size: 0.6em;
 
 a {
 font-size: 0.9em;
-fond-weight: bold;
+font-weight: bold;
 }
 
 p {
@@ -183,7 +183,7 @@ display: block;
 margin: 0px;
 padding: 0px 4px 0px 4px;
 font-size: 0.9em;
-fond-weight: bold;
+font-weight: bold;
 }
 
 ul.subscreens-menu li a {
@@ -192,6 +192,14 @@ text-decoration: none;
 
 ul.subscreens-menu li a:hover, ul.subscreens-menu li.selected a {
 text-decoration: underline;
+}
+
+/* ======================= XML Form Styles ======================= */
+
+.form-title {
+padding: 0px 8px 0px 4px;
+font-size: 0.9em;
+font-weight: bold;
 }
 
 /* ========================= misc styles ========================= */

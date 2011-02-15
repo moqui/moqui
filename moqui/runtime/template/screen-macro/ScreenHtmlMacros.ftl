@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <#recurse widgetsNode/>
 
-<#macro @element><!-- doing nothing for element ${.node?node_name}, not yet implemented --></#macro>
+<#macro @element><p>=== Doing nothing for element ${.node?node_name}, not yet implemented. ===</p></#macro>
 
 <#macro widgets>
 <#if sri.doBoundaryComments()><!-- BEGIN screen[@location=${sri.getActiveScreenDef().location}].widgets --></#if>
@@ -254,65 +254,126 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#else/>
         <#-- TODO: change to something better than a table, perhaps HTML field label stuff -->
         <table>
-            <#-- TODO: conditional, visible-when; maybe get list of fields from the form object with conditional checked -->
-            <#list .node["field"] as fieldNode>
-                <#if fieldNode?node_name != "ignored">
-                <tr>
-                    <td><#if fieldNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldNode/></#if></td>
-                    <td><#visit fieldNode/></td>
-                </tr>
-                </#if>
-            </#list>
+            <#list .node["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
         </table>
         </#if>
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
+<#macro formSingleSubField fieldNode>
+    <#list fieldNode["conditional-field"] as fieldSubNode>
+        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+            <@formSingleWidget fieldSubNode/>
+            <#return/>
+        </#if>
+    </#list>
+    <#if fieldNode["default-field"]?has_content>
+        <@formSingleWidget fieldNode["default-field"][0]/>
+        <#return/>
+    </#if>
+</#macro>
+<#macro formSingleWidget fieldSubNode>
+    <#if fieldSubNode["ignored"]?has_content><#return/></#if>
+    <tr>
+        <td class="form-title"><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if></td>
+        <td><#recurse fieldSubNode/></td>
+    </tr>
+</#macro>
+
 <#macro "form-list">
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <#if .node["auto-fields-service"]?has_content><h3>TODO: form-list auto-fields-service (form ${.node["@name"]})</h3></#if>
     <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-list auto-fields-entity (form ${.node["@name"]})</h3></#if>
-<!--            <xs:element minOccurs="0" ref="row-actions"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
-                <xs:element minOccurs="0" ref="field-layout"/>
--->
-    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post">
-    <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
+<!-- TODO           <xs:element minOccurs="0" ref="row-actions"/> -->
+    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition")/>
+    <#assign listObject = ec.resource.evaluateContextField(.node["@list"], "")/>
+    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post" action="${urlInfo.url}">
+        <#if .node["field-layout"]?has_content>
+        <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
+        <#else/>
+        <table>
+            <tr class="form-header">
+                <#list .node["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
+            </tr>
+            <#list listObject as listEntry>
+            <tr class="form-row">
+                <#list .node["field"] as fieldNode><@formListSubField fieldNode/></#list>
+            </tr>
+            </#list>
+        </table>
+        </#if>
     ${sri.renderFormList(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
+<#macro formListHeaderField fieldNode>
+    <#if fieldNode["header-field"]?has_content>
+        <#assign fieldSubNode = fieldNode["header-field"][0]/>
+    <#elseif fieldNode["default-field"]?has_content/>
+        <#assign fieldSubNode = fieldNode["default-field"][0]/>
+    <#else/>
+        <#-- this only makes sense for fields with a single conditional -->
+        <#assign fieldSubNode = fieldNode["conditional-field"][0]/>
+    </#if>
+    <td class="form-title"><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if></td>
+</#macro>
+<#macro formListSubField fieldNode>
+    <#list fieldNode["conditional-field"] as fieldSubNode>
+        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+            <@formListWidget fieldSubNode/>
+            <#return/>
+        </#if>
+    </#list>
+    <#if fieldNode["default-field"]?has_content>
+        <@formListWidget fieldNode["default-field"][0]/>
+        <#return/>
+    </#if>
+</#macro>
+<#macro formListWidget fieldSubNode>
+    <#if fieldSubNode["ignored"]?has_content><td>&nbsp;</td><#return/></#if>
+    <td><#recurse fieldSubNode/></td>
+</#macro>
 
-<#macro fieldTitle fieldNode><#assign titleValue><#if fieldNode["@title"]?has_content>${fieldNode["@title"]}<#else/><#list fieldNode["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
+
+<#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}</#macro>
 <#-- TODO: use fieldId everywhere! -->
 <#-- TODO: make fieldId handle multi-row stuff -->
-<#macro fieldId fieldNode>${fieldNode?parent["@name"]}_${fieldNode["@name"]}</#macro>
-<#macro field><#recurse/></#macro>
+<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}</#macro>
+<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
+
+<#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
+<#macro "conditional-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
+<#macro "default-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
+
+<#-- ================== Form Field Widgets ==================== -->
 
 <#macro "display">
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
     <#else/>
-        <#assign fieldValue = sri.getFieldValue(.node?parent, "")/>
+        <#assign fieldValue = sri.getFieldValue(.node?parent?parent, "")/>
     </#if>
     <#-- TODO: currency formatting: currency-unit-field attribute -->
-<#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if>
-<#if .node["also-hidden"]!"true" == "true"><input type="hidden" name="${(.node?parent["@name"])?html}" value="${(fieldValue!"")?html}"/></#if>
+    <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
+    <#if .node["also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}" id="<@fieldId .node/>"/></#if>
 </#macro>
 
-<#macro "hidden"><input type="hidden" name="${(.node?parent["@name"])?html}" value="${sri.getFieldValue(.node?parent, .node["@default-value"]!"")}"/></#macro>
+<#macro "hidden"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}"/></#macro>
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
-<#macro "password"><input type="password" name="${(.node?parent["@name"])?html}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if>/></#macro>
+<#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"/></#macro>
 
-<#macro "reset"><input type="reset" name="${(.node?parent["@name"])?html}" value="<@fieldTitle .node?parent/>"/></#macro>
+<#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"/></#macro>
+
 <#macro "submit">
 <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
     <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else/><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>
-<#else><input type="submit"</#if> name="${(.node?parent["@name"])?html}" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if>/>
+<#else><input type="submit"</#if> name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if> id="<@fieldId .node/>"/>
 </#macro>
 
-<#macro "text-line"><input type="text" name="${(.node?parent["@name"])?html}" value="${sri.getFieldValue(.node?parent, .node["@default-value"]!"")}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if>/></#macro>
+<#macro "text-area"><textarea name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${maxlength}"</#if> id="<@fieldId .node/>">${sri.getFieldValue(.node?parent, .node["@default-value"]!"")?html}</textarea></#macro>
+
+<#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"/></#macro>
 
 <#-- ===============================================================================================
 
@@ -324,7 +385,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </xs:choice>
             <xs:attribute name="all-checked" type="boolean"/>
 </#macro>
-
 <#macro "date-find">
             <xs:attribute name="type" default="timestamp">
                 <xs:simpleType>
@@ -463,15 +523,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <xs:enumeration value="less-equals"/>
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:attribute>
-</#macro>
-<#macro "text-area">
-            <xs:attribute name="cols" type="xs:positiveInteger" default="60"/>
-            <xs:attribute name="rows" type="xs:positiveInteger" default="3"/>
-            <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="read-only" default="false" type="boolean"/>
-            <xs:attribute name="visual-html-editor" default="false" type="boolean">
-                <xs:annotation><xs:documentation>This will enable the visual html editor on this text area.</xs:documentation></xs:annotation>
             </xs:attribute>
 </#macro>
 <#macro "text-find">

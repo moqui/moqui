@@ -26,6 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="exampleFeatureId" from-field="ec.web.parameters.exampleFeatureId"/>
         <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
     </actions>
     <widgets>
@@ -34,22 +35,23 @@ This Work includes contributions authored by David E. Jones, not as a
             <widgets>
                 <form-single name="CreateExampleFeature" transition="createExampleFeature">
                     <auto-fields-service service-name="createExampleFeature"/>
-                    <field name="exampleFeatureId" title="Example Feature ID">
-                        <conditional>
-                            <condition><compare field="exampleFeatureId" operator="not-empty"/></condition>
+                    <field name="exampleFeatureId">
+                        <conditional-field condition="exampleFeatureId">
                             <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>
-                        </conditional>
+                        </conditional-field>
                     </field>
-                    <field name="description" title="Description"/>
-                    <field name="featureSourceEnumId" title="Feature Source">
-                        <drop-down allow-empty="false">
-                            <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
-                                <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
-                                <order-by field-name="sequenceId"/>
-                            </entity-options>
-                        </drop-down>
+                    <field name="featureSourceEnumId">
+                        <default-field title="Feature Source">
+                            <drop-down allow-empty="false">
+                                <entity-options entity-name="Enumeration" key-field="enumId"
+                                                text="${description} [${enumCode}]">
+                                    <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+                                    <order-by field-name="sequenceId"/>
+                                </entity-options>
+                            </drop-down>
+                        </default-field>
                     </field>
-                    <field name="submitButton" title="Create"><submit button-type="button"/></field>
+                    <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>
             </widgets>
         </section>
@@ -57,8 +59,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><compare field="fieldValues" operator="not-empty"/></condition>
             <widgets>
                 <form-single name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
-                    <field name="exampleId" title="Example Feature ID"><display/></field>
-                    <field name="submitButton" title="Update"><submit button-type="button"/></field>
+                    <field name="exampleId"><default-field><display/></default-field></field>
+                    <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                 </form-single>
             </widgets>
         </section>

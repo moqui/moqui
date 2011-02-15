@@ -28,17 +28,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <container id="button-bar"><link url="newExampleFeature" text="New Feature"/></container>
         <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form -->
         <form-single name="FindExampleFeatures" transition="findExampleFeature">
-            <field name="exampleFeatureId" title="Example Feature ID"><text-find/></field>
-            <field name="description" title="Description"><text-find/></field>
-            <field name="searchButton" title="Find"><submit button-type="button"/></field>
+            <field name="exampleFeatureId"><default-field><text-find/></default-field></field>
+            <field name="description"><default-field><text-find/></default-field></field>
+            <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
         </form-single>
         <form-list name="ListExampleFeatures" list="exampleFeatureList">
-            <field name="exampleFeatureId" title="Example Feature ID">
+            <field name="exampleFeatureId">
                 <header-field show-order-by="true"/>
                 <!-- this list will pass an exampleFeatureId param, as defined on the EditExampleFeature screen as an incoming parameter -->
-                <link url="editExampleFeature" text="${exampleFeatureId}"/>
+                <default-field><link url="editExampleFeature" text="${exampleFeatureId}"/></default-field>
             </field>
-            <field name="description" title="Description"><header-field show-order-by="true"/><display/></field>
+            <field name="description"><header-field show-order-by="true"/><default-field><display/></default-field></field>
         </form-list>
     </widgets>
 </screen>
