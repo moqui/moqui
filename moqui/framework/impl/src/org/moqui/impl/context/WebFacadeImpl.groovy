@@ -102,6 +102,7 @@ class WebFacadeImpl implements WebFacade {
     Map<String, Object> getRequestParameters() {
         if (requestParameters) return requestParameters
         ContextStack cs = new ContextStack()
+        if (savedParameters) cs.push(savedParameters)
         cs.push((Map<String, Object>) request.getParameterMap())
         cs.push(StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))
         // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
@@ -134,7 +135,7 @@ class WebFacadeImpl implements WebFacade {
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
         session.setAttribute("moqui.screen.last.path", screenPath ?: request.getPathInfo())
-        session.setAttribute("moqui.screen.last.parameters", parameters ?: getRequestParameters())
+        session.setAttribute("moqui.screen.last.parameters", parameters ?: new HashMap(getRequestParameters()))
     }
 
     String getRemoveScreenLastPath() {
@@ -143,8 +144,7 @@ class WebFacadeImpl implements WebFacade {
         return path
     }
     void removeScreenLastParameters(boolean moveToSaved) {
-        if (moveToSaved)
-            session.setAttribute("moqui.saved.parameters", session.getAttribute("moqui.screen.last.parameters"))
+        if (moveToSaved) session.setAttribute("moqui.saved.parameters", session.getAttribute("moqui.screen.last.parameters"))
         session.removeAttribute("moqui.screen.last.parameters")
     }
 

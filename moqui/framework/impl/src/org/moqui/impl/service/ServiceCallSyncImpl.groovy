@@ -37,7 +37,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     ServiceCallSync name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
 
     @Override
-    ServiceCallSync parameters(Map<String, Object> map) { setParametersClean(map); return this }
+    ServiceCallSync parameters(Map<String, Object> map) { parameters.putAll(map); return this }
 
     @Override
     ServiceCallSync parameter(String name, Object value) { parameters.put(name, value); return this }
@@ -90,6 +90,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // TODO trigger SECAs
 
         // TODO validation (sd.serviceNode."@validate")
+        // TODO: if service is to be validated, go through service in-parameters definition and only get valid parameters
+        // TODO: do type conversions as needed for matching in parameters
 
         // TODO authentication (sd.serviceNode."@authenticate")
 

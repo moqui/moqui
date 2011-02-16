@@ -398,7 +398,7 @@ class EntityFindImpl implements EntityFind {
         }
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
+        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(true, true))
         // select fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         

@@ -200,6 +200,7 @@ text-decoration: underline;
 padding: 0px 8px 0px 4px;
 font-size: 0.9em;
 font-weight: bold;
+vertical-align: middle;
 }
 
 /* ========================= misc styles ========================= */

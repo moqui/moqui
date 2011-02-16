@@ -68,7 +68,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     }
 
     public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue newEntity = sfi.ecfi.entityFacade.makeValue(ed.entityName)
+        EntityValue newEntityValue = sfi.ecfi.entityFacade.makeValue(ed.entityName)
 
         ListOrderedSet pkFieldNames = ed.getFieldNames(true, false)
 
@@ -91,18 +91,18 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
             Object pkValue = parameters.get(singlePkField."@name")
             if (!pkValue) pkValue = sfi.ecfi.entityFacade.sequencedIdPrimary(ed.entityName, null)
-            newEntity.set(singlePkField."@name", pkValue)
+            newEntityValue.set(singlePkField."@name", pkValue)
             if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
             String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
-            newEntity.setFields(parameters, true, null, true)
-            sfi.ecfi.entityFacade.sequencedIdSecondary(newEntity, doublePkSecondaryName, 5, 1)
+            newEntityValue.setFields(parameters, true, null, true)
+            sfi.ecfi.entityFacade.sequencedIdSecondary(newEntityValue, doublePkSecondaryName, 5, 1)
             if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
-                result.put(doublePkSecondaryName, newEntity.get(doublePkSecondaryName))
+                result.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
         } else if (allPksIn) {
             /* **** plain specified primary key **** */
-            newEntity.setFields(parameters, true, null, true)
+            newEntityValue.setFields(parameters, true, null, true)
         } else {
             throw new ServiceException("In entity-auto create service for entity [${ed.entityName}]: " +
                     "could not find a valid combination of primary key settings to do a create operation; options include: " +
@@ -111,9 +111,9 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                     "3. all entity pk fields are passed into the service");
         }
 
-        newEntity.setFields(parameters, true, null, false)
-
-        newEntity.create()
+        newEntityValue.setFields(parameters, true, null, false)
+        // logger.info("In auto createEntity allPksIn [${allPksIn}] isSinglePk [${isSinglePk}] isDoublePk [${isDoublePk}] newEntityValue final [${newEntityValue}]")
+        newEntityValue.create()
     }
 
     public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
@@ -147,6 +147,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule
 
         lookedUpValue.setFields(parameters, true, null, false)
+        // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")
         lookedUpValue.update()
     }
 

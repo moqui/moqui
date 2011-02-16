@@ -35,8 +35,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
             <field name="exampleName">
-                <header-field show-order-by="true"><text-find/></header-field>
-                <default-field title="Name"><display/></default-field>
+                <header-field title="Name" show-order-by="true"><text-find/></header-field>
+                <default-field><display/></default-field>
             </field>
             <field name="exampleTypeId">
                 <header-field title="Type">

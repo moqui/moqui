@@ -328,6 +328,10 @@ class ScreenRenderImpl implements ScreenRender {
         if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
                 !request.isSecure()) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure, sending redirect to secure.")
+            if (ec.web) {
+                // save messages in session before redirecting so they can be displayed on the next screen
+                ((WebFacadeImpl) ec.web).saveMessagesToSession()
+            }
             // redirect to the same URL this came to
             response.sendRedirect(screenUrlInfo.getUrlWithParams())
             return false
@@ -342,6 +346,8 @@ class ScreenRenderImpl implements ScreenRender {
                 StringBuilder screenPath = new StringBuilder()
                 for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
                 ((WebFacadeImpl) ec.web).saveScreenLastInfo(screenPath.toString(), null)
+                // save messages in session before redirecting so they can be displayed on the next screen
+                ((WebFacadeImpl) ec.web).saveMessagesToSession()
             }
             // now prepare and send the redirect
             ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, null, "Login")
@@ -431,8 +437,10 @@ class ScreenRenderImpl implements ScreenRender {
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
         return ""
     }
-    String endFormListRow(String formName) {
+    String endFormListRow() {
         ((ContextStack) ec.context).pop()
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
+        return ""
     }
     String safeCloseList(Object listObject) {
         if (listObject instanceof EntityListIterator) ((EntityListIterator) listObject).close()

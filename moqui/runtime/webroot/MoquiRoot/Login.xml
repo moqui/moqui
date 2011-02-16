@@ -36,7 +36,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- TODO add forgot password, etc -->
         </container>
 
-        <!-- TODO remove this link when the normal login form is implemented -->
+        <!-- TODO remove this link when moving away from more of a testing mode, very convenient for now -->
         <link url="login" text="Login as John Doe">
             <parameter name="userId" value="john.doe"/>
             <parameter name="password" value="moqui"/>
