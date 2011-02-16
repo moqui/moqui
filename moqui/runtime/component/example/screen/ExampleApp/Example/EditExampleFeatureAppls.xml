@@ -38,7 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
-            <auto-fields-service service-name="updateExampleFeatureAppl"/>
+            <auto-fields-service service-name="update#ExampleFeatureAppl"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleFeatureId">
                 <default-field title="Feature">
@@ -68,7 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </form-list>
 
         <form-single name="AddExampleFeatureAppl" transition="createExampleFeatureAppl">
-            <auto-fields-service service-name="createExampleFeatureAppl"/>
+            <auto-fields-service service-name="create#ExampleFeatureAppl"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
 
             <field name="exampleFeatureId">

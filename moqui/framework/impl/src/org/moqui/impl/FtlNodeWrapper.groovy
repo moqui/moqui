@@ -24,7 +24,7 @@ import org.slf4j.Logger
 class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, TemplateHashModel, AdapterTemplateModel,
         TemplateScalarModel {
     protected final static Logger logger = LoggerFactory.getLogger(FtlNodeWrapper.class)
-    protected static final BeansWrapper wrapper = BeansWrapper.getDefaultInstance()
+    protected final static BeansWrapper wrapper = BeansWrapper.getDefaultInstance()
 
     /** Factory method for null-sensitive Groovy Node wrapping. */
     static FtlNodeWrapper wrapNode(Node groovyNode) { return groovyNode != null ? new FtlNodeWrapper(groovyNode) : null }
@@ -43,6 +43,8 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
         this.groovyNode = groovyNode
         this.parentNode = parentNode
     }
+
+    Node getGroovyNode() { return groovyNode }
 
     Object getAdaptedObject(Class aClass) { return groovyNode }
 
@@ -140,6 +142,9 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
 
         // TemplateScalarModel methods
         String getAsString() { return value != null ? value as String : null }
+
+        @Override
+        String toString() { return getAsString() }
     }
 
 
@@ -171,6 +176,9 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
 
         // TemplateScalarModel methods
         String getAsString() { return text }
+
+        @Override
+        String toString() { return getAsString() }
     }
 
     static class FtlNodeListWrapper implements TemplateSequenceModel {

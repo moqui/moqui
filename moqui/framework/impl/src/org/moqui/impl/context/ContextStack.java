@@ -12,6 +12,7 @@
 package org.moqui.impl.context;
 
 import java.util.*;
+import java.util.Hashtable;
 
 public class ContextStack implements Map {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class);
@@ -80,6 +81,7 @@ public class ContextStack implements Map {
     /** @see java.util.Map#containsKey(java.lang.Object) */
     public boolean containsKey(Object key) {
         for (Map curMap: stackList) {
+            if (key == null && curMap instanceof Hashtable) continue;
             if (curMap.containsKey(key)) return true;
         }
         return false;
@@ -112,6 +114,7 @@ public class ContextStack implements Map {
         Object value = null;
         for (Map curMap: stackList) {
             try {
+                if (key == null && curMap instanceof Hashtable) continue;
                 if (curMap.containsKey(key)) {
                     value = curMap.get(key);
                     break;

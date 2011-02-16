@@ -19,7 +19,7 @@ import org.moqui.impl.StupidUtilities
 
 <#-- NOTE should we handle out-map?has_content and async!=false with a ServiceResultWaiter? -->
 <#macro "call-service">    <#if .node["@out-map"]?has_content && (!.node["@async"]?has_content || .node["@async"] == "false")>${.node["@out-map"]} = </#if>ec.service.<#if .node.@async?has_content && .node.@async != "false">async()<#else/>sync()</#if>.name("${.node.@name}")<#if .node["@async"]?has_content && .node["@async"] == "persist">.persist(true)</#if>
-        <#if .node["@in-map"]?has_content>.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}", <#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#else><#if fieldMap.@value?has_content>"""${fieldMap.@value}"""<#else/>${fieldMap["@field-name"]}</#if></#if>)</#list>.call()
+        <#if .node["@in-map"]?if_exists == "true">.parameters(context)<#elseif .node["@in-map"]?if_exists != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
 </#macro>
 
 <#macro "call-script"><#if .node["@location"]?has_content>ec.resource.runScriptInCurrentContext(${.node["@location"]}, null)</#if>
@@ -38,15 +38,15 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "filter-map-list"><#if .node["field-map"]?has_content>
     StupidUtilities.filterMapList(${.node["@list"]}, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from-field"]?has_content>${fm["@from-field"]}<#else/>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
     </#if><#list .node["date-filter"] as df>
-    StupidUtilities.filterMapListByDate(${.node["@list"]}, ${df["@from-field-name"][0]?default("fromDate")}, ${df["@thru-field-name"][0]?default("thruDate")}, <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else/>ec.user.nowTimestamp</#if>)
+    StupidUtilities.filterMapListByDate(${.node["@list"]}, ${df["@from-field-name"]?default("fromDate")}, ${df["@thru-field-name"]?default("thruDate")}, <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else/>ec.user.nowTimestamp</#if>)
     </#list>
 </#macro>
 
 <#macro "entity-sequenced-id-primary">
-    ${.node["@field"]} = ec.entity.sequencedIdPrimary("${.node["@sequence-name"]}", ${.node["@stagger-max"][0]?default("null")})
+    ${.node["@field"]} = ec.entity.sequencedIdPrimary("${.node["@sequence-name"]}", ${.node["@stagger-max"]?default("null")})
 </#macro>
 <#macro "entity-sequenced-id-secondary">
-    ec.entity.sequencedIdSecondary(${.node["@value-field"]}, "${.node["@seq-field-name"]}", ${.node["@padded-length"][0]?default("3")}, ${.node["@increment-by"][0]?default("1")})
+    ec.entity.sequencedIdSecondary(${.node["@value-field"]}, "${.node["@seq-field-name"]}", ${.node["@padded-length"]?default("3")}, ${.node["@increment-by"]?default("1")})
 </#macro>
 <#macro "entity-data">
     // TODO impl entity-data
@@ -86,15 +86,15 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list><#if .node["having-econditions"]?has_content><#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list></#if>.count()
 </#macro>
 <#-- =================== entity-find sub-elements =================== -->
-<#macro "date-filter">ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"][0]?default("fromDate")}", "${.node["@thru-field-name"][0]?default("thruDate")}", <#if .node["@valid-date"]?has_content>.node["@valid-date"] as Timestamp<#else>ec.user.nowTimestamp</#if>)</#macro>
-<#macro "econdition">ec.entity.conditionFactory.makeActionCondition("${.node["@field-name"]}", "${.node["@operator"][0]?default("equals")}", ${.node["@from-field"][0]?default("null")}, <#if .node["@value"]?has_content>"${.node["@value"]}"<#else>null</#if>, <#if .node["@to-field-name"]?has_content>"${.node["@to-field-name"]}"<#else>null</#if>, ${.node["@ignore-case"][0]?default("false")}, ${.node["@ignore-if-empty"][0]?default("false")}, ${.node["@ignore"][0]?default("false")})</#macro>
+<#macro "date-filter">ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]?default("fromDate")}", "${.node["@thru-field-name"]?default("thruDate")}", <#if .node["@valid-date"]?has_content>.node["@valid-date"] as Timestamp<#else>ec.user.nowTimestamp</#if>)</#macro>
+<#macro "econdition">ec.entity.conditionFactory.makeActionCondition("${.node["@field-name"]}", "${.node["@operator"]?default("equals")}", ${.node["@from-field"]?default("null")}, <#if .node["@value"]?has_content>"${.node["@value"]}"<#else>null</#if>, <#if .node["@to-field-name"]?has_content>"${.node["@to-field-name"]}"<#else>null</#if>, ${.node["@ignore-case"]?default("false")}, ${.node["@ignore-if-empty"]?default("false")}, ${.node["@ignore"]?default("false")})</#macro>
 <#macro "econditions">ec.entity.conditionFactory.makeCondition([<#list .node["*"] as subCond><#visit subCond/><#if subCond_has_next>, </#if></#list>], org.moqui.impl.entity.EntityConditionFactoryImpl.getJoinOperator("${.node["@combine"]}"))</#macro>
 <#macro "econdition-object">${.node["@field"]}</#macro>
 
 <#-- =================== entity other elements =================== -->
-<#macro "entity-find-related-one">    ${.node["@to-value-field"]} = ${.node["@value-field"]}.findRelatedOne("${.node["@relationship-name"]}", ${.node["@cache"][0]?default("null")}, ${.node["@for-update"][0]?default("null")})
+<#macro "entity-find-related-one">    ${.node["@to-value-field"]} = ${.node["@value-field"]}.findRelatedOne("${.node["@relationship-name"]}", ${.node["@cache"]?default("null")}, ${.node["@for-update"]?default("null")})
 </#macro>
-<#macro "entity-find-related">    ${.node["@list"]} = ${.node["@value-field"]}.findRelated("${.node["@relationship-name"]}", ${.node["@map"][0]?default("null")}, ${.node["@order-by-list"][0]?default("null")}, ${.node["@cache"][0]?default("null")}, ${.node["@for-update"][0]?default("null")})
+<#macro "entity-find-related">    ${.node["@list"]} = ${.node["@value-field"]}.findRelated("${.node["@relationship-name"]}", ${.node["@map"]?default("null")}, ${.node["@order-by-list"]?default("null")}, ${.node["@cache"]?default("null")}, ${.node["@for-update"]?default("null")})
 </#macro>
 
 <#macro "entity-make-value">    ${.node["@value-field"]} = ec.entity.makeValue(${.node["@entity-name"]})<#if .node["@map"]?has_content>
@@ -111,7 +111,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "entity-delete-by-condition">    ec.entity.makeFind("${.node["@entity-name"]}")
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>.deleteAll()
 </#macro>
-<#macro "entity-set">    ${.node["@value-field"]}.setFields(${.node["@map"]}, ${.node["@set-if-empty"][0]?default("true")}, ${.node["@prefix"][0]?default("null")}, <#if .node["@include"]?has_content && .node["@include"] == "pk">true<#elseif .node["@include"]?has_content && .node["@include"] == "nonpk"/>false<#else/>null</#if>)
+<#macro "entity-set">    ${.node["@value-field"]}.setFields(${.node["@map"]}, ${.node["@set-if-empty"]?default("true")}, ${.node["@prefix"]?default("null")}, <#if .node["@include"]?has_content && .node["@include"] == "pk">true<#elseif .node["@include"]?has_content && .node["@include"] == "nonpk"/>false<#else/>null</#if>)
 </#macro>
 
 <#macro iterate>    if (${.node["@list"]} instanceof Map) {
@@ -191,5 +191,5 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#-- =================== other elements =================== -->
-<#macro "log">    ec.logger.log(<#if .node["@level"]?has_content>${.node["@level"]}<#else/>"trace"</#if>, """${.node["@message"]}""", null)
+<#macro "log">    ec.logger.log(<#if .node["@level"]?has_content>"${.node["@level"]}"<#else/>"info"</#if>, """${.node["@message"]}""", null)
 </#macro>

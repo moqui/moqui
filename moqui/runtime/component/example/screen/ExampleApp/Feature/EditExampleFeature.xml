@@ -34,7 +34,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><compare field="fieldValues" operator="empty"/></condition>
             <widgets>
                 <form-single name="CreateExampleFeature" transition="createExampleFeature">
-                    <auto-fields-service service-name="createExampleFeature"/>
+                    <auto-fields-service service-name="create#ExampleFeature"/>
                     <field name="exampleFeatureId">
                         <conditional-field condition="exampleFeatureId">
                             <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>

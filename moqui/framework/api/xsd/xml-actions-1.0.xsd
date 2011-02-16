@@ -1161,7 +1161,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="log" substitutionGroup="OtherOperations">
         <xs:annotation><xs:documentation>Logs a message using Log4J.</xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:attribute name="level" use="required">
+            <xs:attribute name="level" default="info">
                 <xs:annotation><xs:documentation>The logging/debug level to use.</xs:documentation></xs:annotation>
                 <xs:simpleType>
                     <xs:restriction base="xs:token">

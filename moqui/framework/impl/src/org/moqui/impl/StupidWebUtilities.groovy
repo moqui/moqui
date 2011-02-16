@@ -143,7 +143,7 @@ class StupidWebUtilities {
         }
         int size() { return mp.size() }
         boolean isEmpty() { return mp.isEmpty() }
-        boolean containsKey(Object o) { return (o == null && !supportsNull) ? null : mp.containsKey(o) }
+        boolean containsKey(Object o) { return (o == null && !supportsNull) ? false : mp.containsKey(o) }
         boolean containsValue(Object o) { return mp.containsValue(o) }
         Object get(Object o) {
             return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.get(o))

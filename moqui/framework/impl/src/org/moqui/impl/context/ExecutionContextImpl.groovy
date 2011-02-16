@@ -37,7 +37,6 @@ class ExecutionContextImpl implements ExecutionContext {
     protected WebFacadeImpl webFacade = null
     protected UserFacadeImpl userFacade
     protected MessageFacadeImpl messageFacade
-    protected L10nFacadeImpl l10nFacade
     protected ArtifactExecutionFacadeImpl artifactExecutionFacade
 
     ExecutionContextImpl(ExecutionContextFactoryImpl ecfi) {
@@ -45,7 +44,6 @@ class ExecutionContextImpl implements ExecutionContext {
         // NOTE: no WebFacade init here, wait for call in to do that
         this.userFacade = new UserFacadeImpl(this)
         this.messageFacade = new MessageFacadeImpl()
-        this.l10nFacade = new L10nFacadeImpl(this)
         this.artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this)
 
         // put reference to this in the context root
@@ -72,13 +70,13 @@ class ExecutionContextImpl implements ExecutionContext {
     /** @see org.moqui.context.ExecutionContext#getMessage() */
     MessageFacade getMessage() { this.messageFacade }
 
-    /** @see org.moqui.context.ExecutionContext#getL10n() */
-    L10nFacade getL10n() { this.l10nFacade }
-
     /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
     ArtifactExecutionFacade getArtifactExecution() { this.artifactExecutionFacade }
 
     // ==== More Permanent Objects (get from the factory instead of locally) ===
+
+    /** @see org.moqui.context.ExecutionContext#getL10n() */
+    L10nFacade getL10n() { this.ecfi.getL10nFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getResource() */
     ResourceFacade getResource() { this.ecfi.getResourceFacade() }

@@ -20,6 +20,7 @@ import org.moqui.impl.StupidUtilities
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.text.NumberFormat
 
 class UserFacadeImpl implements UserFacade {
     protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -128,6 +129,16 @@ class UserFacadeImpl implements UserFacade {
         } else {
             throw new IllegalStateException("No user logged in, can't set Currency")
         }
+    }
+
+    /** @see org.moqui.context.UserFacade#formatCurrency(Object, String, int) */
+    String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
+        if (fractionDigits == null) fractionDigits = 2
+        NumberFormat nf = NumberFormat.getCurrencyInstance(getLocale())
+        nf.setCurrency(Currency.getInstance(uomId))
+        nf.setMaximumFractionDigits(fractionDigits)
+        nf.setMinimumFractionDigits(fractionDigits)
+        return nf.format(amount)
     }
 
     String getPreference(String preferenceTypeEnumId) {

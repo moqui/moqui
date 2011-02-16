@@ -21,6 +21,7 @@ import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 
 import org.moqui.impl.screen.ScreenFacadeImpl
+import org.moqui.context.L10nFacade
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -44,6 +45,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final ScreenFacadeImpl screenFacade
     protected final ServiceFacadeImpl serviceFacade
     protected final TransactionFacadeImpl transactionFacade
+    protected final L10nFacadeImpl l10nFacade
 
     /**
      * This constructor gets runtime directory and conf file location from a properties file on the classpath so that
@@ -115,6 +117,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ServiceFacadeImpl Initialized")
         this.screenFacade = new ScreenFacadeImpl(this)
         logger.info("Moqui ScreenFacadeImpl Initialized")
+        this.l10nFacade = new L10nFacadeImpl(this)
+        logger.info("Moqui L10nFacadeImpl Initialized")
 
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
@@ -157,6 +161,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ServiceFacadeImpl Initialized")
         this.screenFacade = new ScreenFacadeImpl(this)
         logger.info("Moqui ScreenFacadeImpl Initialized")
+        this.l10nFacade = new L10nFacadeImpl(this)
+        logger.info("Moqui L10nFacadeImpl Initialized")
 
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
@@ -230,33 +236,21 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     // ========== Getters ==========
 
-    CacheFacadeImpl getCacheFacade() {
-        return this.cacheFacade
-    }
+    CacheFacadeImpl getCacheFacade() { return this.cacheFacade }
 
-    EntityFacadeImpl getEntityFacade() {
-        return this.entityFacade
-    }
+    EntityFacadeImpl getEntityFacade() { return this.entityFacade }
 
-    LoggerFacadeImpl getLoggerFacade() {
-        return this.loggerFacade
-    }
+    LoggerFacadeImpl getLoggerFacade() { return this.loggerFacade }
 
-    ResourceFacadeImpl getResourceFacade() {
-        return this.resourceFacade
-    }
+    ResourceFacadeImpl getResourceFacade() { return this.resourceFacade }
 
-    ScreenFacadeImpl getScreenFacade() {
-        return this.screenFacade
-    }
+    ScreenFacadeImpl getScreenFacade() { return this.screenFacade }
 
-    ServiceFacadeImpl getServiceFacade() {
-        return this.serviceFacade
-    }
+    ServiceFacadeImpl getServiceFacade() { return this.serviceFacade }
 
-    TransactionFacadeImpl getTransactionFacade() {
-        return this.transactionFacade
-    }
+    TransactionFacadeImpl getTransactionFacade() { return this.transactionFacade }
+
+    L10nFacade getL10nFacade() { return this.l10nFacade }
 
     // ========== Interface Implementations ==========
 

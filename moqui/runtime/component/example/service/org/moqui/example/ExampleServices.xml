@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="create" noun="Example" type="entity-auto">
         <in-parameters>
             <auto-parameters include="nonpk"/>
-            <parameter name="exampleTypeId" required="true"/>
+            <parameter name="exampleTypeEnumId" required="true"/>
             <parameter name="statusId" required="true"/>
             <parameter name="exampleName" required="true"/>
         </in-parameters>

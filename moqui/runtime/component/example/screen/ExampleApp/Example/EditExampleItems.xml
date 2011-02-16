@@ -37,7 +37,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList">
-            <auto-fields-service service-name="updateExampleItem"/>
+            <auto-fields-service service-name="update#ExampleItem"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleItemSeqId"><default-field title="Item"><display/></default-field></field>
             <field name="description"><default-field><text-line size="30"/></default-field></field>
@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </form-list>
 
         <form-single name="AddExampleItem" transition="createExampleItem">
-            <auto-fields-service service-name="createExampleItem"/>
+            <auto-fields-service service-name="create#ExampleItem"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleItemSeqId"><default-field><ignored/><!-- this will be auto-sequenced --></default-field></field>
             <field name="amountUomId">

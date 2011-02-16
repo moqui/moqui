@@ -28,6 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <set field="exampleId" from-field="ec.web.parameters.exampleId"/>
         <entity-find-one entity-name="Example" value-field="fieldValues"/>
+        <log message="EditExample exampleId [${exampleId}] fieldValues [${fieldValues}]"/>
         <entity-find-one entity-name="StatusItem" value-field="currentStatus">
             <field-map field-name="statusId" from-field="fieldValues?.statusId"/>
         </entity-find-one>
@@ -37,7 +38,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><compare field="fieldValues" operator="empty"/></condition>
             <widgets>
                 <form-single name="CreateExample" transition="createExample">
-                    <auto-fields-service service-name="createExample"/>
+                    <!-- <auto-fields-service service-name="org.moqui.example.ExampleServices.create#Example"/> -->
+                    <auto-fields-service service-name="create#Example"/>
 
                     <field name="exampleId">
                         <!-- the conditional-field.@condition attribute evaluates as a groovy boolean expression,
@@ -46,11 +48,11 @@ This Work includes contributions authored by David E. Jones, not as a
                             <display text="Not Found: [${exampleId}]" also-hidden="false"/>
                         </conditional-field>
                     </field>
-
-                    <field name="exampleTypeId">
+                    <field name="exampleTypeEnumId">
                         <default-field title="Type">
                             <drop-down allow-empty="false">
-                                <entity-options entity-name="ExampleType" text="${description}">
+                                <entity-options entity-name="Enumeration" text="${description}">
+                                    <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/>
                                     <order-by field-name="description"/>
                                 </entity-options>
                             </drop-down>
@@ -73,7 +75,6 @@ This Work includes contributions authored by David E. Jones, not as a
                         </drop-down>
                     </field>
                     -->
-
                     <field name="submitButton">
                         <default-field title="Create"><submit/></default-field>
                     </field>
@@ -84,7 +85,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><compare field="fieldValues" operator="not-empty"/></condition>
             <widgets>
                 <form-single name="UpdateExample" extends="CreateExample" transition="updateExample">
-                    <field name="exampleId"><default-field title="Example ID"><display/></default-field></field>
+                    <field name="exampleId">
+                        <!-- this is in a conditional-field instead of default-field so that it can override the one in CreateExample -->
+                        <conditional-field condition="exampleId">
+                            <display/>
+                        </conditional-field>
+                    </field>
                     <field name="statusId">
                         <default-field title="Status">
                             <drop-down allow-empty="false" current-description="${currentStatus.description}">

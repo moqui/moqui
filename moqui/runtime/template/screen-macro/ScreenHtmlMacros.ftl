@@ -243,18 +243,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#-- ======================= Form ========================= -->
 <#macro "form-single">
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
-    <#if .node["auto-fields-service"]?has_content><h3>TODO: form-single auto-fields-service (form ${.node["@name"]})</h3></#if>
-    <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-single auto-fields-entity (form ${.node["@name"]})</h3></#if>
-    <#-- ${sri.renderFormSingle(.node["@name"])} -->
-
-    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition")/>
-    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post" action="${urlInfo.url}">
-        <#if .node["field-layout"]?has_content>
+    <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
+    <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition")/>
+    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+        <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
         <#else/>
         <#-- TODO: change to something better than a table, perhaps HTML field label stuff -->
         <table>
-            <#list .node["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
+            <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
         </table>
         </#if>
     </form>
@@ -274,6 +272,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro formSingleWidget fieldSubNode>
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
+    <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <tr>
         <td class="form-title"><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if></td>
         <td><#recurse fieldSubNode/></td>
@@ -282,30 +281,29 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro "form-list">
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
-    <#if .node["auto-fields-service"]?has_content><h3>TODO: form-list auto-fields-service (form ${.node["@name"]})</h3></#if>
-    <#if .node["auto-fields-entity"]?has_content><h3>TODO: form-list auto-fields-entity (form ${.node["@name"]})</h3></#if>
-    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition")/>
-    <#assign listObject = ec.resource.evaluateContextField(.node["@list"], "")/>
-    <form name="${.node["@name"]}" id="${.node["@name"]}" method="post" action="${urlInfo.url}">
-        <#if .node["field-layout"]?has_content>
+    <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
+    <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition")/>
+    <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
+    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+        <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
         <#else/>
         <table>
             <tr class="form-header">
-                <#list .node["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
+                <#list formNode["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
             </tr>
             <#list listObject as listEntry>
                 <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-                ${sri.startFormListRow(.node["@name"], listEntry)}
+                ${sri.startFormListRow(formNode["@name"], listEntry)}
                 <tr class="form-row">
-                    <#list .node["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                    <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
                 </tr>
                 ${sri.endFormListRow()}
             </#list>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         </table>
         </#if>
-    ${sri.renderFormList(.node["@name"])}
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
@@ -355,9 +353,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#else/>
         <#assign fieldValue = sri.getFieldValue(.node?parent?parent, "")/>
     </#if>
-    <#-- TODO: currency formatting: currency-unit-field attribute -->
+    <#if .node["@currency-unit-field"]?has_content><#assign fieldValue = formatCurrency(fieldValue, .node["@currency-unit-field"], 2)/></#if>
     <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
-    <#if .node["also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}" id="<@fieldId .node/>"/></#if>
+    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}" id="<@fieldId .node/>"/></#if>
 </#macro>
 
 <#macro "hidden"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}"/></#macro>

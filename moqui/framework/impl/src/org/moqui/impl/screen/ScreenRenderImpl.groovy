@@ -439,6 +439,12 @@ class ScreenRenderImpl implements ScreenRender {
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
         return ""
     }
+    FtlNodeWrapper getFtlFormNode(String formName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        ScreenForm form = sd.getForm(formName)
+        if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+        return form.ftlFormNode
+    }
 
     String renderIncludeScreen(String location, String shareScopeStr) {
         boolean shareScope = false
@@ -511,11 +517,14 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
-    String getFieldValue(FtlNodeWrapper fieldNode, String defaultValue) {
-        String key = fieldNode.get("@entry-name") ?: fieldNode.get("@name")
-        Object value = ec.context.get((fieldNode.parentNode?.get("@map-name") ?: "") + (key ?: ""))
-        if (!value && ec.web) value = ec.web.parameters.get(key)
-        return value == null ? "" : (value as String)
+    String getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
+        Node fieldNode = fieldNodeWrapper.getGroovyNode()
+        if (fieldNode."@entry-name") return ec.resource.evaluateContextField(fieldNode."@entry-name", null)
+        String fieldName = fieldNode."@name"
+        Object value = ec.context.get(fieldName)
+        if (!value && ec.context.fieldValues) value = ec.context.fieldValues.get(fieldName)
+        if (!value && ec.web) value = ec.web.parameters.get(fieldName)
+        return value ? (value as String) : defaultValue
     }
 
     boolean isInCurrentScreenPath(List<String> pathNameList) {

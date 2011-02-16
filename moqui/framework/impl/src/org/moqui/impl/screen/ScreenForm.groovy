@@ -11,27 +11,243 @@
  */
 package org.moqui.impl.screen
 
+import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
-import org.moqui.impl.context.ContextStack
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.service.ServiceDefinition
+import org.moqui.impl.FtlNodeWrapper
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class ScreenForm {
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
+
     protected Node formNode
     protected String location
 
     protected XmlAction rowActions = null
 
-    ScreenForm(ExecutionContextFactoryImpl ecfi, Node formNode, String location) {
-        this.formNode = formNode
+    ScreenForm(ExecutionContextFactoryImpl ecfi, ScreenDefinition sd, Node baseFormNode, String location) {
         this.location = location
+
+        // settings parent to null so that this isn't found in addition to the literal form-* element
+        formNode = new Node(null, baseFormNode.name())
+
+        // if there is an extends, put that in first (everything else overrides it)
+        if (baseFormNode."@extends") {
+            String extendsForm = baseFormNode."@extends"
+            ScreenForm esf
+            if (extendsForm.contains("#")) {
+                ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(extendsForm.substring(0, extendsForm.indexOf("#")))
+                esf = esd ? esd.getForm(extendsForm.substring(extendsForm.indexOf("#")+1)) : null
+            } else {
+                esf = sd.getForm(extendsForm)
+            }
+            if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${formNode."@name"}] of screen [${sd.location}]")
+            mergeFormNodes(formNode, esf.formNode)
+        }
+
+        for (Node afsNode in baseFormNode."auto-fields-service") {
+            String serviceName = afsNode."@service-name"
+            ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
+            if (serviceDef != null) {
+                addServiceFields(serviceDef, afsNode."@field-type"?:"edit", formNode)
+                continue
+            }
+            if (serviceName.contains("#")) {
+                EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
+                if (ed != null) {
+                    addEntityFields(ed, afsNode."@field-type"?:"edit",
+                            serviceName.substring(0, serviceName.indexOf("#")), formNode)
+                    continue
+                }
+            }
+            throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${formNode."@name"}] of screen [${sd.location}]")
+        }
+        for (Node afeNode in baseFormNode."auto-fields-entity") {
+            String entityName = afeNode."@entity-name"
+            EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
+            if (ed != null) {
+                addEntityFields(ed, afeNode."@field-type"?:"find-display", null, formNode)
+                continue
+            }
+            throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-fields-entity of form [${formNode."@name"}] of screen [${sd.location}]")
+        }
+
+        // merge original formNode to override any applicable settings
+        mergeFormNodes(formNode, baseFormNode)
+
+        if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(formNode).toString())
 
         // prep row-actions
         if (formNode."row-actions") {
-            rowActions = new XmlAction(ecfi, (Node) formNode."row-actions"[0], location + ".row-actions")
+            rowActions = new XmlAction(ecfi, (Node) formNode."row-actions"[0], location + ".row_actions")
+        }
+    }
+
+    protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode) {
+        for (Node parameterNode in sd.serviceNode."in-parameters"[0]."parameter") {
+            String spType = parameterNode."@type" ?: "String"
+            String serviceVerb = sd.serviceNode."@verb"
+
+            Node newFieldNode = new Node(null, "field", [name:parameterNode."@name"])
+            Node subFieldNode = newFieldNode.appendNode("default-field")
+            switch (fieldType) {
+            case "edit":
+                if (parameterNode."@required" == "true" && serviceVerb.startsWith("update")) {
+                    subFieldNode.appendNode("hidden")
+                } else {
+                    if (spType.endsWith("Date") && spType != "java.util.Date") {
+                        subFieldNode.appendNode("date-time", [type:"date"])
+                    } else if (spType.endsWith("Time")) {
+                        subFieldNode.appendNode("date-time", [type:"time"])
+                    } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
+                        subFieldNode.appendNode("date-time", [type:"date-time"])
+                    } else {
+                        subFieldNode.appendNode("text-line")
+                    }
+                }
+                break;
+            case "find":
+                if (spType.endsWith("Date") && spType != "java.util.Date") {
+                    subFieldNode.appendNode("date-find", [type:"date"])
+                } else if (spType.endsWith("Time")) {
+                    subFieldNode.appendNode("date-find", [type:"time"])
+                } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
+                    subFieldNode.appendNode("date-find", [type:"date-time"])
+                } else if (spType.endsWith("BigDecimal") || spType.endsWith("Long") || spType.endsWith("Integer")
+                        || spType.endsWith("Double") || spType.endsWith("Float") || spType.endsWith("Number")) {
+                    subFieldNode.appendNode("range-find")
+                } else {
+                    subFieldNode.appendNode("text-find")
+                }
+                break;
+            case "display":
+                subFieldNode.appendNode("display")
+                break;
+            case "find-display":
+                Node headerFieldNode = newFieldNode.appendNode("header-field")
+                if (spType.endsWith("Date") && spType != "java.util.Date") {
+                    headerFieldNode.appendNode("date-find", [type:"date"])
+                } else if (spType.endsWith("Time")) {
+                    headerFieldNode.appendNode("date-find", [type:"time"])
+                } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
+                    headerFieldNode.appendNode("date-find", [type:"date-time"])
+                } else if (spType.endsWith("BigDecimal") || spType.endsWith("Long") || spType.endsWith("Integer")
+                        || spType.endsWith("Double") || spType.endsWith("Float") || spType.endsWith("Number")) {
+                    headerFieldNode.appendNode("range-find")
+                } else {
+                    headerFieldNode.appendNode("text-find")
+                }
+                subFieldNode.appendNode("display")
+                break;
+            case "hidden":
+                subFieldNode.appendNode("hidden")
+                break;
+            }
+            mergeFieldNode(baseFormNode, newFieldNode)
+        }
+    }
+
+    protected void addEntityFields(EntityDefinition ed, String fieldType, String serviceVerb, Node baseFormNode) {
+        ListOrderedSet pkFieldNameSet = ed.getFieldNames(true, false)
+        for (String fieldName in ed.getFieldNames(true, true)) {
+            String efType = ed.getFieldNode(fieldName)."@type"
+
+            Node newFieldNode = new Node(null, "field", [name:fieldName])
+            Node subFieldNode = newFieldNode.appendNode("default-field")
+
+            switch (fieldType) {
+            case "edit":
+                if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
+                    subFieldNode.appendNode("hidden")
+                } else {
+                    if (efType.startsWith("date") || efType.startsWith("time")) {
+                        subFieldNode.appendNode("date-time", [type:efType])
+                    } else if (efType == "text-very-long") {
+                        subFieldNode.appendNode("text-area")
+                    } else {
+                        subFieldNode.appendNode("text-line")
+                    }
+                }
+                break;
+            case "find":
+                if (efType.startsWith("date") || efType.startsWith("time")) {
+                    subFieldNode.appendNode("date-find", [type:efType])
+                } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
+                    subFieldNode.appendNode("range-find")
+                } else {
+                    subFieldNode.appendNode("text-find")
+                }
+                break;
+            case "display":
+                subFieldNode.appendNode("display")
+                break;
+            case "find-display":
+                Node headerFieldNode = newFieldNode.appendNode("header-field")
+                if (efType.startsWith("date") || efType.startsWith("time")) {
+                    headerFieldNode.appendNode("date-find", [type:efType])
+                } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
+                    headerFieldNode.appendNode("range-find")
+                } else {
+                    headerFieldNode.appendNode("text-find")
+                }
+                subFieldNode.appendNode("display")
+                break;
+            case "hidden":
+                subFieldNode.appendNode("hidden")
+                break;
+            }
+
+            // logger.info("Adding form auto entity field [${fieldName}] of type [${efType}], fieldType [${fieldType}] serviceVerb [${serviceVerb}], node: ${newFieldNode}")
+            mergeFieldNode(baseFormNode, newFieldNode)
+        }
+    }
+
+    protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode) {
+        baseFormNode.attributes().putAll(overrideFormNode.attributes())
+
+        // if overrideFormNode has any row-actions add them all to the ones of the baseFormNode, ie both will run
+        if (overrideFormNode."row-actions") {
+            if (!baseFormNode."row-actions") baseFormNode.appendNode("row-actions")
+            Node baseRowActionsNode = baseFormNode."row-actions"[0]
+            for (Node actionNode in overrideFormNode."row-actions") baseRowActionsNode.append(actionNode)
         }
 
-        // TODO handle auto-fields-service?
-        // TODO handle auto-fields-entity?
+        for (Node overrideFieldNode in overrideFormNode."field") {
+            mergeFieldNode(baseFormNode, overrideFieldNode)
+        }
+
+        if (overrideFormNode."field-layout") {
+            // just use entire override field-layout, don't try to merge
+            if (baseFormNode."field-layout") baseFormNode.remove(baseFormNode."field-layout"[0])
+            baseFormNode.append(overrideFormNode."field-layout"[0])
+        }
+    }
+
+    protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode) {
+        Node baseFieldNode = (Node) baseFormNode."field".find({ it."@name" == overrideFieldNode."@name" })
+        if (baseFieldNode != null) {
+            baseFieldNode.attributes().putAll(overrideFieldNode.attributes())
+
+            if (overrideFieldNode."header-field") {
+                if (baseFieldNode."header-field") baseFieldNode.remove(baseFieldNode."header-field"[0])
+                baseFieldNode.append(overrideFieldNode."header-field"[0])
+            }
+            for (Node overrideConditionalFieldNode in overrideFieldNode."conditional-field") {
+                Node baseConditionalFieldNode = (Node) baseFieldNode."conditional-field"
+                        .find({ it."@condition" == overrideConditionalFieldNode."@condition" })
+                if (baseConditionalFieldNode != null) baseFieldNode.remove(baseConditionalFieldNode)
+                baseFieldNode.append(overrideConditionalFieldNode)
+            }
+            if (overrideFieldNode."default-field") {
+                if (baseFieldNode."default-field") baseFieldNode.remove(baseFieldNode."default-field"[0])
+                baseFieldNode.append(overrideFieldNode."default-field"[0])
+            }
+        } else {
+            baseFormNode.append(overrideFieldNode)
+        }
     }
 
     void runFormListRowActions(ScreenRenderImpl sri, Object listEntry) {
@@ -47,4 +263,6 @@ class ScreenForm {
         }
         if (rowActions) rowActions.run(sri.ec)
     }
+
+    FtlNodeWrapper getFtlFormNode() { return FtlNodeWrapper.wrapNode(formNode) }
 }
