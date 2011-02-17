@@ -4,8 +4,12 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class ScreenUrlInfo {
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenUrlInfo.class)
+
     ScreenRenderImpl sri
 
     ScreenDefinition fromSd = null
@@ -66,11 +70,6 @@ class ScreenUrlInfo {
         disableLink = targetTransition ? !targetTransition.checkCondition(sri.ec) : false
     }
 
-    void addParameters(Map<String, Object> parameters) {
-        for (Map.Entry<String, Object> p in parameters)
-            this.pathParameterMap.put(p.getKey(), p.getValue() as String)
-    }
-
     String getMinimalPathUrlWithParams() {
         String ps = getParameterString()
         return getMinimalPathUrl() + (ps ? "?" + ps : "")
@@ -99,12 +98,26 @@ class ScreenUrlInfo {
         if (targetScreen) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
                 Object value = pi.getValue(sri.ec)
+                logger.info("TOREMOVE Adding parameter [${pi.name}:${value}] from targetScreen [${targetScreen.location}]")
                 if (value) pm.put(pi.name, value as String)
             }
         }
         // add all of the parameters specified inline in the screen path or added after
+        logger.info("TOREMOVE Adding pathParameterMap [${pathParameterMap}] for targetScreen [${targetScreen.location}]")
         if (pathParameterMap) pm.putAll(pathParameterMap)
         return pm
+    }
+
+    ScreenUrlInfo addParameter(Object name, Object value) {
+        if (!name || !value) return this
+        pathParameterMap.put(name as String, value as String)
+        return this
+    }
+    ScreenUrlInfo addParameters(Map manualParameters) {
+        if (!manualParameters) return this
+        for (Map.Entry mpEntry in manualParameters.entrySet())
+            pathParameterMap.put(mpEntry.key as String, mpEntry.value as String)
+        return this
     }
 
     String getParameterString() {

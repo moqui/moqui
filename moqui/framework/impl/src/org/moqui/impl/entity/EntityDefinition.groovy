@@ -103,8 +103,8 @@ public class EntityDefinition {
                 // TODO: column name for view-entity alias with function (wrap in function, after complex-alias to wrap that too when used)
 
                 // column name for view-entity (prefix with "${entity-alias}.")
-                colName.append(fieldNode."@entity-alias").append('.')
-                logger.warn("For view-entity include function and complex not yet supported, for entity [${entityName}], may get bad SQL...")
+                //colName.append(fieldNode."@entity-alias").append('.')
+                logger.trace("For view-entity include function and complex not yet supported, for entity [${entityName}], may get bad SQL...")
             }
             // else {
                 // column name for view-entity (prefix with "${entity-alias}.")

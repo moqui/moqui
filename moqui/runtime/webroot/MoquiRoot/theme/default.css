@@ -54,7 +54,7 @@ height: 30px;
 }
 #header-logo h1 {
 font-size: 1.5em;
-font-family: "Courier New", Courier, monospace;
+font-family: Courier, "Courier New", monospace;
 font-weight: bold;
 }
 #header-user {
@@ -166,7 +166,7 @@ border-color: #999 #bbb #ddd;
 margin: 0px 2px 0px 2px;
 padding: 2px 4px 2px 4px;
 font-size: 0.9em;
-font-family: Courier, monospace;
+font-family: Lucida Console, Monaco, monospace;
 }
 
 /* ======================= subscreens-menu ======================= */
@@ -191,8 +191,11 @@ ul.subscreens-menu li a {
 text-decoration: none;
 }
 
-ul.subscreens-menu li a:hover, ul.subscreens-menu li.selected a {
+ul.subscreens-menu li.selected a {
 text-decoration: underline;
+}
+ul.subscreens-menu li a:hover {
+color: #000077;
 }
 
 /* ======================= XML Form Styles ======================= */
@@ -215,11 +218,15 @@ border-radius: 4px;
 padding: 4px;
 width: 100%;
 }
+
 .form-title {
-padding: 0px 8px 0px 4px;
+padding: 0px 8px 0px 2px;
 font-size: 0.9em;
 font-weight: bold;
 vertical-align: middle;
+}
+table.form-list-outer .form-title {
+border-bottom: 1px solid #DDDDDF;
 }
 
 /* ========================= misc styles ========================= */

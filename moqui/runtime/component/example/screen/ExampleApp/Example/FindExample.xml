@@ -47,7 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleTypeEnumId">
                 <header-field title="Type">
                     <drop-down allow-empty="true">
-                        <list-options list="exampleTypeEnumList" key="${enumId}" text="${description}"/>
+                        <list-options list="exampleTypeEnumList" text="${description}"/>
                     </drop-down>
                 </header-field>
                 <default-field><display-entity entity-name="Enumeration" key-field-name="enumId"/></default-field>
