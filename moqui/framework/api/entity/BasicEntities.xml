@@ -290,6 +290,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="uomTypeEnumId"/>
         </relationship>
     </entity>
+    <view-entity entity-name="UomAndType" package-name="org.moqui.basic.uom" cache="true">
+        <member-entity entity-alias="UOM" entity-name="Uom"/>
+        <member-entity entity-alias="UTE" entity-name="Enumeration"/>
+        <alias entity-alias="UOM" name="uomId"/>
+        <alias entity-alias="UOM" name="description"/>
+        <alias entity-alias="UOM" name="abbreviation"/>
+        <alias entity-alias="UTE" name="typeDescription" field="description"/>
+        <view-link entity-alias="UOM" related-entity-alias="UTE">
+            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
+        </view-link>
+    </view-entity>
     <entity entity-name="UomConversion" package-name="org.moqui.basic.uom" cache="true">
         <field name="uomConversionId" type="id" is-pk="true"/>
         <field name="uomId" type="id"/>

@@ -109,10 +109,10 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
         if (localEntityDefinition.isViewEntity()) {
             Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(localEntityDefinition.entityName))
-            String joinStyle = databaseNode."@join-style"
+            String joinStyle = databaseNode."@join-style" ?: "ansi"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
-                throw new IllegalArgumentException("The join-style " + joinStyle + " is not supported")
+                throw new IllegalArgumentException("The join-style [${joinStyle}] is not supported, found on database [${databaseNode."@name"}]")
             }
 
             boolean useParenthesis = ("ansi" == joinStyle)

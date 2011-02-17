@@ -343,7 +343,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:simpleType>
         </xs:attribute>
     </xs:attributeGroup>
-    <!-- tabled, not to be part of 1.0:
+    <!-- TABLED, not to be part of 1.0:
     <xs:element name="visible-when">
         <xs:annotation><xs:documentation>
             Used to dynamically show or hide a field based on the value of another field (usually a drop-down).
@@ -367,7 +367,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="check" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="entity-options"/>
+                <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>
@@ -422,22 +422,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="input-method" default="popup">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="popup"/>
-                        <xs:enumeration value="time-dropdown"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="clock" default="24">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="12"/>
-                        <xs:enumeration value="24"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="display" substitutionGroup="SubFields">
@@ -480,15 +464,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="drop-down" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" ref="auto-complete"/>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
-                    <xs:element ref="entity-options"/>
+                    <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
                     <xs:element ref="list-options"/>
                     <xs:element ref="option"/>
                 </xs:choice>
             </xs:sequence>
             <xs:attribute name="allow-empty" default="false" type="boolean"/>
             <xs:attribute name="allow-multiple" default="false" type="boolean"/>
-            <xs:attribute name="auto-complete" default="false" type="boolean"/>
+            <xs:attribute name="size" type="xs:integer" default="1"/>
             <xs:attribute name="current" default="first-in-list">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
@@ -500,13 +485,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="no-current-selected-key" type="xs:string">
                 <xs:annotation><xs:documentation>The key to mark as selected when there is no current entry value.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="size" type="xs:integer" default="1"/>
             <xs:attribute name="current-description" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="file" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
         </xs:complexType>
@@ -521,24 +505,27 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="lookup" substitutionGroup="SubFields">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="auto-complete"/>
+            </xs:sequence>
             <xs:attribute name="target-screen" type="xs:string" use="required"/>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="description-field-name" type="xs:string"/>
             <xs:attribute name="disabled" default="false" type="boolean"/>
+            <xs:attribute name="secondary-field" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="password" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="radio" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="entity-options"/>
+                <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>
@@ -547,7 +534,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="range-find" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="default-option-from" default="greater-equals">
@@ -584,7 +571,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="text-line" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="disabled" default="false" type="boolean"/>
@@ -601,7 +588,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="text-find" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="ignore-case" default="true" type="boolean"/>
@@ -641,66 +628,41 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="ignore-case" default="true" type="boolean"/>
         </xs:complexType>
     </xs:element>
+    <!-- TABLED, not to be part of 1.0:
     <xs:element name="entity-options">
         <xs:annotation>
-            <xs:documentation>entity-options will look up options for the field in the given entity</xs:documentation>
+            <xs:documentation>Look up options for the field using the named entity.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:choice minOccurs="0" maxOccurs="unbounded">
-                    <xs:element ref="econdition"/>
-                    <xs:element ref="econditions"/>
-                    <xs:element ref="econdition-object"/>
-                </xs:choice>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="order-by"/>
+                <xs:element minOccurs="0" ref="entity-find"/>
             </xs:sequence>
-            <xs:attribute name="entity-name" type="xs:string" use="required"/>
-            <xs:attribute name="key-field" type="xs:string">
-                <xs:annotation><xs:documentation>The name of the field in the looked up entity that will be used for
-                    the key value; if empty defaults to the name of the field this is in.</xs:documentation></xs:annotation>
+            <xs:attribute name="key" type="xs:string">
+                <xs:annotation><xs:documentation>The text representing the key. Use the ${} syntax to insert entries
+                    from the entity value or from the context. If empty defaults to the value of the field this is in.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="text" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert variables.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="cache" default="true" type="boolean"/>
-            <xs:attribute name="filter-by-date" default="by-name">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="true"/>
-                        <xs:enumeration value="false"/>
-                        <xs:enumeration value="by-name"/>
-                    </xs:restriction>
-                </xs:simpleType>
+            <xs:attribute name="text" type="xs:string">
+                <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert variables.
+                    If empty defaults to the value of the key.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
+    -->
     <xs:element name="list-options">
         <xs:annotation>
-            <xs:documentation>Create options based on data in a list, usually a List of Maps.</xs:documentation>
+            <xs:documentation>Create options based on data in a List of Maps.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
             <xs:attribute name="list" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>The name of the list to iterate through to get values.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="entry" type="xs:string">
-                <xs:annotation>
-                    <xs:documentation>
-                        If specified each list entry will be placed in the local context, otherwise each list entry 
-                        must be a Map that will be expanded into the local context.
-                    </xs:documentation>
-                </xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="key-field" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        The value of the key-field will be the value passed to the server; this should be the full
-                        name of the location of the key value in the context, given the entry name or expanded
-                        list-entry Map as the options you would most likely use.
-                    </xs:documentation>
-                </xs:annotation>
+            <xs:attribute name="key" type="xs:string">
+                <xs:annotation><xs:documentation>The text representing the key. Use the ${} syntax to insert entries
+                    from a Map in the list or from the context. If empty defaults to the value of the field this is in.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="text" type="xs:string">
-                <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert variables.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert entries
+                    from a Map in the list or from the context. If empty defaults to the value of the key.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

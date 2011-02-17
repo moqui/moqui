@@ -36,11 +36,13 @@ public class EntityDefinition {
         if (isViewEntity()) {
             // if this is a view-entity, expand the alias-all elements into alias elements here
             this.expandAliasAlls()
-            // set is-pk on all alias Nodes if the related field is-pk
+            // set @type, set is-pk on all alias Nodes if the related field is-pk
             for (Node aliasNode in entityNode."alias") {
                 Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
+                if (memberEntity == null) throw new IllegalArgumentException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${entityName}]")
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                Node fieldNode = memberEd.getFieldNode(aliasNode."@field" ? aliasNode."@field" : aliasNode."@name")
+                Node fieldNode = memberEd.getFieldNode(aliasNode."@field" ?: aliasNode."@name")
+                aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
         } else {
@@ -103,8 +105,9 @@ public class EntityDefinition {
 
                 // column name for view-entity (prefix with "${entity-alias}.")
                 colName.append(fieldNode."@entity-alias").append('.')
-                throw new IllegalArgumentException("For view-entity include function and complex not yet supported")
-            } else {
+                logger.warn("For view-entity include function and complex not yet supported, for entity [${entityName}], may get bad SQL...")
+            }
+            // else {
                 // column name for view-entity (prefix with "${entity-alias}.")
                 colName.append(fieldNode."@entity-alias").append('.')
 
@@ -112,8 +115,8 @@ public class EntityDefinition {
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
                 String memberFieldName = fieldNode."@field" ? fieldNode."@field" : fieldNode."@name"
                 colName.append(memberEd.getColumnName(memberFieldName, false))
-            }
-            return null
+            // }
+            return colName.toString()
         } else {
             if (fieldNode."@column-name") {
                 return fieldNode."@column-name"
@@ -251,7 +254,7 @@ public class EntityDefinition {
     protected void expandAliasAlls() {
         if (!isViewEntity()) return
         for (Node aliasAll: this.entityNode."alias-all") {
-            Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" = aliasAll."@entity-alias" })[0]
+            Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == aliasAll."@entity-alias" })
             if (!memberEntity) {
                 logger.error("In alias-all with entity-alias [${aliasAll."@entity-alias"}], member-entity with same entity-alias not found, ignoring")
                 continue;
@@ -277,7 +280,7 @@ public class EntityDefinition {
                     aliasName = newAliasName.toString()
                 }
 
-                Node existingAliasNode = (Node) this.entityNode.alias.find({ it."@name" == aliasName })[0]
+                Node existingAliasNode = (Node) this.entityNode.alias.find({ it."@name" == aliasName })
                 if (existingAliasNode) {
                     //log differently if this is part of a view-link key-map because that is a common case when a field will be auto-expanded multiple times
                     boolean isInViewLink = false
@@ -318,7 +321,7 @@ public class EntityDefinition {
                         "entity-alias":aliasAll."@entity-alias",
                         "if-from-alias-all":true,
                         "group-by":aliasAll."@group-by"])
-                if (fieldNode.description) newAlias.appendNode(fieldNode.description[0].clone())
+                if (fieldNode.description) newAlias.appendNode(fieldNode."description")
             }
         }
     }
@@ -330,6 +333,7 @@ public class EntityDefinition {
         return makeViewListCondition(entityCondition)
     }
     protected EntityConditionImplBase makeViewListCondition(Node conditionsParent) {
+        if (conditionsParent == null) return null
         List<EntityConditionImplBase> condList = new ArrayList()
         for (Node dateFilter in conditionsParent."date-filter") {
             // NOTE: this doesn't do context expansion of the valid-date as it doesn't make sense for an entity def to depend on something being in the context
@@ -349,8 +353,8 @@ public class EntityDefinition {
                     field = new ConditionField(econdition."@field-name")
                 }
                 // NOTE: may need to convert value from String to object for field
-                cond =  new FieldValueCondition(this.efi.conditionFactory, field,
-                        StupidUtilities.getComparisonOperator(econdition."@operator"), econdition."@value")
+                cond = new FieldValueCondition(this.efi.conditionFactory, field,
+                        EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), econdition."@value")
             } else {
                 ConditionField field
                 if (econdition."@entity-alias") {
@@ -370,15 +374,17 @@ public class EntityDefinition {
                 } else {
                     toField = new ConditionField(econdition."@to-field-name")
                 }
-                cond =  new FieldToFieldCondition(this.efi.conditionFactory, field,
-                        StupidUtilities.getComparisonOperator(econdition."@operator"), toField)
+                cond = new FieldToFieldCondition(this.efi.conditionFactory, field,
+                        EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), toField)
             }
-            if (econdition."@ignore-case" == "true") cond.ignoreCase()
+            if (cond && econdition."@ignore-case" == "true") cond.ignoreCase()
+            if (cond) condList.add(cond)
         }
         for (Node econditions in conditionsParent."econditions") {
             EntityConditionImplBase cond = this.makeViewListCondition(econditions)
             if (cond) condList.add(cond)
         }
+        //logger.info("TOREMOVE In makeViewListCondition for entity [${entityName}] resulting condList: ${condList}")
         if (!condList) return null
         if (condList.size() == 1) return condList.get(0)
         JoinOperator op = (conditionsParent."@combine" == "or" ? JoinOperator.OR : JoinOperator.AND)

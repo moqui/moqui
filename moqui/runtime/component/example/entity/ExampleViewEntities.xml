@@ -43,8 +43,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="SI" entity-name="StatusItem"/>
         <alias-all entity-alias="SI"/>
         <entity-condition>
-            <econdition entity-alias="SI" field-name="statusTypeId" operator="equals" value="EXAMPLE_STATUS"/>
-            <order-by field-name="sequenceId"/>
+            <econdition field-name="statusTypeId" operator="equals" value="EXAMPLE_STATUS"/>
+            <order-by field-name="sequenceNum"/>
         </entity-condition>
     </view-entity>
     

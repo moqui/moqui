@@ -19,6 +19,11 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.FtlNodeWrapper
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.apache.commons.collections.map.ListOrderedMap
+import org.moqui.context.ExecutionContext
+import org.moqui.entity.EntityListIterator
+import org.moqui.entity.EntityValue
+import org.moqui.impl.StupidUtilities
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -45,7 +50,7 @@ class ScreenForm {
                 esf = sd.getForm(extendsForm)
             }
             if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${formNode."@name"}] of screen [${sd.location}]")
-            mergeFormNodes(formNode, esf.formNode)
+            mergeFormNodes(formNode, esf.formNode, true)
         }
 
         for (Node afsNode in baseFormNode."auto-fields-service") {
@@ -58,8 +63,7 @@ class ScreenForm {
             if (serviceName.contains("#")) {
                 EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
                 if (ed != null) {
-                    addEntityFields(ed, afsNode."@field-type"?:"edit",
-                            serviceName.substring(0, serviceName.indexOf("#")), formNode)
+                    addEntityFields(ed, afsNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), formNode)
                     continue
                 }
             }
@@ -76,7 +80,7 @@ class ScreenForm {
         }
 
         // merge original formNode to override any applicable settings
-        mergeFormNodes(formNode, baseFormNode)
+        mergeFormNodes(formNode, baseFormNode, false)
 
         if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(formNode).toString())
 
@@ -146,7 +150,7 @@ class ScreenForm {
                 subFieldNode.appendNode("hidden")
                 break;
             }
-            mergeFieldNode(baseFormNode, newFieldNode)
+            mergeFieldNode(baseFormNode, newFieldNode, false)
         }
     }
 
@@ -164,7 +168,8 @@ class ScreenForm {
                     subFieldNode.appendNode("hidden")
                 } else {
                     if (efType.startsWith("date") || efType.startsWith("time")) {
-                        subFieldNode.appendNode("date-time", [type:efType])
+                        Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
+                        if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
                     } else if (efType == "text-very-long") {
                         subFieldNode.appendNode("text-area")
                     } else {
@@ -201,11 +206,11 @@ class ScreenForm {
             }
 
             // logger.info("Adding form auto entity field [${fieldName}] of type [${efType}], fieldType [${fieldType}] serviceVerb [${serviceVerb}], node: ${newFieldNode}")
-            mergeFieldNode(baseFormNode, newFieldNode)
+            mergeFieldNode(baseFormNode, newFieldNode, false)
         }
     }
 
-    protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode) {
+    protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode, boolean deepCopy) {
         baseFormNode.attributes().putAll(overrideFormNode.attributes())
 
         // if overrideFormNode has any row-actions add them all to the ones of the baseFormNode, ie both will run
@@ -216,7 +221,7 @@ class ScreenForm {
         }
 
         for (Node overrideFieldNode in overrideFormNode."field") {
-            mergeFieldNode(baseFormNode, overrideFieldNode)
+            mergeFieldNode(baseFormNode, overrideFieldNode, deepCopy)
         }
 
         if (overrideFormNode."field-layout") {
@@ -226,7 +231,7 @@ class ScreenForm {
         }
     }
 
-    protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode) {
+    protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode, boolean deepCopy) {
         Node baseFieldNode = (Node) baseFormNode."field".find({ it."@name" == overrideFieldNode."@name" })
         if (baseFieldNode != null) {
             baseFieldNode.attributes().putAll(overrideFieldNode.attributes())
@@ -246,7 +251,7 @@ class ScreenForm {
                 baseFieldNode.append(overrideFieldNode."default-field"[0])
             }
         } else {
-            baseFormNode.append(overrideFieldNode)
+            baseFormNode.append(deepCopy ? StupidUtilities.deepCopyNode(overrideFieldNode) : overrideFieldNode)
         }
     }
 
@@ -265,4 +270,57 @@ class ScreenForm {
     }
 
     FtlNodeWrapper getFtlFormNode() { return FtlNodeWrapper.wrapNode(formNode) }
+
+    static ListOrderedMap getFieldOptions(Node widgetNode, ExecutionContext ec) {
+        Node fieldNode = widgetNode.parent().parent()
+        ListOrderedMap options = new ListOrderedMap()
+        for (Node childNode in widgetNode.children()) {
+            /* tabled for now, not to include in 1.0:
+            if (childNode.name() == "entity-options") {
+                EntityListIterator eli
+                try {
+                    ef = ec.entity.makeFind(childNode."@entity-name")
+                    // still need to build find options...
+                    eli = ef.iterator()
+                    EntityValue ev
+                    while ((ev = eli.next()) != null) {
+                        ec.context.push(ev)
+                        String key = ec.resource.evaluateStringExpand(childNode."@key"?:"\${${fieldNode."@name"}}", null)
+                        options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
+                        ec.context.pop()
+                    }
+                } finally {
+                    eli.close()
+                }
+            } else */
+            if (childNode.name() == "list-options") {
+                Object listObject = ec.resource.evaluateContextField(childNode."@list", null)
+                if (listObject instanceof EntityListIterator) {
+                    EntityListIterator eli
+                    try {
+                        eli = (EntityListIterator) listObject
+                        EntityValue ev
+                        while ((ev = eli.next()) != null) {
+                            ec.context.push(ev)
+                            String key = ec.resource.evaluateStringExpand(childNode."@key"?:"\${${fieldNode."@name"}}", null)
+                            options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
+                            ec.context.pop()
+                        }
+                    } finally {
+                        eli.close()
+                    }
+                } else {
+                    for (Map listOption in listObject) {
+                        ec.context.push(listOption)
+                        String key = ec.resource.evaluateStringExpand(childNode."@key"?:"\${${fieldNode."@name"}}", null)
+                        options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
+                        ec.context.pop()
+                    }
+                }
+            } else if (childNode.name() == "option") {
+                options.put(childNode."@key", childNode."@text"?:childNode."@key")
+            }
+        }
+        return options
+    }
 }

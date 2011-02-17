@@ -251,7 +251,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
         <#else/>
         <#-- TODO: change to something better than a table, perhaps HTML field label stuff -->
-        <table>
+        <table class="form-single-outer">
             <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
         </table>
         </#if>
@@ -289,7 +289,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
         <#else/>
-        <table>
+        <table class="form-list-outer">
             <tr class="form-header">
                 <#list formNode["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
             </tr>
@@ -347,6 +347,25 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Form Field Widgets ==================== -->
 
+<#macro "date-time">
+    <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/>
+    <#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/>
+    <#else><#assign size=23/><#assign maxlength=23/>
+    </#if>
+    <#assign id><@fieldId .node/></#assign>
+    <input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}"/>
+<#if .node["@type"]?if_exists != "time">
+    <script type="text/javascript">
+        <#if shortDateInput?exists && shortDateInput>
+            jQuery("#${id}").datepicker({
+        <#else>
+            jQuery("#${id}").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 10,
+        </#if>
+                showOn: 'button', buttonImage: '', buttonText: '', buttonImageOnly: false, dateFormat: 'yyyy-mm-dd'});
+    </script>
+</#if>
+</#macro>
+
 <#macro "display">
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
@@ -358,7 +377,39 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}" id="<@fieldId .node/>"/></#if>
 </#macro>
 
-<#macro "hidden"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}"/></#macro>
+<#macro "drop-down">
+    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
+    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
+    <#assign currentDescription = (options.get(currentValue))?if_exists/>
+    <#if !currentDescription?has_content && .node["@current-description"]?has_content>
+        <#assign currentDescription = ec.resource.evaluateStringExpand(.node["@current-description"], "")/>
+    </#if>
+    <#assign id><@fieldId .node/></#assign>
+
+    <select name="<@fieldName .node/>" id="${id}"<#if .node["@allow-multiple"]?if_exists == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if>>
+    <#if currentValue?has_content && (.node["@current"]?if_exists != "selected") && !(.node["@allow-multiple"]?if_exists == "true")>
+        <option selected="selected" value="${currentValue}">${currentDescription!currentValue}</option><#rt/>
+        <option value="${currentValue}">---</option><#rt/>
+    </#if>
+    <#if !(.node["@allow-empty"]?if_exists == "true") || !options?has_content>
+        <option value="">&nbsp;</option>
+    </#if>
+    <#list (options.keySet())?if_exists as key>
+        <option<#if currentValue?has_content && currentValue == key> selected="selected"</#if> value="${key}">${options.get(key)}</option>
+    </#list>
+    </select>
+    <#if .node["auto-complete"]?has_content>
+    <#-- TODO: auto-complete attributes, get it working -->
+    <script language="JavaScript" type="text/javascript">
+        jQuery(function() { jQuery("#${id}").combobox(); });
+    </script>
+    </#if>
+</#macro>
+
+<#macro "hidden">
+    <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}"/>
+</#macro>
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
 <#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"/></#macro>
@@ -371,15 +422,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#else><input type="submit"</#if> name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if> id="<@fieldId .node/>"/>
 </#macro>
 
-<#macro "text-area"><textarea name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${maxlength}"</#if> id="<@fieldId .node/>">${sri.getFieldValue(.node?parent, .node["@default-value"]!"")?html}</textarea></#macro>
+<#macro "text-area"><textarea name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${maxlength}"</#if> id="<@fieldId .node/>">${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}</textarea></#macro>
 
-<#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"/></#macro>
+<#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"/></#macro>
 
 <#-- ===============================================================================================
 
 <#macro check>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="entity-options"/>
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>
@@ -390,6 +440,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="timestamp"/>
+                        <xs:enumeration value="date-time"/>
                         <xs:enumeration value="date"/>
                         <xs:enumeration value="time"/>
                     </xs:restriction>
@@ -417,34 +468,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </xs:simpleType>
             </xs:attribute>
 </#macro>
-<#macro "date-time">
-            <xs:attribute name="type" default="timestamp">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="timestamp"/>
-                        <xs:enumeration value="date"/>
-                        <xs:enumeration value="time"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="input-method" default="popup">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="popup"/>
-                        <xs:enumeration value="time-dropdown"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="clock" default="24">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="12"/>
-                        <xs:enumeration value="24"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-</#macro>
 <#macro "display-entity">
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
             <xs:attribute name="key-field-name" type="xs:string"/>
@@ -457,31 +480,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </xs:documentation></xs:annotation>
             </xs:attribute>
 </#macro>
-<#macro "drop-down">
-            <xs:sequence>
-                <xs:choice minOccurs="0" maxOccurs="unbounded">
-                    <xs:element ref="entity-options"/>
-                    <xs:element ref="list-options"/>
-                    <xs:element ref="option"/>
-                </xs:choice>
-            </xs:sequence>
-            <xs:attribute name="allow-empty" default="false" type="boolean"/>
-            <xs:attribute name="allow-multiple" default="false" type="boolean"/>
-            <xs:attribute name="auto-complete" default="false" type="boolean"/>
-            <xs:attribute name="current" default="first-in-list">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="first-in-list"/>
-                        <xs:enumeration value="selected"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="no-current-selected-key" type="xs:string">
-                <xs:annotation><xs:documentation>The key to mark as selected when there is no current entry value.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="size" type="xs:integer" default="1"/>
-            <xs:attribute name="current-description" type="xs:string"/>
-</#macro>
+
 <#macro "file">
             <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
@@ -489,15 +488,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro "lookup">
             <xs:attribute name="target-screen" type="xs:string" use="required"/>
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="description-field-name" type="xs:string"/>
             <xs:attribute name="disabled" default="false" type="boolean"/>
+            <xs:attribute name="secondary-field" type="xs:string"/>
 </#macro>
 <#macro "radio">
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="entity-options"/>
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>

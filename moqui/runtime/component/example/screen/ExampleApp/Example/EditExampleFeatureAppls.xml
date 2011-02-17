@@ -32,8 +32,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-            <econdition field-name="exampleId" from-field="exampleId"/>
+            <econdition field-name="exampleId" from-field="ec.web.parameters.exampleId"/>
             <order-by field-name="sequenceNum"/>
+        </entity-find>
+
+        <entity-find entity-name="ExampleFeatureApplType" list="allExampleFeatureApplTypeList">
+            <order-by field-name="description"/>
         </entity-find>
     </actions>
     <widgets>
@@ -51,9 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleFeatureApplTypeId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">
-                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
-                            <order-by field-name="description"/>
-                        </entity-options>
+                        <list-options list="allExampleFeatureApplTypeList" text="${description}"/>
                     </drop-down>
                 </default-field>
             </field>
@@ -89,9 +91,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleFeatureApplTypeId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">
-                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
-                            <order-by field-name="description"/>
-                        </entity-options>
+                        <list-options list="allExampleFeatureApplTypeList" text="${description}"/>
                     </drop-down>
                 </default-field>
             </field>

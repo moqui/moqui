@@ -35,6 +35,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="exampleFeatureId" from-field="exampleFeatureId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
+
+        <entity-find entity-name="ExampleFeatureApplType" list="exampleFeatureApplTypeList">
+            <order-by field-name="description"/>
+        </entity-find>
+        <entity-find entity-name="Example" list="allExampleList">
+            <order-by field-name="exampleName"/>
+        </entity-find>
     </actions>
     <widgets>
         <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
@@ -49,11 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="fromDate"><default-field><display/></default-field></field>
             <field name="exampleFeatureApplTypeId">
                 <default-field title="Type">
-                    <drop-down allow-empty="false">
-                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
-                            <order-by field-name="description"/>
-                        </entity-options>
-                    </drop-down>
+                    <drop-down allow-empty="false"><list-options list="exampleFeatureApplTypeList" text="${description}"/></drop-down>
                 </default-field>
             </field>
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
@@ -71,9 +74,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleId">
                 <default-field title="Example">
                     <drop-down allow-empty="false">
-                        <entity-options entity-name="Example" text="${exampleName} [${exampleId}]">
-                            <order-by field-name="exampleName"/>
-                        </entity-options>
+                        <list-options list="allExampleList" text="${exampleName} [${exampleId}]"/>
                     </drop-down>
                 </default-field>
             </field>
@@ -81,11 +82,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <field name="exampleFeatureApplTypeId">
                 <default-field title="Type">
-                    <drop-down allow-empty="false">
-                        <entity-options entity-name="ExampleFeatureApplType" text="${description}">
-                            <order-by field-name="description"/>
-                        </entity-options>
-                    </drop-down>
+                    <drop-down allow-empty="false"><list-options list="exampleFeatureApplTypeList" text="${description}"/></drop-down>
                 </default-field>
             </field>
             <field name="submitButton"><default-field title="Add"><submit/></default-field></field>

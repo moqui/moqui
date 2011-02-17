@@ -28,6 +28,7 @@ import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.entity.EntityListIterator
+import org.apache.commons.collections.map.ListOrderedMap
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -532,7 +533,13 @@ class ScreenRenderImpl implements ScreenRender {
         Object value = ec.context.get(fieldName)
         if (!value && ec.context.fieldValues) value = ec.context.fieldValues.get(fieldName)
         if (!value && ec.web) value = ec.web.parameters.get(fieldName)
-        return value ? (value as String) : defaultValue
+
+        if (value) return value as String
+        return ec.resource.evaluateStringExpand(defaultValue, null)
+    }
+
+    ListOrderedMap getFieldOptions(FtlNodeWrapper widgetNodeWrapper) {
+        return ScreenForm.getFieldOptions(widgetNodeWrapper.getGroovyNode(), ec)
     }
 
     boolean isInCurrentScreenPath(List<String> pathNameList) {

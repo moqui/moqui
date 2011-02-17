@@ -438,9 +438,8 @@ class EntityFindImpl implements EntityFind {
         List<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        for (Node orderBy in entityDefinition.getEntityNode()."entity-condition"[0]?."order-by") {
-            orderByExpanded.add(orderBy."@field-name")
-        }
+        def ecObList = entityDefinition.getEntityNode()."entity-condition"?.getAt(0)?."order-by"
+        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
         efb.makeOrderByClause(orderByExpanded)
 
         if (this.forUpdate) efb.makeForUpdate()

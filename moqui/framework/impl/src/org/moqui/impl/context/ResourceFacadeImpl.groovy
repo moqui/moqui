@@ -233,6 +233,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
+        if (!expression) return false
         try {
             Script script = getGroovyScript(expression)
             Object result = script.run()
@@ -244,6 +245,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#evaluateContextField(String, String) */
     Object evaluateContextField(String expression, String debugLocation) {
+        if (!expression) return null
         try {
             Script script = getGroovyScript(expression)
             Object result = script.run()
@@ -255,6 +257,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
     String evaluateStringExpand(String inputString, String debugLocation) {
+        if (!inputString) return ""
         String expression = '"""' + inputString + '"""'
         try {
             Script script = getGroovyScript(expression)

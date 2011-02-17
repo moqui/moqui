@@ -28,6 +28,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <set field="exampleFeatureId" from-field="ec.web.parameters.exampleFeatureId"/>
         <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
+
+        <entity-find entity-name="Enumeration" list="featureSourceEnumList">
+            <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+            <order-by field-name="sequenceNum"/>
+        </entity-find>
     </actions>
     <widgets>
         <section name="create">
@@ -41,15 +46,9 @@ This Work includes contributions authored by David E. Jones, not as a
                         </conditional-field>
                     </field>
                     <field name="featureSourceEnumId">
-                        <default-field title="Feature Source">
-                            <drop-down allow-empty="false">
-                                <entity-options entity-name="Enumeration" key-field="enumId"
-                                                text="${description} [${enumCode}]">
-                                    <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
-                                    <order-by field-name="sequenceId"/>
-                                </entity-options>
-                            </drop-down>
-                        </default-field>
+                        <default-field title="Feature Source"><drop-down allow-empty="false">
+                            <list-options list="featureSourceEnumList" key="${enumId}" text="${description} [${enumCode}]"/>
+                        </drop-down></default-field>
                     </field>
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>

@@ -23,6 +23,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <search-form-inputs/>
             <order-by field-name="${context.sortByField?:''}"/>
         </entity-find>
+
+        <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
+            <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/>
+            <order-by field-name="description"/>
+        </entity-find>
+        <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
     </actions>
     <widgets>
         <container><link url="newExample" text="New Example"/></container>
@@ -38,20 +44,18 @@ This Work includes contributions authored by David E. Jones, not as a
                 <header-field title="Name" show-order-by="true"><text-find/></header-field>
                 <default-field><display/></default-field>
             </field>
-            <field name="exampleTypeId">
+            <field name="exampleTypeEnumId">
                 <header-field title="Type">
                     <drop-down allow-empty="true">
-                        <entity-options text="${description}" entity-name="ExampleType">
-                            <order-by field-name="description"/>
-                        </entity-options>
+                        <list-options list="exampleTypeEnumList" key="${enumId}" text="${description}"/>
                     </drop-down>
                 </header-field>
-                <default-field><display-entity entity-name="ExampleType"/></default-field>
+                <default-field><display-entity entity-name="Enumeration"/></default-field>
             </field>
             <field name="statusId">
                 <header-field title="Status">
                     <drop-down allow-empty="true">
-                        <entity-options text="${description}" entity-name="ExampleStatusItem"/>
+                        <list-options list="exampleStatusItemList" text="${description}"/>
                     </drop-down>
                 </header-field>
                 <default-field><display-entity entity-name="StatusItem"/></default-field>

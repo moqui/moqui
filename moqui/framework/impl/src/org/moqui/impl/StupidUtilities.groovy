@@ -256,6 +256,13 @@ class StupidUtilities {
         theList.add(value)
     }
 
+    static Node deepCopyNode(Node original) {
+        // always pass in a null parent and expect this to be appended to the parent node by the caller if desired
+        Node newNode = new Node(null, original.name(), original.attributes())
+        for (Node childNode in original.children()) newNode.append(deepCopyNode(childNode))
+        return newNode
+    }
+
     static String elementValue(Element element) {
         if (element == null) return null
         element.normalize()

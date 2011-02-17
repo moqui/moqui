@@ -31,8 +31,13 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleItem" list="exampleItemList">
-            <econdition field-name="exampleId" from-field="exampleId"/>
+            <econdition field-name="exampleId" from-field="ec.web.parameters.exampleId"/>
             <order-by field-name="exampleItemSeqId"/>
+        </entity-find>
+
+        <entity-find entity-name="UomAndType" list="allUomAndTypeList">
+            <order-by field-name="typeDescription"/>
+            <order-by field-name="description"/>
         </entity-find>
     </actions>
     <widgets>
@@ -44,11 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="amountUomId">
                 <default-field title="UOM">
                     <drop-down allow-empty="true">
-                        <entity-options entity-name="UomAndType" key-field="uomId"
-                                        text="${typeDescription}: ${description} (${abbreviation})">
-                            <order-by field-name="typeDescription"/>
-                            <order-by field-name="description"/>
-                        </entity-options>
+                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
                     </drop-down>
                 </default-field>
             </field>
@@ -68,11 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="amountUomId">
                 <default-field title="UOM">
                     <drop-down allow-empty="true">
-                        <entity-options entity-name="UomAndType" key-field="uomId"
-                                        text="${typeDescription}: ${description} (${abbreviation})">
-                            <order-by field-name="typeDescription"/>
-                            <order-by field-name="description"/>
-                        </entity-options>
+                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
                     </drop-down>
                 </default-field>
             </field>

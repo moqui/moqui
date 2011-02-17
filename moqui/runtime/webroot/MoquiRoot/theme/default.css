@@ -156,7 +156,7 @@ text-shadow: #fff 0 1px 1px;
 width: auto;
 }
 
-textarea, input[type="text"], input[type="password"] {
+input[type="text"], input[type="password"], textarea, select {
 -moz-border-radius: 4px;
 -webkit-border-radius: 4px;
 border-radius: 4px;
@@ -165,7 +165,7 @@ border-color: #999 #bbb #ddd;
 margin: 0px 2px 0px 2px;
 padding: 2px 4px 2px 4px;
 font-size: 0.9em;
-font-family: "Courier New", Courier, monospace;
+font-family: Courier, monospace;
 }
 
 /* ======================= subscreens-menu ======================= */
@@ -196,6 +196,24 @@ text-decoration: underline;
 
 /* ======================= XML Form Styles ======================= */
 
+table.form-single-outer {
+margin: 4px;
+-moz-border-radius: 4px;
+-webkit-border-radius: 4px;
+border-radius: 4px;
+border: 1px solid #DDDDDF;
+padding: 4px;
+width: 100%;
+}
+table.form-list-outer {
+margin: 4px;
+border: 1px solid #DDDDDF;
+-moz-border-radius: 4px;
+-webkit-border-radius: 4px;
+border-radius: 4px;
+padding: 4px;
+width: 100%;
+}
 .form-title {
 padding: 0px 8px 0px 4px;
 font-size: 0.9em;
