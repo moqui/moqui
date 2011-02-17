@@ -32,11 +32,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-            <econdition field-name="exampleFeatureId" from-field="exampleFeatureId"/>
+            <econdition field-name="exampleFeatureId" from-field="ec.web.parameters.exampleFeatureId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
 
-        <entity-find entity-name="ExampleFeatureApplType" list="exampleFeatureApplTypeList">
+        <entity-find entity-name="Enumeration" list="exampleFeatureApplEnumList">
+            <econdition field-name="enumTypeId" value="EXAMPLE_FEATURE_APPL"/>
             <order-by field-name="description"/>
         </entity-find>
         <entity-find entity-name="Example" list="allExampleList">
@@ -54,9 +55,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="exampleFeatureId"><default-field><hidden/></default-field></field>
             <field name="fromDate"><default-field><display/></default-field></field>
-            <field name="exampleFeatureApplTypeId">
+            <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
-                    <drop-down allow-empty="false"><list-options list="exampleFeatureApplTypeList" text="${description}"/></drop-down>
+                    <drop-down allow-empty="false">
+                        <list-options list="exampleFeatureApplEnumList" key="${enumId}" text="${description}"/>
+                    </drop-down>
                 </default-field>
             </field>
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
@@ -80,9 +83,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="exampleFeatureId"><default-field><hidden/></default-field></field>
 
-            <field name="exampleFeatureApplTypeId">
+            <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
-                    <drop-down allow-empty="false"><list-options list="exampleFeatureApplTypeList" text="${description}"/></drop-down>
+                    <drop-down allow-empty="false">
+                        <list-options list="exampleFeatureApplEnumList" key="${enumId}" text="${description}"/>
+                    </drop-down>
                 </default-field>
             </field>
             <field name="submitButton"><default-field title="Add"><submit/></default-field></field>

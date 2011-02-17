@@ -371,6 +371,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>
+            <xs:attribute name="no-current-selected-key" type="xs:string"/>
             <xs:attribute name="all-checked" type="boolean"/>
         </xs:complexType>
     </xs:element>

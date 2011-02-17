@@ -41,13 +41,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-single name="CreateExampleFeature" transition="createExampleFeature">
                     <auto-fields-service service-name="create#ExampleFeature"/>
                     <field name="exampleFeatureId">
-                        <conditional-field condition="exampleFeatureId">
+                        <conditional-field condition="!exampleFeatureId">
                             <display text="Not Found: [${exampleFeatureId}]" also-hidden="false"/>
                         </conditional-field>
                     </field>
                     <field name="featureSourceEnumId">
                         <default-field title="Feature Source"><drop-down allow-empty="false">
-                            <list-options list="featureSourceEnumList" key="${enumId}" text="${description} [${enumCode}]"/>
+                            <list-options list="featureSourceEnumList" key="${enumId}" text="${description}"/>
                         </drop-down></default-field>
                     </field>
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
@@ -58,7 +58,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><compare field="fieldValues" operator="not-empty"/></condition>
             <widgets>
                 <form-single name="UpdateExampleFeature" extends="CreateExampleFeature" transition="updateExampleFeature">
-                    <field name="exampleId"><default-field><display/></default-field></field>
+                    <field name="exampleFeatureId"><default-field><display/></default-field></field>
                     <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                 </form-single>
             </widgets>

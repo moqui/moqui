@@ -375,7 +375,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if .node["@currency-unit-field"]?has_content><#assign fieldValue = formatCurrency(fieldValue, .node["@currency-unit-field"], 2)/></#if>
     <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
-    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"/></#if>
+    <#if .node["@also-hidden"]?if_exists == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"/></#if>
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
@@ -412,11 +412,45 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </script>
     </#if>
 </#macro>
+<#macro check>
+    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
+    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
+    <#assign id><@fieldId .node/></#assign>
+    <#assign curName><@fieldName .node/></#assign>
+    <#list (options.keySet())?if_exists as key>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if .node["@all-checked"]?if_exists == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if>/>${options.get(key)?default("")}</span>
+    </#list>
+</#macro>
+<#macro "radio">
+    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
+    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
+    <#assign id><@fieldId .node/></#assign>
+    <#assign curName><@fieldName .node/></#assign>
+    <#list (options.keySet())?if_exists as key>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if>/>${options.get(key)?default("")}</span>
+    </#list>
+</#macro>
 
 <#macro "hidden">
     <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}"/>
 </#macro>
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
+
+<#macro "lookup">
+    <#-- TODO: <xs:element minOccurs="0" ref="auto-complete"/> -->
+    <#assign curFieldName = .node?parent?parent["@name"]?html/>
+    <#assign curFormName = .node?parent?parent?parent["@name"]?html/>
+    <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"/>
+    <#assign ajaxUrl = ""/><#-- TODO once the JSON service stuff is in place put something real here -->
+    <script type="text/javascript">
+        jQuery(document).ready(function() {
+            new ConstructLookup("${.node["@target-screen"]}", "${id}", document.${curFormName}.${curFieldName},
+            <#if .node["@secondary-field"]?has_content>document.${curFormName}.${.node["@secondary-field"]}<#else>null</#if>,
+            "${curFormName}", "${width!""}", "${height!""}", "${position!"topcenter"}", "${fadeBackground!"true"}", "${ajaxUrl!""}", "${showDescription!""}", ''); });
+    </script>
+</#macro>
 
 <#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"/></#macro>
 
@@ -434,13 +468,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ===============================================================================================
 
-<#macro check>
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="list-options"/>
-                <xs:element ref="option"/>
-            </xs:choice>
-            <xs:attribute name="all-checked" type="boolean"/>
-</#macro>
 <#macro "date-find">
             <xs:attribute name="type" default="timestamp">
                 <xs:simpleType>
@@ -479,21 +506,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
-</#macro>
-<#macro "lookup">
-            <xs:attribute name="target-screen" type="xs:string" use="required"/>
-            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
-            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
-            <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="disabled" default="false" type="boolean"/>
-            <xs:attribute name="secondary-field" type="xs:string"/>
-</#macro>
-<#macro "radio">
-            <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="list-options"/>
-                <xs:element ref="option"/>
-            </xs:choice>
-            <xs:attribute name="no-current-selected-key" type="xs:string"/>
 </#macro>
 <#macro "range-find">
             <xs:attribute name="size" type="xs:positiveInteger" default="25"/>

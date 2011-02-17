@@ -36,7 +36,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <order-by field-name="sequenceNum"/>
         </entity-find>
 
-        <entity-find entity-name="ExampleFeatureApplType" list="allExampleFeatureApplTypeList">
+        <entity-find entity-name="Enumeration" list="exampleFeatureApplEnumList">
+            <econdition field-name="enumTypeId" value="EXAMPLE_FEATURE_APPL"/>
             <order-by field-name="description"/>
         </entity-find>
     </actions>
@@ -52,10 +53,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
             <field name="fromDate"><default-field><display/></default-field></field>
-            <field name="exampleFeatureApplTypeId">
+            <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">
-                        <list-options list="allExampleFeatureApplTypeList" text="${description}"/>
+                        <list-options list="exampleFeatureApplEnumList" key="${enumId}" text="${description}"/>
                     </drop-down>
                 </default-field>
             </field>
@@ -88,10 +89,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 </drop-down>
             </field>
             -->
-            <field name="exampleFeatureApplTypeId">
+            <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">
-                        <list-options list="allExampleFeatureApplTypeList" text="${description}"/>
+                        <list-options list="exampleFeatureApplEnumList" key="${enumId}" text="${description}"/>
                     </drop-down>
                 </default-field>
             </field>
