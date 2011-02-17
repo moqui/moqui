@@ -15,7 +15,6 @@ import java.sql.Timestamp
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityCondition
-import org.moqui.impl.StupidUtilities
 import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition

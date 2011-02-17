@@ -11,19 +11,20 @@
  */
 package org.moqui.impl.screen
 
+import org.apache.commons.collections.map.ListOrderedMap
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.FtlNodeWrapper
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.entity.EntityValueImpl
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -301,20 +302,14 @@ class ScreenForm {
                         eli = (EntityListIterator) listObject
                         EntityValue ev
                         while ((ev = eli.next()) != null) {
-                            ec.context.push(ev)
-                            String key = ec.resource.evaluateStringExpand(childNode."@key"?:"\${${fieldNode."@name"}}", null)
-                            options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
-                            ec.context.pop()
+                            addFieldOption(options, fieldNode, childNode, ev, ec)
                         }
                     } finally {
                         eli.close()
                     }
                 } else {
                     for (Map listOption in listObject) {
-                        ec.context.push(listOption)
-                        String key = ec.resource.evaluateStringExpand(childNode."@key"?:"\${${fieldNode."@name"}}", null)
-                        options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
-                        ec.context.pop()
+                        addFieldOption(options, fieldNode, childNode, listOption, ec)
                     }
                 }
             } else if (childNode.name() == "option") {
@@ -322,5 +317,20 @@ class ScreenForm {
             }
         }
         return options
+    }
+    static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption, ExecutionContext ec) {
+        ec.context.push(listOption)
+        String key = null
+        if (childNode."@key") {
+            key = ec.resource.evaluateStringExpand(childNode."@key", null)
+        } else if (listOption instanceof EntityValueImpl) {
+            String keyFieldName = listOption.getEntityDefinition().getFieldNames(true, false).get(0)
+            if (keyFieldName) key = ec.context.get(keyFieldName)
+        }
+        if (!key) key = ec.context.get(fieldNode."@name")
+        if (!key) return
+
+        options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
+        ec.context.pop()
     }
 }

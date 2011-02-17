@@ -60,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="exampleTypeEnumId">
                         <default-field title="Type">
                             <drop-down allow-empty="false">
-                                <list-options list="exampleTypeEnumList" key="${enumId}" text="${description}"/>
+                                <list-options list="exampleTypeEnumList" text="${description}"/>
                             </drop-down>
                         </default-field>
                     </field>

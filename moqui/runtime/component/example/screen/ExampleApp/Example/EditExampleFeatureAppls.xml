@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     
     <parameter name="exampleId"/>
 
-    <transition name="editExampleFeature"><default-response url="../../FeatureTabs/EditExampleFeature"/></transition>
+    <transition name="editExampleFeature"><default-response url="../../Feature/EditExampleFeature"/></transition>
     <transition name="createExampleFeatureAppl">
         <call-service name="create#ExampleFeatureAppl"/>
         <default-response url="."/>
@@ -56,7 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">
-                        <list-options list="exampleFeatureApplEnumList" key="${enumId}" text="${description}"/>
+                        <list-options list="exampleFeatureApplEnumList" text="${description}"/>
                     </drop-down>
                 </default-field>
             </field>
@@ -92,7 +92,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">
-                        <list-options list="exampleFeatureApplEnumList" key="${enumId}" text="${description}"/>
+                        <list-options list="exampleFeatureApplEnumList" text="${description}"/>
                     </drop-down>
                 </default-field>
             </field>

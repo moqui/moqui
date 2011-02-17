@@ -659,7 +659,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="key" type="xs:string">
                 <xs:annotation><xs:documentation>The text representing the key. Use the ${} syntax to insert entries
-                    from a Map in the list or from the context. If empty defaults to the value of the field this is in.</xs:documentation></xs:annotation>
+                    from a Map in the list or from the context. If empty and the List contains EntityValue instances
+                    then will use the first primary key field name to lookup a value in the context, otherwise will
+                    use the name of the field to lookup a value in the context.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="text" type="xs:string">
                 <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert entries
