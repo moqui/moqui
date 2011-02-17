@@ -50,7 +50,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <list-options list="exampleTypeEnumList" key="${enumId}" text="${description}"/>
                     </drop-down>
                 </header-field>
-                <default-field><display-entity entity-name="Enumeration"/></default-field>
+                <default-field><display-entity entity-name="Enumeration" key-field-name="enumId"/></default-field>
             </field>
             <field name="statusId">
                 <header-field title="Status">

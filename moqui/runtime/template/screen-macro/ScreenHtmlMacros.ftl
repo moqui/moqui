@@ -367,6 +367,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 
 <#macro "display">
+    <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
     <#else/>
@@ -374,7 +375,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if .node["@currency-unit-field"]?has_content><#assign fieldValue = formatCurrency(fieldValue, .node["@currency-unit-field"], 2)/></#if>
     <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
-    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}" id="<@fieldId .node/>"/></#if>
+    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"/></#if>
+</#macro>
+<#macro "display-entity">
+    <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
+    <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
+    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"/></#if>
 </#macro>
 
 <#macro "drop-down">
@@ -466,18 +472,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <xs:enumeration value="empty"/>
                     </xs:restriction>
                 </xs:simpleType>
-            </xs:attribute>
-</#macro>
-<#macro "display-entity">
-            <xs:attribute name="entity-name" type="xs:string" use="required"/>
-            <xs:attribute name="key-field-name" type="xs:string"/>
-            <xs:attribute name="text" type="xs:string" default="${description}"/>
-            <xs:attribute name="use-cache" default="true" type="boolean"/>
-            <xs:attribute name="also-hidden" default="true" type="boolean"/>
-            <xs:attribute name="encode" default="true" type="boolean">
-                <xs:annotation><xs:documentation>
-                    If true text will be encoded so that it does not interfere with markup of the target output.
-                </xs:documentation></xs:annotation>
             </xs:attribute>
 </#macro>
 

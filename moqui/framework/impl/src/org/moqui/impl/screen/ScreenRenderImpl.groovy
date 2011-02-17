@@ -538,6 +538,23 @@ class ScreenRenderImpl implements ScreenRender {
         return ec.resource.evaluateStringExpand(defaultValue, null)
     }
 
+    String getFieldEntityValue(FtlNodeWrapper widgetNodeWrapper) {
+        FtlNodeWrapper fieldNodeWrapper = widgetNodeWrapper.parentNode.parentNode
+        Object fieldValue = getFieldValue(fieldNodeWrapper, "")
+        if (!fieldValue) return ""
+        Node widgetNode = widgetNodeWrapper.getGroovyNode()
+        // find the entity value
+        EntityValue ev = ec.entity.makeFind(widgetNode."@entity-name")
+                .condition(widgetNode."@key-field-name"?:fieldNodeWrapper.groovyNode."@name", fieldValue)
+                .useCache(widgetNode."@use-cache"?:"true" == "true").one()
+        if (ev == null) return ""
+        // push onto the context and then expand the text
+        ec.context.push(ev)
+        String value = ec.resource.evaluateStringExpand(widgetNode."@text"?:"\${description}", null)
+        ec.context.pop()
+        return value
+    }
+
     ListOrderedMap getFieldOptions(FtlNodeWrapper widgetNodeWrapper) {
         return ScreenForm.getFieldOptions(widgetNodeWrapper.getGroovyNode(), ec)
     }
