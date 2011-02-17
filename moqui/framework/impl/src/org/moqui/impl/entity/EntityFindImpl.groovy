@@ -393,7 +393,7 @@ class EntityFindImpl implements EntityFind {
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
 
         if (this.getDistinct() || (entityDefinition.isViewEntity() &&
-                entityDefinition.getEntityNode()."entity-condition"[0]."@distinct") == "true") {
+                entityDefinition.getEntityNode()."entity-condition"[0]?."@distinct") == "true") {
             efb.makeDistinct()
         }
 

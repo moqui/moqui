@@ -277,6 +277,14 @@ This Work includes contributions authored by David E. Jones, not as a
                     context then in a map called "fieldValues" (ie: "fieldValues.${name}"). With this convention when
                     you do an entity find to get a recard to edit, use "fieldValues" for the value-field.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="hide" type="boolean">
+                <xs:annotation><xs:documentation>If false field will always be visible (at least the title if nothing
+                    else). If true will always be hidden regardless of title and widgets defined. If empty (default)
+                    will guess based on definition of field.
+
+                    Note that for form-list fields this governs the entire column for the field, and not just a single
+                    row.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="header-field">

@@ -9,18 +9,18 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<#recurse widgetsNode/>
+<#recurse widgetsNode>
 
 <#macro @element><p>=== Doing nothing for element ${.node?node_name}, not yet implemented. ===</p></#macro>
 
 <#macro widgets>
 <#if sri.doBoundaryComments()><!-- BEGIN screen[@location=${sri.getActiveScreenDef().location}].widgets --></#if>
-<#recurse/>
+<#recurse>
 <#if sri.doBoundaryComments()><!-- END   screen[@location=${sri.getActiveScreenDef().location}].widgets --></#if>
 </#macro>
 <#macro "fail-widgets">
 <#if sri.doBoundaryComments()><!-- BEGIN screen[@location=${sri.getActiveScreenDef().location}].fail-widgets --></#if>
-<#recurse/>
+<#recurse>
 <#if sri.doBoundaryComments()><!-- END   screen[@location=${sri.getActiveScreenDef().location}].fail-widgets --></#if>
 </#macro>
 
@@ -28,8 +28,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-menu">
     <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-        <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
-        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
+        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
     </#if></#list>
     </ul>
     <div class="clear"></div>
@@ -46,8 +46,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-            <#assign urlInfo = sri.buildUrl(subscreensItem.name)/>
-            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else/><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
+            <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
         <div class="clear"></div>
@@ -55,9 +55,9 @@ This Work includes contributions authored by David E. Jones, not as a
         ${sri.renderSubscreen()}
         </div>
     </div>
-    <#elseif .node["@type"] == "stack"/>
+    <#elseif .node["@type"] == "stack">
     <h1>TODO stack type subscreens-panel not yet supported.</h1>
-    <#elseif .node["@type"] == "wizard"/>
+    <#elseif .node["@type"] == "wizard">
     <h1>TODO wizard type subscreens-panel not yet supported.</h1>
     </#if>
 </#macro>
@@ -77,28 +77,28 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#-- ================ Containers ================ -->
-<#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse/>
+<#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
     </div>
 </#macro>
 
 <#macro "container-panel">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>
         <#if .node["panel-header"]?has_content>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_header"</#if> class="panel-header"><#recurse .node["panel-header"][0]/>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
             <div class="clear"></div>
         </div></#if>
         <#if .node["panel-left"]?has_content>
         <#-- TODO <xs:attribute name="draggable" default="false" type="boolean"/> -->
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_left"</#if> class="panel-left"><#recurse .node["panel-left"][0]/>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_left"</#if> class="panel-left"><#recurse .node["panel-left"][0]>
         </div></#if>
         <#if .node["panel-right"]?has_content>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_right"</#if> class="panel-right"><#recurse .node["panel-right"][0]/>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_right"</#if> class="panel-right"><#recurse .node["panel-right"][0]>
         </div></#if>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_center"</#if> class="panel-center"><#recurse .node["panel-center"][0]/>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_center"</#if> class="panel-center"><#recurse .node["panel-center"][0]>
         </div>
         <#if .node["panel-footer"]?has_content>
         <div class="clear"></div>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]/>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
         </div></#if>
     </div>
 </#macro>
@@ -213,9 +213,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#list .node["parameter"] as parameterNode><input name="${parameterNode["@name"]?html}" value="${sri.makeValue(parameterNode["@from-field"]?default(""),parameterNode["@value"]?default(""))?html}" type="hidden"/></#list>
         <#list parameterMap?if_exists?keys as pKey><input name="${pKey?html}" value="${parameterMap[pKey]?html}" type="hidden"/></#list>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
-    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>/>
+    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>>
     <#else/>
-    <input type="submit" value="${ec.resource.evaluateStringExpand(.node["@text"], "")}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>/>
+    <input type="submit" value="${ec.resource.evaluateStringExpand(.node["@text"], "")}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>>
     </#if>
     </form>
     <#-- NOTE: consider using a link instead of submit buttons/image, would look something like this (would require id attribute, or add a name attribute):
@@ -262,17 +262,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#list fieldNode["conditional-field"] as fieldSubNode>
         <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
             <@formSingleWidget fieldSubNode/>
-            <#return/>
+            <#return>
         </#if>
     </#list>
     <#if fieldNode["default-field"]?has_content>
         <@formSingleWidget fieldNode["default-field"][0]/>
-        <#return/>
+        <#return>
     </#if>
 </#macro>
 <#macro formSingleWidget fieldSubNode>
-    <#if fieldSubNode["ignored"]?has_content><#return/></#if>
-    <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
+    <#if fieldSubNode["ignored"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#return></#if>
+    <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#recurse fieldSubNode/><#return></#if>
+    <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
     <tr>
         <td class="form-title"><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if></td>
         <td><#recurse fieldSubNode/></td>
@@ -308,6 +309,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formListHeaderField fieldNode>
+    <#if fieldNode["@hide"]?if_exists == "true"><#return></#if>
+    <#if (!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 && (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)><#return></#if>
     <#if fieldNode["header-field"]?has_content>
         <#assign fieldSubNode = fieldNode["header-field"][0]/>
     <#elseif fieldNode["default-field"]?has_content/>
@@ -322,16 +325,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#list fieldNode["conditional-field"] as fieldSubNode>
         <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
             <@formListWidget fieldSubNode/>
-            <#return/>
+            <#return>
         </#if>
     </#list>
     <#if fieldNode["default-field"]?has_content>
         <@formListWidget fieldNode["default-field"][0]/>
-        <#return/>
+        <#return>
     </#if>
 </#macro>
 <#macro formListWidget fieldSubNode>
-    <#if fieldSubNode["ignored"]?has_content><td>&nbsp;</td><#return/></#if>
+    <#if fieldSubNode["ignored"]?has_content><#return/></#if>
+    <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
+    <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
     <td><#recurse fieldSubNode/></td>
 </#macro>
 
@@ -353,7 +358,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#else><#assign size=23/><#assign maxlength=23/>
     </#if>
     <#assign id><@fieldId .node/></#assign>
-    <input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}"/>
+    <input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}">
 <#if .node["@type"]?if_exists != "time">
     <script type="text/javascript">
         <#if shortDateInput?exists && shortDateInput>
@@ -375,12 +380,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if .node["@currency-unit-field"]?has_content><#assign fieldValue = formatCurrency(fieldValue, .node["@currency-unit-field"], 2)/></#if>
     <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
-    <#if .node["@also-hidden"]?if_exists == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"/></#if>
+    <#if !.node["@also-hidden"]?exists || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
     <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
-    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"/></#if>
+    <#if .node["@also-hidden"]!"true" == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
 </#macro>
 
 <#macro "drop-down">
@@ -419,7 +424,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign id><@fieldId .node/></#assign>
     <#assign curName><@fieldName .node/></#assign>
     <#list (options.keySet())?if_exists as key>
-        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if .node["@all-checked"]?if_exists == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if>/>${options.get(key)?default("")}</span>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if .node["@all-checked"]?if_exists == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if>>${options.get(key)?default("")}</span>
     </#list>
 </#macro>
 <#macro "radio">
@@ -429,12 +434,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign id><@fieldId .node/></#assign>
     <#assign curName><@fieldName .node/></#assign>
     <#list (options.keySet())?if_exists as key>
-        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if>/>${options.get(key)?default("")}</span>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if>>${options.get(key)?default("")}</span>
     </#list>
 </#macro>
 
 <#macro "hidden">
-    <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}"/>
+    <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}">
 </#macro>
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
@@ -442,7 +447,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#-- TODO: <xs:element minOccurs="0" ref="auto-complete"/> -->
     <#assign curFieldName = .node?parent?parent["@name"]?html/>
     <#assign curFormName = .node?parent?parent?parent["@name"]?html/>
-    <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"/>
+    <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>">
     <#assign ajaxUrl = ""/><#-- TODO once the JSON service stuff is in place put something real here -->
     <script type="text/javascript">
         jQuery(document).ready(function() {
@@ -452,19 +457,19 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </script>
 </#macro>
 
-<#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"/></#macro>
+<#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"></#macro>
 
-<#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"/></#macro>
+<#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"></#macro>
 
 <#macro "submit">
 <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
     <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else/><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>
-<#else><input type="submit"</#if> name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if> id="<@fieldId .node/>"/>
+<#else><input type="submit"</#if> name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if> id="<@fieldId .node/>">
 </#macro>
 
 <#macro "text-area"><textarea name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${maxlength}"</#if> id="<@fieldId .node/>">${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}</textarea></#macro>
 
-<#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"/></#macro>
+<#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"></#macro>
 
 <#-- ===============================================================================================
 

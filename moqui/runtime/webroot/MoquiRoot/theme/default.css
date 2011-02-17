@@ -38,6 +38,7 @@ margin: 0px auto 0px auto;
 border: 10px solid #DDDDDF;
 padding: 10px;
 width: 780px;
+overflow: auto;
 -moz-border-radius: 15px;
 -webkit-border-radius: 15px;
 border-radius: 15px;

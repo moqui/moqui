@@ -45,7 +45,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <auto-fields-service service-name="update#ExampleItem"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleItemSeqId"><default-field title="Item"><display/></default-field></field>
-            <field name="description"><default-field><text-line size="30"/></default-field></field>
+            <field name="description"><default-field><text-line size="15"/></default-field></field>
+            <field name="amount"><default-field><text-line size="5"/></default-field></field>
             <field name="amountUomId">
                 <default-field title="UOM">
                     <drop-down allow-empty="true">
@@ -53,13 +54,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     </drop-down>
                 </default-field>
             </field>
+            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
             <field name="deleteLink">
-                <default-field>
+                <default-field title="">
                     <!-- the parameters for this will be auto-mapped: exampleId, exampleItemSeqId -->
                     <link url="deleteExampleItem" text="Delete" confirmation="Really Delete?"/>
                 </default-field>
             </field>
-            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
         </form-list>
 
         <form-single name="AddExampleItem" transition="createExampleItem">

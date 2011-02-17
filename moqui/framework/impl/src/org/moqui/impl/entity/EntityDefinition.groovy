@@ -393,7 +393,8 @@ public class EntityDefinition {
     EntityConditionImplBase makeViewHavingCondition() {
         if (!this.isViewEntity()) return null
         // add the view-entity.entity-condition.having-econditions
-        Node havingEconditions = this.entityNode."entity-condition"[0]."having-econditions"[0]
+        Node havingEconditions = (Node) this.entityNode."entity-condition"?.getAt(0)?."having-econditions"?.getAt(0)
+        if (!havingEconditions) return null
         return makeViewListCondition(havingEconditions)
     }
 
