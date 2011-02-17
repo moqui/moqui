@@ -275,6 +275,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource-reference"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="template-renderer"/>
             </xs:sequence>
+            <xs:attribute name="xml-actions-template-location" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="resource-reference">

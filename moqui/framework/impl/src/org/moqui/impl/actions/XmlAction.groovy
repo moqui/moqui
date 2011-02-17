@@ -27,33 +27,6 @@ import org.slf4j.Logger
 class XmlAction {
     protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
 
-    // ============ Static Fields for the Template (same one used over an over, so just always keep it here)
-    protected final static String templateLocation = "template/XmlActions.groovy.ftl"
-    protected final static Template template = makeTemplate()
-    protected static Template makeTemplate() {
-        Template newTemplate = null
-        Reader templateReader = null
-        try {
-            URL templateUrl = XmlAction.class.getClassLoader().getResource(templateLocation)
-            if (!templateUrl) templateUrl = ClassLoader.getSystemResource(templateLocation)
-            InputStream templateStream = templateUrl.newInputStream()
-            templateReader = new InputStreamReader(templateStream)
-            newTemplate = new Template(templateLocation, templateReader, makeConfiguration())
-        } catch (Exception e) {
-            logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
-        } finally {
-            if (templateReader) templateReader.close()
-        }
-        return newTemplate
-    }
-    protected static Configuration makeConfiguration() {
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        Configuration newConfig = new Configuration()
-        newConfig.setObjectWrapper(defaultWrapper)
-        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
-        return newConfig
-    }
-
     /** The Groovy class compiled from the script transformed from the XML actions text using the FTL template. */
     protected final Class groovyClass
     protected final String groovyString
@@ -83,10 +56,11 @@ class XmlAction {
         String groovyText = null
         InputStream xmlStream = null
         try {
-            Map root = ["doc":ftlNode]
+            Map root = ["xmlActionsRoot":ftlNode]
 
             Writer outWriter = new StringWriter()
-            Environment env = template.createProcessingEnvironment(root, (Writer) outWriter)
+            Environment env = ecfi.resourceFacade.getXmlActionsTemplate()
+                    .createProcessingEnvironment(root, (Writer) outWriter)
             env.process()
 
             groovyText = outWriter.toString()

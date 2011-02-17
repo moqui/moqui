@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 import org.moqui.impl.StupidUtilities
 // these are in the context by default: ExecutionContext ec, Map<String, Object> context, Map<String, Object> result
-<#visit doc/>
+<#visit xmlActionsRoot/>
 
 <#macro actions>
 <#recurse/>

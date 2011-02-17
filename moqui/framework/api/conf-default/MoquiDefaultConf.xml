@@ -84,7 +84,7 @@
         -->
     </transaction-facade>
 
-    <resource-facade>
+    <resource-facade xml-actions-template-location="classpath://template/XmlActions.groovy.ftl">
         <!-- resource reference class needs to implement the org.moqui.context.ResourceReference interface -->
         <resource-reference scheme="http" class="org.moqui.impl.context.reference.UrlResourceReference"/>
         <resource-reference scheme="https" class="org.moqui.impl.context.reference.UrlResourceReference"/>

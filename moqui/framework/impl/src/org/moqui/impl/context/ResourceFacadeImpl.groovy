@@ -30,6 +30,8 @@ import org.moqui.impl.StupidUtilities
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import javax.activation.MimetypesFileTypeMap
+import freemarker.template.Template
+import org.moqui.impl.context.renderer.FtlTemplateRenderer
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -50,6 +52,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Map<String, String> contentRepositoryWorkspaces = new HashMap()
 
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
+
+    protected final Template xmlActionsTemplate
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -89,6 +93,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 logger.error("Error getting JCR content repository with name [${repositoryNode."@name"}], is of type [${repositoryNode."@type"}] at location [${repositoryNode."@location"}]: ${e.toString()}")
             }
         }
+
+        this.xmlActionsTemplate = makeXmlActionsTemplate()
     }
 
     void destroyAllInThread() {
@@ -230,6 +236,22 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
         return xa
     }
+    Template getXmlActionsTemplate() { return xmlActionsTemplate }
+    protected Template makeXmlActionsTemplate() {
+        String templateLocation = ecfi.confXmlRoot."resource-facade"[0]."@xml-actions-template-location"
+        Template newTemplate = null
+        Reader templateReader = null
+        try {
+            templateReader = new InputStreamReader(this.getLocationStream(templateLocation))
+            newTemplate = new Template(templateLocation, templateReader, FtlTemplateRenderer.getFtlConfiguration())
+        } catch (Exception e) {
+            logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
+        } finally {
+            if (templateReader) templateReader.close()
+        }
+        return newTemplate
+    }
+
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
@@ -318,6 +340,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (type.contains(";")) type = type.substring(0, type.indexOf(";"))
         return type
     }
+
     boolean isBinaryContentType(String contentType) {
         if (!contentType) return false
         if (contentType.startsWith("text/")) return false
