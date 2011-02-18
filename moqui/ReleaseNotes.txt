@@ -5,9 +5,51 @@ Moqui Framework Release Notes
 Release 1.0-preview2 - (date not yet planned)
 ===========================================================================
 
+TODO: add/maintain notes here
+
 This release includes:
 
-TODO: add notes here
+- All of the great features of 1.0-preview1
+- Significant updates to Example application screens (most now working)
+- Added various configuration options and examples for flexible deployment
+  and overriding templates for screen macros, xml-actions, etc
+- View-entity fixes and testing, now most view-entity options work
+- Executable WAR file is more self-contained, ie less required in runtime
+
+- XML Screens
+  - Screen form elements, nearly all implemented
+  - Output encoding, configurable on various screen/form elements
+  - I18n (calls to L10nFacade) for labels and titles in XML Screens
+
+Notable features not yet implemented:
+
+- XML Screens
+  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
+  - Screen tree elements
+  - Screen form *-find elements, file element
+  - Screen form AJAX and jQuery
+- Entity Facade
+  - Entity ECA rules
+  - Entity encryption, audit-logging, complex aliases in views
+  - Automatic cache clearing
+  - Entity extension
+  - Database meta-data support for adding columns, fks, indexes
+  - EntitySync tool
+  - Database-driven dynamic view entity
+- Service Facade
+  - Service ECA rules
+  - Service validation (Antisamy HTML checks), authentication, semaphores
+  - Service runners for remote service calls (HTTP, JMS, RMI proxies)
+  - Service runners for web service standards (XML-RPC, REST, JSON, etc)
+  - Expand auto-parameters
+  - Service run on commit and on rollback of current tx (ServiceCallSpecial)
+  - Service async or scheduled max-retry
+- ArtifactExecutionFacade for artifact stack tracking
+- Artifact Authorization, Tar-pitting based on configuration in db
+- ServerHit and ServerHitBin tracking
+- Visitor tracking
+- Multi-tenant support (shared app server, separate databases)
+- Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
 
 ===========================================================================
 Release 1.0-preview1 - 09 Feb 2011

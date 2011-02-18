@@ -430,6 +430,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
+    /* This is not needed with the getTemplate override
     static class NullCacheStorage implements CacheStorage {
         Object get(Object o) { return null }
         void put(Object o, Object o1) { }
@@ -437,7 +438,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
         void clear() { }
     }
 
-    /* This is not needed with the getTemplate override
     static class MoquiResourceTemplateLoader implements TemplateLoader {
         ExecutionContextFactoryImpl ecfi
         MoquiResourceTemplateLoader(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }

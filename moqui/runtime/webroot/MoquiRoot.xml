@@ -48,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </panel-center>
             <panel-footer>
                 <render-mode><text type="html"><![CDATA[<h6>Built on <a href="http://www.moqui.org/">Moqui</a></h6>]]></text></render-mode>
-                <render-mode><text type="html"><![CDATA[<div><a href="http://sourceforge.net/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=302949&amp;type=16" alt="SourceForge.net" width="75" height="20"></a></div>]]></text></render-mode>
+                <render-mode><text type="html"><![CDATA[<div><a href="http://sourceforge.net/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=302949&type=10" alt="SourceForge.net" width="80" height="15"></a></div>]]></text></render-mode>
             </panel-footer>
         </container-panel>
 
