@@ -13,11 +13,6 @@ package org.moqui.impl.context.renderer
 
 import org.moqui.context.TemplateRenderer
 import freemarker.template.Template
-import freemarker.template.Configuration
-import freemarker.ext.beans.BeansWrapper
-import freemarker.template.TemplateExceptionHandler
-import freemarker.template.TemplateException
-import freemarker.core.Environment
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.moqui.context.Cache
@@ -27,11 +22,7 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 class FtlTemplateRenderer implements TemplateRenderer {
     protected final static Logger logger = LoggerFactory.getLogger(FtlTemplateRenderer.class)
 
-    protected final static Configuration defaultFtlConfiguration = makeFtlConfiguration()
-    public static Configuration getFtlConfiguration() { return defaultFtlConfiguration }
-
     protected ExecutionContextFactoryImpl ecfi
-
     protected Cache templateFtlLocationCache
 
     FtlTemplateRenderer() { }
@@ -51,7 +42,6 @@ class FtlTemplateRenderer implements TemplateRenderer {
 
     void destroy() { }
 
-
     protected Template makeTemplate(String location) {
         Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (theTemplate) return theTemplate
@@ -60,7 +50,7 @@ class FtlTemplateRenderer implements TemplateRenderer {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
-            newTemplate = new Template(location, templateReader, getFtlConfiguration())
+            newTemplate = new Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
         } finally {
@@ -69,33 +59,5 @@ class FtlTemplateRenderer implements TemplateRenderer {
 
         if (newTemplate) templateFtlLocationCache.put(location, newTemplate)
         return newTemplate
-    }
-
-    protected static Configuration makeFtlConfiguration() {
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        Configuration newConfig = new Configuration()
-        newConfig.setObjectWrapper(defaultWrapper)
-        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
-        newConfig.setTemplateExceptionHandler(new MoquiTemplateExceptionHandler())
-        return newConfig
-    }
-
-    static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
-        public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
-                throws TemplateException {
-            try {
-                // TODO: encode error, something like: StringUtil.SimpleEncoder simpleEncoder = FreeMarkerWorker.getWrappedObject("simpleEncoder", env);
-                // stackTrace = simpleEncoder.encode(stackTrace);
-                if (te.cause) {
-                    logger.error("Error in FTL render", te.cause)
-                    out.write("[Error: ${te.cause.message}]")
-                } else {
-                    logger.error("Error in FTL render", te)
-                    out.write("[Template Error: ${te.message}]")
-                }
-            } catch (IOException e) {
-                throw new TemplateException("Failed to print error message. Cause: " + e, env)
-            }
-        }
     }
 }

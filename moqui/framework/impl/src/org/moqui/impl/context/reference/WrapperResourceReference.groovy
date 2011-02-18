@@ -54,6 +54,9 @@ class WrapperResourceReference implements ResourceReference {
     boolean supportsExists() { return rr.supportsExists() }
     boolean getExists() { return rr.getExists()}
 
+    boolean supportsLastModified() { return rr.supportsLastModified() }
+    long getLastModified() { return rr.getLastModified() }
+
     void destroy() { rr.destroy() }
 
     @Override

@@ -127,6 +127,12 @@ class ContentResourceReference implements ResourceReference {
         return session.nodeExists(nodePath)
     }
 
+    boolean supportsLastModified() { return false }
+    long getLastModified() {
+        // TODO: more research to see if we can get a last modified time
+        System.currentTimeMillis()
+    }
+
     @Override
     void destroy() { }
 

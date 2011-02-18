@@ -97,7 +97,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, FtlTemplateRenderer.getFtlConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {

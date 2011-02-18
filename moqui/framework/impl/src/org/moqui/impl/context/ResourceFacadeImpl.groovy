@@ -32,6 +32,12 @@ import org.slf4j.Logger
 import javax.activation.MimetypesFileTypeMap
 import freemarker.template.Template
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
+import freemarker.template.Configuration
+import freemarker.ext.beans.BeansWrapper
+import freemarker.cache.TemplateLoader
+import freemarker.template.TemplateExceptionHandler
+import freemarker.template.TemplateException
+import freemarker.core.Environment
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -39,6 +45,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap()
 
     protected final ExecutionContextFactoryImpl ecfi
+    protected final Configuration defaultFtlConfiguration
 
     protected final Cache scriptGroovyLocationCache
     protected final Cache scriptGroovyExpressionCache
@@ -57,6 +64,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
+        defaultFtlConfiguration = makeFtlConfiguration(ecfi)
+
         this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
 
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
@@ -243,7 +252,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(this.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, FtlTemplateRenderer.getFtlConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, getFtlConfiguration())
         } catch (Exception e) {
             logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
         } finally {
@@ -350,5 +359,51 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (contentType == "application/xml") return false
         if (contentType == "application/xml-dtd") return false
         return true
+    }
+
+    public Configuration getFtlConfiguration() { return defaultFtlConfiguration }
+
+    protected static Configuration makeFtlConfiguration(ExecutionContextFactoryImpl ecfi) {
+        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
+        Configuration newConfig = new Configuration()
+        newConfig.setObjectWrapper(defaultWrapper)
+        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
+        newConfig.setTemplateExceptionHandler(new MoquiTemplateExceptionHandler())
+        newConfig.setTemplateLoader(new MoquiResourceTemplateLoader(ecfi))
+        return newConfig
+    }
+
+    static class MoquiResourceTemplateLoader implements TemplateLoader {
+        ExecutionContextFactoryImpl ecfi
+        MoquiResourceTemplateLoader(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }
+
+        public Object findTemplateSource(String name) throws IOException { return name }
+        public long getLastModified(Object templateSource) {
+            ResourceReference rr = ecfi.resourceFacade.getLocationReference((String) templateSource)
+            return rr.supportsLastModified() ? rr.getLastModified() : -1
+        }
+        public Reader getReader(Object templateSource, String encoding) throws IOException {
+            return new StringReader(ecfi.resourceFacade.getLocationText((String) templateSource, true))
+        }
+        public void closeTemplateSource(Object templateSource) throws IOException { /* nothing to do */ }
+    }
+
+    static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
+        public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
+                throws TemplateException {
+            try {
+                // TODO: encode error, something like: StringUtil.SimpleEncoder simpleEncoder = FreeMarkerWorker.getWrappedObject("simpleEncoder", env);
+                // stackTrace = simpleEncoder.encode(stackTrace);
+                if (te.cause) {
+                    logger.error("Error in FTL render", te.cause)
+                    out.write("[Error: ${te.cause.message}]")
+                } else {
+                    logger.error("Error in FTL render", te)
+                    out.write("[Template Error: ${te.message}]")
+                }
+            } catch (IOException e) {
+                throw new TemplateException("Failed to print error message. Cause: " + e, env)
+            }
+        }
     }
 }

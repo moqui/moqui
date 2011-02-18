@@ -45,5 +45,8 @@ public interface ResourceReference {
     boolean supportsExists();
     boolean getExists();
 
+    boolean supportsLastModified();
+    long getLastModified();
+
     void destroy();
 }

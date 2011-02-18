@@ -116,6 +116,16 @@ class UrlResourceReference implements ResourceReference {
         }
     }
 
+    boolean supportsLastModified() { return locationUrl?.protocol == "file" }
+    long getLastModified() {
+        if (locationUrl?.protocol == "file") {
+            File f = new File(locationUrl.toURI())
+            return f.lastModified()
+        } else {
+            System.currentTimeMillis()
+        }
+    }
+
     @Override
     void destroy() { }
 
