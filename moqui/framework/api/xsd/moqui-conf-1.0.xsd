@@ -28,6 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="entity-facade"/>
                 <xs:element minOccurs="0" ref="database-list"/>
                 <xs:element minOccurs="0" ref="repository-list"/>
+                <xs:element minOccurs="0" ref="component-list"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
@@ -615,7 +616,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <!-- ====================== Repository (JCR) Conf Root ======================= -->
+    <!-- ================== Repository (JCR) Conf Root ==================== -->
     <xs:element name="repository-list">
         <xs:complexType>
             <xs:sequence>
@@ -647,6 +648,25 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="workspace" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>Defaults to the repository's default workspace.</xs:documentation></xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ================= Additional Component Locations ================= -->
+    <xs:element name="component-list">
+        <xs:annotation><xs:documentation>Use this to specify components to load in addition to those in the
+            runtime/component directory. This is useful for components in JCR repositories or wherever.
+            The location needs to use a protocol/schema that supports looking at sub-directories, etc (like content:,
+            file:, etc).</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="component"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="component">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="optional"/>
+            <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>

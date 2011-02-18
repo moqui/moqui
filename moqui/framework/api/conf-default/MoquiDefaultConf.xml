@@ -386,4 +386,9 @@
         <!-- <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"/> -->
         <!-- <repository name="main" location="java:comp/env/jcr/repository" type="jndi" workspace="default"/> -->
     </repository-list>
+    <component-list>
+        <!-- No components explicitly loaded by default, but here are some examples: -->
+        <!-- <component name="example" location="component/example"/> -->
+        <!-- <component name="example" location="content://main/component/example"/> -->
+    </component-list>
 </moqui-conf>

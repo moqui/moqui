@@ -195,8 +195,15 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             for (File componentSubDir in componentDir.listFiles()) {
                 // if it's a directory and doesn't start with a "." then add it as a component dir
                 if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
-                    this.initComponent(componentSubDir.toURI().toURL().toString())
+                    this.initComponent(null, componentSubDir.toURI().toURL().toString())
                 }
+            }
+        }
+
+        // init components referred to in component-list.component elements in the conf file
+        if (confXmlRoot."component-list"?.getAt(0)?."component") {
+            for (Node componentNode in confXmlRoot."component-list"[0]."component") {
+                this.initComponent(componentNode."@name", componentNode."@location")
             }
         }
     }
@@ -275,21 +282,20 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    /** @see org.moqui.context.ExecutionContextFactory#initComponent(String) */
-    void initComponent(String baseLocation) throws BaseException {
+    /** @see org.moqui.context.ExecutionContextFactory#initComponent(String, String) */
+    void initComponent(String componentName, String baseLocation) throws BaseException {
         // NOTE: how to get component name? for now use last directory name
         if (baseLocation.endsWith('/')) baseLocation = baseLocation.substring(0, baseLocation.length()-1)
         int lastSlashIndex = baseLocation.lastIndexOf('/')
-        String componentName
         if (lastSlashIndex < 0) {
             // if this happens the component directory is directly under the runtime directory, so prefix loc with that
-            componentName = baseLocation
-            baseLocation = this.runtimePath + '/' + baseLocation
-        } else {
-            componentName = baseLocation.substring(lastSlashIndex+1)
+            baseLocation = runtimePath + '/' + baseLocation
         }
+        if (!componentName) componentName = baseLocation.substring(lastSlashIndex+1)
 
-        this.componentLocationMap.put(componentName, baseLocation)
+        if (componentLocationMap.containsKey(componentName))
+            logger.warn("Overriding component [${componentName}] at [${componentLocationMap.get(componentName)}] with location [${baseLocation}] because another component of the same name was initialized.")
+        componentLocationMap.put(componentName, baseLocation)
         logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
@@ -380,6 +386,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (overrideNode."repository-list") {
             mergeNodeWithChildKey(baseNode."repository-list"[0], overrideNode."repository-list"[0], "repository", "name")
         }
+
+        if (overrideNode."component-list") {
+            if (!baseNode."component-list") baseNode.appendNode("component-list")
+            mergeNodeWithChildKey(baseNode."component-list"[0], overrideNode."component-list"[0], "component", "name")
+        }
     }
 
     protected void mergeSingleChild(Node baseNode, Node overrideNode, String childNodeName) {
@@ -400,7 +411,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         for (Node childOverrideNode in overrideNode[childNodesName]) {
             String keyValue = childOverrideNode.attribute(keyAttributeName)
-            Node childBaseNode = (Node) baseNode[childNodesName].find({ it.attribute(keyAttributeName) == keyValue })
+            Node childBaseNode = (Node) baseNode[childNodesName]?.find({ it.attribute(keyAttributeName) == keyValue })
 
             if (childBaseNode) {
                 // merge the node attributes

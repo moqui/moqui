@@ -33,9 +33,11 @@ public interface ExecutionContextFactory {
     /**
      * Register a component with the framework.
      *
+     * @param componentName Optional name for the component. If not specified the last directory in the location path
+     *     will be used as the name.
      * @param baseLocation A file system directory or a content repository location (the component base location).
      */
-    void initComponent(String baseLocation) throws BaseException;
+    void initComponent(String componentName, String baseLocation) throws BaseException;
 
     /**
      * Destroy a component that has been initialized.
