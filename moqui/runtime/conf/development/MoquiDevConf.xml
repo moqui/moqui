@@ -37,7 +37,10 @@
 
     <webapp-list><webapp name="webroot" https-enabled="false"/></webapp-list>
 
-    <screen-facade boundary-comments="true"/>
+    <screen-facade boundary-comments="true">
+        <screen-text-output type="html" mime-type="text/html"
+                            macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
+    </screen-facade>
 
     <repository-list>
         <repository name="main" location="http://localhost:8081/server" type="davex" workspace="development"/>

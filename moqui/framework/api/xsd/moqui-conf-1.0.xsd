@@ -347,6 +347,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     -->
     <xs:element name="startup-service">
+        <!-- TODO implement this -->
         <xs:complexType>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="runtime-data-id" type="xs:string"/>
@@ -371,6 +372,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="jms-service">
+        <!-- TODO implement this -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="server-jndi"/>

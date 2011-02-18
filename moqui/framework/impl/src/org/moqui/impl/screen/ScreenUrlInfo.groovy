@@ -98,13 +98,12 @@ class ScreenUrlInfo {
         if (targetScreen) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
                 Object value = pi.getValue(sri.ec)
-                logger.info("TOREMOVE Adding parameter [${pi.name}:${value}] from targetScreen [${targetScreen.location}]")
                 if (value) pm.put(pi.name, value as String)
             }
         }
         // add all of the parameters specified inline in the screen path or added after
-        logger.info("TOREMOVE Adding pathParameterMap [${pathParameterMap}] for targetScreen [${targetScreen.location}]")
         if (pathParameterMap) pm.putAll(pathParameterMap)
+        // logger.info("TOREMOVE Getting parameterMap [${pm}] for targetScreen [${targetScreen.location}]")
         return pm
     }
 
@@ -115,8 +114,9 @@ class ScreenUrlInfo {
     }
     ScreenUrlInfo addParameters(Map manualParameters) {
         if (!manualParameters) return this
-        for (Map.Entry mpEntry in manualParameters.entrySet())
+        for (Map.Entry mpEntry in manualParameters.entrySet()) {
             pathParameterMap.put(mpEntry.key as String, mpEntry.value as String)
+        }
         return this
     }
 

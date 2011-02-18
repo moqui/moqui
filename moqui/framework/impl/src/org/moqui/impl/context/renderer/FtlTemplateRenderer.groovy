@@ -23,41 +23,18 @@ class FtlTemplateRenderer implements TemplateRenderer {
     protected final static Logger logger = LoggerFactory.getLogger(FtlTemplateRenderer.class)
 
     protected ExecutionContextFactoryImpl ecfi
-    protected Cache templateFtlLocationCache
 
     FtlTemplateRenderer() { }
 
     TemplateRenderer init(ExecutionContextFactory ecf) {
         this.ecfi = (ExecutionContextFactoryImpl) ecf
-        this.templateFtlLocationCache = ecfi.cacheFacade.getCache("resource.ftl.location")
         return this
     }
 
     void render(String location, Writer writer) {
-        Template theTemplate = (Template) templateFtlLocationCache.get(location)
-        if (!theTemplate) theTemplate = makeTemplate(location)
-        if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
+        Template theTemplate = ecfi.resourceFacade.getFtlTemplateByLocation(location)
         theTemplate.createProcessingEnvironment(ecfi.executionContext.context, writer).process()
     }
 
     void destroy() { }
-
-    protected Template makeTemplate(String location) {
-        Template theTemplate = (Template) templateFtlLocationCache.get(location)
-        if (theTemplate) return theTemplate
-
-        Template newTemplate = null
-        Reader templateReader = null
-        try {
-            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
-            newTemplate = new Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
-        } finally {
-            if (templateReader != null) templateReader.close()
-        }
-
-        if (newTemplate) templateFtlLocationCache.put(location, newTemplate)
-        return newTemplate
-    }
 }

@@ -38,6 +38,7 @@ import freemarker.cache.TemplateLoader
 import freemarker.template.TemplateExceptionHandler
 import freemarker.template.TemplateException
 import freemarker.core.Environment
+import freemarker.cache.CacheStorage
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -50,6 +51,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Cache scriptGroovyLocationCache
     protected final Cache scriptGroovyExpressionCache
     protected final Cache scriptXmlActionLocationCache
+    protected final Cache templateFtlLocationCache
     protected final Cache textLocationCache
 
     protected final Map<String, Class> resourceReferenceClasses = new HashMap()
@@ -67,6 +69,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         defaultFtlConfiguration = makeFtlConfiguration(ecfi)
 
         this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
+        this.templateFtlLocationCache = ecfi.cacheFacade.getCache("resource.ftl.location")
 
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
         this.scriptGroovyExpressionCache = ecfi.getCacheFacade().getCache("resource.groovy.expression")
@@ -114,6 +117,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
     Map<String, TemplateRenderer> getTemplateRenderers() { return templateRenderers }
+    Cache getTemplateFtlLocationCache() { return templateFtlLocationCache }
 
     Repository getContentRepository(String name) { return contentRepositories.get(name) }
 
@@ -166,9 +170,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     }
 
     String getLocationText(String location, boolean cache) {
-        String text = cache ? (String) textLocationCache.get(location) : null
-        if (text != null) return text
-        text = StupidUtilities.getStreamText(getLocationStream(location))
+        if (cache && textLocationCache.containsKey(location)) return (String) textLocationCache.get(location)
+        String text = StupidUtilities.getStreamText(getLocationStream(location))
         if (cache) textLocationCache.put(location, text)
         return text
     }
@@ -196,6 +199,31 @@ public class ResourceFacadeImpl implements ResourceFacade {
             String text = getLocationText(location, true)
             if (text) writer.write(text)
         }
+    }
+
+    Template getFtlTemplateByLocation(String location) {
+        Template theTemplate = (Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
+        if (!theTemplate) theTemplate = makeTemplate(location)
+        if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
+        return theTemplate
+    }
+    protected Template makeTemplate(String location) {
+        Template theTemplate = (Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
+        if (theTemplate) return theTemplate
+
+        Template newTemplate = null
+        Reader templateReader = null
+        try {
+            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
+            newTemplate = new Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
+        } finally {
+            if (templateReader != null) templateReader.close()
+        }
+
+        if (newTemplate) ecfi.resourceFacade.templateFtlLocationCache.put(location, newTemplate)
+        return newTemplate
     }
 
     /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */
@@ -364,29 +392,76 @@ public class ResourceFacadeImpl implements ResourceFacade {
     public Configuration getFtlConfiguration() { return defaultFtlConfiguration }
 
     protected static Configuration makeFtlConfiguration(ExecutionContextFactoryImpl ecfi) {
+        Configuration newConfig = new MoquiConfiguration(ecfi)
         BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        Configuration newConfig = new Configuration()
         newConfig.setObjectWrapper(defaultWrapper)
         newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
+
+        // not needed, using getTemplate override instead: newConfig.setCacheStorage(new NullCacheStorage())
+        // not needed, using getTemplate override instead: newConfig.setTemplateUpdateDelay(1)
+        // not needed, using getTemplate override instead: newConfig.setTemplateLoader(new MoquiResourceTemplateLoader(ecfi))
+        // not needed, using getTemplate override instead: newConfig.setLocalizedLookup(false)
+
         newConfig.setTemplateExceptionHandler(new MoquiTemplateExceptionHandler())
-        newConfig.setTemplateLoader(new MoquiResourceTemplateLoader(ecfi))
+        newConfig.setWhitespaceStripping(true)
         return newConfig
     }
 
+    static class MoquiConfiguration extends Configuration {
+        ExecutionContextFactoryImpl ecfi
+        MoquiConfiguration(ExecutionContextFactoryImpl ecfi) {
+            super()
+            this.ecfi = ecfi
+        }
+        @Override
+        Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
+            //return super.getTemplate(name, locale, encoding, parse)
+            // NOTE: doing this because template loading behavior with cache/etc not desired and was having issues
+            Template theTemplate
+            if (parse) {
+                theTemplate = ecfi.resourceFacade.getFtlTemplateByLocation(name)
+            } else {
+                String text = ecfi.resourceFacade.getLocationText(name, true)
+                theTemplate = Template.getPlainTextTemplate(name, text, this)
+            }
+            // NOTE: this is the same exception the standard FreeMarker code returns
+            if (theTemplate == null) throw new FileNotFoundException("Template [${name}] not found.")
+            return theTemplate
+        }
+    }
+
+    static class NullCacheStorage implements CacheStorage {
+        Object get(Object o) { return null }
+        void put(Object o, Object o1) { }
+        void remove(Object o) { }
+        void clear() { }
+    }
+
+    /* This is not needed with the getTemplate override
     static class MoquiResourceTemplateLoader implements TemplateLoader {
         ExecutionContextFactoryImpl ecfi
         MoquiResourceTemplateLoader(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }
 
-        public Object findTemplateSource(String name) throws IOException { return name }
+        public Object findTemplateSource(String name) throws IOException {
+            String text = ecfi.resourceFacade.getLocationText(name, true)
+            if (text) return name
+            return null
+        }
         public long getLastModified(Object templateSource) {
             ResourceReference rr = ecfi.resourceFacade.getLocationReference((String) templateSource)
             return rr.supportsLastModified() ? rr.getLastModified() : -1
         }
         public Reader getReader(Object templateSource, String encoding) throws IOException {
-            return new StringReader(ecfi.resourceFacade.getLocationText((String) templateSource, true))
+            String text = ecfi.resourceFacade.getLocationText((String) templateSource, true)
+            if (!text) {
+                logger.warn("Could not find text at location [${templateSource}] reffered to in an FTL template.")
+                text = ""
+            }
+            return new StringReader(text)
         }
-        public void closeTemplateSource(Object templateSource) throws IOException { /* nothing to do */ }
+        public void closeTemplateSource(Object templateSource) throws IOException { }
     }
+    */
 
     static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
         public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)

@@ -105,19 +105,21 @@
         <template-renderer extension=".html" class="org.moqui.impl.context.renderer.NoTemplateRenderer"/>
     </resource-facade>
 
-    <screen-facade boundary-comments="true" default-autocomplete-rows="20" default-paginate-rows="20">
-        <screen-text-output type="text" mime-type="text/plain"
-                            macro-template-location="template/screen-macro/ScreenTextMacros.ftl"/>
-        <screen-text-output type="cwiki" mime-type="text/plain"
-                            macro-template-location="template/screen-macro/ScreenCwikiMacros.ftl"/>
+    <screen-facade boundary-comments="false" default-autocomplete-rows="20" default-paginate-rows="20">
         <screen-text-output type="html" mime-type="text/html"
-                            macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
+                            macro-template-location="classpath://template/DefaultScreenMacros.html.ftl"/>
+        <!-- TODO not yet implemented:
+        <screen-text-output type="text" mime-type="text/plain"
+                            macro-template-location="classpath://template/DefaultScreenMacros.txt.ftl"/>
+        <screen-text-output type="cwiki" mime-type="text/plain"
+                            macro-template-location="classpath://template/DefaultScreenMacros.cwiki.ftl"/>
         <screen-text-output type="xsl-fo" mime-type="text/xml"
-                            macro-template-location="template/screen-macro/ScreenXslFoMacros.ftl"/>
+                            macro-template-location="classpath://template/DefaultScreenMacros.xslfo.ftl"/>
         <screen-text-output type="xml" mime-type="text/xml"
-                            macro-template-location="template/screen-macro/ScreenXmlMacros.ftl"/>
+                            macro-template-location="classpath://template/DefaultScreenMacros.xml.ftl"/>
         <screen-text-output type="csv" mime-type="text/csv"
-                            macro-template-location="template/screen-macro/ScreenCsvMacros.ftl"/>
+                            macro-template-location="classpath://template/DefaultScreenMacros.csv.ftl"/>
+        -->
     </screen-facade>
 
     <service-facade>
@@ -379,8 +381,8 @@
         </database>
     </database-list>
     <repository-list>
-        <repository name="main" location="http://localhost:8081/server" type="davex" workspace="default"/>
-
+        <!-- No JCR repo by default, but here are some examples: -->
+        <!-- <repository name="main" location="http://localhost:8081/server" type="davex" workspace="default"/> -->
         <!-- <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"/> -->
         <!-- <repository name="main" location="java:comp/env/jcr/repository" type="jndi" workspace="default"/> -->
     </repository-list>

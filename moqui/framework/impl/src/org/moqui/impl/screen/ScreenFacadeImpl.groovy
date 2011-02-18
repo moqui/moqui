@@ -92,16 +92,16 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         String templateLocation = ecfi.getConfXmlRoot()."screen-facade"[0]
                 ."screen-text-output".find({ it.@type == renderMode })."@macro-template-location"
+        // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
+        String rootTemplate = """<#include "${templateLocation}"/>
+            <#recurse widgetsNode>
+            """
 
         Template newTemplate = null
-        Reader templateReader = null
         try {
-            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, ecfi.resourceFacade.getFtlConfiguration())
+            newTemplate = new Template("moqui.automatic.${renderMode}", new StringReader(rootTemplate), ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
-        } finally {
-            if (templateReader) templateReader.close()
         }
 
         if (newTemplate) screenTemplateModeCache.put(renderMode, newTemplate)
