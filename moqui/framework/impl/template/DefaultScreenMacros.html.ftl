@@ -83,21 +83,21 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "container-panel">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>
         <#if .node["panel-header"]?has_content>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
             <div class="clear"></div>
         </div></#if>
         <#if .node["panel-left"]?has_content>
         <#-- TODO <xs:attribute name="draggable" default="false" type="boolean"/> -->
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_left"</#if> class="panel-left"><#recurse .node["panel-left"][0]>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-left"</#if> class="panel-left"><#recurse .node["panel-left"][0]>
         </div></#if>
         <#if .node["panel-right"]?has_content>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_right"</#if> class="panel-right"><#recurse .node["panel-right"][0]>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-right"</#if> class="panel-right"><#recurse .node["panel-right"][0]>
         </div></#if>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_center"</#if> class="panel-center"><#recurse .node["panel-center"][0]>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-center"</#if> class="panel-center"><#recurse .node["panel-center"][0]>
         </div>
         <#if .node["panel-footer"]?has_content>
         <div class="clear"></div>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
         </div></#if>
     </div>
 </#macro>

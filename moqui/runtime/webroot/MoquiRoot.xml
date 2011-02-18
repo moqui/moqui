@@ -14,43 +14,13 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         require-authentication="false">
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide, and because the Login screen is below this. -->
-    <subscreens default-item="example">
-        <!-- refer to the various app roots here -->
-        <subscreens-item name="example" location="component://example/screen/ExampleApp.xml"
-                         menu-title="Example" menu-index="8"/>
+    <subscreens default-item="apps">
+        <!-- refer to the UNDECORATED (or self-decorating) app roots here -->
     </subscreens>
     <widgets>
         <render-mode><text type="html" location="webroot/includes/HtmlHeader.html.ftl"/></render-mode>
 
-        <container-panel id="WebrootPanel">
-            <panel-header>
-                <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
-                <section name="HeaderUserInfo">
-                    <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
-                    <widgets>
-                        <container id="header-user">
-                            <label text="${ec.user.userAccount?.userName}"/>
-                            <link text="Logout" url="/Login/logout"/>
-                        </container>
-                    </widgets>
-                </section>
-                <container id="header-menu"><subscreens-menu/></container>
-            </panel-header>
-            <panel-center>
-                <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
-                    <widgets><container style="message"><label text="${message}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
-                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                </section-iterate>
-
-                <subscreens-active id="WebrootSubsPanel"/>
-            </panel-center>
-            <panel-footer>
-                <render-mode><text type="html"><![CDATA[<h6>Built on <a href="http://www.moqui.org/">Moqui</a></h6>]]></text></render-mode>
-                <render-mode><text type="html"><![CDATA[<div><a href="http://sourceforge.net/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=302949&type=10" alt="SourceForge.net" width="80" height="15"></a></div>]]></text></render-mode>
-            </panel-footer>
-        </container-panel>
+        <subscreens-active id="root-active"/>
 
         <render-mode><text type="html"><![CDATA[</body></html>]]></text></render-mode>
     </widgets>

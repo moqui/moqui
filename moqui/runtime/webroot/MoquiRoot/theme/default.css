@@ -32,7 +32,7 @@ background: #DDDDDF;
 margin: 0px;
 }
 
-#WebrootPanel {
+#apps-container {
 background: white;
 margin: 0px auto 0px auto;
 border: 10px solid #DDDDDF;
@@ -44,7 +44,7 @@ overflow: auto;
 border-radius: 15px;
 }
 
-#WebrootPanel_header {
+#apps-container-header {
 border-bottom: 1px solid #DDDDDF;
 }
 #header-logo {
@@ -77,7 +77,7 @@ div.error span {
 color: red;
 }
 
-#WebrootPanel_footer {
+#apps-container-footer {
 margin: 0px auto 0px auto;
 border-top:  1px solid #DDDDDF;
 padding: 2px;
@@ -239,7 +239,7 @@ visibility: hidden;
 
 /* ======================= Screen-specific ======================= */
 
-#LoginBox {
+#login-box {
 width: 300px;
 margin: 0px auto 0px auto;
 padding: 10px;

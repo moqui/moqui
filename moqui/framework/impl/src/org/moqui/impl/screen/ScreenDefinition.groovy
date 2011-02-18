@@ -59,13 +59,13 @@ class ScreenDefinition {
             // get all of the other sections by name
             for (Node sectionNode in rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it.name() == "section" || it.name() == "section-iterate" })) {
-                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"]}"))
+                sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"].replace('-','_')}"))
             }
 
             // get all forms by name
             for (Node formNode in rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it.name() == "form-single" || it.name() == "form-list" })) {
-                formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"]}"))
+                formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"].replace('-','_')}"))
             }
         }
 
