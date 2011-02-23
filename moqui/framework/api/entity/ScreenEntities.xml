@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
     <!-- org.moqui.screen.dynform -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="DynForm" package-name="org.moqui.screen.dynform">
         <field name="dynFormId" type="id" is-pk="true"/>
         <field name="dynFormName" type="text-medium"/>
@@ -150,11 +150,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="DynFormField"/>
         <relationship type="one" related-entity-name="DynFormFieldOption"/>
     </entity>
-
+    -->
     <!-- ========================================================= -->
     <!-- org.moqui.screen.dynscreen -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="DynamicScreen" package-name="org.moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="screenName" type="text-medium"/>
@@ -199,7 +199,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>Options include: Y or N, defaults to N.</description>
         </field>
     </entity>
-
+    -->
     <!-- ========================================================= -->
     <!-- org.moqui.screen.subscreen -->
     <!-- ========================================================= -->

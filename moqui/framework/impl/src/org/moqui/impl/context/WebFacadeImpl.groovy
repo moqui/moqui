@@ -21,10 +21,14 @@ import org.moqui.context.WebFacade
 import org.moqui.impl.StupidWebUtilities
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.apache.commons.fileupload.disk.DiskFileItemFactory
+import org.apache.commons.io.FileCleaningTracker
+import org.apache.commons.fileupload.servlet.FileCleanerCleanup
+import org.apache.commons.fileupload.servlet.ServletFileUpload
+import org.apache.commons.fileupload.FileItemFactory
+import org.apache.commons.fileupload.FileItem
 
-/** This class is a delegator for the ExecutionContextImpl class so that it can easily be used to extend an existing
- * ExecutionContext.
- */
+/** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
     protected final static Logger logger = LoggerFactory.getLogger(WebFacadeImpl.class)
 
@@ -34,8 +38,9 @@ class WebFacadeImpl implements WebFacade {
     protected HttpServletResponse response
 
     protected Map<String, Object> savedParameters = null
+    protected Map<String, Object> multiPartParameters = null
 
-    protected Map<String, Object> parameters = null
+    protected ContextStack parameters = null
     protected Map<String, Object> requestAttributes = null
     protected Map<String, Object> requestParameters = null
     protected Map<String, Object> sessionAttributes = null
@@ -65,13 +70,51 @@ class WebFacadeImpl implements WebFacade {
             eci.message.errorList.addAll((Collection) session.getAttribute("moqui.message.errors"))
             session.removeAttribute("moqui.message.errors")
         }
+
+        // if this is a multi-part request, get the data for it
+        if (ServletFileUpload.isMultipartContent(request)) {
+            multiPartParameters = new HashMap()
+            FileItemFactory factory = makeDiskFileItemFactory(request.session.getServletContext())
+            ServletFileUpload upload = new ServletFileUpload(factory)
+
+            List<FileItem> items = upload.parseRequest(request)
+            for (FileItem item in items) {
+                if (item.isFormField()) {
+                    multiPartParameters.put(item.getFieldName(), item.getString())
+                } else {
+                    // put the FileItem itself in the Map to be used by the application code
+                    multiPartParameters.put(item.getFieldName(), item)
+
+                    /* Stuff to do with the FileItem:
+                      - get info about the uploaded file
+                        String fieldName = item.getFieldName()
+                        String fileName = item.getName()
+                        String contentType = item.getContentType()
+                        boolean isInMemory = item.isInMemory()
+                        long sizeInBytes = item.getSize()
+
+                      - get the bytes in memory
+                        byte[] data = item.get()
+
+                      - write the data to a File
+                        File uploadedFile = new File(...)
+                        item.write(uploadedFile)
+
+                      - get the bytes in a stream
+                        InputStream uploadedStream = item.getInputStream()
+                        ...
+                        uploadedStream.close()
+                     */
+                }
+            }
+        }
     }
 
     ExecutionContextImpl getEci() { eci }
 
     /** @see org.moqui.context.WebFacade#getParameters() */
     Map<String, Object> getParameters() {
-        // NOTE: no blocking in these methods because the ExecutionContext is created for each thread
+        // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread
 
         // only create when requested, then keep for additional requests
         if (parameters) return parameters
@@ -103,6 +146,7 @@ class WebFacadeImpl implements WebFacade {
         if (requestParameters) return requestParameters
         ContextStack cs = new ContextStack()
         if (savedParameters) cs.push(savedParameters)
+        if (multiPartParameters) cs.push(multiPartParameters)
         cs.push((Map<String, Object>) request.getParameterMap())
         cs.push(StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))
         // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
@@ -151,5 +195,17 @@ class WebFacadeImpl implements WebFacade {
     void saveMessagesToSession() {
         if (eci.message.messages) session.setAttribute("moqui.message.messages", eci.message.messages)
         if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
+    }
+
+    public static DiskFileItemFactory makeDiskFileItemFactory(ServletContext context) {
+        // NOTE: consider keeping this factory somewhere to be more efficient, if it even makes a difference...
+        File repository = new File(System.getProperty("moqui.runtime") + "/tmp")
+        if (!repository.exists()) repository.mkdir()
+
+        DiskFileItemFactory factory = new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, repository)
+
+        FileCleaningTracker fileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(context)
+        factory.setFileCleaningTracker(fileCleaningTracker)
+        return factory
     }
 }

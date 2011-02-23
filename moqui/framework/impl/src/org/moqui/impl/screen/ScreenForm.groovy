@@ -31,6 +31,7 @@ class ScreenForm {
 
     protected Node formNode
     protected String location
+    protected Boolean isUploadForm = null
 
     protected XmlAction rowActions = null
 
@@ -89,6 +90,13 @@ class ScreenForm {
         if (formNode."row-actions") {
             rowActions = new XmlAction(ecfi, (Node) formNode."row-actions"[0], location + ".row_actions")
         }
+    }
+
+    boolean isUpload() {
+        if (isUploadForm != null) return isUploadForm
+        // if there is a "file" element, then it's an upload form
+        isUploadForm = formNode.depthFirst().find({ it.name() == "file" }) as boolean
+        return isUploadForm
     }
 
     protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode) {

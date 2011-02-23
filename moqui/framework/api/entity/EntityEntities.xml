@@ -15,7 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
     <!-- org.moqui.entity.group -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="EntityGroup" package-name="org.moqui.entity.group">
         <field name="entityGroupId" type="id" is-pk="true"/>
         <field name="entityGroupName" type="text-medium"/>
@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="applEnumId" type="id"/>
         <relationship type="one" related-entity-name="EntityGroup"/>
     </entity>
-
+    -->
     <!-- ========================================================= -->
     <!-- org.moqui.entity.misc -->
     <!-- ========================================================= -->
@@ -50,7 +50,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
     <!-- org.moqui.entity.synchronization -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="EntitySync" package-name="org.moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="runStatusId" type="id"/>
@@ -102,11 +102,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="entitySyncRemoveId" type="id" is-pk="true"/>
         <field name="primaryKeyRemoved" type="text-very-long"/>
     </entity>
-
+    -->
     <!-- ========================================================= -->
     <!-- org.moqui.entity.dynamic -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="DynamicViewEntity" package-name="org.moqui.entity.dynamic">
         <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
         <field name="packageName" type="text-long"/>
@@ -142,4 +142,5 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="relatedKeyName" type="text-medium"/>
         <relationship type="one" related-entity-name="DynamicViewEntityJoin"/>
     </entity>
+    -->
 </entities>

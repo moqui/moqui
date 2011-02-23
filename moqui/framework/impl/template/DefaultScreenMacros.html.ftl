@@ -202,7 +202,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition")/>
-    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
         <#else/>
@@ -308,6 +308,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Form Field Widgets ==================== -->
 
+<#macro "check">
+    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
+    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
+    <#assign id><@fieldId .node/></#assign>
+    <#assign curName><@fieldName .node/></#assign>
+    <#list (options.keySet())?if_exists as key>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if .node["@all-checked"]?if_exists == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if>>${options.get(key)?default("")}</span>
+    </#list>
+</#macro>
+
 <#macro "date-time">
     <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/>
     <#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/>
@@ -373,30 +384,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </script>
     </#if>
 </#macro>
-<#macro "check">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
-    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
-    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
-    <#assign id><@fieldId .node/></#assign>
-    <#assign curName><@fieldName .node/></#assign>
-    <#list (options.keySet())?if_exists as key>
-        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if .node["@all-checked"]?if_exists == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if>>${options.get(key)?default("")}</span>
-    </#list>
-</#macro>
-<#macro "radio">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
-    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
-    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
-    <#assign id><@fieldId .node/></#assign>
-    <#assign curName><@fieldName .node/></#assign>
-    <#list (options.keySet())?if_exists as key>
-        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if>>${options.get(key)?default("")}</span>
-    </#list>
-</#macro>
+
+<#macro "file"><input type="file" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if>></#macro>
 
 <#macro "hidden">
     <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")}">
 </#macro>
+
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
 <#macro "lookup">
@@ -415,6 +409,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 
 <#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"></#macro>
+
+<#macro "radio">
+    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
+    <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
+    <#assign id><@fieldId .node/></#assign>
+    <#assign curName><@fieldName .node/></#assign>
+    <#list (options.keySet())?if_exists as key>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if>>${options.get(key)?default("")}</span>
+    </#list>
+</#macro>
 
 <#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"></#macro>
 

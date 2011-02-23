@@ -2,8 +2,7 @@
 <!-- No copyright or license for configuration file, details here are not considered a creative work. -->
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
-    <display-name>Moqui Base (Root) Webapp</display-name>
-    <description></description>
+    <display-name>Moqui Root Webapp</display-name>
 
     <context-param>
         <param-name>moqui-name</param-name>
@@ -15,6 +14,7 @@
         <!-- Implements HttpSessionListener; used to finalize Visit and track certain stats -->
         <listener-class>org.moqui.impl.webapp.MoquiEventListener</listener-class>
     </listener>
+    <listener><listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class></listener>
 
     <servlet>
         <servlet-name>MoquiServlet</servlet-name>
@@ -29,8 +29,8 @@
     </servlet-mapping>
 
     <session-config>
-        <!-- in minutes -->
-        <session-timeout>60</session-timeout>
+        <!-- default to 30 minutes, good for PCI compliance and general good practice -->
+        <session-timeout>30</session-timeout>
     </session-config>
 
 <!-- HTTP Response Code definitions:

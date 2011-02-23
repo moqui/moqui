@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#include "classpath://template/DefaultScreenMacros.html.ftl"/>
 
 <#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
-    </div><!-- CONTAINER OVERRIDE -->
+    </div><!-- CONTAINER OVERRIDE EXAMPLE -->
 </#macro>
 
 
@@ -96,11 +96,6 @@ TODO:
             </xs:attribute>
 </#macro>
 
-<#macro "file">
-            <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
-            <xs:attribute name="maxlength" type="xs:positiveInteger"/>
-            <xs:attribute name="default-value" type="xs:string"/>
-</#macro>
 <#macro "range-find">
             <xs:attribute name="size" type="xs:positiveInteger" default="25"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>

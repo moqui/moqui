@@ -455,6 +455,12 @@ class ScreenRenderImpl implements ScreenRender {
         return form.ftlFormNode
     }
 
+    boolean isFormUpload(String formName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        ScreenForm form = sd.getForm(formName)
+        return form.isUpload()
+    }
+
     String renderIncludeScreen(String location, String shareScopeStr) {
         boolean shareScope = false
         if (shareScopeStr == "true") shareScope = true
