@@ -319,11 +319,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#list>
 </#macro>
 
+<#macro "date-find">
+<span class="form-date-find">
+    <#assign curFieldName><@fieldName .node/></#assign>
+    <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
+    <#assign id><@fieldId .node/></#assign>
+    ${ec.l10n.getLocalizedMessage("From")}&nbsp;<input type="text" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")?if_exists?default(.node["@default-value-from"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_from">
+    ${ec.l10n.getLocalizedMessage("Through")}&nbsp;<input type="text" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")?if_exists?default(.node["@default-value-thru"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_thru">
+    <#-- TODO: add date pickers -->
+</span>
+</#macro>
 <#macro "date-time">
-    <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/>
-    <#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/>
-    <#else><#assign size=23/><#assign maxlength=23/>
-    </#if>
+    <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}">
 <#if .node["@type"]?if_exists != "time">
@@ -332,8 +339,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             jQuery("#${id}").datepicker({
         <#else>
             jQuery("#${id}").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 10,
-        </#if>
-                showOn: 'button', buttonImage: '', buttonText: '', buttonImageOnly: false, dateFormat: 'yyyy-mm-dd'});
+        </#if>showOn: 'button', buttonImage: '', buttonText: '', buttonImageOnly: false, dateFormat: 'yyyy-mm-dd'});
     </script>
 </#if>
 </#macro>
@@ -421,6 +427,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#list>
 </#macro>
 
+<#macro "range-find">
+<span class="form-range-find">
+    <#assign curFieldName><@fieldName .node/></#assign>
+    <#assign id><@fieldId .node/></#assign>
+    ${ec.l10n.getLocalizedMessage("From")}&nbsp;<input type="text" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")?if_exists?default(.node["@default-value-from"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_from">
+    ${ec.l10n.getLocalizedMessage("Through")}&nbsp;<input type="text" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")?if_exists?default(.node["@default-value-thru"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_thru">
+</span>
+</#macro>
+
 <#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"></#macro>
 
 <#macro "submit">
@@ -432,3 +447,30 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "text-area"><textarea name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${maxlength}"</#if> id="<@fieldId .node/>">${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}</textarea></#macro>
 
 <#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"></#macro>
+
+<#macro "text-find">
+<span class="form-text-find">
+    <#assign defaultOperator = .node["@default-operator"]?if_exists?default("contains")>
+    <#assign curFieldName><@fieldName .node/></#assign>
+    <#if .node["@hide-options"]?if_exists == "true" || .node["@hide-options"]?if_exists == "operator">
+        <input type="hidden" name="${curFieldName}_op" value="${defaultOperator}"/>
+    <#else>
+        <select name="${curFieldName}_op">
+            <option value="equals"<#if defaultOperator == "equals"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Equals")}</option>
+            <option value="like"<#if defaultOperator == "like"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Like")}</option>
+            <option value="contains"<#if defaultOperator == "contains"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Contains")}</option>
+            <option value="empty"<#rt/><#if defaultOperator == "empty"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Empty")}</option>
+        </select>
+        <input type="checkbox" name="${curFieldName}_not" value="Y"<#if ec.web.parameters.get(curFieldName + "_not")?if_exists == "Y"> checked="checked"</#if>>&nbsp;${ec.l10n.getLocalizedMessage("Not")}
+    </#if>
+
+    <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>">
+
+    <#assign ignoreCase = (ec.web.parameters.get(curFieldName + "_ic")?if_exists == "Y") || (!.node["@ignore-case"]?has_content) || (.node["ignore-case"] == "true")>
+    <#if .node["@hide-options"]?if_exists == "true" || .node["@hide-options"]?if_exists == "ignore-case">
+        <input type="hidden" name="${curFieldName}_ic" value="Y"<#if ignoreCase> checked="checked"</#if>>
+    <#else>
+        <input type="checkbox" name="${curFieldName}_ic" value="Y"<#if ignoreCase> checked="checked"</#if>>&nbsp;${ec.l10n.getLocalizedMessage("Ignore Case")}
+    </#if>
+</span>
+</#macro>

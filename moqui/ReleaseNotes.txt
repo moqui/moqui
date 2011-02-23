@@ -19,20 +19,21 @@ This release includes:
 - Root web screen split to support undecorated subscreens and apps
 
 - XML Screens
-  - Screen form elements, all implemented (including file upload)
+  - Screen form elements, all implemented (including file upload, *-find)
   - Output encoding, configurable on various screen/form elements
   - I18n (calls to L10nFacade) for labels and titles in XML Screens
 
 Notable features not yet implemented:
 
 - XML Screens
-  - Screen form *-find elements
+  - Screen form header-field rendering
   - Screen form AJAX and jQuery
   - Screen form validation based on target transition service definition
     with the define once, run on client and server concept
   - Screen tree elements
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Entity Facade
+  - Support entity-find.search-form-inputs element for form *-find elements
   - Entity ECA rules
   - Entity encryption, audit-logging, complex aliases in views
   - Automatic cache clearing

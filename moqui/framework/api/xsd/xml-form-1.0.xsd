@@ -395,27 +395,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="default-option-from" default="equals">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="equals"/>
-                        <xs:enumeration value="same-day"/>
-                        <xs:enumeration value="greater-day-start"/>
-                        <xs:enumeration value="greater"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="default-option-thru" default="less">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="less"/>
-                        <xs:enumeration value="up-to-day-start"/>
-                        <xs:enumeration value="up-to-day-end"/>
-                        <xs:enumeration value="empty"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="default-value-from" type="xs:string"/>
+            <xs:attribute name="default-value-thru" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="date-time" substitutionGroup="SubFields">
@@ -543,26 +524,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="range-find" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
+            <xs:attribute name="size" type="xs:positiveInteger" default="10"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
-            <xs:attribute name="default-value" type="xs:string"/>
-            <xs:attribute name="default-option-from" default="greater-equals">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="equals"/>
-                        <xs:enumeration value="greater"/>
-                        <xs:enumeration value="greater-equals"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="default-option-thru" default="less-equals">
-                <xs:simpleType>
-                    <xs:restriction base="xs:string">
-                        <xs:enumeration value="less"/>
-                        <xs:enumeration value="less-equals"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="default-value-from" type="xs:string"/>
+            <xs:attribute name="default-value-thru" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="reset" substitutionGroup="SubFields">
@@ -601,11 +566,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="ignore-case" default="true" type="boolean"/>
-            <xs:attribute name="default-option">
+            <xs:attribute name="default-operator" default="contains">
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:enumeration value="equals"/>
-                        <xs:enumeration value="not-equals"/>
                         <xs:enumeration value="like"/>
                         <xs:enumeration value="contains"/>
                         <xs:enumeration value="empty"/>
@@ -618,7 +582,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="true"/>
                         <xs:enumeration value="false"/>
                         <xs:enumeration value="ignore-case"/>
-                        <xs:enumeration value="options"/>
+                        <xs:enumeration value="operator"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
@@ -637,7 +601,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="ignore-case" default="true" type="boolean"/>
         </xs:complexType>
     </xs:element>
-    <!-- TABLED, not to be part of 1.0:
+    <!-- TABLED, not to be part of 1.0, use entity-find and list-options instead
     <xs:element name="entity-options">
         <xs:annotation>
             <xs:documentation>Look up options for the field using the named entity.</xs:documentation>
