@@ -144,6 +144,63 @@ class EntityFindImpl implements EntityFind {
         return this.havingEntityCondition
     }
 
+    /** @see org.moqui.entity.EntityFind#searchFormInputs(String) */
+    EntityFind searchFormInputs(String inputFieldsMapName) {
+        Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] :
+            (efi.ecfi.executionContext.web ? efi.ecfi.executionContext.web.parameters : efi.ecfi.executionContext.context)
+        EntityDefinition ed = getEntityDef()
+
+        for (String fn in ed.getFieldNames(true, true)) {
+            // NOTE: do we need to do type conversion here?
+
+            // this will handle text-find
+            if (inf.containsKey(fn) || inf.containsKey(fn + "_op")) {
+                String op = inf.get(fn + "_op") ?: "contains"
+                boolean not = (inf.get(fn + "_not") == "true")
+                EntityCondition ec
+                switch (op) {
+                case "equals":
+                    ec = efi.conditionFactory.makeCondition(fn,
+                        not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
+                        inf.get(fn))
+                    if (inf.get(fn + "_ic") == "true") ec.ignoreCase()
+                    break;
+                case "like":
+                    ec = efi.conditionFactory.makeCondition(fn,
+                        not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
+                        inf.get(fn))
+                    if (inf.get(fn + "_ic") == "true") ec.ignoreCase()
+                    break;
+                case "contains":
+                    ec = efi.conditionFactory.makeCondition(fn,
+                        not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
+                        "%${inf.get(fn)}%")
+                    if (inf.get(fn + "_ic") == "true") ec.ignoreCase()
+                    break;
+                case "empty":
+                    ec = efi.conditionFactory.makeCondition(
+                        efi.conditionFactory.makeCondition(fn,
+                        not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
+                        null),
+                        not ? EntityCondition.JoinOperator.AND : EntityCondition.JoinOperator.OR,
+                        efi.conditionFactory.makeCondition(fn,
+                        not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
+                        ""))
+                    break;
+                }
+                this.condition(ec)
+            }
+
+            // these will handle range-find and date-find
+            if (inf.containsKey(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
+                        EntityCondition.ComparisonOperator.GREATER_THAN_EQUAL_TO, inf.get(fn + "_from")))
+            if (inf.containsKey(fn + "_thru")) this.condition(efi.conditionFactory.makeCondition(fn,
+                        EntityCondition.ComparisonOperator.LESS_THAN, inf.get(fn + "_thru")))
+        }
+
+        return this
+    }
+
     // ======================== General/Common Options ========================
 
     /** @see org.moqui.entity.EntityFind#selectField(String) */

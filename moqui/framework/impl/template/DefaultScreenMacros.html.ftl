@@ -28,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
+        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
     </#if></#list>
     </ul>
     <div class="clear"></div>
@@ -453,7 +453,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign defaultOperator = .node["@default-operator"]?if_exists?default("contains")>
     <#assign curFieldName><@fieldName .node/></#assign>
     <#if .node["@hide-options"]?if_exists == "true" || .node["@hide-options"]?if_exists == "operator">
-        <input type="hidden" name="${curFieldName}_op" value="${defaultOperator}"/>
+        <input type="hidden" name="${curFieldName}_op" value="${defaultOperator}">
     <#else>
         <select name="${curFieldName}_op">
             <option value="equals"<#if defaultOperator == "equals"> selected="selected"</#if>>${ec.l10n.getLocalizedMessage("Equals")}</option>

@@ -21,10 +21,13 @@ This release includes:
 - XML Screens
   - Screen form elements, all implemented (including file upload, *-find)
   - Output encoding, configurable on various screen/form elements
-  - I18n (calls to L10nFacade) for labels and titles in XML Screens
+  - I18n (with L10nFacade) for labels and titles in screens, forms, menus
+- Entity Facade
+  - Support entity-find.search-form-inputs element for form *-find elements
 
 Notable features not yet implemented:
 
+- Clean up JavaDoc/GroovyDoc comments and post to site
 - XML Screens
   - Screen form header-field rendering
   - Screen form AJAX and jQuery
@@ -33,7 +36,6 @@ Notable features not yet implemented:
   - Screen tree elements
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Entity Facade
-  - Support entity-find.search-form-inputs element for form *-find elements
   - Entity ECA rules
   - Entity encryption, audit-logging, complex aliases in views
   - Automatic cache clearing
