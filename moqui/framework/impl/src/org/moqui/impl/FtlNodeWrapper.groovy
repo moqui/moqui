@@ -105,10 +105,12 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
     String getAsString() { return groovyNode.text() }
 
     @Override
-    String toString() {
+    String toString() { return prettyPrintNode(groovyNode) }
+
+    static String prettyPrintNode(Node nd) {
         StringWriter sw = new StringWriter()
         XmlNodePrinter xnp = new XmlNodePrinter(new PrintWriter(sw))
-        xnp.print(groovyNode)
+        xnp.print(nd)
         return sw.toString()
     }
 

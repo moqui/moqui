@@ -238,6 +238,7 @@ class ScreenDefinition {
             if (transitionNode."call-service") {
                 Node callServiceNode = (Node) transitionNode."call-service"[0]
                 if (!callServiceNode."@in-map") callServiceNode.attributes().put("in-map", "true")
+                if (!callServiceNode."@out-map") callServiceNode.attributes().put("out-map", "ec.web.requestAttributes")
                 actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".call_service")
             } else if (transitionNode.actions) {
                 actions = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode.actions[0], location + ".actions")

@@ -17,7 +17,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
 
     <transition name="createExampleItem">
-        <call-service name="create#ExampleItem"/>
+        <call-service name="org.moqui.example.ExampleServices.create#ExampleItem"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExampleItem">

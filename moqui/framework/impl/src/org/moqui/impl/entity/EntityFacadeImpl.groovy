@@ -514,7 +514,7 @@ class EntityFacadeImpl implements EntityFacade {
             "text-long":"java.lang.String",
             "text-very-long":"java.lang.String",
             "binary-very-long":"java.sql.Blob"]
-    protected String getFieldJavaType(String fieldType, String entityName) {
+    String getFieldJavaType(String fieldType, String entityName) {
         Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
         String javaType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@java-type" : null
         if (javaType) {

@@ -60,7 +60,7 @@ class ScreenForm {
             String serviceName = afsNode."@service-name"
             ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
             if (serviceDef != null) {
-                addServiceFields(serviceDef, afsNode."@field-type"?:"edit", formNode)
+                addServiceFields(serviceDef, afsNode."@field-type"?:"edit", formNode, ecfi)
                 continue
             }
             if (serviceName.contains("#")) {
@@ -112,10 +112,15 @@ class ScreenForm {
         return isFormHeaderFormVal
     }
 
-    protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode) {
+    protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
+        String serviceVerb = sd.verb
+        String serviceType = sd.serviceNode."@type"
+        EntityDefinition ed = null
+        if (serviceType == "entity-auto") ed = ecfi.entityFacade.getEntityDefinition(sd.noun)
+
         for (Node parameterNode in sd.serviceNode."in-parameters"[0]."parameter") {
             String spType = parameterNode."@type" ?: "String"
-            String serviceVerb = sd.serviceNode."@verb"
+            String efType = ed != null ? ed.getFieldNode(parameterNode."@name")?."@type" : null
 
             Node newFieldNode = new Node(null, "field", [name:parameterNode."@name"])
             Node subFieldNode = newFieldNode.appendNode("default-field")
@@ -131,7 +136,11 @@ class ScreenForm {
                     } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
                         subFieldNode.appendNode("date-time", [type:"date-time"])
                     } else {
-                        subFieldNode.appendNode("text-line")
+                        if (efType == "text-very-long") {
+                            subFieldNode.appendNode("text-area")
+                        } else {
+                            subFieldNode.appendNode("text-line")
+                        }
                     }
                 }
                 break;

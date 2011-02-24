@@ -17,11 +17,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
     
     <transition name="createExample">
-        <call-service name="create#Example"/>
+        <call-service name="org.moqui.example.ExampleServices.createExample"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExample">
-        <call-service name="update#Example"/>
+        <call-service name="org.moqui.example.ExampleServices.updateExample"/>
         <default-response url="."/>
     </transition>
 
@@ -47,8 +47,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </actions>
             <widgets>
                 <form-single name="CreateExample" transition="createExample">
-                    <!-- <auto-fields-service service-name="org.moqui.example.ExampleServices.create#Example"/> -->
-                    <auto-fields-service service-name="create#Example"/>
+                    <auto-fields-service service-name="org.moqui.example.ExampleServices.create#Example"/>
+                    <!-- for the auto-service, basically the entity and operation: <auto-fields-service service-name="create#Example"/> -->
 
                     <field name="exampleId">
                         <!-- the conditional-field.@condition attribute evaluates as a groovy boolean expression,

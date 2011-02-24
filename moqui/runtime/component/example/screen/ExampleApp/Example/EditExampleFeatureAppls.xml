@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="editExampleFeature"><default-response url="../../Feature/EditExampleFeature"/></transition>
     <transition name="createExampleFeatureAppl">
-        <call-service name="create#ExampleFeatureAppl"/>
+        <call-service name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExampleFeatureAppl">

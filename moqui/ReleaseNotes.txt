@@ -24,6 +24,8 @@ This release includes:
   - Screen form header-field.@show-order-by support
   - Output encoding, configurable on various screen/form elements
   - I18n (with L10nFacade) for labels and titles in screens, forms, menus
+- Service Facade
+  - Service expand auto-parameters, get parameters from implements
 - Entity Facade
   - Support entity-find.search-form-inputs element for form *-find elements
   - Automatic cache clearing for one (pk) cache
@@ -43,14 +45,13 @@ Notable features not yet implemented:
   - Service validation, Antisamy HTML checks, authentication, semaphores
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
-  - Expand auto-parameters
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async or scheduled max-retry
 - Entity Facade
+  - Entity extension
   - Entity ECA rules
   - Entity encryption, audit-logging, complex aliases in views
   - Automatic cache clearing for list, count caches
-  - Entity extension
   - Database meta-data support for adding columns, fks, indexes
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db

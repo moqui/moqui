@@ -21,7 +21,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <entity-find entity-name="ExampleFeature" list="exampleFeatureList">
             <search-form-inputs/>
-            <order-by field-name="${ec.web.parameters.orderByField?:''}"/>
         </entity-find>
     </actions>
     <widgets>

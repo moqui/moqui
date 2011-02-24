@@ -207,6 +207,16 @@ class EntityFindImpl implements EntityFind {
             }
         }
 
+        // always look for an orderByField parameter too
+        if (inf.containsKey("orderByField")) {
+            String obf = inf.get("orderByField")
+            if (obf.contains(",")) {
+                for (String obfPart in obf.split(",")) this.orderBy(obfPart.trim())
+            } else {
+                this.orderBy(obf)
+            }
+        }
+
         return this
     }
 

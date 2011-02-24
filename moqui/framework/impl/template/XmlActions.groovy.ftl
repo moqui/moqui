@@ -18,8 +18,19 @@ import org.moqui.impl.StupidUtilities
 </#macro>
 
 <#-- NOTE should we handle out-map?has_content and async!=false with a ServiceResultWaiter? -->
-<#macro "call-service">    <#if .node["@out-map"]?has_content && (!.node["@async"]?has_content || .node["@async"] == "false")>${.node["@out-map"]} = </#if>ec.service.<#if .node.@async?has_content && .node.@async != "false">async()<#else/>sync()</#if>.name("${.node.@name}")<#if .node["@async"]?has_content && .node["@async"] == "persist">.persist(true)</#if>
-        <#if .node["@in-map"]?if_exists == "true">.parameters(context).parameters((ec.web?.parameters)?:[:])<#elseif .node["@in-map"]?if_exists != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
+<#macro "call-service">
+    <#assign handleResult = (.node["@out-map"]?has_content && (!.node["@async"]?has_content || .node["@async"] == "false"))>
+    if (true) {
+        <#if handleResult>def call_service_result = </#if>ec.service.<#if .node.@async?has_content && .node.@async != "false">async()<#else/>sync()</#if>.name("${.node.@name}")<#if .node["@async"]?has_content && .node["@async"] == "persist">.persist(true)</#if>
+            <#if .node["@in-map"]?if_exists == "true">.parameters(context).parameters((ec.web?.parameters)?:[:])<#elseif .node["@in-map"]?if_exists != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
+        <#if handleResult>
+        if (context.${.node["@out-map"]} != null) {
+            context.${.node["@out-map"]}.putAll(call_service_result)
+        } else {
+            context.${.node["@out-map"]} = call_service_result
+        }
+        </#if>
+    }
 </#macro>
 
 <#macro "call-script"><#if .node["@location"]?has_content>ec.resource.runScriptInCurrentContext(${.node["@location"]}, null)</#if>
