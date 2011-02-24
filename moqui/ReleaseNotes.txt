@@ -42,15 +42,19 @@ Notable features not yet implemented:
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
   - Service ECA rules
-  - Service validation, Antisamy HTML checks, authentication, semaphores
+  - Service validation, Antisamy HTML checks
+  - Service authentication
+  - Service semaphores
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async or scheduled max-retry
 - Entity Facade
+  - Entity field encryption
+  - Entity audit-logging
   - Entity extension
   - Entity ECA rules
-  - Entity encryption, audit-logging, complex aliases in views
+  - Entity complex aliases in views
   - Automatic cache clearing for list, count caches
   - Database meta-data support for adding columns, fks, indexes
 - ArtifactExecutionFacade for artifact stack tracking
