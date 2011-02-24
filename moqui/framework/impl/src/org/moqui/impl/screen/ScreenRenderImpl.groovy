@@ -460,6 +460,11 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenForm form = sd.getForm(formName)
         return form.isUpload()
     }
+    boolean isFormHeaderForm(String formName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        ScreenForm form = sd.getForm(formName)
+        return form.isFormHeaderForm()
+    }
 
     String renderIncludeScreen(String location, String shareScopeStr) {
         boolean shareScope = false
@@ -572,6 +577,8 @@ class ScreenRenderImpl implements ScreenRender {
         }
         return true
     }
+
+    ScreenUrlInfo getCurrentScreenUrl() { return screenUrlInfo }
 
     String getCurrentThemeId() {
         // get the screen's theme type; try second level

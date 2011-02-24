@@ -21,24 +21,22 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <entity-find entity-name="ExampleFeature" list="exampleFeatureList">
             <search-form-inputs/>
-            <order-by field-name="${context.sortByField?:''}"/>
+            <order-by field-name="${ec.web.parameters.orderByField?:''}"/>
         </entity-find>
     </actions>
     <widgets>
         <container id="button-bar"><link url="newExampleFeature" text="New Feature"/></container>
-        <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form -->
-        <form-single name="FindExampleFeatures" transition="findExampleFeature">
-            <field name="exampleFeatureId"><default-field><text-find/></default-field></field>
-            <field name="description"><default-field><text-find/></default-field></field>
-            <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
-        </form-single>
         <form-list name="ListExampleFeatures" list="exampleFeatureList">
             <field name="exampleFeatureId">
-                <header-field show-order-by="true"/>
+                <header-field show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
                 <!-- this list will pass an exampleFeatureId param, as defined on the EditExampleFeature screen as an incoming parameter -->
                 <default-field><link url="editExampleFeature" text="${exampleFeatureId}"/></default-field>
             </field>
-            <field name="description"><header-field show-order-by="true"/><default-field><display/></default-field></field>
+            <field name="description">
+                <header-field show-order-by="true"><text-find hide-options="true"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="searchButton"><header-field title="Find"><submit/></header-field></field>
         </form-list>
     </widgets>
 </screen>

@@ -32,6 +32,7 @@ class ScreenForm {
     protected Node formNode
     protected String location
     protected Boolean isUploadForm = null
+    protected Boolean isFormHeaderFormVal = null
 
     protected XmlAction rowActions = null
 
@@ -97,6 +98,18 @@ class ScreenForm {
         // if there is a "file" element, then it's an upload form
         isUploadForm = formNode.depthFirst().find({ it.name() == "file" }) as boolean
         return isUploadForm
+    }
+    boolean isFormHeaderForm() {
+        if (isFormHeaderFormVal != null) return isFormHeaderFormVal
+        // if there is a "file" element, then it's an upload form
+        isFormHeaderFormVal = false
+        for (Node hfNode in formNode.depthFirst().findAll({ it.name() == "header-field" })) {
+            if (hfNode.children()) {
+                isFormHeaderFormVal = true
+                break
+            }
+        }
+        return isFormHeaderFormVal
     }
 
     protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode) {

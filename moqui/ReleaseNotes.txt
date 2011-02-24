@@ -20,6 +20,8 @@ This release includes:
 
 - XML Screens
   - Screen form elements, all implemented (including file upload, *-find)
+  - Screen form header-field widget rendering
+  - Screen form header-field.@show-order-by support
   - Output encoding, configurable on various screen/form elements
   - I18n (with L10nFacade) for labels and titles in screens, forms, menus
 - Entity Facade
@@ -30,19 +32,12 @@ Notable features not yet implemented:
 
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - XML Screens
-  - Screen form header-field widget rendering
-  - Screen form header-field.@show-order-by support
   - Screen form AJAX and jQuery
+  - Screen form field-layout support
   - Screen form validation based on target transition service definition
     with the define once, run on client and server concept
   - Screen tree elements
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
-- Entity Facade
-  - Entity ECA rules
-  - Entity encryption, audit-logging, complex aliases in views
-  - Automatic cache clearing for list, count caches
-  - Entity extension
-  - Database meta-data support for adding columns, fks, indexes
 - Service Facade
   - Service ECA rules
   - Service validation, Antisamy HTML checks, authentication, semaphores
@@ -51,6 +46,12 @@ Notable features not yet implemented:
   - Expand auto-parameters
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async or scheduled max-retry
+- Entity Facade
+  - Entity ECA rules
+  - Entity encryption, audit-logging, complex aliases in views
+  - Automatic cache clearing for list, count caches
+  - Entity extension
+  - Database meta-data support for adding columns, fks, indexes
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db
 - ServerHit and ServerHitBin tracking

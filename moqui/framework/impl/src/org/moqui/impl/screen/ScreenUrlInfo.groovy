@@ -45,6 +45,8 @@ class ScreenUrlInfo {
     TransitionItem targetTransition = null
     List<String> preTransitionPathNameList = new ArrayList<String>()
 
+    protected ScreenUrlInfo() { }
+
     ScreenUrlInfo(ScreenRenderImpl sri, String url) {
         this.sri = sri
         this.baseUrl = url
@@ -307,6 +309,33 @@ class ScreenUrlInfo {
     String toString() {
         // return ONLY the url built from the inputs; that is the most basic possible value
         return this.url
+    }
+
+    ScreenUrlInfo cloneUrlInfo() {
+        ScreenUrlInfo sui = new ScreenUrlInfo()
+
+        sui.sri = this.sri
+        sui.fromSd = this.fromSd
+        sui.fromPathList = this.fromPathList!=null ? new ArrayList<String>(this.fromPathList) : null
+        sui.fromScreenPath = this.fromScreenPath
+        sui.baseUrl = this.baseUrl
+        sui.pathParameterMap = this.pathParameterMap!=null ? new HashMap(this.pathParameterMap) : null
+        sui.requireEncryption = this.requireEncryption
+        sui.hasActions = this.hasActions
+        sui.inCurrentScreenPath = this.inCurrentScreenPath
+        sui.disableLink = this.disableLink
+        sui.beginTransaction = this.beginTransaction
+        sui.fullPathNameList = this.fullPathNameList!=null ? new ArrayList(this.fullPathNameList) : null
+        sui.minimalPathNameList = this.minimalPathNameList!=null ? new ArrayList(this.minimalPathNameList) : null
+        sui.fileResourcePathList = this.fileResourcePathList!=null ? new ArrayList(this.fileResourcePathList) : null
+        sui.fileResourceRef = this.fileResourceRef
+        sui.fileResourceContentType = this.fileResourceContentType
+        sui.screenPathDefList = this.screenPathDefList!=null ? new ArrayList(this.screenPathDefList) : null
+        sui.targetScreen = this.targetScreen
+        sui.targetTransition = this.targetTransition
+        sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList(this.preTransitionPathNameList) : null
+
+        return sui
     }
 
     static List<String> cleanupPathNameList(List<String> inputPathNameList, Map inlineParameters) {

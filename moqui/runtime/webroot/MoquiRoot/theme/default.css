@@ -232,6 +232,13 @@ border-bottom: 1px solid #DDDDDF;
 font-size: 0.8em;
 }
 
+.form-order-by {
+font-family: Courier, "Courier New", monospace;
+font-weight: bold;
+font-size: 1em;
+vertical-align: top;
+}
+
 /* ========================= misc styles ========================= */
 
 .clear {

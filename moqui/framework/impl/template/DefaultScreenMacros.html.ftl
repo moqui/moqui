@@ -242,14 +242,22 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition")/>
     <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
-    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
-        <#if formNode["field-layout"]?has_content>
+    <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
-        <#else/>
-        <table class="form-list-outer">
+    <#else>
+    <table class="form-list-outer">
+        <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
+        <#if needHeaderForm>
+            <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+            <form name="${formNode["@name"]}_header" id="${formNode["@name"]}_header" method="post" action="${curUrlInfo.url}">
+        </#if>
             <tr class="form-header">
                 <#list formNode["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
             </tr>
+        <#if needHeaderForm>
+            </form>
+        </#if>
+        <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
             <#list listObject as listEntry>
                 <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                 ${sri.startFormListRow(formNode["@name"], listEntry)}
@@ -259,23 +267,38 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 ${sri.endFormListRow()}
             </#list>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
-        </table>
-        </#if>
-    </form>
+        </form>
+    </table>
+    </#if>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formListHeaderField fieldNode>
     <#if fieldNode["@hide"]?if_exists == "true"><#return></#if>
     <#if (!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 && (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)><#return></#if>
     <#if fieldNode["header-field"]?has_content>
-        <#assign fieldSubNode = fieldNode["header-field"][0]/>
-    <#elseif fieldNode["default-field"]?has_content/>
-        <#assign fieldSubNode = fieldNode["default-field"][0]/>
-    <#else/>
+        <#assign fieldSubNode = fieldNode["header-field"][0]>
+    <#elseif fieldNode["default-field"]?has_content>
+        <#assign fieldSubNode = fieldNode["default-field"][0]>
+    <#else>
         <#-- this only makes sense for fields with a single conditional -->
-        <#assign fieldSubNode = fieldNode["conditional-field"][0]/>
+        <#assign fieldSubNode = fieldNode["conditional-field"][0]>
     </#if>
-    <td class="form-title"><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if></td>
+    <td>
+        <div class="form-title">
+            <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
+            <#if fieldSubNode["@show-order-by"]?if_exists == "true">
+                <#assign orderByField = ec.web.requestParameters.orderByField?if_exists>
+                <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
+                <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", orderByField)>
+                <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">${orderByField?substring(0,1)}</a>
+            </#if>
+        </div>
+        <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
+        <div class="form-header-field">
+            <#recurse fieldNode["header-field"][0]/>
+        </div>
+        </#if>
+    </td>
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>

@@ -21,7 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <actions>
         <entity-find entity-name="Example" list="exampleList">
             <search-form-inputs/>
-            <order-by field-name="${context.sortByField?:''}"/>
+            <order-by field-name="${ec.web.parameters.orderByField?:''}"/>
         </entity-find>
 
         <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
@@ -32,39 +32,48 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <container><link url="newExample" text="New Example"/></container>
+        <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form -->
+        <form-single name="FindExamples" transition="findExample">
+            <field name="exampleId"><default-field><text-find/></default-field></field>
+            <field name="exampleName"><default-field><text-find/></default-field></field>
+            <field name="exampleTypeEnumId">
+                <default-field title="Type">
+                    <drop-down allow-empty="true">
+                        <list-options list="exampleTypeEnumList" text="${description}"/>
+                    </drop-down>
+                </default-field>
+            </field>
+            <field name="statusId">
+                <default-field title="Status">
+                    <drop-down allow-empty="true">
+                        <list-options list="exampleStatusItemList" text="${description}"/>
+                    </drop-down>
+                </default-field>
+            </field>
+            <field name="description"><default-field><text-find/></default-field></field>
+            <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
+        </form-single>
         <form-list name="ListExamples" list="exampleList">
             <field name="exampleId">
-                <header-field><text-find/></header-field>
                 <default-field>
-                    <!-- this list will pass an exampleId param, as defined on the EditExample screen as an incoming parameter -->
+                    <!-- this link will pass an exampleId param, as defined on the EditExample screen as an incoming parameter -->
                     <link url="editExample" text="${exampleId}"/>
                 </default-field>
             </field>
             <field name="exampleName">
-                <header-field title="Name" show-order-by="true"><text-find/></header-field>
+                <header-field title="Name" show-order-by="true"/>
                 <default-field><display/></default-field>
             </field>
             <field name="exampleTypeEnumId">
-                <header-field title="Type">
-                    <drop-down allow-empty="true">
-                        <list-options list="exampleTypeEnumList" text="${description}"/>
-                    </drop-down>
-                </header-field>
-                <default-field><display-entity entity-name="Enumeration" key-field-name="enumId"/></default-field>
+                <default-field title="Type"><display-entity entity-name="Enumeration" key-field-name="enumId"/></default-field>
             </field>
             <field name="statusId">
-                <header-field title="Status">
-                    <drop-down allow-empty="true">
-                        <list-options list="exampleStatusItemList" text="${description}"/>
-                    </drop-down>
-                </header-field>
-                <default-field><display-entity entity-name="StatusItem"/></default-field>
+                <default-field title="Status"><display-entity entity-name="StatusItem"/></default-field>
             </field>
             <field name="description">
                 <header-field show-order-by="true"/>
                 <default-field><display/></default-field>
             </field>
-            <field name="searchButton"><header-field title="Find"><submit/></header-field></field>
         </form-list>
     </widgets>
 </screen>
