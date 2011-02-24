@@ -228,6 +228,9 @@ vertical-align: middle;
 table.form-list-outer .form-title {
 border-bottom: 1px solid #DDDDDF;
 }
+.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select {
+font-size: 0.8em;
+}
 
 /* ========================= misc styles ========================= */
 

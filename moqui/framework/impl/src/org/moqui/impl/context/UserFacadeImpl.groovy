@@ -74,6 +74,7 @@ class UserFacadeImpl implements UserFacade {
                             clientIpAddress:request.getRemoteAddr(), clientHostName:request.getRemoteHost(),
                             clientUser:request.getRemoteUser()])
                         .call()
+
             }
         }
     }

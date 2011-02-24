@@ -19,6 +19,7 @@ import org.moqui.entity.EntityCondition
 import org.moqui.impl.StupidUtilities.MapOrderByComparator
 
 class EntityListImpl implements EntityList {
+    public static final EntityList EMPTY = new EmptyEntityList()
 
     protected EntityFacadeImpl efi
 
@@ -30,7 +31,7 @@ class EntityListImpl implements EntityList {
 
     @Override
     EntityValue getFirst() {
-        return this.valueList.get(0)
+        return valueList ? valueList.get(0) : null
     }
 
     @Override
@@ -90,12 +91,12 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
-    public Object clone() {
+    Object clone() {
         return this.cloneList()
     }
 
     @Override
-    public EntityList cloneList() {
+    EntityList cloneList() {
         EntityListImpl newObj = new EntityListImpl(this.efi)
         newObj.valueList.addAll(this.valueList)
         return newObj
@@ -171,4 +172,44 @@ class EntityListImpl implements EntityList {
 
     @Override
     String toString() { this.valueList.toString() }
+
+    static class EmptyEntityList implements EntityList {
+        static final ListIterator emptyIterator = new LinkedList().listIterator()
+
+        EmptyEntityList() { }
+
+        EntityValue getFirst() { return null }
+        EntityList filterByDate(Timestamp moment, String fromDateName, String thruDateName) { return this }
+        EntityList filterByAnd(Map<String, ?> fields) { return this }
+        EntityList orderByFields(List<String> fieldNames) { return this }
+        EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
+        Iterator<EntityValue> iterator() { return emptyIterator }
+        Object clone() { return this.cloneList() }
+        EntityList cloneList() { return this }
+
+        // ========== List Interface Methods ==========
+        int size() { return 0 }
+        boolean isEmpty() { return true }
+        boolean contains(Object o) { return false }
+        Object[] toArray() { return new Object[0] }
+        Object[] toArray(Object[] ts) { return new Object[0] }
+        boolean add(EntityValue e) { throw new IllegalArgumentException("EmptyEntityList does not support add") }
+        boolean remove(Object o) { return false }
+        boolean containsAll(Collection<?> objects) { return false }
+        boolean addAll(Collection<? extends EntityValue> es) { throw new IllegalArgumentException("EmptyEntityList does not support addAll") }
+        boolean addAll(int i, Collection<? extends EntityValue> es) { throw new IllegalArgumentException("EmptyEntityList does not support addAll") }
+        boolean removeAll(Collection<?> objects) { return false }
+        boolean retainAll(Collection<?> objects) { return false }
+        void clear() { }
+        EntityValue get(int i) { return null }
+        EntityValue set(int i, EntityValue e) { throw new IllegalArgumentException("EmptyEntityList does not support set") }
+        void add(int i, EntityValue e) { throw new IllegalArgumentException("EmptyEntityList does not support add") }
+        EntityValue remove(int i) { return null }
+        int indexOf(Object o) { return -1 }
+        int lastIndexOf(Object o) { return -1 }
+        ListIterator<EntityValue> listIterator() { return emptyIterator }
+        ListIterator<EntityValue> listIterator(int i) { return emptyIterator }
+        List<EntityValue> subList(int start, int end) { return this }
+        String toString() { return "[]" }
+    }
 }

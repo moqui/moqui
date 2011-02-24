@@ -20,6 +20,8 @@ import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
+
     protected boolean requireNewTransaction = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
 
@@ -52,11 +54,14 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
     @Override
     Map<String, Object> call() {
+        long callStartTime = System.currentTimeMillis()
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
         if (!sd) {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
             if ((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
-                return runImplicitEntityAuto()
+                Map result = runImplicitEntityAuto()
+                if (logger.infoEnabled) logger.info("Finished call to service [${getServiceName()}] in ${(System.currentTimeMillis()-callStartTime)/1000} seconds")
+                return result
             } else {
                 throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
             }
@@ -116,6 +121,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         } finally {
             if (parentTransaction != null) tf.resume(parentTransaction)
         }
+        if (logger.infoEnabled) logger.info("Finished call to service [${getServiceName()}] in ${(System.currentTimeMillis()-callStartTime)/1000} seconds")
         return result
     }
 

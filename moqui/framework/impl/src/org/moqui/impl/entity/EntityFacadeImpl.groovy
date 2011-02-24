@@ -308,6 +308,30 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
+    Cache getCacheOne(String entityName) {
+        return ecfi.getCacheFacade().getCache("entity.one.${entityName}")
+    }
+    Cache getCacheList(String entityName) {
+        return ecfi.getCacheFacade().getCache("entity.list.${entityName}")
+    }
+    Cache getCacheCount(String entityName) {
+        return ecfi.getCacheFacade().getCache("entity.count.${entityName}")
+    }
+
+    void clearCacheForValue(EntityValueImpl evi) {
+        if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
+
+        // clear one cache
+        EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
+        Cache entityOneCache = getCacheOne(evi.getEntityName())
+        if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
+
+        // TODO clear list cache
+
+        // TODO clear count cache
+    }
+
+
     Node getDatabaseNode(String groupName) {
         Node confXmlRoot = this.ecfi.getConfXmlRoot()
         String databaseConfName = getDataBaseConfName(groupName)
@@ -525,7 +549,7 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected static final Map<String, Integer> javaTypeMap = [
-            "java.lang.String":1, "String":1,
+            "java.lang.String":1, "String":1, "org.codehaus.groovy.runtime.GStringImpl":1,
             "java.sql.Timestamp":2, "Timestamp":2,
             "java.sql.Time":3, "Time":3,
             "java.sql.Date":4, "Date":4,

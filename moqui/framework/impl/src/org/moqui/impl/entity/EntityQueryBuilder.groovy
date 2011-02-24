@@ -75,7 +75,9 @@ class EntityQueryBuilder {
     ResultSet executeQuery() throws EntityException {
         if (!this.ps) throw new IllegalStateException("Cannot Execute Query, no PreparedStatement in place")
         try {
+            long timeBefore = System.currentTimeMillis()
             this.rs = this.ps.executeQuery()
+            if (logger.infoEnabled) logger.info("Executed query with SQL [${getSqlTopLevel().toString()}] and parameters [${parameters}] in [${(System.currentTimeMillis()-timeBefore)/1000}] seconds")
             return this.rs
         } catch (SQLException sqle) {
             throw new EntityException("Error in query for:" + this.sqlTopLevel, sqle)
@@ -85,7 +87,10 @@ class EntityQueryBuilder {
     public int executeUpdate() throws EntityException {
         if (!this.ps) throw new IllegalStateException("Cannot Execute Update, no PreparedStatement in place")
         try {
-            return ps.executeUpdate()
+            long timeBefore = System.currentTimeMillis()
+            int rows = ps.executeUpdate()
+            if (logger.infoEnabled) logger.info("Executed update with SQL [${getSqlTopLevel().toString()}] and parameters [${parameters}] in [${(System.currentTimeMillis()-timeBefore)/1000}] seconds changing [${rows}] rows")
+            return rows
         } catch (SQLException sqle) {
             throw new EntityException("Error in update for:" + this.sqlTopLevel, sqle)
         }

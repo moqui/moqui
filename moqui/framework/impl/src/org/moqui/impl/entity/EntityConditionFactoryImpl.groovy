@@ -213,7 +213,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                     for (Object curValue in this.value) {
                         if (isFirst) isFirst = false else sql.append(", ")
                         sql.append("?")
-                        if (this.ignoreCase && curValue instanceof String) curValue = ((String) curValue).toUpperCase()
+                        if (this.ignoreCase && (curValue instanceof String || curValue instanceof GString)) curValue = ((String) curValue).toUpperCase()
                         eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), curValue, eqb))
                     }
                     sql.append(')')
@@ -222,13 +222,13 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                     sql.append(" ? AND ?")
                     Iterator iterator = ((Collection) this.value).iterator()
                     Object value1 = iterator.next()
-                    if (this.ignoreCase && value1 instanceof String) value1 = ((String) value1).toUpperCase()
+                    if (this.ignoreCase && (value1 instanceof String || value1 instanceof GString)) value1 = ((String) value1).toUpperCase()
                     Object value2 = iterator.next()
-                    if (this.ignoreCase && value2 instanceof String) value2 = ((String) value2).toUpperCase()
+                    if (this.ignoreCase && (value2 instanceof String || value2 instanceof GString)) value2 = ((String) value2).toUpperCase()
                     eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value1, eqb))
                     eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), value2, eqb))
                 } else {
-                    if (this.ignoreCase && this.value instanceof String) this.value = ((String) this.value).toUpperCase()
+                    if (this.ignoreCase && (this.value instanceof String || this.value instanceof GString)) this.value = ((String) this.value).toUpperCase()
                     sql.append(" ?")
                     eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
                 }

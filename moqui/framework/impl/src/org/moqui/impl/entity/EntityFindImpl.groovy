@@ -155,27 +155,36 @@ class EntityFindImpl implements EntityFind {
 
             // this will handle text-find
             if (inf.containsKey(fn) || inf.containsKey(fn + "_op")) {
+                Object value = inf.get(fn)
                 String op = inf.get(fn + "_op") ?: "contains"
-                boolean not = (inf.get(fn + "_not") == "true")
-                EntityCondition ec
+                boolean not = (inf.get(fn + "_not") == "Y")
+                boolean ic = (inf.get(fn + "_ic") == "Y")
+
+                EntityCondition ec = null
                 switch (op) {
                 case "equals":
-                    ec = efi.conditionFactory.makeCondition(fn,
-                        not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
-                        inf.get(fn))
-                    if (inf.get(fn + "_ic") == "true") ec.ignoreCase()
+                    if (value) {
+                        ec = efi.conditionFactory.makeCondition(fn,
+                            not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
+                            value)
+                        if (ic) ec.ignoreCase()
+                    }
                     break;
                 case "like":
-                    ec = efi.conditionFactory.makeCondition(fn,
-                        not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
-                        inf.get(fn))
-                    if (inf.get(fn + "_ic") == "true") ec.ignoreCase()
+                    if (value) {
+                        ec = efi.conditionFactory.makeCondition(fn,
+                            not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
+                            value)
+                        if (ic) ec.ignoreCase()
+                    }
                     break;
                 case "contains":
-                    ec = efi.conditionFactory.makeCondition(fn,
-                        not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
-                        "%${inf.get(fn)}%")
-                    if (inf.get(fn + "_ic") == "true") ec.ignoreCase()
+                    if (value) {
+                        ec = efi.conditionFactory.makeCondition(fn,
+                            not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
+                            "%${value}%")
+                        if (ic) ec.ignoreCase()
+                    }
                     break;
                 case "empty":
                     ec = efi.conditionFactory.makeCondition(
@@ -188,14 +197,14 @@ class EntityFindImpl implements EntityFind {
                         ""))
                     break;
                 }
-                this.condition(ec)
-            }
-
-            // these will handle range-find and date-find
-            if (inf.containsKey(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
+                if (ec != null) this.condition(ec)
+            } else {
+                // these will handle range-find and date-find
+                if (inf.containsKey(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
                         EntityCondition.ComparisonOperator.GREATER_THAN_EQUAL_TO, inf.get(fn + "_from")))
-            if (inf.containsKey(fn + "_thru")) this.condition(efi.conditionFactory.makeCondition(fn,
+                if (inf.containsKey(fn + "_thru")) this.condition(efi.conditionFactory.makeCondition(fn,
                         EntityCondition.ComparisonOperator.LESS_THAN, inf.get(fn + "_thru")))
+            }
         }
 
         return this
@@ -342,8 +351,9 @@ class EntityFindImpl implements EntityFind {
         if (!whereCondition) return null
 
         Cache entityOneCache = null
-        if (this.shouldCache()) {
-            entityOneCache = this.efi.ecfi.getCacheFacade().getCache("entity.one.${this.entityName}")
+        boolean doCache = this.shouldCache()
+        if (doCache) {
+            entityOneCache = this.efi.getCacheOne(this.entityName)
             if (entityOneCache.containsKey(whereCondition)) {
                 EntityValue cacheHit = (EntityValue) entityOneCache.get(whereCondition)
                 if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
@@ -385,7 +395,7 @@ class EntityFindImpl implements EntityFind {
             efb.closeAll()
         }
 
-        if (this.shouldCache()) {
+        if (doCache) {
             // put it in whether null or not
             entityOneCache.put(whereCondition, newEntityValue)
         }
@@ -425,7 +435,7 @@ class EntityFindImpl implements EntityFind {
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
-            entityListCache = this.efi.ecfi.getCacheFacade().getCache("entity.list.${this.entityName}")
+            entityListCache = this.efi.getCacheList(this.entityName)
             if (entityListCache.containsKey(whereCondition)) return (EntityList) entityListCache.get(whereCondition)
         }
 
@@ -438,8 +448,8 @@ class EntityFindImpl implements EntityFind {
             if (eli != null) eli.close()
         }
 
-        if (doCache && el) {
-            entityListCache.put(whereCondition, el)
+        if (doCache) {
+            entityListCache.put(whereCondition, el ?: EntityListImpl.EMPTY)
         }
         return el
     }
@@ -536,7 +546,7 @@ class EntityFindImpl implements EntityFind {
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
-            entityCountCache = this.efi.ecfi.getCacheFacade().getCache("entity.count.${this.entityName}")
+            entityCountCache = this.efi.getCacheCount(this.entityName)
             if (entityCountCache.containsKey(whereCondition)) return (Long) entityCountCache.get(whereCondition)
         }
 
@@ -661,7 +671,7 @@ class EntityFindImpl implements EntityFind {
 
     protected boolean shouldCache() {
         if (this.dynamicView) return false
-        String entityCache = this.getEntityDef().getEntityNode()."@use-cache" == "true"
+        String entityCache = this.getEntityDef().getEntityNode()."@use-cache"
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
     }
 }

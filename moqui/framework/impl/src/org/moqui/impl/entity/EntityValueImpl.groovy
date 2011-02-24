@@ -271,7 +271,9 @@ class EntityValueImpl implements EntityValue {
         }
         eqb.executeUpdate()
         setSyncedWithDb()
-        // TODO: notify cache clear
+        // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
+        // might have a null value for a previous query attempt
+        getEntityFacadeImpl().clearCacheForValue(this)
     }
 
     /** @see org.moqui.entity.EntityValue#createOrUpdate() */
@@ -354,7 +356,7 @@ class EntityValueImpl implements EntityValue {
         if (eqb.executeUpdate() == 0)
             throw new EntityException("Tried to update a value that does not exist [${this.toString()}]. SQL used was [${eqb.sqlTopLevel}], parameters were [${eqb.parameters}]")
         setSyncedWithDb()
-        // TODO: notify cache clear
+        getEntityFacadeImpl().clearCacheForValue(this)
     }
 
     /** @see org.moqui.entity.EntityValue#delete() */
@@ -394,7 +396,7 @@ class EntityValueImpl implements EntityValue {
         eqb.makePreparedStatement()
         eqb.setPreparedStatementValues()
         if (eqb.executeUpdate() == 0) logger.info("Tried to delete a value that does not exist [${this.toString()}]")
-        // TODO: notify cache clear
+        getEntityFacadeImpl().clearCacheForValue(this)
     }
 
     /** @see org.moqui.entity.EntityValue#refresh() */
