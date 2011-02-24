@@ -27,8 +27,8 @@ This release includes:
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
 - Entity Facade
-  - Support entity-find.search-form-inputs element for form *-find elements
-  - Automatic cache clearing for one (pk) cache
+  - Support entity-find.search-form-inputs element for form *-find fields
+  - Automatic cache clearing for one, list (using RA cache), count caches
 
 Notable features not yet implemented:
 
@@ -55,7 +55,6 @@ Notable features not yet implemented:
   - Entity extension
   - Entity ECA rules
   - Entity complex aliases in views
-  - Automatic cache clearing for list, count caches
   - Database meta-data support for adding columns, fks, indexes
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db

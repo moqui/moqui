@@ -34,7 +34,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityList
-import org.moqui.entity.EntityListIterator
+
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.StupidUtilities
 
@@ -308,43 +308,63 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
-    Cache getCacheOne(String entityName) {
-        return ecfi.getCacheFacade().getCache("entity.one.${entityName}")
-    }
-    Cache getCacheList(String entityName) {
-        return ecfi.getCacheFacade().getCache("entity.list.${entityName}")
-    }
-    Cache getCacheCount(String entityName) {
-        return ecfi.getCacheFacade().getCache("entity.count.${entityName}")
-    }
+    Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("entity.one.${entityName}") }
+    Cache getCacheList(String entityName) { return ecfi.getCacheFacade().getCache("entity.list.${entityName}") }
+    Cache getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCache("entity.list_ra.${entityName}") }
+    Cache getCacheCount(String entityName) { return ecfi.getCacheFacade().getCache("entity.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
+        String entityName = evi.getEntityName()
 
         // clear one cache
         EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
-        Cache entityOneCache = getCacheOne(evi.getEntityName())
+        Cache entityOneCache = getCacheOne(entityName)
         if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
 
-        // TODO clear list cache
+        // clear list cache, use reverse-associative Map (also a Cache)
+        Cache listRaCache = getCacheListRa(entityName)
+        if (listRaCache.containsKey(pkCondition)) {
+            List raKeyList = (List) listRaCache.get(pkCondition)
+            Cache entityListCache = getCacheList(entityName)
+            for (EntityCondition ec in raKeyList) {
+                // check it one last time before removing, may have been cleared by something else
+                if (entityListCache.containsKey(ec)) entityListCache.remove(ec)
+            }
+            // we've cleared all entries that this was referring to, so clean it out too
+            listRaCache.remove(pkCondition)
+        }
 
-        // TODO clear count cache
+        // clear count cache (no RA because we only have a count to work with, just match by condition)
+        Cache entityCountCache = getCacheCount(entityName)
+        for (EntityCondition ec in entityCountCache.keySet()) {
+            if (ec.mapMatches(evi)) entityCountCache.remove(ec)
+        }
     }
-
+    void registerCacheListRa(String entityName, EntityCondition ec, EntityList el) {
+        Cache listRaCache = getCacheListRa(entityName)
+        for (EntityValue ev in el) {
+            EntityCondition pkCondition = conditionFactory.makeCondition(ev.getPrimaryKeys())
+            List raKeyList = (List) listRaCache.get(pkCondition)
+            if (!raKeyList) {
+                raKeyList = new ArrayList()
+                listRaCache.put(pkCondition, raKeyList)
+            }
+            raKeyList.add(ec)
+        }
+    }
 
     Node getDatabaseNode(String groupName) {
-        Node confXmlRoot = this.ecfi.getConfXmlRoot()
-        String databaseConfName = getDataBaseConfName(groupName)
-        return (Node) confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
+        String databaseConfName = getDatabaseConfName(groupName)
+        return (Node) ecfi.confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
     }
-    String getDataBaseConfName(String groupName) {
-        Node confXmlRoot = this.ecfi.getConfXmlRoot()
-        Node datasourceNode = (Node) confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
+    String getDatabaseConfName(String groupName) {
+        Node datasourceNode = (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
         return datasourceNode."@database-conf-name"
     }
 
     Node getDatasourceNode(String groupName) {
-        return (Node) this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource".find({ it."@group-name" == groupName })
+        return (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
     }
 
     EntityDbMeta getEntityDbMeta() {
