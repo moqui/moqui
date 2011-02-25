@@ -161,7 +161,10 @@
     </service-facade>
 
     <entity-facade default-group-name="transactional" distributed-cache-clear-enabled="false"
-                   entity-eca-enabled="true" sequenced-id-prefix="">
+                   entity-eca-enabled="true" sequenced-id-prefix=""
+                   crypt-salt="SkcorIuqom" crypt-iter="10" crypt-algo="PBEWithMD5AndDES">
+        <!-- note: no crypt-pass attribute by default, must specify in your conf file! -->
+
         <!-- if this is not present the default JNDI server will be used -->
         <!-- <server-jndi context-provider-url="rmi://127.0.0.1:1099"
                      initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"

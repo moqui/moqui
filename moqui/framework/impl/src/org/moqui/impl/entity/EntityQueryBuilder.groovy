@@ -24,6 +24,12 @@ import javax.sql.rowset.serial.SerialBlob
 
 import org.moqui.entity.EntityException
 import org.moqui.impl.StupidUtilities
+import javax.crypto.Cipher
+import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.PBEParameterSpec
+import javax.crypto.spec.PBEKeySpec
+import org.apache.commons.codec.binary.Hex
 
 class EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityQueryBuilder.class)
@@ -170,10 +176,12 @@ class EntityQueryBuilder {
 
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
+        String fieldName = fieldNode."@name"
         String javaType = efi.getFieldJavaType(fieldNode."@type", entityValueImpl.getEntityName())
+        int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
 
+        Object value = null
         try {
-            int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
             ResultSetMetaData rsmd = rs.getMetaData()
             int colType = rsmd.getColumnType(index)
 
@@ -199,82 +207,55 @@ class EntityQueryBuilder {
                             }
                             valueReader.close()
                         } catch (IOException e) {
-                            throw new EntityException("Error reading long character stream for field [${fieldNode."@name"}] of entity [${entityValueImpl.getEntityName()}]", e)
+                            throw new EntityException("Error reading long character stream for field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]", e)
                         }
-                        entityValueImpl.getValueMap().put(fieldNode."@name", strBuf.toString())
-                    } else {
-                        entityValueImpl.getValueMap().put(fieldNode."@name", null)
+                        value = strBuf.toString()
                     }
                 } else {
-                    String value = rs.getString(index)
-                    entityValueImpl.getValueMap().put(fieldNode."@name", value)
+                    value = rs.getString(index)
                 }
                 break
 
             case 2:
-                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getTimestamp(index))
+                value = rs.getTimestamp(index)
                 break
 
             case 3:
-                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getTime(index))
+                value = rs.getTime(index)
                 break
 
             case 4:
-                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getDate(index))
+                value = rs.getDate(index)
                 break
 
             case 5:
                 int intValue = rs.getInt(index)
-                if (rs.wasNull()) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
-                } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", Integer.valueOf(intValue))
-                }
+                if (!rs.wasNull()) value = intValue
                 break
 
             case 6:
                 long longValue = rs.getLong(index)
-                if (rs.wasNull()) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
-                } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", Long.valueOf(longValue))
-                }
+                if (!rs.wasNull()) value = longValue
                 break
 
             case 7:
                 float floatValue = rs.getFloat(index)
-                if (rs.wasNull()) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
-                } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", Float.valueOf(floatValue))
-                }
+                if (!rs.wasNull()) value = floatValue
                 break
 
             case 8:
                 double doubleValue = rs.getDouble(index)
-                if (rs.wasNull()) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
-                } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", Double.valueOf(doubleValue))
-                }
+                if (!rs.wasNull()) value = doubleValue
                 break
 
             case 9:
                 BigDecimal bigDecimalValue = rs.getBigDecimal(index)
-                if (rs.wasNull()) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
-                } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", bigDecimalValue)
-                }
+                if (!rs.wasNull()) value = bigDecimalValue
                 break
 
             case 10:
                 boolean booleanValue = rs.getBoolean(index)
-                if (rs.wasNull()) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", null)
-                } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", Boolean.valueOf(booleanValue))
-                }
+                if (!rs.wasNull()) value = Boolean.valueOf(booleanValue)
                 break
 
             case 11:
@@ -285,7 +266,7 @@ class EntityQueryBuilder {
                     binaryInput = new ByteArrayInputStream(originalBytes);
                 }
                 if (originalBytes != null && originalBytes.length <= 0) {
-                    logger.warn("Got byte array back empty for serialized Object with length [${originalBytes.length}] for field [${fieldNode."@name"}] (${index})")
+                    logger.warn("Got byte array back empty for serialized Object with length [${originalBytes.length}] for field [${fieldName}] (${index})")
                 }
 
                 if (binaryInput != null) {
@@ -294,24 +275,24 @@ class EntityQueryBuilder {
                         inStream = new ObjectInputStream(binaryInput)
                         obj = inStream.readObject()
                     } catch (IOException ex) {
-                        if (logger.traceEnabled) logger.trace("Unable to read BLOB from input stream for field [${fieldNode."@name"}] (${index}): ${ex.toString()}")
+                        if (logger.traceEnabled) logger.trace("Unable to read BLOB from input stream for field [${fieldName}] (${index}): ${ex.toString()}")
                     } catch (ClassNotFoundException ex) {
-                        if (logger.traceEnabled) logger.trace("Class not found: Unable to cast BLOB data to an Java object for field [${fieldNode."@name"}] (${index}); most likely because it is a straight byte[], so just using the raw bytes: ${ex.toString()}")
+                        if (logger.traceEnabled) logger.trace("Class not found: Unable to cast BLOB data to an Java object for field [${fieldName}] (${index}); most likely because it is a straight byte[], so just using the raw bytes: ${ex.toString()}")
                     } finally {
                         if (inStream != null) {
                             try {
                                 inStream.close()
                             } catch (IOException e) {
-                                throw new EntityException("Unable to close binary input stream for field [${fieldNode."@name"}] (${index}): ${e.toString()}", e)
+                                throw new EntityException("Unable to close binary input stream for field [${fieldName}] (${index}): ${e.toString()}", e)
                             }
                         }
                     }
                 }
 
                 if (obj != null) {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", obj)
+                    value = obj
                 } else {
-                    entityValueImpl.getValueMap().put(fieldNode."@name", originalBytes)
+                    value = originalBytes
                 }
                 break
             case 12:
@@ -329,37 +310,79 @@ class EntityQueryBuilder {
 
                 if (originalObject != null) {
                     // for backward compatibility, check to see if there is a serialized object and if so return that
-                    Object blobObject = deserializeField(fieldBytes, index, fieldNode."@name")
+                    Object blobObject = deserializeField(fieldBytes, index, fieldName)
                     if (blobObject != null) {
-                        entityValueImpl.getValueMap().put(fieldNode."@name", blobObject)
+                        entityValueImpl.getValueMap().put(fieldName, blobObject)
                     } else {
                         if (originalObject instanceof Blob) {
                             // NOTE using SerialBlob here instead of the Blob from the database to make sure we can pass it around, serialize it, etc
-                            entityValueImpl.getValueMap().put(fieldNode."@name", new SerialBlob((Blob) originalObject))
+                            value = new SerialBlob((Blob) originalObject)
                         } else {
-                            entityValueImpl.getValueMap().put(fieldNode."@name", originalObject)
+                            value = originalObject
                         }
                     }
                 }
 
                 break
             case 13:
-                entityValueImpl.getValueMap().put(fieldNode."@name", new SerialClob(rs.getClob(index)))
+                value = new SerialClob(rs.getClob(index))
                 break
             case 14:
             case 15:
-                entityValueImpl.getValueMap().put(fieldNode."@name", rs.getObject(index))
+                value = rs.getObject(index)
                 break
             }
         } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception while getting value for field: [${fieldNode."@name"}] (${index})", sqle)
+            throw new EntityException("SQL Exception while getting value for field: [${fieldName}] (${index})", sqle)
         }
+
+        // if field is to be encrypted, do it now
+        if (value && fieldNode."@encrypt" == "true") {
+            if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]")
+            String original = value.toString()
+            try {
+                value = enDeCrypt(original, false, efi)
+            } catch (Exception e) {
+                logger.error("Error decrypting field [${fieldName}] of entity [${entityValueImpl.getEntityName()}]", e)
+            }
+        }
+
+        entityValueImpl.getValueMap().put(fieldName, value)
+    }
+
+    static String enDeCrypt(String value, boolean encrypt, EntityFacadeImpl efi) {
+        Node entityFacadeNode = efi.ecfi.confXmlRoot."entity-facade"[0]
+        String pwStr = entityFacadeNode."@crypt-pass"
+        if (!pwStr) throw new IllegalArgumentException("No entity-facade.@crypt-pass setting found, NOT doing encryption")
+
+        byte[] salt = (entityFacadeNode."@crypt-salt" ?: "default1").getBytes()
+        if (salt.length > 8) salt = salt[0..7]
+        while (salt.length < 8) salt += (byte)0x45
+        int count = (entityFacadeNode."@crypt-iter" as Integer) ?: 10
+        char[] pass = pwStr.toCharArray()
+
+        String algo = entityFacadeNode."@crypt-algo" ?: "PBEWithMD5AndDES"
+
+        // logger.info("TOREMOVE salt [${salt}] count [${count}] pass [${pass}] algo [${algo}]")
+        PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, count)
+        PBEKeySpec pbeKeySpec = new PBEKeySpec(pass)
+        SecretKeyFactory keyFac = SecretKeyFactory.getInstance(algo)
+        SecretKey pbeKey = keyFac.generateSecret(pbeKeySpec)
+
+        Cipher pbeCipher = Cipher.getInstance(algo)
+        pbeCipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, pbeKey, pbeParamSpec)
+
+        byte[] inBytes = encrypt ? value.getBytes() : Hex.decodeHex(value.toCharArray())
+        byte[] outBytes = pbeCipher.doFinal(inBytes)
+        return encrypt ? Hex.encodeHexString(outBytes) : new String(outBytes)
     }
 
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
                                           String entityName, EntityFacadeImpl efi) throws EntityException {
+        String fieldName = fieldNode."@name"
         String javaType = efi.getFieldJavaType(fieldNode."@type", entityName)
-        if (value) {
+        int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+        if (value != null) {
             if (!StupidUtilities.isInstanceOf(value, javaType)) {
                 // this is only an info level message because under normal operation for most JDBC
                 // drivers this will be okay, but if not then the JDBC driver will throw an exception
@@ -376,12 +399,18 @@ class EntityQueryBuilder {
                         fieldClassName + ", not the definition.")
                 javaType = fieldClassName
             }
+
+            // if field is to be encrypted, do it now
+            if (fieldNode."@encrypt" == "true") {
+                if (typeValue != 1) throw new IllegalArgumentException("The encrypt attribute was set to true on non-String field [${fieldName}] of entity [${entityName}]")
+                String original = value.toString()
+                value = enDeCrypt(original, true, efi)
+            }
         }
 
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
 
         try {
-            int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
             switch (typeValue) {
             case 1:
                 if (value != null) {
@@ -477,7 +506,7 @@ class EntityQueryBuilder {
                         ps.setBinaryStream(index, is, buf.length)
                         is.close()
                     } catch (IOException ex) {
-                        throw new EntityException("Error setting serialized object for field [${this.fieldNode."@name"}]", ex)
+                        throw new EntityException("Error setting serialized object for field [${fieldName}]", ex)
                     }
                 } else {
                     if (useBinaryTypeForBlob) {
@@ -532,9 +561,9 @@ class EntityQueryBuilder {
                 break
             }
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Error while setting value on field [" + fieldNode."@name" + "] of entity " + entityName + ": " + e.toString(), e)
+            throw new IllegalArgumentException("Error while setting value on field [${fieldName}] of entity [${entityName}]: " + e.toString(), e)
         } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception while setting value on field [" + fieldNode."@name" + "] of entity " + entityName + ": " + sqle.toString(), sqle)
+            throw new EntityException("SQL Exception while setting value on field [${fieldName}] of entity [${entityName}]: " + sqle.toString(), sqle)
         }
     }
 }

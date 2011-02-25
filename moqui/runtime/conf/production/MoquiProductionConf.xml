@@ -13,6 +13,8 @@
 
     <screen-facade boundary-comments="false"/>
 
+    <entity-facade crypt-pass="MoquiProductionDefaultPassword:CHANGEME"/>
+
     <repository-list>
         <repository name="main" location="http://localhost:8081/server" type="davex" workspace="production"/>
     </repository-list>

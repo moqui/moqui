@@ -334,7 +334,7 @@ class StupidUtilities {
             sb.append(digestChars, 0, digestChars.length)
             return sb.toString()
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while computing hash of type [${hashType}]", e);
+            throw new IllegalArgumentException("Error while computing hash of type [${hashType}]", e)
         }
     }
 

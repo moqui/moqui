@@ -431,14 +431,18 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="server-jndi">
                     <xs:annotation><xs:documentation>If not present the default JNDI server will be used.</xs:documentation></xs:annotation>
                 </xs:element>
-                <xs:element maxOccurs="unbounded" ref="datasource"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="datasource"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="load-entity"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="load-data"/>
             </xs:sequence>
             <xs:attribute name="entity-eca-enabled" default="true" type="boolean"/>
             <xs:attribute name="distributed-cache-clear-enabled" default="false" type="boolean"/>
             <xs:attribute name="sequenced-id-prefix" type="xs:string"/>
-            <xs:attribute name="default-group-name" type="xs:string" use="required"/>
+            <xs:attribute name="default-group-name" type="xs:string"/>
+            <xs:attribute name="crypt-pass" type="xs:string"/>
+            <xs:attribute name="crypt-salt" type="xs:string"/>
+            <xs:attribute name="crypt-iter" type="xs:string"/>
+            <xs:attribute name="crypt-algo" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 

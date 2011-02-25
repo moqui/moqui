@@ -44,6 +44,8 @@
                             macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
     </screen-facade>
 
+    <entity-facade crypt-pass="MoquiDevDefaultPassword:CHANGEME"/>
+
     <repository-list>
         <repository name="main" location="http://localhost:8081/server" type="davex" workspace="development"/>
     </repository-list>

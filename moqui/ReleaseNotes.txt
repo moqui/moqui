@@ -30,6 +30,7 @@ This release includes:
   - Support entity-find.search-form-inputs element for form *-find fields
   - Automatic cache clearing for one, list (using RA cache), count caches
   - Entity audit-logging
+  - Entity field encryption
 
 Notable features not yet implemented:
 
@@ -51,7 +52,6 @@ Notable features not yet implemented:
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async or scheduled max-retry
 - Entity Facade
-  - Entity field encryption
   - Entity extension
   - Entity ECA rules
   - Entity complex aliases in views
