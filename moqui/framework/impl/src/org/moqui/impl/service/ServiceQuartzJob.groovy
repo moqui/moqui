@@ -13,10 +13,24 @@ package org.moqui.impl.service
 
 import org.quartz.Job
 import org.quartz.JobExecutionContext
+import org.quartz.JobDataMap
+import org.moqui.context.ExecutionContext
+import org.moqui.Moqui
 
 class ServiceQuartzJob implements Job {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceQuartzJob.class)
+
     void execute(JobExecutionContext jobExecutionContext) {
-        // TODO impl this
         String serviceName = jobExecutionContext.jobDetail.key.group
+
+        JobDataMap jdm = jobExecutionContext.jobDetail.jobDataMap
+        Map parameters = new HashMap()
+        for (String key in jdm.getKeys()) parameters.put(key, jdm.get(key))
+
+        if (logger.infoEnabled) logger.info("Calling async|scheduled service [${serviceName}] with parameters [${parameters}]")
+
+        ExecutionContext ec = Moqui.getExecutionContext()
+        ec.service.sync().name(serviceName).parameters(parameters).call()
+        ec.destroy()
     }
 }

@@ -68,6 +68,7 @@ class StupidWebUtilities {
         Object put(String s, Object o) { Object orig = req.getAttribute(s); req.setAttribute(s, o); return orig; }
         Object remove(Object o) { Object orig = req.getAttribute((String) o); req.removeAttribute((String) o); return orig; }
         void putAll(Map<? extends String, ? extends Object> map) {
+            if (!map) return
             for (Map.Entry entry in map.entrySet()) req.setAttribute((String) entry.getKey(), entry.getValue())
         }
         void clear() { for (String name in req.getAttributeNames()) req.removeAttribute(name) }
@@ -94,6 +95,7 @@ class StupidWebUtilities {
         Object put(String s, Object o) { Object orig = ses.getAttribute(s); ses.setAttribute(s, o); return orig; }
         Object remove(Object o) { Object orig = ses.getAttribute((String) o); ses.removeAttribute((String) o); return orig; }
         void putAll(Map<? extends String, ? extends Object> map) {
+            if (!map) return
             for (Map.Entry entry in map.entrySet()) ses.setAttribute((String) entry.getKey(), entry.getValue())
         }
         void clear() { for (String name in ses.getAttributeNames()) ses.removeAttribute(name) }
@@ -120,6 +122,7 @@ class StupidWebUtilities {
         Object put(String s, Object o) { Object orig = sc.getAttribute(s); sc.setAttribute(s, o); return orig; }
         Object remove(Object o) { Object orig = sc.getAttribute((String) o); sc.removeAttribute((String) o); return orig; }
         void putAll(Map<? extends String, ? extends Object> map) {
+            if (!map) return
             for (Map.Entry entry in map.entrySet()) sc.setAttribute((String) entry.getKey(), entry.getValue())
         }
         void clear() { for (String name in sc.getAttributeNames()) sc.removeAttribute(name) }
@@ -154,7 +157,7 @@ class StupidWebUtilities {
         Object remove(Object o) {
             return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.remove(o))
         }
-        void putAll(Map<? extends String, ? extends Object> map) { mp.putAll(map) }
+        void putAll(Map<? extends String, ? extends Object> map) { if (map) mp.putAll(map) }
         void clear() { mp.clear() }
         Set<String> keySet() { return mp.keySet() }
         Collection<Object> values() {

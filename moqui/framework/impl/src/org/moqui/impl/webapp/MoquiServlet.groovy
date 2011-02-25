@@ -35,7 +35,7 @@ class MoquiServlet extends HttpServlet {
 
     @Override
     public void init(ServletConfig config) throws ServletException {
-        super.init(config);
+        super.init(config)
         String contextPath = config.getServletContext().getContextPath()
         webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
         webappMoquiName = config.getServletContext().getInitParameter("moqui-name")
@@ -100,7 +100,7 @@ class MoquiServlet extends HttpServlet {
         }
 
         // make sure everything is cleaned up
-        executionContextFactory.destroyActiveExecutionContext()
+        ec.destroy()
 
         double runningTime = (System.currentTimeMillis() - startTime) / 1000
         if (logger.infoEnabled) logger.info("=-=-=-=-=-= End request to [${pathInfo}] of type [${response.getContentType()}] in [${runningTime}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")

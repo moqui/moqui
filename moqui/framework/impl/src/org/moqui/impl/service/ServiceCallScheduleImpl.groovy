@@ -100,7 +100,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
         // do we have to have an identity?: .withIdentity(..., "ScheduleTrigger")
         TriggerBuilder tb = TriggerBuilder.newTrigger()
                 .withPriority(3)
-                .usingJobData(new JobDataMap(context))
+                .usingJobData(new JobDataMap(parameters))
                 .forJob(job)
         if (startTime) tb.startAt(new Date(startTime))
         if (endTime) tb.endAt(new Date(endTime))

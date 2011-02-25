@@ -22,6 +22,8 @@ import org.quartz.JobDataMap
 import org.quartz.JobBuilder
 
 class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallAsyncImpl.class)
+
     protected boolean persist = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
     protected ServiceResultReceiver resultReceiver = null
@@ -64,13 +66,14 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     void call() {
         // TODO: how to handle persist on a per-job bases? seems like the volatile Job concept matched this, but that is deprecated in 2.0
         // TODO: how to handle maxRetry
+        logger.info("Setting up call to async service [${serviceName}] with parameters [${parameters}]")
 
         // NOTE: is this the best way to get a unique job name? (needed to register a listener below)
         String uniqueJobName = UUID.randomUUID()
         // NOTE: don't store durably, ie tell it to get rid of it after it is run
         JobBuilder jobBuilder = JobBuilder.newJob(ServiceQuartzJob.class)
                 .withIdentity(uniqueJobName, serviceName)
-                .usingJobData(new JobDataMap(context))
+                .usingJobData(new JobDataMap(parameters))
                 .requestRecovery().storeDurably(false)
         JobDetail job = jobBuilder.build()
 

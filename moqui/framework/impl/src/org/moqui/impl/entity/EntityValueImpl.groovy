@@ -70,7 +70,7 @@ class EntityValueImpl implements EntityValue {
     protected Map<String, Object> getDbValueMap() { return dbValueMap }
     protected void setDbValueMap(Map<String, Object> map) { dbValueMap = map }
 
-    void setSyncedWithDb() { dbValueMap = (Map) valueMap.clone(); modified = false }
+    void setSyncedWithDb() { dbValueMap = null; modified = false }
 
     /** @see org.moqui.entity.EntityValue#getEntityName() */
     String getEntityName() { return entityName }
@@ -137,7 +137,11 @@ class EntityValueImpl implements EntityValue {
         if (!getEntityDefinition().isField(name)) {
             throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${entityName}]")
         }
-        if (valueMap[name] != value) modified = true
+        if (valueMap[name] != value) {
+            modified = true
+            if (dbValueMap == null) dbValueMap = new HashMap()
+            dbValueMap.put(name, valueMap[name])
+        }
         valueMap.put(name, value)
     }
 
@@ -220,19 +224,20 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
         // TODO: add EECA execution
-        if (getEntityDefinition().isViewEntity()) {
+        EntityDefinition ed = getEntityDefinition()
+        if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Create not yet implemented for view-entity")
         } else {
-            if (getEntityDefinition().isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
+            if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
                 this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
 
-            ListOrderedSet allFieldList = getEntityDefinition().getFieldNames(true, true)
+            ListOrderedSet allFieldList = ed.getFieldNames(true, true)
             ListOrderedSet fieldList = new ListOrderedSet()
             for (String fieldName in allFieldList) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
-            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+            EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("INSERT INTO ").append(getEntityDefinition().getFullTableName())
+            sql.append("INSERT INTO ").append(ed.getFullTableName())
 
             sql.append(" (")
             boolean isFirstField = true
@@ -244,13 +249,13 @@ class EntityValueImpl implements EntityValue {
                     sql.append(", ")
                     values.append(", ")
                 }
-                sql.append(getEntityDefinition().getColumnName(fieldName, false))
+                sql.append(ed.getColumnName(fieldName, false))
                 values.append('?')
             }
             sql.append(") VALUES (").append(values.toString()).append(')')
 
             try {
-                efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
+                efi.entityDbMeta.checkTableRuntime(ed)
 
                 internalCreate(eqb, fieldList)
             } catch (EntityException e) {
@@ -259,6 +264,8 @@ class EntityValueImpl implements EntityValue {
                 eqb.closeAll()
             }
         }
+
+        handleAuditLog(false, null)
     }
 
     protected void internalCreate(EntityQueryBuilder eqb, ListOrderedSet fieldList) {
@@ -289,12 +296,14 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#update() */
     void update() {
         // TODO: add EECA execution
-        if (getEntityDefinition().isViewEntity()) {
+        EntityDefinition ed = getEntityDefinition()
+        Map oldValues = this.getDbValueMap()
+        if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Update not yet implemented for view-entity")
         } else {
-            ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
+            ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
 
-            ListOrderedSet nonPkAllFieldList = getEntityDefinition().getFieldNames(false, true)
+            ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true)
             ListOrderedSet nonPkFieldList = new ListOrderedSet()
             for (String fieldName in nonPkAllFieldList) {
                 if (valueMap.containsKey(fieldName) &&
@@ -303,42 +312,42 @@ class EntityValueImpl implements EntityValue {
                 }
             }
             if (!nonPkFieldList) {
-                logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+                if (logger.traceEnabled) logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
                 return
             }
 
-            if (getEntityDefinition().getEntityNode()."@optimistic-lock" == "true") {
+            if (ed.getEntityNode()."@optimistic-lock" == "true") {
                 EntityValue dbValue = (EntityValue) this.clone()
                 dbValue.refresh()
                 if (getTimestamp("lastUpdatedStamp") != dbValue.getTimestamp("lastUpdatedStamp"))
                     throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${dbValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
             }
 
-            if (getEntityDefinition().isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
+            if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
                 this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
 
-            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+            EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("UPDATE ").append(getEntityDefinition().getFullTableName()).append(" SET ")
+            sql.append("UPDATE ").append(ed.getFullTableName()).append(" SET ")
 
             boolean isFirstField = true
             for (String fieldName in nonPkFieldList) {
                 if (isFirstField) isFirstField = false else sql.append(", ")
-                sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                sql.append(ed.getColumnName(fieldName, false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
                         valueMap.get(fieldName), eqb))
             }
             sql.append(" WHERE ")
             boolean isFirstPk = true
             for (String fieldName in pkFieldList) {
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                sql.append(ed.getColumnName(fieldName, false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
                         valueMap.get(fieldName), eqb))
             }
 
             try {
-                efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
+                efi.entityDbMeta.checkTableRuntime(ed)
 
                 internalUpdate(eqb)
             } catch (EntityException e) {
@@ -347,6 +356,8 @@ class EntityValueImpl implements EntityValue {
                 eqb.closeAll()
             }
         }
+
+        handleAuditLog(true, oldValues)
     }
 
     protected void internalUpdate(EntityQueryBuilder eqb) {
@@ -359,28 +370,67 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().clearCacheForValue(this)
     }
 
+    void handleAuditLog(boolean isUpdate, Map oldValues) {
+        if (isUpdate && oldValues == null) return
+        EntityDefinition ed = getEntityDefinition()
+        if (!ed.needsAuditLog()) return
+        // in this case DON'T use the ec.user.nowTimestamp because we want the real time for audits
+        Timestamp nowTimestamp = new Timestamp(System.currentTimeMillis())
+
+        StringBuffer pkTextSb = new StringBuffer()
+        boolean firstField = true
+        for (String fieldName in ed.getFieldNames(true, false)) {
+            if (firstField) firstField = false else pkTextSb.append(",")
+            pkTextSb.append(fieldName).append("=").append(get(fieldName) as String)
+        }
+        String pkText = pkTextSb.toString()
+
+        for (Node fieldNode in ed.getFieldNodes(true, true)) {
+            if (fieldNode."@enable-audit-log" == "true") {
+                String fieldName = fieldNode."@name"
+                // if isUpdate but oldValues has not value then it hasn't been updated, so skip it
+                if (isUpdate && !oldValues.containsKey(fieldName)) continue
+
+                Object value = get(fieldName)
+                // don't skip for this, if a field was reset then we want to record that: if (!value) continue
+
+                Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
+                    changedFieldName:fieldName, pkCombinedValueText:pkText,
+                    newValueText:(value as String), changedDate:nowTimestamp,
+                    changedByUserId:getEntityFacadeImpl().ecfi.executionContext.user.userId,
+                    changedInVisitId:getEntityFacadeImpl().ecfi.executionContext.user.visitId]
+                if (oldValues != null && oldValues.get(fieldName)) {
+                    parms.put("oldValueText", oldValues.get(fieldName))
+                }
+
+                getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#EntityAuditLog").parameters(parms).call()
+            }
+        }
+    }
+
     /** @see org.moqui.entity.EntityValue#delete() */
     void delete() {
         // TODO: add EECA execution
-        if (getEntityDefinition().isViewEntity()) {
+        EntityDefinition ed = getEntityDefinition()
+        if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Delete not implemented for view-entity")
         } else {
-            ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
+            ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
 
-            EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+            EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
-            sql.append("DELETE FROM ").append(getEntityDefinition().getFullTableName()).append(" WHERE ")
+            sql.append("DELETE FROM ").append(ed.getFullTableName()).append(" WHERE ")
 
             boolean isFirstPk = true
             for (String fieldName in pkFieldList) {
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
-                eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+                sql.append(ed.getColumnName(fieldName, false)).append("=?")
+                eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
                         valueMap.get(fieldName), eqb))
             }
 
             try {
-                efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
+                efi.entityDbMeta.checkTableRuntime(ed)
 
                 internalDelete(eqb)
             } catch (EntityException e) {
@@ -403,37 +453,38 @@ class EntityValueImpl implements EntityValue {
     boolean refresh() {
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
-        ListOrderedSet pkFieldList = getEntityDefinition().getFieldNames(true, false)
+        EntityDefinition ed = getEntityDefinition()
+        ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
         if (!pkFieldList) throw new IllegalArgumentException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
-        ListOrderedSet nonPkFieldList = getEntityDefinition().getFieldNames(false, true)
+        ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true)
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
-        EntityQueryBuilder eqb = new EntityQueryBuilder(getEntityDefinition(), getEntityFacadeImpl())
+        EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
         StringBuilder sql = eqb.getSqlTopLevel()
         sql.append("SELECT ")
         boolean isFirstField = true
         if (nonPkFieldList) {
             for (String fieldName in nonPkFieldList) {
                 if (isFirstField) isFirstField = false else sql.append(", ")
-                sql.append(getEntityDefinition().getColumnName(fieldName, false))
+                sql.append(ed.getColumnName(fieldName, false))
             }
         } else {
             sql.append("*")
         }
 
-        sql.append(" FROM ").append(getEntityDefinition().getFullTableName()).append(" WHERE ")
+        sql.append(" FROM ").append(ed.getFullTableName()).append(" WHERE ")
 
         boolean isFirstPk = true
         for (String fieldName in pkFieldList) {
             if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-            sql.append(getEntityDefinition().getColumnName(fieldName, false)).append("=?")
-            eqb.getParameters().add(new EntityConditionParameter(getEntityDefinition().getFieldNode(fieldName),
+            sql.append(ed.getColumnName(fieldName, false)).append("=?")
+            eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
                     valueMap.get(fieldName), eqb))
         }
 
         boolean retVal = false
         try {
-            efi.entityDbMeta.checkTableRuntime(getEntityDefinition())
+            efi.entityDbMeta.checkTableRuntime(ed)
 
             retVal = internalRefresh(eqb, nonPkFieldList)
         } catch (EntityException e) {

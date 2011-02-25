@@ -30,17 +30,17 @@ public class CacheFacadeImpl implements CacheFacade {
      */
     protected final CacheManager cacheManager = new CacheManager()
 
-    public CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+    CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
     }
 
-    public void destroy() { this.cacheManager.shutdown() }
+    void destroy() { this.cacheManager.shutdown() }
 
     /** @see org.moqui.context.CacheFacade#clearAllCaches() */
-    public void clearAllCaches() { this.cacheManager.clearAll() }
+    void clearAllCaches() { this.cacheManager.clearAll() }
 
     /** @see org.moqui.context.CacheFacade#clearExpiredFromAllCaches() */
-    public void clearExpiredFromAllCaches() {
+    void clearExpiredFromAllCaches() {
         List<String> cacheNames = Arrays.asList(this.cacheManager.getCacheNames())
         for (String cacheName in cacheNames) {
             Ehcache ehcache = this.cacheManager.getEhcache(cacheName)
@@ -49,10 +49,10 @@ public class CacheFacadeImpl implements CacheFacade {
     }
 
     /** @see org.moqui.context.CacheFacade#clearCachesByPrefix(String) */
-    public void clearCachesByPrefix(String prefix) { this.cacheManager.clearAllStartingWith(prefix) }
+    void clearCachesByPrefix(String prefix) { this.cacheManager.clearAllStartingWith(prefix) }
 
     /** @see org.moqui.context.CacheFacade#getCache(String) */
-    public Cache getCache(String cacheName) {
+    Cache getCache(String cacheName) {
         Cache theCache
         if (this.cacheManager.cacheExists(cacheName)) {
             // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
@@ -63,6 +63,8 @@ public class CacheFacadeImpl implements CacheFacade {
 
         return theCache
     }
+
+    boolean cacheExists(String cacheName) { return this.cacheManager.cacheExists(cacheName) }
 
     protected synchronized net.sf.ehcache.Cache initCache(String cacheName) {
         if (this.cacheManager.cacheExists(cacheName)) return cacheManager.getCache(cacheName)

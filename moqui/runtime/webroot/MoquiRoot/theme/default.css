@@ -169,6 +169,10 @@ font-size: 0.8em;
 font-family: Lucida Console, Monaco, monospace;
 }
 
+td {
+padding: 0px 4px 0px 2px;
+}
+
 /* ======================= subscreens-menu ======================= */
 
 ul.subscreens-menu {
@@ -227,6 +231,7 @@ vertical-align: middle;
 }
 table.form-list-outer .form-title {
 border-bottom: 1px solid #DDDDDF;
+white-space: nowrap;
 }
 .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select {
 font-size: 0.8em;

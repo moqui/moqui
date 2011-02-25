@@ -316,29 +316,35 @@ class EntityFacadeImpl implements EntityFacade {
     void clearCacheForValue(EntityValueImpl evi) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
         String entityName = evi.getEntityName()
+        EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
 
         // clear one cache
-        EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
-        Cache entityOneCache = getCacheOne(entityName)
-        if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
+        if (ecfi.cacheFacade.cacheExists("entity.one.${entityName}")) {
+            Cache entityOneCache = getCacheOne(entityName)
+            if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
+        }
 
         // clear list cache, use reverse-associative Map (also a Cache)
-        Cache listRaCache = getCacheListRa(entityName)
-        if (listRaCache.containsKey(pkCondition)) {
-            List raKeyList = (List) listRaCache.get(pkCondition)
-            Cache entityListCache = getCacheList(entityName)
-            for (EntityCondition ec in raKeyList) {
-                // check it one last time before removing, may have been cleared by something else
-                if (entityListCache.containsKey(ec)) entityListCache.remove(ec)
+        if (ecfi.cacheFacade.cacheExists("entity.list.${entityName}")) {
+            Cache listRaCache = getCacheListRa(entityName)
+            if (listRaCache.containsKey(pkCondition)) {
+                List raKeyList = (List) listRaCache.get(pkCondition)
+                Cache entityListCache = getCacheList(entityName)
+                for (EntityCondition ec in raKeyList) {
+                    // check it one last time before removing, may have been cleared by something else
+                    if (entityListCache.containsKey(ec)) entityListCache.remove(ec)
+                }
+                // we've cleared all entries that this was referring to, so clean it out too
+                listRaCache.remove(pkCondition)
             }
-            // we've cleared all entries that this was referring to, so clean it out too
-            listRaCache.remove(pkCondition)
         }
 
         // clear count cache (no RA because we only have a count to work with, just match by condition)
-        Cache entityCountCache = getCacheCount(entityName)
-        for (EntityCondition ec in entityCountCache.keySet()) {
-            if (ec.mapMatches(evi)) entityCountCache.remove(ec)
+        if (ecfi.cacheFacade.cacheExists("entity.count.${entityName}")) {
+            Cache entityCountCache = getCacheCount(entityName)
+            for (EntityCondition ec in entityCountCache.keySet()) {
+                if (ec.mapMatches(evi)) entityCountCache.remove(ec)
+            }
         }
     }
     void registerCacheListRa(String entityName, EntityCondition ec, EntityList el) {

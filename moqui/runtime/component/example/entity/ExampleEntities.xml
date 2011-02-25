@@ -24,6 +24,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="description" type="text-long"/>
         <field name="longDescription" type="text-very-long"/>
         <field name="comments" type="text-long"/>
+        <field name="auditedField" type="text-long" enable-audit-log="true"/>
+        <field name="encryptedField" type="text-long" encrypt="true"/>
         <field name="exampleSize" type="number-integer"/>
         <field name="exampleDate" type="date-time"/>
         <!-- try uncommenting these while running to see how things change

@@ -27,6 +27,9 @@ public class EntityDefinition {
     protected String entityName
     protected Node entityNode
 
+    protected Boolean needsAuditLogVal = null
+    protected Boolean needsEncryptVal = null
+
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
         this.entityName = entityNode."@entity-name"
@@ -62,6 +65,24 @@ public class EntityDefinition {
 
     boolean isViewEntity() {
         return this.entityNode.name() == "view-entity"
+    }
+
+    boolean needsAuditLog() {
+        if (needsAuditLogVal != null) return needsAuditLogVal
+        needsAuditLogVal = false
+        for (Node fieldNode in getFieldNodes(true, true)) {
+            if (fieldNode."@enable-audit-log" == "true") needsAuditLogVal = true
+        }
+        return needsAuditLogVal
+    }
+
+    boolean needsEncrypt() {
+        if (needsEncryptVal != null) return needsEncryptVal
+        needsEncryptVal = false
+        for (Node fieldNode in getFieldNodes(true, true)) {
+            if (fieldNode."@encrypt" == "true") needsEncryptVal = true
+        }
+        return needsEncryptVal
     }
 
     Node getFieldNode(String fieldName) {
@@ -178,6 +199,18 @@ public class EntityDefinition {
             }
         }
         return nameSet
+    }
+
+    List<Node> getFieldNodes(boolean includePk, boolean includeNonPk) {
+        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
+        List<Node> nodeList = new ArrayList<Node>()
+        String nodeName = this.isViewEntity() ? "alias" : "field"
+        for (Node node in this.entityNode[nodeName]) {
+            if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
+                nodeList.add(node)
+            }
+        }
+        return nodeList
     }
 
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
