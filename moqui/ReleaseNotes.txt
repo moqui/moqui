@@ -13,7 +13,6 @@ This release includes:
 - Significant updates to Example application screens (most now working)
 - Added various configuration options and examples for flexible deployment
   and overriding templates for screen macros, xml-actions, etc
-- View-entity fixes and testing, now most view-entity options work
 - Executable WAR file is more self-contained, ie less required in runtime
   but with a few more override options in runtime too
 - Root web screen split to support undecorated subscreens and apps
@@ -26,7 +25,9 @@ This release includes:
   - I18n (with L10nFacade) for labels and titles in screens, forms, menus
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
+  - Finished implementation of async/scheduled service calls
 - Entity Facade
+  - View-entity fixes and testing, now most view-entity options work
   - Support entity-find.search-form-inputs element for form *-find fields
   - Automatic cache clearing for one, list (using RA cache), count caches
   - Entity audit-logging
@@ -50,7 +51,7 @@ Notable features not yet implemented:
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
-  - Service async or scheduled max-retry
+  - Service async/scheduled max-retry in Quartz
 - Entity Facade
   - Entity extension
   - Entity ECA rules
