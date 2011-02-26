@@ -130,11 +130,11 @@ class ScreenForm {
                     subFieldNode.appendNode("hidden")
                 } else {
                     if (spType.endsWith("Date") && spType != "java.util.Date") {
-                        subFieldNode.appendNode("date-time", [type:"date"])
+                        subFieldNode.appendNode("date-time", [type:"date", format:parameterNode."@format"])
                     } else if (spType.endsWith("Time")) {
-                        subFieldNode.appendNode("date-time", [type:"time"])
+                        subFieldNode.appendNode("date-time", [type:"time", format:parameterNode."@format"])
                     } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
-                        subFieldNode.appendNode("date-time", [type:"date-time"])
+                        subFieldNode.appendNode("date-time", [type:"date-time", format:parameterNode."@format"])
                     } else {
                         if (efType == "text-very-long") {
                             subFieldNode.appendNode("text-area")
@@ -146,11 +146,11 @@ class ScreenForm {
                 break;
             case "find":
                 if (spType.endsWith("Date") && spType != "java.util.Date") {
-                    subFieldNode.appendNode("date-find", [type:"date"])
+                    subFieldNode.appendNode("date-find", [type:"date", format:parameterNode."@format"])
                 } else if (spType.endsWith("Time")) {
-                    subFieldNode.appendNode("date-find", [type:"time"])
+                    subFieldNode.appendNode("date-find", [type:"time", format:parameterNode."@format"])
                 } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
-                    subFieldNode.appendNode("date-find", [type:"date-time"])
+                    subFieldNode.appendNode("date-find", [type:"date-time", format:parameterNode."@format"])
                 } else if (spType.endsWith("BigDecimal") || spType.endsWith("Long") || spType.endsWith("Integer")
                         || spType.endsWith("Double") || spType.endsWith("Float") || spType.endsWith("Number")) {
                     subFieldNode.appendNode("range-find")
@@ -159,23 +159,23 @@ class ScreenForm {
                 }
                 break;
             case "display":
-                subFieldNode.appendNode("display")
+                subFieldNode.appendNode("display", [format:parameterNode."@format"])
                 break;
             case "find-display":
                 Node headerFieldNode = newFieldNode.appendNode("header-field")
                 if (spType.endsWith("Date") && spType != "java.util.Date") {
-                    headerFieldNode.appendNode("date-find", [type:"date"])
+                    headerFieldNode.appendNode("date-find", [type:"date", format:parameterNode."@format"])
                 } else if (spType.endsWith("Time")) {
-                    headerFieldNode.appendNode("date-find", [type:"time"])
+                    headerFieldNode.appendNode("date-find", [type:"time", format:parameterNode."@format"])
                 } else if (spType.endsWith("Timestamp") || spType == "java.util.Date") {
-                    headerFieldNode.appendNode("date-find", [type:"date-time"])
+                    headerFieldNode.appendNode("date-find", [type:"date-time", format:parameterNode."@format"])
                 } else if (spType.endsWith("BigDecimal") || spType.endsWith("Long") || spType.endsWith("Integer")
                         || spType.endsWith("Double") || spType.endsWith("Float") || spType.endsWith("Number")) {
                     headerFieldNode.appendNode("range-find")
                 } else {
                     headerFieldNode.appendNode("text-find")
                 }
-                subFieldNode.appendNode("display")
+                subFieldNode.appendNode("display", [format:parameterNode."@format"])
                 break;
             case "hidden":
                 subFieldNode.appendNode("hidden")

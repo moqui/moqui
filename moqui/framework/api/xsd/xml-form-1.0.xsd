@@ -395,6 +395,11 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            <!-- TODO support in code -->
+            <xs:attribute name="format" type="xs:string">
+                <xs:annotation><xs:documentation>Used to format the output of Time/Date/Timestamp objects. With
+                    auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="default-value-from" type="xs:string"/>
             <xs:attribute name="default-value-thru" type="xs:string"/>
         </xs:complexType>
@@ -410,6 +415,11 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="time"/>
                     </xs:restriction>
                 </xs:simpleType>
+            </xs:attribute>
+            <!-- TODO support in code -->
+            <xs:attribute name="format" type="xs:string">
+                <xs:annotation><xs:documentation>Used to format the output of Time/Date/Timestamp objects. With
+                    auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="default-value" type="xs:string"/>
         </xs:complexType>
@@ -427,6 +437,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="currency-unit-field" type="xs:string">
                 <xs:annotation><xs:documentation>Specifies the currency uomId (ISO code) used to format the value.
                 Will only format as currency if this is specified.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <!-- TODO support in code -->
+            <xs:attribute name="format" type="xs:string">
+                <xs:annotation><xs:documentation>Used to format the output of Time/Date/Timestamp objects. With
+                    auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="encode" default="true" type="boolean">
                 <xs:annotation><xs:documentation>

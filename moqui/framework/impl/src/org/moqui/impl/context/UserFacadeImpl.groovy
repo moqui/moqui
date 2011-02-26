@@ -21,9 +21,13 @@ import org.moqui.impl.StupidUtilities
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.text.NumberFormat
+import org.apache.commons.validator.routines.BigDecimalValidator
+import org.apache.commons.validator.routines.CalendarValidator
 
 class UserFacadeImpl implements UserFacade {
     protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
+    final static BigDecimalValidator bigDecimalValidator = new BigDecimalValidator(false)
+    final static CalendarValidator calendarValidator = new CalendarValidator()
 
     protected ExecutionContextImpl eci
     protected Timestamp effectiveTime = null
@@ -301,5 +305,52 @@ class UserFacadeImpl implements UserFacade {
     EntityValue getVisit() {
         if (!visitId) return null
         return eci.entity.makeFind("Visit").condition("visitId", visitId).useCache(true).one()
+    }
+
+    java.sql.Time parseTime(String input, String format) {
+        if (!format) format = "HH:mm:ss.SSS"
+        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
+        if (cal == null) return null
+        return new java.sql.Time(cal.getTimeInMillis())
+    }
+    String printTime(java.sql.Time input, String format) {
+        if (!format) format = "HH:mm:ss.SSS"
+        return calendarValidator.format(input, format, getLocale(), getTimeZone())
+    }
+
+    java.sql.Date parseDate(String input, String format) {
+        if (!format) format = "yyyy-MM-dd"
+        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
+        if (cal == null) return null
+        return new java.sql.Date(cal.getTimeInMillis())
+    }
+    String printDate(java.sql.Date input, String format) {
+        if (!format) format = "yyyy-MM-dd"
+        return calendarValidator.format(input, format, getLocale(), getTimeZone())
+    }
+
+    java.sql.Timestamp parseTimestamp(String input, String format) {
+        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
+        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
+        if (cal == null) return null
+        return new Timestamp(cal.getTimeInMillis())
+    }
+    String printDate(java.sql.Timestamp input, String format) {
+        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
+        return calendarValidator.format(input, format, getLocale(), getTimeZone())
+    }
+
+    Calendar parseDateTime(String input, String format) {
+        return calendarValidator.validate(input, format, getLocale(), getTimeZone())
+    }
+    String printDateTime(Calendar input, String format) {
+        return calendarValidator.format(input, format, getLocale(), getTimeZone())
+    }
+
+    BigDecimal parseNumber(String input, String format) {
+        return bigDecimalValidator.validate(input, format, getLocale())
+    }
+    String printNumber(Number input, String format) {
+        return bigDecimalValidator.format(input, format, getLocale())
     }
 }

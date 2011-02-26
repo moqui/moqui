@@ -182,6 +182,15 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="type" type="xs:string" default="String"/>
+            <xs:attribute name="format" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    Used only when the parameter is passed in as a String but the type is
+                    something other than String to convert to that type.
+
+                    For date/time uses standard Java format strings described here:
+                    http://download.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="default-value" type="xs:string">
                 <xs:annotation><xs:documentation>The value specified will be used for the parameter if no value is
                     passed in (only used if required=false).</xs:documentation></xs:annotation>
@@ -263,27 +272,29 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:annotation><xs:documentation>Validate the current parameter against the regular expression specified in the
             regexp attribute.</xs:documentation></xs:annotation>
         <xs:complexType>
-            <xs:simpleContent>
-                <xs:extension base="xs:string">
-                    <xs:attribute name="regexp" type="xs:string" use="required"/>
-                </xs:extension>
-            </xs:simpleContent>
+            <xs:attribute name="regexp" type="xs:string" use="required"/>
+            <xs:attribute name="message" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 
     <xs:element name="number-range" substitutionGroup="ParameterValidations">
         <xs:complexType>
-            <xs:attribute name="min" type="xs:nonNegativeInteger"/>
-            <xs:attribute name="max" type="xs:nonNegativeInteger"/>
-            <xs:attribute name="positive" type="boolean" default="false"/>
-            <xs:attribute name="non-positive" type="boolean" default="false"/>
-            <xs:attribute name="negative" type="boolean" default="false"/>
-            <xs:attribute name="non-negative" type="boolean" default="false"/>
+            <xs:attribute name="min" type="xs:decimal">
+                <xs:annotation><xs:documentation>To pass number must be greater than or equal to this value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="min-include-equals" type="boolean" default="true">
+                <xs:annotation><xs:documentation>Should the range include equal to the min number? Defaults to true.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="max" type="xs:decimal">
+                <xs:annotation><xs:documentation>To pass number must be less than this value.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="max-include-equals" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Should the range include equal to the max number? Defaults to false (exclusive).</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="number-integer" substitutionGroup="ParameterValidations"/>
     <xs:element name="number-decimal" substitutionGroup="ParameterValidations"/>
-    <xs:element name="number-credit-card" substitutionGroup="ParameterValidations"/>
 
     <xs:element name="text-length" substitutionGroup="ParameterValidations">
         <xs:complexType>
@@ -296,32 +307,26 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="text-letters" substitutionGroup="ParameterValidations"/>
     <xs:element name="text-digits" substitutionGroup="ParameterValidations"/>
 
-    <xs:element name="time-date" substitutionGroup="ParameterValidations"/>
-    <xs:element name="time-time" substitutionGroup="ParameterValidations"/>
-    <xs:element name="time-date-time" substitutionGroup="ParameterValidations"/>
     <xs:element name="time-range" substitutionGroup="ParameterValidations">
         <xs:complexType>
-            <xs:attribute name="before" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or
-                "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="after" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or
+                "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="before" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or
                 "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="creditcard-any" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-visa" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-mastercard" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-amex" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-discover" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-enroute" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-jcb" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-solo" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-switch" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-dinersclub" substitutionGroup="ParameterValidations"/>
-    <xs:element name="creditcard-visaelectron" substitutionGroup="ParameterValidations"/>
+    <xs:element name="credit-card" substitutionGroup="ParameterValidations">
+        <xs:complexType>
+            <xs:attribute name="types" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    A comma-separate list of the types of credit card to allow. The available options include:
+                        visa,mastercard,amex,discover,enroute,jcb,solo,switch,dinersclub,visaelectron
 
-    <xs:element name="usa-zip-code" substitutionGroup="ParameterValidations"/>
-    <xs:element name="usa-po-box" substitutionGroup="ParameterValidations"/>
-    <xs:element name="usa-phone" substitutionGroup="ParameterValidations"/>
-    <xs:element name="usa-area-code" substitutionGroup="ParameterValidations"/>
+                    If empty defaults to allow any type of card (ie doesn't check the card type, just checks the number
+                    using the Luhn MOD-10 checksum).
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>

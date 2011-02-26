@@ -29,6 +29,7 @@ This release includes:
   - Service parameter type/subtype checking
   - Service parameter ESAPI/Antisamy HTML checks (any/safe/none)
   - Service authentication
+  - Service parameter conversion/parsing and validation checks
 - Entity Facade
   - View-entity fixes and testing, now most view-entity options work
   - Support entity-find.search-form-inputs element for form *-find fields
@@ -43,13 +44,14 @@ Notable features not yet implemented:
 - XML Screens
   - Screen form AJAX and jQuery
   - Screen form field-layout support
+  - Screen form output formatting, based on service parameter format if
+    applicable, otherwise on format specified in form field
   - Screen form validation based on target transition service definition
     with the define once, run on client and server concept
   - Screen tree elements
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
   - Service ECA rules
-  - Service parameter validation checks
   - Service semaphores
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)

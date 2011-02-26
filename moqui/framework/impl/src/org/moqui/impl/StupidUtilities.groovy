@@ -20,6 +20,12 @@ import org.w3c.dom.Element
 import java.nio.charset.Charset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.apache.commons.validator.routines.BigDecimalValidator
+import org.apache.commons.validator.routines.BigIntegerValidator
+import org.apache.commons.validator.routines.IntegerValidator
+import org.apache.commons.validator.routines.DoubleValidator
+import org.apache.commons.validator.routines.FloatValidator
+import org.apache.commons.validator.routines.LongValidator
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -37,6 +43,7 @@ class StupidUtilities {
             "java.lang.Float":java.lang.Float.class, "Float":java.lang.Float.class,
             "java.lang.Double":java.lang.Double.class, "Double":java.lang.Double.class,
             "java.math.BigDecimal":java.math.BigDecimal.class, "BigDecimal":java.math.BigDecimal.class,
+            "java.math.BigInteger":java.math.BigInteger.class, "BigInteger":java.math.BigInteger.class,
             "java.lang.Boolean":java.lang.Boolean.class, "Boolean":java.lang.Boolean.class,
             "java.lang.Object":java.lang.Object.class, "Object":java.lang.Object.class,
             "java.sql.Blob":java.sql.Blob.class, "Blob":java.sql.Blob.class,
@@ -56,6 +63,7 @@ class StupidUtilities {
     }
     static Object basicConvert(Object value, String javaType) {
         if (value == null) return null
+
         Class theClass = commonJavaClassesMap.get(javaType)
         // only support the classes we have pre-configured
         if (theClass == null) return null
