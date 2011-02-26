@@ -313,7 +313,7 @@ class UserFacadeImpl implements UserFacade {
         if (cal == null) return null
         return new java.sql.Time(cal.getTimeInMillis())
     }
-    String printTime(java.sql.Time input, String format) {
+    String formatTime(java.sql.Time input, String format) {
         if (!format) format = "HH:mm:ss.SSS"
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
@@ -324,7 +324,7 @@ class UserFacadeImpl implements UserFacade {
         if (cal == null) return null
         return new java.sql.Date(cal.getTimeInMillis())
     }
-    String printDate(java.sql.Date input, String format) {
+    String formatDate(java.sql.Date input, String format) {
         if (!format) format = "yyyy-MM-dd"
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
@@ -335,7 +335,7 @@ class UserFacadeImpl implements UserFacade {
         if (cal == null) return null
         return new Timestamp(cal.getTimeInMillis())
     }
-    String printDate(java.sql.Timestamp input, String format) {
+    String formatTimestamp(java.sql.Timestamp input, String format) {
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
@@ -343,14 +343,25 @@ class UserFacadeImpl implements UserFacade {
     Calendar parseDateTime(String input, String format) {
         return calendarValidator.validate(input, format, getLocale(), getTimeZone())
     }
-    String printDateTime(Calendar input, String format) {
+    String formatDateTime(Calendar input, String format) {
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
 
     BigDecimal parseNumber(String input, String format) {
         return bigDecimalValidator.validate(input, format, getLocale())
     }
-    String printNumber(Number input, String format) {
+    String formatNumber(Number input, String format) {
         return bigDecimalValidator.format(input, format, getLocale())
+    }
+
+    String formatValue(Object value, String format) {
+        if (!value) return ""
+        if (value instanceof String) return value
+        if (value instanceof Number) return formatNumber(value, format)
+        if (value instanceof Timestamp) return formatTimestamp(value, format)
+        if (value instanceof java.sql.Date) return formatDate(value, format)
+        if (value instanceof java.sql.Time) return formatTime(value, format)
+        if (value instanceof Calendar) return formatDateTime(value, format)
+        return value as String
     }
 }

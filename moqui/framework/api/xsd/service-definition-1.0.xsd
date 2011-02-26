@@ -106,7 +106,13 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             -->
             <xs:attribute name="max-retry" type="xs:int" default="-1"/>
+            <!-- Tabled for now, not to be part of 1.0:
             <xs:attribute name="semaphore" default="none">
+                <xs:annotation><xs:documentation>
+                    Intended for use in long-running services (usually scheduled). This uses a record in the database
+                    to "lock" the service so that only one instance of it can run against a given database at any
+                    given time.
+                </xs:documentation></xs:annotation>
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="none"/>
@@ -117,6 +123,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="semaphore-wait-seconds" type="xs:int" default="300"/>
             <xs:attribute name="semaphore-sleep" type="xs:int" default="500"/>
+            -->
         </xs:complexType>
     </xs:element>
     <xs:element name="in-parameters">
@@ -140,8 +147,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="service" type="xs:string" use="required"/>
             <xs:attribute name="required" type="boolean" use="optional">
-                <xs:annotation><xs:documentation>If set to true or false all parameters inherited have that required
-                    value.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>If set to true or false all parameters inherited have that value for
+                    the required attribute.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

@@ -24,6 +24,7 @@ import org.quartz.JobKey
 import org.quartz.CalendarIntervalScheduleBuilder
 import org.quartz.DateBuilder.IntervalUnit
 import org.quartz.CronScheduleBuilder
+import org.moqui.impl.context.ExecutionContextImpl
 
 class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSchedule {
     protected String jobName = null
@@ -84,6 +85,21 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     @Override
     void call() {
         // TODO maxRetry: any way to set and then track the number of retries?
+
+        // Before scheduling the service check a few basic things so they show up sooner than later:
+        ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
+        if (sd == null && !((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null)) {
+            throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+        }
+        String serviceType = sd.serviceNode."@type" ?: "inline"
+        if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
+        ServiceRunner sr = sfi.getServiceRunner(serviceType)
+        if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
+        // validation
+        ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
+        sd.convertValidateCleanParameters(this.parameters, eci)
+        // if error(s) in parameters, return now with no results
+        if (eci.message.errors) return
 
         // NOTE: get existing job based on jobName/serviceName pair IFF a jobName is specified
         JobKey jk = JobKey.jobKey(jobName, serviceName)

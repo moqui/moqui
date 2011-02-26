@@ -197,7 +197,7 @@ class WebFacadeImpl implements WebFacade {
         if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
     }
 
-    public static DiskFileItemFactory makeDiskFileItemFactory(ServletContext context) {
+    static DiskFileItemFactory makeDiskFileItemFactory(ServletContext context) {
         // NOTE: consider keeping this factory somewhere to be more efficient, if it even makes a difference...
         File repository = new File(System.getProperty("moqui.runtime") + "/tmp")
         if (!repository.exists()) repository.mkdir()

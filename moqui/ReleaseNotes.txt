@@ -21,6 +21,8 @@ This release includes:
   - Screen form elements, all implemented (including file upload, *-find)
   - Screen form header-field widget rendering
   - Screen form header-field.@show-order-by support
+  - Screen form output formatting, based on service parameter format if
+    applicable, otherwise on format specified in form field
   - Output encoding, configurable on various screen/form elements
   - I18n (with L10nFacade) for labels and titles in screens, forms, menus
 - Service Facade
@@ -44,15 +46,12 @@ Notable features not yet implemented:
 - XML Screens
   - Screen form AJAX and jQuery
   - Screen form field-layout support
-  - Screen form output formatting, based on service parameter format if
-    applicable, otherwise on format specified in form field
   - Screen form validation based on target transition service definition
     with the define once, run on client and server concept
   - Screen tree elements
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
   - Service ECA rules
-  - Service semaphores
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
@@ -193,3 +192,5 @@ Features designed, but not to be included in 1.0 series
 - Entity Facade
   - EntitySync tool
   - Database-driven dynamic view entity
+- Service Facade
+  - Service database-driven semaphores
