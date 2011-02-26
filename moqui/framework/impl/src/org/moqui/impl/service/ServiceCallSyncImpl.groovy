@@ -193,8 +193,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(transactionTimeout) : false
             try {
                 result = sr.runService(sd, this.parameters)
+                // if we got any errors added to the message list in the service, rollback for that too
+                if (eci.message.errors) {
+                    tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.message.errors[0], null)
+                }
             } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error running service [${getServiceName()}]", t)
+                tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
                 // add all exception messages to the error messages list
                 eci.message.addError(t.message)
                 Throwable parent = t.cause
