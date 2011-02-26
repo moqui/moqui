@@ -49,10 +49,22 @@ class StupidUtilities {
             "java.util.Set":java.util.Set.class]
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = commonJavaClassesMap.get(javaType)
-        if (!theClass) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)
-        if (!theClass) theClass = System.getClassLoader().loadClass(javaType)
-        if (!theClass) throw new IllegalArgumentException("Cannot find class for type: ${javaType}")
+        if (theClass == null) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)
+        if (theClass == null) theClass = System.getClassLoader().loadClass(javaType)
+        if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: ${javaType}")
         return theClass.isInstance(theObjectInQuestion)
+    }
+    static Object basicConvert(Object value, String javaType) {
+        if (value == null) return null
+        Class theClass = commonJavaClassesMap.get(javaType)
+        // only support the classes we have pre-configured
+        if (theClass == null) return null
+        try {
+            // groovy do the work
+            return value.asType(theClass)
+        } catch (Throwable t) {
+            return null
+        }
     }
 
     static final boolean compareLike(Object value1, Object value2) {

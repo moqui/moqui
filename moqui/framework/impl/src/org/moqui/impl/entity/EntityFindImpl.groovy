@@ -60,15 +60,10 @@ class EntityFindImpl implements EntityFind {
     }
 
     /** @see org.moqui.entity.EntityFind#entity(String) */
-    EntityFind entity(String entityName) {
-        this.entityName = entityName
-        return this
-    }
+    EntityFind entity(String entityName) { this.entityName = entityName; return this }
 
     /** @see org.moqui.entity.EntityFind#getEntity() */
-    String getEntity() {
-        return this.entityName
-    }
+    String getEntity() { return this.entityName }
 
     /** @see org.moqui.entity.EntityFind#makeEntityDynamicView() */
     EntityDynamicView makeEntityDynamicView() {
@@ -237,9 +232,7 @@ class EntityFindImpl implements EntityFind {
     }
 
     /** @see org.moqui.entity.EntityFind#getSelectFields() */
-    List<String> getSelectFields() {
-        return this.fieldsToSelect ? this.fieldsToSelect.asList() : null
-    }
+    List<String> getSelectFields() { return this.fieldsToSelect ? this.fieldsToSelect.asList() : null }
 
     /** @see org.moqui.entity.EntityFind#orderBy(String) */
     EntityFind orderBy(String orderByFieldName) {
@@ -256,44 +249,27 @@ class EntityFindImpl implements EntityFind {
     }
 
     /** @see org.moqui.entity.EntityFind#getOrderBy() */
-    List<String> getOrderBy() {
-        return this.orderByFields ? Collections.unmodifiableList(this.orderByFields) : null
-    }
+    List<String> getOrderBy() { return this.orderByFields ? Collections.unmodifiableList(this.orderByFields) : null }
 
     /** @see org.moqui.entity.EntityFind#useCache(boolean) */
-    EntityFind useCache(Boolean useCache) {
-        this.useCache = useCache
-        return this
-    }
+    EntityFind useCache(Boolean useCache) { this.useCache = useCache; return this }
 
     /** @see org.moqui.entity.EntityFind#getUseCache() */
-    boolean getUseCache() {
-        return this.useCache
-    }
+    boolean getUseCache() { return this.useCache }
 
     /** @see org.moqui.entity.EntityFind#forUpdate(boolean) */
-    EntityFind forUpdate(boolean forUpdate) {
-        this.forUpdate = forUpdate
-        return this
-    }
+    EntityFind forUpdate(boolean forUpdate) { this.forUpdate = forUpdate; return this }
 
     /** @see org.moqui.entity.EntityFind#getForUpdate() */
-    boolean getForUpdate() {
-        return this.forUpdate
-    }
+    boolean getForUpdate() { return this.forUpdate }
 
     // ======================== Advanced Options ==============================
 
     /** @see org.moqui.entity.EntityFind#resultSetType(int) */
-    EntityFind resultSetType(int resultSetType) {
-        this.resultSetType = resultSetType
-        return this
-    }
+    EntityFind resultSetType(int resultSetType) { this.resultSetType = resultSetType; return this }
 
     /** @see org.moqui.entity.EntityFind#getResultSetType() */
-    int getResultSetType() {
-        return this.resultSetType
-    }
+    int getResultSetType() { return this.resultSetType }
 
     /** @see org.moqui.entity.EntityFind#resultSetConcurrency(int) */
     EntityFind resultSetConcurrency(int resultSetConcurrency) {
@@ -302,42 +278,25 @@ class EntityFindImpl implements EntityFind {
     }
 
     /** @see org.moqui.entity.EntityFind#getResultSetConcurrency() */
-    int getResultSetConcurrency() {
-        return this.resultSetConcurrency
-    }
+    int getResultSetConcurrency() { return this.resultSetConcurrency }
 
     /** @see org.moqui.entity.EntityFind#fetchSize(int) */
-    EntityFind fetchSize(Integer fetchSize) {
-        this.fetchSize = fetchSize
-        return this
-    }
+    EntityFind fetchSize(Integer fetchSize) { this.fetchSize = fetchSize; return this }
 
     /** @see org.moqui.entity.EntityFind#getFetchSize() */
-    Integer getFetchSize() {
-        return this.fetchSize
-    }
+    Integer getFetchSize() { return this.fetchSize }
 
     /** @see org.moqui.entity.EntityFind#maxRows(int) */
-    EntityFind maxRows(Integer maxRows) {
-        this.maxRows = maxRows
-        return this
-    }
+    EntityFind maxRows(Integer maxRows) { this.maxRows = maxRows; return this }
 
     /** @see org.moqui.entity.EntityFind#getMaxRows() */
-    Integer getMaxRows() {
-        return this.maxRows
-    }
+    Integer getMaxRows() { return this.maxRows }
 
     /** @see org.moqui.entity.EntityFind#distinct(boolean) */
-    EntityFind distinct(boolean distinct) {
-        this.distinct = distinct
-        return this
-    }
+    EntityFind distinct(boolean distinct) { this.distinct = distinct; return this }
 
     /** @see org.moqui.entity.EntityFind#getDistinct() */
-    boolean getDistinct() {
-        return this.distinct
-    }
+    boolean getDistinct() { return this.distinct }
 
     // ======================== Run Find Methods ==============================
 

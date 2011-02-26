@@ -16,6 +16,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.example.example -->
     <!-- ========================================================= -->
 
+    <extend-entity entity-name="Example">
+        <field name="auditedField" type="text-long" enable-audit-log="true"/>
+        <field name="encryptedField" type="text-long" encrypt="true"/>
+    </extend-entity>
     <entity entity-name="Example" package-name="org.moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="exampleTypeEnumId" type="id"/>
@@ -24,8 +28,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="description" type="text-long"/>
         <field name="longDescription" type="text-very-long"/>
         <field name="comments" type="text-long"/>
-        <field name="auditedField" type="text-long" enable-audit-log="true"/>
-        <field name="encryptedField" type="text-long" encrypt="true"/>
         <field name="exampleSize" type="number-integer"/>
         <field name="exampleDate" type="date-time"/>
         <!-- try uncommenting these while running to see how things change

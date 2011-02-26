@@ -160,6 +160,12 @@ class ServiceDefinition {
     XmlAction getXmlAction() { return xmlAction }
 
     Node getInParameter(String name) { return (Node) serviceNode."in-parameters"[0]."parameter".find({ it."@name" == name }) }
+    Set<String> getInParameterNames() {
+        Set<String> inNames = new HashSet()
+        for (Node parameter in serviceNode."in-parameters"[0]."parameter") inNames.add(parameter."@name")
+        return inNames
+    }
+
     Node getOutParameter(String name) { return (Node) serviceNode."out-parameters"[0]."parameter".find({ it."@name" == name }) }
     Set<String> getOutParameterNames() {
         Set<String> outNames = new HashSet()

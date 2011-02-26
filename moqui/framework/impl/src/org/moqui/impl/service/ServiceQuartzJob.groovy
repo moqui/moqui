@@ -30,7 +30,29 @@ class ServiceQuartzJob implements Job {
         if (logger.infoEnabled) logger.info("Calling async|scheduled service [${serviceName}] with parameters [${parameters}]")
 
         ExecutionContext ec = Moqui.getExecutionContext()
-        ec.service.sync().name(serviceName).parameters(parameters).call()
+
+        try {
+            ec.service.sync().name(serviceName).parameters(parameters).call()
+        } catch (Throwable t) {
+            ec.message.addError(t.message)
+            Throwable parent = t.cause
+            while (parent != null) {
+                ec.message.addError(parent.message)
+                parent = parent.cause
+            }
+        }
+
+        if (ec.message.errors) {
+            StringBuilder sb = new StringBuilder()
+            sb.append("Error calling service [${serviceName}] with parameters [${parameters}]\n")
+            for (String message in ec.message.errors) {
+                sb.append(message).append("\n")
+            }
+            logger.error(sb.toString())
+
+            // TODO handle retry on error with max-retry
+        }
+
         ec.destroy()
     }
 }

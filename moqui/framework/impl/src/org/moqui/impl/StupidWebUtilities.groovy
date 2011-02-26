@@ -20,6 +20,8 @@ import org.owasp.esapi.codecs.HTMLEntityCodec
 import org.owasp.esapi.codecs.PercentCodec
 import org.owasp.esapi.reference.DefaultEncoder
 import org.owasp.esapi.Encoder
+import org.owasp.esapi.Validator
+import org.owasp.esapi.reference.DefaultValidator
 
 class StupidWebUtilities {
     public static Map<String, Object> getPathInfoParameterMap(String pathInfoStr) {
@@ -136,6 +138,7 @@ class StupidWebUtilities {
     }
     
     static final Encoder defaultWebEncoder = DefaultEncoder.getInstance()
+    static final Validator defaultWebValidator = DefaultValidator.getInstance()
 
     static class CanonicalizeMap implements Map<String, Object> {
         protected Map mp
@@ -184,7 +187,7 @@ class StupidWebUtilities {
         Object setValue(Object v) { Object orig = value; value = v; return orig; }
     }
 
-    protected static Object canonicalizeValue(Object orig) {
+    static Object canonicalizeValue(Object orig) {
         if (orig instanceof List || orig instanceof String[] || orig instanceof Object[]) {
             List lst = orig as List
             if (lst.size() == 1) {
@@ -196,6 +199,7 @@ class StupidWebUtilities {
                 }
             }
         }
+        // catch strings or lists with a single string in them unwrapped above
         if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
         return orig
     }

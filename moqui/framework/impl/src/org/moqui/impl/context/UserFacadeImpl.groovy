@@ -161,6 +161,10 @@ class UserFacadeImpl implements UserFacade {
 
     boolean loginUser(String userId, String password, String tenantId) {
         boolean successful = false
+
+        // TODO handle tenantId for active tenant
+        // TODO handle tenant change if tenantId is different than the current tenant
+
         if (authenticateUser(userId, password)) {
             successful = true
 
@@ -186,8 +190,6 @@ class UserFacadeImpl implements UserFacade {
 
             // just in case there is already a user authenticated push onto a stack to remember
             this.userIdStack.push((String) newUserAccount.userId)
-
-            // TODO handle tenantId for active tenant
         }
 
         Node loginNode = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]

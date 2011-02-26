@@ -118,9 +118,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
-    boolean containsPrimaryKey() {
-        return this.getEntityDefinition().containsPrimaryKey(valueMap)
-    }
+    boolean containsPrimaryKey() { return this.getEntityDefinition().containsPrimaryKey(valueMap) }
 
     /** @see org.moqui.entity.EntityValue#getPrimaryKeys() */
     Map<String, Object> getPrimaryKeys() {
@@ -146,9 +144,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#setString(String, String) */
-    void setString(String name, String value) {
-        entityDefinition.setString(name, value, this)
-    }
+    void setString(String name, String value) { entityDefinition.setString(name, value, this) }
 
     /** @see org.moqui.entity.EntityValue#getBoolean(String) */
     Boolean getBoolean(String name) { return this.get(name) as Boolean }
@@ -160,11 +156,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#getTimestamp(String) */
-    Timestamp getTimestamp(String name) {
-        // NOTE: all of these methods are using the Groovy asType to do type conversion
-        // if any don't work use the org.apache.commons.beanutils.Converter stuff
-        return (Timestamp) this.get(name).asType(Timestamp.class)
-    }
+    Timestamp getTimestamp(String name) { return (Timestamp) this.get(name).asType(Timestamp.class) }
 
     /** @see org.moqui.entity.EntityValue#getTime(String) */
     Time getTime(String name) { return this.get(name) as Time }
@@ -756,15 +748,10 @@ class EntityValueImpl implements EntityValue {
     }
 
     @Override
-    String toString() {
-        // general SQL where clause style text with values included
-        return "[${entityName}: ${valueMap}]"
-    }
+    String toString() { return "[${entityName}: ${valueMap}]" }
 
     @Override
-    public Object clone() {
-        return this.cloneValue()
-    }
+    public Object clone() { return this.cloneValue() }
 
     public EntityValue cloneValue() {
         EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), getEntityFacadeImpl())

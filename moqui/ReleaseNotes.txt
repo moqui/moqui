@@ -26,10 +26,14 @@ This release includes:
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
   - Finished implementation of async/scheduled service calls
+  - Service parameter type/subtype checking
+  - Service parameter ESAPI/Antisamy HTML checks (any/safe/none)
+  - Service authentication
 - Entity Facade
   - View-entity fixes and testing, now most view-entity options work
   - Support entity-find.search-form-inputs element for form *-find fields
   - Automatic cache clearing for one, list (using RA cache), count caches
+  - Entity extension
   - Entity audit-logging
   - Entity field encryption
 
@@ -45,15 +49,13 @@ Notable features not yet implemented:
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
   - Service ECA rules
-  - Service validation, Antisamy HTML checks
-  - Service authentication
+  - Service parameter validation checks
   - Service semaphores
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
-  - Entity extension
   - Entity ECA rules
   - Entity complex aliases in views
   - Database meta-data support for adding columns, fks, indexes

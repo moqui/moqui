@@ -302,11 +302,11 @@ public class EntityDefinition {
                 // never auto-alias these
                 if (fieldNode."@name" == "lastUpdatedStamp") continue
                 // if specified as excluded, leave it out
-                if (aliasAll.exclude.find({ it.@field == fieldNode."@name"})) continue
+                if (aliasAll."exclude".find({ it."@field" == fieldNode."@name"})) continue
 
                 String aliasName = fieldNode."@name"
-                if (aliasAll.@prefix) {
-                    StringBuilder newAliasName = new StringBuilder((String) aliasAll.@prefix)
+                if (aliasAll."@prefix") {
+                    StringBuilder newAliasName = new StringBuilder((String) aliasAll."@prefix")
                     newAliasName.append(Character.toUpperCase(aliasName.charAt(0)))
                     newAliasName.append(aliasName.substring(1))
                     aliasName = newAliasName.toString()
