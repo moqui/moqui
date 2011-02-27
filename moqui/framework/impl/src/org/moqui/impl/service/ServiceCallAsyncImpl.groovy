@@ -74,15 +74,17 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
         if (sd == null && !((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null)) {
             throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
         }
-        String serviceType = sd.serviceNode."@type" ?: "inline"
-        if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
-        ServiceRunner sr = sfi.getServiceRunner(serviceType)
-        if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
-        // validation
-        ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
-        sd.convertValidateCleanParameters(this.parameters, eci)
-        // if error(s) in parameters, return now with no results
-        if (eci.message.errors) return
+        if (sd != null) {
+            String serviceType = sd.serviceNode."@type" ?: "inline"
+            if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
+            ServiceRunner sr = sfi.getServiceRunner(serviceType)
+            if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
+            // validation
+            ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
+            sd.convertValidateCleanParameters(this.parameters, eci)
+            // if error(s) in parameters, return now with no results
+            if (eci.message.errors) return
+        }
 
         // NOTE: is this the best way to get a unique job name? (needed to register a listener below)
         String uniqueJobName = UUID.randomUUID()

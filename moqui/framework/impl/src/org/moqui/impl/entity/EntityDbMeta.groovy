@@ -389,8 +389,7 @@ class EntityDbMeta {
             stmt = con.createStatement()
             stmt.executeUpdate(sql.toString())
         } catch (SQLException e) {
-            String errMsg = "SQL Exception while executing the following SQL [${sql.toString()}]"
-            logger.error(errMsg, e)
+            logger.error("SQL Exception while executing the following SQL [${sql.toString()}]: ${e.toString()}")
         } finally {
             if (stmt != null) stmt.close()
             if (con != null) con.close()

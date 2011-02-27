@@ -148,7 +148,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 }
             } finally {
                 if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
-                sfi.runSecaRules(getServiceName(), this.parameters, "post-commit")
+                sfi.runSecaRules(getServiceName(), result, "post-commit")
             }
         } catch (TransactionException e) {
             throw e
