@@ -172,8 +172,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected Map<String, Object> runImplicitEntityAuto() {
         // NOTE: no authentication, assume not required for this; security settings can override this and require
         //     permissions, which will require authentication
-        sfi.runSecaRules(getServiceName(), this.parameters, "pre-validate")
-        sfi.runSecaRules(getServiceName(), this.parameters, "pre-auth")
+        sfi.runSecaRules(getServiceName(), this.parameters, null, "pre-validate")
+        sfi.runSecaRules(getServiceName(), this.parameters, null, "pre-auth")
 
         TransactionFacade tf = sfi.ecfi.getTransactionFacade()
         Transaction parentTransaction = null
@@ -182,7 +182,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (requireNewTransaction && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(null)
             try {
-                sfi.runSecaRules(getServiceName(), this.parameters, "pre-service")
+                sfi.runSecaRules(getServiceName(), this.parameters, null, "pre-service")
                 sfi.registerTxSecaRules(getServiceName(), this.parameters)
 
                 EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
@@ -194,12 +194,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     EntityAutoServiceRunner.deleteEntity(sfi, ed, parameters)
                 }
 
-                sfi.runSecaRules(getServiceName(), result, "post-service")
+                sfi.runSecaRules(getServiceName(), this.parameters, result, "post-service")
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
             } finally {
                 if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
-                sfi.runSecaRules(getServiceName(), this.parameters, "post-commit")
+                sfi.runSecaRules(getServiceName(), this.parameters, result, "post-commit")
             }
         } catch (TransactionException e) {
             throw e
