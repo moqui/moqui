@@ -19,6 +19,7 @@ import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldValueCondition
+import org.apache.commons.collections.map.ListOrderedMap
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -104,8 +105,15 @@ public class EntityDefinition {
             ListOrderedSet pkFieldNames = relEd.getFieldNames(true, false)
             for (String pkFieldName in pkFieldNames) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
-            for (Node keyMap in relationship."key-map") eKeyMap.put(keyMap."@field-name",
-                    keyMap."@related-field-name" ? keyMap."@related-field-name" : keyMap."@field-name")
+            for (Node keyMap in relationship."key-map") {
+                String relFn = keyMap."@related-field-name" ?: keyMap."@field-name"
+                if (!relEd.isField(relFn) && ((String) relationship."@type").startsWith("one")) {
+                    ListOrderedSet pks = relEd.getFieldNames(true, false)
+                    if (pks.size() == 1) relFn = pks.get(0)
+                    // if we don't match these constraints and get this default we'll get an error later...
+                }
+                eKeyMap.put(keyMap."@field-name", relFn)
+            }
         }
         return eKeyMap
     }

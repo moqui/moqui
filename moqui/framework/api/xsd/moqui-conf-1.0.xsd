@@ -551,11 +551,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="constraint-name-clip-length" default="30" type="xs:nonNegativeInteger"/>
             <!-- TODO use in code -->
             <xs:attribute name="result-fetch-size" default="-1" type="xs:integer"/>
-            <!-- TODO use in code -->
             <xs:attribute name="use-foreign-keys" default="true" type="boolean"/>
-            <!-- TODO use in code -->
-            <xs:attribute name="use-foreign-key-indices" default="true" type="boolean"/>
-            <!-- TODO use in code -->
+            <xs:attribute name="use-foreign-key-indexes" default="true" type="boolean"/>
             <xs:attribute name="fk-style" default="name_constraint">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
@@ -564,15 +561,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <!-- TODO use in code -->
             <xs:attribute name="use-fk-initially-deferred" default="false" type="boolean"/>
-            <!-- TODO use in code -->
-            <xs:attribute name="use-indices" default="true" type="boolean">
-                <xs:annotation><xs:documentation>Use manually declared indices (indexes)?</xs:documentation></xs:annotation>
+            <xs:attribute name="use-indexes" default="true" type="boolean">
+                <xs:annotation><xs:documentation>Use manually declared indexes?</xs:documentation></xs:annotation>
             </xs:attribute>
-            <!-- TODO use in code -->
-            <xs:attribute name="use-indices-unique" default="true" type="boolean">
-                <xs:annotation><xs:documentation>For manually declared indices (if used), use the unique constraint?</xs:documentation></xs:annotation>
+            <xs:attribute name="use-indexes-unique" default="true" type="boolean">
+                <xs:annotation><xs:documentation>For manually declared indexes (if used), use the unique constraint?</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="join-style" default="ansi">
                 <xs:simpleType>

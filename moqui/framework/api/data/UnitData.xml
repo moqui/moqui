@@ -275,8 +275,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="bhp" description="Boiler horsepower" uomId="PW_bhp" uomTypeEnumId="UT_POWER_MEASURE"/>
 
     <UomConversion uomId="PW_kw" uomIdTo="PW_w" conversionFactor="1000"/>
-    <UomConversion uomId="PW_HP" uomIdTo="PW_w" conversionFactor="745.7"/>
-    <UomConversion uomId="PW_kw" uomIdTo="PW_HP" conversionFactor="1.341021858"/>
+    <UomConversion uomId="PW_hp" uomIdTo="PW_w" conversionFactor="745.7"/>
+    <UomConversion uomId="PW_kw" uomIdTo="PW_hp" conversionFactor="1.341021858"/>
     <UomConversion uomId="PW_kw" uomIdTo="PW_BTU_hr" conversionFactor="3412.14245"/>
     <UomConversion uomId="PW_kw" uomIdTo="PW_cal_sec" conversionFactor="238.845897"/>
     <UomConversion uomId="PW_kw" uomIdTo="PW_bhp" conversionFactor="0.101929972"/>

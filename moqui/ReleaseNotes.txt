@@ -42,7 +42,10 @@ This release includes:
   - Entity audit-logging
   - Entity field encryption
   - Entity ECA rules
+  - Database meta-data support for adding indexes when tables added
   - Automatically add columns if missing in table check
+  - Add foreign keys to existing tables when table created, and in table
+    check add foreign keys that don't yet exist to existing tables
 
 Notable features not yet implemented:
 
@@ -63,7 +66,6 @@ Notable features not yet implemented:
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
   - Entity complex aliases in views
-  - Database meta-data support for fks, indexes
   - Database meta-data check/report against entity definitions
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db

@@ -134,7 +134,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-long"/>
         <relationship type="one" related-entity-name="EnumerationType"/>
-        <relationship type="one" title="Parent" related-entity-name="Enumeration">
+        <relationship type="one-nofk" title="Parent" related-entity-name="Enumeration">
             <key-map field-name="parentEnumId"/>
         </relationship>
     </entity>
