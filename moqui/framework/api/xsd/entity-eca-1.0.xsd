@@ -21,56 +21,28 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="eeca">
+        <xs:annotation><xs:documentation>
+            Triggered by entity operations such a create, update, delete, and find. If condition (optional) evaluates
+            to true then the actions are run.
+
+            Entity ECAs are meant for maintenance of data derived from other entities. Entity ECAs should NOT generally
+            be used for triggering business processes, Service ECA rules are a much better tool for that.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="condition"/>
-                <xs:choice maxOccurs="unbounded">
-                    <xs:element ref="set"/>
-                    <xs:element ref="action"/>
-                </xs:choice>
+                <xs:element ref="actions"/>
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
             <xs:attribute name="on-create" default="false" type="boolean"/>
             <xs:attribute name="on-update" default="false" type="boolean"/>
             <xs:attribute name="on-delete" default="false" type="boolean"/>
             <xs:attribute name="on-find" default="false" type="boolean"/>
-            <xs:attribute name="event" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="validate"/>
-                        <xs:enumeration value="run"/>
-                        <xs:enumeration value="return"/>
-                        <xs:enumeration value="cache-check"/>
-                        <xs:enumeration value="cache-put"/>
-                        <xs:enumeration value="cache-clear"/>
-                    </xs:restriction>
-                </xs:simpleType>
+            <xs:attribute name="run-before" default="false" type="boolean">
+                <xs:annotation><xs:documentation>If false (default) runs after the entity operation. If true runs before
+                    the operation.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="run-on-error" default="false" type="boolean"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="action">
-        <xs:complexType>
-            <xs:attribute name="service" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
-                    put a hash (#) between them, like: "${path}.${verb}#${noun}".
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="mode" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="sync"/>
-                        <xs:enumeration value="async"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="result-to-value" default="true" type="boolean"/>
-            <xs:attribute name="abort-on-error" default="false" type="boolean"/>
-            <xs:attribute name="rollback-on-error" default="false" type="boolean"/>
-            <xs:attribute name="persist" default="false" type="boolean"/>
-            <xs:attribute name="run-as-user" type="xs:string"/>
-            <xs:attribute name="value-attr" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>

@@ -16,24 +16,13 @@ import javax.transaction.Transaction
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
 import org.moqui.service.ServiceCallSync
+
+import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 
-import org.moqui.impl.context.ExecutionContextImpl
-import org.moqui.impl.StupidUtilities
-import org.moqui.impl.StupidWebUtilities
-import org.owasp.esapi.errors.IntrusionException
-import org.owasp.esapi.ValidationErrorList
-import org.owasp.esapi.errors.ValidationException
-import org.apache.commons.validator.EmailValidator
-import org.apache.commons.validator.UrlValidator
-import org.apache.commons.validator.CreditCardValidator
-
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
-
-    protected final static EmailValidator emailValidator = EmailValidator.getInstance()
-    protected final static UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES)
 
     protected boolean requireNewTransaction = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
@@ -109,7 +98,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         // TODO (future) sd.serviceNode."@semaphore"
 
-        // TODO trigger SECAs
+        sfi.runSecaRules(getServiceName(), this.parameters, "pre-validate")
 
         // validation
         sd.convertValidateCleanParameters(this.parameters, eci)
@@ -122,6 +111,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         Map<String, Object> result = null
         try {
             // authentication
+            sfi.runSecaRules(getServiceName(), this.parameters, "pre-auth")
             // always try to login the user if parameters are specified
             String userId = parameters.authUserAccount?.userId ?: parameters.authUsername
             String password = parameters.authUserAccount?.currentPassword ?: parameters.authPassword
@@ -139,7 +129,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (pauseResumeIfNeeded && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(transactionTimeout) : false
             try {
+                sfi.runSecaRules(getServiceName(), this.parameters, "pre-service")
+                sfi.registerTxSecaRules(getServiceName(), this.parameters)
                 result = sr.runService(sd, this.parameters)
+                sfi.runSecaRules(getServiceName(), result, "post-service")
                 // if we got any errors added to the message list in the service, rollback for that too
                 if (eci.message.errors) {
                     tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.message.errors[0], null)
@@ -155,6 +148,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 }
             } finally {
                 if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+                sfi.runSecaRules(getServiceName(), this.parameters, "post-commit")
             }
         } catch (TransactionException e) {
             throw e
@@ -176,9 +170,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     }
 
     protected Map<String, Object> runImplicitEntityAuto() {
-        // TODO trigger SECAs
         // NOTE: no authentication, assume not required for this; security settings can override this and require
         //     permissions, which will require authentication
+        sfi.runSecaRules(getServiceName(), this.parameters, "pre-validate")
+        sfi.runSecaRules(getServiceName(), this.parameters, "pre-auth")
+
         TransactionFacade tf = sfi.ecfi.getTransactionFacade()
         Transaction parentTransaction = null
         Map<String, Object> result = new HashMap()
@@ -186,6 +182,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (requireNewTransaction && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(null)
             try {
+                sfi.runSecaRules(getServiceName(), this.parameters, "pre-service")
+                sfi.registerTxSecaRules(getServiceName(), this.parameters)
+
                 EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
                 if (verb == "create") {
                     EntityAutoServiceRunner.createEntity(sfi, ed, parameters, result, null)
@@ -194,10 +193,13 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 } else if (verb == "delete") {
                     EntityAutoServiceRunner.deleteEntity(sfi, ed, parameters)
                 }
+
+                sfi.runSecaRules(getServiceName(), result, "post-service")
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
             } finally {
                 if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+                sfi.runSecaRules(getServiceName(), this.parameters, "post-commit")
             }
         } catch (TransactionException e) {
             throw e

@@ -12,36 +12,27 @@
 package org.moqui.impl.service
 
 import org.moqui.context.Cache
+import org.moqui.context.ResourceReference
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
 import org.moqui.service.ServiceCallSync
 import org.moqui.service.ServiceCallAsync
 import org.moqui.service.ServiceCallSchedule
 import org.moqui.service.ServiceCallSpecial
+
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.impl.service.runner.JavaServiceRunner
-import org.moqui.impl.service.runner.ScriptServiceRunner
-import org.moqui.impl.service.runner.EntityAutoServiceRunner
-import org.moqui.impl.service.runner.InlineServiceRunner
-import org.moqui.impl.service.runner.ProxyHttpServiceRunner
-import org.moqui.impl.service.runner.ProxyJmsServiceRunner
-import org.moqui.impl.service.runner.ProxyRmiServiceRunner
-import org.moqui.impl.service.runner.RemoteXmlrpcServiceRunner
+import org.moqui.impl.context.reference.ClasspathResourceReference
 
 import org.quartz.Scheduler
 import org.quartz.impl.StdSchedulerFactory
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.moqui.context.ResourceReference
-import org.moqui.impl.context.reference.ClasspathResourceReference
-
 class ServiceFacadeImpl implements ServiceFacade {
-    protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache serviceLocationCache
+    protected final Map<String, List<ServiceEcaRule>> secaRulesByServiceName = new HashMap()
 
     protected final Map<String, ServiceRunner> serviceRunners = new HashMap()
 
@@ -54,25 +45,16 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         this.serviceLocationCache = ecfi.getCacheFacade().getCache("service.location")
 
-        // init quartz scheduler
-        scheduler.start()
         // TODO: load SECA rule tables
 
-        // init service runners
-        serviceRunners.put("inline", new InlineServiceRunner().init(this))
-        serviceRunners.put("entity-auto", new EntityAutoServiceRunner().init(this))
-        serviceRunners.put("script", new ScriptServiceRunner().init(this))
-        serviceRunners.put("java", new JavaServiceRunner().init(this))
-        serviceRunners.put("proxy-http", new ProxyHttpServiceRunner().init(this))
-        serviceRunners.put("proxy-jms", new ProxyJmsServiceRunner().init(this))
-        serviceRunners.put("proxy-rmi", new ProxyRmiServiceRunner().init(this))
-        serviceRunners.put("remote-xmlrpc", new RemoteXmlrpcServiceRunner().init(this))
-
-        // load other service runners from configuration
+        // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
             ServiceRunner sr = (ServiceRunner) this.getClass().getClassLoader().loadClass(serviceType."@runner-class").newInstance()
             serviceRunners.put(serviceType."@name", sr.init(this))
         }
+
+        // init quartz scheduler (do last just in case it gets any jobs going right away)
+        scheduler.start()
     }
 
     void destroy() {
@@ -175,6 +157,72 @@ class ServiceFacadeImpl implements ServiceFacade {
             if (serviceFileIs != null) serviceFileIs.close()
         }
         return serviceNode
+    }
+
+    void loadSecaRulesAll() {
+        if (secaRulesByServiceName.size() > 0) secaRulesByServiceName.clear()
+
+        // search for the service def XML file in the components
+        for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            ResourceReference serviceDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/service")
+            if (serviceDirRr.supportsAll()) {
+                // if for some weird reason this isn't a directory, skip it
+                if (!serviceDirRr.isDirectory()) continue
+                for (ResourceReference rr in serviceDirRr.directoryEntries) {
+                    if (!rr.fileName.endsWith(".secas.xml")) continue
+                    loadSecaRulesFile(rr)
+                }
+            } else {
+                logger.warn("Can't load SECA rules from component at [${serviceDirRr.location}] because it doesn't support exists/directory/etc")
+            }
+        }
+    }
+    void loadSecaRulesFile(ResourceReference rr) {
+        InputStream is = null
+        try {
+            is = rr.openStream()
+            Node serviceRoot = new XmlParser().parse(is)
+            int numLoaded = 0
+            for (Node secaNode in serviceRoot."seca") {
+                ServiceEcaRule ser = new ServiceEcaRule(ecfi, secaNode, rr.location)
+                String serviceName = ser.serviceName
+                // remove the hash if there is one to more consistently match the service name
+                if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+                List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
+                if (!lst) {
+                    lst = new LinkedList()
+                    secaRulesByServiceName.put(serviceName, lst)
+                }
+                lst.add(ser)
+                numLoaded++
+            }
+            if (logger.infoEnabled) logger.info("Loaded [${numLoaded}] Service ECA rules from [${rr.location}]")
+        } catch (IOException e) {
+            // probably because there is no resource at that location, so do nothing
+            if (logger.traceEnabled) logger.trace("Error loading SECA rules from [${rr.location}]", e)
+        } finally {
+            if (is != null) is.close()
+        }
+    }
+
+    void runSecaRules(String serviceName, Map<String, Object> parameters, String when) {
+        // remove the hash if there is one to more consistently match the service name
+        if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+        List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
+        for (ServiceEcaRule ser in lst) {
+            ser.runIfMatches(serviceName, parameters, when, ecfi.executionContext)
+        }
+    }
+
+    void registerTxSecaRules(String serviceName, Map<String, Object> parameters) {
+        // remove the hash if there is one to more consistently match the service name
+        if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
+        List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
+        for (ServiceEcaRule ser in lst) {
+            if (ser.when.startsWith("tx-")) {
+                ser.registerTx(serviceName, parameters, ecfi)
+            }
+        }
     }
 
     @Override

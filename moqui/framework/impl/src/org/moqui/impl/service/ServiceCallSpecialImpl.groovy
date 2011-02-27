@@ -97,11 +97,12 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
             }
             if (this.xid != null && !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
-            // start a thread with this object to do something on timeout
-            this.setName("ServiceXaResource-Thread")
-            this.setDaemon(true)
             this.active = true
             this.xid = xid
+
+            // start a thread with this object to do something on timeout
+            this.setName("ServiceXaResourceThread")
+            this.setDaemon(true)
             this.start()
         }
 

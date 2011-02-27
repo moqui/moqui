@@ -33,6 +33,7 @@ This release includes:
   - Service parameter ESAPI/Antisamy HTML checks (any/safe/none)
   - Service authentication
   - Service parameter conversion/parsing and validation checks
+  - Service ECA rules
 - Entity Facade
   - View-entity fixes and testing, now most view-entity options work
   - Support entity-find.search-form-inputs element for form *-find fields
@@ -47,14 +48,16 @@ Notable features not yet implemented:
 - XML Screens
   - Screen form AJAX and jQuery
   - Screen form field-layout support
-  - Screen form validation based on target transition service definition
-    with the define once, run on client and server concept
+  - Screen form client JS validation based on target transition service
+    definition (define once, run on client and server)
+  - Screen form-list pagination
   - Screen tree elements
+  - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
-  - Service ECA rules
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
+  - Service mail handling (MCA rules)
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
   - Entity ECA rules
@@ -189,8 +192,8 @@ Features designed, but not to be included in 1.0 series
 - XML Screens
   - Dynamic Screens (database-driven: DynamicScreen*)
   - Dynamic Forms (database-driven: DynForm*)
+- Service Facade
+  - Service database-driven semaphores
 - Entity Facade
   - EntitySync tool
   - Database-driven dynamic view entity
-- Service Facade
-  - Service database-driven semaphores

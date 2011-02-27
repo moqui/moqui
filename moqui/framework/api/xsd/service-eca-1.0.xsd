@@ -21,13 +21,25 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="seca">
+        <xs:annotation><xs:documentation>
+            Triggered by service calls with various options about when during the service call to trigger the event.
+            If condition (optional) evaluates to true then the actions are run.
+
+            Service ECAs are meant for triggering business processes and for extending the functionality of existing
+            services that you don't want to, or can't, modify.
+            Service ECAs should NOT generally be used for maintenance of data derived from other entities, Entity ECA
+            rules are a much better tool for that.
+
+            When this runs the context will be whatever context the service was run in, plus the individual parameters
+            for convenience in reading the values.
+            If when is before the service itself is run there will be a context variable called "parameters" with the
+            parameters Map in it that you can modify as needed in the actions. If when is after the service itself
+            the "parameters" variable will contain the results that also may be modified.
+        </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="condition"/>
-                <xs:choice minOccurs="1" maxOccurs="unbounded">
-                    <xs:element ref="set"/>
-                    <xs:element ref="action"/>
-                </xs:choice>
+                <xs:element ref="actions"/>
             </xs:sequence>
             <xs:attribute name="service" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
@@ -35,63 +47,28 @@ This Work includes contributions authored by David E. Jones, not as a
                     put a hash (#) between them, like: "${path}.${verb}#${noun}".
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="event" use="required">
+            <xs:attribute name="when" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
-                        <xs:enumeration value="auth"/>
-                        <xs:enumeration value="in-validate"/>
-                        <xs:enumeration value="invoke"/>
-                        <xs:enumeration value="out-validate"/>
-                        <xs:enumeration value="commit"/>
-                        <xs:enumeration value="return"/>
-                        <xs:enumeration value="tx-commit"><xs:annotation><xs:documentation>Runs when the transaction the service is running in is successfully committed. Gets its context post/after the run of the service and all non-tx ECA rules.</xs:documentation></xs:annotation></xs:enumeration>
-                        <xs:enumeration value="tx-rollback"><xs:annotation><xs:documentation>Runs when the transaction the service is running in is rolled back.</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="pre-validate"/>
+                        <xs:enumeration value="pre-auth"/>
+                        <xs:enumeration value="pre-service"/>
+                        <xs:enumeration value="post-service"/>
+                        <xs:enumeration value="post-commit"/>
+                        <xs:enumeration value="tx-commit">
+                            <xs:annotation><xs:documentation>Runs when the transaction the service is running in is
+                                successfully committed. Gets its context just before the run of the service and after
+                                the pre-service ECA rules.</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="tx-rollback">
+                            <xs:annotation><xs:documentation>Runs when the transaction the service is running in is
+                                rolled back. Gets its context just before the run of the service and after
+                                the pre-service ECA rules.</xs:documentation></xs:annotation>
+                        </xs:enumeration>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="run-on-failure" default="false">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="true"/>
-                        <xs:enumeration value="false"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="run-on-error" default="false">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="true"/>
-                        <xs:enumeration value="false"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="action">
-        <xs:complexType>
-            <xs:attribute name="service" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    The combined service name, like: "${path}.${verb}${noun}". To explicitly separate the verb and noun
-                    put a hash (#) between them, like: "${path}.${verb}#${noun}".
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="mode" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="sync"/>
-                        <xs:enumeration value="async"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="run-as-user" type="xs:string"/>
-            <xs:attribute name="result-map-name" type="xs:string"/>
-            <xs:attribute name="new-transaction" default="false" type="boolean"/>
-            <xs:attribute name="result-to-context" default="true" type="boolean"/>
-            <xs:attribute name="result-to-result" default="false" type="boolean">
-                <xs:annotation><xs:documentation>If true, copies the action's result Map into the service's result Map.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="ignore-error" default="true" type="boolean"/>
-            <xs:attribute name="persist" default="false" type="boolean"/>
+            <xs:attribute name="run-on-error" type="boolean" default="false"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>
