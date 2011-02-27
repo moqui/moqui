@@ -45,7 +45,8 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         this.serviceLocationCache = ecfi.getCacheFacade().getCache("service.location")
 
-        // TODO: load SECA rule tables
+        // load SECA rule tables
+        loadSecaRulesAll()
 
         // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {

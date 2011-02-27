@@ -59,6 +59,8 @@ class EntityFacadeImpl implements EntityFacade {
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
     protected final Cache entityLocationCache
 
+    protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
+
     protected EntityDbMeta dbMeta = null
 
     EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
@@ -73,7 +75,8 @@ class EntityFacadeImpl implements EntityFacade {
         this.entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
         this.loadAllEntityLocations()
 
-        // TODO: EECA rule tables
+        // EECA rule tables
+        loadEecaRulesAll()
     }
 
     protected void initAllDatasources() {
@@ -233,7 +236,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    protected synchronized EntityDefinition loadEntityDefinition(String entityName) {
+    protected EntityDefinition loadEntityDefinition(String entityName) {
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
         if (ed) return ed
 
@@ -288,6 +291,59 @@ class EntityFacadeImpl implements EntityFacade {
         ed = new EntityDefinition(this, entityNode)
 
         return ed
+    }
+
+    void loadEecaRulesAll() {
+        if (eecaRulesByEntityName.size() > 0) eecaRulesByEntityName.clear()
+
+        // search for the service def XML file in the components
+        for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            ResourceReference entityDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/entity")
+            if (entityDirRr.supportsAll()) {
+                // if for some weird reason this isn't a directory, skip it
+                if (!entityDirRr.isDirectory()) continue
+                for (ResourceReference rr in entityDirRr.directoryEntries) {
+                    if (!rr.fileName.endsWith(".eecas.xml")) continue
+                    loadEecaRulesFile(rr)
+                }
+            } else {
+                logger.warn("Can't load EECA rules from component at [${entityDirRr.location}] because it doesn't support exists/directory/etc")
+            }
+        }
+    }
+    void loadEecaRulesFile(ResourceReference rr) {
+        InputStream is = null
+        try {
+            is = rr.openStream()
+            Node serviceRoot = new XmlParser().parse(is)
+            int numLoaded = 0
+            for (Node secaNode in serviceRoot."eeca") {
+                EntityEcaRule ser = new EntityEcaRule(ecfi, secaNode, rr.location)
+                String entityName = ser.entityName
+                // remove the hash if there is one to more consistently match the service name
+                if (entityName.contains("#")) entityName = entityName.replace("#", "")
+                List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
+                if (!lst) {
+                    lst = new LinkedList()
+                    eecaRulesByEntityName.put(entityName, lst)
+                }
+                lst.add(ser)
+                numLoaded++
+            }
+            if (logger.infoEnabled) logger.info("Loaded [${numLoaded}] Entity ECA rules from [${rr.location}]")
+        } catch (IOException e) {
+            // probably because there is no resource at that location, so do nothing
+            if (logger.traceEnabled) logger.trace("Error loading EECA rules from [${rr.location}]", e)
+        } finally {
+            if (is != null) is.close()
+        }
+    }
+
+    void runEecaRules(String entityName, Map fieldValues, String operation, boolean before) {
+        List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
+        for (EntityEcaRule eer in lst) {
+            eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.executionContext)
+        }
     }
 
     void destroy() {

@@ -41,6 +41,7 @@ This release includes:
   - Entity extension
   - Entity audit-logging
   - Entity field encryption
+  - Entity ECA rules
 
 Notable features not yet implemented:
 
@@ -60,7 +61,6 @@ Notable features not yet implemented:
   - Service mail handling (MCA rules)
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
-  - Entity ECA rules
   - Entity complex aliases in views
   - Database meta-data support for adding columns, fks, indexes
 - ArtifactExecutionFacade for artifact stack tracking

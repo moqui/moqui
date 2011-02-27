@@ -60,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <entity-make-value entity-name="ExampleStatus" value-field="newEntity"/>
             <entity-set include="all" value-field="newEntity"/>
-            <set field="newEntity.statusDate" from-field="nowTimestamp"/>
+            <set field="newEntity.statusDate" from-field="ec.user.nowTimestamp"/>
             <entity-create value-field="newEntity"/>
         </actions>
     </service>

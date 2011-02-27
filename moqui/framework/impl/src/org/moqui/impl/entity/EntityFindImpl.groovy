@@ -203,7 +203,7 @@ class EntityFindImpl implements EntityFind {
         }
 
         // always look for an orderByField parameter too
-        if (inf.containsKey("orderByField")) {
+        if (inf.get("orderByField")) {
             String obf = inf.get("orderByField")
             if (obf.contains(",")) {
                 for (String obfPart in obf.split(",")) this.orderBy(obfPart.trim())
@@ -307,6 +307,8 @@ class EntityFindImpl implements EntityFind {
         }
 
         EntityDefinition ed = this.getEntityDef()
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-one", true)
+
 
         // if over-constrained (anything in addition to a full PK), just use the full PK
         EntityConditionImplBase whereCondition
@@ -325,7 +327,8 @@ class EntityFindImpl implements EntityFind {
             entityOneCache = this.efi.getCacheOne(this.entityName)
             if (entityOneCache.containsKey(whereCondition)) {
                 EntityValue cacheHit = (EntityValue) entityOneCache.get(whereCondition)
-                if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
+                // if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
+                efi.runEecaRules(ed.getEntityName(), cacheHit, "find-one", false)
                 return cacheHit
             }
         }
@@ -371,6 +374,7 @@ class EntityFindImpl implements EntityFind {
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
 
+        efi.runEecaRules(ed.getEntityName(), newEntityValue, "find-one", false)
         return newEntityValue
     }
 
@@ -399,19 +403,26 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() throws EntityException {
+        EntityDefinition entityDefinition = this.getEntityDef()
+        // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
+        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", true)
+
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         Cache entityListCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
             entityListCache = this.efi.getCacheList(this.entityName)
-            if (entityListCache.containsKey(whereCondition)) return (EntityList) entityListCache.get(whereCondition)
+            if (entityListCache.containsKey(whereCondition)) {
+                efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", false)
+                return (EntityList) entityListCache.get(whereCondition)
+            }
         }
 
         EntityListIterator eli = null
         EntityList el = null
         try {
-            eli = this.iterator()
+            eli = this.iteratorPlain()
             el = eli.getCompleteList()
         } finally {
             if (eli != null) eli.close()
@@ -422,12 +433,24 @@ class EntityFindImpl implements EntityFind {
             entityListCache.put(whereCondition, elToCache)
             efi.registerCacheListRa(this.entityName, whereCondition, elToCache)
         }
+        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", false)
         return el
     }
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() throws EntityException {
         EntityDefinition entityDefinition = this.getEntityDef()
+
+        // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
+        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-iterator", true)
+        EntityListIterator eli = iteratorPlain()
+
+        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-iterator", false)
+        return eli
+    }
+    protected EntityListIterator iteratorPlain() throws EntityException {
+        EntityDefinition entityDefinition = this.getEntityDef()
+
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
 
         if (this.getDistinct() || (entityDefinition.isViewEntity() &&
@@ -483,10 +506,11 @@ class EntityFindImpl implements EntityFind {
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
+        EntityListIterator eli = null
         try {
             efi.entityDbMeta.checkTableRuntime(entityDefinition)
 
-            return internalIterator(efb)
+            eli = internalIterator(efb)
         } catch (EntityException e) {
             efb.closeAll()
             throw e
@@ -494,6 +518,8 @@ class EntityFindImpl implements EntityFind {
             efb.closeAll()
             throw new EntityException("Error in find", t)
         }
+
+        return eli
     }
 
     EntityListIteratorImpl internalIterator(EntityFindBuilder efb) {
@@ -512,16 +538,22 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
+        EntityDefinition entityDefinition = this.getEntityDef()
+        // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
+        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", true)
+
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         Cache entityCountCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
             entityCountCache = this.efi.getCacheCount(this.entityName)
-            if (entityCountCache.containsKey(whereCondition)) return (Long) entityCountCache.get(whereCondition)
+            if (entityCountCache.containsKey(whereCondition)) {
+                efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", false)
+                return (Long) entityCountCache.get(whereCondition)
+            }
         }
 
-        EntityDefinition entityDefinition = this.getEntityDef()
         if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
 
         EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
@@ -574,6 +606,7 @@ class EntityFindImpl implements EntityFind {
             entityCountCache.put(whereCondition, count)
         }
 
+        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", false)
         return count
     }
 

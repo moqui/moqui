@@ -80,11 +80,16 @@ public class ContextStack implements Map {
 
     /** @see java.util.Map#containsKey(java.lang.Object) */
     public boolean containsKey(Object key) {
+        /* NOTE: this would be the proper way to do it, but to avoid problems with fields not defined in Groovy, etc
+         *     we'll always pretend like it is defined and null. May consider not doing this at some point and find
+         *     a better solution.
         for (Map curMap: stackList) {
             if (key == null && curMap instanceof Hashtable) continue;
             if (curMap.containsKey(key)) return true;
         }
         return false;
+        */
+        return true;
     }
 
     /** @see java.util.Map#containsValue(java.lang.Object) */

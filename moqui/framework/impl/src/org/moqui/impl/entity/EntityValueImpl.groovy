@@ -215,7 +215,8 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
-        // TODO: add EECA execution
+        efi.runEecaRules(this.getEntityName(), this, "create", true)
+
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Create not yet implemented for view-entity")
@@ -258,6 +259,8 @@ class EntityValueImpl implements EntityValue {
         }
 
         handleAuditLog(false, null)
+
+        efi.runEecaRules(this.getEntityName(), this, "create", false)
     }
 
     protected void internalCreate(EntityQueryBuilder eqb, ListOrderedSet fieldList) {
@@ -287,7 +290,8 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#update() */
     void update() {
-        // TODO: add EECA execution
+        efi.runEecaRules(this.getEntityName(), this, "update", true)
+
         EntityDefinition ed = getEntityDefinition()
         Map oldValues = this.getDbValueMap()
         if (ed.isViewEntity()) {
@@ -350,6 +354,8 @@ class EntityValueImpl implements EntityValue {
         }
 
         handleAuditLog(true, oldValues)
+
+        efi.runEecaRules(this.getEntityName(), this, "update", false)
     }
 
     protected void internalUpdate(EntityQueryBuilder eqb) {
@@ -402,7 +408,8 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#delete() */
     void delete() {
-        // TODO: add EECA execution
+        efi.runEecaRules(this.getEntityName(), this, "delete", true)
+
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Delete not implemented for view-entity")
@@ -431,6 +438,8 @@ class EntityValueImpl implements EntityValue {
                 eqb.closeAll()
             }
         }
+
+        efi.runEecaRules(this.getEntityName(), this, "delete", false)
     }
 
     protected void internalDelete(EntityQueryBuilder eqb) {
@@ -443,6 +452,8 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#refresh() */
     boolean refresh() {
+        efi.runEecaRules(this.getEntityName(), this, "find-one", true)
+
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         EntityDefinition ed = getEntityDefinition()
@@ -484,6 +495,8 @@ class EntityValueImpl implements EntityValue {
         } finally {
             eqb.closeAll()
         }
+
+        efi.runEecaRules(this.getEntityName(), this, "find-one", false)
         return retVal
     }
 

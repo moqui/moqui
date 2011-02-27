@@ -191,7 +191,7 @@ class ServiceDefinition {
             for (String parameterName in new HashSet(parameters.keySet())) {
                 if (!inParameterNames.contains(parameterName)) {
                     parameters.remove(parameterName)
-                    logger.warn("Parameter [${parameterName}] was passed to service [${getServiceName()}] but is not defined as an in parameter, removing from parameters.")
+                    if (logger.infoEnabled && parameterName != "ec") logger.info("Parameter [${parameterName}] was passed to service [${getServiceName()}] but is not defined as an in parameter, removing from parameters.")
                     continue
                 }
 

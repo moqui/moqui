@@ -22,7 +22,7 @@ import org.moqui.impl.StupidUtilities
     <#assign handleResult = (.node["@out-map"]?has_content && (!.node["@async"]?has_content || .node["@async"] == "false"))>
     if (true) {
         <#if handleResult>def call_service_result = </#if>ec.service.<#if .node.@async?has_content && .node.@async != "false">async()<#else/>sync()</#if>.name("${.node.@name}")<#if .node["@async"]?has_content && .node["@async"] == "persist">.persist(true)</#if>
-            <#if .node["@in-map"]?if_exists == "true">.parameters(context).parameters((ec.web?.parameters)?:[:])<#elseif .node["@in-map"]?if_exists != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
+            <#if .node["@in-map"]?if_exists == "true">.parameters(context).parameters((ec.web?.parameters)?:[:])<#elseif .node["@in-map"]?has_content && .node["@in-map"] != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from-field"]?has_content>${fieldMap["@from-field"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
         <#if handleResult>
         if (context.${.node["@out-map"]} != null) {
             context.${.node["@out-map"]}.putAll(call_service_result)
@@ -108,7 +108,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "entity-find-related">    ${.node["@list"]} = ${.node["@value-field"]}.findRelated("${.node["@relationship-name"]}", ${.node["@map"]?default("null")}, ${.node["@order-by-list"]?default("null")}, ${.node["@cache"]?default("null")}, ${.node["@for-update"]?default("null")})
 </#macro>
 
-<#macro "entity-make-value">    ${.node["@value-field"]} = ec.entity.makeValue(${.node["@entity-name"]})<#if .node["@map"]?has_content>
+<#macro "entity-make-value">    ${.node["@value-field"]} = ec.entity.makeValue("${.node["@entity-name"]}")<#if .node["@map"]?has_content>
     ${.node["@value-field"]}.setFields(${.node["@map"]}, true, null, null)</#if>
 </#macro>
 <#macro "entity-create">    ${.node["@value-field"]}<#if .node["@or-update"]?has_content && .node["@or-update"] == "true">.createOrUpdate()<#else/>.create()</#if>
@@ -122,7 +122,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "entity-delete-by-condition">    ec.entity.makeFind("${.node["@entity-name"]}")
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>.deleteAll()
 </#macro>
-<#macro "entity-set">    ${.node["@value-field"]}.setFields(${.node["@map"]}, ${.node["@set-if-empty"]?default("true")}, ${.node["@prefix"]?default("null")}, <#if .node["@include"]?has_content && .node["@include"] == "pk">true<#elseif .node["@include"]?has_content && .node["@include"] == "nonpk"/>false<#else/>null</#if>)
+<#macro "entity-set">    ${.node["@value-field"]}.setFields(${.node["@map"]?default("context")}, ${.node["@set-if-empty"]?default("true")}, ${.node["@prefix"]?default("null")}, <#if .node["@include"]?has_content && .node["@include"] == "pk">true<#elseif .node["@include"]?has_content && .node["@include"] == "nonpk"/>false<#else/>null</#if>)
 </#macro>
 
 <#macro iterate>    if (${.node["@list"]} instanceof Map) {
