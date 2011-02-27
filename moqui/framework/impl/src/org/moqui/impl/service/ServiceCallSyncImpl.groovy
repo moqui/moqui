@@ -98,7 +98,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         // TODO (future) sd.serviceNode."@semaphore"
 
-        sfi.runSecaRules(getServiceName(), this.parameters, "pre-validate")
+        sfi.runSecaRules(getServiceName(), this.parameters, null, "pre-validate")
 
         // validation
         sd.convertValidateCleanParameters(this.parameters, eci)
@@ -111,7 +111,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         Map<String, Object> result = null
         try {
             // authentication
-            sfi.runSecaRules(getServiceName(), this.parameters, "pre-auth")
+            sfi.runSecaRules(getServiceName(), this.parameters, null, "pre-auth")
             // always try to login the user if parameters are specified
             String userId = parameters.authUserAccount?.userId ?: parameters.authUsername
             String password = parameters.authUserAccount?.currentPassword ?: parameters.authPassword
@@ -129,10 +129,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             if (pauseResumeIfNeeded && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(transactionTimeout) : false
             try {
-                sfi.runSecaRules(getServiceName(), this.parameters, "pre-service")
+                sfi.runSecaRules(getServiceName(), this.parameters, null, "pre-service")
                 sfi.registerTxSecaRules(getServiceName(), this.parameters)
                 result = sr.runService(sd, this.parameters)
-                sfi.runSecaRules(getServiceName(), result, "post-service")
+                sfi.runSecaRules(getServiceName(), this.parameters, result, "post-service")
                 // if we got any errors added to the message list in the service, rollback for that too
                 if (eci.message.errors) {
                     tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.message.errors[0], null)
@@ -148,7 +148,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 }
             } finally {
                 if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
-                sfi.runSecaRules(getServiceName(), result, "post-commit")
+                sfi.runSecaRules(getServiceName(), this.parameters, result, "post-commit")
             }
         } catch (TransactionException e) {
             throw e

@@ -49,20 +49,24 @@ class ServiceEcaRule {
     String getWhen() { return secaNode."@when" }
     Node getSecaNode() { return secaNode }
 
-    void runIfMatches(String serviceName, Map<String, Object> parameters, String when, ExecutionContext ec) {
+    void runIfMatches(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when, ExecutionContext ec) {
         // see if we match this event and should run
         if (serviceName != secaNode."@service") return
         if (when != secaNode."@when") return
         if (ec.message.errors && secaNode."@run-on-error" != "true") return
 
-        standaloneRun(parameters, ec)
+        standaloneRun(parameters, results, ec)
     }
 
-    void standaloneRun(Map<String, Object> parameters, ExecutionContext ec) {
+    void standaloneRun(Map<String, Object> parameters, Map<String, Object> results, ExecutionContext ec) {
         try {
             ec.context.push()
             ec.context.putAll(parameters)
             ec.context.put("parameters", parameters)
+            if (results != null) {
+                ec.context.putAll(results)
+                ec.context.put("results", results)
+            }
 
             // run the condition and if passes run the actions
             boolean conditionPassed = true

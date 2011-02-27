@@ -206,12 +206,12 @@ class ServiceFacadeImpl implements ServiceFacade {
         }
     }
 
-    void runSecaRules(String serviceName, Map<String, Object> parameters, String when) {
+    void runSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when) {
         // remove the hash if there is one to more consistently match the service name
         if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
         for (ServiceEcaRule ser in lst) {
-            ser.runIfMatches(serviceName, parameters, when, ecfi.executionContext)
+            ser.runIfMatches(serviceName, parameters, results, when, ecfi.executionContext)
         }
     }
 
