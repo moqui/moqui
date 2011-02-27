@@ -28,6 +28,7 @@ This release includes:
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
   - Finished implementation of async/scheduled service calls
+  - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service parameter type/subtype checking
   - Service parameter ESAPI/Antisamy HTML checks (any/safe/none)
   - Service authentication
@@ -54,7 +55,6 @@ Notable features not yet implemented:
   - Service ECA rules
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
-  - Service run on commit and on rollback of current tx (ServiceCallSpecial)
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
   - Entity ECA rules

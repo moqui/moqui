@@ -12,20 +12,18 @@
 package org.moqui.impl.context
 
 import java.sql.Timestamp
+import java.text.NumberFormat
 import javax.servlet.http.HttpServletRequest
 
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import java.text.NumberFormat
 import org.apache.commons.validator.routines.BigDecimalValidator
 import org.apache.commons.validator.routines.CalendarValidator
 
 class UserFacadeImpl implements UserFacade {
-    protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
     final static BigDecimalValidator bigDecimalValidator = new BigDecimalValidator(false)
     final static CalendarValidator calendarValidator = new CalendarValidator()
 

@@ -103,6 +103,9 @@ class TransactionFacadeImpl implements TransactionFacade {
         suspendedTxStackList.remove()
     }
 
+    TransactionManager getTransactionManager() { return tm }
+    UserTransaction getUserTransaction() { return ut }
+
     protected ArrayList<Exception> getTransactionBeginStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()
         if (!list) {
