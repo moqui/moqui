@@ -18,6 +18,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="findExample"><default-response url="."/></transition>
     <transition name="editExample"><default-response url="../EditExample"/></transition>
 
+    <pre-actions>
+        <set field="html_title" value="Moqui: Find Example"/>
+        <set field="html_description" value="A page for finding Examples"/>
+        <set field="html_keywords" value="moqui,find,example,status,edit,new"/>
+    </pre-actions>
+    
     <actions>
         <entity-find entity-name="Example" list="exampleList">
             <search-form-inputs/>

@@ -24,13 +24,13 @@ class ScreenDefinition {
 
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
-    final String location
+    protected final String location
 
     protected Map<String, ParameterItem> parameterByName = new HashMap()
-
     protected Map<String, TransitionItem> transitionByName = new HashMap()
-
     protected Map<String, SubscreensItem> subscreensByName = new HashMap()
+
+    protected XmlAction preActions = null
 
     protected ScreenSection rootSection = null
     protected Map<String, ScreenSection> sectionByName = new HashMap()
@@ -51,6 +51,10 @@ class ScreenDefinition {
             transitionByName.put(transitionNode."@name", new TransitionItem(transitionNode, this))
         // subscreens
         populateSubscreens()
+        // prep pre-actions
+        if (screenNode."pre-actions") {
+            preActions = new XmlAction(sfi.ecfi, (Node) screenNode."pre-actions"[0], location + ".pre_actions")
+        }
 
         // get the root section
         rootSection = new ScreenSection(sfi.ecfi, screenNode, location + ".screen")
@@ -133,6 +137,8 @@ class ScreenDefinition {
     Node getScreenNode() { return screenNode }
 
     Node getWebSettingsNode() { return screenNode."web-settings"[0] }
+
+    String getLocation() { return location }
 
     String getDefaultMenuName() {
         return screenNode."@default-menu-title" ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)

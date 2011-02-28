@@ -54,6 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:element>
                 <xs:element ref="transition" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="subscreens" minOccurs="0"/>
+                <xs:element ref="pre-actions" minOccurs="0"/>
                 <xs:group ref="section-elements"/>
             </xs:sequence>
             <xs:attribute name="standalone" type="boolean" default="false">
@@ -86,7 +87,6 @@ This Work includes contributions authored by David E. Jones, not as a
                     it. If true then the child content is included in this screen as if it were a subscreen.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <!-- TODO support this in code -->
             <xs:attribute name="screen-theme-type-enum-id" type="xs:string" default="STT_INTERNAL"/>
         </xs:complexType>
     </xs:element>
@@ -106,6 +106,14 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
+    <xs:element name="pre-actions">
+        <xs:annotation><xs:documentation>These actions run before any of the screens (this screen or any parent screens)
+            are rendered, allowing you to set parameters used by parent screens or other general reasons.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+        </xs:complexType>
+    </xs:element>
+
 
     <!-- ================ Transition ================ -->
     <xs:element name="transition">

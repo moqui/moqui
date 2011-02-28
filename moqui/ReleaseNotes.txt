@@ -20,6 +20,9 @@ This release includes:
 - XML Screens
   - Standalone screens that are rendered independently of parent screens
     and can still be subscreens of any other screen
+  - Screen pre-actions that all run before any parent screen is rendered
+    to allow for setting parameters in parent screens, setting up general
+    things, etc
   - Screen form elements, all implemented (including file upload, *-find)
   - Screen form header-field widget rendering
   - Screen form header-field.@show-order-by support

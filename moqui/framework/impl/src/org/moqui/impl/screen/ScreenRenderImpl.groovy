@@ -195,8 +195,7 @@ class ScreenRenderImpl implements ScreenRender {
             String url = ri.url ?: ""
             String urlType = ri.urlType ?: "screen-path"
 
-            // TODO auto-add the parameters of the target screen at run time (before the explicit ones so they can override)
-            // TODO add the ri.parameters
+            // NOTE parameters are auto-handled elsewhere, do we need to handle any more here (leave this as a placeholder for now)
             Map<String, String> parameterMap = new HashMap()
 
             // handle screen-last, etc
@@ -288,39 +287,34 @@ class ScreenRenderImpl implements ScreenRender {
                 sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
-                boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
-                try {
-                    if (response != null) {
-                        response.setContentType(this.outputContentType)
-                        response.setCharacterEncoding(this.characterEncoding)
-                    }
-                    ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
-                    renderStartDef.getRootSection().render(this)
-                } catch (Throwable t) {
-                    String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
-                    sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
-                    throw new RuntimeException(errMsg, t)
-                } finally {
-                    if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
-                }
+                doActualRender()
             }
         } else {
-            // start rendering at the root section of the root screen
-            boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
-            try {
-                if (response != null) {
-                    response.setContentType(this.outputContentType)
-                    response.setCharacterEncoding(this.characterEncoding)
-                }
-                ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
-                renderStartDef.getRootSection().render(this)
-            } catch (Throwable t) {
-                String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
-                sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
-                throw new RuntimeException(errMsg, t)
-            } finally {
-                if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
+            doActualRender()
+        }
+    }
+
+    void doActualRender() {
+        boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
+        try {
+            // before we kick-off rendering run all pre-actions
+            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+                if (sd.preActions != null) sd.preActions.run(ec)
             }
+
+            // start rendering at the root section of the root screen
+            if (response != null) {
+                response.setContentType(this.outputContentType)
+                response.setCharacterEncoding(this.characterEncoding)
+            }
+            ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
+            renderStartDef.getRootSection().render(this)
+        } catch (Throwable t) {
+            String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
+            sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
+            throw new RuntimeException(errMsg, t)
+        } finally {
+            if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
         }
     }
 
