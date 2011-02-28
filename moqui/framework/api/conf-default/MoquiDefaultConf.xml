@@ -37,27 +37,17 @@
     <webapp-list>
         <!-- The webapp.@moqui-name attribute value is looked up based on the value of the moqui-name context-param in
         the web.xml file. This configuration will allow the framework to do various things for that webapp. -->
-        <webapp name="webroot" root-screen-location="webroot/MoquiRoot.xml"
+        <webapp name="webroot"
                 http-port="8080" http-host=""
                 https-port="8443" https-host="" https-enabled="true"
                 content-prefix-secure="" content-prefix-standard=""
                 cookie-domain="">
 
-            <first-hit-in-visit>
-                <actions></actions>
-            </first-hit-in-visit>
-            <after-request>
-                <actions></actions>
-            </after-request>
-            <before-request>
-                <actions></actions>
-            </before-request>
-            <after-login>
-                <actions></actions>
-            </after-login>
-            <before-logout>
-                <actions></actions>
-            </before-logout>
+            <first-hit-in-visit><actions></actions></first-hit-in-visit>
+            <after-request><actions></actions></after-request>
+            <before-request><actions></actions></before-request>
+            <after-login><actions></actions></after-login>
+            <before-logout><actions></actions></before-logout>
         </webapp>
     </webapp-list>
 

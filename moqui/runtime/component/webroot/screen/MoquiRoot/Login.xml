@@ -27,8 +27,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <widgets>
         <!-- NOTE: this screen is not under the apps screen, but uses similar header/footer/etc -->
-        <render-mode><text type="html" location="webroot/includes/HtmlHeader.html.ftl"/></render-mode>
-
         <container-panel id="apps-container">
             <panel-header>
                 <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
@@ -58,7 +56,5 @@ This Work includes contributions authored by David E. Jones, not as a
                 </link>
             </panel-center>
         </container-panel>
-
-        <render-mode><text type="html"><![CDATA[</body></html>]]></text></render-mode>
     </widgets>
 </screen>

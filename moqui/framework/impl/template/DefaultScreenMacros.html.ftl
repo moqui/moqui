@@ -349,7 +349,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign id><@fieldId .node/></#assign>
     <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")?if_exists?default(.node["@default-value-from"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_from">
     <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span><input type="text" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")?if_exists?default(.node["@default-value-thru"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_thru">
-    <#-- TODO: add date pickers, handle date/time format -->
+    <#if .node["@type"]?if_exists != "time">
+        <script type="text/javascript">
+            <#if .node["@type"]?if_exists == "date">
+                $("#${id}_from,#${id}_thru").datepicker({
+            <#else>
+                $("#${id}_from,#${id}_thru").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 5,
+            </#if>showOn: 'button', buttonImage: '', buttonText: '...', buttonImageOnly: false, dateFormat: 'yy-mm-dd'});
+        </script>
+    </#if>
 </span>
 </#macro>
 <#macro "date-time">
@@ -358,16 +366,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}">
-<#if .node["@type"]?if_exists != "time">
-    <#-- TODO: handle date/time format in date picker -->
-    <script type="text/javascript">
-        <#if shortDateInput?exists && shortDateInput>
-            jQuery("#${id}").datepicker({
-        <#else>
-            jQuery("#${id}").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 10,
-        </#if>showOn: 'button', buttonImage: '', buttonText: '', buttonImageOnly: false, dateFormat: 'yyyy-mm-dd'});
-    </script>
-</#if>
+    <#if .node["@type"]?if_exists != "time">
+        <script type="text/javascript">
+            <#if .node["@type"]?if_exists == "date">
+                $("#${id}").datepicker({
+            <#else>
+                $("#${id}").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 5,
+            </#if>showOn: 'button', buttonImage: '', buttonText: '...', buttonImageOnly: false, dateFormat: 'yy-mm-dd'});
+        </script>
+    </#if>
 </#macro>
 
 <#macro "display">
@@ -416,7 +423,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if .node["auto-complete"]?has_content>
     <#-- TODO: auto-complete attributes, get it working -->
     <script language="JavaScript" type="text/javascript">
-        jQuery(function() { jQuery("#${id}").combobox(); });
+        $(function() { $("#${id}").combobox(); });
     </script>
     </#if>
 </#macro>
@@ -437,7 +444,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
     <#assign ajaxUrl = ""/><#-- TODO once the JSON service stuff is in place put something real here -->
     <script type="text/javascript">
-        jQuery(document).ready(function() {
+        $(document).ready(function() {
             new ConstructLookup("${.node["@target-screen"]}", "${id}", document.${curFormName}.${curFieldName},
             <#if .node["@secondary-field"]?has_content>document.${curFormName}.${.node["@secondary-field"]}<#else>null</#if>,
             "${curFormName}", "${width!""}", "${height!""}", "${position!"topcenter"}", "${fadeBackground!"true"}", "${ajaxUrl!""}", "${showDescription!""}", ''); });

@@ -35,8 +35,8 @@ class EntityDbMeta {
     }
 
     void checkTableRuntime(EntityDefinition ed) {
-        boolean addMissingRuntime = !ed.isViewEntity() &&
-                efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))?."@add-missing-runtime" != "false"
+        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
+        boolean addMissingRuntime = !ed.isViewEntity() && datasourceNode?."@runtime-add-missing" != "false"
         if (!addMissingRuntime) return
 
         // if it's in this table we've already checked it
@@ -62,7 +62,7 @@ class EntityDbMeta {
                     addColumn(ed, fieldName)
                 }
                 // create foreign keys after checking each to see if it already exists
-                createForeignKeys(ed, true)
+                if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
             }
             entityTablesChecked.put(ed.entityName, new Timestamp(System.currentTimeMillis()))
         } finally {
@@ -389,15 +389,20 @@ class EntityDbMeta {
     void runSqlUpdate(StringBuilder sql, String groupName) {
         Connection con = null
         Statement stmt = null
+
+        // use a short timeout here just in case this is in the middle of stuff going on with tables locked, may happen a lot for FK ops
+        boolean beganTx = efi.ecfi.transactionFacade.begin(5)
         try {
             con = efi.getConnection(groupName)
             stmt = con.createStatement()
             stmt.executeUpdate(sql.toString())
         } catch (SQLException e) {
             logger.error("SQL Exception while executing the following SQL [${sql.toString()}]: ${e.toString()}")
+            efi.ecfi.transactionFacade.rollback(beganTx, "SQL meta data update failed; SQL [${sql.toString()}]", e)
         } finally {
             if (stmt != null) stmt.close()
             if (con != null) con.close()
+            efi.ecfi.transactionFacade.commit(beganTx)
         }
     }
 }

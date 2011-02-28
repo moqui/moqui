@@ -11,6 +11,10 @@
         <artifact-stats type="entity" track-bin="false" persist-bin="false" persist-hit="false"/>
     </server-stats>
 
+    <webapp-list>
+        <webapp name="webroot" root-screen-location="component://webroot/screen/MoquiRoot.xml"/>
+    </webapp-list>
+
     <screen-facade boundary-comments="false"/>
 
     <entity-facade crypt-pass="MoquiProductionDefaultPassword:CHANGEME"/>

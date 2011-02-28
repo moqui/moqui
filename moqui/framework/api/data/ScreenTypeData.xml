@@ -46,7 +46,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- Default Theme -->
     <ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL" description="Moqui Plain Theme: simple, flat, default"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET" resourceValue="/theme/default.css"/>
-    <!-- <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_SHORTCUT_ICON" resourceValue="/theme/moqui.ico"/> -->
-    <!-- <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="3" resourceTypeEnumId="STRT_SCREENSHOT" resourceValue="/theme/screenshot.jpg"/> -->
+    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
+                         resourceValue="/css/default.css"/>
+    <!-- <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="10" resourceTypeEnumId="STRT_SCREENSHOT" resourceValue="/theme/screenshot.jpg"/> -->
+    <!-- NOTE: the default webroot component extends this theme, see the WebrootThemeData.xml file for more -->
 </entity-facade-xml>

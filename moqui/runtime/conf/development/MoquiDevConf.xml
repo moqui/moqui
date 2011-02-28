@@ -35,7 +35,10 @@
         <artifact-stats type="entity" track-bin="true" persist-bin="true" persist-hit="true"/>
     </server-stats>
 
-    <webapp-list><webapp name="webroot" https-enabled="false"/></webapp-list>
+    <webapp-list>
+        <webapp name="webroot" root-screen-location="component://webroot/screen/MoquiRoot.xml"
+                https-enabled="false"/>
+    </webapp-list>
 
     <screen-facade boundary-comments="true">
         <!-- The default conf file has a macro location defined for html already, but this is an example of how to

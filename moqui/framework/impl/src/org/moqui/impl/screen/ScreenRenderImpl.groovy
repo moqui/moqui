@@ -580,10 +580,13 @@ class ScreenRenderImpl implements ScreenRender {
 
     String getCurrentThemeId() {
         String stteId = null
-        // start with the first screen to render
-        if (screenUrlInfo.screenRenderDefList) stteId = screenUrlInfo.screenRenderDefList[0].screenNode?."@screen-theme-type-enum-id"
-        // if no setting try first level (root)
-        if (!stteId) stteId = rootScreenDef.screenNode?."@screen-theme-type-enum-id"
+        if (screenUrlInfo.screenRenderDefList) {
+            // start with the second screen to render (makes it easier to have themes there to allow for different branches with different themes)
+            if (screenUrlInfo.screenRenderDefList.size() > 1)
+                stteId = screenUrlInfo.screenRenderDefList[1].screenNode?."@screen-theme-type-enum-id"
+            // if nothing there, try the first screen to render, the root screen
+            if (!stteId) stteId = screenUrlInfo.screenRenderDefList[0].screenNode?."@screen-theme-type-enum-id"
+        }
         // if no setting default to STT_INTERNAL
         if (!stteId) stteId = "STT_INTERNAL"
 

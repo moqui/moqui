@@ -56,6 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
             <field name="description"><default-field><text-find/></default-field></field>
+            <field name="exampleDate"><default-field><date-find/></default-field></field>
             <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
         </form-single>
         <form-list name="ListExamples" list="exampleList">

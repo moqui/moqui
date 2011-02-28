@@ -35,11 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ===================== Cache Conf Root ===================== -->
     <xs:element name="cache-list">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="cache"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" ref="cache"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="cache">
         <xs:complexType>
@@ -100,11 +96,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ===================== Webapp Conf Root ===================== -->
     <xs:element name="webapp-list">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="webapp"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" ref="webapp"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="webapp">
         <xs:complexType>
@@ -143,43 +135,23 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="first-hit-in-visit">
         <!-- TODO use in code -->
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="actions"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="after-request">
         <!-- TODO use in code -->
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="actions"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="before-request">
         <!-- TODO use in code -->
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="actions"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="after-login">
         <!-- TODO use in code -->
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="actions"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="before-logout">
         <!-- TODO use in code -->
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="actions"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
 
     <!-- ====================== Transaction Facade Conf Root ======================= -->
@@ -456,9 +428,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="group-name" type="xs:string" use="required"/>
             <xs:attribute name="database-conf-name" type="xs:string" use="required"/>
-            <!-- TODO support in code -->
             <xs:attribute name="schema-name" type="xs:string"/>
-            <xs:attribute name="add-missing-runtime" default="true" type="boolean"/>
+            <xs:attribute name="runtime-add-missing" default="true" type="boolean"/>
+            <xs:attribute name="runtime-add-fks" default="false" type="boolean"/>
             <!-- TODO support in code, or even use these?
             <xs:attribute name="check-on-start" default="true" type="boolean"/>
             <xs:attribute name="add-missing-on-start" default="true" type="boolean"/>
@@ -509,9 +481,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="xa-properties">
-        <xs:complexType>
-            <xs:anyAttribute processContents="skip"/>
-        </xs:complexType>
+        <xs:complexType><xs:anyAttribute processContents="skip"/></xs:complexType>
     </xs:element>
     <xs:element name="load-entity">
         <xs:annotation><xs:documentation>Most resources should be loaded by directory convention (convention over
@@ -569,20 +539,16 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>For manually declared indexes (if used), use the unique constraint?</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="join-style" default="ansi">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
+                <xs:simpleType><xs:restriction base="xs:token">
                         <xs:enumeration value="ansi"/>
                         <xs:enumeration value="ansi-no-parenthesis"/>
-                    </xs:restriction>
-                </xs:simpleType>
+                </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="offset-style" default="fetch">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
+                <xs:simpleType><xs:restriction base="xs:token">
                         <xs:enumeration value="fetch"/>
                         <xs:enumeration value="limit"/>
-                    </xs:restriction>
-                </xs:simpleType>
+                </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="always-use-constraint-keyword" default="false" type="boolean"/>
             <!-- TODO use in code -->
@@ -591,15 +557,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="character-set" type="xs:string"/>
             <xs:attribute name="collate" type="xs:string"/>
             <xs:attribute name="default-isolation-level">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
+                <xs:simpleType><xs:restriction base="xs:token">
                         <xs:enumeration value="None"/>
                         <xs:enumeration value="ReadCommitted"/>
                         <xs:enumeration value="ReadUncommitted"/>
                         <xs:enumeration value="RepeatableRead"/>
                         <xs:enumeration value="Serializable"/>
-                    </xs:restriction>
-                </xs:simpleType>
+                </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="default-jdbc-driver" type="xs:string"/>
             <xs:attribute name="default-xa-ds-class" type="xs:string"/>
@@ -624,11 +588,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ================== Repository (JCR) Conf Root ==================== -->
     <xs:element name="repository-list">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="repository"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="repository"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="repository">
         <xs:complexType>
@@ -663,11 +623,7 @@ This Work includes contributions authored by David E. Jones, not as a
             runtime/component directory. This is useful for components in JCR repositories or wherever.
             The location needs to use a protocol/schema that supports looking at sub-directories, etc (like content:,
             file:, etc).</xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="component"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="component"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="component">
         <xs:complexType>
