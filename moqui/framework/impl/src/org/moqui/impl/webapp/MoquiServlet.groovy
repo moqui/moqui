@@ -102,7 +102,6 @@ class MoquiServlet extends HttpServlet {
         // make sure everything is cleaned up
         ec.destroy()
 
-        double runningTime = (System.currentTimeMillis() - startTime) / 1000
-        if (logger.infoEnabled) logger.info("=-=-=-=-=-= End request to [${pathInfo}] of type [${response.getContentType()}] in [${runningTime}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+        if (logger.infoEnabled) logger.info("=-=-=-=-=-= End request to [${pathInfo}] of type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
     }
 }

@@ -27,15 +27,24 @@ class EntityFindBuilder extends EntityQueryBuilder {
         this.sqlTopLevel.append("SELECT ")
     }
 
+    void addLimitOffset(Integer limit, Integer offset) {
+        if (limit == null && offset == null) return
+        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(mainEntityDefinition.entityName))
+        if (databaseNode."@offset-style" == "limit") {
+            // use the LIMIT/OFFSET style
+            this.sqlTopLevel.append(" LIMIT ").append(limit ?: "ALL")
+            this.sqlTopLevel.append(" OFFSET ").append(offset ?: 0)
+        } else {
+            // use SQL2008 OFFSET/FETCH style by default
+            if (offset != null) this.sqlTopLevel.append(" OFFSET ").append(offset).append(" ROWS")
+            if (limit != null) this.sqlTopLevel.append(" FETCH FIRST ").append(limit).append(" ROWS ONLY")
+        }
+    }
+
     /** Adds FOR UPDATE, should be added to end of query */
-    void makeForUpdate() {
-        this.sqlTopLevel.append(" FOR UPDATE")
-    }
+    void makeForUpdate() { this.sqlTopLevel.append(" FOR UPDATE") }
 
-    void makeDistinct() {
-        this.sqlTopLevel.append("DISTINCT ")
-
-    }
+    void makeDistinct() { this.sqlTopLevel.append("DISTINCT ") }
 
     void makeCountFunction() {
         boolean isDistinct = this.entityFindImpl.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&

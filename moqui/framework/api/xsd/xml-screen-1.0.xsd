@@ -56,6 +56,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="subscreens" minOccurs="0"/>
                 <xs:group ref="section-elements"/>
             </xs:sequence>
+            <xs:attribute name="standalone" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    If set to true this screen will be rendered without rendering any parent screens. It can still be
+                    referred to as a subscreen of its parent, but when rendered the parent will not run, the rendering
+                    will start at this screen. Any non-standalone children will still be treated as normal subscreens.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="default-menu-title" type="xs:string"/>
             <xs:attribute name="default-menu-index" type="xs:positiveInteger"/>
             <xs:attribute name="default-menu-include" type="boolean" default="true">

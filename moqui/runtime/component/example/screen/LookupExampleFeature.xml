@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-include="false">
+        standalone="true" default-menu-include="false">
 
     <transition name="lookupExampleFeature"><default-response url="."/></transition>
 
@@ -21,6 +21,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <search-form-inputs/>
             <order-by field-name="description"/>
         </entity-find>
+        <entity-find entity-name="Enumeration" list="featureSourceEnumList">
+            <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
+            <order-by field-name="sequenceNum"/>
+        </entity-find>
     </actions>
     <widgets>
         <form-single name="FindExampleFeature" transition="lookupExampleFeature">
@@ -28,10 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="featureSourceEnumId">
                 <default-field title="Feature Source">
                     <drop-down allow-empty="true">
-                        <entity-options entity-name="Enumeration" key-field="enumId" text="${description} [${enumCode}]">
-                            <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
-                            <order-by field-name="sequenceId"/>
-                        </entity-options>
+                        <list-options list="featureSourceEnumList" text="${description} [${enumCode}]"/>
                     </drop-down>
                 </default-field>
             </field>
@@ -47,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="featureSourceEnumId">
                 <default-field title="Feature Source">
-                    <display-entity entity-name="Enumeration" key-field-name="enumId" text="${description} [${enumCode}]"/>
+                    <display-entity entity-name="Enumeration" text="${description} [${enumCode}]"/>
                 </default-field>
             </field>
             <field name="description"><default-field title="Description"><display/></default-field></field>

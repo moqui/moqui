@@ -100,7 +100,7 @@ public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<
     /** Gets a partial list of results starting at start and containing at most number elements.
      * Start is a one based value, ie 1 is the first element.
      */
-    EntityList getPartialList(int start, int number) throws EntityException;
+    EntityList getPartialList(int offset, int limit) throws EntityException;
 
     /** Method to implement the Iterable interface to allow an EntityListIterator to be used in a foreach loop. Just
      * returns this.

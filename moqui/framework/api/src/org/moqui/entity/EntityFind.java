@@ -167,19 +167,32 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind resultSetConcurrency(int resultSetConcurrency);
     int getResultSetConcurrency();
 
-    /** Specifies the fetch size for this query. Default (null) will fall back to datasource settings.
+    /** The JDBC fetch size for this query. Default (null) will fall back to datasource settings.
+     * This is not the fetch as in OFFSET/FETCH (use limit for that), and is rather the JDBC fetch to determine how
+     * many rows to get back on each round-trip to the database.
+     *
+     * Only applicable for list() and iterator() finds.
      *
      * @return Returns this for chaining of method calls.
      */
     EntityFind fetchSize(Integer fetchSize);
     Integer getFetchSize();
 
-    /** Specifies the max number of rows to return. Default (null) means all rows.
+    /** The limit, ie max number of rows to return. Default (null) means all rows.
+     * Only applicable for list() and iterator() finds.
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind maxRows(Integer maxRows);
-    Integer getMaxRows();
+    EntityFind offset(Integer offset);
+    Integer getOffset();
+
+    /** The limit, ie max number of rows to return. Default (null) means all rows.
+     * Only applicable for list() and iterator() finds.
+     *
+     * @return Returns this for chaining of method calls.
+     */
+    EntityFind limit(Integer limit);
+    Integer getLimit();
 
     /** Specifies whether the values returned should be filtered to remove duplicate values.
      * Default is false.

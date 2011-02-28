@@ -41,7 +41,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected List<String> originalScreenPathNameList = new ArrayList<String>()
     protected ScreenUrlInfo screenUrlInfo = null
-    protected int screenPathIndex = -1
+    protected int screenPathIndex = 0
 
     protected String baseLinkUrl = null
     protected String servletContextPath = null
@@ -105,8 +105,6 @@ class ScreenRenderImpl implements ScreenRender {
         if (!renderMode) renderMode = "html"
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
-        // NOTE: should we really use the character encoding of the request, or always go with UTF-8 if nothing specified on the screen def?
-        if (!characterEncoding && request.getCharacterEncoding()) encoding(request.getCharacterEncoding())
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
         // now render
         internalRender()
@@ -142,8 +140,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         // check webapp settings for each screen in the path
-        if (!checkWebappSettings(rootScreenDef)) return
-        for (ScreenDefinition checkSd in screenUrlInfo.screenPathDefList) {
+        for (ScreenDefinition checkSd in screenUrlInfo.screenRenderDefList) {
             if (!checkWebappSettings(checkSd)) return
         }
 
@@ -282,15 +279,22 @@ class ScreenRenderImpl implements ScreenRender {
             // not binary, render as text
             if (screenUrlInfo.targetScreen.screenNode."@include-child-content" != "true") {
                 if (fileContentType) this.outputContentType = fileContentType
-                if (response != null) response.setContentType(this.outputContentType)
+                if (response != null) {
+                    response.setContentType(this.outputContentType)
+                    response.setCharacterEncoding(this.characterEncoding)
+                }
                 // not a binary object (hopefully), read it and write it to the writer
                 sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
                 boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
                 try {
-                    if (response != null) response.setContentType(this.outputContentType)
-                    rootScreenDef.getRootSection().render(this)
+                    if (response != null) {
+                        response.setContentType(this.outputContentType)
+                        response.setCharacterEncoding(this.characterEncoding)
+                    }
+                    ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
+                    renderStartDef.getRootSection().render(this)
                 } catch (Throwable t) {
                     String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
                     sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
@@ -303,8 +307,12 @@ class ScreenRenderImpl implements ScreenRender {
             // start rendering at the root section of the root screen
             boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
             try {
-                if (response != null) response.setContentType(this.outputContentType)
-                rootScreenDef.getRootSection().render(this)
+                if (response != null) {
+                    response.setContentType(this.outputContentType)
+                    response.setCharacterEncoding(this.characterEncoding)
+                }
+                ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
+                renderStartDef.getRootSection().render(this)
             } catch (Throwable t) {
                 String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
                 sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
@@ -322,8 +330,7 @@ class ScreenRenderImpl implements ScreenRender {
             throw new IllegalArgumentException("The screen [${currentSd.location}] cannot be used in a web request (allow-web-request=false).")
 
         if (currentSd.webSettingsNode?."@mime-type") this.outputContentType = currentSd.webSettingsNode?."@mime-type"
-        if (!this.characterEncoding && currentSd.webSettingsNode?."@character-encoding")
-            this.characterEncoding = currentSd.webSettingsNode?."@character-encoding"
+        if (currentSd.webSettingsNode?."@character-encoding") this.characterEncoding = currentSd.webSettingsNode?."@character-encoding"
 
         // if request not secure and screens requires secure redirect to https
         if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
@@ -371,20 +378,18 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenDefinition getActiveScreenDef() {
-        ScreenDefinition screenDef = rootScreenDef
-        if (screenPathIndex >= 0) {
-            screenDef = screenUrlInfo.screenPathDefList[screenPathIndex]
-        }
-        return screenDef
+        return screenUrlInfo.screenRenderDefList[screenPathIndex]
     }
 
     List<String> getActiveScreenPath() {
-        return (screenPathIndex >= 0 ? screenUrlInfo.fullPathNameList[0..screenPathIndex] : [])
+        // handle case where root screen is first/zero in list versus a standalone screen
+        int fullPathIndex = screenUrlInfo.renderPathDifference + screenPathIndex
+        return screenUrlInfo.fullPathNameList[0..fullPathIndex-1]
     }
 
     String renderSubscreen() {
         // first see if there is another screen def in the list
-        if ((screenPathIndex+1) >= screenUrlInfo.screenPathDefList.size()) {
+        if ((screenPathIndex+1) >= screenUrlInfo.screenRenderDefList.size()) {
             if (screenUrlInfo.fileResourceRef) {
                 // NOTE: don't set this.outputContentType, when including in a screen the screen determines the type
                 sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
@@ -395,7 +400,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
 
         screenPathIndex++
-        ScreenDefinition screenDef = screenUrlInfo.screenPathDefList[screenPathIndex]
+        ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
         try {
             writer.flush()
             screenDef.getRootSection().render(this)
@@ -581,9 +586,9 @@ class ScreenRenderImpl implements ScreenRender {
     ScreenUrlInfo getCurrentScreenUrl() { return screenUrlInfo }
 
     String getCurrentThemeId() {
-        // get the screen's theme type; try second level
         String stteId = null
-        if (screenUrlInfo.screenPathDefList) stteId = screenUrlInfo.screenPathDefList[0].screenNode?."@screen-theme-type-enum-id"
+        // start with the first screen to render
+        if (screenUrlInfo.screenRenderDefList) stteId = screenUrlInfo.screenRenderDefList[0].screenNode?."@screen-theme-type-enum-id"
         // if no setting try first level (root)
         if (!stteId) stteId = rootScreenDef.screenNode?."@screen-theme-type-enum-id"
         // if no setting default to STT_INTERNAL

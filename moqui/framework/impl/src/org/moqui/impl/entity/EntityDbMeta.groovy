@@ -274,16 +274,21 @@ class EntityDbMeta {
             // get set of fields on main entity to match against (more unique than fields on related entity)
             Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
             Set<String> fieldNames = new HashSet(keyMap.keySet())
+            Set<String> fkColsFound = new HashSet()
 
             ikSet = dbData.getImportedKeys(null, ed.getSchemaName(), ed.getTableName())
             while (ikSet.next()) {
                 String pkTable = ikSet.getString("PKTABLE_NAME")
+                // logger.info("FK exists [${ed.entityName}] - [${relNode."@title"}${relEd.entityName}] PKTABLE_NAME [${ikSet.getString("PKTABLE_NAME")}] PKCOLUMN_NAME [${ikSet.getString("PKCOLUMN_NAME")}] FKCOLUMN_NAME [${ikSet.getString("FKCOLUMN_NAME")}]")
                 if (pkTable != relEd.tableName) continue
                 String fkCol = ikSet.getString("FKCOLUMN_NAME")
+                fkColsFound.add(fkCol)
                 String foundField = null
                 for (String fn in fieldNames) if (ed.getColumnName(fn, false) == fkCol) foundField = fn
                 if (foundField) fieldNames.remove(foundField)
             }
+
+            // logger.info("Checking FK exists for entity [${ed.entityName}] relationship [${relNode."@title"}${relEd.entityName}] fields to match are [${keyMap.keySet()}] FK columns found [${fkColsFound}] final fieldNames (empty for match) [${fieldNames}]")
 
             // if we found all of the key-map field-names then fieldNames will be empty, and we have a full fk
             return (fieldNames.size() == 0)
@@ -321,8 +326,8 @@ class EntityDbMeta {
             }
             if (checkFkExists) {
                 Boolean fkExists = foreignKeyExists(ed, relEd, relNode)
-                if (fkExists != null && !fkExists) {
-                    logger.info("Not creating foreign key from entity [${ed.entityName}] to related entity [${relEd.entityName}] with title [${relNode."@title"}] because it already exists (matched by key mappings)")
+                if (fkExists != null && fkExists) {
+                    if (logger.traceEnabled) logger.trace("Not creating foreign key from entity [${ed.entityName}] to related entity [${relEd.entityName}] with title [${relNode."@title"}] because it already exists (matched by key mappings)")
                     continue
                 }
                 // if we get a null back there was an error, and we'll try to create the FK, which may result in another error
@@ -370,7 +375,7 @@ class EntityDbMeta {
 
     void shrinkName(StringBuilder name, int maxLength) {
         if (name.length() > maxLength) {
-            // remove all vowels
+            // remove vowels from end toward beginning
             for (int i = name.length()-1; i >= 0 && name.length() > maxLength; i--) {
                 if ("AEIOUaeiou".contains(name.charAt(i) as String)) name.deleteCharAt(i)
             }

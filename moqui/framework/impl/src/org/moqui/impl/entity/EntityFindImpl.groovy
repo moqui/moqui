@@ -50,8 +50,10 @@ class EntityFindImpl implements EntityFind {
 
     protected int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE
     protected int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY
+    // TODO support fetchSize in code
     protected Integer fetchSize = null
-    protected Integer maxRows = null
+    protected Integer offset = null
+    protected Integer limit = null
     protected boolean distinct = false
 
     EntityFindImpl(EntityFacadeImpl efi, String entityName) {
@@ -286,11 +288,17 @@ class EntityFindImpl implements EntityFind {
     /** @see org.moqui.entity.EntityFind#getFetchSize() */
     Integer getFetchSize() { return this.fetchSize }
 
-    /** @see org.moqui.entity.EntityFind#maxRows(int) */
-    EntityFind maxRows(Integer maxRows) { this.maxRows = maxRows; return this }
+    /** @see org.moqui.entity.EntityFind#offset(int) */
+    EntityFind offset(Integer offset) { this.offset = offset; return this }
 
-    /** @see org.moqui.entity.EntityFind#getMaxRows() */
-    Integer getMaxRows() { return this.maxRows }
+    /** @see org.moqui.entity.EntityFind#getOffset() */
+    Integer getOffset() { return this.offset }
+
+    /** @see org.moqui.entity.EntityFind#limit(int) */
+    EntityFind limit(Integer limit) { this.limit = limit; return this }
+
+    /** @see org.moqui.entity.EntityFind#getLimit() */
+    Integer getLimit() { return this.limit }
 
     /** @see org.moqui.entity.EntityFind#distinct(boolean) */
     EntityFind distinct(boolean distinct) { this.distinct = distinct; return this }
@@ -503,6 +511,7 @@ class EntityFindImpl implements EntityFind {
         if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
         efb.makeOrderByClause(orderByExpanded)
 
+        efb.addLimitOffset(this.limit, this.offset)
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built

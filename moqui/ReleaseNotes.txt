@@ -18,6 +18,8 @@ This release includes:
 - Root web screen split to support undecorated subscreens and apps
 
 - XML Screens
+  - Standalone screens that are rendered independently of parent screens
+    and can still be subscreens of any other screen
   - Screen form elements, all implemented (including file upload, *-find)
   - Screen form header-field widget rendering
   - Screen form header-field.@show-order-by support
@@ -42,6 +44,8 @@ This release includes:
   - Entity audit-logging
   - Entity field encryption
   - Entity ECA rules
+  - Support offset and limit as LIMIT/OFFSET or OFFSET/FETCH depending on
+    configuration on the database element in the Moqui conf file
   - Database meta-data support for adding indexes when tables added
   - Automatically add columns if missing in table check
   - Add foreign keys to existing tables when table created, and in table

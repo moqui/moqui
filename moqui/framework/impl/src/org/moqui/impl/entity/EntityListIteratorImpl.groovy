@@ -233,16 +233,16 @@ class EntityListIteratorImpl implements EntityListIterator {
     }
 
     @Override
-    EntityList getPartialList(int start, int number) {
+    EntityList getPartialList(int offset, int limit) {
         try {
             EntityList list = new EntityListImpl(this.efi)
-            if (number == 0) list
+            if (limit == 0) list
 
             // list is 1 based
-            if (start == 0) start = 1
+            if (offset == 0) offset = 1
 
             // jump to start index, or just get the first result
-            if (!this.absolute(start)) {
+            if (!this.absolute(offset)) {
                 // not that many results, get empty list
                 return list
             }
@@ -252,7 +252,7 @@ class EntityListIteratorImpl implements EntityListIterator {
 
             int numberSoFar = 1
             EntityValue nextValue
-            while (number > numberSoFar && (nextValue = this.next()) != null) {
+            while (limit > numberSoFar && (nextValue = this.next()) != null) {
                 list.add(nextValue)
                 numberSoFar++
             }

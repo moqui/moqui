@@ -39,6 +39,10 @@ class ScreenUrlInfo {
 
     /** All screens found in the path list */
     List<ScreenDefinition> screenPathDefList = new ArrayList<ScreenDefinition>()
+    /** The list of screens to render, starting with the root screen OR the last standalone screen if applicable */
+    List<ScreenDefinition> screenRenderDefList = new ArrayList<ScreenDefinition>()
+    int renderPathDifference = 0
+
     /** The last screen found in the path list */
     ScreenDefinition targetScreen = null
     /** If a transition is specified, the target transition within the targetScreen */
@@ -169,8 +173,11 @@ class ScreenUrlInfo {
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
         this.requireEncryption = false
-        if (sri.rootScreenDef?.webSettingsNode?."require-encryption" != "false") this.requireEncryption = true
-        if (sri.rootScreenDef.screenNode?."begin-transaction" == "true") this.beginTransaction = true
+        if (sri.rootScreenDef?.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
+        if (sri.rootScreenDef.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+
+        // start the render list with the from/base SD
+        screenRenderDefList.add(fromSd)
 
         // loop through path for various things: check validity, see if we can do a transition short-cut and go right to its response url, etc
         ScreenDefinition lastSd = sri.rootScreenDef
@@ -208,16 +215,23 @@ class ScreenUrlInfo {
                 throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName)
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
-            if (nextSd) {
-                if (nextSd.webSettingsNode?."require-encryption" != "false") this.requireEncryption = true
-                if (nextSd.screenNode?."begin-transaction" == "true") this.beginTransaction = true
-                screenPathDefList.add(nextSd)
-                lastSd = nextSd
-                // add this to the list of path names to use for transition redirect
-                preTransitionPathNameList.add(pathName)
-            } else {
-                throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
+            if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
+
+            if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
+            if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+
+            // if standalone, clear out screenRenderDefList before adding this to it
+            if (nextSd.screenNode?."@standalone" == "true") {
+                renderPathDifference += screenRenderDefList.size()
+                screenRenderDefList.clear()
             }
+            screenRenderDefList.add(nextSd)
+
+            screenPathDefList.add(nextSd)
+            lastSd = nextSd
+            // add this to the list of path names to use for transition redirect
+            preTransitionPathNameList.add(pathName)
+
             // made it all the way to here so this was a screen or transition
             remainingPathList.remove(0)
         }
@@ -239,7 +253,18 @@ class ScreenUrlInfo {
                 }
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
-            if (!nextSd) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
+
+            if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
+            if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+
+            // if standalone, clear out screenRenderDefList before adding this to it
+            if (nextSd.screenNode?."@standalone" == "true") {
+                renderPathDifference += screenRenderDefList.size()
+                screenRenderDefList.clear()
+            }
+            screenRenderDefList.add(nextSd)
+
             screenPathDefList.add(nextSd)
             lastSd = nextSd
             // for use in URL writing and such add the subscreenName we found to the main path name list
@@ -331,6 +356,7 @@ class ScreenUrlInfo {
         sui.fileResourceRef = this.fileResourceRef
         sui.fileResourceContentType = this.fileResourceContentType
         sui.screenPathDefList = this.screenPathDefList!=null ? new ArrayList(this.screenPathDefList) : null
+        sui.screenRenderDefList = this.screenRenderDefList!=null ? new ArrayList(this.screenRenderDefList) : null
         sui.targetScreen = this.targetScreen
         sui.targetTransition = this.targetTransition
         sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList(this.preTransitionPathNameList) : null
