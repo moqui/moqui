@@ -5,7 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html">
 <#t/><#if html_keywords?has_content><meta name="keywords" content="${html_keywords}"></#if>
 <#t/><#if html_description?has_content><meta name="description" content="${html_description}"></#if>
-<#t/><#if html_title?has_content><title>${html_title}</title></#if>
+<#t/><title>${html_title!("Moqui - " + (sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Application Screen")}</title>
 <#list sri.getThemeValues("STRT_SCRIPT") as scriptLocation>
     <script language="javascript" src="${sri.buildUrl(scriptLocation).url}" type="text/javascript"></script>
 </#list>

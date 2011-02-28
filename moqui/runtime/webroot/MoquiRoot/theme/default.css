@@ -156,6 +156,10 @@ text-decoration: none;
 text-shadow: #fff 0 1px 1px;
 width: auto;
 }
+button:active, input[type="reset"]:active, input[type="submit"]:active, input[type="button"]:active {
+border-color: #999 #bbb #ddd;
+color: #666;
+}
 
 input[type="text"], input[type="password"], textarea, select {
 -moz-border-radius: 4px;

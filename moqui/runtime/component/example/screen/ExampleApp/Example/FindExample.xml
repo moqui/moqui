@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        standalone="true" default-menu-include="false">
+        default-menu-include="false">
 
     <transition name="newExample"><default-response url="../EditExample"/></transition>
     <transition name="findExample"><default-response url="."/></transition>

@@ -134,6 +134,10 @@ class ScreenDefinition {
 
     Node getWebSettingsNode() { return screenNode."web-settings"[0] }
 
+    String getDefaultMenuName() {
+        return screenNode."@default-menu-title" ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+    }
+
     Map<String, ParameterItem> getParameterMap() { return parameterByName }
 
     TransitionItem getTransitionItem(String name) { return (TransitionItem) transitionByName.get(name) }

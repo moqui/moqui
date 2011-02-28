@@ -68,6 +68,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     ExecutionContext getEc() { return sfi.ecfi.getExecutionContext() }
     ScreenFacadeImpl getSfi() { return sfi }
+    ScreenUrlInfo getScreenUrlInfo() { return screenUrlInfo }
 
     @Override
     ScreenRender rootScreen(String rootScreenLocation) { this.rootScreenLocation = rootScreenLocation; return this }
@@ -377,9 +378,7 @@ class ScreenRenderImpl implements ScreenRender {
         return boundaryComments
     }
 
-    ScreenDefinition getActiveScreenDef() {
-        return screenUrlInfo.screenRenderDefList[screenPathIndex]
-    }
+    ScreenDefinition getActiveScreenDef() { return screenUrlInfo.screenRenderDefList[screenPathIndex] }
 
     List<String> getActiveScreenPath() {
         // handle case where root screen is first/zero in list versus a standalone screen
