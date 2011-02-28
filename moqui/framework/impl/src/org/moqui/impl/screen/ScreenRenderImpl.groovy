@@ -358,7 +358,7 @@ class ScreenRenderImpl implements ScreenRender {
                 ((WebFacadeImpl) ec.web).saveMessagesToSession()
             }
             // now prepare and send the redirect
-            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, null, "Login")
+            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], "Login")
             response.sendRedirect(sui.url)
             return false
         }

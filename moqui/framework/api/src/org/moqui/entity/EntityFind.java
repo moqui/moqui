@@ -134,6 +134,32 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind useCache(Boolean useCache);
     boolean getUseCache();
 
+    // ======================== Advanced Options ==============================
+
+    /** Specifies whether the values returned should be filtered to remove duplicate values.
+     * Default is false.
+     *
+     * @return Returns this for chaining of method calls.
+     */
+    EntityFind distinct(boolean distinct);
+    boolean getDistinct();
+
+    /** The limit, ie max number of rows to return. Default (null) means all rows.
+     * Only applicable for list() and iterator() finds.
+     *
+     * @return Returns this for chaining of method calls.
+     */
+    EntityFind offset(Integer offset);
+    Integer getOffset();
+
+    /** The limit, ie max number of rows to return. Default (null) means all rows.
+     * Only applicable for list() and iterator() finds.
+     *
+     * @return Returns this for chaining of method calls.
+     */
+    EntityFind limit(Integer limit);
+    Integer getLimit();
+
     /** Lock the selected record so only this transaction can change it until it is ended.
      * If this is set when the find is done the useCache setting will be ignored as this will always get the data from
      *     the database.
@@ -144,7 +170,7 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind forUpdate(boolean forUpdate);
     boolean getForUpdate();
 
-    // ======================== Advanced Options ==============================
+    // ======================== JDBC Options ==============================
 
     /** Specifies how the ResultSet will be traversed. Available values: ResultSet.TYPE_FORWARD_ONLY,
      *      ResultSet.TYPE_SCROLL_INSENSITIVE or ResultSet.TYPE_SCROLL_SENSITIVE. See the java.sql.ResultSet JavaDoc for
@@ -178,29 +204,16 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind fetchSize(Integer fetchSize);
     Integer getFetchSize();
 
-    /** The limit, ie max number of rows to return. Default (null) means all rows.
+    /** The JDBC max rows for this query. Default (null) will fall back to datasource settings.
+     * This is the maximum number of rows the ResultSet will keep in memory at any given time before releasing them
+     * and if requested they are retreived from the database again.
+     *
      * Only applicable for list() and iterator() finds.
      *
      * @return Returns this for chaining of method calls.
      */
-    EntityFind offset(Integer offset);
-    Integer getOffset();
-
-    /** The limit, ie max number of rows to return. Default (null) means all rows.
-     * Only applicable for list() and iterator() finds.
-     *
-     * @return Returns this for chaining of method calls.
-     */
-    EntityFind limit(Integer limit);
-    Integer getLimit();
-
-    /** Specifies whether the values returned should be filtered to remove duplicate values.
-     * Default is false.
-     *
-     * @return Returns this for chaining of method calls.
-     */
-    EntityFind distinct(boolean distinct);
-    boolean getDistinct();
+    EntityFind maxRows(Integer maxRows);
+    Integer getMaxRows();
 
 
     // ======================== Run Find Methods ==============================

@@ -212,7 +212,7 @@ class ScreenUrlInfo {
                     break
                 }
 
-                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName)
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName, new Exception("Resource not found"))
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")

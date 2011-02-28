@@ -21,13 +21,13 @@ public class ScreenResourceNotFoundException extends RuntimeException {
     ScreenDefinition lastSd;
     String pathFromLastScreen;
     public ScreenResourceNotFoundException(ScreenDefinition rootSd, List<String> fullPathNameList,
-                                           ScreenDefinition lastSd, String pathFromLastScreen) {
+                                           ScreenDefinition lastSd, String pathFromLastScreen, Exception cause) {
         super("Could not find subscreen or transition or file/content [" + pathFromLastScreen + "] under screen [" +
                 lastSd.getLocation() + "] while finding url for path " + fullPathNameList + " under root screen [" +
-                rootSd.getLocation() + "]");
-        this.rootSd = rootSd;
-        this.fullPathNameList = fullPathNameList;
-        this.lastSd = lastSd;
-        this.pathFromLastScreen = pathFromLastScreen;
+                rootSd.getLocation() + "]", cause)
+        this.rootSd = rootSd
+        this.fullPathNameList = fullPathNameList
+        this.lastSd = lastSd
+        this.pathFromLastScreen = pathFromLastScreen
     }
 }

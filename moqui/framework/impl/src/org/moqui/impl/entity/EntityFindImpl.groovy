@@ -46,15 +46,16 @@ class EntityFindImpl implements EntityFind {
     protected List<String> orderByFields = null
 
     protected Boolean useCache = null
+
+    protected boolean distinct = false
+    protected Integer offset = null
+    protected Integer limit = null
     protected boolean forUpdate = false
 
     protected int resultSetType = ResultSet.TYPE_SCROLL_INSENSITIVE
     protected int resultSetConcurrency = ResultSet.CONCUR_READ_ONLY
-    // TODO support fetchSize in code
     protected Integer fetchSize = null
-    protected Integer offset = null
-    protected Integer limit = null
-    protected boolean distinct = false
+    protected Integer maxRows = null
 
     EntityFindImpl(EntityFacadeImpl efi, String entityName) {
         this.efi = efi
@@ -259,17 +260,32 @@ class EntityFindImpl implements EntityFind {
     /** @see org.moqui.entity.EntityFind#getUseCache() */
     boolean getUseCache() { return this.useCache }
 
+    // ======================== Advanced Options ==============================
+
+    /** @see org.moqui.entity.EntityFind#distinct(boolean) */
+    EntityFind distinct(boolean distinct) { this.distinct = distinct; return this }
+    /** @see org.moqui.entity.EntityFind#getDistinct() */
+    boolean getDistinct() { return this.distinct }
+
+    /** @see org.moqui.entity.EntityFind#offset(int) */
+    EntityFind offset(Integer offset) { this.offset = offset; return this }
+    /** @see org.moqui.entity.EntityFind#getOffset() */
+    Integer getOffset() { return this.offset }
+
+    /** @see org.moqui.entity.EntityFind#limit(int) */
+    EntityFind limit(Integer limit) { this.limit = limit; return this }
+    /** @see org.moqui.entity.EntityFind#getLimit() */
+    Integer getLimit() { return this.limit }
+
     /** @see org.moqui.entity.EntityFind#forUpdate(boolean) */
     EntityFind forUpdate(boolean forUpdate) { this.forUpdate = forUpdate; return this }
-
     /** @see org.moqui.entity.EntityFind#getForUpdate() */
     boolean getForUpdate() { return this.forUpdate }
 
-    // ======================== Advanced Options ==============================
+    // ======================== JDBC Options ==============================
 
     /** @see org.moqui.entity.EntityFind#resultSetType(int) */
     EntityFind resultSetType(int resultSetType) { this.resultSetType = resultSetType; return this }
-
     /** @see org.moqui.entity.EntityFind#getResultSetType() */
     int getResultSetType() { return this.resultSetType }
 
@@ -278,33 +294,18 @@ class EntityFindImpl implements EntityFind {
         this.resultSetConcurrency = resultSetConcurrency
         return this
     }
-
     /** @see org.moqui.entity.EntityFind#getResultSetConcurrency() */
     int getResultSetConcurrency() { return this.resultSetConcurrency }
 
     /** @see org.moqui.entity.EntityFind#fetchSize(int) */
     EntityFind fetchSize(Integer fetchSize) { this.fetchSize = fetchSize; return this }
-
     /** @see org.moqui.entity.EntityFind#getFetchSize() */
     Integer getFetchSize() { return this.fetchSize }
 
-    /** @see org.moqui.entity.EntityFind#offset(int) */
-    EntityFind offset(Integer offset) { this.offset = offset; return this }
-
-    /** @see org.moqui.entity.EntityFind#getOffset() */
-    Integer getOffset() { return this.offset }
-
-    /** @see org.moqui.entity.EntityFind#limit(int) */
-    EntityFind limit(Integer limit) { this.limit = limit; return this }
-
-    /** @see org.moqui.entity.EntityFind#getLimit() */
-    Integer getLimit() { return this.limit }
-
-    /** @see org.moqui.entity.EntityFind#distinct(boolean) */
-    EntityFind distinct(boolean distinct) { this.distinct = distinct; return this }
-
-    /** @see org.moqui.entity.EntityFind#getDistinct() */
-    boolean getDistinct() { return this.distinct }
+    /** @see org.moqui.entity.EntityFind#fetchSize(int) */
+    EntityFind maxRows(Integer maxRows) { this.maxRows = maxRows; return this }
+    /** @see org.moqui.entity.EntityFind#getFetchSize() */
+    Integer getMaxRows() { return this.maxRows }
 
     // ======================== Run Find Methods ==============================
 
