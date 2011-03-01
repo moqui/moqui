@@ -358,6 +358,12 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    /** This uses the data from the loadAllEntityLocations() method, so that must be called first (it is called in the
+     * constructor, and the cache must not have been cleared since. */
+    Set<String> getAllEntityNames() {
+        return new HashSet(entityLocationCache.keySet())
+    }
+
     EntityDefinition getEntityDefinition(String entityName) {
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
         if (ed) return ed

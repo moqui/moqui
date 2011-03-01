@@ -261,6 +261,15 @@ class EntityDbMeta {
         }
     }
 
+    /** Loop through all known entities and for each that has an existing table check each foreign key to see if it
+     * exists in the database, and if it doesn't but the related table does then add the foreign key. */
+    void createForeignKeysForExistingTables() {
+        for (String en in efi.getAllEntityNames()) {
+            EntityDefinition ed = efi.getEntityDefinition(en)
+            if (tableExists(ed)) createForeignKeys(ed, true)
+        }
+    }
+
     Boolean foreignKeyExists(EntityDefinition ed, EntityDefinition relEd, Node relNode) {
         String groupName = efi.getEntityGroupName(ed.entityName)
         Connection con = null
@@ -305,8 +314,10 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot create foreign keys")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot create foreign keys for a view entity")
 
-        // TODO: in order to get all FKs in place by the time they are used we will probably need to check all incoming
-        // TODO: FKs as well as outgoing because of entity use order, tables not rechecked after first hit, etc
+        // NOTE: in order to get all FKs in place by the time they are used we will probably need to check all incoming
+        //     FKs as well as outgoing because of entity use order, tables not rechecked after first hit, etc
+        // NOTE2: with the createForeignKeysForExistingTables() method this isn't strictly necessary, that can be run
+        //     after the system is run for a bit and/or all tables desired have been created and it will take care of it
 
         String groupName = efi.getEntityGroupName(ed.entityName)
         Node databaseNode = efi.getDatabaseNode(groupName)
