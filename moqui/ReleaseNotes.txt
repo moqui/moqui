@@ -2,10 +2,25 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0-preview2 - (date not yet planned)
+Release 1.0-preview2 - 01 Mar 2011
 ===========================================================================
 
-TODO: add/maintain notes here
+With release 1.0-preview2 the Moqui Framework is now nearly complete and
+has sufficient functionality to build a wide variety of functional and
+useful enterprise, or less formal, applications. This release includes a
+functional example application with various screens demonstrating features
+of the framework and recommended practices and patterns to use when
+developing with Moqui.
+
+While not feature-complete for the planned 1.0 feature set, the
+1.0-preview2 release is ready for early adopters. For those interested,
+this is a great time to try out Moqui for a pet project or even a more
+formal project that is just getting started and won't be deployed in
+production for at least a few months.
+
+Feedback on functionality and bugs by early adopters would be extremely
+helpful for the project at this point, both to validate (or invalidate...)
+designs and to more extensively test the implementation.
 
 This release includes:
 
@@ -18,12 +33,12 @@ This release includes:
 - Root web screen split to support undecorated subscreens and apps
 
 - XML Screens
+  - Screen form elements, all implemented (including file upload, *-find)
   - Standalone screens that are rendered independently of parent screens
     and can still be subscreens of any other screen
   - Screen pre-actions that all run before any parent screen is rendered
     to allow for setting parameters in parent screens, setting up general
     things, etc
-  - Screen form elements, all implemented (including file upload, *-find)
   - Screen single-form HTML uses fieldset and label instead of a table
   - Screen form header-field widget rendering
   - Screen form header-field.@show-order-by support
@@ -36,10 +51,12 @@ This release includes:
     on opens a dialog with the contents of the container-dialog.
   - Added datetimepicker, which is the standard jquery datepicker plus the
     timepicker add-on, combined using some code from Apache OFBiz
+  - Extended and now using database-driven screen visual themes
+  - Can send Maps to HTTP response as JSON string (Web Facade)
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
   - Finished implementation of async/scheduled service calls
-  - Service run on commit and on rollback of current tx (ServiceCallSpecial)
+  - Service run on commit and on rollback of current tx
   - Service parameter type/subtype checking
   - Service parameter ESAPI/Antisamy HTML checks (any/safe/none)
   - Service authentication
@@ -57,12 +74,15 @@ This release includes:
     configuration on the database element in the Moqui conf file
   - Database meta-data support for adding indexes when tables added
   - Automatically add columns if missing in table check
-  - Add foreign keys to existing tables when table created, and in table
-    check add foreign keys that don't yet exist to existing tables
+  - Add foreign keys to existing tables when table created
+  - Added EntityDbMeta.createForeignKeysForExistingTables() to check the
+    foreign keys of all entities with existing tables and add missing ones
+    where both tables exist; useful to run once all desired tables have
+    been created (through a data load, test script, etc) to round out the
+    DB meta-data
 
 Notable features not yet implemented:
 
-- Clean up JavaDoc/GroovyDoc comments and post to site
 - XML Screens
   - Screen form AJAX/DHTML for lookup
   - Screen form implement auto-complete for drop-down and lookup
@@ -87,6 +107,7 @@ Notable features not yet implemented:
 - Visitor tracking
 - Multi-tenant support (shared app server, separate databases)
 - Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
+- Clean up JavaDoc/GroovyDoc comments and post to site
 
 ===========================================================================
 Release 1.0-preview1 - 09 Feb 2011

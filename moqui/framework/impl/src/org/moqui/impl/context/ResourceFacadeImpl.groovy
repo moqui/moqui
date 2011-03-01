@@ -178,6 +178,17 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
     void renderTemplateInCurrentContext(String location, Writer writer) {
+        TemplateRenderer tr = getTemplateRendererByLocation(location)
+        if (tr != null) {
+            tr.render(location, writer)
+        } else {
+            // no renderer found, just grab the text and throw it to the writer
+            String text = getLocationText(location, true)
+            if (text) writer.write(text)
+        }
+    }
+
+    TemplateRenderer getTemplateRendererByLocation(String location) {
         // match against extension for template renderer, with as many dots that match as possible (most specific match)
         int mostDots = 0
         TemplateRenderer tr = null
@@ -191,14 +202,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 }
             }
         }
-
-        if (tr != null) {
-            tr.render(location, writer)
-        } else {
-            // no renderer found, just grab the text and throw it to the writer
-            String text = getLocationText(location, true)
-            if (text) writer.write(text)
-        }
+        return tr
     }
 
     Template getFtlTemplateByLocation(String location) {

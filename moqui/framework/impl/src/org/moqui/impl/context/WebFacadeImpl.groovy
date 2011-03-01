@@ -27,6 +27,7 @@ import org.apache.commons.fileupload.servlet.FileCleanerCleanup
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.FileItemFactory
 import org.apache.commons.fileupload.FileItem
+import net.sf.json.JSONObject
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -175,6 +176,30 @@ class WebFacadeImpl implements WebFacade {
         if (applicationAttributes) return applicationAttributes
         applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.session.getServletContext())
         return applicationAttributes
+    }
+
+    /** @see org.moqui.context.WebFacade#sendJsonMapResponse(Map) */
+    void sendJsonMapResponse(Map responseMap) {
+        JSONObject json = JSONObject.fromObject(responseMap)
+        String jsonStr = json.toString()
+
+        if (!jsonStr) return
+
+        response.setContentType("application/x-json")
+        // NOTE: String.length not correct for byte length
+        String charset = response.getCharacterEncoding() ?: "UTF-8"
+        int length = jsonStr.getBytes(charset).length
+        response.setContentLength(length)
+
+        logger.info("Sending JSON Map response of length [${length}] with [${charset}] encoding")
+
+        try {
+            Writer out = response.getWriter()
+            out.write(jsonStr)
+            out.flush()
+        } catch (IOException e) {
+            logger.error("Error sending JSON string response")
+        }
     }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {

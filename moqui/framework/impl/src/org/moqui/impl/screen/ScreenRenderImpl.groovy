@@ -29,6 +29,7 @@ import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.entity.EntityListIterator
 import org.apache.commons.collections.map.ListOrderedMap
+import org.moqui.context.TemplateRenderer
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -203,10 +204,9 @@ class ScreenRenderImpl implements ScreenRender {
                 WebFacadeImpl wfi = (WebFacadeImpl) ec.web
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
                     String savedUrl = wfi.getRemoveScreenLastPath()
-                    if (savedUrl) {
-                        urlType = "screen-path"
-                        url = savedUrl
-                    }
+                    urlType = "screen-path"
+                    url = savedUrl ?: "/"
+                    // if no saved URL, just go to root/default; avoid getting stuck on Login screen, etc
                 }
                 if (ri.type == "screen-last") {
                     wfi.removeScreenLastParameters(true)
@@ -284,7 +284,24 @@ class ScreenRenderImpl implements ScreenRender {
                     response.setCharacterEncoding(this.characterEncoding)
                 }
                 // not a binary object (hopefully), read it and write it to the writer
-                sfi.ecfi.resourceFacade.renderTemplateInCurrentContext(screenUrlInfo.fileResourceRef.location, writer)
+                TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
+                if (tr != null) {
+                    tr.render(screenUrlInfo.fileResourceRef.location, writer)
+                } else {
+                    // no renderer found, just grab the text (cached) and throw it to the writer
+                    String text = sfi.ecfi.resourceFacade.getLocationText(screenUrlInfo.fileResourceRef.location, true)
+                    if (text) {
+                        // NOTE: String.length not correct for byte length
+                        String charset = response.getCharacterEncoding() ?: "UTF-8"
+                        int length = text.getBytes(charset).length
+                        response.setContentLength(length)
+
+                        if (logger.infoEnabled) logger.info("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
+
+                        writer.write(text)
+                    }
+                }
+
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
                 doActualRender()

@@ -33,4 +33,6 @@ public interface WebFacade {
 
     ServletContext getServletContext();
     Map<String, Object> getApplicationAttributes();
+
+    void sendJsonMapResponse(Map responseMap);
 }
