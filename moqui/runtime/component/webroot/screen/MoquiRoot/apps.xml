@@ -28,8 +28,10 @@
                 <section name="header-user">
                     <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
                     <widgets>
-                        <label text="${ec.user.userAccount?.userName}"/>
-                        <link text="Logout" url="/Login/logout"/>
+                        <container id="header-user">
+                            <label text="${ec.user.userAccount?.userName}"/>
+                            <link text="Logout" url="/Login/logout"/>
+                        </container>
                     </widgets>
                 </section>
                 <container id="header-menu"><subscreens-menu/></container>
