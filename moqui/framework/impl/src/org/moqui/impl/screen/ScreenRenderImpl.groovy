@@ -133,7 +133,7 @@ class ScreenRenderImpl implements ScreenRender {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
-        logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
+        if (logger.infoEnabled) logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
         this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null)
         if (ec.web) {
@@ -247,11 +247,10 @@ class ScreenRenderImpl implements ScreenRender {
             if (fileName.contains(".cwiki")) fileName = fileName.replace(".cwiki", "")
             String fileContentType = sfi.ecfi.resourceFacade.getContentType(fileName)
 
-            if (logger.traceEnabled) logger.trace("Content type for screen sub-content filename [${fileName}] is [${fileContentType}], default [${this.outputContentType}], is binary? ${sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)}")
+            boolean isBinary = sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)
+            if (logger.traceEnabled) logger.trace("Content type for screen sub-content filename [${fileName}] is [${fileContentType}], default [${this.outputContentType}], is binary? ${isBinary}")
 
-            // is it binary?
-            if (sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)) {
-                if (logger.infoEnabled) logger.info("Streaming binary content from [${screenUrlInfo.fileResourceRef.location}]")
+            if (isBinary) {
                 if (response) {
                     this.outputContentType = fileContentType
                     response.setContentType(this.outputContentType)
@@ -261,12 +260,15 @@ class ScreenRenderImpl implements ScreenRender {
                         is = screenUrlInfo.fileResourceRef.openStream()
                         OutputStream os = response.outputStream
                         byte[] buffer = new byte[4096]
+                        int totalLen = 0
                         int len = is.read(buffer)
                         while (len != -1) {
+                            totalLen += len
                             os.write(buffer, 0, len)
                             len = is.read(buffer)
                             if (Thread.interrupted()) throw new InterruptedException()
                         }
+                        if (logger.infoEnabled) logger.info("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
                         return
                     } finally {
                         if (is != null) is.close()
@@ -301,7 +303,6 @@ class ScreenRenderImpl implements ScreenRender {
                         writer.write(text)
                     }
                 }
-
             } else {
                 // render the root screen as normal, and when that is to the targetScreen include the content
                 doActualRender()

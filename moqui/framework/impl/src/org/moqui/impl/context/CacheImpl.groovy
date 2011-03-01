@@ -84,7 +84,7 @@ public class CacheImpl implements Cache {
     /** @see org.moqui.context.Cache#get(Serializable) */
     public Object get(Serializable key) {
         Element element = this.ehcache.get(key)
-        if (!element) return null
+        if (element == null) return null
         if (element.isExpired()) {
             this.ehcache.removeElement(element)
             return null
@@ -130,15 +130,35 @@ public class CacheImpl implements Cache {
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
         if (originalElement) {
-            // TODO: if we find an expired element in this case should we remove it?
-            return originalElement.isExpired()
+            // if we find an expired element in this case should we remove it? yes, if caller wants to get details
+            // about the element should use the ehcache API
+            if (originalElement.isExpired()) {
+                this.ehcache.removeElement(originalElement)
+                return true
+            } else {
+                return false
+            }
         } else {
             return false
         }
     }
 
     /** @see org.moqui.context.Cache#containsKey(String) */
-    public boolean containsKey(Serializable key) { return this.ehcache.isKeyInCache(key) }
+    public boolean containsKey(Serializable key) {
+        if (this.ehcache.isKeyInCache(key)) {
+            Element element = this.ehcache.get(key)
+            if (element == null) return false
+            // if the element is expired, consider it at not existing
+            if (element.isExpired()) {
+                this.ehcache.removeElement(element)
+                return false
+            } else {
+                return true
+            }
+        } else {
+            return false
+        }
+    }
 
     /** @see org.moqui.context.Cache#isEmpty() */
     public boolean isEmpty() { return (this.ehcache.getSize() > 0) }
