@@ -181,7 +181,7 @@ class ScreenDefinition {
             // get rid of the prefix, before the ":"
             fileLoc.delete(0, fileLoc.indexOf(":")+1)
             // get rid of the suffix, probably .xml but use .*
-            if (fileLoc.indexOf(".") > 0) fileLoc.delete(fileLoc.indexOf("."), fileLoc.length())
+            if (fileLoc.lastIndexOf(".") > 0) fileLoc.delete(fileLoc.lastIndexOf("."), fileLoc.length())
             fileLoc.append(pathName)
 
             ResourceReference theFile = sfi.ecfi.resourceFacade.getLocationReference(fileLoc.toString())
