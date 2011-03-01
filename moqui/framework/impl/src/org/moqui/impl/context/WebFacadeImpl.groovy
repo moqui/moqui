@@ -17,17 +17,18 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 import javax.servlet.ServletContext
 
+import net.sf.json.JSONObject
+
 import org.moqui.context.WebFacade
 import org.moqui.impl.StupidWebUtilities
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.apache.commons.fileupload.disk.DiskFileItemFactory
-import org.apache.commons.io.FileCleaningTracker
 import org.apache.commons.fileupload.servlet.FileCleanerCleanup
 import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.FileItemFactory
 import org.apache.commons.fileupload.FileItem
-import net.sf.json.JSONObject
+import org.apache.commons.io.FileCleaningTracker
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -191,7 +192,7 @@ class WebFacadeImpl implements WebFacade {
         int length = jsonStr.getBytes(charset).length
         response.setContentLength(length)
 
-        logger.info("Sending JSON Map response of length [${length}] with [${charset}] encoding")
+        if (logger.infoEnabled) logger.info("Sending JSON Map response of length [${length}] with [${charset}] encoding")
 
         try {
             Writer out = response.getWriter()

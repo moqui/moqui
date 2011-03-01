@@ -24,6 +24,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <call-service name="org.moqui.example.ExampleServices.updateExample"/>
         <default-response url="."/>
     </transition>
+    <transition name="getExampleTypeEnumList">
+        <actions>
+            <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
+                <!-- for purposes of the example, get this as a parameter instead of the inline value: <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/> -->
+                <econdition field-name="enumTypeId" from-field="ec.web.requestParameters.enumTypeId"/>
+                <order-by field-name="description"/>
+            </entity-find>
+            <call-script>ec.web.sendJsonMapResponse([exampleTypeEnumList:exampleTypeEnumList])</call-script>
+        </actions>
+        <default-response type="none"/>
+    </transition>
 
     <actions>
         <set field="exampleId" from-field="ec.web.parameters.exampleId"/>
@@ -46,6 +57,24 @@ This Work includes contributions authored by David E. Jones, not as a
                 <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
             </actions>
             <widgets>
+                <!-- TODO: add some framework stuff to make this much easier to do: -->
+                <render-mode><text type="html"><![CDATA[
+    <script type="text/javascript">
+    $(document).ready(function() {
+        var data;
+        jQuery.ajax({ type: 'POST', url: 'EditExample/getExampleTypeEnumList', data: [{ name: 'enumTypeId', value: 'EXAMPLE_TYPE' }],
+            async: false, cache: false, dataType: 'json', success: function(result) { data = result; }
+        });
+        list = data["exampleTypeEnumList"];
+        if (list) {
+            jQuery('#CreateExample_exampleTypeEnumId').html("");
+            jQuery.each(list, function(key, value) {
+                jQuery('#CreateExample_exampleTypeEnumId').append("<option value = '" + value["enumId"] + "'>" + value["description"] + "</option>");
+            })
+        };
+    })
+    </script>
+                ]]></text></render-mode>
                 <form-single name="CreateExample" transition="createExample">
                     <auto-fields-service service-name="org.moqui.example.ExampleServices.create#Example"/>
                     <!-- for the auto-service, basically the entity and operation: <auto-fields-service service-name="create#Example"/> -->
@@ -60,7 +89,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="exampleTypeEnumId">
                         <default-field title="Type">
                             <drop-down allow-empty="false">
-                                <list-options list="exampleTypeEnumList" text="${description}"/>
+                                <!-- This is obviously more efficient and easier done this way, but for purposes of an example this list is
+                                    retrieved after load through an AJAX call to the getExampleTypeEnumList transition defined above.
+                                <list-options list="exampleTypeEnumList" text="${description}"/> -->
                             </drop-down>
                         </default-field>
                     </field>
@@ -71,16 +102,6 @@ This Work includes contributions authored by David E. Jones, not as a
                             </drop-down>
                         </default-field>
                     </field>
-                    <!-- uncomment the Example.anotherText field too in order to try this
-                    <field name="anotherText">
-                        <drop-down allow-empty="true">
-                            <option key="Explicit Option" text="Explicit Option"/>
-                            <entity-options entity-name="ExampleType" text="${description}" key-field="exampleTypeId">
-                                <order-by field-name="description"/>
-                            </entity-options>
-                        </drop-down>
-                    </field>
-                    -->
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>
             </widgets>
@@ -100,6 +121,13 @@ This Work includes contributions authored by David E. Jones, not as a
                             <display/>
                         </conditional-field>
                     </field>
+                    <field name="exampleTypeEnumId">
+                        <default-field title="Type">
+                            <drop-down allow-empty="false">
+                                <list-options list="exampleTypeEnumList" text="${description}"/>
+                            </drop-down>
+                        </default-field>
+                    </field>
                     <field name="statusId">
                         <default-field title="Status">
                             <drop-down allow-empty="false" current-description="${currentStatus?.description}">
@@ -108,14 +136,6 @@ This Work includes contributions authored by David E. Jones, not as a
                             </drop-down>
                         </default-field>
                     </field>
-                    <!-- uncomment the Example.anotherText field too in order to try this
-                    <field name="displayAnotherText">
-                        <conditional>
-                            <condition><compare field="fieldValues.anotherText" operator="not-empty"/></condition>
-                            <display text="${fieldValues.anotherText}"/>
-                        </conditional>
-                    </field>
-                    -->
                     <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                 </form-single>
             </widgets>
