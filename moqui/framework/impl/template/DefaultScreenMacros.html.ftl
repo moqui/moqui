@@ -64,14 +64,12 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ================ Section ================ -->
 <#macro section>
     <#if sri.doBoundaryComments()><!-- BEGIN section[@name=${.node["@name"]}] --></#if>
-    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
-    </div>
+    ${sri.renderSection(.node["@name"])}
     <#if sri.doBoundaryComments()><!-- END   section[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro "section-iterate">
     <#if sri.doBoundaryComments()><!-- BEGIN section-iterate[@name=${.node["@name"]}] --></#if>
-    <div id="${.node["@name"]}">${sri.renderSection(.node["@name"])}
-    </div>
+    ${sri.renderSection(.node["@name"])}
     <#if sri.doBoundaryComments()><!-- END   section-iterate[@name=${.node["@name"]}] --></#if>
 </#macro>
 

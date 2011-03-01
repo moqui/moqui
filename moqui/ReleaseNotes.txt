@@ -52,7 +52,8 @@ This release includes:
   - Added datetimepicker, which is the standard jquery datepicker plus the
     timepicker add-on, combined using some code from Apache OFBiz
   - Extended and now using database-driven screen visual themes
-  - Can send Maps to HTTP response as JSON string (Web Facade)
+  - Can send Maps to HTTP response as JSON string (Web Facade), example of
+    this is in EditExample.xml
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
   - Finished implementation of async/scheduled service calls
@@ -85,7 +86,7 @@ Notable features not yet implemented:
 
 - XML Screens
   - Screen form AJAX/DHTML for lookup
-  - Screen form implement auto-complete for drop-down and lookup
+  - Screen form auto-complete for drop-down and lookup
   - Screen form field-layout support
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server)

@@ -54,6 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <section name="create">
             <condition><compare field="fieldValues" operator="empty"/></condition>
             <actions>
+                <!-- this is not constrained and sorted here because it is a view entity with those done internally -->
                 <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
             </actions>
             <widgets>
@@ -67,7 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
         });
         list = data["exampleTypeEnumList"];
         if (list) {
-            jQuery('#CreateExample_exampleTypeEnumId').html("");
+            jQuery('#CreateExample_exampleTypeEnumId').html(""); /* clear out the drop-down */
             jQuery.each(list, function(key, value) {
                 jQuery('#CreateExample_exampleTypeEnumId').append("<option value = '" + value["enumId"] + "'>" + value["description"] + "</option>");
             })

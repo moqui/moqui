@@ -59,7 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the API lib -->
         <echo message="===== Making api jar"/>
-        <jar jarfile="build/lib/moqui-framework-api-${version}.jar">
+        <jar jarfile="build/lib/moqui-api-${version}.jar">
             <fileset dir="build/api/classes"/>
             <!-- include XSDs, default-conf, etc in the API file for runtime reference -->
             <fileset dir="api">
@@ -96,7 +96,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the framework impl lib -->
         <echo message="===== Making impl jar"/>
-        <jar jarfile="build/lib/moqui-framework-impl-${version}.jar">
+        <jar jarfile="build/lib/moqui-impl-${version}.jar">
             <fileset dir="build/impl/classes"/>
             <fileset dir="impl/src">
                 <include name="META-INF/**"/>
