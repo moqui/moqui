@@ -301,6 +301,8 @@ class ScreenRenderImpl implements ScreenRender {
                         if (logger.infoEnabled) logger.info("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
 
                         writer.write(text)
+                    } else {
+                        logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}] because no text was found in the file.")
                     }
                 }
             } else {

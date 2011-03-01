@@ -60,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <widgets>
                 <!-- TODO: add some framework stuff to make this much easier to do: -->
                 <render-mode><text type="html"><![CDATA[
-    <script type="text/javascript">
+    <script language="javascript">
     $(document).ready(function() {
         var data;
         jQuery.ajax({ type: 'POST', url: 'EditExample/getExampleTypeEnumList', data: [{ name: 'enumTypeId', value: 'EXAMPLE_TYPE' }],

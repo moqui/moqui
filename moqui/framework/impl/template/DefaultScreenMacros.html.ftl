@@ -25,7 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
-    <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
+    <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-menu">
     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
         <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
@@ -43,14 +43,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-panel">
     <#if !(.node["@type"]?has_content) || .node["@type"] == "tab">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
-        <ul<#if .node["@id"]?has_content> id="${.node["@id"]}_menu"</#if> class="subscreens-menu">
+        <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="subscreens-menu">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
             <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
         </#if></#list>
         </ul>
         <div class="clear"></div>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}_active"</#if> class="subscreens-active">
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-active"</#if> class="subscreens-active">
         ${sri.renderSubscreen()}
         </div>
     </div>

@@ -14,16 +14,17 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         include-child-content="true">
     <subscreens default-item="Example">
+        <!-- these are actually links to content to add to the menu since content is not automatically added to the menu -->
         <subscreens-item name="ExamplePolicies" menu-index="5" menu-title="Policies"/>
         <subscreens-item name="ExampleWiki" menu-index="6" menu-title="Wiki"/>
     </subscreens>
     <widgets>
-        <container-panel id="ExampleAppPanel">
+        <container-panel id="example-app">
             <panel-header>
                 <label text="Moqui Example App" type="h2"/>
             </panel-header>
             <panel-center>
-                <subscreens-panel id="ExampleAppSubsPanel" type="tab"/>
+                <subscreens-panel id="example-app-subscreen" type="tab"/>
             </panel-center>
             <!-- No footer, use the one from webroot -->
         </container-panel>

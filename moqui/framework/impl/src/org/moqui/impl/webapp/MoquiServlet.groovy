@@ -80,7 +80,7 @@ class MoquiServlet extends HttpServlet {
         String pathInfo = request.getPathInfo()
         long startTime = System.currentTimeMillis()
 
-        if (logger.infoEnabled) logger.info("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+        if (logger.traceEnabled) logger.trace("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
 
         ExecutionContext ec = executionContextFactory.getExecutionContext()
         ec.initWebFacade(webappMoquiName, request, response)
@@ -102,6 +102,6 @@ class MoquiServlet extends HttpServlet {
         // make sure everything is cleaned up
         ec.destroy()
 
-        if (logger.infoEnabled) logger.info("End request to [${pathInfo}] of type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+        if (logger.infoEnabled) logger.info("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
     }
 }

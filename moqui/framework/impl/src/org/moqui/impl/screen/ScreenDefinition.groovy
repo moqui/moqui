@@ -43,6 +43,8 @@ class ScreenDefinition {
         this.screenNode = screenNode
         this.location = location
 
+        long startTime = System.currentTimeMillis()
+
         // parameter
         for (Node parameterNode in screenNode."parameter")
             parameterByName.put(parameterNode."@name", new ParameterItem(parameterNode, location))
@@ -73,7 +75,7 @@ class ScreenDefinition {
             }
         }
 
-        if (logger.infoEnabled) logger.info("Loaded screen at [${location}]")
+        if (logger.infoEnabled) logger.info("Loaded screen at [${location}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds")
     }
 
     void populateSubscreens() {

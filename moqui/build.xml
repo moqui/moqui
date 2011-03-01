@@ -105,6 +105,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <target name="run" depends="war" description="Run Moqui Web server with Embedded Winstone (run the executable war file)">
         <java jar="moqui-${version}.war" fork="true">
+            <jvmarg value="-Xms128M"/>
             <jvmarg value="-Xmx256M"/>
             <jvmarg value="-XX:MaxPermSize=64m"/>
         </java>

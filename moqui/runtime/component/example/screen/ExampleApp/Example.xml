@@ -17,8 +17,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <section name="menu">
             <condition><expression>ec.web.parameters.exampleId</expression></condition>
-            <widgets><subscreens-menu id="ExampleMenu"/></widgets>
+            <widgets><subscreens-menu id="example-menu"/></widgets>
         </section>
-        <subscreens-active id="ExampleSubscreen"/>
+        <subscreens-active id="example-subscreen"/>
     </widgets>
 </screen>
