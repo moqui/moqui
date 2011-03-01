@@ -36,29 +36,31 @@ This Work includes contributions authored by David E. Jones, not as a
         <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
     </actions>
     <widgets>
-        <container><link url="newExample" text="New Example"/></container>
-        <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form -->
-        <form-single name="FindExamples" transition="findExample">
-            <field name="exampleId"><default-field><text-find/></default-field></field>
-            <field name="exampleName"><default-field><text-find/></default-field></field>
-            <field name="exampleTypeEnumId">
-                <default-field title="Type">
-                    <drop-down allow-empty="true">
-                        <list-options list="exampleTypeEnumList" text="${description}"/>
-                    </drop-down>
-                </default-field>
-            </field>
-            <field name="statusId">
-                <default-field title="Status">
-                    <drop-down allow-empty="true">
-                        <list-options list="exampleStatusItemList" text="${description}"/>
-                    </drop-down>
-                </default-field>
-            </field>
-            <field name="description"><default-field><text-find/></default-field></field>
-            <field name="exampleDate"><default-field><date-find/></default-field></field>
-            <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
-        </form-single>
+        <container-dialog id="FindExampleDialog" button-text="Search Examples">
+            <!-- NOTE: these find fields could go into the field.header-field element, but this is intentionally left this way to show another style of find form, and because there are lots of them -->
+            <form-single name="FindExamples" transition="findExample">
+                <field name="exampleId"><default-field><text-find/></default-field></field>
+                <field name="exampleName"><default-field><text-find/></default-field></field>
+                <field name="exampleTypeEnumId">
+                    <default-field title="Type">
+                        <drop-down allow-empty="true">
+                            <list-options list="exampleTypeEnumList" text="${description}"/>
+                        </drop-down>
+                    </default-field>
+                </field>
+                <field name="statusId">
+                    <default-field title="Status">
+                        <drop-down allow-empty="true">
+                            <list-options list="exampleStatusItemList" text="${description}"/>
+                        </drop-down>
+                    </default-field>
+                </field>
+                <field name="description"><default-field><text-find/></default-field></field>
+                <field name="exampleDate"><default-field><date-find/></default-field></field>
+                <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
+            </form-single>
+        </container-dialog>
+        <link url="newExample" text="New Example"/>
         <form-list name="ListExamples" list="exampleList">
             <field name="exampleId">
                 <default-field>

@@ -102,6 +102,23 @@ This Work includes contributions authored by David E. Jones, not as a
     </div>
 </#macro>
 
+<#macro "container-dialog">
+    <#assign buttonText = ec.l10n.getLocalizedMessage(.node["@button-text"])>
+    <button id="${.node["@id"]}-button">${buttonText}</button>
+    <script>
+	$(function() {
+		$("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"800"}, modal:true
+		    <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
+			<#--, close: function() { } -->
+		});
+		$("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
+	});
+	</script>
+    <div id="${.node["@id"]}" title="${buttonText}">
+    <#recurse>
+    </div>
+</#macro>
+
 <#-- ==================== Includes ==================== -->
 <#macro "include-screen">
 <#if sri.doBoundaryComments()><!-- BEGIN include-screen[@location=${.node["@location"]}][@share-scope=${.node["@share-scope"]?if_exists}] --></#if>
@@ -158,7 +175,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
              ((.node["@url-type"]?has_content && .node["@url-type"] != "transition") ||
               (!urlInfo.hasActions)))>
             <#assign parameterString = urlInfo.getParameterString()/>
-            <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>>
+            <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if> class="button">
             <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if>
             </a>
         <#else/>
@@ -206,10 +223,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
         <#else/>
-        <#-- TODO: change to something better than a table, perhaps HTML field label stuff -->
-        <table class="form-single-outer">
+        <fieldset class="form-single-outer">
             <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
-        </table>
+        </fieldset>
         </#if>
     </form>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
@@ -230,10 +246,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode["ignored"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#return></#if>
     <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#recurse fieldSubNode/><#return></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
-    <tr>
-        <td class="form-title"><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if></td>
-        <td><#recurse fieldSubNode/></td>
-    </tr>
+    <div class="single-form-field">
+        <#if !fieldSubNode["submit"]?has_content><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}"><@fieldTitle fieldSubNode/></label></#if>
+        <#recurse fieldSubNode/>
+    </div>
 </#macro>
 
 <#macro "form-list">
@@ -246,18 +262,21 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
     <#else>
     <table class="form-list-outer">
-        <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-        <#if needHeaderForm>
-            <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-            <form name="${formNode["@name"]}_header" id="${formNode["@name"]}_header" method="post" action="${curUrlInfo.url}">
-        </#if>
+    <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
+    <#if needHeaderForm>
+        <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+        <form name="${formNode["@name"]}_header" id="${formNode["@name"]}_header" method="post" action="${curUrlInfo.url}">
+    </#if>
+        <thead>
             <tr class="form-header">
                 <#list formNode["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
             </tr>
-        <#if needHeaderForm>
-            </form>
-        </#if>
+        </thead>
+    <#if needHeaderForm>
+        </form>
+    </#if>
         <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+            <tbody>
             <#list listObject as listEntry>
                 <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                 ${sri.startFormListRow(formNode["@name"], listEntry)}
@@ -266,6 +285,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </tr>
                 ${sri.endFormListRow()}
             </#list>
+            </tbody>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         </form>
     </table>
@@ -283,7 +303,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#-- this only makes sense for fields with a single conditional -->
         <#assign fieldSubNode = fieldNode["conditional-field"][0]>
     </#if>
-    <td>
+    <th>
         <div class="form-title">
             <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
             <#if fieldSubNode["@show-order-by"]?if_exists == "true">
@@ -298,7 +318,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#recurse fieldNode["header-field"][0]/>
         </div>
         </#if>
-    </td>
+    </th>
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
@@ -321,7 +341,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}</#macro>
-<#-- TODO: use fieldId everywhere! -->
 <#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntry_index?has_content>_${listEntry_index}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 

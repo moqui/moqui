@@ -67,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     extend. If there is no location is a form in the current screen.</xs:documentation></xs:annotation>
             </xs:attribute>
             <!-- TODO handle this in code -->
-            <xs:attribute name="multi" default="false" type="boolean"/>
+            <xs:attribute name="multi" default="true" type="boolean"/>
             <xs:attribute name="transition" type="xs:string"/>
             <xs:attribute name="list" type="xs:string">
                 <xs:annotation><xs:documentation>The name of the list in the context to iterate over.</xs:documentation></xs:annotation>

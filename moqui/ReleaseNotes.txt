@@ -24,12 +24,18 @@ This release includes:
     to allow for setting parameters in parent screens, setting up general
     things, etc
   - Screen form elements, all implemented (including file upload, *-find)
+  - Screen single-form HTML uses fieldset and label instead of a table
   - Screen form header-field widget rendering
   - Screen form header-field.@show-order-by support
-  - Screen form output formatting, based on service parameter format if
-    applicable, otherwise on format specified in form field
+  - Screen form localized output formatting, based on service parameter
+    format if applicable, otherwise on format specified in form field
   - Output encoding, configurable on various screen/form elements
   - I18n (with L10nFacade) for labels and titles in screens, forms, menus
+  - Added jquery and jquery-ui and the smoothness theme
+  - Added container-dialog widget that creates a button that when clicked
+    on opens a dialog with the contents of the container-dialog.
+  - Added datetimepicker, which is the standard jquery datepicker plus the
+    timepicker add-on, combined using some code from Apache OFBiz
 - Service Facade
   - Service expand auto-parameters, get parameters from implements
   - Finished implementation of async/scheduled service calls
@@ -58,7 +64,8 @@ Notable features not yet implemented:
 
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - XML Screens
-  - Screen form AJAX and jQuery
+  - Screen form AJAX/DHTML for lookup
+  - Screen form implement auto-complete for drop-down and lookup
   - Screen form field-layout support
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server)
