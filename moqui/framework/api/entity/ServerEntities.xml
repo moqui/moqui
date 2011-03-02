@@ -95,7 +95,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="Visitor" package-name="org.moqui.server.visit" sequence-bank-size="100">
         <field name="visitorId" type="id" is-pk="true"/>
-        <field name="userId" type="id-very-long"/>
-        <relationship type="one" related-entity-name="UserAccount"/>
+        <field name="fromVisitId" type="id"/>
+        <relationship type="one" title="From" related-entity-name="Visit">
+            <key-map field-name="fromVisitId"/>
+        </relationship>
     </entity>
 </entities>

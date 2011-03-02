@@ -2,6 +2,42 @@
 Moqui Framework Release Notes
 
 ===========================================================================
+Release 1.0-preview3 - date not yet decided
+===========================================================================
+
+This release includes:
+
+- All of the great features of 1.0-preview1 and 1.0-preview2
+- Visitor tracking
+
+Notable features not yet implemented:
+
+- XML Screens
+  - Screen form AJAX/DHTML for lookup
+  - Screen form auto-complete for drop-down and lookup
+  - Screen form field-layout support
+  - Screen form client JS validation based on target transition service
+    definition (define once, run on client and server)
+  - Screen form-list pagination
+  - Screen tree elements
+  - Screen section-iterate pagination
+  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
+- Service Facade
+  - Service runners for remote service calls (HTTP, JMS, RMI proxies)
+  - Service runners for web service standards (XML-RPC, REST, JSON, etc)
+  - Service mail handling (MCA rules)
+  - Service async/scheduled max-retry in Quartz
+- Entity Facade
+  - Entity complex aliases in views
+  - Database meta-data check/report against entity definitions
+- ArtifactExecutionFacade for artifact stack tracking
+- Artifact Authorization, Tar-pitting based on configuration in db
+- ServerHit and ServerHitBin tracking
+- Multi-tenant support (shared app server, separate databases)
+- Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
+- Clean up JavaDoc/GroovyDoc comments and post to site
+
+===========================================================================
 Release 1.0-preview2 - 01 Mar 2011
 ===========================================================================
 

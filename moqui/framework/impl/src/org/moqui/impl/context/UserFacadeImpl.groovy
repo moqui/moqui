@@ -21,6 +21,8 @@ import org.moqui.impl.StupidUtilities
 
 import org.apache.commons.validator.routines.BigDecimalValidator
 import org.apache.commons.validator.routines.CalendarValidator
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Cookie
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -43,7 +45,7 @@ class UserFacadeImpl implements UserFacade {
         this.eci = eci
     }
 
-    void initFromHttpRequest(HttpServletRequest request) {
+    void initFromHttpRequest(HttpServletRequest request, HttpServletResponse response) {
         this.request = request
         if (request.session.getAttribute("moqui.userId")) {
             // effectively login the user
@@ -57,10 +59,30 @@ class UserFacadeImpl implements UserFacade {
         if (request.session.getAttribute("moqui.visitId")) {
             this.visitId = (String) request.session.getAttribute("moqui.visitId")
 
-            EntityValue visit = getVisit()
-            if (!visit.initialLocale) {
-                // TODO visitorId and cookie
+            // handle visitorId and cookie
+            String cookieVisitorId = null
+            Cookie[] cookies = request.getCookies()
+            if (cookies != null) {
+                for (int i = 0; i < cookies.length; i++) {
+                    if (cookies[i].getName().equals("moqui.visitor")) {
+                        cookieVisitorId = cookies[i].getValue()
+                        break
+                    }
+                }
+            }
+            if (!cookieVisitorId) {
+                Map cvResult = eci.service.sync().name("create", "Visitor").parameter("fromVisitId", this.visitId).call()
+                cookieVisitorId = cvResult.visitorId
+                logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
+            }
+            // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
+            Cookie visitorCookie = new Cookie("moqui.visitor", cookieVisitorId)
+            visitorCookie.setMaxAge(60 * 60 * 24 * 365)
+            visitorCookie.setPath("/")
+            response.addCookie(visitorCookie)
 
+            EntityValue visit = getVisit()
+            if (!visit?.initialLocale) {
                 StringBuilder requestUrl = new StringBuilder()
                 requestUrl.append(request.getScheme())
                 requestUrl.append("://" + request.getServerName())
@@ -69,13 +91,13 @@ class UserFacadeImpl implements UserFacade {
                 if (request.getQueryString()) requestUrl.append("?" + request.getQueryString())
                 String fullUrl = (requestUrl.length() > 250) ? requestUrl.substring(0, 250) : requestUrl.toString()
 
-                eci.service.sync().name("update", "Visit")
-                        .parameters((Map<String, Object>) [visitId:visit.visitId, initialLocale:getLocale().toString(),
+                Map<String, Object> uvParms = (Map<String, Object>) [visitId:visit.visitId, initialLocale:getLocale().toString(),
                             initialRequest:fullUrl, initialReferrer:request.getHeader("Referrer")?:"",
                             initialUserAgent:request.getHeader("User-Agent")?:"",
                             clientIpAddress:request.getRemoteAddr(), clientHostName:request.getRemoteHost(),
-                            clientUser:request.getRemoteUser()])
-                        .call()
+                            clientUser:request.getRemoteUser()]
+                if (cookieVisitorId) uvParms.visitorId = cookieVisitorId
+                eci.service.sync().name("update", "Visit").parameters(uvParms).call()
             }
         }
     }
