@@ -49,6 +49,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
+    protected final String tenantId
 
     protected final EntityConditionFactoryImpl entityConditionFactory
 
@@ -63,8 +64,9 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected EntityDbMeta dbMeta = null
 
-    EntityFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+    EntityFacadeImpl(ExecutionContextFactoryImpl ecfi, String tenantId) {
         this.ecfi = ecfi
+        this.tenantId = tenantId ?: "DEFAULT"
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
         // init connection pool (DataSource) for each group
@@ -80,7 +82,24 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected void initAllDatasources() {
+        EntityValue tenant = null
+        EntityFacadeImpl defaultEfi = null
+        if (this.tenantId != "DEFAULT") {
+            defaultEfi = ecfi.getEntityFacade("DEFAULT")
+            tenant = defaultEfi.makeFind("Tenant").condition("tenantId", this.tenantId).one()
+        }
+
         for(Node datasource in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+            EntityValue tenantDataSource = null
+            EntityList tenantDataSourceXaPropList = null
+            if (tenant != null) {
+                tenantDataSource = defaultEfi.makeFind("TenantDataSource").condition("tenantId", this.tenantId)
+                        .condition("entityGroupName", datasource."@group-name").one()
+                tenantDataSourceXaPropList = defaultEfi.makeFind("TenantDataSourceXaProp")
+                        .condition("tenantId", this.tenantId).condition("entityGroupName", datasource."@group-name")
+                        .list()
+            }
+
             if (datasource."jndi-jdbc") {
                 Node serverJndi = this.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]
                 try {
@@ -97,7 +116,8 @@ class EntityFacadeImpl implements EntityFacade {
                         ic = new InitialContext()
                     }
 
-                    XADataSource ds = (XADataSource) ic.lookup((String) datasource."jndi-jdbc"[0]."@jndi-name")
+                    String jndiName = tenantDataSource ? tenantDataSource.jndiName : datasource."jndi-jdbc"[0]."@jndi-name"
+                    XADataSource ds = (XADataSource) ic.lookup(jndiName)
                     if (ds) {
                         this.dataSourceByGroupMap.put(datasource."@group-name", (DataSource) ds)
                     } else {
@@ -120,17 +140,26 @@ class EntityFacadeImpl implements EntityFacade {
                 AbstractDataSourceBean ads
                 if (xaProperties) {
                     AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
-                    ds.setUniqueResourceName(datasource."@group-name")
+                    ds.setUniqueResourceName(this.tenantId + datasource."@group-name")
                     String xsDsClass = inlineJdbc."@xa-ds-class" ? inlineJdbc."@xa-ds-class" : database."@default-xa-ds-class"
                     ds.setXaDataSourceClassName(xsDsClass)
 
                     Properties p = new Properties()
-                    for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
-                        // the Derby "databaseName" property has a ${moqui.runtime} which is a System property, others may have it too
-                        String propValue = entry.getValue()
-                        // TODO consider changing this to expand for all system properties using groovy or something
-                        if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
-                        p.setProperty(entry.getKey(), propValue)
+                    if (tenantDataSourceXaPropList) {
+                        for (EntityValue tenantDataSourceXaProp in tenantDataSourceXaPropList) {
+                            String propValue = tenantDataSourceXaProp.propValue
+                            // TODO consider changing this to expand for all system properties using groovy or something
+                            if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
+                            p.setProperty((String) tenantDataSourceXaProp.propName, propValue)
+                        }
+                    } else {
+                        for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
+                            // the Derby "databaseName" property has a ${moqui.runtime} which is a System property, others may have it too
+                            String propValue = entry.getValue()
+                            // TODO consider changing this to expand for all system properties using groovy or something
+                            if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
+                            p.setProperty(entry.getKey(), propValue)
+                        }
                     }
                     ds.setXaProperties(p)
 
@@ -140,9 +169,9 @@ class EntityFacadeImpl implements EntityFacade {
                     ds.setUniqueResourceName(datasource."@group-name")
                     String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
                     ds.setDriverClassName(driver)
-                    ds.setUrl(inlineJdbc."@jdbc-uri")
-                    ds.setUser(inlineJdbc."@jdbc-username")
-                    ds.setPassword(inlineJdbc."@jdbc-password")
+                    ds.setUrl(tenantDataSource ? tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
+                    ds.setUser(tenantDataSource ? tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
+                    ds.setPassword(tenantDataSource ? tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
 
                     ads = ds
                 }
@@ -370,10 +399,10 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
-    Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("entity.one.${entityName}") }
-    Cache getCacheList(String entityName) { return ecfi.getCacheFacade().getCache("entity.list.${entityName}") }
-    Cache getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCache("entity.list_ra.${entityName}") }
-    Cache getCacheCount(String entityName) { return ecfi.getCacheFacade().getCache("entity.count.${entityName}") }
+    Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.one.${entityName}") }
+    Cache getCacheList(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.list.${entityName}") }
+    Cache getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.list_ra.${entityName}") }
+    Cache getCacheCount(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
@@ -381,13 +410,13 @@ class EntityFacadeImpl implements EntityFacade {
         EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
 
         // clear one cache
-        if (ecfi.cacheFacade.cacheExists("entity.one.${entityName}")) {
+        if (ecfi.cacheFacade.cacheExists("${tenantId}.entity.one.${entityName}")) {
             Cache entityOneCache = getCacheOne(entityName)
             if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
         }
 
         // clear list cache, use reverse-associative Map (also a Cache)
-        if (ecfi.cacheFacade.cacheExists("entity.list.${entityName}")) {
+        if (ecfi.cacheFacade.cacheExists("${tenantId}.entity.list.${entityName}")) {
             Cache listRaCache = getCacheListRa(entityName)
             if (listRaCache.containsKey(pkCondition)) {
                 List raKeyList = (List) listRaCache.get(pkCondition)
@@ -402,7 +431,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         // clear count cache (no RA because we only have a count to work with, just match by condition)
-        if (ecfi.cacheFacade.cacheExists("entity.count.${entityName}")) {
+        if (ecfi.cacheFacade.cacheExists("${tenantId}.entity.count.${entityName}")) {
             Cache entityCountCache = getCacheCount(entityName)
             for (EntityCondition ec in entityCountCache.keySet()) {
                 if (ec.mapMatches(evi)) entityCountCache.remove(ec)

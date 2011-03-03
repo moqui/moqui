@@ -59,7 +59,7 @@ class ExecutionContextImpl implements ExecutionContext {
     Map<String, Object> getContextRoot() { this.context.getRootMap() }
 
     /** @see org.moqui.context.ExecutionContext#getTenantId() */
-    String getTenantId() { this.tenantId }
+    String getTenantId() { this.tenantId ?: "DEFAULT" }
 
     /** @see org.moqui.context.ExecutionContext#getWeb() */
     WebFacade getWeb() { this.webFacade }
@@ -91,7 +91,7 @@ class ExecutionContextImpl implements ExecutionContext {
     TransactionFacade getTransaction() { this.ecfi.getTransactionFacade() }
 
     /** @see org.moqui.context.ExecutionContext#getEntity() */
-    EntityFacade getEntity() { this.ecfi.getEntityFacade() }
+    EntityFacade getEntity() { this.ecfi.getEntityFacade(getTenantId()) }
 
     /** @see org.moqui.context.ExecutionContext#getService() */
     ServiceFacade getService() { this.ecfi.getServiceFacade() }
@@ -101,12 +101,20 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#initWebFacade(String, HttpServletRequest, HttpServletResponse) */
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
+        this.tenantId = request.session.getAttribute("moqui.tenantId")
         this.webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
+        this.userFacade.initFromHttpRequest(request, response)
+    }
+
+    void changeTenant(String tenantId) {
+        this.tenantId = tenantId
+        if (this.webFacade != null) {
+            this.webFacade.session.setAttribute("moqui.tenantId", tenantId)
+        }
     }
 
     /** @see org.moqui.context.ExecutionContext#destroy() */
     void destroy() {
-        // TODO?: make sure there are no db connections open, if so close them
         // make sure there are no transactions open, if any commit them all now
         this.ecfi.transactionFacade.destroyAllInThread()
         // clean up resources, like JCR session

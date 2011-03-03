@@ -166,17 +166,19 @@ class UserFacadeImpl implements UserFacade {
     }
 
     String getPreference(String preferenceTypeEnumId) {
-        // TODO implement
-        return null
+        EntityValue up = eci.entity.makeFind("UserPreference").condition("userId", getUserId())
+                .condition("preferenceTypeEnumId", preferenceTypeEnumId).useCache(true).one()
+        return up ? up.userPrefValue : null
     }
 
     void setPreference(String preferenceTypeEnumId, String userPrefValue) {
-        // TODO implement
+        eci.entity.makeValue("UserPreference").set("userId", getUserId())
+                .set("preferenceTypeEnumId", preferenceTypeEnumId).createOrUpdate()
     }
 
     /** @see org.moqui.context.UserFacade#getNowTimestamp() */
     Timestamp getNowTimestamp() {
-        // TODO: review Timestamp and nowTimestamp use, have things use this by default
+        // NOTE: review Timestamp and nowTimestamp use, have things use this by default (except audit/etc where actual date/time is needed
         return this.effectiveTime ? this.effectiveTime : new Timestamp(System.currentTimeMillis())
     }
 
@@ -186,8 +188,11 @@ class UserFacadeImpl implements UserFacade {
     boolean loginUser(String userId, String password, String tenantId) {
         boolean successful = false
 
-        // TODO handle tenantId for active tenant
-        // TODO handle tenant change if tenantId is different than the current tenant
+        if (tenantId) {
+            eci.changeTenant(tenantId)
+            this.visitId = null
+            if (this.eci.web != null) this.eci.web.session.removeAttribute("moqui.visitId")
+        }
 
         if (authenticateUser(userId, password)) {
             successful = true
@@ -294,8 +299,10 @@ class UserFacadeImpl implements UserFacade {
 
     void logoutUser() {
         if (this.userIdStack) this.userIdStack.pop()
-        if (eci.ecfi.executionContext.web) {
-            eci.ecfi.executionContext.web.session.removeAttribute("moqui.userId")
+        if (eci.web) {
+            eci.web.session.removeAttribute("moqui.userId")
+            eci.web.session.removeAttribute("moqui.tenantId")
+            eci.web.session.removeAttribute("moqui.visitId")
         }
     }
 

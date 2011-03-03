@@ -285,7 +285,7 @@
 
         <database name="derby"
                   use-pk-constraint-names="false"
-                  use-indices-unique="false"
+                  use-indexes-unique="false"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
                   default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">

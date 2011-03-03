@@ -8,7 +8,10 @@ Release 1.0-preview3 - date not yet decided
 This release includes:
 
 - All of the great features of 1.0-preview1 and 1.0-preview2
+- Multi-tenant support (shared app server, separate databases)
 - Visitor tracking
+- User preference handling
+
 
 Notable features not yet implemented:
 
@@ -33,9 +36,14 @@ Notable features not yet implemented:
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db
 - ServerHit and ServerHitBin tracking
-- Multi-tenant support (shared app server, separate databases)
-- Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
 - Clean up JavaDoc/GroovyDoc comments and post to site
+- Web Tools UI
+  - Cache
+  - Scheduler
+  - Entity Data UI
+  - SQL/Script Run
+  - Artifact Info
+  - Visit and Hit stats
 
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011

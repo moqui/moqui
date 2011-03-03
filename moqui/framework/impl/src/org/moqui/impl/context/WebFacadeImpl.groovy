@@ -57,7 +57,6 @@ class WebFacadeImpl implements WebFacade {
 
         // NOTE: the Visit is not setup here but rather in the MoquiEventListener (for init and destroy)
         request.setAttribute("ec", eci)
-        this.eci.userFacade.initFromHttpRequest(request, response)
 
         // get any parameters saved to the session from the last request, and clear that session attribute if there
         savedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")

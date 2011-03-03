@@ -57,8 +57,9 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     /** Sets the named field to the passed value, even if the value is null
      * @param name The field name to set
      * @param value The value to set
+     * @return reference to this for convenience
      */
-    void set(String name, Object value);
+    EntityValue set(String name, Object value);
 
     /** Sets the named field to the passed value, converting the value from a String to the corresponding type using 
      *   <code>Type.valueOf()</code>
@@ -68,8 +69,9 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      *
      * @param name The field name to set
      * @param value The String value to convert and set
+     * @return reference to this for convenience
      */
-    void setString(String name, String value);
+    EntityValue setString(String name, String value);
 
     Boolean getBoolean(String name);
 
@@ -96,8 +98,9 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param namePrefix If not null or empty will be pre-pended to each field name (upper-casing the first letter of
      *   the field name first), and that will be used as the fields Map lookup name instead of the field-name
      * @param pks If null, get all values, if TRUE just get PKs, if FALSE just get non-PKs
+     * @return reference to this for convenience
      */
-    void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks);
+    EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks);
 
     /** Compares this EntityValue to the passed object
      * @param that Object to compare this to

@@ -130,7 +130,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
-    void set(String name, Object value) {
+    EntityValue set(String name, Object value) {
         if (!mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         if (!getEntityDefinition().isField(name)) {
             throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${entityName}]")
@@ -141,10 +141,11 @@ class EntityValueImpl implements EntityValue {
             dbValueMap.put(name, valueMap[name])
         }
         valueMap.put(name, value)
+        return this
     }
 
     /** @see org.moqui.entity.EntityValue#setString(String, String) */
-    void setString(String name, String value) { entityDefinition.setString(name, value, this) }
+    EntityValue setString(String name, String value) { entityDefinition.setString(name, value, this); return this }
 
     /** @see org.moqui.entity.EntityValue#getBoolean(String) */
     Boolean getBoolean(String name) { return this.get(name) as Boolean }
@@ -174,8 +175,9 @@ class EntityValueImpl implements EntityValue {
     BigDecimal getBigDecimal(String name) { return this.get(name) as BigDecimal }
 
     /** @see org.moqui.entity.EntityValue#setFields(Map, boolean, java.lang.String, boolean) */
-    void setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
+    EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
         entityDefinition.setFields(fields, this, setIfEmpty, namePrefix, pks)
+        return this
     }
 
     /** @see org.moqui.entity.EntityValue#compareTo(EntityValue) */

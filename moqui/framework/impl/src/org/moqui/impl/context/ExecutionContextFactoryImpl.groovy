@@ -36,9 +36,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected ThreadLocal<ExecutionContext> activeContext = new ThreadLocal<ExecutionContext>()
 
+    protected Map<String, EntityFacadeImpl> entityFacadeByTenantMap = new HashMap<String, EntityFacadeImpl>()
+
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
-    protected final EntityFacadeImpl entityFacade
     protected final LoggerFacadeImpl loggerFacade
     protected final ResourceFacadeImpl resourceFacade
     protected final ScreenFacadeImpl screenFacade
@@ -110,8 +111,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ResourceFacadeImpl Initialized")
         this.transactionFacade = new TransactionFacadeImpl(this)
         logger.info("Moqui TransactionFacadeImpl Initialized")
-        this.entityFacade = new EntityFacadeImpl(this)
-        logger.info("Moqui EntityFacadeImpl Initialized")
+        // always init the EntityFacade for tenantId DEFAULT
+        this.entityFacadeByTenantMap.put("DEFAULT", new EntityFacadeImpl(this, "DEFAULT"))
+        logger.info("Moqui EntityFacadeImpl for DEFAULT Tenant Initialized")
         this.serviceFacade = new ServiceFacadeImpl(this)
         logger.info("Moqui ServiceFacadeImpl Initialized")
         this.screenFacade = new ScreenFacadeImpl(this)
@@ -154,8 +156,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ResourceFacadeImpl Initialized")
         this.transactionFacade = new TransactionFacadeImpl(this)
         logger.info("Moqui TransactionFacadeImpl Initialized")
-        this.entityFacade = new EntityFacadeImpl(this)
-        logger.info("Moqui EntityFacadeImpl Initialized")
+        // always init the EntityFacade for tenantId DEFAULT
+        this.entityFacadeByTenantMap.put("DEFAULT", new EntityFacadeImpl(this, "DEFAULT"))
+        logger.info("Moqui EntityFacadeImpl for DEFAULT Tenant Initialized")
         this.serviceFacade = new ServiceFacadeImpl(this)
         logger.info("Moqui ServiceFacadeImpl Initialized")
         this.screenFacade = new ScreenFacadeImpl(this)
@@ -244,7 +247,21 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     CacheFacadeImpl getCacheFacade() { return this.cacheFacade }
 
-    EntityFacadeImpl getEntityFacade() { return this.entityFacade }
+    EntityFacadeImpl getEntityFacade() { return getEntityFacade(executionContext.tenantId) }
+    EntityFacadeImpl getEntityFacade(String tenantId) {
+        EntityFacadeImpl efi = this.entityFacadeByTenantMap.get(tenantId)
+        if (efi == null) efi = initEntityFacade(tenantId)
+        return efi
+    }
+    synchronized EntityFacadeImpl initEntityFacade(String tenantId) {
+        EntityFacadeImpl efi = this.entityFacadeByTenantMap.get(tenantId)
+        if (efi != null) return efi
+
+        efi = new EntityFacadeImpl(this, tenantId)
+        this.entityFacadeByTenantMap.put(tenantId, efi)
+        logger.info("Moqui EntityFacadeImpl for Tenant [${tenantId}] Initialized")
+        return efi
+    }
 
     LoggerFacadeImpl getLoggerFacade() { return this.loggerFacade }
 

@@ -72,6 +72,8 @@ public class Moqui {
             activeExecutionContextFactory = executionContextFactoryLoader.iterator().next();
 
         ExecutionContext ec = activeExecutionContextFactory.getExecutionContext();
+        String tenantId = argMap.get("tenantId");
+        if (tenantId != null && tenantId.length() > 0) ec.changeTenant(tenantId);
 
         EntityDataLoader edl = ec.getEntity().makeDataLoader();
         if (argMap.containsKey("types"))

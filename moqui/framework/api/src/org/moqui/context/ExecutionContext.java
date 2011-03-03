@@ -79,6 +79,8 @@ public interface ExecutionContext {
      */
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response);
 
+    void changeTenant(String tenantId);
+
     /** This should be called when the ExecutionContext won't be used any more. Implementations should make sure
      * any active transactions, database connections, etc are closed.
      */

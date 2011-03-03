@@ -81,4 +81,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="jdbcPassword" type="text-long"/>
         <relationship type="one" related-entity-name="Tenant"/>
     </entity>
+    <entity entity-name="TenantDataSourceXaProp" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="entityGroupName" type="text-medium" is-pk="true"/>
+        <field name="propName" type="text-long" is-pk="true"/>
+        <field name="propValue" type="text-long"/>
+        <relationship type="one" related-entity-name="TenantDataSource"/>
+    </entity>
 </entities>
