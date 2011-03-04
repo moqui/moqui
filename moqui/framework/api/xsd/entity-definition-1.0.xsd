@@ -46,16 +46,23 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="package-name" type="xs:string" use="required"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
-            <xs:attribute name="sequence-bank-size" type="xs:string"/>
+            <xs:attribute name="sequence-bank-size" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="sequence-primary-stagger" type="xs:nonNegativeInteger" default="1">
+                <xs:annotation><xs:documentation>The maximum amount to stagger the sequenced ID, if 1 the sequence will
+                    be incremented by 1, otherwise the current sequence ID will be incremented by a value between 1 and
+                    staggerMax.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="sequence-secondary-padded-length" type="xs:nonNegativeInteger" default="2">
+                <xs:annotation><xs:documentation>If specified front-pads the secondary sequenced value with zeroes
+                    until it is this length. Defaults to 2.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="optimistic-lock" default="false" type="boolean"/>
             <xs:attribute name="no-update-stamp" default="false" type="boolean">
-                <xs:annotation>
-                    <xs:documentation>
-                        The Entity Facade by default adds a single field (lastUpdatedStamp) to each entity for use in
-                        optimistic locking and data synchronization. If you do not want it to create that stamp for 
-                        this entity then set this attribute to false.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>
+                    The Entity Facade by default adds a single field (lastUpdatedStamp) to each entity for use in
+                    optimistic locking and data synchronization. If you do not want it to create that stamp for
+                    this entity then set this attribute to false.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="cache" default="false" type="cache-options"/>
         </xs:complexType>

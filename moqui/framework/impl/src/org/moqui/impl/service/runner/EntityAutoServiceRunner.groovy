@@ -97,7 +97,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             /* **** secondary sequenced primary key **** */
             String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
             newEntityValue.setFields(parameters, true, null, true)
-            sfi.ecfi.entityFacade.sequencedIdSecondary(newEntityValue, doublePkSecondaryName, 5, 1)
+            newEntityValue.setSequencedIdSecondary()
             if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
                 result.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
         } else if (allPksIn) {

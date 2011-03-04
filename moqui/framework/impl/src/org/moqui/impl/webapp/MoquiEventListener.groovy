@@ -31,6 +31,8 @@ class MoquiEventListener implements HttpSessionListener {
             return
         }
 
+        if (ecfi.confXmlRoot."server-stats"[0]."@visit-enabled" == "false") return
+
         // create and persist Visit
         String contextPath = session.getServletContext().getContextPath()
         String webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
@@ -53,6 +55,9 @@ class MoquiEventListener implements HttpSessionListener {
             logger.warn("Not updating (closing) visit for session [${session.id}], no executionContextFactory in ServletContext")
             return
         }
+
+        if (ecfi.confXmlRoot."server-stats"[0]."@visit-enabled" == "false") return
+
         String visitId = session.getAttribute("visitId")
         if (!visitId) {
             logger.warn("Not updating (closing) visit for session [${session.id}], no visitId attribute found")

@@ -180,6 +180,43 @@ class EntityValueImpl implements EntityValue {
         return this
     }
 
+    /** @see org.moqui.entity.EntityValue#setSequencedIdPrimary() */
+    void setSequencedIdPrimary() {
+        ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
+        Integer staggerMax = (getEntityDefinition().entityNode."@sequence-primary-stagger" as Integer) ?: 1
+        set((String) pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax))
+    }
+
+    /** @see org.moqui.entity.EntityValue#setSequencedIdSecondary() */
+    void setSequencedIdSecondary() {
+        ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
+        if (pkFields.size() < 2) throw new IllegalArgumentException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
+        // sequenced field will be the last pk
+        String seqFieldName = pkFields.get(pkFields.size()-1)
+        int paddedLength  = (getEntityDefinition().entityNode."@sequence-secondary-padded-length" as Integer) ?: 2
+
+        this.remove(seqFieldName)
+        EntityValue lookupValue = getEntityFacadeImpl().makeValue(getEntityName())
+        lookupValue.setFields(this, false, null, true)
+
+        List<EntityValue> allValues = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue).list()
+        Integer highestSeqVal = null;
+        for (EntityValue curValue in allValues) {
+            String currentSeqId = curValue.getString(seqFieldName)
+            if (currentSeqId) {
+                try {
+                    int seqVal = Integer.parseInt(currentSeqId)
+                    if (highestSeqVal == null || seqVal > highestSeqVal) highestSeqVal = seqVal
+                } catch (Exception e) {
+                    logger.warn("Error in secondary sequenced ID converting SeqId [${currentSeqId}] in field [${seqFieldName}] from entity [${getEntityName()}] to a number: ${e.toString()}")
+                }
+            }
+        }
+
+        int seqValToUse = (highestSeqVal ? highestSeqVal+1 : 1)
+        this.set(seqFieldName, StupidUtilities.paddedNumber(seqValToUse, paddedLength))
+    }
+
     /** @see org.moqui.entity.EntityValue#compareTo(EntityValue) */
     int compareTo(EntityValue that) {
         // nulls go earlier
@@ -217,6 +254,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
+        long startTime = System.currentTimeMillis()
         efi.runEecaRules(this.getEntityName(), this, "create", true)
 
         EntityDefinition ed = getEntityDefinition()
@@ -263,6 +301,9 @@ class EntityValueImpl implements EntityValue {
         handleAuditLog(false, null)
 
         efi.runEecaRules(this.getEntityName(), this, "create", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".create", this.getPrimaryKeys(),
+                startTime, System.currentTimeMillis(), 1)
     }
 
     protected void internalCreate(EntityQueryBuilder eqb, ListOrderedSet fieldList) {
@@ -292,6 +333,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#update() */
     void update() {
+        long startTime = System.currentTimeMillis()
         efi.runEecaRules(this.getEntityName(), this, "update", true)
 
         EntityDefinition ed = getEntityDefinition()
@@ -358,6 +400,9 @@ class EntityValueImpl implements EntityValue {
         handleAuditLog(true, oldValues)
 
         efi.runEecaRules(this.getEntityName(), this, "update", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".update", this.getPrimaryKeys(),
+                startTime, System.currentTimeMillis(), 1)
     }
 
     protected void internalUpdate(EntityQueryBuilder eqb) {
@@ -410,6 +455,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#delete() */
     void delete() {
+        long startTime = System.currentTimeMillis()
         efi.runEecaRules(this.getEntityName(), this, "delete", true)
 
         EntityDefinition ed = getEntityDefinition()
@@ -442,6 +488,9 @@ class EntityValueImpl implements EntityValue {
         }
 
         efi.runEecaRules(this.getEntityName(), this, "delete", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".delete", this.getPrimaryKeys(),
+                startTime, System.currentTimeMillis(), 1)
     }
 
     protected void internalDelete(EntityQueryBuilder eqb) {
@@ -454,6 +503,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#refresh() */
     boolean refresh() {
+        long startTime = System.currentTimeMillis()
         efi.runEecaRules(this.getEntityName(), this, "find-one", true)
 
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
@@ -499,6 +549,9 @@ class EntityValueImpl implements EntityValue {
         }
 
         efi.runEecaRules(this.getEntityName(), this, "find-one", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".delete", this.getPrimaryKeys(),
+                startTime, System.currentTimeMillis(), retVal ? 1 : 0)
         return retVal
     }
 

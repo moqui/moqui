@@ -27,11 +27,12 @@
         <cache name="resource.cwiki.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
         <cache name="resource.text.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
     </cache-list>
-    <server-stats bin-length-seconds="900" proxy-enabled="false" visit-persist="true" visitor-persist="true">
-        <artifact-stats type="screen" track-bin="true" persist-bin="true" persist-hit="true"/>
-        <artifact-stats type="transition" track-bin="true" persist-bin="false" persist-hit="false"/>
-        <artifact-stats type="service" track-bin="true" persist-bin="false" persist-hit="false"/>
-        <artifact-stats type="entity" track-bin="true" persist-bin="false" persist-hit="false"/>
+    <server-stats bin-length-seconds="900" proxy-enabled="false" visit-enabled="true" visitor-enabled="true">
+        <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="service" persist-bin="true" persist-hit="false"/>
+        <artifact-stats type="entity" persist-bin="false" persist-hit="false"/>
     </server-stats>
     
     <webapp-list>
@@ -42,7 +43,7 @@
                 https-port="8443" https-host="" https-enabled="true"
                 content-prefix-secure="" content-prefix-standard=""
                 cookie-domain="">
-
+            <!-- TODO support these in code -->
             <first-hit-in-visit><actions></actions></first-hit-in-visit>
             <after-request><actions></actions></after-request>
             <before-request><actions></actions></before-request>

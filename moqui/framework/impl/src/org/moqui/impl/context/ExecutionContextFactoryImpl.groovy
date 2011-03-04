@@ -21,6 +21,8 @@ import org.moqui.impl.service.ServiceFacadeImpl
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.moqui.entity.EntityValue
+import java.sql.Timestamp
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -34,9 +36,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     
     protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
 
-    protected ThreadLocal<ExecutionContext> activeContext = new ThreadLocal<ExecutionContext>()
+    protected ThreadLocal<ExecutionContextImpl> activeContext = new ThreadLocal<ExecutionContextImpl>()
 
     protected Map<String, EntityFacadeImpl> entityFacadeByTenantMap = new HashMap<String, EntityFacadeImpl>()
+
+    protected Map<String, Map<String, Object>> artifactHitBinByType = new HashMap()
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -212,6 +216,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     synchronized void destroy() {
         if (!this.destroyed) {
+            // persist any remaining bins in artifactHitBinByType
+            Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
+            for (Map<String, Object> ahb in artifactHitBinByType.values()) {
+                ahb.binEndDateTime = currentTimestamp
+                executionContext.service.sync().name("create", "ArtifactHitBin").parameters(ahb).call()
+            }
+            artifactHitBinByType.clear()
+
             // this destroy order is important as some use others so must be destroyed first
             if (this.serviceFacade) { this.serviceFacade.destroy() }
             if (this.entityFacade) { this.entityFacade.destroy() }
@@ -279,7 +291,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** @see org.moqui.context.ExecutionContextFactory#getExecutionContext() */
     ExecutionContext getExecutionContext() {
-        ExecutionContext ec = this.activeContext.get()
+        ExecutionContextImpl ec = this.activeContext.get()
         if (ec) {
             return ec
         } else {
@@ -324,6 +336,100 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     Map<String, String> getComponentBaseLocations() {
         return Collections.unmodifiableMap(this.componentLocationMap)
     }
+
+    // ========== Server Stat Tracking ==========
+    void countArtifactHit(String artifactType, String artifactName, Map parameters, long startTime, long endTime,
+                          Long outputSize) {
+        ExecutionContextImpl eci = this.executionContext
+        Node artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType })
+        int hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
+        long runningTimeMillis = endTime - startTime
+
+        // NOTE: never save hits for entity artifact hits, way too heavy and also avoids self-reference (could also be done by checking for ArtifactHit/etc of course)
+        if (artifactStats."@persist-hit" == "true" && artifactType != "entity") {
+            Map<String, Object> ahp = (Map<String, Object>) [visitId:eci.user.visitId, userId:eci.user.userId,
+                artifactType:artifactType, artifactName:artifactName,
+                startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
+
+            if (parameters) ahp.parameterString = parameters.toMapString()
+            if (outputSize != null) ahp.outputSize = outputSize
+            if (eci.message.errors) {
+                ahp.wasError = "Y"
+                StringBuilder errorMessage = new StringBuilder()
+                for (String curErr in eci.message.errors) errorMessage.append(curErr)
+                if (errorMessage.length() > 255) errorMessage.delete(255, errorMessage.length())
+                ahp.errorMessage = errorMessage
+            } else {
+                ahp.wasError = "N"
+            }
+            if (eci.web != null) {
+                String fullUrl = eci.web.requestUrl
+                fullUrl = (fullUrl.length() > 255) ? fullUrl.substring(0, 255) : fullUrl.toString()
+                ahp.requestUrl = fullUrl
+                ahp.referrerUrl = eci.web.request.getHeader("Referrer") ?: ""
+            }
+            InetAddress address = InetAddress.getLocalHost();
+            if (address) {
+                ahp.serverIpAddress = address.getHostAddress()
+                ahp.serverHostName = address.getHostName()
+            }
+
+            // call async, let the server do it whenever
+            eci.service.async().name("create", "ArtifactHit").parameters(ahp).call()
+        }
+        if (artifactStats."@persist-bin" == "true") {
+            Map<String, Object> ahb = artifactHitBinByType.get(artifactType + ":" + artifactName)
+            if (ahb == null) ahb = makeArtifactHitBinMap(artifactType, artifactName, startTime)
+
+            // has the current bin expired since the last hit record?
+            long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
+            if (startTime > (binStartTime + hitBinLengthMillis)) {
+                if (logger.infoEnabled) logger.info("Advancing ArtifactHitBin [${artifactType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
+                ahb = advanceArtifactHitBin(artifactType, artifactName, startTime, hitBinLengthMillis)
+            }
+
+            ahb.hitCount += 1
+            ahb.totalTimeMillis += runningTimeMillis
+            if (runningTimeMillis < ahb.minTimeMillis) ahb.minTimeMillis = runningTimeMillis
+            if (runningTimeMillis > ahb.maxTimeMillis) ahb.maxTimeMillis = runningTimeMillis
+        }
+    }
+
+    protected synchronized Map<String, Object> advanceArtifactHitBin(String artifactType, String artifactName, long startTime, int hitBinLengthMillis) {
+        Map<String, Object> ahb = artifactHitBinByType.get(artifactType + ":" + artifactName)
+        if (ahb == null) return makeArtifactHitBinMap(artifactType, artifactName, startTime)
+
+        long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
+
+        // check the time again and return just in case something got in while waiting with the same type
+        if (startTime < (binStartTime + hitBinLengthMillis)) return ahb
+
+        // otherwise, persist the old (async so this is fast) and create a new one
+        ahb.binEndDateTime = new Timestamp(binStartTime + hitBinLengthMillis)
+        executionContext.service.async().name("create", "ArtifactHitBin").parameters(ahb).call()
+
+        return makeArtifactHitBinMap(artifactType, artifactName, startTime)
+    }
+    protected Map<String, Object> makeArtifactHitBinMap(String artifactType, String artifactName, long startTime) {
+        Map<String, Object> ahb = new HashMap()
+        ahb.artifactType = artifactType
+        ahb.artifactName = artifactName
+        ahb.binStartDateTime = new Timestamp(startTime)
+        ahb.binEndDateTime = null
+        ahb.hitCount = 0
+        ahb.totalTimeMillis = 0
+        ahb.minTimeMillis = Long.MAX_VALUE
+        ahb.maxTimeMillis = 0
+        InetAddress address = InetAddress.getLocalHost();
+        if (address) {
+            ahb.serverIpAddress = address.getHostAddress()
+            ahb.serverHostName = address.getHostName()
+        }
+        artifactHitBinByType.put(artifactType + ":" + artifactName, ahb)
+        return ahb
+    }
+
+    // ========== Configuration File Merging Methods ==========
 
     protected void mergeConfigNodes(Node baseNode, Node overrideNode) {
         if (overrideNode."cache-list") {

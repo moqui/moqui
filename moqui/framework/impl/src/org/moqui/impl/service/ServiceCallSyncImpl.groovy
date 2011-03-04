@@ -163,7 +163,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             } catch (Throwable t) {
                 logger.error("Error logging out user after call to service [${getServiceName()}]")
             }
-            if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(System.currentTimeMillis()-callStartTime)/1000} seconds" + (eci.message.errors ? " with ${eci.message.errors.size()} error messages" : ", was successful"))
+
+            long endTime = System.currentTimeMillis()
+            sfi.ecfi.countArtifactHit("service", getServiceName(), this.parameters, callStartTime, endTime, null)
+
+            if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds" + (eci.message.errors ? " with ${eci.message.errors.size()} error messages" : ", was successful"))
         }
 
         return result

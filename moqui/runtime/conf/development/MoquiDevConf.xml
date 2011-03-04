@@ -27,9 +27,10 @@
         <cache name="resource.text.location" expire-time-idle="10"/>
     </cache-list>
     
-    <server-stats bin-length-seconds="900" proxy-enabled="false" visit-persist="true" visitor-persist="true">
+    <server-stats>
         <!-- For development, track everything! It'll run slow through... -->
         <artifact-stats type="screen" track-bin="true" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="screen-content" track-bin="true" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="transition" track-bin="true" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="service" track-bin="true" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="entity" track-bin="true" persist-bin="true" persist-hit="true"/>

@@ -67,7 +67,7 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
     void call() {
         // TODO: how to handle persist on a per-job bases? seems like the volatile Job concept matched this, but that is deprecated in 2.0
         // TODO: how to handle maxRetry
-        logger.info("Setting up call to async service [${serviceName}] with parameters [${parameters}]")
+        if (logger.traceEnabled) logger.trace("Setting up call to async service [${serviceName}] with parameters [${parameters}]")
 
         // Before scheduling the service check a few basic things so they show up sooner than later:
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())

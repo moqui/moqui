@@ -315,6 +315,7 @@ class EntityFindImpl implements EntityFind {
             throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
         }
 
+        long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-one", true)
 
@@ -383,7 +384,11 @@ class EntityFindImpl implements EntityFind {
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
 
+        // final ECA trigger
         efi.runEecaRules(ed.getEntityName(), newEntityValue, "find-one", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
+
         return newEntityValue
     }
 
@@ -412,6 +417,7 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() throws EntityException {
+        long startTime = System.currentTimeMillis()
         EntityDefinition entityDefinition = this.getEntityDef()
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", true)
@@ -442,12 +448,16 @@ class EntityFindImpl implements EntityFind {
             entityListCache.put(whereCondition, elToCache)
             efi.registerCacheListRa(this.entityName, whereCondition, elToCache)
         }
+        // run the final rules
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", entityDefinition.getEntityName() + ".list", simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
         return el
     }
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() throws EntityException {
+        long startTime = System.currentTimeMillis()
         EntityDefinition entityDefinition = this.getEntityDef()
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
@@ -455,6 +465,8 @@ class EntityFindImpl implements EntityFind {
         EntityListIterator eli = iteratorPlain()
 
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-iterator", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", entityDefinition.getEntityName() + ".iterator", simpleAndMap, startTime, System.currentTimeMillis(), null)
         return eli
     }
     protected EntityListIterator iteratorPlain() throws EntityException {
@@ -548,6 +560,7 @@ class EntityFindImpl implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
+        long startTime = System.currentTimeMillis()
         EntityDefinition entityDefinition = this.getEntityDef()
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", true)
@@ -617,6 +630,8 @@ class EntityFindImpl implements EntityFind {
         }
 
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", false)
+        // count the artifact hit
+        efi.ecfi.countArtifactHit("entity", entityDefinition.getEntityName() + ".count", simpleAndMap, startTime, System.currentTimeMillis(), count)
         return count
     }
 

@@ -88,6 +88,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="screen-theme-type-enum-id" type="xs:string" default="STT_INTERNAL"/>
+            <!-- TODO support this in code -->
+            <xs:attribute name="track-visit" type="boolean" default="true"/>
+            <!-- TODO support this in code -->
+            <xs:attribute name="track-server-hit" type="boolean" default="true"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="web-settings">
@@ -96,10 +100,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="require-encryption" default="true" type="boolean"/>
             <xs:attribute name="mime-type" type="xs:string" default="text/html"/>
             <xs:attribute name="character-encoding" type="xs:string" default="UTF-8"/>
-            <!-- TODO support this in code -->
-            <xs:attribute name="track-visit" default="true" type="boolean"/>
-            <!-- TODO support this in code -->
-            <xs:attribute name="track-serverhit" type="boolean" default="true"/>
             <!-- TODO support this in code -->
             <xs:attribute name="http-no-cache" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Send no-cache headers if true.</xs:documentation></xs:annotation>

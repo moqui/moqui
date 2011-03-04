@@ -60,28 +60,30 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <xs:element name="server-stats">
-        <!-- TODO use in code -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="artifact-stats"/>
             </xs:sequence>
             <xs:attribute name="bin-length-seconds" type="xs:positiveInteger" default="900">
-                <xs:annotation><xs:documentation>The bin length should be less than or equal to one hour and evenly divisible into an hour, the default is 900 seconds (15 minutes)</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The bin length should be less than or equal to one hour and evenly
+                    divisible into an hour, the default is 900 seconds (15 minutes)</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="visit-persist" type="boolean" default="true"/>
-            <xs:attribute name="visitor-persist" type="boolean" default="true"/>
+            <xs:attribute name="visit-enabled" type="boolean" default="true"/>
+            <xs:attribute name="visitor-enabled" type="boolean" default="true"/>
+            <!-- TODO use in code -->
             <xs:attribute name="proxy-enabled" type="boolean" default="false">
-                <xs:annotation><xs:documentation>Is there a proxy in front of this app server? Allows us collect the client's real IP address.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Is there a proxy in front of this app server? Allows us collect the
+                    client's real IP address.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="artifact-stats">
-        <!-- TODO use in code -->
         <xs:complexType>
             <xs:attribute name="type" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="screen"/>
+                        <xs:enumeration value="screen-content"/>
                         <xs:enumeration value="transition"/>
                         <xs:enumeration value="service"/>
                         <xs:enumeration value="entity"/>
@@ -89,7 +91,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="persist-hit" type="boolean" default="false"/>
-            <xs:attribute name="track-bin" type="boolean" default="false"/>
             <xs:attribute name="persist-bin" type="boolean" default="false"/>
         </xs:complexType>
     </xs:element>
@@ -101,15 +102,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="webapp">
         <xs:complexType>
             <xs:sequence>
-                <!-- TODO use in code -->
                 <xs:element minOccurs="0" ref="first-hit-in-visit"/>
-                <!-- TODO use in code -->
                 <xs:element minOccurs="0" ref="after-request"/>
-                <!-- TODO use in code -->
                 <xs:element minOccurs="0" ref="before-request"/>
-                <!-- TODO use in code -->
                 <xs:element minOccurs="0" ref="after-login"/>
-                <!-- TODO use in code -->
                 <xs:element minOccurs="0" ref="before-logout"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
@@ -431,14 +427,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="schema-name" type="xs:string"/>
             <xs:attribute name="runtime-add-missing" default="true" type="boolean"/>
             <xs:attribute name="runtime-add-fks" default="false" type="boolean"/>
-            <!-- TODO support in code, or even use these?
-            <xs:attribute name="check-on-start" default="true" type="boolean"/>
-            <xs:attribute name="add-missing-on-start" default="true" type="boolean"/>
-            <xs:attribute name="check-pks-on-start" default="true" type="boolean"/>
-            <xs:attribute name="check-fks-on-start" default="true" type="boolean"/>
-            <xs:attribute name="check-fk-indices-on-start" default="true" type="boolean"/>
-            <xs:attribute name="check-indices-on-start" default="true" type="boolean"/>
-             -->
         </xs:complexType>
     </xs:element>
     <xs:element name="inline-jdbc">

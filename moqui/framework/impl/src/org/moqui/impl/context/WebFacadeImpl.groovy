@@ -113,6 +113,16 @@ class WebFacadeImpl implements WebFacade {
 
     ExecutionContextImpl getEci() { eci }
 
+    String getRequestUrl() {
+        StringBuilder requestUrl = new StringBuilder()
+        requestUrl.append(request.getScheme())
+        requestUrl.append("://" + request.getServerName())
+        if (request.getServerPort() != 80 && request.getServerPort() != 443) requestUrl.append(":" + request.getServerPort())
+        requestUrl.append(request.getRequestURI())
+        if (request.getQueryString()) requestUrl.append("?" + request.getQueryString())
+        return requestUrl.toString()
+    }
+
     /** @see org.moqui.context.WebFacade#getParameters() */
     Map<String, Object> getParameters() {
         // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread

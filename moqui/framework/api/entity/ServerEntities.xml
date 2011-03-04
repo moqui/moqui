@@ -13,53 +13,49 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.server.stats -->
+    <!-- org.moqui.server.artifact -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ServerHit" package-name="org.moqui.server.stats" cache="never" sequence-bank-size="100">
-        <field name="serverHitId" type="id" is-pk="true"/>
+    <entity entity-name="ArtifactHit" package-name="org.moqui.server.artifact" cache="never" sequence-bank-size="100">
+        <field name="hitId" type="id" is-pk="true"/>
         <field name="visitId" type="id"/>
-        <field name="targetResource" type="id-very-long">
-            <description>The ID of the resource hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
-        </field>
-        <field name="hitStartDateTime" type="date-time"/>
-        <field name="serverHitTypeEnumId" type="id"/>
-        <field name="numOfBytes" type="number-integer"/>
-        <field name="runningTimeMillis" type="number-integer"/>
         <field name="userId" type="id-very-long"/>
-        <field name="statusId" type="id"/>
+        <field name="artifactType" type="text-medium"/>
+        <field name="artifactName" type="text-long">
+            <description>The name of the artifact hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
+        </field>
+        <field name="parameterString" type="text-long"/>
+        <field name="startDateTime" type="date-time"/>
+        <field name="runningTimeMillis" type="number-integer"/>
+        <field name="outputSize" type="number-integer"/>
+        <field name="wasError" type="text-indicator"/>
+        <field name="errorMessage" type="text-long"/>
         <field name="requestUrl" type="text-long"/>
         <field name="referrerUrl" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>
-        <relationship type="one" title="ServerHitType" related-entity-name="Enumeration">
-            <description>(enumTypeId = SERVER_HIT_TYPE)</description>
-            <key-map field-name="serverHitTypeEnumId"/>
-        </relationship>
         <relationship type="one" related-entity-name="Visit"/>
-        <relationship type="one" related-entity-name="StatusItem"/>
         <relationship type="one" related-entity-name="UserAccount"/>
     </entity>
-    <entity entity-name="ServerHitBin" package-name="org.moqui.server.stats" cache="never">
-        <field name="serverHitBinId" type="id" is-pk="true"/>
-        <field name="contentId" type="id-very-long"/>
-        <field name="hitTypeId" type="id"/>
+    <entity entity-name="ArtifactHitBin" package-name="org.moqui.server.artifact" cache="never" sequence-bank-size="100">
+        <field name="hitBinId" type="id" is-pk="true"/>
+        <field name="artifactType" type="text-medium"/>
+        <field name="artifactName" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>
         <field name="binStartDateTime" type="date-time"/>
         <field name="binEndDateTime" type="date-time"/>
-        <field name="numberHits" type="number-integer"/>
+        <field name="hitCount" type="number-integer"/>
         <field name="totalTimeMillis" type="number-integer"/>
         <field name="minTimeMillis" type="number-integer"/>
         <field name="maxTimeMillis" type="number-integer"/>
-        <relationship type="one" related-entity-name="ServerHitType"/>
     </entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.server.visit -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Visit" package-name="org.moqui.server.visit" cache="never" sequence-bank-size="100">
+    <entity entity-name="Visit" package-name="org.moqui.server.visit" sequence-bank-size="100">
         <field name="visitId" type="id" is-pk="true"/>
         <field name="visitorId" type="id"/>
         <field name="userId" type="id-very-long"/>

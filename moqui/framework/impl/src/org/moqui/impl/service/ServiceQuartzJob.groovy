@@ -27,7 +27,7 @@ class ServiceQuartzJob implements Job {
         Map parameters = new HashMap()
         for (String key in jdm.getKeys()) parameters.put(key, jdm.get(key))
 
-        if (logger.infoEnabled) logger.info("Calling async|scheduled service [${serviceName}] with parameters [${parameters}]")
+        if (logger.traceEnabled) logger.trace("Calling async|scheduled service [${serviceName}] with parameters [${parameters}]")
 
         ExecutionContext ec = Moqui.getExecutionContext()
 

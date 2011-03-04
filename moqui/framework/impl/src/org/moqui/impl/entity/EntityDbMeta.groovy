@@ -69,7 +69,7 @@ class EntityDbMeta {
             if (parentTransaction != null) efi.ecfi.transactionFacade.resume(parentTransaction)
         }
 
-        logger.info("Checked table for entity [${ed.entityName}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
+        if (logger.infoEnabled) logger.info("Checked table for entity [${ed.entityName}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
     }
 
     boolean tableExists(EntityDefinition ed) {

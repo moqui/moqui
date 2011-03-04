@@ -168,6 +168,7 @@ class ScreenRenderImpl implements ScreenRender {
                 }
             }
 
+            long transitionStartTime = System.currentTimeMillis()
             // NOTE: always use a transaction for transition run (actions, etc)
             boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
             ResponseItem ri = null
@@ -181,6 +182,8 @@ class ScreenRenderImpl implements ScreenRender {
                 if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
                     sfi.ecfi.transactionFacade.commit(beganTransaction)
                 }
+                sfi.ecfi.countArtifactHit("transition", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                        transitionStartTime, System.currentTimeMillis(), null)
             }
 
             if (ri == null) throw new IllegalArgumentException("No response found for transition [${screenUrlInfo.targetTransition.name}] on screen [${screenUrlInfo.targetScreen.location}]")
@@ -240,6 +243,7 @@ class ScreenRenderImpl implements ScreenRender {
                 internalRender()
             }
         } else if (screenUrlInfo.fileResourceRef != null) {
+            long resourceStartTime = System.currentTimeMillis()
             // use the fileName to determine the content/mime type
             String fileName = screenUrlInfo.fileResourceRef.fileName
             // if it contains .ftl or .cwiki remove those to avoid problems with trying to find content types based on them
@@ -268,6 +272,8 @@ class ScreenRenderImpl implements ScreenRender {
                             len = is.read(buffer)
                             if (Thread.interrupted()) throw new InterruptedException()
                         }
+                        sfi.ecfi.countArtifactHit("screen-content", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                                resourceStartTime, System.currentTimeMillis(), totalLen)
                         if (logger.infoEnabled) logger.info("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
                         return
                     } finally {
@@ -301,6 +307,9 @@ class ScreenRenderImpl implements ScreenRender {
                         if (logger.infoEnabled) logger.info("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
 
                         writer.write(text)
+
+                        sfi.ecfi.countArtifactHit("screen-content", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                                resourceStartTime, System.currentTimeMillis(), length)
                     } else {
                         logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}] because no text was found in the file.")
                     }
@@ -315,6 +324,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     void doActualRender() {
+        long screenStartTime = System.currentTimeMillis()
         boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
         try {
             // before we kick-off rendering run all pre-actions
@@ -335,6 +345,8 @@ class ScreenRenderImpl implements ScreenRender {
             throw new RuntimeException(errMsg, t)
         } finally {
             if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
+            sfi.ecfi.countArtifactHit("screen", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                    screenStartTime, System.currentTimeMillis(), null)
         }
     }
 

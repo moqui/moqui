@@ -46,7 +46,7 @@ public interface EntityFacade {
     EntityFind makeFind(String entityName);
 
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;
-     * if the named sequence doesn't exist, it will be created
+     * if the named sequence doesn't exist, it will be created.
      *
      * @param seqName The name of the sequence to get the next seq id from
      * @param staggerMax The maximum amount to stagger the sequenced ID, if 1 the sequence will be incremented by 1,
@@ -54,16 +54,6 @@ public interface EntityFacade {
      * @return Long with the next seq id for the given sequence name
      */
     String sequencedIdPrimary(String seqName, Long staggerMax);
-
-    /** Look at existing values for a sub-entity with a sequenced secondary ID, and get the highest plus incrementBy
-     * (default 1).
-     *
-     * @param value An existing value object with the primary sequenced field already populated.
-     * @param seqFieldName The field to set the secondary sequenced value on.
-     * @param paddedLength If specified front-pads the secondary sequenced value with zeroes until it is this length.
-     * @param incrementBy If specified adds this value instead of the default (1) to the highest existing value. 
-     */
-    void sequencedIdSecondary(EntityValue value, String seqFieldName, Integer paddedLength, Integer incrementBy);
 
     /** Gets the group name for specified entityName
      * @param entityName The name of the entity to get the group name

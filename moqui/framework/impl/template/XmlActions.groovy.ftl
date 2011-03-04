@@ -57,10 +57,10 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#macro "entity-sequenced-id-primary">
-    ${.node["@field"]} = ec.entity.sequencedIdPrimary("${.node["@sequence-name"]}", ${.node["@stagger-max"]?default("null")})
+    ${.node["@value-field"]}.setSequencedIdPrimary()
 </#macro>
 <#macro "entity-sequenced-id-secondary">
-    ec.entity.sequencedIdSecondary(${.node["@value-field"]}, "${.node["@seq-field-name"]}", ${.node["@padded-length"]?default("3")}, ${.node["@increment-by"]?default("1")})
+    ${.node["@value-field"]}.setSequencedIdSecondary()
 </#macro>
 <#macro "entity-data">
     // TODO impl entity-data

@@ -261,52 +261,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <!-- Entity Misc Operations -->
-    <xs:element name="entity-sequenced-id-primary" substitutionGroup="EntityMiscOperations">
-        <xs:annotation><xs:documentation>Generates a sequenced ID to uniquely identify a database record, or for other
-            purposes.</xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:attribute name="sequence-name" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The unique name of the sequence, usually an entity-name.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="field" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The name of the field the sequenced ID will be put in. Generally use
-                    the dot syntax to refer to a field on a EntityValue object.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="stagger-max" type="xs:string">
-                <xs:annotation><xs:documentation>To make sequenced IDs more difficult to guess the ID returned will be
-                    the last ID plus a number from 1 to this value.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="entity-sequenced-id-secondary" substitutionGroup="EntityMiscOperations">
-        <xs:annotation>
-            <xs:documentation>
-                Given an entity value object with all primary key fields except one already set will generate an ID for
-                the remaining primary key field by looking at all records with the partial primary key and then adding
-                increment-by to the highest value.
-            </xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-            <xs:attribute name="value-field" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The EntityValue object to work on.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="seq-field-name" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    Field to receive the sequenced ID. Usually the second primary key field after a primary sequenced ID.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="padded-length" type="xs:string" default="3">
-                <xs:annotation><xs:documentation>
-                    To consistently sort on the String value, pad the beginning with zeroes until the number
-                    has this number of digits. Defaults to 3 digits total.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="increment-by" type="xs:string" default="1">
-                <xs:annotation><xs:documentation>Increment by more than 1 to stagger sequenced IDs. Defaults to 1.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-
     <xs:element name="entity-data" substitutionGroup="EntityMiscOperations">
         <xs:annotation><xs:documentation>Load or assert each record in an entity-facade-xml file.</xs:documentation></xs:annotation>
         <xs:complexType>
@@ -830,6 +784,30 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="set-if-empty" type="boolean" default="true">
                 <xs:annotation><xs:documentation>Specifies whether or not to set fields that are null or empty.
                     Defaults to true.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-sequenced-id-primary" substitutionGroup="EntityMiscOperations">
+        <xs:annotation><xs:documentation>Get the next guaranteed unique seq id for this entity, and set it in the
+            primary key field. This will set it in the first primary key field in the entity definition, but it really
+            should be used for entities with only one primary key field.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="value-field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The EntityValue object to work on.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="entity-sequenced-id-secondary" substitutionGroup="EntityMiscOperations">
+        <xs:annotation>
+            <xs:documentation>
+                Given an entity value object with all primary key fields except one already set will generate an ID for
+                the remaining primary key field by looking at all records with the partial primary key and then adding
+                increment-by to the highest value.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="value-field" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The EntityValue object to work on.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

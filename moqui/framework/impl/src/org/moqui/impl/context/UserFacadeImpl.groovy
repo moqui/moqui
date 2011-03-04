@@ -61,35 +61,32 @@ class UserFacadeImpl implements UserFacade {
 
             // handle visitorId and cookie
             String cookieVisitorId = null
-            Cookie[] cookies = request.getCookies()
-            if (cookies != null) {
-                for (int i = 0; i < cookies.length; i++) {
-                    if (cookies[i].getName().equals("moqui.visitor")) {
-                        cookieVisitorId = cookies[i].getValue()
-                        break
+            if (eci.ecfi.confXmlRoot."server-stats"[0]."@visitor-enabled" != "false") {
+                Cookie[] cookies = request.getCookies()
+                if (cookies != null) {
+                    for (int i = 0; i < cookies.length; i++) {
+                        if (cookies[i].getName().equals("moqui.visitor")) {
+                            cookieVisitorId = cookies[i].getValue()
+                            break
+                        }
                     }
                 }
+                if (!cookieVisitorId) {
+                    Map cvResult = eci.service.sync().name("create", "Visitor").parameter("fromVisitId", this.visitId).call()
+                    cookieVisitorId = cvResult.visitorId
+                    logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
+                }
+                // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
+                Cookie visitorCookie = new Cookie("moqui.visitor", cookieVisitorId)
+                visitorCookie.setMaxAge(60 * 60 * 24 * 365)
+                visitorCookie.setPath("/")
+                response.addCookie(visitorCookie)
             }
-            if (!cookieVisitorId) {
-                Map cvResult = eci.service.sync().name("create", "Visitor").parameter("fromVisitId", this.visitId).call()
-                cookieVisitorId = cvResult.visitorId
-                logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
-            }
-            // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
-            Cookie visitorCookie = new Cookie("moqui.visitor", cookieVisitorId)
-            visitorCookie.setMaxAge(60 * 60 * 24 * 365)
-            visitorCookie.setPath("/")
-            response.addCookie(visitorCookie)
 
             EntityValue visit = getVisit()
             if (!visit?.initialLocale) {
-                StringBuilder requestUrl = new StringBuilder()
-                requestUrl.append(request.getScheme())
-                requestUrl.append("://" + request.getServerName())
-                if (request.getServerPort() != 80 && request.getServerPort() != 443) requestUrl.append(":" + request.getServerPort())
-                requestUrl.append(request.getRequestURI())
-                if (request.getQueryString()) requestUrl.append("?" + request.getQueryString())
-                String fullUrl = (requestUrl.length() > 250) ? requestUrl.substring(0, 250) : requestUrl.toString()
+                String fullUrl = eci.web.requestUrl
+                fullUrl = (fullUrl.length() > 255) ? fullUrl.substring(0, 255) : fullUrl.toString()
 
                 Map<String, Object> uvParms = (Map<String, Object>) [visitId:visit.visitId, initialLocale:getLocale().toString(),
                             initialRequest:fullUrl, initialReferrer:request.getHeader("Referrer")?:"",
@@ -97,6 +94,7 @@ class UserFacadeImpl implements UserFacade {
                             clientIpAddress:request.getRemoteAddr(), clientHostName:request.getRemoteHost(),
                             clientUser:request.getRemoteUser()]
                 if (cookieVisitorId) uvParms.visitorId = cookieVisitorId
+                // called this sync so it is ready next time referred to, like on next request
                 eci.service.sync().name("update", "Visit").parameters(uvParms).call()
             }
         }

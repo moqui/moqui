@@ -10,8 +10,11 @@ This release includes:
 - All of the great features of 1.0-preview1 and 1.0-preview2
 - Multi-tenant support (shared app server, separate databases)
 - Visitor tracking
+- ArtifactHit and ArtifactHitBin tracking for screen, screen-content,
+  transition, service and entity (bin only)
 - User preference handling
-
+- Simplified sequenced ID API for both primary and secondary sequenced IDs
+  and moved configuration to entity definition, and methods to EntityValue
 
 Notable features not yet implemented:
 
@@ -35,7 +38,8 @@ Notable features not yet implemented:
   - Database meta-data check/report against entity definitions
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db
-- ServerHit and ServerHitBin tracking
+- WebApp event actions
+- Auto-add lastUpdatedStamp (unless def says no), set on create/update
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Web Tools UI
   - Cache
