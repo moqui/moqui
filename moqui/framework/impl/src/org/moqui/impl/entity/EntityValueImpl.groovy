@@ -302,7 +302,7 @@ class EntityValueImpl implements EntityValue {
 
         efi.runEecaRules(this.getEntityName(), this, "create", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".create", this.getPrimaryKeys(),
+        efi.ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
     }
 
@@ -401,7 +401,7 @@ class EntityValueImpl implements EntityValue {
 
         efi.runEecaRules(this.getEntityName(), this, "update", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".update", this.getPrimaryKeys(),
+        efi.ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
     }
 
@@ -489,7 +489,7 @@ class EntityValueImpl implements EntityValue {
 
         efi.runEecaRules(this.getEntityName(), this, "delete", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".delete", this.getPrimaryKeys(),
+        efi.ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
     }
 
@@ -550,7 +550,7 @@ class EntityValueImpl implements EntityValue {
 
         efi.runEecaRules(this.getEntityName(), this, "find-one", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", ed.getEntityName() + ".delete", this.getPrimaryKeys(),
+        efi.ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
         return retVal
     }

@@ -4,11 +4,11 @@
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
 
     <server-stats>
-        <artifact-stats type="screen" track-bin="true" persist-bin="true" persist-hit="true"/>
-        <artifact-stats type="screen-content" track-bin="true" persist-bin="true" persist-hit="true"/>
-        <artifact-stats type="transition" track-bin="true" persist-bin="true" persist-hit="true"/>
-        <artifact-stats type="service" track-bin="true" persist-bin="true" persist-hit="false"/>
-        <artifact-stats type="entity" track-bin="false" persist-bin="false" persist-hit="false"/>
+        <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="service" persist-bin="true" persist-hit="false"/>
+        <artifact-stats type="entity" persist-bin="false"/>
     </server-stats>
 
     <webapp-list>

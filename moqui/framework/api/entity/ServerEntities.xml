@@ -21,6 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="visitId" type="id"/>
         <field name="userId" type="id-very-long"/>
         <field name="artifactType" type="text-medium"/>
+        <field name="artifactSubType" type="text-medium"/>
         <field name="artifactName" type="text-long">
             <description>The name of the artifact hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
         </field>
@@ -40,6 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="ArtifactHitBin" package-name="org.moqui.server.artifact" cache="never" sequence-bank-size="100">
         <field name="hitBinId" type="id" is-pk="true"/>
         <field name="artifactType" type="text-medium"/>
+        <field name="artifactSubType" type="text-medium"/>
         <field name="artifactName" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-long"/>

@@ -91,8 +91,13 @@ class UserFacadeImpl implements UserFacade {
                 Map<String, Object> uvParms = (Map<String, Object>) [visitId:visit.visitId, initialLocale:getLocale().toString(),
                             initialRequest:fullUrl, initialReferrer:request.getHeader("Referrer")?:"",
                             initialUserAgent:request.getHeader("User-Agent")?:"",
-                            clientIpAddress:request.getRemoteAddr(), clientHostName:request.getRemoteHost(),
-                            clientUser:request.getRemoteUser()]
+                            clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()]
+                // handle proxy original address, if exists
+                if (request.getHeader("X-Forwarded-For")) {
+                    uvParms.clientIpAddress = request.getHeader("X-Forwarded-For")
+                } else {
+                    uvParms.clientIpAddress = request.getRemoteAddr()
+                }
                 if (cookieVisitorId) uvParms.visitorId = cookieVisitorId
                 // called this sync so it is ready next time referred to, like on next request
                 eci.service.sync().name("update", "Visit").parameters(uvParms).call()

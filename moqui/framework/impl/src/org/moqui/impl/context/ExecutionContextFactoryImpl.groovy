@@ -218,11 +218,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (!this.destroyed) {
             // persist any remaining bins in artifactHitBinByType
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
-            for (Map<String, Object> ahb in artifactHitBinByType.values()) {
+            List<Map<String, Object>> ahbList = new ArrayList(artifactHitBinByType.values())
+            artifactHitBinByType.clear()
+            for (Map<String, Object> ahb in ahbList) {
                 ahb.binEndDateTime = currentTimestamp
                 executionContext.service.sync().name("create", "ArtifactHitBin").parameters(ahb).call()
             }
-            artifactHitBinByType.clear()
 
             // this destroy order is important as some use others so must be destroyed first
             if (this.serviceFacade) { this.serviceFacade.destroy() }
@@ -338,17 +339,24 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     // ========== Server Stat Tracking ==========
-    void countArtifactHit(String artifactType, String artifactName, Map parameters, long startTime, long endTime,
-                          Long outputSize) {
+    void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
+                          long startTime, long endTime, Long outputSize) {
+        // don't count the ones this calls
+        if (artifactType == "service" && artifactName == "create#ArtifactHitBin") return
+        if (artifactType == "service" && artifactName == "create#ArtifactHit") return
+
         ExecutionContextImpl eci = this.executionContext
-        Node artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType })
+        // find artifact-stats node by type AND sub-type, if not found find by just the type
+        Node artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType && it."@sub-type" == artifactSubType })
+        if (artifactStats == null) artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType })
+
         int hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
         long runningTimeMillis = endTime - startTime
 
         // NOTE: never save hits for entity artifact hits, way too heavy and also avoids self-reference (could also be done by checking for ArtifactHit/etc of course)
         if (artifactStats."@persist-hit" == "true" && artifactType != "entity") {
             Map<String, Object> ahp = (Map<String, Object>) [visitId:eci.user.visitId, userId:eci.user.userId,
-                artifactType:artifactType, artifactName:artifactName,
+                artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                 startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
 
             if (parameters) ahp.parameterString = parameters.toMapString()
@@ -378,14 +386,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             eci.service.async().name("create", "ArtifactHit").parameters(ahp).call()
         }
         if (artifactStats."@persist-bin" == "true") {
-            Map<String, Object> ahb = artifactHitBinByType.get(artifactType + ":" + artifactName)
-            if (ahb == null) ahb = makeArtifactHitBinMap(artifactType, artifactName, startTime)
+            Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
+            if (ahb == null) ahb = makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
 
             // has the current bin expired since the last hit record?
             long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
             if (startTime > (binStartTime + hitBinLengthMillis)) {
                 if (logger.infoEnabled) logger.info("Advancing ArtifactHitBin [${artifactType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
-                ahb = advanceArtifactHitBin(artifactType, artifactName, startTime, hitBinLengthMillis)
+                ahb = advanceArtifactHitBin(artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
             }
 
             ahb.hitCount += 1
@@ -394,10 +402,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             if (runningTimeMillis > ahb.maxTimeMillis) ahb.maxTimeMillis = runningTimeMillis
         }
     }
-
-    protected synchronized Map<String, Object> advanceArtifactHitBin(String artifactType, String artifactName, long startTime, int hitBinLengthMillis) {
-        Map<String, Object> ahb = artifactHitBinByType.get(artifactType + ":" + artifactName)
-        if (ahb == null) return makeArtifactHitBinMap(artifactType, artifactName, startTime)
+    protected synchronized Map<String, Object> advanceArtifactHitBin(String artifactType, String artifactSubType,
+                                                     String artifactName, long startTime, int hitBinLengthMillis) {
+        Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
+        if (ahb == null) return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
 
         long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
 
@@ -408,19 +416,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         ahb.binEndDateTime = new Timestamp(binStartTime + hitBinLengthMillis)
         executionContext.service.async().name("create", "ArtifactHitBin").parameters(ahb).call()
 
-        return makeArtifactHitBinMap(artifactType, artifactName, startTime)
+        return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
     }
-    protected Map<String, Object> makeArtifactHitBinMap(String artifactType, String artifactName, long startTime) {
-        Map<String, Object> ahb = new HashMap()
-        ahb.artifactType = artifactType
-        ahb.artifactName = artifactName
-        ahb.binStartDateTime = new Timestamp(startTime)
-        ahb.binEndDateTime = null
-        ahb.hitCount = 0
-        ahb.totalTimeMillis = 0
-        ahb.minTimeMillis = Long.MAX_VALUE
-        ahb.maxTimeMillis = 0
-        InetAddress address = InetAddress.getLocalHost();
+    protected Map<String, Object> makeArtifactHitBinMap(String artifactType, String artifactSubType,
+                                                        String artifactName, long startTime) {
+        Map<String, Object> ahb = (Map<String, Object>) [artifactType:artifactType, artifactSubType:artifactSubType,
+                artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:null,
+                hitCount:0, totalTimeMillis:0, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
+        InetAddress address = InetAddress.getLocalHost()
         if (address) {
             ahb.serverIpAddress = address.getHostAddress()
             ahb.serverHostName = address.getHostName()
@@ -437,7 +440,24 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         
         if (overrideNode."server-stats") {
-            mergeNodeWithChildKey(baseNode."server-stats"[0], overrideNode."server-stats"[0], "artifact-stats", "type")
+            // the artifact-stats nodes have 2 keys: type, sub-type; can't use the normal method
+            Node ssNode = baseNode."server-stats"[0]
+            Node overrideSsNode = overrideNode."server-stats"[0]
+            // override attributes for this node
+            ssNode.attributes().putAll(overrideSsNode.attributes())
+            for (Node childOverrideNode in overrideSsNode["artifact-stats"]) {
+                String type = childOverrideNode.attribute("type")
+                String subType = childOverrideNode.attribute("sub-type")
+                Node childBaseNode = (Node) ssNode["artifact-stats"]?.find({ it."@type" == type &&
+                        (it."@sub-type" == subType || (!it."@sub-type" && !subType)) })
+                if (childBaseNode) {
+                    // merge the node attributes
+                    childBaseNode.attributes().putAll(childOverrideNode.attributes())
+                } else {
+                    // no matching child base node, so add a new one
+                    ssNode.append(childOverrideNode)
+                }
+            }
         }
 
         if (overrideNode."webapp-list") {

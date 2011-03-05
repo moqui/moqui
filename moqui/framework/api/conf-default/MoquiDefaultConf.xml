@@ -27,12 +27,12 @@
         <cache name="resource.cwiki.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
         <cache name="resource.text.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
     </cache-list>
-    <server-stats bin-length-seconds="900" proxy-enabled="false" visit-enabled="true" visitor-enabled="true">
+    <server-stats bin-length-seconds="900" visit-enabled="true" visitor-enabled="true">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="service" persist-bin="true" persist-hit="false"/>
-        <artifact-stats type="entity" persist-bin="false" persist-hit="false"/>
+        <artifact-stats type="entity" persist-bin="false"/>
     </server-stats>
     
     <webapp-list>

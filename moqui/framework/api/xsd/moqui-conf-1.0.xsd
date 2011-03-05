@@ -70,11 +70,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="visit-enabled" type="boolean" default="true"/>
             <xs:attribute name="visitor-enabled" type="boolean" default="true"/>
-            <!-- TODO use in code -->
-            <xs:attribute name="proxy-enabled" type="boolean" default="false">
-                <xs:annotation><xs:documentation>Is there a proxy in front of this app server? Allows us collect the
-                    client's real IP address.</xs:documentation></xs:annotation>
-            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="artifact-stats">
@@ -90,6 +85,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+            <xs:attribute name="sub-type" type="xs:string"/>
             <xs:attribute name="persist-hit" type="boolean" default="false"/>
             <xs:attribute name="persist-bin" type="boolean" default="false"/>
         </xs:complexType>

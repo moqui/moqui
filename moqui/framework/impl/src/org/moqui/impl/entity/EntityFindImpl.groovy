@@ -387,7 +387,7 @@ class EntityFindImpl implements EntityFind {
         // final ECA trigger
         efi.runEecaRules(ed.getEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
+        efi.ecfi.countArtifactHit("entity", "one", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
 
         return newEntityValue
     }
@@ -451,7 +451,7 @@ class EntityFindImpl implements EntityFind {
         // run the final rules
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", entityDefinition.getEntityName() + ".list", simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
+        efi.ecfi.countArtifactHit("entity", "list", entityDefinition.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
         return el
     }
 
@@ -466,7 +466,7 @@ class EntityFindImpl implements EntityFind {
 
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", entityDefinition.getEntityName() + ".iterator", simpleAndMap, startTime, System.currentTimeMillis(), null)
+        efi.ecfi.countArtifactHit("entity", "iterator", entityDefinition.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
         return eli
     }
     protected EntityListIterator iteratorPlain() throws EntityException {
@@ -631,7 +631,7 @@ class EntityFindImpl implements EntityFind {
 
         efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", entityDefinition.getEntityName() + ".count", simpleAndMap, startTime, System.currentTimeMillis(), count)
+        efi.ecfi.countArtifactHit("entity", "count", entityDefinition.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
         return count
     }
 

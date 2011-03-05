@@ -182,7 +182,7 @@ class ScreenRenderImpl implements ScreenRender {
                 if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
                     sfi.ecfi.transactionFacade.commit(beganTransaction)
                 }
-                sfi.ecfi.countArtifactHit("transition", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                sfi.ecfi.countArtifactHit("transition", ri.type ?: "", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
                         transitionStartTime, System.currentTimeMillis(), null)
             }
 
@@ -272,7 +272,7 @@ class ScreenRenderImpl implements ScreenRender {
                             len = is.read(buffer)
                             if (Thread.interrupted()) throw new InterruptedException()
                         }
-                        sfi.ecfi.countArtifactHit("screen-content", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                        sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
                                 resourceStartTime, System.currentTimeMillis(), totalLen)
                         if (logger.infoEnabled) logger.info("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
                         return
@@ -308,7 +308,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                         writer.write(text)
 
-                        sfi.ecfi.countArtifactHit("screen-content", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                        sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
                                 resourceStartTime, System.currentTimeMillis(), length)
                     } else {
                         logger.warn("Not sending text response from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}] because no text was found in the file.")
@@ -345,7 +345,7 @@ class ScreenRenderImpl implements ScreenRender {
             throw new RuntimeException(errMsg, t)
         } finally {
             if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
-            sfi.ecfi.countArtifactHit("screen", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+            sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
                     screenStartTime, System.currentTimeMillis(), null)
         }
     }

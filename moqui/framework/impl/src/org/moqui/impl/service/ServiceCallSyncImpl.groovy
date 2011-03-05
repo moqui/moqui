@@ -64,7 +64,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
             if ((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
                 Map result = runImplicitEntityAuto()
+
                 if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(System.currentTimeMillis()-callStartTime)/1000} seconds")
+                long endTime = System.currentTimeMillis()
+                sfi.ecfi.countArtifactHit("service", "entity-implicit", getServiceName(), this.parameters, callStartTime, endTime, null)
+
                 return result
             } else {
                 throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
@@ -165,7 +169,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             }
 
             long endTime = System.currentTimeMillis()
-            sfi.ecfi.countArtifactHit("service", getServiceName(), this.parameters, callStartTime, endTime, null)
+            sfi.ecfi.countArtifactHit("service", serviceType, getServiceName(), this.parameters, callStartTime, endTime, null)
 
             if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds" + (eci.message.errors ? " with ${eci.message.errors.size()} error messages" : ", was successful"))
         }
