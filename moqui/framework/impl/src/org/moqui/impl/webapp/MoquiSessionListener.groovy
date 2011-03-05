@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import java.sql.Timestamp
 
-class MoquiEventListener implements HttpSessionListener {
-    protected final static Logger logger = LoggerFactory.getLogger(MoquiEventListener.class)
+class MoquiSessionListener implements HttpSessionListener {
+    protected final static Logger logger = LoggerFactory.getLogger(MoquiSessionListener.class)
 
     void sessionCreated(HttpSessionEvent event) {
         HttpSession session = event.getSession()

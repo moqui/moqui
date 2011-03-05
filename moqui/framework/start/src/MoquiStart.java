@@ -210,6 +210,7 @@ public class MoquiStart extends ClassLoader {
     protected JarFile outerFile = null;
     protected List<JarFile> jarFileList = new ArrayList<JarFile>();
     protected Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
+    protected Map<String, URL> resourceCache = new HashMap<String, URL>();
     protected ProtectionDomain pd;
     protected boolean loadWebInf;
 
@@ -287,13 +288,17 @@ public class MoquiStart extends ClassLoader {
     /** @see java.lang.ClassLoader#findResource(java.lang.String) */
     @Override
     protected URL findResource(String resourceName) {
+        if (resourceCache.containsKey(resourceName)) return resourceCache.get(resourceName);
+
         for (JarFile jarFile : jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
             if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
             if (jarEntry != null) {
                 try {
-                    return new URL("jar:file:" + jarFile.getName() + "!/" + jarEntry);
+                    URL resourceUrl = new URL("jar:file:" + jarFile.getName() + "!/" + jarEntry);
+                    resourceCache.put(resourceName, resourceUrl);
+                    return resourceUrl;
                 } catch (MalformedURLException e) {
                     System.out.println("Error making URL for [" + resourceName + "] in jar [" + jarFile + "] in war file [" + outerFile + "]: " + e.toString());
                 }
@@ -350,9 +355,9 @@ public class MoquiStart extends ClassLoader {
     }
 
     protected Class<?> findJarClass(String className) throws IOException, ClassFormatError {
-        Class<?> c = classCache.get(className);
-        if (c != null) return c;
+        if (classCache.containsKey(className)) return classCache.get(className);
 
+        Class<?> c = null;
         String classFileName = className.replace('.', '/') + ".class";
         for (JarFile jarFile: jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(classFileName);
@@ -370,7 +375,7 @@ public class MoquiStart extends ClassLoader {
                 break;
             }
         }
-        if (c != null) classCache.put(className, c);
+        classCache.put(className, c);
         return c;
     }
 

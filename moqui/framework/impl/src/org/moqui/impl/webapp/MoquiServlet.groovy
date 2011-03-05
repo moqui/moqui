@@ -25,45 +25,7 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 class MoquiServlet extends HttpServlet {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiServlet.class)
 
-    protected String webappId = null
-    protected String webappMoquiName = null
-    protected WebappDefinition webappDef = null
-
-    public MoquiServlet() {
-        super();
-    }
-
-    @Override
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config)
-        String contextPath = config.getServletContext().getContextPath()
-        webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
-        webappMoquiName = config.getServletContext().getInitParameter("moqui-name")
-
-        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${webappMoquiName}], context name [${config.getServletContext().getServletContextName()}], located at [${config.getServletContext().getRealPath("/")}]")
-        ExecutionContextFactory executionContextFactory = new ExecutionContextFactoryImpl()
-        config.getServletContext().setAttribute("executionContextFactory", executionContextFactory)
-
-        // there should always be one ECF that is active for things like deserialize of EntityValue
-        // for a servlet that has a factory separate from the rest of the system DON'T call this (ie to have multiple ECFs on a single system)
-        Moqui.dynamicInit(executionContextFactory)
-        logger.info("Loaded Moqui Execution Context Factory for webapp [${webappId}]")
-
-        webappDef = new WebappDefinition(webappMoquiName, executionContextFactory)
-    }
-
-    @Override
-    public void destroy() {
-        logger.info("Destroying Moqui Execution Context Factory for webapp [${webappId}]")
-        if (getServletContext().getAttribute("executionContextFactory")) {
-            ExecutionContextFactory executionContextFactory =
-                    (ExecutionContextFactory) getServletContext().getAttribute("executionContextFactory")
-            executionContextFactory.destroy()
-            getServletContext().removeAttribute("executionContextFactory")
-        }
-        super.destroy();
-        logger.info("Destroyed Moqui Execution Context Factory for webapp [${webappId}]")
-    }
+    public MoquiServlet() { super(); }
 
     /** @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
@@ -76,6 +38,7 @@ class MoquiServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         ExecutionContextFactory executionContextFactory =
                 (ExecutionContextFactory) getServletContext().getAttribute("executionContextFactory")
+        String moquiWebappName = getServletContext().getInitParameter("moqui-name")
 
         String pathInfo = request.getPathInfo()
         long startTime = System.currentTimeMillis()
@@ -83,7 +46,7 @@ class MoquiServlet extends HttpServlet {
         if (logger.traceEnabled) logger.trace("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
 
         ExecutionContext ec = executionContextFactory.getExecutionContext()
-        ec.initWebFacade(webappMoquiName, request, response)
+        ec.initWebFacade(moquiWebappName, request, response)
 
         /** NOTE to set render settings manually do something like this, but it is not necessary to set these things
          * for a web page render because if we call render(request, response) it can figure all of this out as defaults

@@ -91,11 +91,13 @@ class TransactionFacadeImpl implements TransactionFacade {
         if (suspendedTxStackList.get()) {
             int numSuspended = 0;
             for (Transaction tx in suspendedTxStackList.get()) {
-                this.resume(tx)
-                this.commit()
-                numSuspended++
+                if (tx != null) {
+                    this.resume(tx)
+                    this.commit()
+                    numSuspended++
+                }
             }
-            logger.warn("Cleaned up [" + numSuspended + "] suspended transactions.")
+            if (numSuspended > 0) logger.warn("Cleaned up [" + numSuspended + "] suspended transactions.")
         }
 
         transactionBeginStackList.remove()
@@ -243,7 +245,7 @@ class TransactionFacadeImpl implements TransactionFacade {
                     status != Status.STATUS_ROLLEDBACK) {
                 ut.commit()
             } else {
-                logger.warn("Not committing transaction because status is " + getStatusString())
+                logger.warn("Not committing transaction because status is " + getStatusString(), new Exception("Bad TX status location"))
             }
         } catch (RollbackException e) {
             RollbackInfo rollbackOnlyInfo = getRollbackOnlyInfoStack().get(0)

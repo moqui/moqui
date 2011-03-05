@@ -133,7 +133,7 @@ class ScreenRenderImpl implements ScreenRender {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
-        if (logger.infoEnabled) logger.info("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
+        if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
         this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null)
         if (ec.web) {
@@ -252,7 +252,7 @@ class ScreenRenderImpl implements ScreenRender {
             String fileContentType = sfi.ecfi.resourceFacade.getContentType(fileName)
 
             boolean isBinary = sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)
-            if (logger.traceEnabled) logger.trace("Content type for screen sub-content filename [${fileName}] is [${fileContentType}], default [${this.outputContentType}], is binary? ${isBinary}")
+            // if (logger.traceEnabled) logger.trace("Content type for screen sub-content filename [${fileName}] is [${fileContentType}], default [${this.outputContentType}], is binary? ${isBinary}")
 
             if (isBinary) {
                 if (response) {
@@ -274,7 +274,7 @@ class ScreenRenderImpl implements ScreenRender {
                         }
                         sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
                                 resourceStartTime, System.currentTimeMillis(), totalLen)
-                        if (logger.infoEnabled) logger.info("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
+                        if (logger.traceEnabled) logger.trace("Sent binary response of length [${totalLen}] with from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
                         return
                     } finally {
                         if (is != null) is.close()
@@ -304,7 +304,7 @@ class ScreenRenderImpl implements ScreenRender {
                         int length = text.getBytes(charset).length
                         response.setContentLength(length)
 
-                        if (logger.infoEnabled) logger.info("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
+                        if (logger.traceEnabled) logger.trace("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
 
                         writer.write(text)
 

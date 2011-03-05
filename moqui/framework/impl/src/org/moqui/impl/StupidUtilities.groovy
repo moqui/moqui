@@ -11,21 +11,15 @@
  */
 package org.moqui.impl
 
+import java.nio.charset.Charset
 import java.security.MessageDigest
 import java.sql.Timestamp
 import java.util.regex.Pattern
 
 import org.apache.commons.codec.binary.Hex
-import org.w3c.dom.Element
-import java.nio.charset.Charset
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.apache.commons.validator.routines.BigDecimalValidator
-import org.apache.commons.validator.routines.BigIntegerValidator
-import org.apache.commons.validator.routines.IntegerValidator
-import org.apache.commons.validator.routines.DoubleValidator
-import org.apache.commons.validator.routines.FloatValidator
-import org.apache.commons.validator.routines.LongValidator
+import org.w3c.dom.Element
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -129,16 +123,12 @@ class StupidUtilities {
             case "greater": result = (field > toField); break;
             case "less-equals": result = (field <= toField); break;
             case "greater-equals": result = (field >= toField); break;
-
             case "contains": result = (field as String).contains(toField as String); break;
             case "not-contains": result = !(field as String).contains(toField as String); break;
-
             case "empty": result = (field ? false : true); break;
             case "not-empty": result = (field ? true : false); break;
-
             case "matches": result = (field as String).matches(toField as String); break;
             case "not-matches": result = !(field as String).matches(toField as String); break;
-
             case "not-equals": result = (field != toField); break;
             case "equals":
             default: result = (field == toField)
@@ -240,11 +230,7 @@ class StupidUtilities {
         return count
     }
 
-    static int countChars(String s, char cMatch) {
-        int count = 0
-        for (char c in s) if (c == cMatch) count++
-        return count
-    }
+    static int countChars(String s, char cMatch) { int count = 0; for (char c in s) if (c == cMatch) count++; return count; }
 
     static String getStreamText(InputStream is) {
         if (!is) return null
@@ -269,10 +255,7 @@ class StupidUtilities {
     static void addToListInMap(String key, Object value, Map theMap) {
         if (!theMap) return
         List theList = (List) theMap.get(key)
-        if (!theList) {
-            theList = new ArrayList()
-            theMap.put(key, theList)
-        }
+        if (!theList) { theList = new ArrayList(); theMap.put(key, theList) }
         theList.add(value)
     }
 
@@ -367,16 +350,57 @@ class StupidUtilities {
         if (!hashString)  return ""
         if (!hashString.contains(":"))  return ""
         int closeBraceIndex = hashString.indexOf('}')
-        if (closeBraceIndex > 0) {
-            return hashString.substring(closeBraceIndex + 1, hashString.indexOf(':'))
-        } else {
-            return hashString.substring(0, hashString.indexOf(':'))
-        }
+        if (closeBraceIndex > 0) return hashString.substring(closeBraceIndex + 1, hashString.indexOf(':'))
+        else return hashString.substring(0, hashString.indexOf(':'))
     }
     public static String getHashHashFromFull(String hashString) {
         if (!hashString)  return ""
         if (hashString.contains(":")) return hashString.substring(hashString.indexOf(':') + 1)
         if (hashString.contains("}")) return hashString.substring(hashString.indexOf('}') + 1)
         return hashString
+    }
+
+    public static class CachedClassLoader extends URLClassLoader {
+        protected final Map<String, Class> classCache = new HashMap()
+        protected final Map<String, URL> resourceCache = new HashMap()
+        public CachedClassLoader(URL[] url, ClassLoader parent) {
+            super(url, parent)
+
+            List<Class> preLoadClasses = [java.math.BigDecimal.class, java.lang.Object.class, java.lang.String.class,
+                    java.lang.Boolean.class, java.math.BigDecimal.class, java.math.BigInteger.class,
+                    java.lang.Double.class, java.lang.Float.class, java.lang.Long.class, java.lang.Integer.class,
+                    java.lang.Short.class, java.lang.Byte.class, java.lang.Character.class, java.sql.Timestamp.class,
+                    java.sql.Time.class, java.sql.Date.class, java.util.Locale.class, java.util.Date.class,
+                    java.util.Collection.class, java.util.List.class, java.util.Set.class, java.util.HashSet.class,
+                    java.util.Map.class, java.util.HashMap.class, java.util.TimeZone.class, java.util.Locale.class,
+                    Boolean.TYPE, Short.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE, Byte.TYPE,
+                    Character.TYPE]
+            for (Class preLoadClass in preLoadClasses) classCache.put(preLoadClass.getName(), preLoadClass)
+        }
+        Map<String, Class> getClassCache() { return classCache }
+        Map<String, Class> getResourceCache() { return resourceCache }
+        @Override
+        public Class<?> loadClass(String name) throws ClassNotFoundException { return loadClass(name, false) }
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (classCache.containsKey(name)) {
+                Class c = classCache.get(name)
+                if (c != null) return classCache.get(name)
+                else throw new ClassNotFoundException("Class [" + name + "] not found")
+            }
+            try {
+                Class<?> theClass = super.loadClass(name, resolve)
+                this.classCache.put(name, theClass)
+                // logger.info("CachedClassLoader on put [${name}] classCache size [${classCache.size()}] resourceCache size [${resourceCache.size()}]")
+                return theClass
+            } catch (ClassNotFoundException e) { classCache.put(name, null); throw e; }
+        }
+        @Override
+        public URL getResource(String name) {
+            if (resourceCache.containsKey(name)) resourceCache.get(name)
+            URL url = super.getResource(name)
+            resourceCache.put(name, url)
+            return url
+        }
     }
 }

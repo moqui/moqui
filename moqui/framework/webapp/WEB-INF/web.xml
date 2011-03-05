@@ -10,10 +10,8 @@
         <description>The name of the Moqui webapp used to lookup configuration in the moqui-conf.webapp-list.webapp.@moqui-name attribute.</description>
     </context-param>
 
-    <listener>
-        <!-- Implements HttpSessionListener; used to finalize Visit and track certain stats -->
-        <listener-class>org.moqui.impl.webapp.MoquiEventListener</listener-class>
-    </listener>
+    <listener><listener-class>org.moqui.impl.webapp.MoquiContextListener</listener-class></listener>
+    <listener><listener-class>org.moqui.impl.webapp.MoquiSessionListener</listener-class></listener>
     <listener><listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class></listener>
 
     <servlet>
