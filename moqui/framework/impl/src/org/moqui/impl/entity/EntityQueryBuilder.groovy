@@ -215,49 +215,15 @@ class EntityQueryBuilder {
                     value = rs.getString(index)
                 }
                 break
-
-            case 2:
-                value = rs.getTimestamp(index)
-                break
-
-            case 3:
-                value = rs.getTime(index)
-                break
-
-            case 4:
-                value = rs.getDate(index)
-                break
-
-            case 5:
-                int intValue = rs.getInt(index)
-                if (!rs.wasNull()) value = intValue
-                break
-
-            case 6:
-                long longValue = rs.getLong(index)
-                if (!rs.wasNull()) value = longValue
-                break
-
-            case 7:
-                float floatValue = rs.getFloat(index)
-                if (!rs.wasNull()) value = floatValue
-                break
-
-            case 8:
-                double doubleValue = rs.getDouble(index)
-                if (!rs.wasNull()) value = doubleValue
-                break
-
-            case 9:
-                BigDecimal bigDecimalValue = rs.getBigDecimal(index)
-                if (!rs.wasNull()) value = bigDecimalValue
-                break
-
-            case 10:
-                boolean booleanValue = rs.getBoolean(index)
-                if (!rs.wasNull()) value = Boolean.valueOf(booleanValue)
-                break
-
+            case 2: value = rs.getTimestamp(index); break
+            case 3: value = rs.getTime(index); break
+            case 4: value = rs.getDate(index); break
+            case 5: int intValue = rs.getInt(index); if (!rs.wasNull()) value = intValue; break
+            case 6: long longValue = rs.getLong(index); if (!rs.wasNull()) value = longValue; break
+            case 7: float floatValue = rs.getFloat(index); if (!rs.wasNull()) value = floatValue; break
+            case 8: double doubleValue = rs.getDouble(index); if (!rs.wasNull()) value = doubleValue; break
+            case 9: BigDecimal bigDecimalValue = rs.getBigDecimal(index); if (!rs.wasNull()) value = bigDecimalValue; break
+            case 10: boolean booleanValue = rs.getBoolean(index); if (!rs.wasNull()) value = Boolean.valueOf(booleanValue); break
             case 11:
                 Object obj = null
                 byte[] originalBytes = rs.getBytes(index)
@@ -268,7 +234,6 @@ class EntityQueryBuilder {
                 if (originalBytes != null && originalBytes.length <= 0) {
                     logger.warn("Got byte array back empty for serialized Object with length [${originalBytes.length}] for field [${fieldName}] (${index})")
                 }
-
                 if (binaryInput != null) {
                     ObjectInputStream inStream = null
                     try {
@@ -288,7 +253,6 @@ class EntityQueryBuilder {
                         }
                     }
                 }
-
                 if (obj != null) {
                     value = obj
                 } else {
@@ -303,34 +267,22 @@ class EntityQueryBuilder {
                     fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
                     originalObject = theBlob
                 } catch (SQLException e) {
-                    // for backward compatibility if getBlob didn't work try getBytes
+                    // if getBlob didn't work try getBytes
                     fieldBytes = rs.getBytes(index)
                     originalObject = fieldBytes
                 }
-
                 if (originalObject != null) {
-                    // for backward compatibility, check to see if there is a serialized object and if so return that
-                    Object blobObject = deserializeField(fieldBytes, index, fieldName)
-                    if (blobObject != null) {
-                        entityValueImpl.getValueMap().put(fieldName, blobObject)
+                    if (originalObject instanceof Blob) {
+                        // NOTE using SerialBlob here instead of the Blob from the database to make sure we can pass it around, serialize it, etc
+                        value = new SerialBlob((Blob) originalObject)
                     } else {
-                        if (originalObject instanceof Blob) {
-                            // NOTE using SerialBlob here instead of the Blob from the database to make sure we can pass it around, serialize it, etc
-                            value = new SerialBlob((Blob) originalObject)
-                        } else {
-                            value = originalObject
-                        }
+                        value = originalObject
                     }
                 }
-
                 break
-            case 13:
-                value = new SerialClob(rs.getClob(index))
-                break
+            case 13: value = new SerialClob(rs.getClob(index)); break
             case 14:
-            case 15:
-                value = rs.getObject(index)
-                break
+            case 15: value = rs.getObject(index); break
             }
         } catch (SQLException sqle) {
             throw new EntityException("SQL Exception while getting value for field: [${fieldName}] (${index})", sqle)
@@ -411,159 +363,64 @@ class EntityQueryBuilder {
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
 
         try {
-            switch (typeValue) {
-            case 1:
-                if (value != null) {
-                    ps.setString(index, (String) value)
-                } else {
-                    ps.setNull(index, Types.VARCHAR)
-                }
-                break
-
-            case 2:
-                if (value != null) {
-                    ps.setTimestamp(index, (java.sql.Timestamp) value)
-                } else {
-                    ps.setNull(index, Types.TIMESTAMP)
-                }
-                break
-
-            case 3:
-                if (value != null) {
-                    ps.setTime(index, (java.sql.Time) value)
-                } else {
-                    ps.setNull(index, Types.TIME)
-                }
-                break
-
-            case 4:
-                if (value != null) {
-                    ps.setDate(index, (java.sql.Date) value)
-                } else {
-                    ps.setNull(index, Types.DATE)
-                }
-                break
-
-            case 5:
-                if (value != null) {
-                    ps.setInt(index, (java.lang.Integer) value)
-                } else {
-                    ps.setNull(index, Types.NUMERIC)
-                }
-                break
-
-            case 6:
-                if (value != null) {
-                    ps.setLong(index, (java.lang.Long) value)
-                } else {
-                    ps.setNull(index, Types.NUMERIC)
-                }
-                break
-
-            case 7:
-                if (value != null) {
-                    ps.setFloat(index, (java.lang.Float) value)
-                } else {
-                    ps.setNull(index, Types.NUMERIC)
-                }
-                break
-
-            case 8:
-                if (value != null) {
-                    ps.setDouble(index, (java.lang.Double) value);
-                } else {
-                    ps.setNull(index, Types.NUMERIC)
-                }
-                break
-
-            case 9:
-                if (value != null) {
-                    ps.setBigDecimal(index, (java.math.BigDecimal) value)
-                } else {
-                    ps.setNull(index, Types.NUMERIC)
-                }
-                break
-
-            case 10:
-                if (value != null) {
-                    ps.setBoolean(index, (java.lang.Boolean) value)
-                } else {
-                    ps.setNull(index, Types.BOOLEAN)
-                }
-                break
-
-            case 11:
-                if (value != null) {
-                    try {
-                        ByteArrayOutputStream os = new ByteArrayOutputStream()
-                        ObjectOutputStream oos = new ObjectOutputStream(os)
-                        oos.writeObject(value)
-                        oos.close()
-                        byte[] buf = os.toByteArray()
-                        os.close()
-
-                        ByteArrayInputStream is = new ByteArrayInputStream(buf)
-                        ps.setBinaryStream(index, is, buf.length)
-                        is.close()
-                    } catch (IOException ex) {
-                        throw new EntityException("Error setting serialized object for field [${fieldName}]", ex)
-                    }
-                } else {
-                    if (useBinaryTypeForBlob) {
-                        ps.setNull(index, Types.BINARY)
-                    } else {
-                        ps.setNull(index, Types.BLOB)
-                    }
-                }
-                break
-
-            case 12:
-                if (value instanceof byte[]) {
-                    ps.setBytes(index, (byte[]) value)
-                } else if (value instanceof java.nio.ByteBuffer) {
-                    ps.setBytes(index, ((java.nio.ByteBuffer) value).array())
-                } else {
+            // allow setting, and searching for, String values for all types; JDBC driver should handle this okay
+            if (value instanceof String) {
+                ps.setString(index, value)
+            } else {
+                switch (typeValue) {
+                case 1: if (value != null) { ps.setString(index, value as String) } else { ps.setNull(index, Types.VARCHAR) }; break
+                case 2: if (value != null) { ps.setTimestamp(index, value as java.sql.Timestamp) } else { ps.setNull(index, Types.TIMESTAMP) }; break
+                case 3: if (value != null) { ps.setTime(index, value as java.sql.Time) } else { ps.setNull(index, Types.TIME) }; break
+                case 4: if (value != null) { ps.setDate(index, (java.sql.Date) value) } else { ps.setNull(index, Types.DATE) }; break
+                case 5: if (value != null) { ps.setInt(index, (java.lang.Integer) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 6: if (value != null) { ps.setLong(index, (java.lang.Long) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 7: if (value != null) { ps.setFloat(index, (java.lang.Float) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 8: if (value != null) { ps.setDouble(index, (java.lang.Double) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 9: if (value != null) { ps.setBigDecimal(index, (java.math.BigDecimal) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 10: if (value != null) { ps.setBoolean(index, (java.lang.Boolean) value) } else { ps.setNull(index, Types.BOOLEAN) }; break
+                case 11:
                     if (value != null) {
-                        ps.setBlob(index, (java.sql.Blob) value)
+                        try {
+                            ByteArrayOutputStream os = new ByteArrayOutputStream()
+                            ObjectOutputStream oos = new ObjectOutputStream(os)
+                            oos.writeObject(value)
+                            oos.close()
+                            byte[] buf = os.toByteArray()
+                            os.close()
+
+                            ByteArrayInputStream is = new ByteArrayInputStream(buf)
+                            ps.setBinaryStream(index, is, buf.length)
+                            is.close()
+                        } catch (IOException ex) {
+                            throw new EntityException("Error setting serialized object for field [${fieldName}]", ex)
+                        }
                     } else {
-                        if (useBinaryTypeForBlob) {
-                            ps.setNull(index, Types.BINARY)
+                        if (useBinaryTypeForBlob) { ps.setNull(index, Types.BINARY) } else { ps.setNull(index, Types.BLOB) }
+                    }
+                    break
+                case 12:
+                    if (value instanceof byte[]) {
+                        ps.setBytes(index, (byte[]) value)
+                    } else if (value instanceof java.nio.ByteBuffer) {
+                        ps.setBytes(index, ((java.nio.ByteBuffer) value).array())
+                    } else {
+                        if (value != null) {
+                            ps.setBlob(index, (java.sql.Blob) value)
                         } else {
-                            ps.setNull(index, Types.BLOB)
+                            if (useBinaryTypeForBlob) { ps.setNull(index, Types.BINARY) } else { ps.setNull(index, Types.BLOB) }
                         }
                     }
-                }
-                break
-
-            case 13:
-                if (value != null) {
-                    ps.setClob(index, (java.sql.Clob) value)
-                } else {
-                    ps.setNull(index, Types.CLOB)
-                }
-                break
-
-            case 14:
-                if (value != null) {
-                    ps.setTimestamp(index, new java.sql.Timestamp(((java.util.Date) value).getTime()))
-                } else {
-                    ps.setNull(index, Types.TIMESTAMP)
-                }
-                break
-
-            case 15:
+                    break
+                case 13: if (value != null) { ps.setClob(index, (java.sql.Clob) value) } else { ps.setNull(index, Types.CLOB) }; break
+                case 14: if (value != null) { ps.setTimestamp(index, value as java.sql.Timestamp) } else { ps.setNull(index, Types.TIMESTAMP) }; break
                 // TODO: is this the best way to do collections and such?
-                if (value != null) {
-                    ps.setObject(index, value, Types.JAVA_OBJECT)
-                } else {
-                    ps.setNull(index, Types.JAVA_OBJECT)
+                case 15: if (value != null) { ps.setObject(index, value, Types.JAVA_OBJECT) } else { ps.setNull(index, Types.JAVA_OBJECT) }; break
                 }
-                break
             }
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Error while setting value on field [${fieldName}] of entity [${entityName}]: " + e.toString(), e)
         } catch (SQLException sqle) {
             throw new EntityException("SQL Exception while setting value on field [${fieldName}] of entity [${entityName}]: " + sqle.toString(), sqle)
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while setting value on field [${fieldName}] of entity [${entityName}]: " + e.toString(), e)
         }
     }
 }

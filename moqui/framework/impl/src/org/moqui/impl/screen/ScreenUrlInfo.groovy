@@ -129,9 +129,9 @@ class ScreenUrlInfo {
     String getParameterString() {
         StringBuilder ps = new StringBuilder()
         Map<String, String> pm = this.getParameterMap()
-        boolean isFirst = true
         for (Map.Entry<String, String> pme in pm) {
-            if (isFirst) isFirst = false else ps.append("&")
+            if (!pme.value) continue
+            if (ps.length() > 0) ps.append("&")
             ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
         }
         return ps.toString()
@@ -141,6 +141,7 @@ class ScreenUrlInfo {
         StringBuilder ps = new StringBuilder()
         Map<String, String> pm = this.getParameterMap()
         for (Map.Entry<String, String> pme in pm) {
+            if (!pme.value) continue
             ps.append("/~")
             ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
         }

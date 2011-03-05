@@ -38,10 +38,10 @@ Notable features not yet implemented:
 - Entity Facade
   - Entity complex aliases in views
   - Database meta-data check/report against entity definitions
+  - Auto-add lastUpdatedStamp (unless def says no), set on create/update
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db
 - WebApp event actions
-- Auto-add lastUpdatedStamp (unless def says no), set on create/update
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens
   - Cache
@@ -49,7 +49,7 @@ Notable features not yet implemented:
   - Entity Data UI
   - SQL/Script Run
   - Artifact Info
-  - Visit and Hit Stats
+  - Visit and Hit Info/Stats
 
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011

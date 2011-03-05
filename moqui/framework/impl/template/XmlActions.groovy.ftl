@@ -19,6 +19,9 @@ import org.moqui.impl.StupidUtilities
 <#macro "pre-actions">
 <#recurse/>
 </#macro>
+<#macro "row-actions">
+<#recurse/>
+</#macro>
 
 <#-- NOTE should we handle out-map?has_content and async!=false with a ServiceResultWaiter? -->
 <#macro "call-service">

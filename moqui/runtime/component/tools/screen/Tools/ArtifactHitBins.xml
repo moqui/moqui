@@ -20,6 +20,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <form-list name="ArtifactHitBins" list="artifactHitBinList">
+            <row-actions>
+                <set field="averageTime" from-field="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>
+            </row-actions>
             <field name="artifactType">
                 <header-field show-order-by="true">
                     <drop-down allow-empty="true">
@@ -30,16 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="artifactSubType">
-                <header-field show-order-by="true">
-                    <drop-down allow-empty="true">
-                        <option key="service" text="[service types]"/>
-                        <option key="entity-auto"/><option key="entity-implicit"/><option key="inline"/>
-                        <option key="script"/><option key="java"/>
-                        <option key="entity" text="[entity types]"/>
-                        <option key="create"/><option key="update"/><option key="delete"/><option key="refresh"/>
-                        <option key="one"/><option key="list"/><option key="iterator"/>
-                    </drop-down>
-                </header-field>
+                <header-field show-order-by="true"><text-find hide-options="true" size="10"/></header-field>
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="artifactName">
@@ -55,10 +49,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="minTimeMillis">
-                <default-field title="Min"><display also-hidden="false"/></default-field>
+                <header-field title="Min" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="averageTime">
-                <default-field title="Avg"><display text="${totalTimeMillis/hitCount}" also-hidden="false"/></default-field>
+                <default-field title="Avg"><display also-hidden="false"/></default-field>
             </field>
             <field name="maxTimeMillis">
                 <header-field title="Max" show-order-by="true"/>

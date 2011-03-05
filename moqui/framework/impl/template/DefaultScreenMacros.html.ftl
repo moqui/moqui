@@ -307,9 +307,19 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
             <#if fieldSubNode["@show-order-by"]?if_exists == "true">
                 <#assign orderByField = ec.web.requestParameters.orderByField?if_exists>
+                <#-- the old way, show + or -:
                 <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
                 <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", orderByField)>
                 <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">${orderByField?substring(0,1)}</a>
+                -->
+                <#if !orderByField?has_content || !orderByField?contains(fieldNode["@name"]) || (orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-"))>
+                    <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "+" + fieldNode["@name"])>
+                    <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">+</a>
+                </#if>
+                <#if !orderByField?has_content || !orderByField?contains(fieldNode["@name"]) || (orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-"))>
+                    <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "-" + fieldNode["@name"])>
+                    <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">-</a>
+                </#if>
             </#if>
         </div>
         <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
@@ -337,7 +347,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
     <td><#recurse fieldSubNode/></td>
 </#macro>
-
+<#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}</#macro>
 <#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>

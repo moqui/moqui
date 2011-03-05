@@ -255,12 +255,19 @@ width: 120px;
 font-size: 0.8em;
 }
 
+tr.form-header th, th div.form-title {
+vertical-align: top;
+}
+
 /* This is the +/- in the header, use fixed width font for consistent sizing. */
-.form-order-by {
+a.form-order-by {
 font-family: Courier, "Courier New", monospace;
 font-weight: bold;
 font-size: 1em;
 vertical-align: top;
+}
+a.form-order-by:hover {
+color: blue;
 }
 
 /* ========================= misc styles ========================= */

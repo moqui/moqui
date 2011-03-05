@@ -342,8 +342,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
-        if (artifactType == "service" && artifactName == "create#ArtifactHitBin") return
-        if (artifactType == "service" && artifactName == "create#ArtifactHit") return
+        if (artifactType == "service" && artifactName.contains("ArtifactHit")) return
+        if (artifactType == "entity" && artifactName == "ArtifactHit") return
 
         ExecutionContextImpl eci = this.executionContext
         // find artifact-stats node by type AND sub-type, if not found find by just the type
@@ -359,12 +359,21 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                 startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
 
-            if (parameters) ahp.parameterString = parameters.toMapString()
+            if (parameters) {
+                StringBuilder ps = new StringBuilder()
+                for (Map.Entry<String, String> pme in parameters) {
+                    if (!pme.value) continue
+                    if (ps.length() > 0) ps.append(",")
+                    ps.append(pme.key).append("=").append(pme.value)
+                }
+                if (ps.length() > 255) ps.delete(255, ps.length())
+                ahp.parameterString = ps.toString()
+            }
             if (outputSize != null) ahp.outputSize = outputSize
             if (eci.message.errors) {
                 ahp.wasError = "Y"
                 StringBuilder errorMessage = new StringBuilder()
-                for (String curErr in eci.message.errors) errorMessage.append(curErr)
+                for (String curErr in eci.message.errors) errorMessage.append(curErr).append(";")
                 if (errorMessage.length() > 255) errorMessage.delete(255, errorMessage.length())
                 ahp.errorMessage = errorMessage
             } else {
@@ -392,8 +401,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             // has the current bin expired since the last hit record?
             long binStartTime = ((Timestamp) ahb.get("binStartDateTime")).time
             if (startTime > (binStartTime + hitBinLengthMillis)) {
-                if (logger.infoEnabled) logger.info("Advancing ArtifactHitBin [${artifactType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
+                if (logger.infoEnabled) logger.info("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
                 ahb = advanceArtifactHitBin(artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
+            } else {
+                // if (logger.infoEnabled) logger.info("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
             }
 
             ahb.hitCount += 1
@@ -428,7 +439,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             ahb.serverIpAddress = address.getHostAddress()
             ahb.serverHostName = address.getHostName()
         }
-        artifactHitBinByType.put(artifactType + ":" + artifactName, ahb)
+        artifactHitBinByType.put(artifactType + "." + artifactSubType + ":" + artifactName, ahb)
         return ahb
     }
 
