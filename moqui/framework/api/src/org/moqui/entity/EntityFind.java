@@ -94,9 +94,10 @@ public interface EntityFind extends java.io.Serializable {
      *
      * @param inputFieldsMapName The map to get form fields from. If empty will look at the ec.web.parameters map if
      *        the web facade is available, otherwise the current context (ec.context).
+     * @param defaultOrderBy If there is not orderByField parameter this is used instead.
      * @return Returns this for chaining of method calls.
      */
-    EntityFind searchFormInputs(String inputFieldsMapName);
+    EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy);
 
     // ======================== General/Common Options ========================
 

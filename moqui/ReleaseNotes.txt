@@ -15,6 +15,8 @@ This release includes:
 - User preference handling
 - Simplified sequenced ID API for both primary and secondary sequenced IDs
   and moved configuration to entity definition, and methods to EntityValue
+- Tools Screens
+  - Artifact Hit Bins
 
 Notable features not yet implemented:
 
@@ -41,13 +43,13 @@ Notable features not yet implemented:
 - WebApp event actions
 - Auto-add lastUpdatedStamp (unless def says no), set on create/update
 - Clean up JavaDoc/GroovyDoc comments and post to site
-- Web Tools UI
+- Tools Screens
   - Cache
   - Scheduler
   - Entity Data UI
   - SQL/Script Run
   - Artifact Info
-  - Visit and Hit stats
+  - Visit and Hit Stats
 
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011

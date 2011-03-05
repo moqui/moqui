@@ -376,6 +376,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Get only distinct results, based on the combination of all fields
                     selected. Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="offset" type="xs:string">
+                <xs:annotation><xs:documentation>Get back results starting at this offset.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="limit" type="xs:string">
+                <xs:annotation><xs:documentation>Get back only this many results.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="search-form-inputs">
@@ -394,6 +400,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="input-fields-map" type="xs:string">
                 <xs:annotation><xs:documentation>The map to get form fields from. If empty will look at the
                     ec.web.parameters map if the web facade is available, otherwise the current context (ec.context).</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="default-order-by" type="xs:string">
+                <xs:annotation><xs:documentation>If no orderByField parameter, order by this.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

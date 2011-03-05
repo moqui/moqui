@@ -142,8 +142,8 @@ class EntityFindImpl implements EntityFind {
         return this.havingEntityCondition
     }
 
-    /** @see org.moqui.entity.EntityFind#searchFormInputs(String) */
-    EntityFind searchFormInputs(String inputFieldsMapName) {
+    /** @see org.moqui.entity.EntityFind#searchFormInputs(String,String) */
+    EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy) {
         Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] :
             (efi.ecfi.executionContext.web ? efi.ecfi.executionContext.web.parameters : efi.ecfi.executionContext.context)
         EntityDefinition ed = getEntityDef()
@@ -206,12 +206,12 @@ class EntityFindImpl implements EntityFind {
         }
 
         // always look for an orderByField parameter too
-        if (inf.get("orderByField")) {
-            String obf = inf.get("orderByField")
-            if (obf.contains(",")) {
-                for (String obfPart in obf.split(",")) this.orderBy(obfPart.trim())
+        String orderByString = inf.get("orderByField") ?: defaultOrderBy
+        if (orderByString) {
+            if (orderByString.contains(",")) {
+                for (String obsPart in orderByString.split(",")) this.orderBy(obsPart.trim())
             } else {
-                this.orderBy(obf)
+                this.orderBy(orderByString)
             }
         }
 

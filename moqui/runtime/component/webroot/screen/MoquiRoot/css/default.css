@@ -37,7 +37,7 @@ background: white;
 margin: 0px auto 0px auto;
 border: 10px solid #DDDDDF;
 padding: 10px;
-width: 780px;
+width: 980px;
 overflow: auto;
 -moz-border-radius: 15px;
 -webkit-border-radius: 15px;
@@ -277,4 +277,9 @@ visibility: hidden;
 width: 300px;
 margin: 0px auto 0px auto;
 padding: 10px;
+}
+
+#ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
+#ArtifactHitBins-table thead tr th div input {
+font-size: 0.7em;
 }

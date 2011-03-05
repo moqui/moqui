@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Artifact Bins">
+    <actions>
+        <entity-find entity-name="ArtifactHitBin" list="artifactHitBinList" offset="0" limit="100">
+            <search-form-inputs default-order-by="-binStartDateTime"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-list name="ArtifactHitBins" list="artifactHitBinList">
+            <field name="artifactType">
+                <header-field show-order-by="true">
+                    <drop-down allow-empty="true">
+                        <option key="screen"/><option key="screen-content"/><option key="transition"/>
+                        <option key="service"/><option key="entity"/>
+                    </drop-down>
+                </header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="artifactSubType">
+                <header-field show-order-by="true">
+                    <drop-down allow-empty="true">
+                        <option key="service" text="[service types]"/>
+                        <option key="entity-auto"/><option key="entity-implicit"/><option key="inline"/>
+                        <option key="script"/><option key="java"/>
+                        <option key="entity" text="[entity types]"/>
+                        <option key="create"/><option key="update"/><option key="delete"/><option key="refresh"/>
+                        <option key="one"/><option key="list"/><option key="iterator"/>
+                    </drop-down>
+                </header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="artifactName">
+                <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="binStartDateTime">
+                <header-field title="Bin Start" show-order-by="true"><text-find hide-options="true" size="15"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="hitCount">
+                <header-field title="Hits" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="minTimeMillis">
+                <default-field title="Min"><display also-hidden="false"/></default-field>
+            </field>
+            <field name="averageTime">
+                <default-field title="Avg"><display text="${totalTimeMillis/hitCount}" also-hidden="false"/></default-field>
+            </field>
+            <field name="maxTimeMillis">
+                <header-field title="Max" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="submit">
+                <header-field title="Find"><submit/></header-field>
+            </field>
+        </form-list>
+    </widgets>
+</screen>

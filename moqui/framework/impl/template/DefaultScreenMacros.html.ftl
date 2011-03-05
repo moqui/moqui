@@ -259,11 +259,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
     <#else>
-    <table class="form-list-outer">
+    <table class="form-list-outer" id="${formNode["@name"]}-table">
     <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
     <#if needHeaderForm>
         <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-        <form name="${formNode["@name"]}_header" id="${formNode["@name"]}_header" method="post" action="${curUrlInfo.url}">
+        <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
     </#if>
         <thead>
             <tr class="form-header">
@@ -276,6 +276,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
             <tbody>
             <#list listObject as listEntry>
+                <#assign listEntryIndex = listEntry_index>
                 <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                 ${sri.startFormListRow(formNode["@name"], listEntry)}
                 <tr class="form-row">
@@ -339,7 +340,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}</#macro>
-<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntry_index?has_content>_${listEntry_index}</#if></#macro>
+<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -406,8 +407,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#else>
         <#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
-    <span id="<@fieldId .node/>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
-    <#if !.node["@also-hidden"]?exists || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
+    <#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else/>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
+    <#t><#if !.node["@also-hidden"]?exists || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
