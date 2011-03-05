@@ -258,6 +258,9 @@ class ScreenRenderImpl implements ScreenRender {
                 if (response) {
                     this.outputContentType = fileContentType
                     response.setContentType(this.outputContentType)
+                    // static binary, tell the browser to cache it
+                    // NOTE: make this configurable?
+                    response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
 
                     InputStream is
                     try {
@@ -296,6 +299,9 @@ class ScreenRenderImpl implements ScreenRender {
                 if (tr != null) {
                     tr.render(screenUrlInfo.fileResourceRef.location, writer)
                 } else {
+                    // static text, tell the browser to cache it
+                    // NOTE: make this configurable?
+                    response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
                     // no renderer found, just grab the text (cached) and throw it to the writer
                     String text = sfi.ecfi.resourceFacade.getLocationText(screenUrlInfo.fileResourceRef.location, true)
                     if (text) {
