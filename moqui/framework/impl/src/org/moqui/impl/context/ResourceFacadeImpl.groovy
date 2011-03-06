@@ -153,10 +153,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
     /** @see org.moqui.context.ResourceFacade#getLocationReference(String) */
     ResourceReference getLocationReference(String location) {
         String scheme = "file"
-        if (location.contains(":")) scheme = location.substring(0, location.indexOf(":"))
+        URI locUri = new URI(location)
+        if (locUri.scheme) scheme = locUri.scheme
 
         Class rrClass = resourceReferenceClasses.get(scheme)
-        if (!rrClass) throw new IllegalArgumentException("Prefix (scheme) not supported for location [${location}")
+        if (!rrClass) throw new IllegalArgumentException("Prefix (scheme) not supported for location [${location}]")
 
         ResourceReference rr = (ResourceReference) rrClass.newInstance()
         return rr.init(location, ecfi.executionContext)
