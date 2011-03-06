@@ -266,14 +266,14 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected EntityDefinition loadEntityDefinition(String entityName) {
-        EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
+        EntityDefinition ed = (EntityDefinition) entityDefinitionCache.get(entityName)
         if (ed) return ed
 
-        List<String> entityLocationList = (List<String>) this.entityLocationCache.get(entityName)
+        List<String> entityLocationList = (List<String>) entityLocationCache.get(entityName)
         if (!entityLocationList) {
             if (logger.warnEnabled) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
             this.loadAllEntityLocations()
-            entityLocationList = (List<String>) this.entityLocationCache.get(entityName)
+            entityLocationList = (List<String>) entityLocationCache.get(entityName)
             // no locations found for this entity, entity probably doesn't exist
             if (!entityLocationList) {
                 throw new IllegalArgumentException("No definition found for entity-name [${entityName}]")
@@ -318,7 +318,9 @@ class EntityFacadeImpl implements EntityFacade {
 
         // create the new EntityDefinition
         ed = new EntityDefinition(this, entityNode)
-
+        // cache it
+        entityDefinitionCache.put(entityName, ed)
+        // send it on its way
         return ed
     }
 

@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-title="Artifact Bins">
+        default-menu-title="Artifact Hits">
     <actions>
         <entity-find entity-name="ArtifactHitBin" list="artifactHitBinList" offset="0" limit="100">
             <search-form-inputs default-order-by="-binStartDateTime"/>

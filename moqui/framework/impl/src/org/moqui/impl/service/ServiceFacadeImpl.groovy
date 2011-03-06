@@ -83,11 +83,17 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     protected ServiceDefinition makeServiceDefinition(String path, String verb, String noun) {
         String cacheKey = makeCacheKey(path, verb, noun)
-        ServiceDefinition sd = (ServiceDefinition) serviceLocationCache.get(cacheKey)
-        if (sd) return sd
+        ServiceDefinition sd = null
+        if (serviceLocationCache.containsKey(cacheKey)) {
+            sd = (ServiceDefinition) serviceLocationCache.get(cacheKey)
+            // NOTE: this could be null if it's a known non-existing service
+            return sd
+        }
 
         Node serviceNode = findServiceNode(path, verb, noun)
         // NOTE: don't throw an exception for service not found (this is where we know there is no def), let service caller handle that
+        // use this to remember the non-existing service
+        serviceLocationCache.put(cacheKey, null)
         if (serviceNode == null) return null
 
         sd = new ServiceDefinition(this, path, serviceNode)
