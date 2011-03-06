@@ -262,15 +262,20 @@ tr.form-row td {
 font-size: 0.8em;
 }
 
-/* This is the +/- in the header, use fixed width font for consistent sizing. */
+/* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by {
-font-family: Courier, "Courier New", monospace;
+margin: 0px;
+padding: 0px;
+font-family: "Courier New", monospace;
 font-weight: bold;
-font-size: 1em;
+font-size: 1.2em;
 vertical-align: top;
 }
 a.form-order-by:hover {
 color: blue;
+}
+a.active {
+color: red;
 }
 
 /* ========================= misc styles ========================= */

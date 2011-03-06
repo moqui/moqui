@@ -307,19 +307,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
             <#if fieldSubNode["@show-order-by"]?if_exists == "true">
                 <#assign orderByField = ec.web.requestParameters.orderByField?if_exists>
+                <#assign ascActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-")>
+                <#assign ascOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "+" + fieldNode["@name"])>
+                <#assign descActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-")>
+                <#assign descOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "-" + fieldNode["@name"])>
+                <a href="${ascOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if ascActive> active</#if>">+</a><a href="${descOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if descActive> active</#if>">-</a>
                 <#-- the old way, show + or -:
                 <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
                 <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", orderByField)>
                 <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">${orderByField?substring(0,1)}</a>
                 -->
-                <#if !orderByField?has_content || !orderByField?contains(fieldNode["@name"]) || (orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-"))>
-                    <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "+" + fieldNode["@name"])>
-                    <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">+</a>
-                </#if>
-                <#if !orderByField?has_content || !orderByField?contains(fieldNode["@name"]) || (orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-"))>
-                    <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "-" + fieldNode["@name"])>
-                    <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">-</a>
-                </#if>
             </#if>
         </div>
         <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
