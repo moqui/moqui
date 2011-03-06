@@ -35,8 +35,6 @@ public class MoquiStart extends ClassLoader {
     static final String defaultConf = "conf/development/MoquiDevConf.xml";
 
     public static void main(String[] args) throws IOException {
-        initSystemProperties();
-
         // now grab the first arg and see if it is a known command
         String firstArg = args.length > 0 ? args[0] : "";
 
@@ -45,6 +43,7 @@ public class MoquiStart extends ClassLoader {
             MoquiStart moquiStartLoader = new MoquiStart(true);
             Thread.currentThread().setContextClassLoader(moquiStartLoader);
             Runtime.getRuntime().addShutdownHook(new MoquiShutdown(null, null, moquiStartLoader.jarFileList));
+            initSystemProperties(moquiStartLoader);
 
             System.out.println("Internal Class Path Jars:");
             for (JarFile jf: moquiStartLoader.jarFileList) {
@@ -86,6 +85,7 @@ public class MoquiStart extends ClassLoader {
             MoquiStart moquiStartLoader = new MoquiStart(true);
             Thread.currentThread().setContextClassLoader(moquiStartLoader);
             Runtime.getRuntime().addShutdownHook(new MoquiShutdown(null, null, moquiStartLoader.jarFileList));
+            initSystemProperties(moquiStartLoader);
 
             Map<String, String> argMap = new HashMap<String, String>();
             for (String arg: argList) {
@@ -114,6 +114,7 @@ public class MoquiStart extends ClassLoader {
         MoquiStart moquiStartLoader = new MoquiStart(false);
         Thread.currentThread().setContextClassLoader(moquiStartLoader);
         // NOTE: the MoquiShutdown hook is not set here because we want to get the winstone Launcher object first, so done below...
+        initSystemProperties(moquiStartLoader);
 
         Map<String, String> argMap = new HashMap<String, String>();
         for (String arg: argList) {
@@ -148,9 +149,9 @@ public class MoquiStart extends ClassLoader {
         // now wait for break...
     }
 
-    protected static void initSystemProperties() throws IOException {
+    protected static void initSystemProperties(ClassLoader cl) throws IOException {
         Properties moquiInitProperties = new Properties();
-        URL initProps = ClassLoader.getSystemResource("MoquiInit.properties");
+        URL initProps = cl.getResource("MoquiInit.properties");
         if (initProps != null) { InputStream is = initProps.openStream(); moquiInitProperties.load(is); is.close(); }
 
         // before doing anything else make sure the moqui.runtime system property exists (needed for config of various things)

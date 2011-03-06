@@ -297,18 +297,20 @@ class ScreenRenderImpl implements ScreenRender {
                 // not a binary object (hopefully), read it and write it to the writer
                 TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
                 if (tr != null) {
+                    // if requires a render, don't cache and make it private
+                    if (response != null) response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
                     tr.render(screenUrlInfo.fileResourceRef.location, writer)
                 } else {
                     // static text, tell the browser to cache it
                     // NOTE: make this configurable?
-                    response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
+                    if (response != null) response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
                     // no renderer found, just grab the text (cached) and throw it to the writer
                     String text = sfi.ecfi.resourceFacade.getLocationText(screenUrlInfo.fileResourceRef.location, true)
                     if (text) {
                         // NOTE: String.length not correct for byte length
-                        String charset = response.getCharacterEncoding() ?: "UTF-8"
+                        String charset = response?.getCharacterEncoding() ?: "UTF-8"
                         int length = text.getBytes(charset).length
-                        response.setContentLength(length)
+                        if (response != null) response.setContentLength(length)
 
                         if (logger.traceEnabled) logger.trace("Sending text response of length [${length}] with [${charset}] encoding from file [${screenUrlInfo.fileResourceRef.location}] for request to [${screenUrlInfo.url}]")
 
@@ -337,12 +339,13 @@ class ScreenRenderImpl implements ScreenRender {
             for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
                 if (sd.preActions != null) sd.preActions.run(ec)
             }
-
-            // start rendering at the root section of the root screen
             if (response != null) {
                 response.setContentType(this.outputContentType)
                 response.setCharacterEncoding(this.characterEncoding)
+                // if requires a render, don't cache and make it private
+                response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
             }
+            // start rendering at the root section of the root screen
             ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
             renderStartDef.getRootSection().render(this)
         } catch (Throwable t) {
