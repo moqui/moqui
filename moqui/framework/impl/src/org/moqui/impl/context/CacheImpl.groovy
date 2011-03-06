@@ -16,7 +16,9 @@ import org.moqui.context.Cache.EvictionStrategy
 
 import net.sf.ehcache.Ehcache
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy
-import net.sf.ehcache.Element;
+import net.sf.ehcache.Element
+import org.moqui.impl.StupidUtilities
+import java.sql.Timestamp;
 
 public class CacheImpl implements Cache {
 
@@ -123,6 +125,21 @@ public class CacheImpl implements Cache {
         Set newKeySet = new HashSet()
         newKeySet.addAll(keyList)
         return newKeySet
+    }
+
+    List<Map> makeElementInfoList(String orderByField) {
+        if (size() > 500) return [[key:"Not displaying cache elements because cache size [${size()}] is greater than 500."]]
+        List<Map> elementInfoList = new LinkedList()
+        for (Serializable key in ehcache.getKeysWithExpiryCheck()) {
+            Element e = ehcache.get(key)
+            Map im = [key:key as String, value:e.getObjectValue() as String, hitCount:e.getHitCount(),
+                    creationTime:new Timestamp(e.getCreationTime()), version:e.getVersion()]
+            if (e.getLastUpdateTime()) im.lastUpdateTime = new Timestamp(e.getLastUpdateTime())
+            if (e.getLastAccessTime()) im.lastAccessTime = new Timestamp(e.getLastAccessTime())
+            elementInfoList.add(im)
+        }
+        if (orderByField) StupidUtilities.orderMapList(elementInfoList, [orderByField])
+        return elementInfoList
     }
 
     /** @see org.moqui.context.Cache#hasExpired(String) */

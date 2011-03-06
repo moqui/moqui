@@ -258,6 +258,9 @@ font-size: 0.8em;
 tr.form-header th, th div.form-title {
 vertical-align: top;
 }
+tr.form-row td {
+font-size: 0.8em;
+}
 
 /* This is the +/- in the header, use fixed width font for consistent sizing. */
 a.form-order-by {

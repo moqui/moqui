@@ -17,6 +17,7 @@ This release includes:
   and moved configuration to entity definition, and methods to EntityValue
 - Tools Screens
   - Artifact Hit Bins
+  - Cache List and Elements
 
 Notable features not yet implemented:
 
@@ -38,13 +39,11 @@ Notable features not yet implemented:
 - Entity Facade
   - Entity complex aliases in views
   - Database meta-data check/report against entity definitions
-  - Auto-add lastUpdatedStamp (unless def says no), set on create/update
 - ArtifactExecutionFacade for artifact stack tracking
 - Artifact Authorization, Tar-pitting based on configuration in db
 - WebApp event actions
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens
-  - Cache
   - Scheduler
   - Entity Data UI
   - SQL/Script Run

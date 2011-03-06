@@ -19,6 +19,8 @@ import net.sf.ehcache.config.CacheConfiguration
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.moqui.context.Cache.EvictionStrategy
+import org.moqui.impl.StupidUtilities
 
 public class CacheFacadeImpl implements CacheFacade {
     protected final static Logger logger = LoggerFactory.getLogger(CacheFacadeImpl.class)
@@ -34,44 +36,68 @@ public class CacheFacadeImpl implements CacheFacade {
         this.ecfi = ecfi
     }
 
-    void destroy() { this.cacheManager.shutdown() }
+    void destroy() { cacheManager.shutdown() }
 
     /** @see org.moqui.context.CacheFacade#clearAllCaches() */
-    void clearAllCaches() { this.cacheManager.clearAll() }
+    void clearAllCaches() { cacheManager.clearAll() }
 
     /** @see org.moqui.context.CacheFacade#clearExpiredFromAllCaches() */
     void clearExpiredFromAllCaches() {
-        List<String> cacheNames = Arrays.asList(this.cacheManager.getCacheNames())
+        List<String> cacheNames = Arrays.asList(cacheManager.getCacheNames())
         for (String cacheName in cacheNames) {
-            Ehcache ehcache = this.cacheManager.getEhcache(cacheName)
+            Ehcache ehcache = cacheManager.getEhcache(cacheName)
             ehcache.evictExpiredElements()
         }
     }
 
     /** @see org.moqui.context.CacheFacade#clearCachesByPrefix(String) */
-    void clearCachesByPrefix(String prefix) { this.cacheManager.clearAllStartingWith(prefix) }
+    void clearCachesByPrefix(String prefix) { cacheManager.clearAllStartingWith(prefix) }
 
     /** @see org.moqui.context.CacheFacade#getCache(String) */
     Cache getCache(String cacheName) {
         Cache theCache
-        if (this.cacheManager.cacheExists(cacheName)) {
+        if (cacheManager.cacheExists(cacheName)) {
             // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
             theCache = new CacheImpl(cacheManager.getCache(cacheName))
         } else {
-            theCache = new CacheImpl(this.initCache(cacheName))
+            theCache = new CacheImpl(initCache(cacheName))
         }
 
         return theCache
     }
 
-    boolean cacheExists(String cacheName) { return this.cacheManager.cacheExists(cacheName) }
+    boolean cacheExists(String cacheName) { return cacheManager.cacheExists(cacheName) }
+
+    List<Map<String, Object>> getAllCachesInfo(String orderByField) {
+        List<Map<String, Object>> ci = new LinkedList()
+        for (String cn in cacheManager.getCacheNames()) {
+            Cache co = getCache(cn)
+            ci.add((Map<String, Object>) [name:co.getName(), expireTimeIdle:co.getExpireTimeIdle(),
+                    expireTimeLive:co.getExpireTimeLive(), maxElements:co.getMaxElements(),
+                    evictionStrategy:getEvictionStrategyString(co.evictionStrategy), size:co.size(),
+                    hitCount:co.getHitCount(), missCountNotFound:co.getMissCountNotFound(),
+                    missCountExpired:co.getMissCountExpired(), missCountTotal:co.getMissCountTotal(),
+                    removeCount:co.getRemoveCount()])
+        }
+        if (orderByField) StupidUtilities.orderMapList((List<Map>) ci, [orderByField])
+        return ci
+    }
+
+    String getEvictionStrategyString(EvictionStrategy es) {
+        switch (es) {
+            case EvictionStrategy.LEAST_RECENTLY_USED: return "LRU"
+            case EvictionStrategy.LEAST_RECENTLY_ADDED: return "LRA"
+            case EvictionStrategy.LEAST_FREQUENTLY_USED: return "LFU"
+        }
+    }
+
 
     protected synchronized net.sf.ehcache.Cache initCache(String cacheName) {
-        if (this.cacheManager.cacheExists(cacheName)) return cacheManager.getCache(cacheName)
+        if (cacheManager.cacheExists(cacheName)) return cacheManager.getCache(cacheName)
 
         // make a cache with the default seetings from ehcache.xml
-        this.cacheManager.addCacheIfAbsent(cacheName)
-        net.sf.ehcache.Cache newCache = this.cacheManager.getCache(cacheName)
+        cacheManager.addCacheIfAbsent(cacheName)
+        net.sf.ehcache.Cache newCache = cacheManager.getCache(cacheName)
         newCache.setSampledStatisticsEnabled(true)
 
         // set any applicable settings from the moqui conf xml file

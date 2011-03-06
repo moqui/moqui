@@ -399,10 +399,10 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
-    Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.one.${entityName}") }
-    Cache getCacheList(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.list.${entityName}") }
-    Cache getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.list_ra.${entityName}") }
-    Cache getCacheCount(String entityName) { return ecfi.getCacheFacade().getCache("${tenantId}.entity.count.${entityName}") }
+    Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.one.${entityName}") }
+    Cache getCacheList(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.list.${entityName}") }
+    Cache getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.list_ra.${entityName}") }
+    Cache getCacheCount(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
@@ -410,13 +410,13 @@ class EntityFacadeImpl implements EntityFacade {
         EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
 
         // clear one cache
-        if (ecfi.cacheFacade.cacheExists("${tenantId}.entity.one.${entityName}")) {
+        if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.one.${entityName}")) {
             Cache entityOneCache = getCacheOne(entityName)
             if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
         }
 
         // clear list cache, use reverse-associative Map (also a Cache)
-        if (ecfi.cacheFacade.cacheExists("${tenantId}.entity.list.${entityName}")) {
+        if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.list.${entityName}")) {
             Cache listRaCache = getCacheListRa(entityName)
             if (listRaCache.containsKey(pkCondition)) {
                 List raKeyList = (List) listRaCache.get(pkCondition)
@@ -431,7 +431,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         // clear count cache (no RA because we only have a count to work with, just match by condition)
-        if (ecfi.cacheFacade.cacheExists("${tenantId}.entity.count.${entityName}")) {
+        if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.count.${entityName}")) {
             Cache entityCountCache = getCacheCount(entityName)
             for (EntityCondition ec in entityCountCache.keySet()) {
                 if (ec.mapMatches(evi)) entityCountCache.remove(ec)

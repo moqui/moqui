@@ -31,7 +31,7 @@ class EntityDbMeta {
     protected EntityFacadeImpl efi
     EntityDbMeta(EntityFacadeImpl efi) {
         this.efi = efi
-        entityTablesChecked = efi.ecfi.cacheFacade.getCache("${efi.tenantId}.entity.tables.checked")
+        entityTablesChecked = efi.ecfi.cacheFacade.getCache("entity.${efi.tenantId}.tables.checked")
     }
 
     void checkTableRuntime(EntityDefinition ed) {
