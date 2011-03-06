@@ -8,6 +8,8 @@ Release 1.0-preview3 - date not yet decided
 This release includes:
 
 - All of the great features of 1.0-preview1 and 1.0-preview2
+- Significantly more testing and bug fixes related to synchronization,
+  performance, transactions, style, etc
 - Multi-tenant support (shared app server, separate databases)
 - Visitor tracking
 - ArtifactHit and ArtifactHitBin tracking for screen, screen-content,
@@ -46,7 +48,8 @@ Notable features not yet implemented:
 - Tools Screens
   - Scheduler
   - Entity Data UI
-  - SQL/Script Run
+  - SQL Query Run/View
+  - Script Run
   - Artifact Info
   - Visit and Hit Info/Stats
 
