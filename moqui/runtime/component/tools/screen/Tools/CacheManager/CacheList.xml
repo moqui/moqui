@@ -14,11 +14,11 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
 
     <transition name="clearCache">
-        <actions><call-script>ec.cache.getCache(ec.web.requestParameters.cacheName).clear()</call-script></actions>
+        <actions><script>ec.cache.getCache(ec.web.requestParameters.cacheName).clear()</script></actions>
         <default-response url="."/>
     </transition>
     <transition name="clearAllCaches">
-        <actions><call-script>ec.cache.clearAllCaches()</call-script></actions>
+        <actions><script>ec.cache.clearAllCaches()</script></actions>
         <default-response url="."/>
     </transition>
     <transition name="cacheElements">
@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="cacheList" from-field="ec.cache.getAllCachesInfo(ec.web.requestParameters.orderByField?:'+name')"/>
+        <set field="cacheList" from="ec.cache.getAllCachesInfo(ec.web.requestParameters.orderByField?:'+name')"/>
     </actions>
     <widgets>
         <container>
@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-list name="CacheList" list="cacheList">
             <field name="name">
                 <header-field show-order-by="true"/>
-                <default-field><link text="${name}" url="cacheElements"><parameter name="cacheName" from-field="name"/></link></default-field>
+                <default-field><link text="${name}" url="cacheElements"><parameter name="cacheName" from="name"/></link></default-field>
             </field>
             <field name="size">
                 <header-field show-order-by="true"/>
@@ -67,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
             <field name="clear">
-                <default-field><link text="Clear" url="clearCache"><parameter name="cacheName" from-field="name"/></link></default-field>
+                <default-field><link text="Clear" url="clearCache"><parameter name="cacheName" from="name"/></link></default-field>
             </field>
         </form-list>
     </widgets>

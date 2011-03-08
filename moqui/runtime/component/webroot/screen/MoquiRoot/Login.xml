@@ -14,14 +14,14 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-include="false" require-authentication="false">
     <transition name="login">
-        <actions><call-script>
+        <actions><script>
             ec.user.loginUser(ec.web.requestParameters.userId, ec.web.requestParameters.password, ec.web.requestParameters.tenantId)
-        </call-script></actions>
+        </script></actions>
         <default-response type="screen-last"/>
         <error-response url="."/>
     </transition>
     <transition name="logout">
-        <actions><call-script>ec.user.logoutUser()</call-script></actions>
+        <actions><script>ec.user.logoutUser()</script></actions>
         <default-response url="/"/>
         <error-response url="."/>
     </transition>

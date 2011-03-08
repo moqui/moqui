@@ -190,7 +190,7 @@ class ScreenUrlInfo {
                 TransitionItem ti = lastSd.getTransitionItem(pathName)
                 if (ti) {
                     // if fromScreenPath is a transition, and that transition has no condition,
-                    // call-service/actions or conditional-response then use the default-response.url instead
+                    // service/actions or conditional-response then use the default-response.url instead
                     // of the name (if type is screen-path or empty, url-type is url or empty)
                     if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&

@@ -16,12 +16,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="cacheName"/>
 
     <transition name="clearCacheElement">
-        <actions><call-script>ec.cache.getCache(ec.web.requestParameters.key).clear()</call-script></actions>
+        <actions><script>ec.cache.getCache(ec.web.requestParameters.key).clear()</script></actions>
         <default-response url="."/>
     </transition>
 
     <actions>
-        <set field="cacheElementList" from-field="ec.cache.getCache(ec.web.requestParameters.cacheName)?.makeElementInfoList(ec.web.requestParameters.orderByField?:'+key')"/>
+        <set field="cacheElementList" from="ec.cache.getCache(ec.web.requestParameters.cacheName)?.makeElementInfoList(ec.web.requestParameters.orderByField?:'+key')"/>
     </actions>
     <widgets>
         <container>

@@ -49,18 +49,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <!-- find the most recent status record and set the statusEndDate -->
             <entity-find entity-name="ExampleStatus" list="oldExampleStatusList">
-                <econdition field-name="exampleId" from-field="parameters.exampleId"/>
+                <econdition field-name="exampleId" from="parameters.exampleId"/>
                 <order-by field-name="-statusDate"/>
             </entity-find>
-            <set field="oldExampleStatus" from-field="oldExampleStatusList[0]"/>
+            <set field="oldExampleStatus" from="oldExampleStatusList[0]"/>
             <compare field="oldExampleStatus" operator="not-empty">
-                <set field="oldExampleStatus.statusEndDate" from-field="nowTimestamp"/>
+                <set field="oldExampleStatus.statusEndDate" from="nowTimestamp"/>
                 <entity-update value-field="oldExampleStatus"/>
             </compare>
 
             <entity-make-value entity-name="ExampleStatus" value-field="newEntity"/>
             <entity-set include="all" value-field="newEntity"/>
-            <set field="newEntity.statusDate" from-field="ec.user.nowTimestamp"/>
+            <set field="newEntity.statusDate" from="ec.user.nowTimestamp"/>
             <entity-create value-field="newEntity"/>
         </actions>
     </service>

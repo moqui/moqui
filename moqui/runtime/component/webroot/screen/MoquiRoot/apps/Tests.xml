@@ -27,9 +27,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <section name="HeaderUserInfo">
             <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
             <actions>
-                <set field="test1" from-field="ec.user.userId"/>
+                <set field="test1" from="ec.user.userId"/>
                 <set field="testV" value="VALUE"/>
-                <call-script>
+                <script>
                     test2 = ec.user.userId
 
                     System.out.println("================== ec.user.userId=" + ec.user.userId)
@@ -39,7 +39,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     System.out.println("================== test2=" + test2)
                     System.out.println("================== testV=" + testV)
                     System.out.println("================== context=" + context.toString())
-                </call-script>
+                </script>
             </actions>
             <widgets>
                 <label text="Inner section:" type="h3"/>

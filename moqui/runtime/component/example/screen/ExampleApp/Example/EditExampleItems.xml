@@ -17,21 +17,21 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
 
     <transition name="createExampleItem">
-        <call-service name="org.moqui.example.ExampleServices.create#ExampleItem"/>
+        <service name="org.moqui.example.ExampleServices.create#ExampleItem"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExampleItem">
-        <call-service name="update#ExampleItem"/>
+        <service name="update#ExampleItem"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteExampleItem">
-        <call-service name="delete#ExampleItem"/>
+        <service name="delete#ExampleItem"/>
         <default-response url="."/>
     </transition>
 
     <actions>
         <entity-find entity-name="ExampleItem" list="exampleItemList">
-            <econdition field-name="exampleId" from-field="ec.web.parameters.exampleId"/>
+            <econdition field-name="exampleId" from="ec.web.parameters.exampleId"/>
             <order-by field-name="exampleItemSeqId"/>
         </entity-find>
 

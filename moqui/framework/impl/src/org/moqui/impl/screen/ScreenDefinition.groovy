@@ -205,8 +205,8 @@ class ScreenDefinition {
         ParameterItem(Node parameterNode, String location) {
             this.name = parameterNode."@name"
 
-            if (parameterNode."@from-field") fromFieldGroovy = new GroovyClassLoader().parseClass(
-                    (String) parameterNode."@from-field", "${location}.parameter_${name}.from_field")
+            if (parameterNode."@from") fromFieldGroovy = new GroovyClassLoader().parseClass(
+                    (String) parameterNode."@from", "${location}.parameter_${name}.from_field")
             if (parameterNode."@value") fromFieldGroovy = new GroovyClassLoader().parseClass(
                     ('"""' + (String) parameterNode."@value" + '"""'), "${location}.parameter_${name}.value")
         }
@@ -246,9 +246,9 @@ class ScreenDefinition {
                 // the script is effectively the first child of the condition element
                 condition = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode.condition[0].children()[0], location + ".condition")
             }
-            // call-service OR actions
-            if (transitionNode."call-service") {
-                Node callServiceNode = (Node) transitionNode."call-service"[0]
+            // service OR actions
+            if (transitionNode."service") {
+                Node callServiceNode = (Node) transitionNode."service"[0]
                 if (!callServiceNode."@in-map") callServiceNode.attributes().put("in-map", "true")
                 if (!callServiceNode."@out-map") callServiceNode.attributes().put("out-map", "ec.web.requestAttributes")
                 actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".call_service")

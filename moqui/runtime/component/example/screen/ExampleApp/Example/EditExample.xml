@@ -17,32 +17,32 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
     
     <transition name="createExample">
-        <call-service name="org.moqui.example.ExampleServices.createExample"/>
+        <service name="org.moqui.example.ExampleServices.createExample"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExample">
-        <call-service name="org.moqui.example.ExampleServices.updateExample"/>
+        <service name="org.moqui.example.ExampleServices.updateExample"/>
         <default-response url="."/>
     </transition>
     <transition name="getExampleTypeEnumList">
         <actions>
             <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
                 <!-- for purposes of the example, get this as a parameter instead of the inline value: <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/> -->
-                <econdition field-name="enumTypeId" from-field="ec.web.requestParameters.enumTypeId"/>
+                <econdition field-name="enumTypeId" from="ec.web.requestParameters.enumTypeId"/>
                 <order-by field-name="description"/>
             </entity-find>
-            <call-script>ec.web.sendJsonMapResponse([exampleTypeEnumList:exampleTypeEnumList])</call-script>
+            <script>ec.web.sendJsonMapResponse([exampleTypeEnumList:exampleTypeEnumList])</script>
         </actions>
         <default-response type="none"/>
     </transition>
 
     <actions>
-        <set field="exampleId" from-field="ec.web.parameters.exampleId"/>
+        <set field="exampleId" from="ec.web.parameters.exampleId"/>
         <entity-find-one entity-name="Example" value-field="fieldValues"/>
         <log message="EditExample exampleId [${exampleId}] fieldValues [${fieldValues}]"/>
 
         <entity-find-one entity-name="StatusItem" value-field="currentStatus">
-            <field-map field-name="statusId" from-field="fieldValues?.statusId"/>
+            <field-map field-name="statusId" from="fieldValues?.statusId"/>
         </entity-find-one>
 
         <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
@@ -111,7 +111,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><compare field="fieldValues" operator="not-empty"/></condition>
             <actions>
                 <entity-find entity-name="StatusValidChangeToDetail" list="statusValidChangeToDetailList">
-                    <econdition field-name="statusId" from-field="fieldValues.statusId"/>
+                    <econdition field-name="statusId" from="fieldValues.statusId"/>
                 </entity-find>
             </actions>
             <widgets>

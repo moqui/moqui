@@ -33,7 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="condition"/>
                 <xs:choice minOccurs="0">
                     <xs:element ref="entity-find-one"/>
-                    <xs:element ref="call-service"/>
+                    <xs:element ref="service"/>
                 </xs:choice>
                 <xs:element ref="widgets"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="tree-sub-node"/>
@@ -48,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:choice>
                     <xs:element ref="entity-find"/>
-                    <xs:element ref="call-service"/>
+                    <xs:element ref="service"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="out-field-map"/>
             </xs:sequence>

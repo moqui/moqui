@@ -17,16 +17,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleFeatureId"/>
 
     <transition name="createExampleFeature">
-        <call-service name="org.moqui.example.ExampleServices.create#ExampleFeature"/>
+        <service name="org.moqui.example.ExampleServices.create#ExampleFeature"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExampleFeature">
-        <call-service name="update#ExampleFeature"/>
+        <service name="update#ExampleFeature"/>
         <default-response url="."/>
     </transition>
 
     <actions>
-        <set field="exampleFeatureId" from-field="ec.web.parameters.exampleFeatureId"/>
+        <set field="exampleFeatureId" from="ec.web.parameters.exampleFeatureId"/>
         <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
 
         <entity-find entity-name="Enumeration" list="featureSourceEnumList">

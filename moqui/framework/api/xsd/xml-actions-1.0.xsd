@@ -59,7 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <!-- Call Operations -->
-    <xs:element name="call-service" substitutionGroup="CallOperations">
+    <xs:element name="service" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>Call a service.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
@@ -134,7 +134,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="ignore-error" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="call-service-group" substitutionGroup="CallOperations">
+    <xs:element name="service-group" substitutionGroup="CallOperations">
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" ref="service-invoke"/>
@@ -175,7 +175,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
-    <xs:element name="call-script" substitutionGroup="CallOperations">
+    <xs:element name="script" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>
             Runs the script at the specified location. You can also put a Groovy script inline under this element.
             If a location is specified the file can be a Groovy script or an xml-actions script.
@@ -192,13 +192,13 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- Environment specific operations -->
     <xs:element name="set" substitutionGroup="EnvOperations">
-        <xs:annotation><xs:documentation>Set a field from another field (from-field) or an inline value, or a
+        <xs:annotation><xs:documentation>Set a field from another field (from) or an inline value, or a
             default-value.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="field" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Name of the field to set a value in.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="from-field" type="xs:string">
+            <xs:attribute name="from" type="xs:string">
                 <xs:annotation><xs:documentation>Name of a field to copy from. Can also be an expression that evaluates
                     to something to put into the field.</xs:documentation></xs:annotation>
             </xs:attribute>
@@ -459,17 +459,17 @@ This Work includes contributions authored by David E. Jones, not as a
             field, a String value, or another field on the entity.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="field-name" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The field on the entity to constrain on. If from-field, value and
+                <xs:annotation><xs:documentation>The field on the entity to constrain on. If from, value and
                     to-field-name are all empty this is also used as the name of the context field to compare to.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="operator" default="equals" type="operator-entity">
                 <xs:annotation>
                     <xs:documentation>
-                        Operator to apply to field-name on one side, and from-field, value, or to-field-name on the other side.
+                        Operator to apply to field-name on one side, and from, value, or to-field-name on the other side.
 
-                        For the between operator the from-field should be a Collection with exactly 2 values in it.
+                        For the between operator the from should be a Collection with exactly 2 values in it.
 
-                        For the in operator the from-field should be a Collection with 1 to many values in it.
+                        For the in operator the from should be a Collection with 1 to many values in it.
 
                         For the like operator use the standard SQL wildcards, including "%" for any number of
                         characters (like *) and "_" for a single character (like ?), and escape them with a "!" in
@@ -479,7 +479,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:documentation>
                 </xs:annotation>
             </xs:attribute>
-            <xs:attribute name="from-field" type="xs:string">
+            <xs:attribute name="from" type="xs:string">
                 <xs:annotation><xs:documentation>Field expression in the context to compare the entity field to.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="value" type="xs:string">
@@ -563,13 +563,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType/>
     </xs:element>
     <xs:element name="field-map">
-        <xs:annotation><xs:documentation>A name/value pair. If from-field and value are empty will look in the context
+        <xs:annotation><xs:documentation>A name/value pair. If from and value are empty will look in the context
             for a field matching the field-name.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="field-name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Name of the entity field.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="from-field" type="xs:string">
+            <xs:attribute name="from" type="xs:string">
                 <xs:annotation><xs:documentation>Name of the field (variable) in the context.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="value" type="xs:string">

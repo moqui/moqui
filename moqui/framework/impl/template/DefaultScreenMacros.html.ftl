@@ -163,7 +163,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign ctxParameterMap = ec.resource.evaluateContextField(.node["@parameter-map"]?if_exists, "")?if_exists/>
     <#if ctxParameterMap?has_content><#assign void = urlInfo.addParameters(ctxParameterMap)/></#if>
     <#list .node["parameter"] as parameterNode>
-        <#assign void = urlInfo.addParameter(parameterNode["@name"], sri.makeValue(parameterNode["@from-field"]?if_exists, parameterNode["@value"]?if_exists))/>
+        <#assign void = urlInfo.addParameter(parameterNode["@name"], sri.makeValue(parameterNode["@from"]?if_exists, parameterNode["@value"]?if_exists))/>
     </#list>
     <#if urlInfo.disableLink>
         <span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</span>

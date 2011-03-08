@@ -18,21 +18,21 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="editExampleFeature"><default-response url="../../Feature/EditExampleFeature"/></transition>
     <transition name="createExampleFeatureAppl">
-        <call-service name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
+        <service name="org.moqui.example.ExampleServices.create#ExampleFeatureAppl"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExampleFeatureAppl">
-        <call-service name="update#ExampleFeatureAppl"/>
+        <service name="update#ExampleFeatureAppl"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteExampleFeatureAppl">
-        <call-service name="delete#ExampleFeatureAppl"/>
+        <service name="delete#ExampleFeatureAppl"/>
         <default-response url="."/>
     </transition>
 
     <actions>
         <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-            <econdition field-name="exampleId" from-field="ec.web.parameters.exampleId"/>
+            <econdition field-name="exampleId" from="ec.web.parameters.exampleId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
 
