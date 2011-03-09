@@ -132,7 +132,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="parentEnumId" type="id"/>
         <field name="enumCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-long" enable-localization="true"/>
         <relationship type="one" related-entity-name="EnumerationType"/>
         <relationship type="one-nofk" title="Parent" related-entity-name="Enumeration">
             <key-map field-name="parentEnumId"/>
@@ -199,6 +199,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="LocalizedEntityField" package-name="org.moqui.basic.l10n" cache="true">
         <field name="entityName" type="text-medium" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
+        <field name="pkValue" type="text-medium" is-pk="true"/>
         <field name="locale" type="text-short" is-pk="true"/>
         <field name="localized" type="text-very-long"/>
     </entity>
@@ -212,7 +213,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusTypeId" type="id"/>
         <field name="statusCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-long" enable-localization="true"/>
         <relationship type="one" related-entity-name="StatusType"/>
     </entity>
     <entity entity-name="StatusType" package-name="org.moqui.basic.status">

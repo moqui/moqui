@@ -72,17 +72,17 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="exampleName">
                 <header-field title="Name" show-order-by="true"/>
-                <default-field><display/></default-field>
+                <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="exampleTypeEnumId">
-                <default-field title="Type"><display-entity entity-name="Enumeration" key-field-name="enumId"/></default-field>
+                <default-field title="Type"><display-entity entity-name="Enumeration" key-field-name="enumId" also-hidden="false"/></default-field>
             </field>
             <field name="statusId">
                 <default-field title="Status"><display-entity entity-name="StatusItem"/></default-field>
             </field>
             <field name="description">
                 <header-field show-order-by="true"/>
-                <default-field><display/></default-field>
+                <default-field><display also-hidden="false"/></default-field>
             </field>
         </form-list>
     </widgets>

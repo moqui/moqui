@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Fields" default-menu-index="2">
+
+    <transition name="createLocalizedEntityField">
+        <service name="create#LocalizedEntityField"/>
+        <default-response url="."/>
+    </transition>
+    <transition name="updateLocalizedEntityField">
+        <service name="update#LocalizedEntityField"/>
+        <default-response url="."/>
+    </transition>
+    <transition name="deleteLocalizedEntityField">
+        <service name="delete#LocalizedEntityField"/>
+        <default-response url="."/>
+    </transition>
+
+    <actions>
+        <entity-find entity-name="LocalizedEntityField" list="localizedEntityFieldList" offset="0" limit="50">
+            <search-form-inputs default-order-by="entityName,fieldName,locale"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <container>
+            <container-dialog id="CreateEntityFieldDialog" button-text="New Field L10n">
+                <form-single name="CreateLocalizedEntityField" transition="createLocalizedEntityField">
+                    <field name="entityName">
+                        <default-field><text-line size="15"/></default-field>
+                    </field>
+                    <field name="fieldName">
+                        <default-field><text-line size="15"/></default-field>
+                    </field>
+                    <field name="pkValue">
+                        <default-field><text-line size="20"/></default-field>
+                    </field>
+                    <field name="locale">
+                        <default-field><text-line size="5"/></default-field>
+                    </field>
+                    <field name="localized">
+                        <default-field><text-area rows="5" cols="60"/></default-field>
+                    </field>
+                    <field name="submit"><default-field title="Create"><submit/></default-field></field>
+                </form-single>
+            </container-dialog>
+        </container>
+        <form-list name="UpdateLocalizedEntityFields" list="localizedEntityFieldList"
+                   transition="updateLocalizedEntityField" multi="true">
+            <field name="entityName">
+                <header-field show-order-by="true"><text-find hide-options="true" size="12"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="fieldName">
+                <header-field show-order-by="true"><text-find hide-options="true" size="12"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="pkValue">
+                <header-field show-order-by="true"><text-find hide-options="true" size="12"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="locale">
+                <header-field show-order-by="true"><text-find hide-options="true" size="4"/></header-field>
+                <default-field><display/></default-field>
+            </field>
+            <field name="localized">
+                <default-field><text-area rows="2" cols="50"/></default-field>
+            </field>
+            <field name="submit">
+                <header-field title="Find"><submit/></header-field>
+                <default-field><submit/></default-field>
+            </field>
+            <field name="delete">
+                <default-field>
+                    <link text="Delete" url="deleteLocalizedEntityField">
+                        <parameter name="entityName"/>
+                        <parameter name="fieldName"/>
+                        <parameter name="locale"/>
+                    </link>
+                </default-field>
+            </field>
+        </form-list>
+    </widgets>
+</screen>

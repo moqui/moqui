@@ -84,6 +84,8 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#get(String) */
     Object get(String name) {
         Node fieldNode = getEntityDefinition().getFieldNode(name)
+        if (name == "exampleName") logger.info("Getting field ${name} fieldNode.@enable-localization ${fieldNode?.'@enable-localization'}")
+
         if (!fieldNode) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })
@@ -100,15 +102,27 @@ class EntityValueImpl implements EntityValue {
 
         // if enabled use LocalizedEntityField for any localized fields
         if (fieldNode."@enable-localization" == "true") {
-            Locale userLocale = getEntityFacadeImpl().ecfi.executionContext.user.locale
-            if (userLocale) {
-                EntityFind lefFind = getEntityFacadeImpl().makeFind("LocalizedEntityField")
-                lefFind.condition([entityName:entityName, fieldName:name, locale:userLocale.toString()])
-                EntityValue lefValue = lefFind.useCache(true).one()
-                if (lefValue) return lefValue.localized
+            String localeStr = getEntityFacadeImpl().ecfi.executionContext.user.locale?.toString()
+            if (localeStr) {
+                ListOrderedSet pks = this.getEntityDefinition().getFieldNames(true, false)
+                if (pks.size() == 1) {
+                    String pkValue = get(pks.get(0))
+                    if (pkValue) {
+                        EntityFind lefFind = getEntityFacadeImpl().makeFind("LocalizedEntityField")
+                        lefFind.condition([entityName:entityName, fieldName:name, pkValue:pkValue, locale:localeStr])
+                        EntityValue lefValue = lefFind.useCache(true).one()
+                        if (lefValue) return lefValue.localized
+                        // no result found, try with shortened locale
+                        if (localeStr.contains("_")) {
+                            lefFind.condition("locale", localeStr.substring(0, localeStr.indexOf("_")))
+                            lefValue = lefFind.useCache(true).one()
+                            if (lefValue) return lefValue.localized
+                        }
+                    }
+                }
                 // no luck? try getting a localized value from LocalizedMessage
                 EntityFind lmFind = getEntityFacadeImpl().makeFind("LocalizedMessage")
-                lmFind.condition([original:valueMap[name], locale:userLocale.toString()])
+                lmFind.condition([original:valueMap[name], locale:localeStr])
                 EntityValue lmValue = lmFind.useCache(true).one()
                 if (lmValue) return lmValue.localized
             }
@@ -796,9 +810,27 @@ class EntityValueImpl implements EntityValue {
 
     Set<String> keySet() { return Collections.unmodifiableSet(valueMap.keySet()) }
 
-    Collection<Object> values() { return Collections.unmodifiableCollection(valueMap.values()) }
+    Collection<Object> values() {
+        // everything needs to go through the get method, so iterate through the keys and get the values
+        List<Object> values = new ArrayList<Object>(valueMap.size())
+        for (String key in valueMap.keySet()) values.add(get(key))
+        return values
+    }
 
-    Set<Map.Entry<String, Object>> entrySet() { return Collections.unmodifiableSet(valueMap.entrySet()) }
+    Set<Map.Entry<String, Object>> entrySet() {
+        Set<Map.Entry<String, Object>> entries = new HashSet()
+        for (String key in valueMap.keySet()) entries.add(new EntityFieldEntry(key, this))
+        return entries
+    }
+
+    static class EntityFieldEntry implements Map.Entry<String, Object> {
+        protected String key
+        protected EntityValueImpl evi
+        EntityFieldEntry(String key, EntityValueImpl evi) { this.key = key; this.evi = evi; }
+        String getKey() { return key }
+        Object getValue() { return evi.get(key) }
+        Object setValue(Object v) { return evi.set(key, v) }
+    }
 
     // ========== Object Override Methods ==========
 

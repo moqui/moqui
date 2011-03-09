@@ -17,9 +17,11 @@ This release includes:
 - User preference handling
 - Simplified sequenced ID API for both primary and secondary sequenced IDs
   and moved configuration to entity definition, and methods to EntityValue
+- Finished and tested localized messages and entity fields
 - Tools Screens
   - Artifact Hit Bins
   - Cache List and Elements
+  - Localization: Messages, Entity Fields
 
 Notable features not yet implemented:
 
@@ -30,6 +32,8 @@ Notable features not yet implemented:
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server)
   - Screen form-list pagination
+  - Screen form-list multi=true support
+  - Screen form-list multi=false support
   - Screen tree elements
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)

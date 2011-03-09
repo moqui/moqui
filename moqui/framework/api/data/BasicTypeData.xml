@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Purchased Data" enumId="DST_PURCHASED_DATA" enumTypeId="DATA_SOURCE_TYPE"/>
     <Enumeration description="Customer Data Entry" enumId="DST_CUSTOMER_ENTRY" enumTypeId="DATA_SOURCE_TYPE"/>
     <Enumeration description="Internal Data Entry (employees, etc)" enumId="DST_INTERNAL_ENTRY" enumTypeId="DATA_SOURCE_TYPE"/>
-    <Enumeration description="Mailing List Signup" enumId="DST_MAILING_SIGNUP" enumTypeId="DATA_SOURCE_TYPE"/>
+    <Enumeration description="Mailing List Sign-up" enumId="DST_MAILING_SIGNUP" enumTypeId="DATA_SOURCE_TYPE"/>
 
     <!-- =========================== Email Type Data ========================== -->
     <EmailServer emailServerId="SYSTEM" smtpRelayHost="" smtpUsername="" smtpPassword="" smtpPort="" smtpStartTls="" smtpSsl=""/>

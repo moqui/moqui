@@ -55,4 +55,19 @@ This Work includes contributions authored by David E. Jones, not as a
     <LocalizedMessage original="Update" locale="fr" localized="Màj"/>
     <LocalizedMessage original="Update" locale="it" localized="Aggiorna"/>
     <LocalizedMessage original="Update" locale="zh" localized="更新"/>
+
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_CITY" locale="es" localized="Ciudad"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_CITY" locale="fr" localized="Ville"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_CITY" locale="it" localized="Città"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_CITY" locale="zh" localized="市"/>
+
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_STATE" locale="es" localized="Estado"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_STATE" locale="fr" localized="Etat"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_STATE" locale="it" localized="Stato"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_STATE" locale="zh" localized="州"/>
+
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="es" localized="País"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="fr" localized="Pays"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="it" localized="Paese"/>
+    <LocalizedEntityField entityName="Enumeration" fieldName="description" pkValue="GEOT_COUNTRY" locale="zh" localized="国家"/>
 </entity-facade-xml>
