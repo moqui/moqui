@@ -34,11 +34,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="artifactSubType">
                 <header-field show-order-by="true"><text-find hide-options="true" size="10"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display text="${artifactSubType.replace('/',' / ')}" also-hidden="false"/></default-field>
             </field>
             <field name="artifactName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
-                <default-field><display also-hidden="false"/></default-field>
+                <default-field><display text="${artifactName.replace('/',' / ').replace(' /  / ', '//')}" also-hidden="false"/></default-field>
             </field>
             <field name="binStartDateTime">
                 <header-field title="Bin Start" show-order-by="true"><text-find hide-options="true" size="15"/></header-field>

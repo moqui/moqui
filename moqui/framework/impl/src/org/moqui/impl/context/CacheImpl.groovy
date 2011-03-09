@@ -101,7 +101,7 @@ public class CacheImpl implements Cache {
         Element originalElement = this.ehcache.getQuiet(key)
         this.ehcache.put(new Element(key, value))
         if (originalElement) {
-            return originalElement.getValue()
+            return originalElement.getObjectValue()
         } else {
             return null
         }
