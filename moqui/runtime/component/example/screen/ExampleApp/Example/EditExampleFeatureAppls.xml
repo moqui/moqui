@@ -40,6 +40,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="enumTypeId" value="EXAMPLE_FEATURE_APPL"/>
             <order-by field-name="description"/>
         </entity-find>
+
+        <entity-find entity-name="ExampleFeature" list="allExampleFeatureList">
+            <order-by field-name="description"/>
+        </entity-find>
     </actions>
     <widgets>
         <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
@@ -75,20 +79,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="exampleId"><default-field><hidden/></default-field></field>
 
             <field name="exampleFeatureId">
-                <default-field title="Feature"><lookup target-screen="/ExampleApp/LookupExampleFeature"/></default-field>
+                <default-field title="Feature">
+                    <drop-down allow-empty="false" combo-box="true">
+                        <list-options list="allExampleFeatureList" text="${description} [${exampleFeatureId}]"/>
+                    </drop-down>
+                </default-field>
+                <!-- support this sooner or later: <default-field title="Feature"><lookup target-screen="/ExampleApp/LookupExampleFeature"/></default-field> -->
             </field>
-            <!-- auto-complete: partial text entry searches the full string; this is only an example since
-            usability is low as you can't see the full list, you HAVE to know part of the ID or description in
-            order to see options -->
-            <!-- uncomment to try it out:
-            <field name="exampleFeatureId">
-                <drop-down auto-complete="true">
-                    <entity-options entity-name="ExampleFeature" text="${exampleFeatureId}: ${description}">
-                        <order-by field-name="exampleFeatureId"/>
-                    </entity-options>
-                </drop-down>
-            </field>
-            -->
             <field name="exampleFeatureApplEnumId">
                 <default-field title="Type">
                     <drop-down allow-empty="false">

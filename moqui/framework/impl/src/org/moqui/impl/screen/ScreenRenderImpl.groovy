@@ -183,7 +183,7 @@ class ScreenRenderImpl implements ScreenRender {
                 if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
                     sfi.ecfi.transactionFacade.commit(beganTransaction)
                 }
-                sfi.ecfi.countArtifactHit("transition", ri.type ?: "", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
+                sfi.ecfi.countArtifactHit("transition", ri?.type ?: "", screenUrlInfo.url, (ec.web ? ec.web.requestParameters : null),
                         transitionStartTime, System.currentTimeMillis(), null)
             }
 

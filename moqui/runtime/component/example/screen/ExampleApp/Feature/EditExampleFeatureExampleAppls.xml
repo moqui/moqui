@@ -29,6 +29,25 @@ This Work includes contributions authored by David E. Jones, not as a
         <service name="delete#ExampleFeatureAppl"/>
         <default-response url="."/>
     </transition>
+    <transition name="getExampleList">
+        <actions>
+            <set field="term" from="ec.web.requestParameters.term"/>
+            <entity-find entity-name="Example" list="exampleList" limit="20">
+                <econditions combine="or">
+                    <econdition field-name="exampleId" operator="like" value="%${term}%"/>
+                    <econdition field-name="exampleName" operator="like" value="%${term}%"/>
+                </econditions>
+                <order-by field-name="exampleName"/>
+            </entity-find>
+            <script>
+                def outList = []
+                for (def example in exampleList)
+                    outList.add([value:example.exampleId, label:"${example.exampleName} [${example.exampleId}]".toString()])
+                ec.web.sendJsonResponse(outList)
+            </script>
+        </actions>
+        <default-response type="none"/>
+    </transition>
 
     <actions>
         <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
@@ -39,9 +58,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <entity-find entity-name="Enumeration" list="exampleFeatureApplEnumList">
             <econdition field-name="enumTypeId" value="EXAMPLE_FEATURE_APPL"/>
             <order-by field-name="description"/>
-        </entity-find>
-        <entity-find entity-name="Example" list="allExampleList">
-            <order-by field-name="exampleName"/>
         </entity-find>
     </actions>
     <widgets>
@@ -76,9 +92,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <auto-fields-service service-name="create#ExampleFeatureAppl"/>
             <field name="exampleId">
                 <default-field title="Example">
-                    <drop-down allow-empty="false">
-                        <list-options list="allExampleList" text="${exampleName} [${exampleId}]"/>
-                    </drop-down>
+                    <text-line size="15" ac-transition="getExampleList"/>
                 </default-field>
             </field>
             <field name="exampleFeatureId"><default-field><hidden/></default-field></field>

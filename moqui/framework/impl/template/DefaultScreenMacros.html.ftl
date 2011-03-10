@@ -412,7 +412,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")?if_exists?default(.node["@default-value-from"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_from">
     <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span><input type="text" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")?if_exists?default(.node["@default-value-thru"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_thru">
     <#if .node["@type"]?if_exists != "time">
-        <script type="text/javascript">
+        <script>
             <#if .node["@type"]?if_exists == "date">
                 $("#${id}_from,#${id}_thru").datepicker({
             <#else>
@@ -429,7 +429,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}">
     <#if .node["@type"]?if_exists != "time">
-        <script type="text/javascript">
+        <script>
             <#if .node["@type"]?if_exists == "date">
                 $("#${id}").datepicker({
             <#else>
@@ -481,10 +481,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <option<#if currentValue?has_content && currentValue == key> selected="selected"</#if> value="${key}">${options.get(key)}</option>
     </#list>
     </select>
-    <#if .node["auto-complete"]?has_content>
-        <#-- TODO: auto-complete attributes, get it working -->
-    <#elseif .node["@combo-box"]?if_exists == "true">
-        <script language="JavaScript" type="text/javascript">$(function() { $("#${id}").combobox(); });</script>
+    <#if .node["@combo-box"]?if_exists == "true">
+        <script language="JavaScript" type="text/javascript">$("#${id}").combobox();</script>
     </#if>
 </#macro>
 
@@ -497,13 +495,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
 <#macro "lookup">
-    <#-- TODO: <xs:element minOccurs="0" ref="auto-complete"/> -->
     <#assign curFieldName = .node?parent?parent["@name"]?html/>
     <#assign curFormName = .node?parent?parent?parent["@name"]?html/>
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
     <#assign ajaxUrl = ""/><#-- TODO once the JSON service stuff is in place put something real here -->
-    <script type="text/javascript">
+    <#-- TODO get lookup code in place, or not... -->
+    <script>
         $(document).ready(function() {
             new ConstructLookup("${.node["@target-screen"]}", "${id}", document.${curFormName}.${curFieldName},
             <#if .node["@secondary-field"]?has_content>document.${curFormName}.${.node["@secondary-field"]}<#else>null</#if>,
@@ -543,7 +541,26 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro "text-area"><textarea name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${maxlength}"</#if> id="<@fieldId .node/>">${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}</textarea></#macro>
 
-<#macro "text-line"><input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="<@fieldId .node/>"></#macro>
+<#macro "text-line">
+    <#assign id><@fieldId .node/></#assign>
+    <input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
+    <#if .node["@ac-transition"]?has_content>
+        <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
+        <script>
+            $("#${id}").autocomplete({
+                source: function(request, response) { $.ajax({
+					url: "${sri.screenUrlInfo.url}/${.node["@ac-transition"]}", type: "POST", dataType: "json", data: { term: request.term },
+					success: function(data) { response($.map(data, function(item) { return { label: item.label, value: item.value } })); }
+				});	},
+                <#t><#if .node["@ac-delay"]?has_content>delay: ${.node["@ac-delay"]},</#if>
+                <#t><#if .node["@ac-min-length"]?has_content>minLength: ${.node["@ac-min-length"]},</#if>
+                select: function( event, ui ) {
+                    if (ui.item) { this.value = ui.item.value; if (ui.item.label) { $("#${id}_value").html(ui.item.label); } }
+                }
+            });
+	    </script>
+    </#if>
+</#macro>
 
 <#macro "text-find">
 <span class="form-text-find">

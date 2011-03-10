@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <econdition field-name="enumTypeId" from="ec.web.requestParameters.enumTypeId"/>
                 <order-by field-name="description"/>
             </entity-find>
-            <script>ec.web.sendJsonMapResponse([exampleTypeEnumList:exampleTypeEnumList])</script>
+            <script>ec.web.sendJsonResponse([exampleTypeEnumList:exampleTypeEnumList])</script>
         </actions>
         <default-response type="none"/>
     </transition>

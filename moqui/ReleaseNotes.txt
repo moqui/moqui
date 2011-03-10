@@ -25,6 +25,7 @@ This release includes:
 - XML Screens
   - Screen form-list multi=false support
   - Screen form-list support form-links in table
+  - Screen form auto-complete for text-line
 - Tools Screens
   - Artifact Hit Bins
   - Cache List and Elements
@@ -33,8 +34,6 @@ This release includes:
 Notable features not yet implemented:
 
 - XML Screens
-  - Screen form AJAX/DHTML for lookup
-  - Screen form auto-complete for drop-down and lookup
   - Screen form field-layout support
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server)
@@ -43,6 +42,7 @@ Notable features not yet implemented:
   - Screen tree elements
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
+  - Screen form AJAX/DHTML for lookup
 - Service Facade
   - Service runners for remote service calls (HTTP, JMS, RMI proxies)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)

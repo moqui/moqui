@@ -469,7 +469,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="drop-down" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" ref="auto-complete"/>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
                     <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
                     <xs:element ref="list-options"/>
@@ -511,9 +510,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="lookup" substitutionGroup="SubFields">
         <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" ref="auto-complete"/>
-            </xs:sequence>
             <xs:attribute name="target-screen" type="xs:string" use="required"/>
             <xs:attribute name="size" type="xs:positiveInteger" default="30"/>
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
@@ -565,6 +561,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="disabled" default="false" type="boolean"/>
+            <xs:attribute name="ac-transition" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>If specified the text-line will have auto-complete added to it with
+                    this transition as the source of the auto-complete options.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="ac-delay" type="xs:positiveInteger" default="300"/>
+            <xs:attribute name="ac-min-length" type="xs:positiveInteger" default="1"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="text-area" substitutionGroup="SubFields">
@@ -606,17 +608,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <!-- ================== Field Sub-Sub-Elements ==================== -->
-    <xs:element name="auto-complete">
-        <xs:complexType>
-            <xs:attribute name="auto-select" default="false" type="boolean"/>
-            <xs:attribute name="frequency" type="xs:double" default="0.4"/>
-            <xs:attribute name="min-chars" type="xs:positiveInteger" default="1"/>
-            <xs:attribute name="choices" type="xs:positiveInteger" default="10"/>
-            <xs:attribute name="partial-search" default="true" type="boolean"/>
-            <xs:attribute name="partial-chars" type="xs:positiveInteger" default="1"/>
-            <xs:attribute name="ignore-case" default="true" type="boolean"/>
-        </xs:complexType>
-    </xs:element>
     <!-- TABLED, not to be part of 1.0, use entity-find and list-options instead
     <xs:element name="entity-options">
         <xs:annotation>

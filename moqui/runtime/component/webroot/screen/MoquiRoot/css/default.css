@@ -25,6 +25,12 @@ font-size: 16px; /* set base font size here, all others relative using em */
 vertical-align: center;
 }
 
+/* ====================== jquery ui styles ======================= */
+
+.ui-autocomplete-loading {
+background: white url('/images/wait_anim_16x16.gif') right center no-repeat;
+}
+
 /* ========================== body, etc ========================== */
 
 body {

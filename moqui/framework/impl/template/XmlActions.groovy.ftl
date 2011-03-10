@@ -105,7 +105,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#-- =================== entity-find sub-elements =================== -->
 <#macro "date-filter">ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]?default("fromDate")}", "${.node["@thru-field-name"]?default("thruDate")}", <#if .node["@valid-date"]?has_content>.node["@valid-date"] as Timestamp<#else>ec.user.nowTimestamp</#if>)</#macro>
 <#macro "econdition">ec.entity.conditionFactory.makeActionCondition("${.node["@field-name"]}", "${.node["@operator"]?default("equals")}", ${.node["@from"]?default("null")}, <#if .node["@value"]?has_content>"${.node["@value"]}"<#else>null</#if>, <#if .node["@to-field-name"]?has_content>"${.node["@to-field-name"]}"<#else>null</#if>, ${.node["@ignore-case"]?default("false")}, ${.node["@ignore-if-empty"]?default("false")}, ${.node["@ignore"]?default("false")})</#macro>
-<#macro "econditions">ec.entity.conditionFactory.makeCondition([<#list .node["*"] as subCond><#visit subCond/><#if subCond_has_next>, </#if></#list>], org.moqui.impl.entity.EntityConditionFactoryImpl.getJoinOperator("${.node["@combine"]}"))</#macro>
+<#macro "econditions">ec.entity.conditionFactory.makeCondition([<#list .node?children as subCond><#visit subCond/><#if subCond_has_next>, </#if></#list>], org.moqui.impl.entity.EntityConditionFactoryImpl.getJoinOperator("${.node["@combine"]}"))</#macro>
 <#macro "econdition-object">${.node["@field"]}</#macro>
 
 <#-- =================== entity other elements =================== -->

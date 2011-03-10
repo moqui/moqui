@@ -29,6 +29,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.FileItemFactory
 import org.apache.commons.fileupload.FileItem
 import org.apache.commons.io.FileCleaningTracker
+import net.sf.json.JSONArray
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -188,10 +189,16 @@ class WebFacadeImpl implements WebFacade {
         return applicationAttributes
     }
 
-    /** @see org.moqui.context.WebFacade#sendJsonMapResponse(Map) */
-    void sendJsonMapResponse(Map responseMap) {
-        JSONObject json = JSONObject.fromObject(responseMap)
-        String jsonStr = json.toString()
+    /** @see org.moqui.context.WebFacade#sendJsonResponse(Object) */
+    void sendJsonResponse(Object responseObj) {
+        String jsonStr = null
+        if (responseObj instanceof Collection || responseObj instanceof Object[]) {
+            JSONArray json = JSONArray.fromObject(responseObj)
+            jsonStr = json.toString()
+        } else {
+            JSONObject json = JSONObject.fromObject(responseObj)
+            jsonStr = json.toString()
+        }
 
         if (!jsonStr) return
 
@@ -201,7 +208,7 @@ class WebFacadeImpl implements WebFacade {
         int length = jsonStr.getBytes(charset).length
         response.setContentLength(length)
 
-        if (logger.infoEnabled) logger.info("Sending JSON Map response of length [${length}] with [${charset}] encoding")
+        if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding")
 
         try {
             Writer out = response.getWriter()
