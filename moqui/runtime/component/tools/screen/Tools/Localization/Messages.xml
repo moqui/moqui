@@ -63,11 +63,13 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="submit">
                 <header-field title="Find"><submit/></header-field>
-                <default-field><submit/></default-field>
+                <default-field title="Update"><submit/></default-field>
             </field>
             <field name="delete">
                 <default-field>
-                    <link text="Delete" url="deleteLocalizedMessage"><parameter name="original"/><parameter name="locale"/></link>
+                    <link text="Delete" url="deleteLocalizedMessage">
+                        <parameter name="original"/><parameter name="locale"/>
+                    </link>
                 </default-field>
             </field>
         </form-list>

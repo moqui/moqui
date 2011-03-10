@@ -60,6 +60,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected HttpServletRequest request = null
     protected HttpServletResponse response = null
     protected Writer writer = null
+    protected Writer afterFormWriter = null
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
@@ -543,6 +544,14 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
+    String appendToAfterFormWriter(String text) {
+        if (afterFormWriter == null) afterFormWriter = new StringWriter()
+        afterFormWriter.append(text)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
+    }
+    String getAfterFormWriterText() { return afterFormWriter == null ? "" : afterFormWriter.toString() }
+
     ScreenUrlInfo buildUrl(String subscreenPath) {
         ScreenUrlInfo ui = new ScreenUrlInfo(this, null, null, subscreenPath)
         return ui
@@ -553,17 +562,30 @@ class ScreenRenderImpl implements ScreenRender {
         return ui
     }
 
-    ScreenUrlInfo makeUrlByType(String url, String urlType) {
+    ScreenUrlInfo makeUrlByType(String url, String urlType, FtlNodeWrapper parameterParentNodeWrapper) {
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
          */
+        ScreenUrlInfo sui = null
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
-            case "transition": return new ScreenUrlInfo(this, null, null, url)
-            case "content": throw new IllegalArgumentException("The url-type of content is not yet supported")
+            case "transition": sui = new ScreenUrlInfo(this, null, null, url); break;
+            case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
-            default: return new ScreenUrlInfo(this, url)
+            default: sui = new ScreenUrlInfo(this, url); break;
         }
+
+        if (sui != null && parameterParentNodeWrapper != null) {
+            Node parameterParentNode = parameterParentNodeWrapper.groovyNode
+            if (parameterParentNode."@parameter-map") {
+                def ctxParameterMap = ec.resource.evaluateContextField((String) parameterParentNode."@parameter-map", "")
+                if (ctxParameterMap) sui.addParameters((Map) ctxParameterMap)
+            }
+            for (Node parameterNode in parameterParentNode."parameter")
+                sui.addParameter(parameterNode."@name", makeValue(parameterNode."@from" ?: parameterNode."@name", parameterNode."@value"))
+        }
+
+        return sui
     }
 
     String makeValue(String fromField, String value) {

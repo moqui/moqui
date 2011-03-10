@@ -159,49 +159,62 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Standalone Fields ==================== -->
 <#macro link>
-    <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition")/>
-    <#assign ctxParameterMap = ec.resource.evaluateContextField(.node["@parameter-map"]?if_exists, "")?if_exists/>
-    <#if ctxParameterMap?has_content><#assign void = urlInfo.addParameters(ctxParameterMap)/></#if>
-    <#list .node["parameter"] as parameterNode>
-        <#assign void = urlInfo.addParameter(parameterNode["@name"], sri.makeValue(parameterNode["@from"]?if_exists, parameterNode["@value"]?if_exists))/>
-    </#list>
+    <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node)>
+    <#assign linkNode = .node>
+    <@linkFormForm linkNode linkNode["@id"]?if_exists/>
+    <@linkFormLink linkNode linkNode["@id"]?if_exists/>
+</#macro>
+<#macro linkFormLink linkNode linkFormId>
     <#if urlInfo.disableLink>
-        <span<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>${ec.resource.evaluateStringExpand(.node["@text"], "")}</span>
+        <span<#if linkFormId?has_content> id="${linkFormId}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
     <#else>
-        <#if (.node["@link-type"]?has_content && .node["@link-type"] == "anchor") ||
-            ((!.node["@link-type"]?has_content || .node["@link-type"] == "auto") &&
-             ((.node["@url-type"]?has_content && .node["@url-type"] != "transition") ||
-              (!urlInfo.hasActions)))>
-            <#assign parameterString = urlInfo.getParameterString()/>
-            <a href="${urlInfo.url}<#if parameterString?has_content>?${parameterString}</#if>"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if> class="button">
-            <#if .node["image"]?has_content><#visit .node["image"]/><#else/>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if>
+        <#if (linkNode["@link-type"]?if_exists == "anchor") ||
+            ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
+             ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if> class="button">
+            <#t><#if linkNode["image"]?has_content><#visit linkNode["image"]><#else/>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
+            <#t></a>
+        <#else>
+            <#if linkFormId?has_content>
+            <a href="javascript:document.${linkFormId}.submit()" class="button">
+                <#if linkNode["image"]?has_content>
+                <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
+                <#else>
+                <#t>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}
+                </#if>
             </a>
-        <#else/>
-            <form method="post" action="${urlInfo.url}" name="${.node["@id"]!""}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@target-window"]?has_content> target="${.node["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
-                <#assign targetParameters = urlInfo.getParameterMap()/>
+            </#if>
+        </#if>
+    </#if>
+</#macro>
+<#macro linkFormForm linkNode linkFormId>
+    <#if urlInfo.disableLink>
+        <#-- do nothing -->
+    <#else>
+        <#if (linkNode["@link-type"]?if_exists == "anchor") ||
+            ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
+             ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
+            <#-- do nothing -->
+        <#else>
+            <form method="post" action="${urlInfo.url}" name="${linkFormId!""}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if> onsubmit="javascript:submitFormDisableSubmit(this)">
+                <#assign targetParameters = urlInfo.getParameterMap()>
                 <#-- NOTE: using .keySet() here instead of ?keys because ?keys was returning all method names with the other keys, not sure why -->
                 <#if targetParameters?has_content><#list targetParameters.keySet() as pKey>
                     <input type="hidden" name="${pKey?html}" value="${targetParameters.get(pKey)?default("")?html}"/>
                 </#list></#if>
-                <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
-                    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>>
-                <#else>
-                    <input type="submit" value="${ec.resource.evaluateStringExpand(.node["@text"], "")}"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}')"</#if>>
+                <#if !linkFormId?has_content>
+                    <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
+                        <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if>>
+                    <#else>
+                        <input type="submit" value="${ec.resource.evaluateStringExpand(linkNode["@text"], "")}"<#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if>>
+                    </#if>
                 </#if>
             </form>
-            <#-- NOTE: consider using a link instead of submit buttons/image, would look something like this (would require id attribute, or add a name attribute):
-            <a href="javascript:document.${.node["@id"]}.submit()">
-                <#if .node["image"]?has_content>
-                <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
-                <#else/>
-                ${ec.resource.evaluateStringExpand(.node["@text"], "")}
-                <#/if>
-            </a>
-            -->
         </#if>
     </#if>
 </#macro>
-<#macro image><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
+
+<#macro image><img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content",null)}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/></#macro>
 <#macro label>
     <#assign labelType = .node["@type"]?default("span")/>
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
@@ -216,7 +229,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition")/>
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
     <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
@@ -254,7 +267,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition")/>
+    <#assign isMulti = formNode["@multi"]?if_exists == "true">
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
     <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
     <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
@@ -273,21 +287,32 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if needHeaderForm>
         </form>
     </#if>
+    <#if isMulti>
         <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+    </#if>
             <tbody>
             <#list listObject as listEntry>
                 <#assign listEntryIndex = listEntry_index>
                 <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                 ${sri.startFormListRow(formNode["@name"], listEntry)}
+            <#if !isMulti>
+                <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
+            </#if>
                 <tr class="form-row">
                     <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
                 </tr>
+            <#if !isMulti>
+                </form>
+            </#if>
                 ${sri.endFormListRow()}
             </#list>
             </tbody>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
+    <#if isMulti>
         </form>
+    </#if>
     </table>
+    ${sri.getAfterFormWriterText()}
     </#if>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
@@ -342,7 +367,19 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
-    <td><#recurse fieldSubNode/></td>
+    <td>
+        <#t><#if isMulti && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
+        <#if fieldSubNode["link"]?has_content>
+            <#assign linkNode = fieldSubNode["link"][0]>
+            <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
+            <#assign linkFormId><@fieldId linkNode/></#assign>
+            <#assign afterFormText><@linkFormForm linkNode linkFormId/></#assign>
+            <#t>${sri.appendToAfterFormWriter(afterFormText)}
+            <@linkFormLink linkNode linkFormId/>
+            <#return>
+        </#if>
+        <#t><#recurse fieldSubNode>
+    </td>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
@@ -415,12 +452,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
     <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
-    <#t><#if !.node["@also-hidden"]?exists || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
+    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
     <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
-    <#t><#if !.node["@also-hidden"]?exists || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
+    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
 </#macro>
 
 <#macro "drop-down">
@@ -502,7 +539,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro "submit">
 <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]/>
-    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else/><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>
+    <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else/><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>
 <#else><input type="submit"</#if> name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>"<#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if> id="<@fieldId .node/>">
 </#macro>
 

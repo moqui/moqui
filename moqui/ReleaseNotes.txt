@@ -8,8 +8,6 @@ Release 1.0-preview3 - date not yet decided
 This release includes:
 
 - All of the great features of 1.0-preview1 and 1.0-preview2
-- Significantly more testing and bug fixes related to synchronization,
-  performance, transactions, style, etc
 - Multi-tenant support (shared app server, separate databases)
 - Visitor tracking
 - ArtifactHit and ArtifactHitBin tracking for screen, screen-content,
@@ -17,7 +15,16 @@ This release includes:
 - User preference handling
 - Simplified sequenced ID API for both primary and secondary sequenced IDs
   and moved configuration to entity definition, and methods to EntityValue
+- Cleanups for xml-actions elements: from-field to from, call-service to
+  service, call-script to script; better now than later to make the XML a
+  bit cleaner and more clear (for example from-field can be any groovy
+  expression and the -field implies otherwise)
+- Significantly more testing and bug fixes related to synchronization,
+  performance, transactions, style, etc
 - Finished and tested localized messages and entity fields
+- XML Screens
+  - Screen form-list multi=false support
+  - Screen form-list support form-links in table
 - Tools Screens
   - Artifact Hit Bins
   - Cache List and Elements
@@ -33,7 +40,6 @@ Notable features not yet implemented:
     definition (define once, run on client and server)
   - Screen form-list pagination
   - Screen form-list multi=true support
-  - Screen form-list multi=false support
   - Screen tree elements
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
@@ -54,7 +60,7 @@ Notable features not yet implemented:
   - Entity Data UI
   - SQL Query Run/View
   - Script Run
-  - Artifact Info
+  - Artifact Info with in/out references
   - Visit and Hit Info/Stats
 
 ===========================================================================
