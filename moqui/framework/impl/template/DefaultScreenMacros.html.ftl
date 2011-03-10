@@ -469,7 +469,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign currentDescription = ec.resource.evaluateStringExpand(.node["@current-description"], "")/>
     </#if>
     <#assign id><@fieldId .node/></#assign>
-
     <select name="<@fieldName .node/>" id="${id}"<#if .node["@allow-multiple"]?if_exists == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if>>
     <#if currentValue?has_content && (.node["@current"]?if_exists != "selected") && !(.node["@allow-multiple"]?if_exists == "true")>
         <option selected="selected" value="${currentValue}">${currentDescription!currentValue}</option><#rt/>
@@ -483,10 +482,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#list>
     </select>
     <#if .node["auto-complete"]?has_content>
-    <#-- TODO: auto-complete attributes, get it working -->
-    <script language="JavaScript" type="text/javascript">
-        $(function() { $("#${id}").combobox(); });
-    </script>
+        <#-- TODO: auto-complete attributes, get it working -->
+    <#elseif .node["@combo-box"]?if_exists == "true">
+        <script language="JavaScript" type="text/javascript">$(function() { $("#${id}").combobox(); });</script>
     </#if>
 </#macro>
 

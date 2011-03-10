@@ -56,7 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </container-dialog>
         </container>
         <form-list name="UpdateLocalizedEntityFields" list="localizedEntityFieldList"
-                   transition="updateLocalizedEntityField" multi="true">
+                   transition="updateLocalizedEntityField" multi="false">
             <field name="entityName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="12"/></header-field>
                 <default-field><display/></default-field>
@@ -82,10 +82,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="delete">
                 <default-field>
-                    <link text="Delete" url="deleteLocalizedEntityField" link-type="anchor">
-                        <parameter name="entityName"/>
-                        <parameter name="fieldName"/>
-                        <parameter name="locale"/>
+                    <link text="Delete" url="deleteLocalizedEntityField">
+                        <parameter name="entityName"/><parameter name="fieldName"/><parameter name="locale"/>
                     </link>
                 </default-field>
             </field>

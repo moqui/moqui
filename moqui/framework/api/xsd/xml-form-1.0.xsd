@@ -476,8 +476,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element ref="option"/>
                 </xs:choice>
             </xs:sequence>
-            <xs:attribute name="allow-empty" default="false" type="boolean"/>
-            <xs:attribute name="allow-multiple" default="false" type="boolean"/>
+            <xs:attribute name="allow-empty" type="boolean" default="false"/>
+            <xs:attribute name="allow-multiple" type="boolean" default="false"/>
             <xs:attribute name="size" type="xs:integer" default="1"/>
             <xs:attribute name="current" default="first-in-list">
                 <xs:simpleType>
@@ -491,6 +491,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The key to mark as selected when there is no current entry value.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="current-description" type="xs:string"/>
+            <xs:attribute name="combo-box" type="boolean" default="false"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="file" substitutionGroup="SubFields">

@@ -244,6 +244,9 @@ table.form-list-outer .form-title {
 border-bottom: 1px solid #DDDDDF;
 white-space: nowrap;
 }
+.form-header-field {
+white-space: nowrap;
+}
 
 label.form-title {
 vertical-align: middle;
