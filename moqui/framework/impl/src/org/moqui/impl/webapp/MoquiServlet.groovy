@@ -67,10 +67,11 @@ class MoquiServlet extends HttpServlet {
 
         if (logger.infoEnabled) logger.info("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
 
-        // TODO: remove this
+        /* this is here just for kicks, uncomment to log a list of all artifacts hit/used in the screen render
         StringBuilder hits = new StringBuilder()
         hits.append("Artifacts hit in this request: ")
         for (def aei in ec.artifactExecution.history) hits.append("\n").append(aei)
         logger.info(hits.toString())
+         */
     }
 }

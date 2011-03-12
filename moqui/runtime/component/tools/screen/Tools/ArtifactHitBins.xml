@@ -41,11 +41,12 @@ This Work includes contributions authored by David E. Jones, not as a
                         <option key="script"/><option key="java"/>
                     </drop-down>
                 </header-field>
-                <default-field><display text="${artifactSubType.replace('/',' / ')}" also-hidden="false"/></default-field>
+                <default-field><display text="${artifactSubType?.replace('/',' / ')}" also-hidden="false"/></default-field>
             </field>
             <field name="artifactName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
-                <default-field><display text="${artifactName.replace('/',' / ').replace(' /  / ', '//')}" also-hidden="false"/></default-field>
+                <!-- NOTE: these replace() calls are to add spaces so that longer artifactNames can wrap instead of making the table super-wide -->
+                <default-field><display text="${artifactName.replace('/',' / ').replace(' /  / ', '//').replace('.',' . ')}" also-hidden="false"/></default-field>
             </field>
             <field name="binStartDateTime">
                 <header-field title="Bin Start" show-order-by="true"><text-find hide-options="true" size="15"/></header-field>
