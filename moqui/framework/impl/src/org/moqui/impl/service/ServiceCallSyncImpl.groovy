@@ -62,9 +62,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
 
-        // NOTE: don't require authz if the service def doesn't authenticate
-        eci.artifactExecution.push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE", "AUTHZA_ALL"),
+        // default to require the "All" authz action, and for special verbs default to something more appropriate
+        String authzAction = "AUTHZA_ALL"
+        if (verb == "create") authzAction = "AUTHZA_CREATE"
+        else if (verb == "update") authzAction = "AUTHZA_UPDATE"
+        else if (verb == "delete") authzAction = "AUTHZA_DELETE"
+        else if (verb == "view" || verb == "find") authzAction = "AUTHZA_VIEW"
+        eci.artifactExecution.push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE", authzAction),
                 sd == null ? false : sd.serviceNode."@authenticate" != "false")
+        // NOTE: don't require authz if the service def doesn't authenticate
 
         if (sd == null) {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
