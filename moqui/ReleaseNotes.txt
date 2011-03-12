@@ -36,14 +36,14 @@ This release includes:
   - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
     screen, transition, service, entity
 
-Notable features not yet implemented:
+Notable features not yet implemented (TODO list):
 
 - XML Screens
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server); using jquery
     validation (http://docs.jquery.com/Plugins/Validation)
   - Screen form field-layout support
-  - Screen form-list pagination
+  - Screen form-list pagination (defaults in search-form-inputs)
   - Screen form-list multi=true support
   - Screen tree elements
   - Screen section-iterate pagination
@@ -61,6 +61,9 @@ Notable features not yet implemented:
 - WebApp event actions
 - Artifact Execution Facade
   - Handle direct service/entity calls, ArtifactGroupMember with pattern
+  - Support authorization on subscreens even if no authz on parent
+    screens, ie authz for EditExample even though not for ExampleApp or
+    any other screens in that app
   - Artifact Tar-pitting based on configuration in db
   - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful)
@@ -68,12 +71,24 @@ Notable features not yet implemented:
   - Authorization with a service (ArtifactAuthzService)
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens
-  - Scheduler
-  - Entity Data UI
+  - Scheduler (view scheduled services with cancel, add scheduled service)
+  - Entity Data UI (entity list, find on entity with delete, view entity
+    record with related, create/update entity record with tabs for
+    list/update/delete/add dependent entities)
   - SQL Query Run/View
-  - Script Run
+  - Script Run (or groovy shell?)
   - Artifact Info with in/out references
   - Visit and Hit Info/Stats
+    - Find Visits screen
+    - View Visit details with hit list
+  - Security screens (consider making Entity Data UI good enough for these)
+    - UserAccount screens (find/delete, edit UA (with tabs for preferences,
+      themes, login, history, visit history, groups, change password))
+    - UserGroup screens (find/delete, edit (tab for users in group))
+    - Artifact Group (find/delete, edit (tab for artifacts in group))
+    - Authorization screen (find/delete, edit (tabs for record, service))
+    - Tarpit screen (find/update/delete,add screen)
+    - Tarpitted screen (find/update/delete,add screen)
 
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011

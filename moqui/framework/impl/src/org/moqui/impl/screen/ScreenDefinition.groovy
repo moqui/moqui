@@ -284,6 +284,8 @@ class ScreenDefinition {
 
         ResponseItem run(ScreenRenderImpl sri) {
             // NOTE: if parent screen of transition does not require auth, don't require authz
+            // NOTE: use the View authz action to leave it open, ie require minimal authz; restrictions are often more
+            //    in the services/etc if/when needed, or specific transitions can have authz settings
             sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location,
                     "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"),
                     parentScreen.screenNode."@require-authentication" != "false")
