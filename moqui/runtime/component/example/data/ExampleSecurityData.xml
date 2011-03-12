@@ -28,6 +28,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- A user group with just view access for the ExampleApp -->
     <UserGroup userGroupId="EXAMPLE_VIEWER" description="Example Viewers (view only)"/>
-    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_2" userGroupId="EXAMPLE_VIEWER" artifactGroupId="EXAMPLE_APP_SCREEN"
+    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_2" userGroupId="EXAMPLE_VIEWER" artifactGroupId="EXAMPLE_APP"
                    authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_VIEW"/>
 </entity-facade-xml>
