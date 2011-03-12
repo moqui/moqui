@@ -101,6 +101,23 @@ This Work includes contributions authored by David E. Jones, not as a
             </description>
         </field>
     </entity>
+    <view-entity entity-name="ArtifactAuthzCheckView" package-name="org.moqui.security.authz">
+        <member-entity entity-alias="UGM" entity-name="UserGroupMember"/>
+        <member-entity entity-alias="AAZ" entity-name="ArtifactAuthz"/>
+        <member-entity entity-alias="AGM" entity-name="ArtifactGroupMember"/>
+        <alias entity-alias="UGM" name="userId"/>
+        <alias entity-alias="AAZ" name="authzActionEnumId"/>
+        <alias entity-alias="AAZ" name="authzTypeEnumId"/>
+        <alias entity-alias="AGM" name="artifactName"/>
+        <alias entity-alias="AGM" name="artifactTypeEnumId"/>
+        <alias entity-alias="AGM" name="inheritAuthz"/>
+        <view-link entity-alias="UGM" related-entity-alias="AAZ">
+            <key-map field-name="userGroupId"/>
+        </view-link>
+        <view-link entity-alias="AAZ" related-entity-alias="AGM">
+            <key-map field-name="artifactGroupId"/>
+        </view-link>
+    </view-entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.security.tarpit -->

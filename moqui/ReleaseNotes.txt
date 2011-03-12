@@ -30,13 +30,18 @@ This release includes:
   - Artifact Hit Bins
   - Cache List and Elements
   - Localization: Messages, Entity Fields
+- ArtifactExecutionFacade for artifact stack tracking
+- Artifact Authorization based on configuration in db
 
 Notable features not yet implemented:
 
+- Call ArtifactExecutionFacade.push(aei) for all artifact types
+- Artifact Tar-pitting based on configuration in db
 - XML Screens
-  - Screen form field-layout support
   - Screen form client JS validation based on target transition service
-    definition (define once, run on client and server)
+    definition (define once, run on client and server); using jquery
+    validation (http://docs.jquery.com/Plugins/Validation)
+  - Screen form field-layout support
   - Screen form-list pagination
   - Screen form-list multi=true support
   - Screen tree elements
@@ -44,15 +49,13 @@ Notable features not yet implemented:
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
   - Screen form AJAX/DHTML for lookup
 - Service Facade
-  - Service runners for remote service calls (HTTP, JMS, RMI proxies)
+  - Service runners for remote/proxy service calls (HTTP, JMS, RMI)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service mail handling (MCA rules)
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
   - Entity complex aliases in views
   - Database meta-data check/report against entity definitions
-- ArtifactExecutionFacade for artifact stack tracking
-- Artifact Authorization, Tar-pitting based on configuration in db
 - WebApp event actions
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens

@@ -52,6 +52,10 @@ public interface EntityFind extends java.io.Serializable {
      */
     EntityFind condition(String fieldName, Object value);
 
+    EntityFind condition(String fieldName, EntityCondition.ComparisonOperator operator, Object value);
+
+    EntityFind conditionToField(String fieldName, EntityCondition.ComparisonOperator operator, String toFieldName);
+
     /** Add a Map of fields to the find (where clause).
      * If a field has been set with the same name and any of the Map keys, this will replace that field's value.
      * Fields set in this way will be combined with other conditions (if applicable) just before doing the query.
@@ -70,6 +74,8 @@ public interface EntityFind extends java.io.Serializable {
      * @return Returns this for chaining of method calls.
      */
     EntityFind condition(EntityCondition condition);
+
+    EntityFind conditionDate(String fromFieldName, String thruFieldName, java.sql.Timestamp compareStamp);
 
     /** Add a EntityCondition to the having clause of the find.
      * If any having constraints are already in place this will be ANDed to them.

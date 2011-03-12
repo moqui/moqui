@@ -84,6 +84,16 @@ class EntityFindImpl implements EntityFind {
         return this
     }
 
+    EntityFind condition(String fieldName, EntityCondition.ComparisonOperator operator, Object value) {
+        condition(efi.conditionFactory.makeCondition(fieldName, operator, value))
+        return this
+    }
+
+    EntityFind conditionToField(String fieldName, EntityCondition.ComparisonOperator operator, String toFieldName) {
+        condition(efi.conditionFactory.makeCondition(fieldName, operator, toFieldName))
+        return this
+    }
+
     /** @see org.moqui.entity.EntityFind#condition(Map<String,?>) */
     EntityFind condition(Map<String, ?> fields) {
         if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
@@ -104,6 +114,11 @@ class EntityFindImpl implements EntityFind {
         } else {
             whereEntityCondition = (EntityConditionImplBase) condition
         }
+        return this
+    }
+
+    EntityFind conditionDate(String fromFieldName, String thruFieldName, java.sql.Timestamp compareStamp) {
+        condition(efi.conditionFactory.makeConditionDate(fromFieldName, thruFieldName, compareStamp))
         return this
     }
 

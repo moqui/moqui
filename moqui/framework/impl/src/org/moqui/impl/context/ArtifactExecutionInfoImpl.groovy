@@ -15,27 +15,36 @@ import org.moqui.context.ArtifactExecutionInfo
 
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
-    protected String location
     protected String name
+    protected String typeEnumId
+    protected String actionEnumId
     protected String authorizedUserId
+    protected String authorizedAuthzTypeId
     protected boolean isAuthorizationInheritable
 
-    ArtifactExecutionInfoImpl(String location, String name, String authorizedUserId, boolean isAuthorizationInheritable) {
-        this.location = location
+    ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
+        this.typeEnumId = typeEnumId
+        this.actionEnumId = actionEnumId
         this.authorizedUserId = authorizedUserId
         this.isAuthorizationInheritable = isAuthorizationInheritable
     }
 
-    /** @see org.moqui.context.ArtifactExecutionInfo#getLocation() */
-    String getLocation() { return this.location }
-
     /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
     String getName() { return this.name }
+    /** @see org.moqui.context.ArtifactExecutionInfo#getTypeEnumId() */
+    String getTypeEnumId() { return this.typeEnumId }
+    /** @see org.moqui.context.ArtifactExecutionInfo#getActionEnumId() */
+    String getActionEnumId() { return this.actionEnumId }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedUserId() */
     String getAuthorizedUserId() { return this.authorizedUserId }
+    void setAuthorizedUserId(String authorizedUserId) { this.authorizedUserId = authorizedUserId }
+    /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedAuthzTypeId() */
+    String getAuthorizedAuthzTypeId() { return this.authorizedAuthzTypeId }
+    void setAuthorizedAuthzTypeId(String authorizedAuthzTypeId) { this.authorizedAuthzTypeId = authorizedAuthzTypeId }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#isAuthorizationInheritable() */
     boolean isAuthorizationInheritable() { return this.isAuthorizationInheritable }
+    void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.isAuthorizationInheritable = isAuthorizationInheritable}
 }

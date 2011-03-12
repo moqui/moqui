@@ -12,9 +12,11 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <EnumerationType description="Artifact Types" enumTypeId="ARTIFACT_TYPE" parentTypeId=""/>
+    <!-- not yet supported types below here -->
     <Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="XML Screen" enumId="AT_XML_SCREEN" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="XML Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="XML Form" enumId="AT_XML_FORM" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="XML Form Field" enumId="AT_XML_FORM_FIELD" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ARTIFACT_TYPE"/>
@@ -27,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration sequenceNum="1" description="Allow" enumCode="ALLOW" enumId="AUTHZT_ALLOW" enumTypeId="AUTHZ_TYPE"/>
     <Enumeration sequenceNum="2" description="Deny (overrides Allow)" enumCode="DENY" enumId="AUTHZT_DENY" enumTypeId="AUTHZ_TYPE"/>
     <Enumeration sequenceNum="3" description="Always Allow (overrides Deny)" enumCode="ALWAYS" enumId="AUTHZT_ALWAYS" enumTypeId="AUTHZ_TYPE"/>
-    <Enumeration sequenceNum="9" description="Not Applicable" enumCode="NA" enumId="AUTHZT_NA" enumTypeId="AUTHZ_TYPE"/>
+    <!-- needed? <Enumeration sequenceNum="9" description="Not Applicable" enumCode="NA" enumId="AUTHZT_NA" enumTypeId="AUTHZ_TYPE"/> -->
 
     <EnumerationType description="Authorization Action" enumTypeId="AUTHZ_ACTION"/>
     <Enumeration description="View" enumCode="VIEW" enumId="AUTHZA_VIEW" enumTypeId="AUTHZ_ACTION"/>

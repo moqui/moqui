@@ -18,9 +18,11 @@ import java.util.Map;
  * Information about execution of an artifact as the system is running
  */
 public interface ArtifactExecutionInfo {
-    String getLocation();
     String getName();
-    
+    String getTypeEnumId();
+    String getActionEnumId();
+
     String getAuthorizedUserId();
+    String getAuthorizedAuthzTypeId();
     boolean isAuthorizationInheritable();
 }

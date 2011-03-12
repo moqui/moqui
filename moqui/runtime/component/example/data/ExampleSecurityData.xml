@@ -18,12 +18,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <UserGroupMember userGroupId="ADMIN" userId="john.doe" fromDate="2010-02-03 00:00:00.000"/>
 
     <!-- an artifact group for all of the Example application via the ExampleApp screen (the root screen for the app) -->
-    <ArtifactGroup artifactGroupId="EXAMPLE_APP_SCREEN" description="Example App (via root screen)"/>
-    <ArtifactGroupMember artifactGroupId="EXAMPLE_APP_SCREEN" artifactName="ExampleApp" artifactTypeEnumId="AT_XML_SCREEN"
-                         inheritAuthz="Y"/>
+    <ArtifactGroup artifactGroupId="EXAMPLE_APP" description="Example App (via root screen)"/>
+    <ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="component://example/screen/ExampleApp.xml"
+                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
 
     <!-- Setup full permissions for the ADMIN user group -->
-    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP_SCREEN"
+    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP"
                    authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
 
     <!-- A user group with just view access for the ExampleApp -->
