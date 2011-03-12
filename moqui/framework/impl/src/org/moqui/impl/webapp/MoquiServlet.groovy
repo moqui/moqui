@@ -66,5 +66,11 @@ class MoquiServlet extends HttpServlet {
         ec.destroy()
 
         if (logger.infoEnabled) logger.info("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+
+        // TODO: remove this
+        StringBuilder hits = new StringBuilder()
+        hits.append("Artifacts hit in this request: ")
+        for (def aei in ec.artifactExecution.history) hits.append("\n").append(aei)
+        logger.info(hits.toString())
     }
 }

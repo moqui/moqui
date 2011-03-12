@@ -24,5 +24,6 @@ public interface ArtifactExecutionInfo {
 
     String getAuthorizedUserId();
     String getAuthorizedAuthzTypeId();
+    String getAuthorizedActionEnumId();
     boolean isAuthorizationInheritable();
 }

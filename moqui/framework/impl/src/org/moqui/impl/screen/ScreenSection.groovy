@@ -33,15 +33,15 @@ class ScreenSection {
         // prep condition
         if (sectionNode.condition && sectionNode.condition[0].children()) {
             // the script is effectively the first child of the condition element
-            condition = new XmlAction(ecfi, (Node) sectionNode.condition[0].children()[0], location + ".condition")
+            condition = new XmlAction(ecfi, (Node) sectionNode."condition"[0].children()[0], location + ".condition")
         }
         // prep actions
         if (sectionNode.actions) {
-            actions = new XmlAction(ecfi, (Node) sectionNode.actions[0], location + ".actions")
+            actions = new XmlAction(ecfi, (Node) sectionNode."actions"[0], location + ".actions")
         }
         // prep widgets
         if (sectionNode.widgets) {
-            widgets = new ScreenWidgets(ecfi, (Node) sectionNode.widgets[0], location + ".widgets")
+            widgets = new ScreenWidgets(ecfi, (Node) sectionNode."widgets"[0], location + ".widgets")
         }
         // prep fail-widgets
         if (sectionNode."fail-widgets") {

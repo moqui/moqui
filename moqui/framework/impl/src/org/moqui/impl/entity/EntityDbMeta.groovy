@@ -36,13 +36,19 @@ class EntityDbMeta {
 
     void checkTableRuntime(EntityDefinition ed) {
         Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
-        boolean addMissingRuntime = !ed.isViewEntity() && datasourceNode?."@runtime-add-missing" != "false"
-        if (!addMissingRuntime) return
+        if (datasourceNode?."@runtime-add-missing" == "false") return
 
-        // if it's in this table we've already checked it
-        if (entityTablesChecked.containsKey(ed.entityName)) return
-        // otherwise do the real check, in a synchronized method
-        internalCheckTable(ed)
+        if (ed.isViewEntity()) {
+            for (Node memberEntityNode in ed.entityNode."member-entity") {
+                EntityDefinition med = efi.getEntityDefinition(memberEntityNode."@entity-name")
+                checkTableRuntime(med)
+            }
+        } else {
+            // if it's in this table we've already checked it
+            if (entityTablesChecked.containsKey(ed.entityName)) return
+            // otherwise do the real check, in a synchronized method
+            internalCheckTable(ed)
+        }
     }
     synchronized void internalCheckTable(EntityDefinition ed) {
         Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))

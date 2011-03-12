@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- Setup full permissions for the ADMIN user group -->
     <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP"
-                   authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
+                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 
     <!-- A user group with just view access for the ExampleApp -->
     <UserGroup userGroupId="EXAMPLE_VIEWER" description="Example Viewers (view only)"/>

@@ -18,16 +18,15 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String name
     protected String typeEnumId
     protected String actionEnumId
-    protected String authorizedUserId
-    protected String authorizedAuthzTypeId
-    protected boolean isAuthorizationInheritable
+    protected String authorizedUserId = null
+    protected String authorizedAuthzTypeId = null
+    protected String authorizedActionEnumId = null
+    protected boolean isAuthorizationInheritable = false
 
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
         this.typeEnumId = typeEnumId
         this.actionEnumId = actionEnumId
-        this.authorizedUserId = authorizedUserId
-        this.isAuthorizationInheritable = isAuthorizationInheritable
     }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
@@ -43,8 +42,23 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedAuthzTypeId() */
     String getAuthorizedAuthzTypeId() { return this.authorizedAuthzTypeId }
     void setAuthorizedAuthzTypeId(String authorizedAuthzTypeId) { this.authorizedAuthzTypeId = authorizedAuthzTypeId }
+    /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedActionEnumId() */
+    String getAuthorizedActionEnumId() { return this.authorizedActionEnumId }
+    void setAuthorizedActionEnumId(String authorizedActionEnumId) { this.authorizedActionEnumId = authorizedActionEnumId }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#isAuthorizationInheritable() */
     boolean isAuthorizationInheritable() { return this.isAuthorizationInheritable }
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.isAuthorizationInheritable = isAuthorizationInheritable}
+
+    void copyAuthorizedInfo(ArtifactExecutionInfoImpl aeii) {
+        this.authorizedUserId = aeii.authorizedUserId
+        this.authorizedAuthzTypeId = aeii.authorizedAuthzTypeId
+        this.authorizedActionEnumId = aeii.authorizedActionEnumId
+        this.isAuthorizationInheritable = aeii.isAuthorizationInheritable
+    }
+
+    @Override
+    String toString() {
+        return "name:${name},type:${typeEnumId},action:${actionEnumId},user:${authorizedUserId},authz:${authorizedAuthzTypeId},authAction:${authorizedActionEnumId},inheritable:${isAuthorizationInheritable}"
+    }
 }

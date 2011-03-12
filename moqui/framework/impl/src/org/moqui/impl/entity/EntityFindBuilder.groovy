@@ -186,12 +186,13 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                     restOfStatement.append(" = ")
 
+                    String relatedFieldName = keyMap."@related-field-name" ?: keyMap."@field-name"
                     restOfStatement.append(viewLink."@related-entity-alias")
                     restOfStatement.append(".")
-                    restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(keyMap."@related-field-name", false)))
+                    restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
                 }
 
-                if (viewLink."entity-condition") {
+                if (viewLink."econdition") {
                     // TODO: add any additional manual conditions for the view-link here
                 }
 

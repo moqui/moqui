@@ -30,13 +30,14 @@ This release includes:
   - Artifact Hit Bins
   - Cache List and Elements
   - Localization: Messages, Entity Fields
-- ArtifactExecutionFacade for artifact stack tracking
-- Artifact Authorization based on configuration in db
+- Artifact Execution Facade
+  - ArtifactExecutionFacade for artifact stack tracking
+  - Artifact Authorization based on configuration in db
+  - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
+    screen, transition, service, entity
 
 Notable features not yet implemented:
 
-- Call ArtifactExecutionFacade.push(aei) for all artifact types
-- Artifact Tar-pitting based on configuration in db
 - XML Screens
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server); using jquery
@@ -55,8 +56,16 @@ Notable features not yet implemented:
   - Service async/scheduled max-retry in Quartz
 - Entity Facade
   - Entity complex aliases in views
+  - View entity view-link.econdition* support (EntityFindBuilder:196)
   - Database meta-data check/report against entity definitions
 - WebApp event actions
+- Artifact Execution Facade
+  - Handle direct service/entity calls, ArtifactGroupMember with pattern
+  - Artifact Tar-pitting based on configuration in db
+  - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
+    other types of artifacts (if/as determined to be helpful)
+  - Record-level authorization (ArtifactAuthzRecord/Cond)
+  - Authorization with a service (ArtifactAuthzService)
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens
   - Scheduler

@@ -23,6 +23,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-combobox.js"/>
     <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery.validate-1.7-100644.js"/>
+                         resourceValue="/js/jquery-validate-1.7-100644.js"/>
     <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON" resourceValue="/moqui.ico"/>
 </entity-facade-xml>

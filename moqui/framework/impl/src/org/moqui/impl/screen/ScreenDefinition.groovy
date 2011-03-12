@@ -18,6 +18,7 @@ import org.moqui.entity.EntityValue
 import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ResourceReference
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
@@ -80,11 +81,13 @@ class ScreenDefinition {
 
     void populateSubscreens() {
         // start with file/directory structure
+        String cleanLocationBase = location.substring(0, location.lastIndexOf("."))
         ResourceReference locationRef = sfi.ecfi.resourceFacade.getLocationReference(location)
         if (logger.traceEnabled) logger.trace("Finding subscreens for screen at [${locationRef}]")
         if (locationRef.supportsAll()) {
             String subscreensDirStr = locationRef.location
             subscreensDirStr = subscreensDirStr.substring(0, subscreensDirStr.lastIndexOf("."))
+
             ResourceReference subscreensDirRef = sfi.ecfi.resourceFacade.getLocationReference(subscreensDirStr)
             if (subscreensDirRef.exists && subscreensDirRef.isDirectory()) {
                 if (logger.traceEnabled) logger.trace("Looking for subscreens in directory [${subscreensDirRef}]")
@@ -96,7 +99,8 @@ class ScreenDefinition {
                         if (subscreenRoot.name() == "screen") {
                             String ssName = subscreenRef.getFileName()
                             ssName = ssName.substring(0, ssName.lastIndexOf("."))
-                            SubscreensItem si = new SubscreensItem(ssName, subscreenRef.location, subscreenRoot)
+                            String cleanLocation = cleanLocationBase + "/" + subscreenRef.getFileName()
+                            SubscreensItem si = new SubscreensItem(ssName, cleanLocation, subscreenRoot)
                             subscreensByName.put(si.name, si)
                             if (logger.traceEnabled) logger.trace("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
                         }
@@ -161,6 +165,14 @@ class ScreenDefinition {
     }
 
     ScreenSection getRootSection() { return rootSection }
+    void render(ScreenRenderImpl sri) {
+        // NOTE: don't require authz if the screen doesn't require auth
+        sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
+                screenNode."@require-authentication" != "false")
+        rootSection.render(sri)
+        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
+        sri.ec.artifactExecution.pop()
+    }
 
     ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
 
@@ -271,6 +283,11 @@ class ScreenDefinition {
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
         ResponseItem run(ScreenRenderImpl sri) {
+            // NOTE: if parent screen of transition does not require auth, don't require authz
+            sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location,
+                    "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"),
+                    parentScreen.screenNode."@require-authentication" != "false")
+
             // put parameters in the context
             if (sri.ec.web) {
                 for (ParameterItem pi in parentScreen.parameterMap.values()) {
@@ -287,14 +304,20 @@ class ScreenDefinition {
 
             if (actions) actions.run(sri.ec)
 
+            ResponseItem ri = null
             // if there is an error-response and there are errors, we have a winner
-            if (errorResponse && sri.ec.message.errors) return errorResponse
+            if (errorResponse && sri.ec.message.errors) ri = errorResponse
             // check all conditional-response, if condition then return that response
             for (ResponseItem condResp in conditionalResponseList) {
-                if (condResp.checkCondition(sri.ec)) return condResp
+                if (condResp.checkCondition(sri.ec)) ri = condResp
             }
             // no errors, no conditionals, return default
-            return defaultResponse
+            ri = defaultResponse
+
+            // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
+            sri.ec.artifactExecution.pop()
+
+            return ri
         }
     }
 

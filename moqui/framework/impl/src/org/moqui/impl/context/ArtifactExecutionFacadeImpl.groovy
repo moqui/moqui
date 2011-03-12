@@ -20,27 +20,75 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
+
+    // NOTE: these need to be in a Map instead of the DB because Enumeration records may not yet be loaded
+    protected final static Map<String, String> artifactTypeDescriptionMap = [AT_XML_SCREEN:"XML Screen",
+            AT_XML_SCREEN_TRANS:"XML Screen Transition", AT_SERVICE:"Service", AT_ENTITY:"Entity"]
+    protected final static Map<String, String> artifactActionDescriptionMap = [AUTHZA_VIEW:"View",
+            AUTHZA_CREATE:"Create", AUTHZA_UPDATE:"Update", AUTHZA_DELETE:"Delete", AUTHZA_ALL:"All"]
 
     protected ExecutionContextImpl eci
     protected Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
+    protected List<ArtifactExecutionInfoImpl> artifactExecutionInfoHistory = new LinkedList<ArtifactExecutionInfoImpl>()
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#peek() */
-    public ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peek() }
+    ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peekFirst() }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#pop() */
-    public ArtifactExecutionInfo pop() { return this.artifactExecutionInfoStack.pop() }
+    ArtifactExecutionInfo pop() {
+        if (this.artifactExecutionInfoStack.size() > 0) {
+            return this.artifactExecutionInfoStack.removeFirst()
+        } else {
+            logger.warn("Tried to pop from an empty ArtifactExecutionInfo stack", new Exception("Bad pop location"))
+            return null
+        }
+    }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#push(ArtifactExecutionInfo) */
-    public void push(ArtifactExecutionInfo aei) {
+    /** @see org.moqui.context.ArtifactExecutionFacade#push(ArtifactExecutionInfo, boolean) */
+    void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
-
         // do permission check for this new aei that current user is trying to access
         String userId = eci.user.userId
-        ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peek()
+        ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
+
+        // always do this regardless of the authz checks, etc; keep a history of artifacts run
+        artifactExecutionInfoHistory.add(aeii)
+
+        // if no authz required, just push it
+        if (!requiresAuthz) {
+            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
+            this.artifactExecutionInfoStack.addFirst(aeii)
+            return
+        }
+
+        // TODO: handle pattern for services and entities called directly, ArtifactGroupMember with pattern
+        // for now don't authz entity artifacts, too many problems with loading data, etc
+        if (aeii.typeEnumId == "AT_ENTITY") {
+            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
+            this.artifactExecutionInfoStack.addFirst(aeii)
+            return
+        }
+
+        // never do this for the view-entity we use below, would cause infinite recursion
+        if (aeii.name == "ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
+            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
+            this.artifactExecutionInfoStack.addFirst(aeii)
+            return
+        }
+
+        // if last was an always allow, then don't bother checking for deny/etc
+        if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
+                lastAeii.authorizedAuthzTypeId == "AUTHZT_ALWAYS" &&
+                (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
+            aeii.copyAuthorizedInfo(lastAeii)
+            this.artifactExecutionInfoStack.addFirst(aeii)
+            return
+        }
 
         EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
                 .condition([userId:userId, artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId])
@@ -54,34 +102,48 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         if (aacvList.size() > 0) {
             boolean foundDeny = false
             for (EntityValue aacv in aacvList) {
-                if (aacv.authzTypeEnumId == "AUTHZT_ALLOW") {
-                    // TODO
-                } else if (aacv.authzTypeEnumId == "AUTHZT_DENY") {
-                    // TODO
-                } else if (aacv.authzTypeEnumId == "AUTHZT_ALWAYS") {
-                    // if always allow don't need to check for deny or anything
+                if (aacv.authzTypeEnumId == "AUTHZT_DENY") {
+                    // we already know last was not always allow (checked above), so keep going in loop just in case we
+                    // find an always allow in the query
+                    foundDeny = true
+                } else if (aacv.authzTypeEnumId == "AUTHZT_ALWAYS" || (aacv.authzTypeEnumId == "AUTHZT_ALLOW" && !foundDeny)) {
                     aeii.setAuthorizedUserId(userId)
                     aeii.setAuthorizedAuthzTypeId((String) aacv.authzTypeEnumId)
+                    aeii.setAuthorizedActionEnumId((String) aacv.authzActionEnumId)
                     aeii.setAuthorizationInheritable(aacv.inheritAuthz == "Y")
-                    this.artifactExecutionInfoStack.push(aeii)
+                    this.artifactExecutionInfoStack.addFirst(aeii)
                     return
                 }
             }
+            if (foundDeny) {
+                StringBuilder warning = new StringBuilder()
+                warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
+                for (def warnAei in this.history) warning.append("\n").append(warnAei)
+                logger.warn(warning.toString())
+
+                throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+            }
         } else {
-            // no perms found for this, only allow if the current AEI has inheritable auth and same user
-            if (lastAeii && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId) {
-                aeii.setAuthorizedUserId(userId)
-                aeii.setAuthorizedAuthzTypeId(lastAeii.authorizedAuthzTypeId)
-                aeii.setAuthorizationInheritable(true)
-                this.artifactExecutionInfoStack.push(aeii)
+            // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
+            if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
+                    (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
+                aeii.copyAuthorizedInfo(lastAeii)
+                this.artifactExecutionInfoStack.addFirst(aeii)
                 return
             }
         }
 
         // if we got here no authz found, blow up
-        throw new IllegalAccessException("User [${userId}] is not authorized for [${aeii.name}]. [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]")
+        StringBuilder warning = new StringBuilder()
+        warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
+        for (def warnAei in this.history) warning.append("\n").append(warnAei)
+        logger.warn(warning.toString())
+        throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */
-    public Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
+    Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
+
+    /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
+    List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
 }

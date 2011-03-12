@@ -20,6 +20,7 @@ import org.moqui.service.ServiceCallSync
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
@@ -60,6 +61,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
+
+        // NOTE: don't require authz if the service def doesn't authenticate
+        eci.artifactExecution.push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE", "AUTHZA_ALL"),
+                sd == null ? false : sd.serviceNode."@authenticate" != "false")
+
         if (sd == null) {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
             if ((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
@@ -173,6 +179,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
             if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds" + (eci.message.errors ? " with ${eci.message.errors.size()} error messages" : ", was successful"))
         }
+
+        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
+        eci.artifactExecution.pop()
 
         return result
     }

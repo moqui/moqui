@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="location" type="xs:string" use="optional"/>
             <xs:attribute name="method" type="xs:string" use="optional"/>
-            <xs:attribute name="authenticate" default="true" type="boolean">
+            <xs:attribute name="authenticate" type="boolean" default="true">
                 <xs:annotation><xs:documentation>
                     If not set to false (is true by default) a user much be logged in to run this service. If the
                     service is running in an ExecutionContext with a user logged in that will qualify. If not then
@@ -77,8 +77,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     instance. If specified will be used to run the service with that as the context tenant.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="export" default="false" type="boolean"/>
-            <xs:attribute name="validate" default="true" type="boolean"/>
+            <xs:attribute name="export" type="boolean" default="false"/>
+            <xs:attribute name="validate" type="boolean" default="true"/>
             <xs:attribute name="transaction" default="use-or-begin">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">

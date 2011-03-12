@@ -27,6 +27,7 @@ import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ListCondition
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 
 class EntityFindImpl implements EntityFind {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindImpl.class)
@@ -332,8 +333,12 @@ class EntityFindImpl implements EntityFind {
 
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-one", true)
 
+        efi.ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                ed.entityNode."@authorize" != "false")
+
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-one", true)
 
         // if over-constrained (anything in addition to a full PK), just use the full PK
         EntityConditionImplBase whereCondition
@@ -344,7 +349,11 @@ class EntityFindImpl implements EntityFind {
         }
 
         // no condition means no condition/parameter set, so return null for find.one()
-        if (!whereCondition) return null
+        if (!whereCondition) {
+            // pop the ArtifactExecutionInfo
+            efi.ecfi.executionContext.artifactExecution.pop()
+            return null
+        }
 
         Cache entityOneCache = null
         boolean doCache = this.shouldCache()
@@ -354,6 +363,8 @@ class EntityFindImpl implements EntityFind {
                 EntityValue cacheHit = (EntityValue) entityOneCache.get(whereCondition)
                 // if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
                 efi.runEecaRules(ed.getEntityName(), cacheHit, "find-one", false)
+                // pop the ArtifactExecutionInfo
+                efi.ecfi.executionContext.artifactExecution.pop()
                 return cacheHit
             }
         }
@@ -403,6 +414,8 @@ class EntityFindImpl implements EntityFind {
         efi.runEecaRules(ed.getEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "one", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
+        // pop the ArtifactExecutionInfo
+        efi.ecfi.executionContext.artifactExecution.pop()
 
         return newEntityValue
     }
@@ -433,9 +446,14 @@ class EntityFindImpl implements EntityFind {
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() throws EntityException {
         long startTime = System.currentTimeMillis()
-        EntityDefinition entityDefinition = this.getEntityDef()
+        EntityDefinition ed = this.getEntityDef()
+
+        efi.ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                ed.entityNode."@authorize" != "false")
+
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
-        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", true)
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", true)
 
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         Cache entityListCache = null
@@ -444,7 +462,9 @@ class EntityFindImpl implements EntityFind {
         if (doCache) {
             entityListCache = this.efi.getCacheList(this.entityName)
             if (entityListCache.containsKey(whereCondition)) {
-                efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", false)
+                efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
+                // pop the ArtifactExecutionInfo
+                efi.ecfi.executionContext.artifactExecution.pop()
                 return (EntityList) entityListCache.get(whereCondition)
             }
         }
@@ -464,26 +484,37 @@ class EntityFindImpl implements EntityFind {
             efi.registerCacheListRa(this.entityName, whereCondition, elToCache)
         }
         // run the final rules
-        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-list", false)
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "list", entityDefinition.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
+        efi.ecfi.countArtifactHit("entity", "list", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
+        // pop the ArtifactExecutionInfo
+        efi.ecfi.executionContext.artifactExecution.pop()
+
         return el
     }
 
     /** @see org.moqui.entity.EntityFind#iterator() */
     EntityListIterator iterator() throws EntityException {
         long startTime = System.currentTimeMillis()
-        EntityDefinition entityDefinition = this.getEntityDef()
+        EntityDefinition ed = this.getEntityDef()
+
+        efi.ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                ed.entityNode."@authorize" != "false")
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
-        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-iterator", true)
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", true)
         EntityListIterator eli = iteratorPlain()
 
-        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-iterator", false)
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "iterator", entityDefinition.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
+        efi.ecfi.countArtifactHit("entity", "iterator", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
+        // pop the ArtifactExecutionInfo
+        efi.ecfi.executionContext.artifactExecution.pop()
+
         return eli
     }
+
     protected EntityListIterator iteratorPlain() throws EntityException {
         EntityDefinition entityDefinition = this.getEntityDef()
 
@@ -576,9 +607,14 @@ class EntityFindImpl implements EntityFind {
     /** @see org.moqui.entity.EntityFind#count() */
     long count() throws EntityException {
         long startTime = System.currentTimeMillis()
-        EntityDefinition entityDefinition = this.getEntityDef()
+        EntityDefinition ed = this.getEntityDef()
+
+        efi.ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                ed.entityNode."@authorize" != "false")
+
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
-        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", true)
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", true)
 
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
         Cache entityCountCache = null
@@ -587,14 +623,16 @@ class EntityFindImpl implements EntityFind {
         if (doCache) {
             entityCountCache = this.efi.getCacheCount(this.entityName)
             if (entityCountCache.containsKey(whereCondition)) {
-                efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", false)
+                efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
+                // pop the ArtifactExecutionInfo
+                efi.ecfi.executionContext.artifactExecution.pop()
                 return (Long) entityCountCache.get(whereCondition)
             }
         }
 
-        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(false, true))
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true))
 
-        EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
+        EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
         // count function instead of select fields
         efb.makeCountFunction()
@@ -604,7 +642,7 @@ class EntityFindImpl implements EntityFind {
 
         // where clause
         efb.startWhereClause()
-        EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
+        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
             whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         } else if (viewWhere) {
@@ -618,7 +656,7 @@ class EntityFindImpl implements EntityFind {
         // having clause
         efb.startHavingClause()
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
-        EntityConditionImplBase viewHaving = entityDefinition.makeViewHavingCondition()
+        EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
             havingCondition = this.efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
         } else if (viewHaving) {
@@ -631,7 +669,7 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         long count = 0
         try {
-            efi.entityDbMeta.checkTableRuntime(entityDefinition)
+            efi.entityDbMeta.checkTableRuntime(ed)
 
             count = internalCount(efb)
         } catch (SQLException e) {
@@ -644,9 +682,12 @@ class EntityFindImpl implements EntityFind {
             entityCountCache.put(whereCondition, count)
         }
 
-        efi.runEecaRules(entityDefinition.getEntityName(), simpleAndMap, "find-count", false)
+        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "count", entityDefinition.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
+        efi.ecfi.countArtifactHit("entity", "count", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
+        // pop the ArtifactExecutionInfo
+        efi.ecfi.executionContext.artifactExecution.pop()
+
         return count
     }
 

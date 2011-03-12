@@ -29,25 +29,25 @@ public class ContextStack implements Map {
      */
     public ContextStack push() {
         Map newMap = new HashMap();
-        stackList.push(newMap);
+        stackList.addFirst(newMap);
         return this;
     }
 
     /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack) */
     public void push(Map existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map");
-        stackList.push(existingMap);
+        stackList.addFirst(existingMap);
     }
 
     /** Remove and returns the Map from the top of the stack (the local context).
      * If there is only one Map on the stack it returns null and does not remove it.
      */
-    public Map pop() { return (stackList != null && stackList.size() > 0) ? stackList.pop() : null; }
+    public Map pop() { return (stackList != null && stackList.size() > 0) ? stackList.removeFirst() : null; }
 
     /** Add an existing Map as the Root Map, ie on the BOTTOM of the stack meaning it will be overridden by other Maps on the stack */
     public void addRootMap(Map existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot add null as an existing Map ");
-        stackList.add(existingMap);
+        stackList.addFirst(existingMap);
     }
 
     public Map getRootMap() { return stackList.peekLast(); }
@@ -134,19 +134,19 @@ public class ContextStack implements Map {
 
     /** @see java.util.Map#  */
     public Object put(Object key, Object value) {
-        return stackList.peek().put(key, value);
+        return stackList.peekFirst().put(key, value);
     }
 
     /** @see java.util.Map#remove(java.lang.Object) */
     public Object remove(Object key) {
-        return stackList.peek().remove(key);
+        return stackList.peekFirst().remove(key);
     }
 
     /** @see java.util.Map#putAll(java.util.Map) */
-    public void putAll(Map arg0) { stackList.peek().putAll(arg0); }
+    public void putAll(Map arg0) { stackList.peekFirst().putAll(arg0); }
 
     /** @see java.util.Map#clear() */
-    public void clear() { stackList.peek().clear(); }
+    public void clear() { stackList.peekFirst().clear(); }
 
     /** @see java.util.Map#keySet() */
     public Set keySet() {

@@ -51,7 +51,7 @@ class UserFacadeImpl implements UserFacade {
             // effectively login the user
             String userId = (String) request.session.getAttribute("moqui.userId")
             // better not to do this, if there was a user before this init leave it for history/debug: if (this.userIdStack) this.userIdStack.pop()
-            if (this.userIdStack.size() == 0 || this.userIdStack.peek() != userId) this.userIdStack.push(userId)
+            if (this.userIdStack.size() == 0 || this.userIdStack.peekFirst() != userId) this.userIdStack.addFirst(userId)
             if (logger.traceEnabled) logger.trace("For new request found moqui.userId [${userId}] in the session; userIdStack is [${this.userIdStack}]")
         } else {
             if (logger.traceEnabled) logger.trace("For new request NO moqui.userId in the session; userIdStack is [${this.userIdStack}]")
@@ -221,7 +221,7 @@ class UserFacadeImpl implements UserFacade {
             }
 
             // just in case there is already a user authenticated push onto a stack to remember
-            this.userIdStack.push((String) newUserAccount.userId)
+            this.userIdStack.addFirst((String) newUserAccount.userId)
         }
 
         Node loginNode = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]
@@ -301,7 +301,7 @@ class UserFacadeImpl implements UserFacade {
     }
 
     void logoutUser() {
-        if (this.userIdStack) this.userIdStack.pop()
+        if (this.userIdStack) this.userIdStack.removeFirst()
         if (eci.web) {
             eci.web.session.removeAttribute("moqui.userId")
             eci.web.session.removeAttribute("moqui.tenantId")
@@ -311,7 +311,7 @@ class UserFacadeImpl implements UserFacade {
 
     /* @see org.moqui.context.UserFacade#getUserId() */
     String getUserId() {
-        return this.userIdStack ? this.userIdStack.peek() : null
+        return this.userIdStack ? this.userIdStack.peekFirst() : null
     }
 
     /* @see org.moqui.context.UserFacade#getUserAccount() */
@@ -320,7 +320,7 @@ class UserFacadeImpl implements UserFacade {
             // logger.info("Getting UserAccount no userIdStack", new Exception("Trace"))
             return null
         }
-        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peek()).useCache(true).one()
+        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", userIdStack.peekFirst()).useCache(true).one()
         // logger.info("Got UserAccount [${ua}] with userIdStack [${userIdStack}]")
         return ua
     }

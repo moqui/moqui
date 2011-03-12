@@ -30,6 +30,7 @@ import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 
 import org.w3c.dom.Element
 import org.w3c.dom.Document
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 
 class EntityValueImpl implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -269,9 +270,14 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#create() */
     void create() {
         long startTime = System.currentTimeMillis()
-        efi.runEecaRules(this.getEntityName(), this, "create", true)
-
         EntityDefinition ed = getEntityDefinition()
+
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
+                ed.entityNode."@authorize" != "false")
+
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", true)
+
         if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Create not yet implemented for view-entity")
         } else {
@@ -302,7 +308,7 @@ class EntityValueImpl implements EntityValue {
             sql.append(") VALUES (").append(values.toString()).append(')')
 
             try {
-                efi.entityDbMeta.checkTableRuntime(ed)
+                getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
                 internalCreate(eqb, fieldList)
             } catch (EntityException e) {
@@ -314,10 +320,12 @@ class EntityValueImpl implements EntityValue {
 
         handleAuditLog(false, null)
 
-        efi.runEecaRules(this.getEntityName(), this, "create", false)
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(),
+        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
+        // pop the ArtifactExecutionInfo to clean it up
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
     }
 
     protected void internalCreate(EntityQueryBuilder eqb, ListOrderedSet fieldList) {
@@ -348,9 +356,14 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#update() */
     void update() {
         long startTime = System.currentTimeMillis()
-        efi.runEecaRules(this.getEntityName(), this, "update", true)
-
         EntityDefinition ed = getEntityDefinition()
+
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
+                ed.entityNode."@authorize" != "false")
+
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", true)
+
         Map oldValues = this.getDbValueMap()
         if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Update not yet implemented for view-entity")
@@ -401,7 +414,7 @@ class EntityValueImpl implements EntityValue {
             }
 
             try {
-                efi.entityDbMeta.checkTableRuntime(ed)
+                getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
                 internalUpdate(eqb)
             } catch (EntityException e) {
@@ -413,10 +426,12 @@ class EntityValueImpl implements EntityValue {
 
         handleAuditLog(true, oldValues)
 
-        efi.runEecaRules(this.getEntityName(), this, "update", false)
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
+        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
+        // pop the ArtifactExecutionInfo to clean it up
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
     }
 
     protected void internalUpdate(EntityQueryBuilder eqb) {
@@ -470,9 +485,14 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#delete() */
     void delete() {
         long startTime = System.currentTimeMillis()
-        efi.runEecaRules(this.getEntityName(), this, "delete", true)
-
         EntityDefinition ed = getEntityDefinition()
+
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
+                ed.entityNode."@authorize" != "false")
+
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", true)
+
         if (ed.isViewEntity()) {
             throw new IllegalArgumentException("Delete not implemented for view-entity")
         } else {
@@ -491,7 +511,7 @@ class EntityValueImpl implements EntityValue {
             }
 
             try {
-                efi.entityDbMeta.checkTableRuntime(ed)
+                getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
                 internalDelete(eqb)
             } catch (EntityException e) {
@@ -501,10 +521,12 @@ class EntityValueImpl implements EntityValue {
             }
         }
 
-        efi.runEecaRules(this.getEntityName(), this, "delete", false)
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
+        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
+        // pop the ArtifactExecutionInfo to clean it up
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
     }
 
     protected void internalDelete(EntityQueryBuilder eqb) {
@@ -518,11 +540,16 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#refresh() */
     boolean refresh() {
         long startTime = System.currentTimeMillis()
-        efi.runEecaRules(this.getEntityName(), this, "find-one", true)
+        EntityDefinition ed = getEntityDefinition()
+
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                ed.entityNode."@authorize" != "false")
+
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", true)
 
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
-        EntityDefinition ed = getEntityDefinition()
         ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
         if (!pkFieldList) throw new IllegalArgumentException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
         ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true)
@@ -553,7 +580,7 @@ class EntityValueImpl implements EntityValue {
 
         boolean retVal = false
         try {
-            efi.entityDbMeta.checkTableRuntime(ed)
+            getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
             retVal = internalRefresh(eqb, nonPkFieldList)
         } catch (EntityException e) {
@@ -562,10 +589,13 @@ class EntityValueImpl implements EntityValue {
             eqb.closeAll()
         }
 
-        efi.runEecaRules(this.getEntityName(), this, "find-one", false)
+        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
+        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
+        // pop the ArtifactExecutionInfo to clean it up
+        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+
         return retVal
     }
 

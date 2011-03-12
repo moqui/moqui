@@ -30,6 +30,7 @@ import org.moqui.impl.FtlNodeWrapper
 import org.moqui.entity.EntityListIterator
 import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.context.TemplateRenderer
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -154,6 +155,7 @@ class ScreenRenderImpl implements ScreenRender {
         // before we render, set the character encoding (set the content type later, after we see if there is sub-content with a different type)
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
+        // if there is a transition run that INSTEAD of the screen to render
         if (screenUrlInfo.targetTransition) {
             // if this transition has actions and request was not secure or any parameters were not in the body
             // return an error, helps prevent XSRF attacks
@@ -174,8 +176,17 @@ class ScreenRenderImpl implements ScreenRender {
             boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
             ResponseItem ri = null
             try {
-                // if there is a transition run that INSTEAD of the screen to render
+                // for inherited permissions to work, walk the screen list and artifact push them, then pop after
+                int screensPushed = 0
+                for (ScreenDefinition permSd in screenUrlInfo.screenPathDefList) {
+                    screensPushed++
+                    ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
+                            permSd.screenNode."@require-authentication" != "false")
+                }
+
                 ri = screenUrlInfo.targetTransition.run(this)
+
+                for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
             } catch (Throwable t) {
                 sfi.ecfi.transactionFacade.rollback(beganTransaction, "Error running transition in [${screenUrlInfo.url}]", t)
                 throw t
@@ -346,9 +357,24 @@ class ScreenRenderImpl implements ScreenRender {
                 // if requires a render, don't cache and make it private
                 response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
             }
+
+            // for inherited permissions to work, walk the screen list before the screenRenderDefList and artifact push
+            // them, then pop after
+            int screensPushed = 0
+            if (screenUrlInfo.renderPathDifference > 0) {
+                for (int i = 0; i < screenUrlInfo.renderPathDifference; i++) {
+                    ScreenDefinition permSd = screenUrlInfo.screenPathDefList.get(i)
+                    ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
+                            permSd.screenNode."@require-authentication" != "false")
+                    screensPushed++
+                }
+            }
+
             // start rendering at the root section of the root screen
             ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
-            renderStartDef.getRootSection().render(this)
+            renderStartDef.render(this)
+
+            for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
         } catch (Throwable t) {
             String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
             sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
@@ -438,7 +464,7 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
         try {
             writer.flush()
-            screenDef.getRootSection().render(this)
+            screenDef.render(this)
             writer.flush()
         } catch (Throwable t) {
             logger.error("Error rendering screen [${screenDef.location}]", t)
