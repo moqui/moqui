@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<entity-facade-xml type="seed">
+    <ArtifactGroup artifactGroupId="TOOLS_APP" description="Tools App (via root screen)"/>
+    <ArtifactGroupMember artifactGroupId="TOOLS_APP" artifactName="component://tools/screen/Tools.xml"
+                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+
+    <!-- Setup full permissions for the ADMIN user group -->
+    <ArtifactAuthz artifactAuthzId="TOOLS_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="TOOLS_APP"
+                   authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
+</entity-facade-xml>
