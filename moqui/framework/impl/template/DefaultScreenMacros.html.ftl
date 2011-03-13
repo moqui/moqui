@@ -60,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
                     </#if>
                 </#if>
-                <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
+                <li class="ui-state-default ui-corner-top<#if urlInfo.disableLink> ui-state-disabled<#elseif urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>"><span>${subscreensItem.menuTitle}</span></a></li>
             </#if></#list>
             </ul>
         </#if>
@@ -72,15 +72,15 @@ This Work includes contributions authored by David E. Jones, not as a
         </div>
         <#if dynamic>
             <script>
-            $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
-                ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Loading screen for tab..."); } }
+            $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive}, spinner: '<span class="ui-loading">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
+                ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Error loading screen..."); } }
             });
             </script>
         </#if>
     <#elseif .node["@type"] == "stack">
-    <h1>TODO stack type subscreens-panel not yet supported.</h1>
+    <h1>LATER stack type subscreens-panel not yet supported.</h1>
     <#elseif .node["@type"] == "wizard">
-    <h1>TODO wizard type subscreens-panel not yet supported.</h1>
+    <h1>LATER wizard type subscreens-panel not yet supported.</h1>
     </#if>
 </#macro>
 
@@ -107,7 +107,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header ui-helper-clearfix"><#recurse .node["panel-header"][0]>
         </div></#if>
         <#if .node["panel-left"]?has_content>
-        <#-- TODO <xs:attribute name="draggable" default="false" type="boolean"/> -->
+        <#-- LATER <xs:attribute name="draggable" default="false" type="boolean"/> -->
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-left"</#if> class="panel-left"><#recurse .node["panel-left"][0]>
         </div></#if>
         <#if .node["panel-right"]?has_content>
@@ -516,13 +516,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
+<#-- TABLED, not to be part of 1.0:
 <#macro "lookup">
     <#assign curFieldName = .node?parent?parent["@name"]?html/>
     <#assign curFormName = .node?parent?parent?parent["@name"]?html/>
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="${curFieldName}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
-    <#assign ajaxUrl = ""/><#-- TODO once the JSON service stuff is in place put something real here -->
-    <#-- TODO get lookup code in place, or not... -->
+    <#assign ajaxUrl = ""/><#- - LATER once the JSON service stuff is in place put something real here - ->
+    <#- - LATER get lookup code in place, or not... - ->
     <script>
         $(document).ready(function() {
             new ConstructLookup("${.node["@target-screen"]}", "${id}", document.${curFormName}.${curFieldName},
@@ -530,6 +531,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             "${curFormName}", "${width!""}", "${height!""}", "${position!"topcenter"}", "${fadeBackground!"true"}", "${ajaxUrl!""}", "${showDescription!""}", ''); });
     </script>
 </#macro>
+-->
 
 <#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"></#macro>
 

@@ -22,6 +22,7 @@ vertical-align: center;
 /* ====================== jquery ui styles ======================= */
 
 .ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
+.ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 
 /* ========================== body, etc ========================== */
 
@@ -53,7 +54,7 @@ h4 { font-size: 0.9em; font-weight: bold; }
 h5 { font-size: 0.8em; font-weight: bold; }
 h6 { font-size: 0.6em; }
 
-a { font-size: 0.9em; font-weight: bold; }
+a, a span { font-size: 0.9em; font-weight: bold; }
 p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
 li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 form { display: inline; }

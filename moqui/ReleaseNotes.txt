@@ -73,10 +73,10 @@ Notable features not yet implemented (TODO list):
   - Authorization with a service (ArtifactAuthzService)
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens
-  - Scheduler (view scheduled services with cancel, add scheduled service)
   - Entity Data UI (entity list, find on entity with delete, view entity
     record with related, create/update entity record with tabs for
     list/update/delete/add dependent entities)
+  - Scheduler (view scheduled services with cancel, add scheduled service)
   - SQL Query Run/View
   - Script Run (or groovy shell?)
   - Artifact Info with in/out references

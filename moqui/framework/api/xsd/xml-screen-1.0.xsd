@@ -73,8 +73,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="require-authentication" default="true" type="boolean"/>
-            <!-- TODO support this in code -->
-            <xs:attribute name="require-certificate" default="false" type="boolean"/>
+            <!-- TABLED, not to be part of 1.0: <xs:attribute name="require-certificate" default="false" type="boolean"/> -->
             <xs:attribute name="begin-transaction" type="boolean" default="false">
                 <xs:annotation><xs:documentation>
                     Begin a transaction for the screen render if there is not one already in place.
@@ -88,10 +87,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="screen-theme-type-enum-id" type="xs:string" default="STT_INTERNAL"/>
-            <!-- TODO support this in code -->
-            <xs:attribute name="track-visit" type="boolean" default="true"/>
-            <!-- TODO support this in code -->
-            <xs:attribute name="track-server-hit" type="boolean" default="true"/>
+            <xs:attribute name="track-artifact-hit" type="boolean" default="true">
+                <xs:annotation><xs:documentation>If set to false no ArtifactHit or ArtifactHitBin data will be kept for
+                    this screen and for any content or transitions under the screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="web-settings">
@@ -100,10 +99,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="require-encryption" default="true" type="boolean"/>
             <xs:attribute name="mime-type" type="xs:string" default="text/html"/>
             <xs:attribute name="character-encoding" type="xs:string" default="UTF-8"/>
-            <!-- TODO support this in code -->
-            <xs:attribute name="http-no-cache" default="false" type="boolean">
-                <xs:annotation><xs:documentation>Send no-cache headers if true.</xs:documentation></xs:annotation>
-            </xs:attribute>
+            <!-- TABLED, not to be part of 1.0: <xs:attribute name="http-no-cache" default="false" type="boolean"/> -->
+            <!-- NOTE: Right now we send some cache headers, could add config for cache headers for screen,
+                 static screen content, template screen content -->
         </xs:complexType>
     </xs:element>
     <xs:element name="pre-actions">
@@ -395,8 +393,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="tab"/>
-                        <xs:enumeration value="stack"/>
-                        <xs:enumeration value="wizard"/>
+                        <!-- TABLED, not to be part of 1.0: <xs:enumeration value="stack"/> -->
+                        <!-- TABLED, not to be part of 1.0: <xs:enumeration value="wizard"/> -->
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
@@ -507,8 +505,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="panel-left">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <!-- TODO handle draggable -->
-            <xs:attribute name="draggable" default="false" type="boolean"/>
+            <!-- TABLED, not to be part of 1.0: <xs:attribute name="draggable" default="false" type="boolean"/> -->
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-center">
