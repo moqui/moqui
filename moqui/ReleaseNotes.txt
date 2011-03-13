@@ -41,6 +41,7 @@ This release includes:
   - Handle direct service/entity calls, ArtifactGroupMember with pattern
   - Review and test to determine which entities can skip authz for view
     and create (ie some view only, some create only, some view and create)
+  - For entity-implicit service calls just look for entity authz
 
 Notable features not yet implemented (TODO list):
 
@@ -64,7 +65,6 @@ Notable features not yet implemented (TODO list):
   - Database meta-data check/report against entity definitions
 - WebApp event actions
 - Artifact Execution Facade
-  - For entity-implicit service calls also look for entity permission
   - Support authorization on subscreens even if no authz on parent
     screens, ie authz for EditExample even though not for ExampleApp or
     any other screens in that app
