@@ -1,3 +1,6 @@
+
+/* NOTE: this file has a significant number of changes for use in the Moqui Default theme */
+
 /*
  * jQuery UI CSS Framework 1.8.10
  *
@@ -61,8 +64,9 @@
 /* use moqui defaults: .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-size: 0.8em; } */
 .ui-widget-content { border: 0px solid #aaaaaa; background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
 .ui-widget-content a { color: #222222; }
-.ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
-.ui-widget-header a { color: #222222; }
+/*  original, with bg image: .ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; } */
+.ui-widget-header { border-bottom: 1px solid #ddd; color: #222222; font-weight: bold; }
+.ui-widget-header a, .ui-widget-header a span { color: #222222; }
 
 /* Interaction states
 ----------------------------------*/
@@ -484,7 +488,7 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  *
  * http://docs.jquery.com/UI/Tabs#theming
  */
-.ui-tabs { position: relative; padding: .1em; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
+.ui-tabs { position: relative; padding: 0em; } /* position: relative prevents IE scroll bug (element with position: relative inside container with overflow: auto appear as "fixed") */
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .1em .2em 0; }
 .ui-tabs .ui-tabs-nav li { list-style: none; float: left; position: relative; top: 1px; margin: 0 .2em 1px 0; border-bottom: 0 !important; padding: 0; white-space: nowrap; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .1em .5em; text-decoration: none; }
