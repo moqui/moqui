@@ -17,11 +17,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="exampleId"/>
     
     <transition name="createExample">
-        <service name="org.moqui.example.ExampleServices.createExample"/>
+        <service-call name="org.moqui.example.ExampleServices.createExample"/>
         <default-response url="."/>
     </transition>
     <transition name="updateExample">
-        <service name="org.moqui.example.ExampleServices.updateExample"/>
+        <service-call name="org.moqui.example.ExampleServices.updateExample"/>
         <default-response url="."/>
     </transition>
     <transition name="getExampleTypeEnumList">

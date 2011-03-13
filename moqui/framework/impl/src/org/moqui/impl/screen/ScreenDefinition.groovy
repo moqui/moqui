@@ -259,13 +259,13 @@ class ScreenDefinition {
                 condition = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode.condition[0].children()[0], location + ".condition")
             }
             // service OR actions
-            if (transitionNode."service") {
-                Node callServiceNode = (Node) transitionNode."service"[0]
+            if (transitionNode."service-call") {
+                Node callServiceNode = (Node) transitionNode."service-call"[0]
                 if (!callServiceNode."@in-map") callServiceNode.attributes().put("in-map", "true")
                 if (!callServiceNode."@out-map") callServiceNode.attributes().put("out-map", "ec.web.requestAttributes")
-                actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".call_service")
+                actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".service_call")
             } else if (transitionNode.actions) {
-                actions = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode.actions[0], location + ".actions")
+                actions = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode."actions"[0], location + ".actions")
             }
 
             // conditional-response*

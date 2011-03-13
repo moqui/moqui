@@ -335,8 +335,8 @@ class EntityFindImpl implements EntityFind {
         EntityDefinition ed = this.getEntityDef()
 
         efi.ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-one", true)
 
@@ -449,8 +449,8 @@ class EntityFindImpl implements EntityFind {
         EntityDefinition ed = this.getEntityDef()
 
         efi.ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", true)
@@ -499,8 +499,8 @@ class EntityFindImpl implements EntityFind {
         EntityDefinition ed = this.getEntityDef()
 
         efi.ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", true)
@@ -610,8 +610,8 @@ class EntityFindImpl implements EntityFind {
         EntityDefinition ed = this.getEntityDef()
 
         efi.ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(ed.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", true)

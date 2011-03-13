@@ -65,13 +65,17 @@ public class Moqui {
         activeExecutionContextFactory.destroyActiveExecutionContext();
     }
 
-    /** This method is meant to be run from a command-line interface and handle data loading in a generic way. */
+    /** This method is meant to be run from a command-line interface and handle data loading in a generic way.
+     * @param argMap Arguments, generally from command line, to configure this data load.
+     */
     public static void loadData(Map<String, String> argMap) {
         // make sure we have a factory, even if moqui.init.static != true
         if (activeExecutionContextFactory == null)
             activeExecutionContextFactory = executionContextFactoryLoader.iterator().next();
 
         ExecutionContext ec = activeExecutionContextFactory.getExecutionContext();
+        ec.getArtifactExecution().disableAuthz();
+
         String tenantId = argMap.get("tenantId");
         if (tenantId != null && tenantId.length() > 0) ec.changeTenant(tenantId);
 

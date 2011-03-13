@@ -36,4 +36,7 @@ public interface ArtifactExecutionFacade {
     Deque<ArtifactExecutionInfo> getStack();
 
     List<ArtifactExecutionInfo> getHistory();
+
+    void disableAuthz();
+    void enableAuthz();
 }

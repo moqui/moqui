@@ -18,6 +18,7 @@ import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
+import org.moqui.entity.EntityCondition.JoinOperator
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
@@ -31,6 +32,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected ExecutionContextImpl eci
     protected Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
     protected List<ArtifactExecutionInfoImpl> artifactExecutionInfoHistory = new LinkedList<ArtifactExecutionInfoImpl>()
+
+    protected boolean disableAuthz = false
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
@@ -60,22 +63,14 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         artifactExecutionInfoHistory.add(aeii)
 
         // if no authz required, just push it
-        if (!requiresAuthz) {
-            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
-            this.artifactExecutionInfoStack.addFirst(aeii)
-            return
-        }
-
-        // TODO: handle pattern for services and entities called directly, ArtifactGroupMember with pattern
-        // for now don't authz entity artifacts, too many problems with loading data, etc
-        if (aeii.typeEnumId == "AT_ENTITY") {
+        if (!requiresAuthz || this.disableAuthz) {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
             return
         }
 
         // never do this for the view-entity we use below, would cause infinite recursion
-        if (aeii.name == "ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
+        if (aeii.name == "org.moqui.security.authz.ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
             return
@@ -91,7 +86,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         }
 
         EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
-                .condition([userId:userId, artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId])
+                .condition([userId:userId, artifactTypeEnumId:aeii.typeEnumId])
+        aacvFind.condition(eci.entity.conditionFactory.makeCondition(
+                eci.entity.conditionFactory.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.name),
+                JoinOperator.OR,
+                eci.entity.conditionFactory.makeCondition("nameIsPattern", ComparisonOperator.EQUALS, "Y")))
         if (aeii.actionEnumId) {
             aacvFind.condition("authzActionEnumId", ComparisonOperator.IN, [aeii.actionEnumId, "AUTHZA_ALL"])
         } else {
@@ -102,6 +101,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         if (aacvList.size() > 0) {
             boolean foundDeny = false
             for (EntityValue aacv in aacvList) {
+                if (aacv.nameIsPattern == "Y" && !aeii.name.matches((String) aacv.artifactName)) continue
+
                 if (aacv.authzTypeEnumId == "AUTHZT_DENY") {
                     // we already know last was not always allow (checked above), so keep going in loop just in case we
                     // find an always allow in the query
@@ -115,6 +116,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     return
                 }
             }
+
             if (foundDeny) {
                 StringBuilder warning = new StringBuilder()
                 warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
@@ -146,4 +148,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
     /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
+
+    void disableAuthz() { this.disableAuthz = true }
+    void enableAuthz() { this.disableAuthz = false }
 }

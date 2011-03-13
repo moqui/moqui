@@ -126,7 +126,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:documentation></xs:annotation>
                 </xs:element>
                 <xs:choice minOccurs="0">
-                    <xs:element ref="service">
+                    <xs:element ref="service-call">
                         <xs:annotation><xs:documentation>
                             In most cases the best way to handle input for a transition is with a single service. To do
                             that use this element instead of an actions element.
@@ -573,7 +573,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="condition"/>
                 <xs:choice minOccurs="0">
                     <xs:element ref="entity-find-one"/>
-                    <xs:element ref="service"/>
+                    <xs:element ref="service-call"/>
                 </xs:choice>
                 <xs:element ref="widgets"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="tree-sub-node"/>
@@ -589,7 +589,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:choice>
                     <xs:element ref="entity-find"/>
-                    <xs:element ref="service"/>
+                    <xs:element ref="service-call"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="out-field-map"/>
             </xs:sequence>

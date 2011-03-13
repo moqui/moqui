@@ -273,8 +273,8 @@ class EntityValueImpl implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
 
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
+                (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", true)
 
@@ -359,8 +359,8 @@ class EntityValueImpl implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
 
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
+                ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", true)
 
@@ -488,8 +488,8 @@ class EntityValueImpl implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
 
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
+                ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", true)
 
@@ -543,8 +543,8 @@ class EntityValueImpl implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
 
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
-                new ArtifactExecutionInfoImpl(this.getEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
-                ed.entityNode."@authorize" != "false")
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", true)
 

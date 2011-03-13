@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <secas xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-eca-1.0.xsd">
     <seca service="org.moqui.example.ExampleServices.createExample" when="post-commit">
         <actions>
-            <service name="org.moqui.example.ExampleServices.createExampleStatus"/>
+            <service-call name="org.moqui.example.ExampleServices.createExampleStatus"/>
         </actions>
     </seca>
     <seca service="org.moqui.example.ExampleServices.updateExample" when="post-commit">
@@ -21,7 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <compare field="statusId" operator="not-equals" to-field="oldStatusId"/>
         </condition>
         <actions>
-            <service name="org.moqui.example.ExampleServices.createExampleStatus"/>
+            <service-call name="org.moqui.example.ExampleServices.createExampleStatus"/>
         </actions>
     </seca>
 </secas>

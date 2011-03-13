@@ -59,7 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <!-- Call Operations -->
-    <xs:element name="service" substitutionGroup="CallOperations">
+    <xs:element name="service-call" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>Call a service.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>

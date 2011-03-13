@@ -99,8 +99,15 @@ class UserFacadeImpl implements UserFacade {
                     uvParms.clientIpAddress = request.getRemoteAddr()
                 }
                 if (cookieVisitorId) uvParms.visitorId = cookieVisitorId
+
+                // NOTE: disable authz for this call, don't normally want to allow update of Visit, but this is special case
+                eci.artifactExecution.disableAuthz()
+                try {
                 // called this sync so it is ready next time referred to, like on next request
                 eci.service.sync().name("update", "Visit").parameters(uvParms).call()
+                } finally {
+                    eci.artifactExecution.enableAuthz()
+                }
             }
         }
     }
@@ -200,28 +207,36 @@ class UserFacadeImpl implements UserFacade {
         if (authenticateUser(userId, password)) {
             successful = true
 
-            EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("userId", userId).useCache(true).one()
+            // do this first so that the rest will be done as this user
+            // just in case there is already a user authenticated push onto a stack to remember
+            this.userIdStack.addFirst(userId)
 
-            // if hasLoggedOut==Y set hasLoggedOut=N
-            if (newUserAccount.hasLoggedOut == "Y") {
-                eci.service.sync().name("update", "UserAccount")
-                        .parameters((Map<String, Object>) [userId:userId, hasLoggedOut:"N"]).call()
-            }
+            // NOTE: special case, for this thread only and for the section of code below need to turn off artifact
+            //     authz since normally the user above would have authorized with something higher up, but that can't
+            //     be done at this point
+            eci.artifactExecution.disableAuthz()
+            try {
+                EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("userId", userId).useCache(true).one()
 
-            // update visit if no user in visit yet
-            EntityValue visit = getVisit()
-            if (visit && !visit.userId) {
-                eci.service.sync().name("update", "Visit")
-                        .parameters((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
+                // no more auth failures? record the various account state updates, hasLoggedOut=N
+                Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
+                        disabled:"N", disabledDateTime:null, hasLoggedOut:"N"]
+                eci.service.sync().name("update", "UserAccount").parameters(uaParameters).call()
+
+                // update visit if no user in visit yet
+                EntityValue visit = getVisit()
+                if (visit && !visit.userId) {
+                    eci.service.sync().name("update", "Visit")
+                            .parameters((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
+                }
+            } finally {
+                eci.artifactExecution.enableAuthz()
             }
 
             // if WebExecutionContext add to session
             if (eci.ecfi.executionContext.web) {
-                eci.ecfi.executionContext.web.session.setAttribute("moqui.userId", newUserAccount.userId)
+                eci.ecfi.executionContext.web.session.setAttribute("moqui.userId", userId)
             }
-
-            // just in case there is already a user authenticated push onto a stack to remember
-            this.userIdStack.addFirst((String) newUserAccount.userId)
         }
 
         Node loginNode = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]
@@ -261,7 +276,6 @@ class UserFacadeImpl implements UserFacade {
             return false
         }
 
-        Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0]
         if (newUserAccount.requirePasswordChange == "Y") {
             eci.message.addError("Authenticate failed for user [${userId}] because account requires password change [PWDCHG].")
             logger.warn("Login failure: ${eci.message.errors}")
@@ -277,9 +291,6 @@ class UserFacadeImpl implements UserFacade {
                 eci.message.addError("Authenticate failed for user [${userId}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
                 logger.warn("Login failure: ${eci.message.errors}")
                 return false
-            } else {
-                uaParameters.disabled = "N"
-                uaParameters.disabledDateTime = null
             }
         }
 
@@ -293,9 +304,6 @@ class UserFacadeImpl implements UserFacade {
                 return false
             }
         }
-
-        // no more auth failures? record the various account state updates
-        eci.service.sync().name("update", "UserAccount").parameters(uaParameters).call()
 
         return true
     }

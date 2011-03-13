@@ -21,13 +21,40 @@ This Work includes contributions authored by David E. Jones, not as a
     <ArtifactGroup artifactGroupId="EXAMPLE_APP" description="Example App (via root screen)"/>
     <ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="component://example/screen/ExampleApp.xml"
                          artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+    <!-- TODO: test & case for this -->
+    <!-- services matched by fully qualified name, so can just use path/package prefix -->
+    <ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\\.moqui\\.example\\..*" nameIsPattern="Y"
+                         artifactTypeEnumId="AT_SERVICE" inheritAuthz="Y"/>
+    <!-- TODO: test & case for this -->
+    <!-- entities matched by full name (package + name), so can match by package; this will also handle entity-implicit
+         services which can be authorized by their entity authz -->
+    <ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\\.moqui\\.example\\..*" nameIsPattern="Y"
+                         artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
 
     <!-- Setup full permissions for the ADMIN user group -->
-    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP"
+    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP"
                    authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 
+    <!-- TODO: test & case for this -->
     <!-- A user group with just view access for the ExampleApp -->
     <UserGroup userGroupId="EXAMPLE_VIEWER" description="Example Viewers (view only)"/>
-    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_2" userGroupId="EXAMPLE_VIEWER" artifactGroupId="EXAMPLE_APP"
+    <UserAccount userId="example.viewer" userName="Example Viewer"
+                 currentPassword="{SHA}16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHint="framework name, lowercase"
+                 currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
+    <UserGroupMember userGroupId="EXAMPLE_VIEWER" userId="example.viewer" fromDate="2010-02-03 00:00:00.000"/>
+    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_VW" userGroupId="EXAMPLE_VIEWER" artifactGroupId="EXAMPLE_APP"
                    authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_VIEW"/>
+
+    <!-- TODO: test & case (and impl) for this -->
+    <!-- Group to test only allow access to Example Find/Edit Screens -->
+    <ArtifactGroup artifactGroupId="EXAMPLE_MAINT" description="Example Find/Edit Screens Only"/>
+    <ArtifactGroupMember artifactGroupId="EXAMPLE_MAINT" artifactName="component://example/screen/ExampleApp/Example.xml"
+                         artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+    <UserGroup userGroupId="EXAMPLE_MAINT" description="Example Maintainers"/>
+    <UserAccount userId="example.maint" userName="Example Maintainer"
+                 currentPassword="{SHA}16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHint="framework name, lowercase"
+                 currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
+    <UserGroupMember userGroupId="EXAMPLE_MAINT" userId="example.maint" fromDate="2010-02-03 00:00:00.000"/>
+    <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_MNT" userGroupId="EXAMPLE_MAINT" artifactGroupId="EXAMPLE_MAINT"
+                   authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
 </entity-facade-xml>

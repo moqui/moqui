@@ -191,12 +191,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.basic.l10n -->
     <!-- ========================================================= -->
 
-    <entity entity-name="LocalizedMessage" package-name="org.moqui.basic.l10n" cache="true">
+    <entity entity-name="LocalizedMessage" package-name="org.moqui.basic.l10n" cache="true" authorize-skip="view">
         <field name="original" type="text-long" is-pk="true"/>
         <field name="locale" type="text-short" is-pk="true"/>
         <field name="localized" type="text-very-long"/>
     </entity>
-    <entity entity-name="LocalizedEntityField" package-name="org.moqui.basic.l10n" cache="true">
+    <entity entity-name="LocalizedEntityField" package-name="org.moqui.basic.l10n" cache="true" authorize-skip="view">
         <field name="entityName" type="text-medium" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="pkValue" type="text-medium" is-pk="true"/>

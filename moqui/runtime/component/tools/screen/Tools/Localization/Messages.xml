@@ -15,15 +15,15 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Messages" default-menu-index="1">
 
     <transition name="createLocalizedMessage">
-        <service name="create#LocalizedMessage"/>
+        <service-call name="create#LocalizedMessage"/>
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedMessage">
-        <service name="update#LocalizedMessage"/>
+        <service-call name="update#LocalizedMessage"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedMessage">
-        <service name="delete#LocalizedMessage"/>
+        <service-call name="delete#LocalizedMessage"/>
         <default-response url="."/>
     </transition>
 

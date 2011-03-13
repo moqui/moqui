@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.entity.misc -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EntityAuditLog" package-name="org.moqui.entity.misc">
+    <entity entity-name="EntityAuditLog" package-name="org.moqui.entity.misc" authorize-skip="create">
         <field name="auditHistorySeqId" type="id" is-pk="true"/>
         <field name="changedEntityName" type="text-medium"/>
         <field name="changedFieldName" type="text-long"/>
@@ -42,7 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="changedByUserId" type="text-long"/>
         <field name="changedInVisitId" type="text-long"/>
     </entity>
-    <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc">
+    <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc" authorize-skip="true">
         <field name="seqName" type="id-long" is-pk="true"/>
         <field name="seqNum" type="number-integer"/>
     </entity>

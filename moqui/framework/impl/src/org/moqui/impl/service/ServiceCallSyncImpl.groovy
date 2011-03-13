@@ -71,6 +71,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         eci.artifactExecution.push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE", authzAction),
                 sd == null ? false : sd.serviceNode."@authenticate" != "false")
         // NOTE: don't require authz if the service def doesn't authenticate
+        // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
+        //     the service on the stack)
 
         if (sd == null) {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto

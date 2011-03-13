@@ -56,17 +56,12 @@ public class EntityDefinition {
         }
     }
 
-    String getEntityName() {
-        return this.entityName
-    }
+    String getEntityName() { return this.entityName }
+    String getFullEntityName() { return entityNode."@package-name" + "." + this.entityName }
 
-    Node getEntityNode() {
-        return this.entityNode
-    }
+    Node getEntityNode() { return this.entityNode }
 
-    boolean isViewEntity() {
-        return this.entityNode.name() == "view-entity"
-    }
+    boolean isViewEntity() { return this.entityNode.name() == "view-entity" }
 
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal

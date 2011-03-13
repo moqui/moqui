@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.0.xsd">
 
-    <service verb="increment" noun="UserAccountFailedLogins">
+    <service verb="increment" noun="UserAccountFailedLogins" authenticate="false">
         <in-parameters><parameter name="userId" type="String" required="true"/></in-parameters>
         <actions>
             <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
@@ -95,10 +95,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- from here on the newPassword is considered okay -->
 
             <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
-            <service name="create#UserPasswordHistory">
+            <service-call name="create#UserPasswordHistory">
                 <field-map field-name="userId"/>
                 <field-map field-name="password" from="newPassword"/>
-            </service>
+            </service-call>
             <entity-find entity-name="UserPasswordHistory" list="existingUserPasswordHistoryList">
                 <econdition field-name="userId" from="userId"/>
                 <order-by field-name="fromDate"/>
@@ -109,12 +109,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- encrypt password (using password.@encrypt-hash-type default SHA) and save -->
             <set field="hashType" from="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
-            <service name="update#UserAccount">
+            <service-call name="update#UserAccount">
                 <field-map field-name="userId"/>
                 <field-map field-name="currentPassword"
                            from="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
                 <field-map field-name="passwordSetDate" from="ec.user.nowTimestamp"/>
-            </service>
+            </service-call>
         </actions>
     </service>
 </services>

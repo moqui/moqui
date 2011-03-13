@@ -15,15 +15,15 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Fields" default-menu-index="2">
 
     <transition name="createLocalizedEntityField">
-        <service name="create#LocalizedEntityField"/>
+        <service-call name="create#LocalizedEntityField"/>
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedEntityField">
-        <service name="update#LocalizedEntityField"/>
+        <service-call name="update#LocalizedEntityField"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedEntityField">
-        <service name="delete#LocalizedEntityField"/>
+        <service-call name="delete#LocalizedEntityField"/>
         <default-response url="."/>
     </transition>
 

@@ -204,7 +204,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.screen.subscreen -->
     <!-- ========================================================= -->
 
-    <entity entity-name="SubscreensItem" package-name="org.moqui.screen.subscreen">
+    <entity entity-name="SubscreensItem" package-name="org.moqui.screen.subscreen" authorize-skip="view">
         <field name="screenLocation" type="text-long" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
         <field name="userId" type="id-very-long" is-pk="true">
@@ -244,7 +244,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="ScreenThemeResource" package-name="org.moqui.screen.theme">
+    <entity entity-name="ScreenThemeResource" package-name="org.moqui.screen.theme" authorize-skip="view">
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="resourceTypeEnumId" type="id"/>

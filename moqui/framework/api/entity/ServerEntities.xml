@@ -16,7 +16,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.server.artifact -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ArtifactHit" package-name="org.moqui.server.artifact" cache="never" sequence-bank-size="100">
+    <entity entity-name="ArtifactHit" package-name="org.moqui.server.artifact"
+            cache="never" sequence-bank-size="100" authorize-skip="create">
         <field name="hitId" type="id" is-pk="true"/>
         <field name="visitId" type="id"/>
         <field name="userId" type="id-very-long"/>
@@ -38,7 +39,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="Visit"/>
         <relationship type="one" related-entity-name="UserAccount"/>
     </entity>
-    <entity entity-name="ArtifactHitBin" package-name="org.moqui.server.artifact" cache="never" sequence-bank-size="100">
+    <entity entity-name="ArtifactHitBin" package-name="org.moqui.server.artifact"
+            cache="never" sequence-bank-size="100" authorize-skip="create">
         <field name="hitBinId" type="id" is-pk="true"/>
         <field name="artifactType" type="text-medium"/>
         <field name="artifactSubType" type="text-medium"/>
@@ -57,7 +59,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- org.moqui.server.visit -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Visit" package-name="org.moqui.server.visit" sequence-bank-size="100">
+    <entity entity-name="Visit" package-name="org.moqui.server.visit"
+            sequence-bank-size="100" authorize-skip="view-create">
         <field name="visitId" type="id" is-pk="true"/>
         <field name="visitorId" type="id"/>
         <field name="userId" type="id-very-long"/>
@@ -91,7 +94,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <index-field name="thruDate"/>
         </index>
     </entity>
-    <entity entity-name="Visitor" package-name="org.moqui.server.visit" sequence-bank-size="100">
+    <entity entity-name="Visitor" package-name="org.moqui.server.visit"
+            sequence-bank-size="100" authorize-skip="view-create">
         <field name="visitorId" type="id" is-pk="true"/>
         <field name="fromVisitId" type="id"/>
         <relationship type="one" title="From" related-entity-name="Visit">
