@@ -74,7 +74,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display/></default-field>
             </field>
             <field name="localized">
-                <default-field><text-area rows="2" cols="50"/></default-field>
+                <default-field><text-area rows="2" cols="35"/></default-field>
             </field>
             <field name="submit">
                 <header-field title="Find"><submit/></header-field>

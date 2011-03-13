@@ -25,35 +25,58 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
-    <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-menu">
-    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-        <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
-    </#if></#list>
-    </ul>
-    <div class="clear"></div>
+    <div class="ui-tabs ui-tabs-collapsible">
+        <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
+        <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+            <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+        </#if></#list>
+        </ul>
+    </div>
 </#macro>
 
 <#macro "subscreens-active">
-    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-active">
-    ${sri.renderSubscreen()}
+    <div class="ui-tabs">
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-panel">
+        ${sri.renderSubscreen()}
+        </div>
     </div>
 </#macro>
 
 <#macro "subscreens-panel">
+    <#assign dynamic = .node["@dynamic"]?if_exists == "true" && .node["@id"]?has_content>
+    <#assign dynamicActive = 0>
+    <#assign displayMenu = sri.activeInCurrentMenu>
     <#if !(.node["@type"]?has_content) || .node["@type"] == "tab">
-    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="subscreens-panel">
-        <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="subscreens-menu">
-        <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-            <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-            <li<#if urlInfo.inCurrentScreenPath> class="selected"</#if>><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
-        </#if></#list>
-        </ul>
-        <div class="clear"></div>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-active"</#if> class="subscreens-active">
-        ${sri.renderSubscreen()}
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs ui-tabs-collapsible">
+        <#if displayMenu>
+            <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
+            <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                <#if dynamic>
+                    <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
+                    <#if urlInfo.inCurrentScreenPath>
+                        <#assign dynamicActive = subscreensItem_index>
+                        <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
+                    </#if>
+                </#if>
+                <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${subscreensItem.menuTitle}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${subscreensItem.menuTitle}</a></#if></li>
+            </#if></#list>
+            </ul>
+        </#if>
+        <#if !dynamic || !displayMenu>
+            <div<#if .node["@id"]?has_content> id="${.node["@id"]}-active"</#if> class="ui-tabs-panel">
+            ${sri.renderSubscreen()}
+            </div>
+        </#if>
         </div>
-    </div>
+        <#if dynamic>
+            <script>
+            $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
+                ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Loading screen for tab..."); } }
+            });
+            </script>
+        </#if>
     <#elseif .node["@type"] == "stack">
     <h1>TODO stack type subscreens-panel not yet supported.</h1>
     <#elseif .node["@type"] == "wizard">
@@ -81,8 +104,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "container-panel">
     <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>
         <#if .node["panel-header"]?has_content>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
-            <div class="clear"></div>
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header ui-helper-clearfix"><#recurse .node["panel-header"][0]>
         </div></#if>
         <#if .node["panel-left"]?has_content>
         <#-- TODO <xs:attribute name="draggable" default="false" type="boolean"/> -->
@@ -94,7 +116,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-center"</#if> class="panel-center"><#recurse .node["panel-center"][0]>
         </div>
         <#if .node["panel-footer"]?has_content>
-        <div class="clear"></div>
+        <div class="ui-helper-clearfix"></div>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
         </div></#if>
     </div>

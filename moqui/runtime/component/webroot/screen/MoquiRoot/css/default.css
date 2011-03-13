@@ -12,298 +12,119 @@
 
 /* defaults */
 * {
-margin: 0px;
-border: 0px;
-outline: 0px;
-padding: 0px;
-color: black;
-background: transparent;
-text-decoration: none;
-font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
-font-weight: normal;
+margin: 0px; border: 0px; outline: 0px; padding: 0px;
+color: black; background: transparent; text-decoration: none;
+font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-weight: normal;
 font-size: 16px; /* set base font size here, all others relative using em */
 vertical-align: center;
 }
 
 /* ====================== jquery ui styles ======================= */
 
-.ui-autocomplete-loading {
-background: white url('/images/wait_anim_16x16.gif') right center no-repeat;
-}
+.ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 
 /* ========================== body, etc ========================== */
 
-body {
-background: #DDDDDF;
-margin: 0px;
-}
+body { background: #DDDDDF; margin: 0px; }
 
 #apps-container {
 background: white;
-margin: 0px auto 0px auto;
-border: 10px solid #DDDDDF;
-padding: 10px;
-width: 980px;
-overflow: auto;
--moz-border-radius: 15px;
--webkit-border-radius: 15px;
-border-radius: 15px;
+margin: 0px auto 0px auto; border: 10px solid #DDDDDF; padding: 10px;
+-moz-border-radius: 15px; -webkit-border-radius: 15px; border-radius: 15px;
+width: 980px; overflow: auto;
 }
 
-#apps-container-header {
-border-bottom: 1px solid #DDDDDF;
-}
-#header-logo {
-float: left;
-width: 300px;
-height: 30px;
-}
-#header-logo h1 {
-font-size: 1.5em;
-font-family: Courier, "Courier New", monospace;
-font-weight: bold;
-}
-#header-user {
-float: right;
-}
-#header-menu {
-}
+#header-logo { float: left; width: 300px; height: 30px; }
+#header-logo h1 { font-size: 1.5em; font-family: Courier, "Courier New", monospace; font-weight: bold; }
+#header-user { float: right; }
 
-div.message {
-width: 600px;
-margin: 2px auto 2px auto;
-border: 1px solid #DDDDDF;
-padding: 2px;
-text-align: center;
-}
-div.message span {
-font-size: 0.9em;
-}
-div.error span {
-color: red;
-}
+div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }
+div.message span { font-size: 0.9em; }
+div.error span { color: red; }
 
-#apps-container-footer {
-margin: 0px auto 0px auto;
-border-top:  1px solid #DDDDDF;
-padding: 2px;
-width: 200px;
-text-align: center;
-}
+#apps-container-footer { margin: 0px auto 0px auto; border-top: 1px solid #DDDDDF; padding: 2px; width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
 
-h1 {
-font-size: 1.5em;
-font-weight: bold;
-}
+h1 { font-size: 1.5em; font-weight: bold; }
+h2 { font-size: 1.2em; font-weight: bold; }
+h3 { font-size: 1.0em; font-weight: bold; }
+h4 { font-size: 0.9em; font-weight: bold; }
+h5 { font-size: 0.8em; font-weight: bold; }
+h6 { font-size: 0.6em; }
 
-h2 {
-font-size: 1.2em;
-font-weight: bold;
-}
-
-h3 {
-font-size: 1.0em;
-font-weight: bold;
-}
-
-h4 {
-font-size: 0.9em;
-font-weight: bold;
-}
-
-h5 {
-font-size: 0.8em;
-font-weight: bold;
-}
-
-h6 {
-font-size: 0.6em;
-}
-
-a {
-font-size: 0.9em;
-font-weight: bold;
-}
-
-p {
-margin: 2px 0px 2px 0px;
-padding: 2px 0px 2px 0px;
-}
-
-li {
-margin: 0px 0px 0px 16px;
-padding: 0px 0px 0px 8px;
-}
-
-form {
-display: inline;
-}
+a { font-size: 0.9em; font-weight: bold; }
+p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
+li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
+form { display: inline; }
 
 button, input[type="reset"], input[type="submit"], input[type="button"], a.button {
--webkit-appearance: none;
--moz-border-radius: 4px;
--webkit-border-radius: 4px;
-border-radius: 4px;
-background: white;
-border: 1px solid;
-border-color: #ddd #bbb #999;
-cursor: pointer;
-color: #333;
-display: inline-block;
-font-size: 0.8em;
-font-weight: bold;
-outline: 0px;
-overflow: visible;
-margin: 2px 2px 2px 2px;
-padding: 2px 4px 2px 4px;
-text-decoration: none;
-text-shadow: #fff 0 1px 1px;
-width: auto;
+-webkit-appearance: none; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
+margin: 2px 2px 2px 2px; border: 1px solid; border-color: #ddd #bbb #999; outline: 0px; padding: 2px 4px 2px 4px;
+display: inline-block; overflow: visible; width: auto; cursor: pointer;
+background: white; color: #333;
+font-size: 0.8em; font-weight: bold; text-decoration: none; text-shadow: #fff 0 1px 1px;
 }
+
 button:active, input[type="reset"]:active, input[type="submit"]:active, input[type="button"]:active, a.button:active {
-border-color: #999 #bbb #ddd;
-color: #666;
+border-color: #999 #bbb #ddd; color: #666;
 }
 
 input[type="text"], input[type="password"], textarea, select {
--moz-border-radius: 4px;
--webkit-border-radius: 4px;
-border-radius: 4px;
-border: 1px solid;
-border-color: #999 #bbb #ddd;
-margin: 2px 2px 2px 2px;
-padding: 2px 4px 2px 4px;
-font-size: 0.8em;
-font-family: Lucida Console, Monaco, monospace;
+-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
+margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
+font-size: 0.8em; font-family: Lucida Console, Monaco, monospace;
 }
 
-th {
-text-align: left;
-padding: 0px 4px 0px 2px;
-}
-
-td {
-padding: 0px 4px 0px 2px;
-}
+th { text-align: left; padding: 0px 4px 0px 2px; }
+td { padding: 0px 4px 0px 2px; }
 
 /* ======================= subscreens-menu ======================= */
+/* NOTE: the jquery UI standard styles should be used instead:
+ * - ui-tabs
+ * - ui-tabs-nav
+ * - ui-tabs-selected
+ * - ui-tabs-panel
 
-ul.subscreens-menu {
-margin: 0px;
-/* border-top: 1px solid #DDDDDF; */
-padding: 0px 4px 0px 4px;
-list-style-type: none;
-}
-
-ul.subscreens-menu li {
-float: left;
-display: block;
-margin: 0px;
-padding: 0px 4px 0px 4px;
-font-size: 0.9em;
-font-weight: bold;
-}
-
-ul.subscreens-menu li a {
-text-decoration: none;
-}
-
-ul.subscreens-menu li.selected a {
-text-decoration: underline;
-}
-ul.subscreens-menu li a:hover {
-color: #000077;
-}
+ul.subscreens-menu { margin: 0px; padding: 0px 4px 0px 4px; list-style-type: none; }
+ul.subscreens-menu li { float: left; display: block; margin: 0px; padding: 0px 4px 0px 4px; font-size: 0.9em; font-weight: bold; }
+ul.subscreens-menu li a { text-decoration: none; }
+ul.subscreens-menu li.selected a { text-decoration: underline; }
+ul.subscreens-menu li a:hover { color: #000077; }
+ */
 
 /* ======================= XML Form Styles ======================= */
 
 fieldset.form-single-outer {
 margin: 4px;
--moz-border-radius: 4px;
--webkit-border-radius: 4px;
-border-radius: 4px;
-border: 1px solid #DDDDDF;
+-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #DDDDDF;
 padding: 4px;
 width: 95%;
 }
 table.form-list-outer {
 margin: 4px;
-border: 1px solid #DDDDDF;
--moz-border-radius: 4px;
--webkit-border-radius: 4px;
-border-radius: 4px;
+border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
 padding: 4px;
 width: 100%;
 }
 
-.single-form-field {
-}
+.form-title { padding: 0px 8px 0px 2px; font-size: 0.9em; font-weight: bold; }
+table.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
 
-.form-title {
-padding: 0px 8px 0px 2px;
-font-size: 0.9em;
-font-weight: bold;
-}
-table.form-list-outer .form-title {
-border-bottom: 1px solid #DDDDDF;
-white-space: nowrap;
-}
-.form-header-field {
-white-space: nowrap;
-}
+.form-header-field { white-space: nowrap; }
+label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
+tr.form-header th, th div.form-title { vertical-align: top; }
 
-label.form-title {
-vertical-align: middle;
-display: inline-block;
-width: 120px;
-}
-
-.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select {
-font-size: 0.8em;
-}
-
-tr.form-header th, th div.form-title {
-vertical-align: top;
-}
-tr.form-row td {
-font-size: 0.8em;
-}
+.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select, tr.form-row td { font-size: 0.8em; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
-a.form-order-by {
-margin: 0px;
-padding: 0px;
-font-family: "Courier New", monospace;
-font-weight: bold;
-font-size: 1.2em;
-vertical-align: top;
-}
-a.form-order-by:hover {
-color: blue;
-}
-a.active {
-color: red;
-}
-
-/* ========================= misc styles ========================= */
-
-.clear {
-clear: both;
-height: 0;
-visibility: hidden;
-}
+a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
+a.form-order-by:hover { color: blue; }
+a.active { color: red; }
 
 /* ======================= Screen-specific ======================= */
 
-#login-box {
-width: 300px;
-margin: 0px auto 0px auto;
-padding: 10px;
-}
+#login-box { width: 300px; margin: 0px auto 0px auto; padding: 10px; }
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
-#ArtifactHitBins-table thead tr th div input {
-font-size: 0.7em;
-}
+#ArtifactHitBins-table thead tr th div input { font-size: 0.7em; }

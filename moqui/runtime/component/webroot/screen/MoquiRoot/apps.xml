@@ -36,7 +36,6 @@
                         </container>
                     </widgets>
                 </section>
-                <container id="header-menu"><subscreens-menu/></container>
             </panel-header>
             <panel-center>
                 <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
@@ -46,6 +45,7 @@
                     <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
                 </section-iterate>
 
+                <container id="header-menu"><subscreens-menu/></container>
                 <subscreens-active id="apps-active"/>
             </panel-center>
             <panel-footer>

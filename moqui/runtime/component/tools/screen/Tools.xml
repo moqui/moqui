@@ -10,19 +10,11 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         include-child-content="true">
     <subscreens default-item="ArtifactHitBins">
     </subscreens>
     <widgets>
-        <container-panel id="tools-app">
-            <panel-header>
-                <label text="Moqui Tools App" type="h2"/>
-            </panel-header>
-            <panel-center>
-                <subscreens-panel id="tools-app-subscreen" type="tab"/>
-            </panel-center>
-        </container-panel>
+        <subscreens-panel id="tools-app" type="tab"/>
     </widgets>
 </screen>

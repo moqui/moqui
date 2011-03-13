@@ -26,6 +26,8 @@ This release includes:
   - Screen form-list multi=false support
   - Screen form-list support form-links in table
   - Screen form auto-complete for text-line
+  - Screen subscreen menu dynamic tabs (last level only) that loads
+    content as a standalone screen from the server with an ajax call
 - Tools Screens
   - Artifact Hit Bins
   - Cache List and Elements

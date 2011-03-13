@@ -222,7 +222,8 @@ class ScreenUrlInfo {
             if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?."@standalone" == "true") {
+            if (nextSd.screenNode?."@standalone" == "true" ||
+                    (sri.ec.web != null && sri.ec.web.requestParameters.lastStandalone == "true")) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -260,7 +261,8 @@ class ScreenUrlInfo {
             if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?."@standalone" == "true") {
+            if (nextSd.screenNode?."@standalone" == "true" ||
+                    (sri.ec.web != null && sri.ec.web.requestParameters.lastStandalone == "true")) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }

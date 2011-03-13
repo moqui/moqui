@@ -19,6 +19,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <subscreens-item name="ExampleWiki" menu-index="6" menu-title="Wiki"/>
     </subscreens>
     <widgets>
+        <subscreens-panel id="example-app" type="tab"/>
+        <!-- for a header and panel in an app can use something like this, though the basic approach above is cleaner:
         <container-panel id="example-app">
             <panel-header>
                 <label text="Moqui Example App" type="h2"/>
@@ -26,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <panel-center>
                 <subscreens-panel id="example-app-subscreen" type="tab"/>
             </panel-center>
-            <!-- No footer, use the one from webroot -->
         </container-panel>
+        -->
     </widgets>
 </screen>

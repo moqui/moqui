@@ -31,6 +31,7 @@ import org.moqui.entity.EntityListIterator
 import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.context.TemplateRenderer
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -43,6 +44,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected List<String> originalScreenPathNameList = new ArrayList<String>()
     protected ScreenUrlInfo screenUrlInfo = null
+    protected Map<String, ScreenUrlInfo> subscreenUrlInfos = new HashMap()
     protected int screenPathIndex = 0
 
     protected String baseLinkUrl = null
@@ -139,6 +141,9 @@ class ScreenRenderImpl implements ScreenRender {
 
         this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null)
         if (ec.web) {
+            // clear out the parameters used for special screen URL config
+            if (ec.web.requestParameters.lastStandalone) ec.web.requestParameters.lastStandalone = ""
+
             // add URL parameters, if there were any in the URL (in path info or after ?)
             this.screenUrlInfo.addParameters(ec.web.requestParameters)
         }
@@ -579,8 +584,10 @@ class ScreenRenderImpl implements ScreenRender {
     String getAfterFormWriterText() { return afterFormWriter == null ? "" : afterFormWriter.toString() }
 
     ScreenUrlInfo buildUrl(String subscreenPath) {
-        ScreenUrlInfo ui = new ScreenUrlInfo(this, null, null, subscreenPath)
-        return ui
+        if (subscreenUrlInfos.containsKey(subscreenPath)) return subscreenUrlInfos.get(subscreenPath)
+        ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath)
+        subscreenUrlInfos.put(subscreenPath, sui)
+        return sui
     }
 
     ScreenUrlInfo buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPath) {
@@ -663,6 +670,14 @@ class ScreenRenderImpl implements ScreenRender {
             if (pathNameList.get(i) != screenUrlInfo.fullPathNameList.get(i)) return false
         }
         return true
+    }
+    boolean isActiveInCurrentMenu() {
+        for (SubscreensItem ssi in getActiveScreenDef().subscreensByName.values()) {
+            if (!ssi.menuInclude) continue
+            ScreenUrlInfo urlInfo = buildUrl(ssi.name)
+            if (urlInfo.inCurrentScreenPath) return true
+        }
+        return false
     }
 
     ScreenUrlInfo getCurrentScreenUrl() { return screenUrlInfo }
