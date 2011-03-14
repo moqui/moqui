@@ -124,7 +124,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
     <!-- org.moqui.security.tarpit -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="ArtifactTarpit" package-name="org.moqui.security.tarpit">
         <description>If an artifact in the group specified is accessed by any user in the UserGroup maxHitsCount
             times in maxHitsDuration seconds then the user/artifact will be blocked fir tarpitDuration seconds.
@@ -148,6 +148,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
         <relationship type="one" related-entity-name="ArtifactType"/>
     </entity>
+    -->
 
     <!-- ========================================================= -->
     <!-- org.moqui.security.user -->

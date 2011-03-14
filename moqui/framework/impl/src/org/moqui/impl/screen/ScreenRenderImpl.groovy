@@ -185,8 +185,10 @@ class ScreenRenderImpl implements ScreenRender {
                 int screensPushed = 0
                 for (ScreenDefinition permSd in screenUrlInfo.screenPathDefList) {
                     screensPushed++
-                    ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                            permSd.screenNode."@require-authentication" != "false")
+                    // for these authz is not required, as long as something authorizes on the way to the transition, or
+                    // the transition itself, it's fine
+                    ec.artifactExecution.push(
+                            new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
                 }
 
                 ri = screenUrlInfo.targetTransition.run(this)
@@ -379,15 +381,15 @@ class ScreenRenderImpl implements ScreenRender {
             if (screenUrlInfo.renderPathDifference > 0) {
                 for (int i = 0; i < screenUrlInfo.renderPathDifference; i++) {
                     ScreenDefinition permSd = screenUrlInfo.screenPathDefList.get(i)
-                    ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                            permSd.screenNode."@require-authentication" != "false")
+                    ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
                     screensPushed++
                 }
             }
 
             // start rendering at the root section of the root screen
             ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
-            renderStartDef.render(this)
+            // if screenRenderDefList.size == 1 then it is the target screen, otherwise it's not
+            renderStartDef.render(this, screenUrlInfo.screenRenderDefList.size() == 1)
 
             for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
         } catch (Throwable t) {
@@ -481,7 +483,7 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
         try {
             writer.flush()
-            screenDef.render(this)
+            screenDef.render(this, (screenUrlInfo.screenRenderDefList.size() - 1) == screenPathIndex)
             writer.flush()
         } catch (Throwable t) {
             logger.error("Error rendering screen [${screenDef.location}]", t)

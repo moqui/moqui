@@ -165,10 +165,10 @@ class ScreenDefinition {
     }
 
     ScreenSection getRootSection() { return rootSection }
-    void render(ScreenRenderImpl sri) {
+    void render(ScreenRenderImpl sri, boolean isTargetScreen) {
         // NOTE: don't require authz if the screen doesn't require auth
         sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                screenNode."@require-authentication" != "false")
+                isTargetScreen ? screenNode."@require-authentication" != "false" : false)
         rootSection.render(sri)
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
         sri.ec.artifactExecution.pop()

@@ -62,13 +62,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
         artifactExecutionInfoHistory.add(aeii)
 
-        // if no authz required, just push it
-        if (!requiresAuthz || this.disableAuthz) {
-            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
-            this.artifactExecutionInfoStack.addFirst(aeii)
-            return
-        }
-
         // never do this for the view-entity we use below, would cause infinite recursion
         if (aeii.name == "org.moqui.security.authz.ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
@@ -98,29 +91,46 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         }
         EntityList aacvList = aacvFind.useCache(true).list()
 
+        EntityValue denyAacv = null
         if (aacvList.size() > 0) {
-            boolean foundDeny = false
             for (EntityValue aacv in aacvList) {
                 if (aacv.nameIsPattern == "Y" && !aeii.name.matches((String) aacv.artifactName)) continue
 
                 if (aacv.authzTypeEnumId == "AUTHZT_DENY") {
                     // we already know last was not always allow (checked above), so keep going in loop just in case we
                     // find an always allow in the query
-                    foundDeny = true
-                } else if (aacv.authzTypeEnumId == "AUTHZT_ALWAYS" || (aacv.authzTypeEnumId == "AUTHZT_ALLOW" && !foundDeny)) {
-                    aeii.setAuthorizedUserId(userId)
-                    aeii.setAuthorizedAuthzTypeId((String) aacv.authzTypeEnumId)
-                    aeii.setAuthorizedActionEnumId((String) aacv.authzActionEnumId)
-                    aeii.setAuthorizationInheritable(aacv.inheritAuthz == "Y")
+                    denyAacv = aacv
+                } else if (aacv.authzTypeEnumId == "AUTHZT_ALWAYS") {
+                    aeii.copyAacvInfo(aacv)
                     this.artifactExecutionInfoStack.addFirst(aeii)
                     return
+                } else if (aacv.authzTypeEnumId == "AUTHZT_ALLOW" && denyAacv == null) {
+                    // see if there are any denies in AEIs on lower on the stack
+                    boolean ancestorDeny = false
+                    for (ArtifactExecutionInfoImpl ancestorAeii in artifactExecutionInfoStack)
+                        if (ancestorAeii.authorizedAuthzTypeId == "AUTHZT_DENY") ancestorDeny = true
+
+                    if (!ancestorDeny) {
+                        aeii.copyAacvInfo(aacv)
+                        this.artifactExecutionInfoStack.addFirst(aeii)
+                        return
+                    }
                 }
             }
+        }
 
-            if (foundDeny) {
+        if (denyAacv != null) {
+            // record that this was an explicit deny (for push or exception in case something catches and handles it)
+            aeii.copyAacvInfo(denyAacv)
+
+            if (!requiresAuthz || this.disableAuthz) {
+                // if no authz required, just push it even though it was a failure
+                this.artifactExecutionInfoStack.addFirst(aeii)
+                return
+            } else {
                 StringBuilder warning = new StringBuilder()
                 warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
-                for (def warnAei in this.history) warning.append("\n").append(warnAei)
+                for (def warnAei in this.stack) warning.append("\n").append(warnAei)
                 logger.warn(warning.toString())
 
                 throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
@@ -135,12 +145,18 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             }
         }
 
-        // if we got here no authz found, blow up
-        StringBuilder warning = new StringBuilder()
-        warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
-        for (def warnAei in this.history) warning.append("\n").append(warnAei)
-        logger.warn(warning.toString())
-        throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+        if (!requiresAuthz || this.disableAuthz) {
+            // if no authz required, just push it even though it was a failure
+            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
+            this.artifactExecutionInfoStack.addFirst(aeii)
+        } else {
+            // if we got here no authz found, blow up
+            StringBuilder warning = new StringBuilder()
+            warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
+            for (def warnAei in this.stack) warning.append("\n").append(warnAei)
+            logger.warn(warning.toString())
+            throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+        }
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */

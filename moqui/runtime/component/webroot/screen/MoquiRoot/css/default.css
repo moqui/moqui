@@ -125,7 +125,7 @@ a.active { color: red; }
 
 /* ======================= Screen-specific ======================= */
 
-#login-box { width: 300px; margin: 0px auto 0px auto; padding: 10px; }
+#login-box { width: 280px; margin: 0px auto 0px auto; padding: 10px; }
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: 0.7em; }

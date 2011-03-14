@@ -21,10 +21,10 @@ This release includes:
   groovy expression and the -field implies otherwise)
 - Significantly more testing and bug fixes related to synchronization,
   performance, transactions, style, etc
-- Finished and tested localized messages and entity fields
+- Finished impl and test for localized messages and localized entity fields
 - XML Screens
   - Screen form-list multi=false support
-  - Screen form-list support form-links in table
+  - Screen form-list support form-links inside main form
   - Screen form auto-complete for text-line
   - Screen subscreen menu dynamic tabs (last level only) that loads
     content as a standalone screen from the server with an ajax call
@@ -42,6 +42,9 @@ This release includes:
   - Review and test to determine which entities can skip authz for view
     and create (ie some view only, some create only, some view and create)
   - For entity-implicit service calls just look for entity authz
+  - Support authorization on subscreens even if no authz on parent
+    screens, ie authz for EditExample even though not for ExampleApp or
+    any other screens in that app
 
 Notable features not yet implemented (TODO list):
 
@@ -65,10 +68,6 @@ Notable features not yet implemented (TODO list):
   - Database meta-data check/report against entity definitions
 - WebApp event actions
 - Artifact Execution Facade
-  - Support authorization on subscreens even if no authz on parent
-    screens, ie authz for EditExample even though not for ExampleApp or
-    any other screens in that app
-  - Artifact Tar-pitting based on configuration in db
   - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful)
   - Record-level authorization (ArtifactAuthzRecord/Cond)
@@ -92,8 +91,6 @@ Notable features not yet implemented (TODO list):
     - UserGroup screens (find/delete, edit (tab for users in group))
     - Artifact Group (find/delete, edit (tab for artifacts in group))
     - Authorization screen (find/delete, edit (tabs for record, service))
-    - Tarpit screen (find/update/delete,add screen)
-    - Tarpitted screen (find/update/delete,add screen)
 
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011
@@ -331,3 +328,9 @@ Features designed, but not to be included in 1.0 series
 - Entity Facade
   - EntitySync tool
   - Database-driven dynamic view entity
+- Artifact Execution Facade
+  - Artifact Tar-pitting based on configuration in db
+- Tools Screens
+  - Security screens
+    - Tarpit screen (find/update/delete,add screen)
+    - Tarpitted screen (find/update/delete,add screen)

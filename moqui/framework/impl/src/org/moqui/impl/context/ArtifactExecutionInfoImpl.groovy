@@ -12,6 +12,7 @@
 package org.moqui.impl.context
 
 import org.moqui.context.ArtifactExecutionInfo
+import org.moqui.entity.EntityValue
 
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
@@ -50,11 +51,18 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     boolean isAuthorizationInheritable() { return this.isAuthorizationInheritable }
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.isAuthorizationInheritable = isAuthorizationInheritable}
 
+    void copyAacvInfo(EntityValue aacv) {
+        setAuthorizedUserId((String) aacv.userId)
+        setAuthorizedAuthzTypeId((String) aacv.authzTypeEnumId)
+        setAuthorizedActionEnumId((String) aacv.authzActionEnumId)
+        setAuthorizationInheritable(aacv.inheritAuthz == "Y")
+    }
+
     void copyAuthorizedInfo(ArtifactExecutionInfoImpl aeii) {
-        this.authorizedUserId = aeii.authorizedUserId
-        this.authorizedAuthzTypeId = aeii.authorizedAuthzTypeId
-        this.authorizedActionEnumId = aeii.authorizedActionEnumId
-        this.isAuthorizationInheritable = aeii.isAuthorizationInheritable
+        setAuthorizedUserId(aeii.authorizedUserId)
+        setAuthorizedAuthzTypeId(aeii.authorizedAuthzTypeId)
+        setAuthorizedActionEnumId(aeii.authorizedActionEnumId)
+        setAuthorizationInheritable(aeii.isAuthorizationInheritable)
     }
 
     @Override
