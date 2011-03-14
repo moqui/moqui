@@ -146,6 +146,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- END   include-screen[@location=${.node["@location"]}][@share-scope=${.node["@share-scope"]?if_exists}] --></#if>
 </#macro>
 
+<#-- ============== Tree ============== -->
+<#-- TABLED, not to be part of 1.0:
+<#macro tree>
+</#macro>
+<#macro "tree-node">
+</#macro>
+<#macro "tree-sub-node">
+</#macro>
+-->
+
 <#-- ============== Render Mode Elements ============== -->
 <#macro "render-mode">
 <#if .node["text"]?has_content>

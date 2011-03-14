@@ -5,33 +5,29 @@ Moqui Framework Release Notes
 Release 1.0-preview3 - date not yet decided
 ===========================================================================
 
+Moqui 1.0-preview3 introduces various features to automatically and easily
+make the applications you build using the previously available tools easier
+to deploy and administer, and easier to test and get information about what
+is happening as artifacts are executed. These include multi-tenant support,
+artifact hit and hit bin tracking, database-driven artifact authorization
+with many advanced options, and Tools screens to administer and get
+information about various parts of the framework.
+
 This release includes:
 
 - All of the great features of 1.0-preview1 and 1.0-preview2
 - Multi-tenant support (shared app server, separate databases)
-- Visitor tracking
-- ArtifactHit and ArtifactHitBin tracking for screen, screen-content,
-  transition, service and entity (bin only)
-- User preference handling
-- Simplified sequenced ID API for both primary and secondary sequenced IDs
-  and moved configuration to entity definition, and methods to EntityValue
-- Cleanups for xml-actions elements: from-field to from, call-service to
-  service-call, call-script to script; better now than later to make the
-  XML a bit cleaner and more clear (for example from-field can be any
-  groovy expression and the -field implies otherwise)
-- Significantly more testing and bug fixes related to synchronization,
-  performance, transactions, style, etc
-- Finished impl and test for localized messages and localized entity fields
+- Finished impl and test for localized messages and entity fields
 - XML Screens
   - Screen form-list multi=false support
   - Screen form-list support form-links inside main form
   - Screen form auto-complete for text-line
   - Screen subscreen menu dynamic tabs (last level only) that loads
     content as a standalone screen from the server with an ajax call
-- Tools Screens
-  - Artifact Hit Bins
-  - Cache List and Elements
-  - Localization: Messages, Entity Fields
+- Visitor tracking
+- ArtifactHit and ArtifactHitBin tracking for screen, screen-content,
+  transition, service and entity (bin only)
+- User preference handling
 - Artifact Execution Facade
   - ArtifactExecutionFacade for artifact stack tracking
   - Artifact Authorization based on configuration in db
@@ -47,6 +43,18 @@ This release includes:
     any other screens in that app
   - Record-level authorization (ArtifactAuthzRecord/Cond)
   - Authorization with a service (ArtifactAuthzService)
+- Tools Screens
+  - Artifact Hit Bins
+  - Cache List and Elements
+  - Localization: Messages, Entity Fields
+- Simplified sequenced ID API for both primary and secondary sequenced IDs
+  and moved configuration to entity definition, and methods to EntityValue
+- Cleanups for xml-actions elements: from-field to from, call-service to
+  service-call, call-script to script; better now than later to make the
+  XML a bit cleaner and more clear (for example from-field can be any
+  groovy expression and the -field implies otherwise)
+- Significantly more testing and bug fixes related to synchronization,
+  performance, transactions, style, etc
 
 Notable features not yet implemented (TODO list):
 
@@ -57,7 +65,6 @@ Notable features not yet implemented (TODO list):
   - Screen form field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
   - Screen form-list multi=true support
-  - Screen tree elements
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
@@ -67,21 +74,25 @@ Notable features not yet implemented (TODO list):
 - Entity Facade
   - Entity complex aliases in views
   - View entity view-link.econdition* support (EntityFindBuilder:196)
-  - Database meta-data check/report against entity definitions
 - WebApp event actions
 - Artifact Execution Facade
-  - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
+  - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful)
-- Clean up JavaDoc/GroovyDoc comments and post to site
+- Documentation
+  - Clean up JavaDoc/GroovyDoc comments and post to site
+  - XSD References (use tool to generate HTML from XSD)
+  - Introduction to Moqui Framework (doc/book for basic training and
+    demonstration of features)
 - Tools Screens
-  - Entity Data UI (entity list, find on entity with delete, view entity
-    record with related, create/update entity record with tabs for
-    list/update/delete/add dependent entities)
-  - Entity Data Import and Export screens
+  - Entity
+    - Entity Data UI (entity list, find on entity with delete, view entity
+      record with related, create/update entity record with tabs for
+      list/update/delete/add dependent entities)
+    - Entity Data Import and Export screens
+    - SQL Query Run/View
+    - Database meta-data check/report against entity definitions
   - Scheduler (view scheduled services with cancel, add scheduled service)
-  - SQL Query Run/View
   - Script Run (or groovy shell?)
-  - Artifact Info with in/out references
   - Visit and Hit Info/Stats
     - Find Visits screen
     - View Visit details with hit list
@@ -91,6 +102,7 @@ Notable features not yet implemented (TODO list):
     - UserGroup screens (find/delete, edit (tab for users in group))
     - Artifact Group (find/delete, edit (tab for artifacts in group))
     - Authorization screen (find/delete, edit (tabs for record, service))
+  - Artifact Info screens (with in/out references for all)
 
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011
@@ -321,6 +333,7 @@ Features designed, but not to be included in 1.0 series
 ===========================================================================
 
 - XML Screens
+  - Screen tree elements
   - Dynamic Screens (database-driven: DynamicScreen*)
   - Dynamic Forms (database-driven: DynForm*)
 - Service Facade
