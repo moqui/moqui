@@ -146,11 +146,15 @@ stop it just press <ctrl-c> (or your preferred alternative).
 - moqui (from https://moqui.svn.sourceforge.net/svnroot/moqui/trunk/moqui)
   - framework
     - api       : Java API, standard entities, services, data, XSDs, etc
+    - build     : Results of framework build go here (classes, jars, etc)
     - impl      : Implementation of the framework
     - start     : Startup code for the executable WAR
     - webapp    : The WEB-INF/web.xml file lives here
   - runtime
     - component : Components to deploy
+      - example : An example application
+      - tools   : Framework administration and maintenance tools
+      - webroot : Root Screen and supporting content
     - conf      : Configuration files separated by dev, staging, prod, etc
     - db        : Database files for Derby, etc will go here
     - lib       : JAR files to add to classpath
@@ -158,4 +162,3 @@ stop it just press <ctrl-c> (or your preferred alternative).
     - rep       : JCR Repositories
     - template  : General Templates
     - tmp       : Temporary files
-    - webroot   : Root Screen and supporting content
