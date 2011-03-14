@@ -45,6 +45,8 @@ This release includes:
   - Support authorization on subscreens even if no authz on parent
     screens, ie authz for EditExample even though not for ExampleApp or
     any other screens in that app
+  - Record-level authorization (ArtifactAuthzRecord/Cond)
+  - Authorization with a service (ArtifactAuthzService)
 
 Notable features not yet implemented (TODO list):
 
@@ -70,8 +72,6 @@ Notable features not yet implemented (TODO list):
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push(aei) (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful)
-  - Record-level authorization (ArtifactAuthzRecord/Cond)
-  - Authorization with a service (ArtifactAuthzService)
 - Clean up JavaDoc/GroovyDoc comments and post to site
 - Tools Screens
   - Entity Data UI (entity list, find on entity with delete, view entity

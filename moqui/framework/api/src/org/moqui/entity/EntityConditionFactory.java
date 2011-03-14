@@ -42,4 +42,7 @@ public interface EntityConditionFactory {
     EntityCondition makeConditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp);
 
     EntityCondition makeConditionWhere(String sqlWhereClause);
+
+    /** Get a ComparisonOperator using an enumId for enum type "ENTITY_COMP_OP" */
+    EntityCondition.ComparisonOperator comparisonOperatorFromEnumId(String enumId);
 }

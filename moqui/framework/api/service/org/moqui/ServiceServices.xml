@@ -11,25 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.0.xsd">
-    <!-- ServiceFacade Engine Interfaces -->
-    <service verb="check" noun="ServiceEcaCondition" type="interface">
-        <description>Interface to describe services which are used as SECA conditions</description>
-        <in-parameters>
-            <parameter name="context" type="Map" required="true"/>
-            <parameter name="serviceName" type="String" required="true"/>
-        </in-parameters>
-        <out-parameters>
-            <parameter name="conditionReply" type="Boolean" required="true"/>
-        </out-parameters>
-    </service>
-    <service verb="check" noun="EffectiveDateEcaCondition" type="script">
-        <implements service="checkServiceEcaCondition"/>
-        <in-parameters>
-            <parameter name="fromDate" type="Timestamp"/>
-            <parameter name="thruDate" type="Timestamp"/>
-        </in-parameters>
-    </service>
-
+    <!-- ServiceFacade Interfaces -->
     <service verb="check" noun="ServiceMcaCondition" type="interface">
         <description>Interface to describe services which are used as SMCA conditions</description>
         <in-parameters><parameter name="messageWrapper" type="TODO.MimeMessageWrapper" required="true"/></in-parameters>

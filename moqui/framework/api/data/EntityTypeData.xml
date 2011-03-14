@@ -11,11 +11,14 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
+    <!-- Tabled for now, not to be part of 1.0:
     <EnumerationType description="Entity Group Entry Application Type" enumTypeId="ENTGRP_ENTRY_APPL"/>
     <Enumeration description="Include" enumCode="INCLUDE" enumId="ESIA_INCLUDE" sequenceNum="1" enumTypeId="ENTGRP_ENTRY_APPL"/>
     <Enumeration description="Exclude" enumCode="EXCLUDE" enumId="ESIA_EXCLUDE" sequenceNum="2" enumTypeId="ENTGRP_ENTRY_APPL"/>
     <Enumeration description="Always Include" enumCode="ALWAYS" enumId="ESIA_ALWAYS" sequenceNum="3" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    -->
 
+    <!-- Tabled for now, not to be part of 1.0:
     <StatusType description="Entity Sync Run Status" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
     <StatusItem description="Not Started" sequenceNum="1" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
     <StatusItem description="Running" sequenceNum="2" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
@@ -24,17 +27,18 @@ This Work includes contributions authored by David E. Jones, not as a
     <StatusItem description="Other Error" sequenceNum="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
     <StatusItem description="Service Call Error" sequenceNum="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
     <StatusItem description="Data Error" sequenceNum="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    -->
 
-    <EnumerationType description="Entity Condition Operator" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="less" enumCode="LESS" enumId="ENTCO_LESS" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="greater" enumCode="GREATER" enumId="ENTCO_GREATER" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="less-equals" enumCode="LESS_EQ" enumId="ENTCO_LESS_EQ" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="greater-equals" enumCode="GREATER_EQ" enumId="ENTCO_GREATER_EQ" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="equals" enumCode="EQUALS" enumId="ENTCO_EQUALS" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="not-equals" enumCode="NOT_EQUALS" enumId="ENTCO_NOT_EQUALS" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="in" enumCode="IN" enumId="ENTCO_IN" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="not-in" enumCode="NOT_IN" enumId="ENTCO_NOT_IN" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="between" enumCode="BETWEEN" enumId="ENTCO_BETWEEN" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="like" enumCode="LIKE" enumId="ENTCO_LIKE" enumTypeId="ENTITY_COND_OP"/>
-    <Enumeration description="not-like" enumCode="NOT_LIKE" enumId="ENTCO_NOT_LIKE" enumTypeId="ENTITY_COND_OP"/>
+    <EnumerationType description="Entity Comparison Operator" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="less" enumCode="LESS" enumId="ENTCO_LESS" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="greater" enumCode="GREATER" enumId="ENTCO_GREATER" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="less-equals" enumCode="LESS_EQ" enumId="ENTCO_LESS_EQ" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="greater-equals" enumCode="GREATER_EQ" enumId="ENTCO_GREATER_EQ" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="equals" enumCode="EQUALS" enumId="ENTCO_EQUALS" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="not-equals" enumCode="NOT_EQUALS" enumId="ENTCO_NOT_EQUALS" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="in" enumCode="IN" enumId="ENTCO_IN" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="not-in" enumCode="NOT_IN" enumId="ENTCO_NOT_IN" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="between" enumCode="BETWEEN" enumId="ENTCO_BETWEEN" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="like" enumCode="LIKE" enumId="ENTCO_LIKE" enumTypeId="ENTITY_COMP_OP"/>
+    <Enumeration description="not-like" enumCode="NOT_LIKE" enumId="ENTCO_NOT_LIKE" enumTypeId="ENTITY_COMP_OP"/>
 </entity-facade-xml>

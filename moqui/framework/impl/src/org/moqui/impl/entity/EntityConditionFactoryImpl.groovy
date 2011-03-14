@@ -74,6 +74,23 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         return new WhereCondition(this, sqlWhereClause)
     }
 
+    EntityCondition.ComparisonOperator comparisonOperatorFromEnumId(String enumId) {
+        switch (enumId) {
+            case "ENTCO_LESS": return EntityCondition.ComparisonOperator.LESS_THAN
+            case "ENTCO_GREATER": return EntityCondition.ComparisonOperator.GREATER_THAN
+            case "ENTCO_LESS_EQ": return EntityCondition.ComparisonOperator.LESS_THAN_EQUAL_TO
+            case "ENTCO_GREATER_EQ": return EntityCondition.ComparisonOperator.GREATER_THAN_EQUAL_TO
+            case "ENTCO_EQUALS": return EntityCondition.ComparisonOperator.EQUALS
+            case "ENTCO_NOT_EQUALS": return EntityCondition.ComparisonOperator.NOT_EQUAL
+            case "ENTCO_IN": return EntityCondition.ComparisonOperator.IN
+            case "ENTCO_NOT_IN": return EntityCondition.ComparisonOperator.NOT_IN
+            case "ENTCO_BETWEEN": return EntityCondition.ComparisonOperator.BETWEEN
+            case "ENTCO_LIKE": return EntityCondition.ComparisonOperator.LIKE
+            case "ENTCO_NOT_LIKE": return EntityCondition.ComparisonOperator.NOT_LIKE
+            default: return null
+        }
+    }
+
     EntityCondition makeActionCondition(String fieldName, String operator, Object fromField, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
         if (ignore) return null
 
