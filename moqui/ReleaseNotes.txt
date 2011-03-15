@@ -9,15 +9,18 @@ Moqui 1.0-preview3 introduces various features to automatically and easily
 make the applications you build using the previously available tools easier
 to deploy and administer, and easier to test and get information about what
 is happening as artifacts are executed. These include multi-tenant support,
-artifact hit and hit bin tracking, database-driven artifact authorization
-with many advanced options, and Tools screens to administer and get
-information about various parts of the framework.
+artifact hit and hit bin tracking (for screens, transitions, services, and
+entities), database-driven artifact authorization with many advanced
+options, and Tools screens to administer and get information about various
+parts of the framework.
 
 This release includes:
 
 - All of the great features of 1.0-preview1 and 1.0-preview2
 - Multi-tenant support (shared app server, separate databases)
 - Finished impl and test for localized messages and entity fields
+- WebApp event actions for first-hit-in-visit, before-request,
+  after-request, after-login, before-logout
 - XML Screens
   - Screen form-list multi=false support
   - Screen form-list support form-links inside main form
@@ -74,7 +77,6 @@ Notable features not yet implemented (TODO list):
 - Entity Facade
   - Entity complex aliases in views
   - View entity view-link.econdition* support (EntityFindBuilder:196)
-- WebApp event actions
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful)

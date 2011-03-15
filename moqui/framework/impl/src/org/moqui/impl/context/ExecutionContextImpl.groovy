@@ -35,17 +35,14 @@ class ExecutionContextImpl implements ExecutionContext {
     protected String tenantId = null
 
     protected WebFacadeImpl webFacade = null
-    protected UserFacadeImpl userFacade
-    protected MessageFacadeImpl messageFacade
-    protected ArtifactExecutionFacadeImpl artifactExecutionFacade
+    protected UserFacadeImpl userFacade = null
+    protected MessageFacadeImpl messageFacade = null
+    protected ArtifactExecutionFacadeImpl artifactExecutionFacade = null
 
     ExecutionContextImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         // NOTE: no WebFacade init here, wait for call in to do that
-        this.userFacade = new UserFacadeImpl(this)
-        this.messageFacade = new MessageFacadeImpl()
-        this.artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this)
-
+        // NOTE: don't init userFacade, messageFacade, artifactExecutionFacade here, lazy init when first used instead
         // put reference to this in the context root
         contextRoot.put("ec", this)
     }
@@ -65,13 +62,15 @@ class ExecutionContextImpl implements ExecutionContext {
     WebFacade getWeb() { this.webFacade }
 
     /** @see org.moqui.context.ExecutionContext#getUser() */
-    UserFacade getUser() { this.userFacade }
+    UserFacade getUser() { if (userFacade) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
 
     /** @see org.moqui.context.ExecutionContext#getMessage() */
-    MessageFacade getMessage() { this.messageFacade }
+    MessageFacade getMessage() { if (messageFacade) return messageFacade else return (messageFacade = new MessageFacadeImpl()) }
 
     /** @see org.moqui.context.ExecutionContext#getArtifactExecution() */
-    ArtifactExecutionFacade getArtifactExecution() { this.artifactExecutionFacade }
+    ArtifactExecutionFacade getArtifactExecution() {
+        if (artifactExecutionFacade) return artifactExecutionFacade else return (artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this))
+    }
 
     // ==== More Permanent Objects (get from the factory instead of locally) ===
 
@@ -103,7 +102,10 @@ class ExecutionContextImpl implements ExecutionContext {
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
         this.tenantId = request.session.getAttribute("moqui.tenantId")
         this.webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
-        this.userFacade.initFromHttpRequest(request, response)
+        this.getUser().initFromHttpRequest(request, response)
+
+        // this is the beginning of a request, so trigger before-request actions
+        this.webFacade.runBeforeRequestActions()
     }
 
     void changeTenant(String tenantId) {
@@ -115,6 +117,9 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#destroy() */
     void destroy() {
+        // if webFacade exists this is the end of a request, so trigger after-request actions
+        if (this.webFacade) this.webFacade.runAfterRequestActions()
+
         // make sure there are no transactions open, if any commit them all now
         this.ecfi.transactionFacade.destroyAllInThread()
         // clean up resources, like JCR session

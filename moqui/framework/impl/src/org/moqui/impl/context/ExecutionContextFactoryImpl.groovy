@@ -23,6 +23,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.moqui.entity.EntityValue
 import java.sql.Timestamp
+import org.moqui.impl.actions.XmlAction
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -41,6 +42,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected Map<String, EntityFacadeImpl> entityFacadeByTenantMap = new HashMap<String, EntityFacadeImpl>()
 
     protected Map<String, Map<String, Object>> artifactHitBinByType = new HashMap()
+
+    protected Map<String, WebappInfo> webappInfoMap = new HashMap()
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -620,6 +623,48 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             for (Node overrideActionNode in overrideActionNodes) {
                 actionsNode.append(overrideActionNode)
             }
+        }
+    }
+
+    Node getWebappNode(String webappName) { return (Node) confXmlRoot."webapp-list"[0]."webapp".find({ it."@name" == webappName }) }
+
+    WebappInfo getWebappInfo(String webappName) {
+        if (webappInfoMap.containsKey(webappName)) return webappInfoMap.get(webappName)
+        return makeWebappInfo(webappName)
+    }
+    protected synchronized WebappInfo makeWebappInfo(String webappName) {
+        WebappInfo wi = new WebappInfo(webappName, this)
+        webappInfoMap.put(webappName, wi)
+        return wi
+    }
+
+    static class WebappInfo {
+        String webappName
+        XmlAction firstHitInVisitActions = null
+        XmlAction beforeRequestActions = null
+        XmlAction afterRequestActions = null
+        XmlAction afterLoginActions = null
+        XmlAction beforeLogoutActions = null
+
+        WebappInfo(String webappName, ExecutionContextFactoryImpl ecfi) {
+            this.webappName = webappName
+            // prep actions
+            Node webappNode = ecfi.getWebappNode(webappName)
+            if (webappNode."first-hit-in-visit")
+                this.firstHitInVisitActions = new XmlAction(ecfi, (Node) webappNode."first-hit-in-visit"[0]."actions"[0],
+                        "webapp_${webappName}.first_hit_in_visit.actions")
+            if (webappNode."before-request")
+                this.beforeRequestActions = new XmlAction(ecfi, (Node) webappNode."before-request"[0]."actions"[0],
+                        "webapp_${webappName}.before_request.actions")
+            if (webappNode."after-request")
+                this.afterRequestActions = new XmlAction(ecfi, (Node) webappNode."after-request"[0]."actions"[0],
+                        "webapp_${webappName}.after_request.actions")
+            if (webappNode."after-login")
+                this.afterLoginActions = new XmlAction(ecfi, (Node) webappNode."after-login"[0]."actions"[0],
+                        "webapp_${webappName}.after_login.actions")
+            if (webappNode."before-logout")
+                this.beforeLogoutActions = new XmlAction(ecfi, (Node) webappNode."before-logout"[0]."actions"[0],
+                        "webapp_${webappName}.before_logout.actions")
         }
     }
 }

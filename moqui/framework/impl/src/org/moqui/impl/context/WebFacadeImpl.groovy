@@ -30,6 +30,9 @@ import org.apache.commons.fileupload.FileItemFactory
 import org.apache.commons.fileupload.FileItem
 import org.apache.commons.io.FileCleaningTracker
 import net.sf.json.JSONArray
+import org.moqui.impl.actions.XmlAction
+import org.moqui.context.ExecutionContext
+import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -113,6 +116,26 @@ class WebFacadeImpl implements WebFacade {
     }
 
     ExecutionContextImpl getEci() { eci }
+    void runFirstHitInVisitActions() {
+        WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
+        if (wi.firstHitInVisitActions) wi.firstHitInVisitActions.run(eci)
+    }
+    void runBeforeRequestActions() {
+        WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
+        if (wi.beforeRequestActions) wi.beforeRequestActions.run(eci)
+    }
+    void runAfterRequestActions() {
+        WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
+        if (wi.afterRequestActions) wi.afterRequestActions.run(eci)
+    }
+    void runAfterLoginActions() {
+        WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
+        if (wi.afterLoginActions) wi.afterLoginActions.run(eci)
+    }
+    void runBeforeLogoutActions() {
+        WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
+        if (wi.beforeLogoutActions) wi.beforeLogoutActions.run(eci)
+    }
 
     String getRequestUrl() {
         StringBuilder requestUrl = new StringBuilder()

@@ -36,13 +36,9 @@ class ScreenSection {
             condition = new XmlAction(ecfi, (Node) sectionNode."condition"[0].children()[0], location + ".condition")
         }
         // prep actions
-        if (sectionNode.actions) {
-            actions = new XmlAction(ecfi, (Node) sectionNode."actions"[0], location + ".actions")
-        }
+        if (sectionNode.actions) actions = new XmlAction(ecfi, (Node) sectionNode."actions"[0], location + ".actions")
         // prep widgets
-        if (sectionNode.widgets) {
-            widgets = new ScreenWidgets(ecfi, (Node) sectionNode."widgets"[0], location + ".widgets")
-        }
+        if (sectionNode.widgets) widgets = new ScreenWidgets(ecfi, (Node) sectionNode."widgets"[0], location + ".widgets")
         // prep fail-widgets
         if (sectionNode."fail-widgets") {
             failWidgets = new ScreenWidgets(ecfi, (Node) sectionNode."fail-widgets"[0], location + ".fail-widgets")

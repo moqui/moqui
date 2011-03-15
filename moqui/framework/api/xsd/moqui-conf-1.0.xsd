@@ -99,8 +99,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="first-hit-in-visit"/>
-                <xs:element minOccurs="0" ref="after-request"/>
                 <xs:element minOccurs="0" ref="before-request"/>
+                <xs:element minOccurs="0" ref="after-request"/>
                 <xs:element minOccurs="0" ref="after-login"/>
                 <xs:element minOccurs="0" ref="before-logout"/>
             </xs:sequence>

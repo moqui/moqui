@@ -108,6 +108,9 @@ class UserFacadeImpl implements UserFacade {
                 } finally {
                     eci.artifactExecution.enableAuthz()
                 }
+
+                // consider this the first hit in the visit, so trigger the actions
+                eci.web.runFirstHitInVisitActions()
             }
         }
     }
@@ -249,6 +252,11 @@ class UserFacadeImpl implements UserFacade {
             eci.service.sync().name("create", "UserLoginHistory").parameters(ulhContext).call()
         }
 
+        if (successful && eci.web) {
+            // after successful login trigger the after-login actions
+            eci.web.runAfterLoginActions()
+        }
+
         return successful
     }
 
@@ -309,7 +317,11 @@ class UserFacadeImpl implements UserFacade {
     }
 
     void logoutUser() {
-        if (this.userIdStack) this.userIdStack.removeFirst()
+        // before logout trigger the before-logout actions
+        if (eci.web) eci.web.runBeforeLogoutActions()
+
+        if (userIdStack) userIdStack.removeFirst()
+
         if (eci.web) {
             eci.web.session.removeAttribute("moqui.userId")
             eci.web.session.removeAttribute("moqui.tenantId")
