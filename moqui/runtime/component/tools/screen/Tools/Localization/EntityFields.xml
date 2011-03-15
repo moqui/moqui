@@ -12,14 +12,14 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-title="Fields" default-menu-index="2">
+        default-menu-title="Entity Fields" default-menu-index="2">
 
     <transition name="createLocalizedEntityField">
         <service-call name="create#LocalizedEntityField"/>
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedEntityField">
-        <service-call name="update#LocalizedEntityField"/>
+        <service-call name="update#LocalizedEntityField" multi="true"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedEntityField">
@@ -56,7 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </container-dialog>
         </container>
         <form-list name="UpdateLocalizedEntityFields" list="localizedEntityFieldList"
-                   transition="updateLocalizedEntityField" multi="false">
+                   transition="updateLocalizedEntityField" multi="true">
             <field name="entityName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="12"/></header-field>
                 <default-field><display/></default-field>
@@ -76,11 +76,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="localized">
                 <default-field><text-area rows="2" cols="35"/></default-field>
             </field>
-            <field name="submit">
-                <header-field title="Find"><submit/></header-field>
+            <field name="update">
                 <default-field title="Update"><submit/></default-field>
             </field>
             <field name="delete">
+                <header-field title="Find"><submit/></header-field>
                 <default-field>
                     <link text="Delete" url="deleteLocalizedEntityField">
                         <parameter name="entityName"/><parameter name="fieldName"/><parameter name="locale"/>

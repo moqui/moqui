@@ -19,7 +19,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedMessage">
-        <service-call name="update#LocalizedMessage"/>
+        <service-call name="update#LocalizedMessage" multi="true"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedMessage">
@@ -49,7 +49,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 </form-single>
             </container-dialog>
         </container>
-        <form-list name="UpdateLocalizedMessages" list="localizedMessageList" transition="updateLocalizedMessage">
+        <form-list name="UpdateLocalizedMessages" list="localizedMessageList" transition="updateLocalizedMessage"
+                   multi="true">
             <field name="original">
                 <header-field show-order-by="true"><text-find hide-options="true" size="15"/></header-field>
                 <default-field><display/></default-field>
@@ -61,11 +62,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="localized">
                 <default-field><text-area rows="2" cols="60"/></default-field>
             </field>
-            <field name="submit">
-                <header-field title="Find"><submit/></header-field>
+            <field name="update">
                 <default-field title="Update"><submit/></default-field>
             </field>
             <field name="delete">
+                <header-field title="Find"><submit/></header-field>
                 <default-field>
                     <link text="Delete" url="deleteLocalizedMessage">
                         <parameter name="original"/><parameter name="locale"/>

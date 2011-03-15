@@ -36,6 +36,12 @@ public interface ServiceCallSync extends ServiceCall {
      */
     ServiceCallSync requireNewTransaction(boolean requireNewTransaction);
 
+    /** If true expect multiple sets of parameters passed in a single map, each set with a suffix of an underscore
+     * and the row of the number, ie something like "userId_8" for the 8th row.
+     * @return Reference to this for convenience.
+     */
+    ServiceCallSync multi(boolean mlt);
+
     /* * If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
      * @return Reference to this for convenience.
      */

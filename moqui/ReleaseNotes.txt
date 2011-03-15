@@ -22,7 +22,8 @@ This release includes:
 - WebApp event actions for first-hit-in-visit, before-request,
   after-request, after-login, before-logout
 - XML Screens
-  - Screen form-list multi=false support
+  - Screen form-list multi=false support (one form per row)
+  - Screen form-list multi=true support, service call multi=true
   - Screen form-list support form-links inside main form
   - Screen form auto-complete for text-line
   - Screen subscreen menu dynamic tabs (last level only) that loads
@@ -68,7 +69,6 @@ Notable features not yet implemented (TODO list):
     validation (http://docs.jquery.com/Plugins/Validation)
   - Screen form field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
-  - Screen form-list multi=true support
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade

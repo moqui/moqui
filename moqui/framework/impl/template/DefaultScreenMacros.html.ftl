@@ -300,6 +300,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
     <#assign isMulti = formNode["@multi"]?if_exists == "true">
+    <#assign isMultiFinalRow = false>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
     <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
     <#if formNode["field-layout"]?has_content>
@@ -319,30 +320,34 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if needHeaderForm>
         </form>
     </#if>
-    <#if isMulti>
-        <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
-    </#if>
-            <tbody>
+        <tbody>
+        <#if isMulti>
+            <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+        </#if>
             <#list listObject as listEntry>
                 <#assign listEntryIndex = listEntry_index>
                 <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                 ${sri.startFormListRow(formNode["@name"], listEntry)}
-            <#if !isMulti>
-                <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
-            </#if>
+                <#if !isMulti>
+                    <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
+                </#if>
                 <tr class="form-row">
                     <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
                 </tr>
-            <#if !isMulti>
-                </form>
-            </#if>
+                <#if !isMulti>
+                    </form>
+                </#if>
                 ${sri.endFormListRow()}
             </#list>
-            </tbody>
-            ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
-    <#if isMulti>
-        </form>
-    </#if>
+        <#if isMulti>
+            <tr class="form-row">
+                <#assign isMultiFinalRow = true>
+                <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+            </tr>
+            </form>
+        </#if>
+        </tbody>
+        ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
     </table>
     ${sri.getAfterFormWriterText()}
     </#if>
@@ -400,7 +405,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
     <td>
-        <#t><#if isMulti && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
+        <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
+        <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
         <#if fieldSubNode["link"]?has_content>
             <#assign linkNode = fieldSubNode["link"][0]>
             <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
@@ -415,8 +421,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
-<#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}</#macro>
-<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
+<#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?exists>_${listEntryIndex}</#if></#macro>
+<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntryIndex?exists>_${listEntryIndex}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -426,8 +432,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#-- ================== Form Field Widgets ==================== -->
 
 <#macro "check">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
-    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
+    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#assign id><@fieldId .node/></#assign>
     <#assign curName><@fieldName .node/></#assign>
