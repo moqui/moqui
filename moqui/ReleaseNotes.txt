@@ -48,6 +48,7 @@ This release includes:
   - Authorization with a service (ArtifactAuthzService)
 - Tools Screens
   - Artifact Hit Bins
+  - Visit and Hit Info/Stats (Find Visits, Visit details with hit list)
   - Cache List and Elements
   - Localization: Messages, Entity Fields
 - Simplified sequenced ID API for both primary and secondary sequenced IDs
@@ -95,9 +96,6 @@ Notable features not yet implemented (TODO list):
     - Database meta-data check/report against entity definitions
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
-  - Visit and Hit Info/Stats
-    - Find Visits screen
-    - View Visit details with hit list
   - Security screens (consider making Entity Data UI good enough for these)
     - UserAccount screens (find/delete, edit UA (with tabs for preferences,
       themes, login, history, visit history, groups, change password))

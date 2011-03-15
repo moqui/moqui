@@ -91,7 +91,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
     }
 
-    EntityCondition makeActionCondition(String fieldName, String operator, Object fromField, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
+    EntityCondition makeActionCondition(String fieldName, String operator, String fromExpr, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
         if (ignore) return null
 
         if (toFieldName) {
@@ -100,14 +100,13 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             return ec
         } else {
             Object condValue = null
-            if (fromField) {
-                condValue = fromField
-            } else if (value) {
+            if (value) {
                 // NOTE: have to convert value (if needed) later on because we don't know which entity/field this is for, or change to pass in entity?
                 condValue = value
-            } else {
-                if (ignoreIfEmpty) return null
+            } else if (fromExpr) {
+                condValue = this.efi.ecfi.resourceFacade.evaluateContextField(fromExpr, "")
             }
+            if (ignoreIfEmpty && !condValue) return null
 
             EntityCondition ec = makeCondition(fieldName, getComparisonOperator(operator), condValue)
             if (ignoreCase) ec.ignoreCase()

@@ -154,7 +154,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="field-align-set">
-        <xs:annotation><xs:documentation>Fields in this set will be side-by-side for vertical/single forms and up-and-down for horizontal/list forms.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Fields in this set will be side-by-side for vertical/single forms and
+            up-and-down for horizontal/list forms.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="field-ref"/>

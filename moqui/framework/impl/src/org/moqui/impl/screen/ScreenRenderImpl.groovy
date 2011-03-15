@@ -650,7 +650,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (fieldNode."@entry-name") return ec.resource.evaluateContextField(fieldNode."@entry-name", null)
         String fieldName = fieldNode."@name"
         Object value = ec.context.get(fieldName)
-        if (!value && ec.context.fieldValues) value = ec.context.fieldValues.get(fieldName)
+        if (!value && ec.context.fieldValues && fieldNode.parent().name() == "form-single") value = ec.context.fieldValues.get(fieldName)
         if (!value && ec.web) value = ec.web.parameters.get(fieldName)
 
         if (value) return value as String

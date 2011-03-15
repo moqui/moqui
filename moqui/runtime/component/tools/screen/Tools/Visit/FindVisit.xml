@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
+
+    <transition name="visitDetail">
+        <default-response url="../VisitDetail"/>
+    </transition>
+
+    <actions>
+        <entity-find entity-name="Visit" list="visitList" limit="50">
+            <search-form-inputs default-order-by="-fromDate"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-list name="VisitList" list="visitList">
+            <field name="fromDate">
+                <header-field show-order-by="true"><text-find hide-options="true" size="16"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="visitId">
+                <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><link text="${visitId}" url="visitDetail"><parameter name="visitId"/></link></default-field>
+            </field>
+            <field name="visitorId">
+                <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="userId">
+                <header-field show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="serverIpAddress">
+                <header-field title="Server IP"><text-find hide-options="true" size="8"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="clientIpAddress">
+                <header-field title="Client IP"><text-find hide-options="true" size="8"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="initialRequest">
+                <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="find"><header-field title="Find"><submit/></header-field></field>
+        </form-list>
+    </widgets>
+</screen>

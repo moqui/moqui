@@ -6,25 +6,25 @@
     <cache-list>
         <!-- Development Mode - don't use these for production, load testing, etc.
              Cleared by default every 10 seconds from when loaded into cache. -->
-        <cache name="entity.definition" expire-time-idle="10"/>
+        <cache name="entity.definition" expire-time-idle="30"/>
         <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
         <cache name="entity.location" expire-time-idle="120"/>
 
-        <cache name="service.location" expire-time-idle="10"/>
-        <cache name="service.java.class" expire-time-idle="10"/>
+        <cache name="service.location" expire-time-idle="20"/>
+        <cache name="service.java.class" expire-time-idle="20"/>
 
-        <cache name="screen.location" expire-time-idle="10"/>
-        <cache name="screen.template.mode" expire-time-idle="10"/>
-        <cache name="screen.template.location" expire-time-idle="10"/>
+        <cache name="screen.location" expire-time-idle="20"/>
+        <cache name="screen.template.mode" expire-time-idle="20"/>
+        <cache name="screen.template.location" expire-time-idle="20"/>
 
-        <cache name="resource.xml-actions.location" expire-time-idle="10"/>
-        <cache name="resource.groovy.location" expire-time-idle="10"/>
+        <cache name="resource.xml-actions.location" expire-time-idle="20"/>
+        <cache name="resource.groovy.location" expire-time-idle="20"/>
         <!-- longer timeout because these are cached by the expression text itself, so changed text is a new entry -->
         <cache name="resource.groovy.expression" expire-time-idle="600"/>
 
-        <cache name="resource.ftl.location" expire-time-idle="10"/>
-        <cache name="resource.cwiki.location" expire-time-idle="10"/>
-        <cache name="resource.text.location" expire-time-idle="10"/>
+        <cache name="resource.ftl.location" expire-time-idle="20"/>
+        <cache name="resource.cwiki.location" expire-time-idle="20"/>
+        <cache name="resource.text.location" expire-time-idle="20"/>
     </cache-list>
     
     <server-stats>
