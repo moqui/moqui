@@ -540,20 +540,30 @@ class ScreenRenderImpl implements ScreenRender {
         return form.ftlFormNode
     }
 
-    boolean isFormUpload(String formName) {
-        ScreenDefinition sd = getActiveScreenDef()
-        ScreenForm form = sd.getForm(formName)
-        return form.isUpload()
-    }
-    boolean isFormHeaderForm(String formName) {
-        ScreenDefinition sd = getActiveScreenDef()
-        ScreenForm form = sd.getForm(formName)
-        return form.isFormHeaderForm()
+    boolean isFormUpload(String formName) { return getActiveScreenDef().getForm(formName).isUpload() }
+    boolean isFormHeaderForm(String formName) { return getActiveScreenDef().getForm(formName).isFormHeaderForm() }
+
+    String getFormFieldValidationClasses(String formName, String fieldName) {
+        ScreenForm form = getActiveScreenDef().getForm(formName)
+        Node parameterNode = form.getFieldInParameterNode(fieldName)
+        if (parameterNode == null) return ""
+
+        Set<String> vcs = new HashSet()
+        if (parameterNode."@required" == "true") vcs.add("required")
+        if (parameterNode."number-integer") vcs.add("number")
+        if (parameterNode."number-decimal") vcs.add("number")
+        if (parameterNode."text-email") vcs.add("email")
+        if (parameterNode."text-url") vcs.add("url")
+        if (parameterNode."text-digits") vcs.add("digits")
+        if (parameterNode."credit-card") vcs.add("creditcard")
+
+        StringBuilder sb = new StringBuilder()
+        for (String vc in vcs) { if (sb) sb.append(" "); sb.append(vc); }
+        return sb.toString()
     }
 
     String renderIncludeScreen(String location, String shareScopeStr) {
-        boolean shareScope = false
-        if (shareScopeStr == "true") shareScope = true
+        boolean shareScope = shareScopeStr == "true"
 
         ContextStack cs = (ContextStack) ec.context
         try {
@@ -635,11 +645,11 @@ class ScreenRenderImpl implements ScreenRender {
         return sui
     }
 
-    String makeValue(String fromField, String value) {
+    String makeValue(String from, String value) {
         if (value) {
             return ec.resource.evaluateStringExpand(value, getActiveScreenDef().location)
-        } else if (fromField) {
-            return ec.resource.evaluateContextField(fromField, getActiveScreenDef().location) as String
+        } else if (from) {
+            return ec.resource.evaluateContextField(from, getActiveScreenDef().location) as String
         } else {
             return ""
         }

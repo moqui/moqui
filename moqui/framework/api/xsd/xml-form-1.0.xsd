@@ -286,6 +286,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     Note that for form-list fields this governs the entire column for the field, and not just a single
                     row.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="validate-service" type="xs:string"/>
+            <xs:attribute name="validate-parameter" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="header-field">

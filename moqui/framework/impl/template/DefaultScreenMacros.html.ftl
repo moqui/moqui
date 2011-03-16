@@ -271,6 +271,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </fieldset>
         </#if>
     </form>
+    <script>$("#${formNode["@name"]}").validate();</script>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formSingleSubField fieldNode>
@@ -336,6 +337,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </tr>
                 <#if !isMulti>
                     </form>
+                    <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
                 </#if>
                 ${sri.endFormListRow()}
             </#list>
@@ -345,6 +347,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
             </tr>
             </form>
+            <script>$("#${formNode["@name"]}").validate();</script>
         </#if>
         </tbody>
         ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
@@ -583,7 +586,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro "text-line">
     <#assign id><@fieldId .node/></#assign>
-    <input type="text" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}">
+    <#assign name><@fieldName .node/></#assign>
+    <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], name)>
+    <input type="text" name="${name}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}"<#if validationClasses?has_content> class="${validationClasses}"</#if>>
     <#if .node["@ac-transition"]?has_content>
         <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
         <script>

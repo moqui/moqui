@@ -19,6 +19,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <extend-entity entity-name="Example">
         <field name="auditedField" type="text-long" enable-audit-log="true"/>
         <field name="encryptedField" type="text-long" encrypt="true"/>
+        <field name="exampleEmail" type="text-long"/>
+        <field name="exampleUrl" type="text-long"/>
     </extend-entity>
     <entity entity-name="Example" package-name="org.moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>

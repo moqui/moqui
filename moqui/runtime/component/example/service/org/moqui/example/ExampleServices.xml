@@ -19,6 +19,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="exampleTypeEnumId" required="true"/>
             <parameter name="statusId" required="true"/>
             <parameter name="exampleName" required="true"/>
+            <parameter name="exampleEmail"><text-email/></parameter>
+            <parameter name="exampleUrl"><text-url/></parameter>
         </in-parameters>
         <out-parameters>
             <auto-parameters include="pk" required="true"/>

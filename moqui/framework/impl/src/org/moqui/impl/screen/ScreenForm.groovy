@@ -29,6 +29,7 @@ import org.slf4j.Logger
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
 
+    protected ExecutionContextFactoryImpl ecfi
     protected Node formNode
     protected String location
     protected Boolean isUploadForm = null
@@ -37,6 +38,7 @@ class ScreenForm {
     protected XmlAction rowActions = null
 
     ScreenForm(ExecutionContextFactoryImpl ecfi, ScreenDefinition sd, Node baseFormNode, String location) {
+        this.ecfi = ecfi
         this.location = location
 
         // settings parent to null so that this isn't found in addition to the literal form-* element
@@ -112,6 +114,17 @@ class ScreenForm {
         return isFormHeaderFormVal
     }
 
+    Node getFieldInParameterNode(String fieldName) {
+        Node fieldNode = (Node) formNode."field".find({ it.@name == fieldName })
+        if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
+        if (fieldNode."@validate-service") {
+            ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(fieldNode."@validate-service")
+            if (sd == null) throw new IllegalArgumentException("Bad validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
+            return sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
+        }
+        return null
+    }
+
     protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
         String serviceVerb = sd.verb
         String serviceType = sd.serviceNode."@type"
@@ -122,7 +135,8 @@ class ScreenForm {
             String spType = parameterNode."@type" ?: "String"
             String efType = ed != null ? ed.getFieldNode(parameterNode."@name")?."@type" : null
 
-            Node newFieldNode = new Node(null, "field", [name:parameterNode."@name"])
+            Node newFieldNode = new Node(null, "field", [name:parameterNode."@name",
+                    "validate-service":sd.serviceName, "validate-parameter":parameterNode."@name"])
             Node subFieldNode = newFieldNode.appendNode("default-field")
             switch (fieldType) {
             case "edit":
@@ -348,6 +362,7 @@ class ScreenForm {
         }
         return options
     }
+
     static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption, ExecutionContext ec) {
         ec.context.push(listOption)
         String key = null

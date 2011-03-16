@@ -22,6 +22,11 @@ This release includes:
 - WebApp event actions for first-hit-in-visit, before-request,
   after-request, after-login, before-logout
 - XML Screens
+  - Screen form client JS validation based on target transition service
+    definition (define once, run on client and server); using jquery
+    validation (http://docs.jquery.com/Plugins/Validation); so far for
+    required, number-integer, number-decimal, text-email, text-url,
+    text-digits, credit-card
   - Screen form-list multi=false support (one form per row)
   - Screen form-list multi=true support, service call multi=true
   - Screen form-list support form-links inside main form
@@ -64,9 +69,8 @@ This release includes:
 Notable features not yet implemented (TODO list):
 
 - XML Screens
-  - Screen form client JS validation based on target transition service
-    definition (define once, run on client and server); using jquery
-    validation (http://docs.jquery.com/Plugins/Validation)
+  - Screen form client JS validation for service in-parameters for matches,
+    number-range, text-length, text-letters, time-range, credit-card.@types
   - Screen form field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
   - Screen section-iterate pagination
