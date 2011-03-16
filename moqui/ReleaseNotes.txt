@@ -33,6 +33,7 @@ This release includes:
   - Screen form auto-complete for text-line
   - Screen subscreen menu dynamic tabs (last level only) that loads
     content as a standalone screen from the server with an ajax call
+  - Screen form focus-field, skip-start and skip-end supported
 - Visitor tracking
 - ArtifactHit and ArtifactHitBin tracking for screen, screen-content,
   transition, service and entity (bin only)
@@ -71,7 +72,8 @@ Notable features not yet implemented (TODO list):
 - XML Screens
   - Screen form client JS validation for service in-parameters for matches,
     number-range, text-length, text-letters, time-range, credit-card.@types
-  - Screen form field-layout support
+  - Screen form-single field-layout support
+  - Screen form-list field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)

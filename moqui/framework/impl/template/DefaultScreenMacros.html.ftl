@@ -260,9 +260,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "form-single">
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
-    <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
-    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
+    <#assign formNode = sri.getFtlFormNode(.node["@name"])>
+    <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
+    <#assign skipEnd = (formNode["@skip-start"]?if_exists == "true")>
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
+    <#if !skipStart><form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>></#if>
         <#if formNode["field-layout"]?has_content>
         <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
         <#else/>
@@ -270,8 +272,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
         </fieldset>
         </#if>
-    </form>
-    <script>$("#${formNode["@name"]}").validate();</script>
+    <#if !skipEnd></form></#if>
+    <#if !skipStart><script>$("#${formNode["@name"]}").validate();</script></#if>
+    <#if formNode["@focus-field"]?has_content><script>$("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();</script></#if>
 <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formSingleSubField fieldNode>
@@ -302,6 +305,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
     <#assign isMulti = formNode["@multi"]?if_exists == "true">
     <#assign isMultiFinalRow = false>
+    <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
+    <#assign skipEnd = (formNode["@skip-start"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
     <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
     <#if formNode["field-layout"]?has_content>
@@ -309,7 +314,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#else>
     <table class="form-list-outer" id="${formNode["@name"]}-table">
     <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-    <#if needHeaderForm>
+    <#if needHeaderForm && !skipStart>
         <#assign curUrlInfo = sri.getCurrentScreenUrl()>
         <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
     </#if>
@@ -318,11 +323,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#list formNode["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
             </tr>
         </thead>
-    <#if needHeaderForm>
+    <#if needHeaderForm && !skipStart>
         </form>
     </#if>
         <tbody>
-        <#if isMulti>
+        <#if isMulti && !skipStart>
             <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
         </#if>
             <#list listObject as listEntry>
@@ -341,12 +346,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </#if>
                 ${sri.endFormListRow()}
             </#list>
-        <#if isMulti>
+        <#if isMulti && !skipEnd>
             <tr class="form-row">
                 <#assign isMultiFinalRow = true>
                 <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
             </tr>
             </form>
+        </#if>
+        <#if isMulti && !skipStart>
             <script>$("#${formNode["@name"]}").validate();</script>
         </#if>
         </tbody>

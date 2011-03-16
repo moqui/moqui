@@ -76,7 +76,7 @@ This Work includes contributions authored by David E. Jones, not as a
     })
     </script>
                 ]]></text></render-mode>
-                <form-single name="CreateExample" transition="createExample">
+                <form-single name="CreateExample" transition="createExample" focus-field="exampleName">
                     <auto-fields-service service-name="org.moqui.example.ExampleServices.create#Example"/>
                     <!-- for the auto-service, basically the entity and operation: <auto-fields-service service-name="create#Example"/> -->
 
