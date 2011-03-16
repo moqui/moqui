@@ -81,12 +81,6 @@ Notable features not yet implemented (TODO list):
   - Service runners for remote/proxy service calls (HTTP, JMS, RMI)
   - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service mail handling (MCA rules)
-- Entity Facade
-  - Entity complex aliases in views
-  - View entity view-link.econdition* support (EntityFindBuilder:196)
-- Artifact Execution Facade
-  - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
-    other types of artifacts (if/as determined to be helpful)
 - Documentation
   - Clean up JavaDoc/GroovyDoc comments and post to site
   - XSD References (use tool to generate HTML from XSD)
@@ -347,8 +341,15 @@ Features designed, but not to be included in 1.0 series
 - Entity Facade
   - EntitySync tool
   - Database-driven dynamic view entity
+  - Entity complex aliases in views
+  - View entity view-link.econdition* support (EntityFindBuilder:196)
 - Artifact Execution Facade
   - Artifact Tar-pitting based on configuration in db
+  - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
+    other types of artifacts (if/as determined to be helpful), including:
+    Component, Webapp, Screen Section, Screen Form, Screen Form Field,
+    Template, Script, Entity Field
+  - Persist data about authz failures (in db, in addition to log)
 - Tools Screens
   - Security screens
     - Tarpit screen (find/update/delete,add screen)

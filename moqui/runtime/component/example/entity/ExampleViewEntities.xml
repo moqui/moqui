@@ -25,12 +25,14 @@ This Work includes contributions authored by David E. Jones, not as a
         </alias-all>
         <alias entity-alias="STIT" name="statusDescription" field="description"/>
         <alias entity-alias="EXPL" name="currentStatusId" field="statusId"/>
+        <!-- TABLED not to be part of 1.0:
         <alias name="statusDelay">
             <complex-alias operator="-">
                 <complex-alias-field entity-alias="EXST" field="statusDate"/>
                 <complex-alias-field entity-alias="EXPL" field="exampleDate"/>
             </complex-alias>
         </alias>
+        -->
         <view-link entity-alias="EXPL" related-entity-alias="EXST">
             <key-map field-name="exampleId"/>
         </view-link>

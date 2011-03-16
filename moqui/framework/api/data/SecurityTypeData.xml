@@ -12,17 +12,17 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <EnumerationType description="Artifact Types" enumTypeId="ARTIFACT_TYPE" parentTypeId=""/>
-    <Enumeration description="XML Screen" enumId="AT_XML_SCREEN" enumTypeId="ARTIFACT_TYPE"/>
-    <Enumeration description="XML Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="Screen" enumId="AT_XML_SCREEN" enumTypeId="ARTIFACT_TYPE"/>
+    <Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ARTIFACT_TYPE"/>
     <!-- not yet pushed/tracked/checked types below here
         some of these are experimental ideas and may not ever be implemented, or useful
     <Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ARTIFACT_TYPE"/>
-    <Enumeration description="XML Screen Section" enumId="AT_XML_SCREEN_SECTN" enumTypeId="ARTIFACT_TYPE"/><!- - if no permission don't throw error, just don't display - ->
-    <Enumeration description="XML Screen Form" enumId="AT_XML_SCREEN_FORM" enumTypeId="ARTIFACT_TYPE"/><!- - if no permission don't throw error, just don't display - ->
-    <Enumeration description="XML Screen Form Field" enumId="AT_XML_SCREEN_FFLD" enumTypeId="ARTIFACT_TYPE"/><!- - if no permission don't throw error, just don't display - ->
+    <Enumeration description="Screen Section" enumId="AT_XML_SCREEN_SECTN" enumTypeId="ARTIFACT_TYPE"/><!- - if no permission don't throw error, just don't display - ->
+    <Enumeration description="Screen Form" enumId="AT_XML_SCREEN_FORM" enumTypeId="ARTIFACT_TYPE"/><!- - if no permission don't throw error, just don't display - ->
+    <Enumeration description="Screen Form Field" enumId="AT_XML_SCREEN_FFLD" enumTypeId="ARTIFACT_TYPE"/><!- - if no permission don't throw error, just don't display - ->
     <Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="Script" enumId="AT_SCRIPT" enumTypeId="ARTIFACT_TYPE"/>
     <Enumeration description="EntityField" enumId="AT_ENTITY_FIELD" enumTypeId="ARTIFACT_TYPE"/>

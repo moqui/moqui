@@ -192,8 +192,8 @@ class EntityFindBuilder extends EntityQueryBuilder {
                     restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
                 }
 
-                if (viewLink."econdition") {
-                    // TODO: add any additional manual conditions for the view-link here
+                if (viewLink."entity-condition") {
+                    // TABLED: add any additional manual conditions for the view-link here
                 }
 
                 if (useParenthesis) restOfStatement.append(')')

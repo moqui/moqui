@@ -81,9 +81,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ==================== field ===================== -->
     <xs:element name="field">
         <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" ref="description"/>
-            </xs:sequence>
+            <xs:sequence><xs:element minOccurs="0" ref="description"/></xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="column-name" type="xs:string"/>
             <xs:attribute name="type" use="required">
@@ -166,12 +164,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="index-field">
-        <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-        </xs:complexType>
+        <xs:complexType><xs:attribute name="name" type="xs:string" use="required"/></xs:complexType>
     </xs:element>
 
     <!-- ================== view-entity ===================== -->
+
     <xs:element name="view-entity">
         <xs:complexType>
             <xs:sequence>
@@ -191,13 +188,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="member-entity">
         <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" ref="description"/>
-            </xs:sequence>
+            <xs:sequence><xs:element minOccurs="0" ref="description"/></xs:sequence>
             <xs:attribute name="entity-alias" type="xs:string" use="required"/>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
+
     <xs:element name="alias-all">
         <xs:complexType>
             <xs:sequence>
@@ -210,15 +206,14 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="exclude">
-        <xs:complexType>
-            <xs:attribute name="field" type="xs:string" use="required"/>
-        </xs:complexType>
+        <xs:complexType><xs:attribute name="field" type="xs:string" use="required"/></xs:complexType>
     </xs:element>
+
     <xs:element name="alias">
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="description"/>
-                <xs:element minOccurs="0" ref="complex-alias"/>
+                <!-- TABLED not to be part of 1.0: <xs:element minOccurs="0" ref="complex-alias"/> -->
             </xs:sequence>
             <xs:attribute name="entity-alias" type="xs:string"/>
             <xs:attribute name="name" type="xs:string" use="required"/>
@@ -227,6 +222,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="function" type="aggregate-function"/>
         </xs:complexType>
     </xs:element>
+    <!-- TABLED not to be part of 1.0:
     <xs:element name="complex-alias">
         <xs:annotation>
             <xs:documentation>
@@ -257,12 +253,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="function" type="aggregate-function"/>
         </xs:complexType>
     </xs:element>
+    -->
+
     <xs:element name="view-link">
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="description"/>
                 <xs:element maxOccurs="unbounded" ref="key-map"/>
-                <xs:element minOccurs="0" ref="entity-condition"/>
+                <!-- TABLED not to be part of 1.0: <xs:element minOccurs="0" ref="entity-condition"/> -->
             </xs:sequence>
             <xs:attribute name="entity-alias" type="xs:string" use="required"/>
             <xs:attribute name="related-entity-alias" type="xs:string" use="required"/>
@@ -343,12 +341,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="order-by">
-        <xs:complexType>
-            <xs:attribute name="field-name" type="xs:string" use="required"/>
-        </xs:complexType>
+        <xs:complexType><xs:attribute name="field-name" type="xs:string" use="required"/></xs:complexType>
     </xs:element>
 
     <!-- ================== extend-entity ===================== -->
+
     <xs:element name="extend-entity">
         <xs:complexType>
             <xs:sequence>
