@@ -451,9 +451,12 @@ class EntityValueImpl implements EntityValue {
         // in this case DON'T use the ec.user.nowTimestamp because we want the real time for audits
         Timestamp nowTimestamp = new Timestamp(System.currentTimeMillis())
 
+        ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
+        String firstPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
+        String secondPkField = pkFieldList.size() > 1 ? pkFieldList.remove(0) : null
         StringBuffer pkTextSb = new StringBuffer()
         boolean firstField = true
-        for (String fieldName in ed.getFieldNames(true, false)) {
+        for (String fieldName in pkFieldList) {
             if (firstField) firstField = false else pkTextSb.append(",")
             pkTextSb.append(fieldName).append("=").append(get(fieldName) as String)
         }
@@ -469,13 +472,14 @@ class EntityValueImpl implements EntityValue {
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
                 Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
-                    changedFieldName:fieldName, pkCombinedValueText:pkText,
+                    changedFieldName:fieldName,
                     newValueText:(value as String), changedDate:nowTimestamp,
                     changedByUserId:getEntityFacadeImpl().ecfi.executionContext.user.userId,
                     changedInVisitId:getEntityFacadeImpl().ecfi.executionContext.user.visitId]
-                if (oldValues != null && oldValues.get(fieldName)) {
-                    parms.put("oldValueText", oldValues.get(fieldName))
-                }
+                if (oldValues != null && oldValues.get(fieldName)) parms.oldValueText = oldValues.get(fieldName)
+                if (firstPkField) parms.pkPrimaryValue = get(firstPkField)
+                if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
+                if (pkText) parms.pkRestCombinedValue = pkText
 
                 getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#EntityAuditLog").parameters(parms).call()
             }

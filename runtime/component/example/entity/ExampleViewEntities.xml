@@ -14,12 +14,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <view-entity entity-name="ExampleStatusDetail" package-name="org.moqui.example.example">
         <member-entity entity-alias="EXPL" entity-name="Example"/>
-        <member-entity entity-alias="EXST" entity-name="ExampleStatus"/>
+        <member-entity entity-alias="EAL" entity-name="EntityAuditLog"/>
         <member-entity entity-alias="STIT" entity-name="StatusItem"/>
         <alias-all entity-alias="EXPL">
             <exclude field="statusId"/>
         </alias-all>
-        <alias-all entity-alias="EXST"/>
+        <alias-all entity-alias="EAL"/>
         <alias-all entity-alias="STIT">
             <exclude field="description"/>
         </alias-all>
@@ -28,17 +28,22 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- TABLED not to be part of 1.0:
         <alias name="statusDelay">
             <complex-alias operator="-">
-                <complex-alias-field entity-alias="EXST" field="statusDate"/>
+                <complex-alias-field entity-alias="EAL" field="changedDate"/>
                 <complex-alias-field entity-alias="EXPL" field="exampleDate"/>
             </complex-alias>
         </alias>
         -->
-        <view-link entity-alias="EXPL" related-entity-alias="EXST">
-            <key-map field-name="exampleId"/>
+        <view-link entity-alias="EXPL" related-entity-alias="EAL">
+            <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/>
+
         </view-link>
-        <view-link entity-alias="EXST" related-entity-alias="STIT">
-            <key-map field-name="statusId"/>
+        <view-link entity-alias="EAL" related-entity-alias="STIT">
+            <key-map field-name="pkPrimaryValue" related-field-name="statusId"/>
         </view-link>
+        <entity-condition>
+            <econdition field-name="changedEntityName" operator="equals" value="Example"/>
+            <econdition field-name="changedFieldName" operator="equals" value="statusId"/>
+        </entity-condition>
     </view-entity>
 
     <view-entity entity-name="ExampleStatusItem" package-name="org.moqui.example.example">

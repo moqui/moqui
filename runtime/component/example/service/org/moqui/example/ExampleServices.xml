@@ -41,32 +41,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
     -->
 
-    <service verb="create" noun="ExampleStatus">
-        <in-parameters>
-            <auto-parameters include="all" required="true">
-                <exclude field-name="statusDate"/>
-                <exclude field-name="statusEndDate"/>
-            </auto-parameters>
-        </in-parameters>
-        <actions>
-            <!-- find the most recent status record and set the statusEndDate -->
-            <entity-find entity-name="ExampleStatus" list="oldExampleStatusList">
-                <econdition field-name="exampleId" from="parameters.exampleId"/>
-                <order-by field-name="-statusDate"/>
-            </entity-find>
-            <set field="oldExampleStatus" from="oldExampleStatusList[0]"/>
-            <compare field="oldExampleStatus" operator="not-empty">
-                <set field="oldExampleStatus.statusEndDate" from="nowTimestamp"/>
-                <entity-update value-field="oldExampleStatus"/>
-            </compare>
-
-            <entity-make-value entity-name="ExampleStatus" value-field="newEntity"/>
-            <entity-set include="all" value-field="newEntity"/>
-            <set field="newEntity.statusDate" from="ec.user.nowTimestamp"/>
-            <entity-create value-field="newEntity"/>
-        </actions>
-    </service>
-
     <service verb="create" noun="ExampleItem" type="entity-auto">
         <in-parameters>
             <auto-parameters include="pk" required="true"><exclude field-name="exampleItemSeqId"/></auto-parameters>

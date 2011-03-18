@@ -35,7 +35,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="auditHistorySeqId" type="id" is-pk="true"/>
         <field name="changedEntityName" type="text-medium"/>
         <field name="changedFieldName" type="text-long"/>
-        <field name="pkCombinedValueText" type="text-long"/>
+        <field name="pkPrimaryValue" type="text-long"/>
+        <field name="pkSecondaryValue" type="text-long"/>
+        <field name="pkRestCombinedValue" type="text-long"/>
         <field name="oldValueText" type="text-long"/>
         <field name="newValueText" type="text-long"/>
         <field name="changedDate" type="date-time"/>

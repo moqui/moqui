@@ -1,0 +1,8 @@
+.idea/
+moqui.iml
+framework/build/
+moqui-1.0-preview3.war
+runtime/db/derby/MoquiTenant/
+runtime/db/derby/MoquiTransactional/
+runtime/db/derby/derby.log
+

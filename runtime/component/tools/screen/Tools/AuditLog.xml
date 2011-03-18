@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Audit Log">
+
+    <actions>
+        <entity-find entity-name="EntityAuditLog" list="entityAuditLogList" limit="50">
+            <search-form-inputs default-order-by="-changedDate"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <form-list name="EntityAuditLogList" list="entityAuditLogList">
+            <field name="changedDate">
+                <header-field title="Date" show-order-by="true"><text-find hide-options="true" size="12"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="changedEntityName">
+                <header-field title="Entity" show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="changedFieldName">
+                <header-field title="Field" show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="pkPrimaryValue">
+                <header-field title="PK 1" show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="pkSecondaryValue">
+                <header-field title="PK 2"><text-find hide-options="true" size="4"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <!--
+            <field name="pkRestCombinedValue">
+                <header-field title="PK Rest"><text-find hide-options="true" size="8"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            -->
+            <field name="oldValueText">
+                <header-field title="Old" show-order-by="true"><text-find hide-options="true" size="10"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="newValueText">
+                <header-field title="New" show-order-by="true"><text-find hide-options="true" size="10"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="changedByUserId">
+                <header-field title="User" show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="changedInVisitId">
+                <header-field title="Visit" show-order-by="true"><text-find hide-options="true" size="6"/></header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="find"><header-field title="Find"><submit/></header-field></field>
+        </form-list>
+    </widgets>
+</screen>
