@@ -53,13 +53,13 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="script"/>
                         <xs:enumeration value="java"/>
                         <xs:enumeration value="interface"/>
+                        <xs:enumeration value="remote-xml-rpc"/>
+                        <xs:enumeration value="remote-json-rpc"/>
                         <!-- TABLED: not to include in 1.0
                         <xs:enumeration value="proxy-http"/>
                         <xs:enumeration value="proxy-jms"/>
                         <xs:enumeration value="proxy-rmi"/>
                         -->
-                        <xs:enumeration value="remote-xml-rpc"/>
-                        <xs:enumeration value="remote-json-rpc"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>

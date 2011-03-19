@@ -17,15 +17,15 @@ Table of Contents
 1. Make sure you have a Java 6 JDK installed (the Sun/Oracle or Apple
    version is best, haven't tried on OpenJDK or Harmony yet)
 
-2. Download and unzip the distribution file, creating a moqui directory
+2. Download and unzip the binary distribution, creating a moqui directory
 
 3. Load the seed and demo data which will create Derby DB and tables:
 
-   $ java -jar moqui.war -load
+   $ java -jar moqui-${version}.war -load
 
 4. Run the framework (with embedded Servlet, JTA/CP, DB):
 
-   $ java -jar moqui.war
+   $ java -jar moqui-${version}.war
 
 5. In your browser (on the same machine) go to:
 
@@ -72,13 +72,13 @@ See below for examples.
 Yep, that's right: an executable WAR file. There are 3 main things you can
 do with this (with example commands to demonstrate, modify as needed):
 
-1. Load Data:                 $ java -jar moqui.war -load
-2. Run embedded web server:   $ java -jar moqui.war
-3. Deploy as WAR, for Tomcat: $ cp moqui.war ../tomcat/webapps
+1. Load Data:                 $ java -jar moqui-${version}.war -load
+2. Run embedded web server:   $ java -jar moqui-${version}.war
+3. Deploy as WAR, for Tomcat: $ cp moqui-${version}.war ../tomcat/webapps
 
 You can also display settings and help information with:
 
-java -jar moqui.war -help
+java -jar moqui-${version}.war -help
 
 For information about loading only certain files instead of all data files
 in all components, run that to see the help text.
@@ -98,15 +98,15 @@ Run the commands below to use the default settings:
 - moqui.runtime=runtime
 - moqui.conf=conf/development/MoquiDevConf.xml (related to runtime)
 
-1. Load Data  : $ java -jar moqui.war -load
-2. Run Server : $ java -jar moqui.war
+1. Load Data  : $ java -jar moqui-${version}.war -load
+2. Run Server : $ java -jar moqui-${version}.war
 
 -- Common Alternate - Specify a Configuration File on Command Line
 
 1. Load Data  : $ java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml
-                       -jar moqui.war -load
+                       -jar moqui-${version}.war -load
 2. Run Server : $ java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml
-                       -jar moqui.war
+                       -jar moqui-${version}.war
 
 -- Create a Custom WAR File with Settings Inside
 

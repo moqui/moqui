@@ -11,8 +11,13 @@ to deploy and administer, and easier to test and get information about what
 is happening as artifacts are executed. These include multi-tenant support,
 artifact hit and hit bin tracking (for screens, transitions, services, and
 entities), database-driven artifact authorization with many advanced
-options, and Tools screens to administer and get information about various
-parts of the framework.
+options, XML-RPC and JSON-RPC calls for Moqui services, and Tools screens
+to administer and get information about various parts of the framework.
+
+NOTE: just before this release the official code repository for Moqui moved
+from SourceForge SVN to Git on GitHub so that users can more easily create
+Git forks for their own use, and to allows pulls from their Git forks back
+into the main Moqui repository.
 
 This release includes:
 
@@ -83,11 +88,6 @@ Notable features not yet implemented (TODO list):
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
   - Service mail handling (MCA rules)
-- Documentation
-  - Clean up JavaDoc/GroovyDoc comments and post to site
-  - XSD References (use tool to generate HTML from XSD)
-  - Introduction to Moqui Framework (doc/book for basic training and
-    demonstration of features)
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete, view entity
@@ -341,7 +341,7 @@ Features designed, but not to be included in 1.0 series
 - Service Facade
   - Service database-driven semaphores
   - Service runners for proxy service calls to another Moqui server via
-    HTTP, JMS, and maybe RMI, email, XMPP
+    HTTP, JMS, and RMI (TX enlisted), email, XMPP
 - Entity Facade
   - EntitySync tool
   - Database-driven dynamic view entity
