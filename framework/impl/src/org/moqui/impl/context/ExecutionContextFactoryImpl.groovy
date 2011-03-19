@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 import org.moqui.entity.EntityValue
 import java.sql.Timestamp
 import org.moqui.impl.actions.XmlAction
+import redstone.xmlrpc.XmlRpcServer
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -44,6 +45,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected Map<String, Map<String, Object>> artifactHitBinByType = new HashMap()
 
     protected Map<String, WebappInfo> webappInfoMap = new HashMap()
+
+    /** The server object for Redstone XML-RPC; to be shared by various things, especially ServiceXmlRpcDispatchers. */
+    protected XmlRpcServer xmlRpcServer = new XmlRpcServer()
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -255,9 +259,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     String getRuntimePath() { return runtimePath }
 
-    Node getConfXmlRoot() {
-        return this.confXmlRoot
-    }
+    Node getConfXmlRoot() { return confXmlRoot }
+
+    XmlRpcServer getXmlRpcServer() { return xmlRpcServer }
 
     // ========== Getters ==========
 

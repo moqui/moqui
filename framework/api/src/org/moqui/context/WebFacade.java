@@ -35,4 +35,6 @@ public interface WebFacade {
     Map<String, Object> getApplicationAttributes();
 
     void sendJsonResponse(Object responseObj);
+    void handleXmlRpcServiceCall();
+    void handleJsonRpcServiceCall();
 }

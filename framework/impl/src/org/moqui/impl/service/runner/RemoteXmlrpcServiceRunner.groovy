@@ -14,17 +14,36 @@ package org.moqui.impl.service.runner
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
+import org.moqui.context.ExecutionContext
 
-public class RemoteXmlrpcServiceRunner implements ServiceRunner {
+import redstone.xmlrpc.XmlRpcClient
+
+public class RemoteXmlRpcServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null
 
-    RemoteXmlrpcServiceRunner() {}
+    RemoteXmlRpcServiceRunner() {}
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
-        // TODO implement
-        return null
+        ExecutionContext ec = sfi.ecfi.getExecutionContext()
+
+        String location = sd.serviceNode."@location"
+        String method = sd.serviceNode."@method"
+        if (!location) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no location specified.")
+        if (!method) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no method specified.")
+
+        XmlRpcClient client = new XmlRpcClient(location, false)
+        Object result = client.invoke(method, [parameters])
+
+        if (!result) return null
+        if (result instanceof Map<String, Object>) {
+            return result
+        } else if (result instanceof List && ((List) result).size() == 1 && ((List) result).get(0) instanceof Map<String, Object>) {
+            return (Map<String, Object>) ((List) result).get(0)
+        } else {
+            return [response:result]
+        }
     }
 
     public void destroy() { }

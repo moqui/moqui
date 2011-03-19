@@ -21,6 +21,10 @@ This release includes:
 - Finished impl and test for localized messages and entity fields
 - WebApp event actions for first-hit-in-visit, before-request,
   after-request, after-login, before-logout
+- JSON-RPC 2.0 incoming service handler (with Dzhuvinov JSON-RPC)
+- JSON-RPC 2.0 outgoing service runner (with Dzhuvinov JSON-RPC)
+- XML-RPC incoming service handler (with Redstone XML-RPC)
+- XML-RPC outgoing service runner (with Redstone XML-RPC)
 - XML Screens
   - Screen form client JS validation based on target transition service
     definition (define once, run on client and server); using jquery
@@ -78,8 +82,6 @@ Notable features not yet implemented (TODO list):
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
-  - Service runners for remote/proxy service calls (HTTP, JMS, RMI)
-  - Service runners for web service standards (XML-RPC, REST, JSON, etc)
   - Service mail handling (MCA rules)
 - Documentation
   - Clean up JavaDoc/GroovyDoc comments and post to site
@@ -338,6 +340,8 @@ Features designed, but not to be included in 1.0 series
   - Dynamic Forms (database-driven: DynForm*)
 - Service Facade
   - Service database-driven semaphores
+  - Service runners for proxy service calls to another Moqui server via
+    HTTP, JMS, and maybe RMI, email, XMPP
 - Entity Facade
   - EntitySync tool
   - Database-driven dynamic view entity

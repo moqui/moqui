@@ -23,6 +23,7 @@ public class ProxyHttpServiceRunner implements ServiceRunner {
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
+        // TABLED: not to include in 1.0
         // TODO implement
         return null
     }
