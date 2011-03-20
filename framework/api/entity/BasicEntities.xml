@@ -123,10 +123,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.enum -->
+    <!-- org.moqui.basic.enumeration -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Enumeration" package-name="org.moqui.basic.enum" cache="true">
+    <entity entity-name="Enumeration" package-name="org.moqui.basic.enumeration" cache="true">
         <field name="enumId" type="id" is-pk="true"/>
         <field name="enumTypeId" type="id"/>
         <field name="parentEnumId" type="id"/>
@@ -138,7 +138,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="parentEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="EnumerationType" package-name="org.moqui.basic.enum" cache="true">
+    <entity entity-name="EnumerationType" package-name="org.moqui.basic.enumeration" cache="true">
         <field name="enumTypeId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
@@ -248,34 +248,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <order-by field-name="sequenceNum"/>
         </entity-condition>
     </view-entity>
-
-    <!-- ========================================================= -->
-    <!-- org.moqui.basic.time -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="TimePeriod" package-name="org.moqui.basic.time">
-        <field name="timePeriodId" type="id" is-pk="true"/>
-        <field name="parentPeriodId" type="id"/>
-        <field name="periodTypeId" type="id"/>
-        <field name="periodNum" type="number-integer"/>
-        <field name="periodName" type="text-medium"/>
-        <field name="fromDate" type="date"/>
-        <field name="thruDate" type="date"/>
-        <field name="isClosed" type="text-indicator"/>
-        <relationship type="one" title="Parent" related-entity-name="TimePeriod">
-            <key-map field-name="parentPeriodId"/>
-        </relationship>
-        <relationship type="one" related-entity-name="PeriodType"/>
-    </entity>
-    <entity entity-name="TimePeriodType" package-name="org.moqui.basic.time">
-        <field name="timePeriodTypeId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
-        <field name="periodLength" type="number-integer"/>
-        <field name="lengthUomId" type="id"/>
-        <relationship type="one" title="Length" related-entity-name="Uom">
-            <key-map field-name="lengthUomId" related-field-name="uomId"/>
-        </relationship>
-    </entity>
 
     <!-- ========================================================= -->
     <!-- org.moqui.basic.uom -->

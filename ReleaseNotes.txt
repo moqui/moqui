@@ -2,6 +2,45 @@
 Moqui Framework Release Notes
 
 ===========================================================================
+Release 1.0-beta1 - Date not yet decided
+===========================================================================
+
+This release includes:
+
+- All of the great features of 1.0-preview1-3
+
+
+Notable features not yet implemented (for 1.0):
+
+- XML Screens
+  - Screen form client JS validation for service in-parameters for matches,
+    number-range, text-length, text-letters, time-range, credit-card.@types
+  - Screen form-single field-layout support
+  - Screen form-list field-layout support
+  - Screen form-list pagination (defaults in search-form-inputs)
+  - Screen section-iterate pagination
+  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
+- Service Facade
+  - Service mail handling (MCA rules, etc)
+- Tools Screens
+  - Entity
+    - Entity Data UI (entity list, find on entity with delete, view entity
+      record with related, create/update entity record with tabs for
+      list/update/delete/add dependent entities)
+    - Entity Data Import and Export screens
+    - SQL Query Run/View
+    - Database meta-data check/report against entity definitions
+  - Scheduler (view scheduled services with cancel, add scheduled service)
+  - Script Run (or groovy shell?)
+  - Security screens (consider making Entity Data UI good enough for these)
+    - UserAccount screens (find/delete, edit UA (with tabs for preferences,
+      themes, login, history, visit history, groups, change password))
+    - UserGroup screens (find/delete, edit (tab for users in group))
+    - Artifact Group (find/delete, edit (tab for artifacts in group))
+    - Authorization screen (find/delete, edit (tabs for record, service))
+  - Artifact Info screens (with in/out references for all)
+
+===========================================================================
 Release 1.0-preview3 - 19 Mar 2011
 ===========================================================================
 
