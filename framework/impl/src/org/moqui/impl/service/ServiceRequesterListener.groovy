@@ -18,6 +18,7 @@ import org.quartz.JobExecutionException
 import org.moqui.service.ServiceResultReceiver
 import org.quartz.TriggerListener
 import org.quartz.Trigger
+import org.quartz.Trigger.CompletedExecutionInstruction
 
 class ServiceRequesterListener implements JobListener, TriggerListener {
     protected ServiceResultReceiver resultReceiver
@@ -55,6 +56,7 @@ class ServiceRequesterListener implements JobListener, TriggerListener {
 
     void triggerMisfired(Trigger trigger) { }
 
-    void triggerComplete(Trigger trigger, JobExecutionContext jobExecutionContext, int triggerInstructionCode) {
+    void triggerComplete(Trigger trigger, JobExecutionContext jobExecutionContext,
+                         CompletedExecutionInstruction completedExecutionInstruction) {
     }
 }

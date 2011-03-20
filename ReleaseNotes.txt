@@ -22,6 +22,7 @@ into the main Moqui repository.
 This release includes:
 
 - All of the great features of 1.0-preview1 and 1.0-preview2
+- Updated various libraries included (esp Groovy, ehCache, Quartz)
 - Multi-tenant support (shared app server, separate databases)
 - Finished impl and test for localized messages and entity fields
 - WebApp event actions for first-hit-in-visit, before-request,
@@ -75,7 +76,8 @@ This release includes:
   XML a bit cleaner and more clear (for example from-field can be any
   groovy expression and the -field implies otherwise)
 - Significantly more testing and bug fixes related to synchronization,
-  performance, transactions, style, etc
+  performance (WAY faster, but more room for improvement), transactions,
+  style, etc
 
 Notable features not yet implemented (TODO list):
 

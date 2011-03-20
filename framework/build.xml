@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <pathelement location="impl/lib/commons-cli-1.2.jar"/>
         <pathelement location="impl/lib/antlr-2.7.7.jar"/>
         <pathelement location="impl/lib/asm-3.2.jar"/>
-        <pathelement location="impl/lib/groovy-all-1.7.7.jar"/>
+        <pathelement location="impl/lib/groovy-all-1.7.10.jar"/>
     </path>
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="groovy.class.path"/>
     <taskdef name="groovydoc" classname="org.codehaus.groovy.ant.Groovydoc" classpathref="groovy.class.path"/>

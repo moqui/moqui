@@ -17,8 +17,7 @@ import java.io.Serializable;
 /**
  * Service Result Receiver Interface
  */
-interface ServiceResultReceiver extends Serializable {
-
+public interface ServiceResultReceiver extends Serializable {
     /**
      * Receive the result of an asynchronous service call
      * @param result Map of name, value pairs composing the result
