@@ -43,7 +43,7 @@ public class MoquiStart extends ClassLoader {
             MoquiStart moquiStartLoader = new MoquiStart(true);
             Thread.currentThread().setContextClassLoader(moquiStartLoader);
             Runtime.getRuntime().addShutdownHook(new MoquiShutdown(null, null, moquiStartLoader.jarFileList));
-            initSystemProperties(moquiStartLoader);
+            initSystemProperties(moquiStartLoader, false);
 
             System.out.println("Internal Class Path Jars:");
             for (JarFile jf: moquiStartLoader.jarFileList) {
@@ -85,7 +85,7 @@ public class MoquiStart extends ClassLoader {
             MoquiStart moquiStartLoader = new MoquiStart(true);
             Thread.currentThread().setContextClassLoader(moquiStartLoader);
             Runtime.getRuntime().addShutdownHook(new MoquiShutdown(null, null, moquiStartLoader.jarFileList));
-            initSystemProperties(moquiStartLoader);
+            initSystemProperties(moquiStartLoader, false);
 
             Map<String, String> argMap = new HashMap<String, String>();
             for (String arg: argList) {
@@ -114,7 +114,7 @@ public class MoquiStart extends ClassLoader {
         MoquiStart moquiStartLoader = new MoquiStart(false);
         Thread.currentThread().setContextClassLoader(moquiStartLoader);
         // NOTE: the MoquiShutdown hook is not set here because we want to get the winstone Launcher object first, so done below...
-        initSystemProperties(moquiStartLoader);
+        initSystemProperties(moquiStartLoader, true);
 
         Map<String, String> argMap = new HashMap<String, String>();
         for (String arg: argList) {
@@ -149,25 +149,33 @@ public class MoquiStart extends ClassLoader {
         // now wait for break...
     }
 
-    protected static void initSystemProperties(ClassLoader cl) throws IOException {
+    protected static void initSystemProperties(ClassLoader cl, boolean useProperties) throws IOException {
         Properties moquiInitProperties = new Properties();
         URL initProps = cl.getResource("MoquiInit.properties");
         if (initProps != null) { InputStream is = initProps.openStream(); moquiInitProperties.load(is); is.close(); }
 
         // before doing anything else make sure the moqui.runtime system property exists (needed for config of various things)
         String runtimePath = System.getProperty("moqui.runtime");
-        if (runtimePath == null || runtimePath.length() == 0) {
+        if (runtimePath != null && runtimePath.length() > 0)
+            System.out.println("Determined runtime from system property: " + runtimePath);
+        if (useProperties && (runtimePath == null || runtimePath.length() == 0)) {
             runtimePath = moquiInitProperties.getProperty("moqui.runtime");
+            if (runtimePath != null && runtimePath.length() > 0)
+                System.out.println("Determined runtime from MoquiInit.properties file: " + runtimePath);
         }
         if (runtimePath == null || runtimePath.length() == 0) {
             // see if runtime directory under the current directory exists, if not default to the current directory
             File testFile = new File("runtime");
             if (testFile.exists()) runtimePath = "runtime";
+            if (runtimePath != null && runtimePath.length() > 0)
+                System.out.println("Determined runtime from existing runtime directory: " + runtimePath);
         }
         if (runtimePath == null || runtimePath.length() == 0) {
             runtimePath = ".";
+            System.out.println("Determined runtime by defaulting to current directory: " + runtimePath);
         }
         runtimePath = new File(runtimePath).getCanonicalPath();
+        System.out.println("Canonicalized runtimePath: " + runtimePath);
         if (runtimePath.endsWith("/")) runtimePath = runtimePath.substring(0, runtimePath.length()-1);
         System.setProperty("moqui.runtime", runtimePath);
 
