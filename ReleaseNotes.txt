@@ -64,6 +64,7 @@ This release includes:
   - Authorization with a service (ArtifactAuthzService)
 - Tools Screens
   - Artifact Hit Bins
+  - Audit Log
   - Visit and Hit Info/Stats (Find Visits, Visit details with hit list)
   - Cache List and Elements
   - Localization: Messages, Entity Fields
