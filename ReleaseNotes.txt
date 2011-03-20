@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0-preview3 - date not yet decided
+Release 1.0-preview3 - 19 Mar 2011
 ===========================================================================
 
 Moqui 1.0-preview3 introduces various features to automatically and easily
@@ -17,7 +17,9 @@ to administer and get information about various parts of the framework.
 NOTE: just before this release the official code repository for Moqui moved
 from SourceForge SVN to Git on GitHub so that users can more easily create
 Git forks for their own use, and to allows pulls from their Git forks back
-into the main Moqui repository.
+into the main Moqui repository. The Moqui GitHub URL is:
+
+https://github.com/jonesde/moqui
 
 This release includes:
 
@@ -36,7 +38,7 @@ This release includes:
     definition (define once, run on client and server); using jquery
     validation (http://docs.jquery.com/Plugins/Validation); so far for
     required, number-integer, number-decimal, text-email, text-url,
-    text-digits, credit-card
+    text-digits, credit-card; try out on the Edit Example screen
   - Screen form-list multi=false support (one form per row)
   - Screen form-list multi=true support, service call multi=true
   - Screen form-list support form-links inside main form
@@ -79,7 +81,7 @@ This release includes:
   performance (WAY faster, but more room for improvement), transactions,
   style, etc
 
-Notable features not yet implemented (TODO list):
+Notable features not yet implemented (for 1.0):
 
 - XML Screens
   - Screen form client JS validation for service in-parameters for matches,
@@ -90,7 +92,7 @@ Notable features not yet implemented (TODO list):
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
-  - Service mail handling (MCA rules)
+  - Service mail handling (MCA rules, etc)
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete, view entity
