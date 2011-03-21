@@ -15,7 +15,8 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-include="false" require-authentication="false">
     <transition name="login">
         <actions><script>
-            ec.user.loginUser(ec.web.requestParameters.userId, ec.web.requestParameters.password, ec.web.requestParameters.tenantId)
+            ec.user.loginUser(ec.web.requestParameters.username, ec.web.requestParameters.password,
+                    ec.web.requestParameters.tenantId)
         </script></actions>
         <default-response type="screen-last"/>
         <error-response url="."/>
@@ -41,7 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 <container id="login-box">
                     <form-single name="login" transition="login">
-                        <field name="userId"><default-field title="Username"><text-line size="20"/></default-field></field>
+                        <field name="username"><default-field><text-line size="20"/></default-field></field>
                         <field name="password"><default-field><password size="20"/></default-field></field>
                         <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
                         <field name="submit"><default-field title="Login"><submit/></default-field></field>
@@ -51,7 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 <!-- TODO remove this link when moving away from more of a testing mode, very convenient for now -->
                 <link url="login" text="Login as John Doe">
-                    <parameter name="userId" value="john.doe"/>
+                    <parameter name="username" value="john.doe"/>
                     <parameter name="password" value="moqui"/>
                 </link>
             </panel-center>

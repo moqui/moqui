@@ -248,7 +248,7 @@ class UserFacadeImpl implements UserFacade {
         Node loginNode = eci.ecfi.confXmlRoot."user-facade"[0]."login"[0]
 
         // track the UserLoginHistory
-        if (loginNode."@history-store" != "false") {
+        if (userId != null && loginNode."@history-store" != "false") {
             Map<String, Object> ulhContext =
                     (Map<String, Object>) [userId:userId, visitId:getVisitId(), successfulLogin:(successful?"Y":"N")]
             if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = password

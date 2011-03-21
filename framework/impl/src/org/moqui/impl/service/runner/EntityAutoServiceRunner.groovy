@@ -75,6 +75,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
         if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {
             parameters.put("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
+            // logger.info("Set fromDate field to default [${parameters.fromDate}]")
         }
 
         // see if all PK fields were passed in
@@ -82,6 +83,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         for (String pkFieldName in pkFieldNames) if (!parameters.get(pkFieldName)) { allPksIn = false; break }
         boolean isSinglePk = pkFieldNames.size() == 1
         boolean isDoublePk = pkFieldNames.size() == 2
+
+        // logger.info("allPksIn=${allPksIn}, isSinglePk=${isSinglePk}, isDoublePk=${isDoublePk}")
 
         if (isSinglePk) {
             /* **** primary sequenced primary key **** */

@@ -214,7 +214,16 @@ class EntityValueImpl implements EntityValue {
         EntityValue lookupValue = getEntityFacadeImpl().makeValue(getEntityName())
         lookupValue.setFields(this, false, null, true)
 
-        List<EntityValue> allValues = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue).list()
+        // temporarily disable authz for this, just doing lookup to get next value and to allow for a
+        //     authorize-skip="create" with authorize-skip of view too this is necessary
+        List<EntityValue> allValues = null
+        this.getEntityFacadeImpl().ecfi.executionContext.artifactExecution.disableAuthz()
+        try {
+            allValues = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue).list()
+        } finally {
+            this.getEntityFacadeImpl().ecfi.executionContext.artifactExecution.enableAuthz()
+        }
+
         Integer highestSeqVal = null;
         for (EntityValue curValue in allValues) {
             String currentSeqId = curValue.getString(seqFieldName)

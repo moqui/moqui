@@ -21,7 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <widgets>
         <link url="../../Login/login" text="Login as John Doe, wrong password test">
-            <parameter name="userId" value="john.doe"/>
+            <parameter name="username" value="john.doe"/>
             <parameter name="password" value="wrong"/>
         </link>
         <section name="HeaderUserInfo">
