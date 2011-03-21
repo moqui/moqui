@@ -164,7 +164,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="UserAccount" package-name="org.moqui.security.user" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>
-        <field name="username" type="text-medium"><description>The username used along with the password to login</description></field>
+        <field name="username" type="text-medium" enable-audit-log="true">
+            <description>The username used along with the password to login</description>
+        </field>
         <field name="userFullName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
         <field name="currentPassword" type="text-medium">
             <description>This is not two-way encrypted by the Entity Facade, and should one one-way encrypted with the
