@@ -98,7 +98,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
-            String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
+            // don't do it this way, currently only supports second pk fields: String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
+            String doublePkSecondaryName = pkFieldNames.get(1)
             newEntityValue.setFields(parameters, true, null, true)
             newEntityValue.setSequencedIdSecondary()
             if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))

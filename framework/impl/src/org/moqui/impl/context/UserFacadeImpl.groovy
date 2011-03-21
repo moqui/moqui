@@ -267,7 +267,7 @@ class UserFacadeImpl implements UserFacade {
     boolean authenticateUser(String username, String password) {
         EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
         if (!newUserAccount) {
-            eci.message.addError("Login failed. Username [$username}] and/or password incorrect.")
+            eci.message.addError("Login failed. Username [${username}] and/or password incorrect.")
             logger.warn("Login failure: ${eci.message.errors}")
             return false
         }
