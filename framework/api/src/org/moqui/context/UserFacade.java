@@ -68,19 +68,19 @@ public interface UserFacade {
     void setEffectiveTime(Timestamp effectiveTime);
 
     /** Authenticate a user and make active in this ExecutionContext (and session of WebExecutionContext if applicable).
-     * @param userId An ID to match the UserAccount.userId field.
+     * @param username An ID to match the UserAccount.username field.
      * @param password The user's current password.
      * @param tenantId The ID of the Tenant to login to. Optional, defaults to no tenant (the base/root instance).
      * @return true if user was logged in, otherwise false
      */
-    boolean loginUser(String userId, String password, String tenantId);
+    boolean loginUser(String username, String password, String tenantId);
 
     /** Only authenticate the user, do not make active in current context.
-     * @param userId An ID to match the UserAccount.userId field.
+     * @param username An ID to match the UserAccount.username field.
      * @param password The user's current password.
      * @return true if user was authenticated successfully, otherwise false
      */
-    boolean authenticateUser(String userId, String password);
+    boolean authenticateUser(String username, String password);
 
     /** Remove (logout) active user. */
     void logoutUser();

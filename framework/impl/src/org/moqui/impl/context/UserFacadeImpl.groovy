@@ -198,7 +198,7 @@ class UserFacadeImpl implements UserFacade {
     /** @see org.moqui.context.UserFacade#setEffectiveTime(Timestamp) */
     void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
-    boolean loginUser(String userId, String password, String tenantId) {
+    boolean loginUser(String username, String password, String tenantId) {
         boolean successful = false
 
         if (tenantId) {
@@ -207,19 +207,22 @@ class UserFacadeImpl implements UserFacade {
             if (this.eci.web != null) this.eci.web.session.removeAttribute("moqui.visitId")
         }
 
-        if (authenticateUser(userId, password)) {
+        String userId = null
+        if (authenticateUser(username, password)) {
             successful = true
-
-            // do this first so that the rest will be done as this user
-            // just in case there is already a user authenticated push onto a stack to remember
-            this.userIdStack.addFirst(userId)
 
             // NOTE: special case, for this thread only and for the section of code below need to turn off artifact
             //     authz since normally the user above would have authorized with something higher up, but that can't
             //     be done at this point
             eci.artifactExecution.disableAuthz()
             try {
-                EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("userId", userId).useCache(true).one()
+                EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("username", username)
+                        .useCache(true).one()
+                userId = newUserAccount.userId
+
+                // do this first so that the rest will be done as this user
+                // just in case there is already a user authenticated push onto a stack to remember
+                this.userIdStack.addFirst(userId)
 
                 // no more auth failures? record the various account state updates, hasLoggedOut=N
                 Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
@@ -261,10 +264,10 @@ class UserFacadeImpl implements UserFacade {
     }
 
     /** @see org.moqui.context.UserFacade#authenticateUser(String, String) */
-    boolean authenticateUser(String userId, String password) {
-        EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("userId", userId).useCache(true).one()
+    boolean authenticateUser(String username, String password) {
+        EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
         if (!newUserAccount) {
-            eci.message.addError("Login failed. Username [${userId}] and/or password incorrect.")
+            eci.message.addError("Login failed. Username [$username}] and/or password incorrect.")
             logger.warn("Login failure: ${eci.message.errors}")
             return false
         }
@@ -278,14 +281,14 @@ class UserFacadeImpl implements UserFacade {
                 StupidUtilities.getHashHashFromFull((String) newUserAccount.currentPassword)) {
             // only if failed on password, increment in new transaction to make sure it sticks
             eci.service.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
-                    .parameters((Map<String, Object>) [userId:userId]).requireNewTransaction(true).call()
-            eci.message.addError("Login failed. Username [${userId}] and/or password incorrect.")
+                    .parameters((Map<String, Object>) [userId:newUserAccount.userId]).requireNewTransaction(true).call()
+            eci.message.addError("Login failed. Username [${username}] and/or password incorrect.")
             logger.warn("Login failure: ${eci.message.errors}")
             return false
         }
 
         if (newUserAccount.requirePasswordChange == "Y") {
-            eci.message.addError("Authenticate failed for user [${userId}] because account requires password change [PWDCHG].")
+            eci.message.addError("Authenticate failed for user [${username}] because account requires password change [PWDCHG].")
             logger.warn("Login failure: ${eci.message.errors}")
             return false
         }
@@ -296,7 +299,7 @@ class UserFacadeImpl implements UserFacade {
                 reEnableTime = new Timestamp(newUserAccount.getTimestamp("disabledDateTime").getTime() + (disabledMinutes*60*1000))
             }
             if (!reEnableTime || reEnableTime < getNowTimestamp()) {
-                eci.message.addError("Authenticate failed for user [${userId}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
+                eci.message.addError("Authenticate failed for user [${username}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
                 logger.warn("Login failure: ${eci.message.errors}")
                 return false
             }
@@ -307,7 +310,7 @@ class UserFacadeImpl implements UserFacade {
             int changeWeeks = eci.ecfi.confXmlRoot."user-facade"[0]."password"[0]."@change-weeks" ?: 12 as int
             int wksSinceChange = (eci.user.nowTimestamp.time - newUserAccount.passwordSetDate.time) / (7*24*60*60*1000)
             if (wksSinceChange > changeWeeks) {
-                eci.message.addError("Authenticate failed for user [${userId}] because password was changed [${wksSinceChange}] weeks ago and should be changed every [${changeWeeks}] weeks [PWDTIM].")
+                eci.message.addError("Authenticate failed for user [${username}] because password was changed [${wksSinceChange}] weeks ago and should be changed every [${changeWeeks}] weeks [PWDTIM].")
                 logger.warn("Login failure: ${eci.message.errors}")
                 return false
             }

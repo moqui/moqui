@@ -164,7 +164,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="UserAccount" package-name="org.moqui.security.user" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>
-        <field name="userName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
+        <field name="username" type="text-medium"><description>The username used along with the password to login</description></field>
+        <field name="userFullName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
         <field name="currentPassword" type="text-medium">
             <description>This is not two-way encrypted by the Entity Facade, and should one one-way encrypted with the
                 hash algorithm type before the value in curly braces, and a salt plus semicolon before the hash text, ie:
@@ -188,6 +189,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="Currency" related-entity-name="Uom">
             <key-map field-name="currencyUomId"/>
         </relationship>
+        <index name="USERACCT_USERNAME" unique="true"><index-field name="username"/></index>
     </entity>
     <entity entity-name="UserGroup" package-name="org.moqui.security.user">
         <field name="userGroupId" type="id" is-pk="true"/>

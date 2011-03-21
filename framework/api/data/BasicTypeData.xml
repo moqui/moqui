@@ -80,15 +80,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="For a region of a larger Geo, i.e. states, counties, provinces..." enumId="GAT_REGIONS" enumTypeId="GEO_ASSOC_TYPE"/>
     <Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GEO_ASSOC_TYPE"/>
 
-    <!-- =========================== Time Type Data =========================== -->
-    <TimePeriodType description="Fiscal Year" timePeriodTypeId="FISCAL_YEAR" periodLength="1" lengthUomId="TF_yr"/>
-    <TimePeriodType description="Fiscal Quarter" timePeriodTypeId="FISCAL_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
-    <TimePeriodType description="Fiscal Month" timePeriodTypeId="FISCAL_MONTH" periodLength="1" lengthUomId="TF_mon"/>
-    <TimePeriodType description="Fiscal Week" timePeriodTypeId="FISCAL_WEEK" periodLength="1" lengthUomId="TF_wk"/>
-    <TimePeriodType description="Fiscal Bi-Week" timePeriodTypeId="FISCAL_BIWEEK" periodLength="2" lengthUomId="TF_wk"/>
-    <TimePeriodType description="Sales Quarter" timePeriodTypeId="SALES_QUARTER" periodLength="3" lengthUomId="TF_mon"/>
-    <TimePeriodType description="Sales Month" timePeriodTypeId="SALES_MONTH" periodLength="1" lengthUomId="TF_mon"/>
-
     <!-- =========================== UOM Type Data ============================ -->
     <EnumerationType description="UOM Type" enumTypeId="UOM_TYPE"/>
     <Enumeration description="Currency" enumId="UT_CURRENCY_MEASURE" enumTypeId="UOM_TYPE"/>

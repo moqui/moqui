@@ -31,7 +31,7 @@
                     <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
                     <widgets>
                         <container id="header-user">
-                            <label text="${ec.user.userAccount?.userName}"/>
+                            <label text="${ec.user.userAccount?.userFullName}"/>
                             <link text="Logout" url="/Login/logout"/>
                         </container>
                     </widgets>

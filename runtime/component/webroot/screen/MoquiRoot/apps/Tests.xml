@@ -55,7 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <label text="test1: ${context.test1}" type="p"/>
         <label text="testV: ${context.testV}" type="p"/>
         <label text="User ID: ${ec.user.userId}" type="p"/>
-        <label text="User Name: ${ec.user.userAccount?.userName}" type="p"/>
+        <label text="User Name: ${ec.user.userAccount?.userFullName}" type="p"/>
         <label text="Messages: ${ec.message.messages}" type="p"/>
         <label text="Errors: ${ec.message.errors}" type="p"/>
         <label text="Context: ${context.toString()}" type="p"/>

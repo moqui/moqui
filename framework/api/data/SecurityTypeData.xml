@@ -41,7 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AUTHZ_ACTION"/>
     <Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AUTHZ_ACTION"/>
 
-    <UserAccount userId="_NA_" userName="Not Applicable" currentPassword="" disabled="Y"/>
+    <UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
     
     <UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
 
