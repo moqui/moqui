@@ -128,7 +128,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="Enumeration" package-name="org.moqui.basic.enumeration" cache="true">
         <field name="enumId" type="id" is-pk="true"/>
-        <field name="enumTypeId" type="id"/>
+        <field name="enumTypeId" type="id-long"/>
         <field name="parentEnumId" type="id"/>
         <field name="enumCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
@@ -139,7 +139,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="EnumerationType" package-name="org.moqui.basic.enumeration" cache="true">
-        <field name="enumTypeId" type="id" is-pk="true"/>
+        <field name="enumTypeId" type="id-long" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
 
