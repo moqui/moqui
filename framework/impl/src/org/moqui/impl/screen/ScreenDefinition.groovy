@@ -191,7 +191,7 @@ class ScreenDefinition {
         if (lastScreenRef.supportsAll()) {
             StringBuilder fileLoc = new StringBuilder(lastScreenRef.location)
             // get rid of the prefix, before the ":"
-            fileLoc.delete(0, fileLoc.indexOf(":")+1)
+            // we probably shouldn't do this, causes problems on Windows and shouldn't be needed: fileLoc.delete(0, fileLoc.indexOf(":")+1)
             // get rid of the suffix, probably .xml but use .*
             if (fileLoc.lastIndexOf(".") > 0) fileLoc.delete(fileLoc.lastIndexOf("."), fileLoc.length())
             fileLoc.append(pathName)
@@ -204,6 +204,8 @@ class ScreenDefinition {
                 theFile = sfi.ecfi.resourceFacade.getLocationReference(fileLoc.toString() + extToTry)
                 if (theFile.exists && theFile.isFile()) contentRef = theFile
             }
+        } else {
+            logger.warn("Not looking for sub-content [${pathName}] under screen [${location}] because screen location does not support exists, isFile, etc")
         }
 
         if (contentRef) subContentRefByPath.put(pathName, contentRef)

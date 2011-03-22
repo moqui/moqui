@@ -19,17 +19,20 @@ class UrlResourceReference implements ResourceReference {
     URL locationUrl = null
     ExecutionContext ec = null
     Boolean exists = null
+    boolean isFile = false
     
     UrlResourceReference() { }
     
     @Override
     ResourceReference init(String location, ExecutionContext ec) {
-        if (location.indexOf(":") < 0) {
+        if (location.startsWith("/") || location.indexOf(":") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
             if (location.charAt(0) != '/') location = ec.ecfi.runtimePath + '/' + location
             locationUrl = new File(location).toURI().toURL()
+            isFile = true
         } else {
-            this.locationUrl = new URL(location)
+            locationUrl = new URL(location)
+            isFile = (locationUrl?.protocol == "file")
         }
         this.ec = ec
         return this
@@ -60,7 +63,7 @@ class UrlResourceReference implements ResourceReference {
     }
 
     @Override
-    boolean supportsAll() { locationUrl?.protocol == "file" }
+    boolean supportsAll() { isFile }
 
     @Override
     boolean supportsUrl() { return true }
@@ -68,10 +71,10 @@ class UrlResourceReference implements ResourceReference {
     URL getUrl() { return locationUrl }
 
     @Override
-    boolean supportsDirectory() { return locationUrl?.protocol == "file" }
+    boolean supportsDirectory() { isFile }
     @Override
     boolean isFile() {
-        if (locationUrl?.protocol == "file") {
+        if (isFile) {
             File f = new File(locationUrl.toURI())
             return f.isFile()
         } else {
@@ -80,7 +83,7 @@ class UrlResourceReference implements ResourceReference {
     }
     @Override
     boolean isDirectory() {
-        if (locationUrl?.protocol == "file") {
+        if (isFile) {
             File f = new File(locationUrl.toURI())
             return f.isDirectory()
         } else {
@@ -89,7 +92,7 @@ class UrlResourceReference implements ResourceReference {
     }
     @Override
     List<ResourceReference> getDirectoryEntries() {
-        if (locationUrl?.protocol == "file") {
+        if (isFile) {
             File f = new File(locationUrl.toURI())
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
@@ -102,12 +105,12 @@ class UrlResourceReference implements ResourceReference {
     }
 
     @Override
-    boolean supportsExists() { return locationUrl?.protocol == "file" || exists != null }
+    boolean supportsExists() { return isFile || exists != null }
     @Override
     boolean getExists() {
         if (exists != null) return exists
 
-        if (locationUrl?.protocol == "file") {
+        if (isFile) {
             File f = new File(locationUrl.toURI())
             exists = f.exists()
             return exists
@@ -116,9 +119,9 @@ class UrlResourceReference implements ResourceReference {
         }
     }
 
-    boolean supportsLastModified() { return locationUrl?.protocol == "file" }
+    boolean supportsLastModified() { isFile }
     long getLastModified() {
-        if (locationUrl?.protocol == "file") {
+        if (isFile) {
             File f = new File(locationUrl.toURI())
             return f.lastModified()
         } else {

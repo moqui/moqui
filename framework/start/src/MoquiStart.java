@@ -305,7 +305,9 @@ public class MoquiStart extends ClassLoader {
             if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
             if (jarEntry != null) {
                 try {
-                    URL resourceUrl = new URL("jar:file:" + jarFile.getName() + "!/" + jarEntry);
+                    String jarFileName = jarFile.getName();
+                    if (jarFileName.contains("\\")) jarFileName = jarFileName.replace('\\', '/');
+                    URL resourceUrl = new URL("jar:file:" + jarFileName + "!/" + jarEntry);
                     resourceCache.put(resourceName, resourceUrl);
                     return resourceUrl;
                 } catch (MalformedURLException e) {
@@ -327,7 +329,9 @@ public class MoquiStart extends ClassLoader {
             if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + resourceName);
             if (jarEntry != null) {
                 try {
-                    urlList.add(new URL("jar:file:" + jarFile.getName() + "!/" + jarEntry));
+                    String jarFileName = jarFile.getName();
+                    if (jarFileName.contains("\\")) jarFileName = jarFileName.replace('\\', '/');
+                    urlList.add(new URL("jar:file:" + jarFileName + "!/" + jarEntry));
                 } catch (MalformedURLException e) {
                     System.out.println("Error making URL for [" + resourceName + "] in jar [" + jarFile + "] in war file [" + outerFile + "]: " + e.toString());
                 }
