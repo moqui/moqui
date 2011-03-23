@@ -104,6 +104,31 @@ This Work includes contributions authored by David E. Jones, not as a
                         </default-field>
                     </field>
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
+
+                    <field-layout collapsible="true">
+                        <field-ref name="exampleId"/>
+                        <field-ref name="exampleTypeEnumId"/>
+                        <field-ref name="statusId"/>
+                        <field-ref name="exampleName"/>
+                        <field-ref name="description"/>
+                        <field-ref name="longDescription"/>
+                        <field-ref name="comments"/>
+                        <field-row>
+                            <field-ref name="exampleSize"/>
+                            <field-ref name="exampleDate"/>
+                        </field-row>
+
+                        <field-group title="Special Fields">
+                            <field-ref name="auditedField"/>
+                            <field-ref name="encryptedField"/>
+                        </field-group>
+                        <field-group title="Validated Fields">
+                            <field-ref name="exampleEmail"/>
+                            <field-ref name="exampleUrl"/>
+                        </field-group>
+
+                        <field-ref name="submitButton"/>
+                    </field-layout>
                 </form-single>
             </widgets>
         </section>

@@ -113,8 +113,10 @@ width: 100%;
 table.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
 
 .form-header-field { white-space: nowrap; }
-label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
 tr.form-header th, th div.form-title { vertical-align: top; }
+
+.single-form-field {  padding-right: 10px; }
+label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
 
 .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select, tr.form-row td { font-size: 0.8em; }
 
@@ -122,6 +124,9 @@ tr.form-header th, th div.form-title { vertical-align: top; }
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
 a.form-order-by:hover { color: blue; }
 a.active { color: red; }
+
+.field-row { }
+.field-row-item { float: left; display: inline-block; }
 
 /* ======================= Screen-specific ======================= */
 

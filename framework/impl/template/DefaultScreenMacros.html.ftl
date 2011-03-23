@@ -266,11 +266,77 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
     <#if !skipStart><form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>></#if>
         <#if formNode["field-layout"]?has_content>
-        <h3>TODO: implement form-single field-layout (form ${.node["@name"]})</h3>
+            <#assign fieldLayout = formNode["field-layout"][0]>
+            <fieldset class="form-single-outer">
+                <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
+                <#assign collapsible = (fieldLayout["@collapsible"] == "true")>
+                <#assign collapsibleOpened = false>
+                <#list formNode["field-layout"][0]?children as layoutNode>
+                    <#if layoutNode?node_name == "field-ref">
+                      <#if collapsibleOpened>
+                        <#assign collapsibleOpened = false>
+                        </div>
+                        <script>$("#${accordionId}").accordion({ collapsible: true });</script>
+                        <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
+                      </#if>
+                        <#assign fieldRef = layoutNode["@name"]>
+                        <#assign fieldNode = "invalid">
+                        <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                        <@formSingleSubField fieldNode/>
+                    <#elseif layoutNode?node_name == "field-row">
+                      <#if collapsibleOpened>
+                        <#assign collapsibleOpened = false>
+                        </div>
+                        <script>$("#${accordionId}").accordion({ collapsible: true });</script>
+                        <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
+                      </#if>
+                        <div class="field-row ui-helper-clearfix">
+                        <#list layoutNode["field-ref"] as rowFieldRefNode>
+                            <div class="field-row-item">
+                                <#assign fieldRef = rowFieldRefNode["@name"]>
+                                <#assign fieldNode = "invalid">
+                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                                <@formSingleSubField fieldNode/>
+                            </div>
+                        </#list>
+                        </div>
+                    <#elseif layoutNode?node_name == "field-group">
+                      <#if collapsible && !collapsibleOpened><#assign collapsibleOpened = true>
+                        <div id="${accordionId}">
+                      </#if>
+                        <h3><a href="#">${layoutNode["@title"]?default("Section " + layoutNode_index)}</a></h3>
+                        <div<#if layoutNode["@style"]?has_content> class="${layoutNode["@style"]}"</#if>>
+                            <#list layoutNode?children as groupNode>
+                                <#if groupNode?node_name == "field-ref">
+                                    <#assign fieldRef = groupNode["@name"]>
+                                    <#assign fieldNode = "invalid">
+                                    <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                                    <@formSingleSubField fieldNode/>
+                                <#elseif groupNode?node_name == "field-row">
+                                    <div class="field-row ui-helper-clearfix">
+                                    <#list groupNode["field-ref"] as rowFieldRefNode>
+                                        <div class="field-row-item">
+                                            <#assign fieldRef = rowFieldRefNode["@name"]>
+                                            <#assign fieldNode = "invalid">
+                                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                                            <@formSingleSubField fieldNode/>
+                                        </div>
+                                    </#list>
+                                    </div>
+                                </#if>
+                            </#list>
+                        </div>
+                    </#if>
+                </#list>
+                <#if collapsibleOpened>
+                    </div>
+                    <script>$("#${accordionId}").accordion({ collapsible: true });</script>
+                </#if>
+            </fieldset>
         <#else/>
-        <fieldset class="form-single-outer">
-            <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
-        </fieldset>
+            <fieldset class="form-single-outer">
+                <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
+            </fieldset>
         </#if>
     <#if !skipEnd></form></#if>
     <#if !skipStart><script>$("#${formNode["@name"]}").validate();</script></#if>
@@ -322,9 +388,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <#list formListColumnList as fieldListColumn>
                         <th>
                         <#list fieldListColumn["field-ref"] as fieldRef>
-                            <#assign fieldName = fieldRef["@name"]>
+                            <#assign fieldRef = fieldRef["@name"]>
                             <#assign fieldNode = "invalid">
-                            <#list formNode["field"] as fn><#if fn["@name"] == fieldName><#assign fieldNode = fn></#if></#list>
+                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
                             <#if !(fieldNode["@hide"]?if_exists == "true" ||
                                     ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                     (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
@@ -353,9 +419,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <#list formNode["form-list-column"] as fieldListColumn>
                             <td>
                             <#list fieldListColumn["field-ref"] as fieldRef>
-                                <#assign fieldName = fieldRef["@name"]>
+                                <#assign fieldRef = fieldRef["@name"]>
                                 <#assign fieldNode = "invalid">
-                                <#list formNode["field"] as fn><#if fn["@name"] == fieldName><#assign fieldNode = fn></#if></#list>
+                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
                                 <#assign formListFieldTag = "div">
                                 <@formListSubField fieldNode/>
                             </#list>

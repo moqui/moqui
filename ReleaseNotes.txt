@@ -13,11 +13,11 @@ This release includes:
 - Some fixes so that Moqui will run in Java on Windows
 - XML Screens
   - Screen form-list form-list-column support
+  - Screen form-single field-layout support
 
 Notable features not yet implemented (for 1.0):
 
 - XML Screens
-  - Screen form-single field-layout support
   - Screen form client JS validation for service in-parameters for matches,
     number-range, text-length, text-letters, time-range, credit-card.@types
   - Screen form-list pagination (defaults in search-form-inputs)
