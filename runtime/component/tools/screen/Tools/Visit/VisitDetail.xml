@@ -35,8 +35,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="artifactName"><default-field><display also-hidden="false"/></default-field></field>
             <field name="parameterString"><default-field><display text="${parameterString?.replace(',',' , ')}" also-hidden="false"/></default-field></field>
 
-            <field name="runningTimeMillis"><default-field title="Time"><display also-hidden="false"/></default-field></field>
-            <field name="outputSize"><default-field title="Size"><display also-hidden="false"/></default-field></field>
+            <field name="runningTimeMillis"><default-field title="Time"><display text="[${runningTimeMillis}]" also-hidden="false"/></default-field></field>
+            <field name="outputSize"><default-field title="Size"><display text="[${outputSize}]" also-hidden="false"/></default-field></field>
 
             <field name="wasError"><default-field title="Error"><display also-hidden="false"/></default-field></field>
             <field name="errorMessage"><default-field title="Message"><display also-hidden="false"/></default-field></field>
@@ -47,18 +47,15 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="serverIpAddress"><default-field><display also-hidden="false"/></default-field></field>
             <field name="serverHostName"><default-field><display also-hidden="false"/></default-field></field>
 
-            <!-- do this once it's supported so it isn't so wide, and maybe go to 3-4 rows per record instead of two
-            <field-layout>
-                <field-align-set><field-ref name="startDateTime"/><field-ref name="userId"/></field-align-set>
-                <field-align-set><field-ref name="artifactType"/><field-ref name="artifactSubType"/></field-align-set>
-                <field-align-set><field-ref name="artifactName"/><field-ref name="parameterString"/></field-align-set>
-                <field-align-set><field-ref name="runningTimeMillis"/><field-ref name="outputSize"/></field-align-set>
+            <!-- NOTE: maybe go to 3-4 rows per record instead of two -->
+            <form-list-column><field-ref name="startDateTime"/><field-ref name="userId"/></form-list-column>
+            <form-list-column><field-ref name="artifactType"/><field-ref name="artifactSubType"/></form-list-column>
+            <form-list-column><field-ref name="artifactName"/><field-ref name="parameterString"/></form-list-column>
+            <form-list-column><field-ref name="runningTimeMillis"/><field-ref name="outputSize"/></form-list-column>
 
-                <field-align-set><field-ref name="wasError"/><field-ref name="errorMessage"/></field-align-set>
-                <field-align-set><field-ref name="requestUrl"/><field-ref name="referrerUrl"/></field-align-set>
-                <field-align-set><field-ref name="serverIpAddress"/><field-ref name="serverHostName"/></field-align-set>
-            </field-layout>
-            -->
+            <form-list-column><field-ref name="requestUrl"/><field-ref name="referrerUrl"/></form-list-column>
+            <form-list-column><field-ref name="wasError"/><field-ref name="errorMessage"/></form-list-column>
+            <form-list-column><field-ref name="serverIpAddress"/><field-ref name="serverHostName"/></form-list-column>
         </form-list>
     </widgets>
 </screen>

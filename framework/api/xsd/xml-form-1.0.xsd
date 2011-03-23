@@ -56,7 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-service"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-entity"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
-                <xs:element minOccurs="0" ref="field-layout"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="form-list-column"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="extends" type="xs:string">
@@ -126,43 +126,38 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="field-group"/>
-                <xs:element ref="field-align-set"/>
                 <xs:element ref="field-ref"/>
-                <xs:element ref="display-container"/>
             </xs:choice>
         </xs:complexType>
     </xs:element>
     <xs:element name="field-group">
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <xs:element ref="field-align-set"/>
                 <xs:element ref="field-ref"/>
-                <xs:element ref="display-container"/>
+                <xs:element ref="field-group-row"/>
             </xs:choice>
             <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="style" type="xs:string"/>
             <xs:attribute name="title" type="xs:string"/>
             <xs:attribute name="collapsible" type="boolean"/>
             <xs:attribute name="initially-collapsed" type="boolean"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="field-align-set">
-        <xs:annotation><xs:documentation>Fields in this set will be side-by-side for vertical/single forms and
-            up-and-down for horizontal/list forms.</xs:documentation></xs:annotation>
+    <xs:element name="field-group-row">
+        <xs:annotation><xs:documentation>If a field-group has any rows the while group will be put into a table with
+            a number of columns equal the number of fields in the widest row.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="field-ref"/></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="form-list-column">
+        <xs:annotation><xs:documentation>Fields in this set will be in the same column in the list form table.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="field-ref"/></xs:sequence>
         </xs:complexType>
     </xs:element>
     <xs:element name="field-ref">
         <xs:complexType><xs:attribute name="name" type="xs:string" use="required"/></xs:complexType>
-    </xs:element>
-    <xs:element name="display-container">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
-            </xs:sequence>
-            <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="style" type="xs:string"/>
-        </xs:complexType>
     </xs:element>
 
     <!-- ================== Standalone Fields ==================== -->

@@ -201,5 +201,8 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
 
         TemplateModel get(int i) { return nodeList.get(i) }
         int size() { return nodeList.size() }
+
+        @Override
+        String toString() { return nodeList.toString() }
     }
 }

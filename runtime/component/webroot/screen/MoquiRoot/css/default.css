@@ -129,3 +129,5 @@ a.active { color: red; }
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: 0.7em; }
+
+#VisitArtifactHitList-table tbody tr td div { font-size: 0.9em; }

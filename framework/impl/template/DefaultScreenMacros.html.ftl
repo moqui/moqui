@@ -262,7 +262,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
-    <#assign skipEnd = (formNode["@skip-start"]?if_exists == "true")>
+    <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
     <#if !skipStart><form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>></#if>
         <#if formNode["field-layout"]?has_content>
@@ -306,66 +306,141 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign isMulti = formNode["@multi"]?if_exists == "true">
     <#assign isMultiFinalRow = false>
     <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
-    <#assign skipEnd = (formNode["@skip-start"]?if_exists == "true")>
+    <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
     <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
-    <#if formNode["field-layout"]?has_content>
-        <h3>TODO: implement form-list field-layout (form ${.node["@name"]})</h3>
-    <#else>
-    <table class="form-list-outer" id="${formNode["@name"]}-table">
-    <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-    <#if needHeaderForm && !skipStart>
-        <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-        <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
-    </#if>
-        <thead>
-            <tr class="form-header">
-                <#list formNode["field"] as fieldNode><@formListHeaderField fieldNode/></#list>
-            </tr>
-        </thead>
-    <#if needHeaderForm && !skipStart>
-        </form>
-    </#if>
-        <tbody>
-        <#if isMulti && !skipStart>
-            <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+    <#assign formListColumnList = formNode["form-list-column"]?if_exists>
+    <#if formListColumnList?exists && (formListColumnList?size > 0)>
+        <table class="form-list-outer" id="${formNode["@name"]}-table">
+        <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
+        <#if needHeaderForm && !skipStart>
+            <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+            <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
         </#if>
-            <#list listObject as listEntry>
-                <#assign listEntryIndex = listEntry_index>
-                <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-                ${sri.startFormListRow(formNode["@name"], listEntry)}
-                <#if !isMulti>
-                    <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
-                </#if>
-                <tr class="form-row">
-                    <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+            <thead>
+                <tr class="form-header">
+                    <#list formListColumnList as fieldListColumn>
+                        <th>
+                        <#list fieldListColumn["field-ref"] as fieldRef>
+                            <#assign fieldName = fieldRef["@name"]>
+                            <#assign fieldNode = "invalid">
+                            <#list formNode["field"] as fn><#if fn["@name"] == fieldName><#assign fieldNode = fn></#if></#list>
+                            <#if !(fieldNode["@hide"]?if_exists == "true" ||
+                                    ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
+                                    (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
+                                <div><@formListHeaderField fieldNode/></div>
+                            </#if>
+                        </#list>
+                        </th>
+                    </#list>
                 </tr>
-                <#if !isMulti>
-                    </form>
-                    <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
-                </#if>
-                ${sri.endFormListRow()}
-            </#list>
-        <#if isMulti && !skipEnd>
-            <tr class="form-row">
-                <#assign isMultiFinalRow = true>
-                <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
-            </tr>
+            </thead>
+        <#if needHeaderForm && !skipStart>
             </form>
         </#if>
-        <#if isMulti && !skipStart>
-            <script>$("#${formNode["@name"]}").validate();</script>
+            <tbody>
+            <#if isMulti && !skipStart>
+                <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+            </#if>
+                <#list listObject as listEntry>
+                    <#assign listEntryIndex = listEntry_index>
+                    <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
+                    ${sri.startFormListRow(formNode["@name"], listEntry)}
+                    <#if !isMulti>
+                        <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
+                    </#if>
+                    <tr class="form-row">
+                        <#list formNode["form-list-column"] as fieldListColumn>
+                            <td>
+                            <#list fieldListColumn["field-ref"] as fieldRef>
+                                <#assign fieldName = fieldRef["@name"]>
+                                <#assign fieldNode = "invalid">
+                                <#list formNode["field"] as fn><#if fn["@name"] == fieldName><#assign fieldNode = fn></#if></#list>
+                                <#assign formListFieldTag = "div">
+                                <@formListSubField fieldNode/>
+                            </#list>
+                            </td>
+                        </#list>
+                    </tr>
+                    <#if !isMulti>
+                        </form>
+                        <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
+                    </#if>
+                    ${sri.endFormListRow()}
+                </#list>
+            <#if isMulti && !skipEnd>
+                <tr class="form-row">
+                    <#assign isMultiFinalRow = true>
+                    <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                </tr>
+                </form>
+            </#if>
+            <#if isMulti && !skipStart>
+                <script>$("#${formNode["@name"]}").validate();</script>
+            </#if>
+            </tbody>
+            ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
+        </table>
+        ${sri.getAfterFormWriterText()}
+    <#else>
+        <table class="form-list-outer" id="${formNode["@name"]}-table">
+        <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
+        <#if needHeaderForm && !skipStart>
+            <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+            <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
         </#if>
-        </tbody>
-        ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
-    </table>
-    ${sri.getAfterFormWriterText()}
+            <thead>
+                <tr class="form-header">
+                    <#list formNode["field"] as fieldNode>
+                        <#if !(fieldNode["@hide"]?if_exists == "true" ||
+                                ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
+                                (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
+                            <th><@formListHeaderField fieldNode/></th>
+                        </#if>
+                    </#list>
+                </tr>
+            </thead>
+        <#if needHeaderForm && !skipStart>
+            </form>
+        </#if>
+            <tbody>
+            <#if isMulti && !skipStart>
+                <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+            </#if>
+                <#list listObject as listEntry>
+                    <#assign listEntryIndex = listEntry_index>
+                    <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
+                    ${sri.startFormListRow(formNode["@name"], listEntry)}
+                    <#if !isMulti>
+                        <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
+                    </#if>
+                    <tr class="form-row">
+                        <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                    </tr>
+                    <#if !isMulti>
+                        </form>
+                        <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
+                    </#if>
+                    ${sri.endFormListRow()}
+                </#list>
+            <#if isMulti && !skipEnd>
+                <tr class="form-row">
+                    <#assign isMultiFinalRow = true>
+                    <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                </tr>
+                </form>
+            </#if>
+            <#if isMulti && !skipStart>
+                <script>$("#${formNode["@name"]}").validate();</script>
+            </#if>
+            </tbody>
+            ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
+        </table>
+        ${sri.getAfterFormWriterText()}
     </#if>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formListHeaderField fieldNode>
-    <#if fieldNode["@hide"]?if_exists == "true"><#return></#if>
-    <#if (!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 && (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)><#return></#if>
     <#if fieldNode["header-field"]?has_content>
         <#assign fieldSubNode = fieldNode["header-field"][0]>
     <#elseif fieldNode["default-field"]?has_content>
@@ -374,29 +449,27 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#-- this only makes sense for fields with a single conditional -->
         <#assign fieldSubNode = fieldNode["conditional-field"][0]>
     </#if>
-    <th>
-        <div class="form-title">
-            <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
-            <#if fieldSubNode["@show-order-by"]?if_exists == "true">
-                <#assign orderByField = ec.web.requestParameters.orderByField?if_exists>
-                <#assign ascActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-")>
-                <#assign ascOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "+" + fieldNode["@name"])>
-                <#assign descActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-")>
-                <#assign descOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "-" + fieldNode["@name"])>
-                <a href="${ascOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if ascActive> active</#if>">+</a><a href="${descOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if descActive> active</#if>">-</a>
-                <#-- the old way, show + or -:
-                <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
-                <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", orderByField)>
-                <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">${orderByField?substring(0,1)}</a>
-                -->
-            </#if>
-        </div>
-        <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
-        <div class="form-header-field">
-            <#recurse fieldNode["header-field"][0]/>
-        </div>
+    <div class="form-title">
+        <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
+        <#if fieldSubNode["@show-order-by"]?if_exists == "true">
+            <#assign orderByField = ec.web.requestParameters.orderByField?if_exists>
+            <#assign ascActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && !orderByField?starts_with("-")>
+            <#assign ascOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "+" + fieldNode["@name"])>
+            <#assign descActive = orderByField?has_content && orderByField?contains(fieldNode["@name"]) && orderByField?starts_with("-")>
+            <#assign descOrderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", "-" + fieldNode["@name"])>
+            <a href="${ascOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if ascActive> active</#if>">+</a><a href="${descOrderByUrlInfo.getUrlWithParams()}" class="form-order-by<#if descActive> active</#if>">-</a>
+            <#-- the old way, show + or -:
+            <#if !orderByField?has_content || orderByField?starts_with("-") || !orderByField?contains(fieldNode["@name"])><#assign orderByField = ("+" + fieldNode["@name"])><#else><#assign orderByField = ("-" + fieldNode["@name"])></#if>
+            <#assign orderByUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("orderByField", orderByField)>
+            <a href="${orderByUrlInfo.getUrlWithParams()}" class="form-order-by">${orderByField?substring(0,1)}</a>
+            -->
         </#if>
-    </th>
+    </div>
+    <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
+    <div class="form-header-field">
+        <#recurse fieldNode["header-field"][0]/>
+    </div>
+    </#if>
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
@@ -414,7 +487,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
-    <td>
+    <${formListFieldTag!"td"}>
         <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
         <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
         <#if fieldSubNode["link"]?has_content>
@@ -427,7 +500,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#return>
         </#if>
         <#t><#recurse fieldSubNode>
-    </td>
+    </${formListFieldTag!"td"}>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 

@@ -274,6 +274,13 @@ class ScreenForm {
             if (baseFormNode."field-layout") baseFormNode.remove(baseFormNode."field-layout"[0])
             baseFormNode.append(overrideFormNode."field-layout"[0])
         }
+        if (overrideFormNode."form-list-column") {
+            // if there are any form-list-column remove all from base and copy all from override
+            if (baseFormNode."form-list-column") {
+                for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.remove(flcNode)
+            }
+            for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.append(flcNode)
+        }
     }
 
     protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode, boolean deepCopy) {

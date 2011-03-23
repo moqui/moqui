@@ -10,14 +10,16 @@ This release includes:
 - All of the great features of 1.0-preview1-3
 - Changed UserAccount so that userId is internal/sequenced and a new
   username field is used for auth/login
+- Some fixes so that Moqui will run in Java on Windows
+- XML Screens
+  - Screen form-list form-list-column support
 
 Notable features not yet implemented (for 1.0):
 
 - XML Screens
+  - Screen form-single field-layout support
   - Screen form client JS validation for service in-parameters for matches,
     number-range, text-length, text-letters, time-range, credit-card.@types
-  - Screen form-single field-layout support
-  - Screen form-list field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
   - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
