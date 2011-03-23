@@ -18,10 +18,7 @@ This release includes:
 Notable features not yet implemented (for 1.0):
 
 - XML Screens
-  - Screen form client JS validation for service in-parameters for matches,
-    number-range, text-length, text-letters, time-range, credit-card.@types
   - Screen form-list pagination (defaults in search-form-inputs)
-  - Screen section-iterate pagination
   - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
 - Service Facade
   - Service mail handling (MCA rules, etc)
@@ -383,8 +380,12 @@ Features designed, but not to be included in 1.0 series
 
 - XML Screens
   - Screen tree elements
-  - Dynamic Screens (database-driven: DynamicScreen*)
-  - Dynamic Forms (database-driven: DynForm*)
+  - Screen section-iterate pagination
+  - Screen form automatic client JS validation for service in-parameters
+    for matches, number-range, text-length, text-letters, time-range,
+    credit-card.@types
+  - Dynamic Screens (database-driven: DynamicScreen* entities)
+  - Dynamic Forms (database-driven: DynForm* entities)
 - Service Facade
   - Service database-driven semaphores
   - Service runners for proxy service calls to another Moqui server via
