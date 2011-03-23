@@ -5,6 +5,11 @@ Moqui Framework Release Notes
 Release 1.0-beta1 - Date not yet decided
 ===========================================================================
 
+The 1.0-beta1 release is the first feature-complete release for the 1.0
+series. Following this release the focus for the framework shifts from
+implementation to testing and to building applications and tools based on
+it (in Moqui Framework, Moqui Mantle, and in other Moqui-based projects).
+
 This release includes:
 
 - All of the great features of 1.0-preview1-3
