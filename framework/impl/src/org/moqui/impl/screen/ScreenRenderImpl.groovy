@@ -108,7 +108,14 @@ class ScreenRenderImpl implements ScreenRender {
         this.request = request
         this.response = response
         // we know this is a web request, set defaults if missing
-        if (!renderMode) renderMode = "html"
+        Map<String, Object> requestParameters = sfi.ecfi.executionContext.web.requestParameters
+        if (!renderMode) {
+            if (requestParameters.containsKey("renderMode")) {
+                renderMode = requestParameters.get("renderMode")
+            } else {
+                renderMode = "html"
+            }
+        }
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)

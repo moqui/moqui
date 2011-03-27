@@ -239,6 +239,12 @@ class EntityFindImpl implements EntityFind {
             limit(pageSize)
         }
 
+        // if there is a pageNoLimit clear out the limit regardless of other settings
+        if (inf.get("pageNoLimit") == "true") {
+            this.offset = null
+            this.limit = null
+        }
+
         return this
     }
 

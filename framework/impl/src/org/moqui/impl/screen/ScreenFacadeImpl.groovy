@@ -91,7 +91,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
         if (template) return template
 
         String templateLocation = ecfi.getConfXmlRoot()."screen-facade"[0]
-                ."screen-text-output".find({ it.@type == renderMode })."@macro-template-location"
+                ."screen-text-output".find({ it.@type == renderMode })?."@macro-template-location"
+        if (!templateLocation) throw new IllegalArgumentException("Could not find macro-template-location for render mode (screen-text-output.@type) [${renderMode}]")
         // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
         String rootTemplate = """<#include "${templateLocation}"/>
             <#recurse widgetsNode>

@@ -13,6 +13,13 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Artifact Hits">
+    <transition name="csv">
+        <default-response url="..">
+            <parameter name="renderMode" value="csv"/>
+            <parameter name="pageNoLimit" value="true"/>
+            <parameter name="lastStandalone" value="true"/>
+        </default-response>
+    </transition>
     <actions>
         <entity-find entity-name="ArtifactHitBin" list="artifactHitBinList" limit="50">
             <search-form-inputs default-order-by="-binStartDateTime"/>

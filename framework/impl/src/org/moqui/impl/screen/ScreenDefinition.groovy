@@ -336,7 +336,7 @@ class ScreenDefinition {
         protected boolean saveCurrentScreen
 
         ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
-            String location = "${parentScreen.location}.transition[${ti.name}].${responseNode.name()}"
+            String location = "${parentScreen.location}.transition_${ti.name}.${responseNode.name().replace("-","_")}"
             if (responseNode.condition && responseNode.condition[0].children()) {
                 // the script is effectively the first child of the condition element
                 condition = new XmlAction(parentScreen.sfi.ecfi, (Node) responseNode.condition[0].children()[0],
