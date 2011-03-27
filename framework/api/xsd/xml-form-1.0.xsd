@@ -74,12 +74,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     root directly.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate" type="xs:string" default="true">
-                <!-- TODO handle this in code -->
                 <xs:annotation><xs:documentation>Indicate if this form should paginate or not. Defaults to true.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="paginate-size" type="xs:integer">
-                <!-- TODO handle this in code -->
-                <xs:annotation><xs:documentation>The number of items to display per page when using pagination.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="skip-start" type="boolean" default="false"/>
             <xs:attribute name="skip-end" type="boolean" default="false"/>

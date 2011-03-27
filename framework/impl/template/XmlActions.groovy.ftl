@@ -76,7 +76,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "entity-find">
     ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
-    <#if .node["search-form-inputs"]?has_content>${.node["@list"]}_xafind.searchFormInputs(${.node["search-form-inputs"][0]["@input-fields-map"]?default("null")}, "${.node["search-form-inputs"][0]["@default-order-by"]?default("")}")
+    <#if .node["search-form-inputs"]?has_content><#assign sfiNode = .node["search-form-inputs"][0]>${.node["@list"]}_xafind.searchFormInputs(${sfiNode["@input-fields-map"]?default("null")}, "${sfiNode["@default-order-by"]?default("")}", ${sfiNode["@paginate"]?default("true")})
     </#if>
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
     </#if>
@@ -96,6 +96,15 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     ${.node["@list"]} = ${.node["@list"]}_xafind.iterator()
     <#else>
     ${.node["@list"]} = ${.node["@list"]}_xafind.list()
+    </#if>
+    <#if .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
+    ${.node["@list"]}Count = ${.node["@list"]}_xafind.count()
+    ${.node["@list"]}PageIndex = ${.node["@list"]}_xafind.pageIndex
+    ${.node["@list"]}PageSize = ${.node["@list"]}_xafind.pageSize
+    ${.node["@list"]}PageMaxIndex = (int)(${.node["@list"]}Count / ${.node["@list"]}PageSize)
+    ${.node["@list"]}PageRangeLow = ${.node["@list"]}PageIndex * ${.node["@list"]}PageSize + 1
+    ${.node["@list"]}PageRangeHigh = (${.node["@list"]}PageIndex * ${.node["@list"]}PageSize) + ${.node["@list"]}PageSize
+    if (${.node["@list"]}PageRangeHigh > ${.node["@list"]}Count) ${.node["@list"]}PageRangeHigh = ${.node["@list"]}Count
     </#if>
 </#macro>
 <#macro "entity-find-count">

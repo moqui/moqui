@@ -114,7 +114,7 @@ class ScreenUrlInfo {
     }
 
     ScreenUrlInfo addParameter(Object name, Object value) {
-        if (!name || !value) return this
+        if (!name || value == null) return this
         pathParameterMap.put(name as String, value as String)
         return this
     }
