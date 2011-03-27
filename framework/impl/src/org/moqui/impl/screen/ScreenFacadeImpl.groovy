@@ -77,6 +77,12 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return sd
     }
 
+    String getMimeTypeByMode(String renderMode) {
+        String mimeType = ecfi.getConfXmlRoot()."screen-facade"[0]
+                ."screen-text-output".find({ it.@type == renderMode })?."@mime-type"
+        return mimeType
+    }
+
     Template getTemplateByMode(String renderMode) {
         Template template = (Template) screenTemplateModeCache.get(renderMode)
         if (template) return template

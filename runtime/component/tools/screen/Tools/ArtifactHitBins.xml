@@ -26,6 +26,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
+        <container>
+            <link url="csv" text="CSV Transition"/>
+            <link url="ArtifactHitBins?renderMode=csv&amp;pageNoLimit=true&amp;lastStandalone=true" url-type="plain" text="CSV URL"/>
+        </container>
         <form-list name="ArtifactHitBins" list="artifactHitBinList">
             <row-actions>
                 <set field="averageTime" from="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>

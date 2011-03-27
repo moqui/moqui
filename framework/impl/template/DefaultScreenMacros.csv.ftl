@@ -173,6 +173,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </#if>
             </#list>
         </#list>
+
         <#list listObject as listEntry>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
@@ -197,11 +198,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 <#t><@formListHeaderField fieldNode/><#if fieldNode_has_next>,</#if>
             </#if>
         </#list>
+
         <#list listObject as listEntry>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
             ${sri.startFormListRow(formNode["@name"], listEntry)}<#t>
-            <#list formNode["field"] as fieldNode><@formListSubField fieldNode/><#if fieldNode_has_next>,</#if></#list>
+            <#lt><#list formNode["field"] as fieldNode><@formListSubField fieldNode/><#if fieldNode_has_next>,</#if></#list>
             ${sri.endFormListRow()}<#t>
         </#list>
         ${sri.safeCloseList(listObject)}<#t><#-- if listObject is an EntityListIterator, close it -->
@@ -216,7 +218,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <#-- this only makes sense for fields with a single conditional -->
         <#assign fieldSubNode = fieldNode["conditional-field"][0]>
     </#if>
-    <#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
+    <#t><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
@@ -239,7 +241,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?exists>_${listEntryIndex}</#if></#macro>
-<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")} </#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
+<#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
 <#macro "conditional-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>

@@ -32,6 +32,7 @@ import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.context.TemplateRenderer
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
+import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -112,6 +113,8 @@ class ScreenRenderImpl implements ScreenRender {
         if (!renderMode) {
             if (requestParameters.containsKey("renderMode")) {
                 renderMode = requestParameters.get("renderMode")
+                String mimeType = sfi.getMimeTypeByMode(renderMode)
+                if (mimeType) outputContentType = mimeType
             } else {
                 renderMode = "html"
             }
@@ -229,9 +232,6 @@ class ScreenRenderImpl implements ScreenRender {
             String url = ri.url ?: ""
             String urlType = ri.urlType ?: "screen-path"
 
-            // NOTE parameters are auto-handled elsewhere, do we need to handle any more here (leave this as a placeholder for now)
-            Map<String, String> parameterMap = new HashMap()
-
             // handle screen-last, etc
             if (ec.web) {
                 WebFacadeImpl wfi = (WebFacadeImpl) ec.web
@@ -258,6 +258,7 @@ class ScreenRenderImpl implements ScreenRender {
                 } else {
                     // default is screen-path
                     ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
+                    for (ParameterItem pi in ri.parameterMap.values()) fullUrl.addParameter(pi.name, pi.getValue(ec))
                     response.sendRedirect(fullUrl.getUrlWithParams())
                 }
             } else {
