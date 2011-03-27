@@ -34,6 +34,7 @@ Notable features not yet implemented (for 1.0):
       list/update/delete/add dependent entities)
     - Entity Data Import and Export screens
     - SQL Query Run/View
+    - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
