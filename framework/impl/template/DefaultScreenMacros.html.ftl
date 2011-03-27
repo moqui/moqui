@@ -368,14 +368,38 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "form-list">
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
-    <#assign formNode = sri.getFtlFormNode(.node["@name"])/>
+    <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign isMulti = formNode["@multi"]?if_exists == "true">
     <#assign isMultiFinalRow = false>
     <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
     <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)/>
-    <#assign listObject = ec.resource.evaluateContextField(formNode["@list"], "")/>
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
+    <#assign listName = formNode["@list"]>
+    <#assign listObject = ec.resource.evaluateContextField(listName, "")>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
+    <#if !(formNode["@paginate"]?if_exists == "false") && (context[listName + "Count"]?if_exists > 0)>
+        <div class="form-list-paginate">
+            <#if (context[listName + "PageIndex"] > 0)>
+                <#assign firstUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", 0)>
+                <#assign previousUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", (context[listName + "PageIndex"] - 1))>
+                <a href="${firstUrlInfo.getUrlWithParams()}">|&lt;</a>
+                <a href="${previousUrlInfo.getUrlWithParams()}">&lt;</a>
+            <#else>
+                <span>|&lt;</span>
+                <span>&lt;</span>
+            </#if>
+            <span>${context[listName + "PageRangeLow"]} - ${context[listName + "PageRangeHigh"]} / ${context[listName + "Count"]}</span>
+            <#if (context[listName + "PageIndex"] < context[listName + "PageMaxIndex"])>
+                <#assign lastUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", context[listName + "PageMaxIndex"])>
+                <#assign nextUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", context[listName + "PageIndex"] + 1)>
+                <a href="${nextUrlInfo.getUrlWithParams()}">&gt;</a>
+                <a href="${lastUrlInfo.getUrlWithParams()}">&gt;|</a>
+            <#else>
+                <span>&gt;</span>
+                <span>&gt;|</span>
+            </#if>
+        </div>
+    </#if>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>
         <table class="form-list-outer" id="${formNode["@name"]}-table">
         <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>

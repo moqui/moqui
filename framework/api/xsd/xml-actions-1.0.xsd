@@ -405,6 +405,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="default-order-by" type="xs:string">
                 <xs:annotation><xs:documentation>If no orderByField parameter, order by this.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="paginate" type="xs:string" default="true">
+                <xs:annotation><xs:documentation>Indicate if this find should set pagination options even if there are
+                    no pageSize and pageIndex parameters. Also adds a context field called "${entity-find.@list}Count"
+                    with a count of the total possible results (ie without the offset/limit). Defaults to true.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="econditions">

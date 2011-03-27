@@ -96,6 +96,9 @@ ul.subscreens-menu li a:hover { color: #000077; }
 
 /* ======================= XML Form Styles ======================= */
 
+.form-list-paginate a, .form-list-paginate span { padding-right: 4px;
+    font-family: "Courier New", monospace; font-weight: bold; font-size: 0.8em; vertical-align: top; }
+
 fieldset.form-single-outer {
 margin: 4px;
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #DDDDDF;

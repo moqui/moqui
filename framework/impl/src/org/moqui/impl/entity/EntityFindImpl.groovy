@@ -158,8 +158,8 @@ class EntityFindImpl implements EntityFind {
         return this.havingEntityCondition
     }
 
-    /** @see org.moqui.entity.EntityFind#searchFormInputs(String,String) */
-    EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy) {
+    /** @see org.moqui.entity.EntityFind#searchFormInputs(String,String,boolean) */
+    EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
         Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] :
             (efi.ecfi.executionContext.web ? efi.ecfi.executionContext.web.parameters : efi.ecfi.executionContext.context)
         EntityDefinition ed = getEntityDef()
@@ -231,8 +231,19 @@ class EntityFindImpl implements EntityFind {
             }
         }
 
+        // look for the pageIndex and optional pageSize parameters
+        if (alwaysPaginate || inf.get("pageIndex")) {
+            int pageIndex = (inf.get("pageIndex") ?: 0) as int
+            int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
+            offset(pageIndex * pageSize)
+            limit(pageSize)
+        }
+
         return this
     }
+
+    int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+    int getPageSize() { return limit ?: 20 }
 
     // ======================== General/Common Options ========================
 
@@ -516,17 +527,17 @@ class EntityFindImpl implements EntityFind {
     }
 
     protected EntityListIterator iteratorPlain() throws EntityException {
-        EntityDefinition entityDefinition = this.getEntityDef()
+        EntityDefinition ed = this.getEntityDef()
 
-        EntityFindBuilder efb = new EntityFindBuilder(entityDefinition, this)
+        EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
-        if (this.getDistinct() || (entityDefinition.isViewEntity() &&
-                entityDefinition.getEntityNode()."entity-condition"[0]?."@distinct") == "true") {
+        if (this.getDistinct() || (ed.isViewEntity() &&
+                ed.getEntityNode()."entity-condition"[0]?."@distinct") == "true") {
             efb.makeDistinct()
         }
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(entityDefinition.getFieldNames(true, true))
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true))
         // select fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         
@@ -535,7 +546,7 @@ class EntityFindImpl implements EntityFind {
 
         // where clause
         EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
-        EntityConditionImplBase viewWhere = entityDefinition.makeViewWhereCondition()
+        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
             whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         } else if (viewWhere) {
@@ -551,7 +562,7 @@ class EntityFindImpl implements EntityFind {
 
         // having clause
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
-        EntityConditionImplBase viewHaving = entityDefinition.makeViewHavingCondition()
+        EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
             havingCondition = this.efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
         } else if (viewHaving) {
@@ -566,7 +577,7 @@ class EntityFindImpl implements EntityFind {
         List<String> orderByExpanded = new ArrayList()
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        def ecObList = entityDefinition.getEntityNode()."entity-condition"?.getAt(0)?."order-by"
+        def ecObList = ed.getEntityNode()."entity-condition"?.getAt(0)?."order-by"
         if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
         efb.makeOrderByClause(orderByExpanded)
 
@@ -576,7 +587,7 @@ class EntityFindImpl implements EntityFind {
         // run the SQL now that it is built
         EntityListIterator eli = null
         try {
-            efi.entityDbMeta.checkTableRuntime(entityDefinition)
+            efi.entityDbMeta.checkTableRuntime(ed)
 
             eli = internalIterator(efb)
         } catch (EntityException e) {
@@ -641,20 +652,21 @@ class EntityFindImpl implements EntityFind {
         efb.makeSqlFromClause()
 
         // where clause
-        efb.startWhereClause()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
             whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         } else if (viewWhere) {
             whereCondition = viewWhere
         }
-        if (whereCondition) whereCondition.makeSqlWhere(efb)
+        if (whereCondition) {
+            efb.startWhereClause()
+            whereCondition.makeSqlWhere(efb)
+        }
 
         // group by clause
         efb.makeGroupByClause()
 
         // having clause
-        efb.startHavingClause()
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
         EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
@@ -662,7 +674,10 @@ class EntityFindImpl implements EntityFind {
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
-        if (havingCondition) havingCondition.makeSqlWhere(efb)
+        if (havingCondition) {
+            efb.startHavingClause()
+            havingCondition.makeSqlWhere(efb)
+        }
 
         efb.closeCountFunctionIfGroupBy()
 

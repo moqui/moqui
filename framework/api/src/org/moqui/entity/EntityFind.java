@@ -101,9 +101,10 @@ public interface EntityFind extends java.io.Serializable {
      * @param inputFieldsMapName The map to get form fields from. If empty will look at the ec.web.parameters map if
      *        the web facade is available, otherwise the current context (ec.context).
      * @param defaultOrderBy If there is not orderByField parameter this is used instead.
+     * @param alwaysPaginate If true pagination offset/limit will be set even if there is no pageIndex parameter.
      * @return Returns this for chaining of method calls.
      */
-    EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy);
+    EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate);
 
     // ======================== General/Common Options ========================
 
