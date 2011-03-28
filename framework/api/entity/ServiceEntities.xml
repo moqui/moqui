@@ -10,17 +10,18 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../xsd/entity-definition-1.0.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- NOTE: there is no ScheduledService or ScheduledServiceData entity any more because Quartz Scheduler will be used and it has its own data model, etc -->
 
     <!-- ========================================================= -->
     <!-- org.moqui.service.semaphore -->
     <!-- ========================================================= -->
-
+    <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="ServiceSemaphore" package-name="org.moqui.service.semaphore" sequence-bank-size="100">
         <field name="serviceName" type="text-medium" is-pk="true"/>
         <field name="lockThread" type="text-medium"/>
         <field name="lockTime" type="date-time"/>
     </entity>
+    -->
 </entities>
