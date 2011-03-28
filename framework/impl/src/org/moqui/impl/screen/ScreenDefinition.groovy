@@ -228,10 +228,10 @@ class ScreenDefinition {
         Object getValue(ExecutionContext ec) {
             Object value = null
             if (fromFieldGroovy) {
-                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(ec.context))
+                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(ec.context)).run()
             }
             if (valueGroovy && !value) {
-                value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context))
+                value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context)).run()
             }
             if (!value) value = ec.context.get(name)
             if (!value && ec.web) value = ec.web.parameters.get(name)

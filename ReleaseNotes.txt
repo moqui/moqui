@@ -16,15 +16,21 @@ This release includes:
 - Changed UserAccount so that userId is internal/sequenced and a new
   username field is used for auth/login
 - Some fixes so that Moqui will run in Java on Windows
+- Testing and fixes for EntityFindImpl.count()
+- Testing and fixes for screen.transition.*-response parameters
 - XML Screens
   - Screen form-list form-list-column support
   - Screen form-single field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
+  - Template for csv render mode (mainly for form-list report-like output)
+  - Support URL parameters for renderMode and pageNoLimit which along with
+    the lastStandalone parameter make it easy to reuse screens and forms
+    meant for user interaction as definitions for CSV output
 
 Notable features not yet implemented (for 1.0):
 
 - XML Screens
-  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
+  - Templates for other non-HTML output (xsl-fo, xml, cwiki, txt)
 - Service Facade
   - Service mail handling (MCA rules, etc)
 - Tools Screens

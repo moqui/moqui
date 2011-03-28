@@ -198,6 +198,8 @@ class ScreenUrlInfo {
                         String newSubPath = this.fromScreenPath + "/../" + ti.defaultResponse.url
                         // call this method again, transition will get cleaned out in the cleanupPathNameList()
                         this.fromScreenPath = newSubPath
+                        for (ParameterItem pi in ti.defaultResponse.parameterMap.values())
+                            this.addParameter(pi.name, pi.getValue(sri.ec))
                         initUrl()
                         return
                     }

@@ -249,7 +249,7 @@ class ScreenRenderImpl implements ScreenRender {
             }
 
             // either send a redirect for the response, if possible, or just render the response now
-            if (this.response) {
+            if (this.response != null) {
                 // save messages in session before redirecting so they can be displayed on the next screen
                 if (ec.web) ((WebFacadeImpl) ec.web).saveMessagesToSession()
 
@@ -706,6 +706,7 @@ class ScreenRenderImpl implements ScreenRender {
     boolean isActiveInCurrentMenu() {
         for (SubscreensItem ssi in getActiveScreenDef().subscreensByName.values()) {
             if (!ssi.menuInclude) continue
+            logger.info("Checking isActiveInCurrentMenu for ssi [${ssi.name}] under active screen [${getActiveScreenDef().location}]")
             ScreenUrlInfo urlInfo = buildUrl(ssi.name)
             if (urlInfo.inCurrentScreenPath) return true
         }
