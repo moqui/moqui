@@ -228,10 +228,10 @@ class ScreenDefinition {
         Object getValue(ExecutionContext ec) {
             Object value = null
             if (fromFieldGroovy) {
-                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(ec.context))
+                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(ec.context)).run()
             }
             if (valueGroovy && !value) {
-                value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context))
+                value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context)).run()
             }
             if (!value) value = ec.context.get(name)
             if (!value && ec.web) value = ec.web.parameters.get(name)
@@ -336,7 +336,7 @@ class ScreenDefinition {
         protected boolean saveCurrentScreen
 
         ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
-            String location = "${parentScreen.location}.transition[${ti.name}].${responseNode.name()}"
+            String location = "${parentScreen.location}.transition_${ti.name}.${responseNode.name().replace("-","_")}"
             if (responseNode.condition && responseNode.condition[0].children()) {
                 // the script is effectively the first child of the condition element
                 condition = new XmlAction(parentScreen.sfi.ecfi, (Node) responseNode.condition[0].children()[0],

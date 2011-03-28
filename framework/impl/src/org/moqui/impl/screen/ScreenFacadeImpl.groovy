@@ -77,6 +77,12 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return sd
     }
 
+    String getMimeTypeByMode(String renderMode) {
+        String mimeType = ecfi.getConfXmlRoot()."screen-facade"[0]
+                ."screen-text-output".find({ it.@type == renderMode })?."@mime-type"
+        return mimeType
+    }
+
     Template getTemplateByMode(String renderMode) {
         Template template = (Template) screenTemplateModeCache.get(renderMode)
         if (template) return template
@@ -91,7 +97,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
         if (template) return template
 
         String templateLocation = ecfi.getConfXmlRoot()."screen-facade"[0]
-                ."screen-text-output".find({ it.@type == renderMode })."@macro-template-location"
+                ."screen-text-output".find({ it.@type == renderMode })?."@macro-template-location"
+        if (!templateLocation) throw new IllegalArgumentException("Could not find macro-template-location for render mode (screen-text-output.@type) [${renderMode}]")
         // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
         String rootTemplate = """<#include "${templateLocation}"/>
             <#recurse widgetsNode>
