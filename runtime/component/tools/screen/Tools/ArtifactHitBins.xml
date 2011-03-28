@@ -14,8 +14,8 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Artifact Hits">
 
-    <transition name="csv">
-        <default-response url="..">
+    <transition name="ArtifactHitBinStats.csv">
+        <default-response url=".">
             <parameter name="renderMode" value="csv"/>
             <parameter name="pageNoLimit" value="true"/>
             <parameter name="lastStandalone" value="true"/>
@@ -28,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <container><link url="csv" text="Get as CSV"/></container>
+        <container><link url="ArtifactHitBinStats.csv" text="Get as CSV"/></container>
         <form-list name="ArtifactHitBins" list="artifactHitBinList">
             <row-actions>
                 <set field="averageTime" from="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>

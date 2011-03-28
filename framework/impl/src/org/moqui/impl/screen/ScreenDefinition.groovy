@@ -212,6 +212,9 @@ class ScreenDefinition {
         return contentRef
     }
 
+    @Override
+    String toString() { return location }
+
     static class ParameterItem {
         protected String name
         protected Class fromFieldGroovy = null

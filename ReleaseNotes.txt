@@ -12,12 +12,14 @@ it (in Moqui Framework, Moqui Mantle, and in other Moqui-based projects).
 
 This release includes:
 
-- All of the great features of 1.0-preview1-3
+- All the great features of releases 1.0-preview1 to 1.0-preview3
 - Changed UserAccount so that userId is internal/sequenced and a new
   username field is used for auth/login
 - Some fixes so that Moqui will run in Java on Windows
 - Testing and fixes for EntityFindImpl.count()
 - Testing and fixes for screen.transition.*-response parameters
+- Testing and fixes for screen.transition with no actions or conditional
+  responses to act as an alias, even with parameters/etc
 - XML Screens
   - Screen form-list form-list-column support
   - Screen form-single field-layout support
@@ -29,10 +31,10 @@ This release includes:
 
 Notable features not yet implemented (for 1.0):
 
-- XML Screens
-  - Templates for other non-HTML output (xsl-fo, xml, cwiki, txt)
 - Service Facade
   - Service mail handling (MCA rules, etc)
+- XML Screens
+  - Templates for other non-HTML output (xsl-fo, xml, cwiki, txt)
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete, view entity

@@ -193,10 +193,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro link>
     <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node)>
     <#assign linkNode = .node>
-    <@linkFormForm linkNode linkNode["@id"]?if_exists/>
-    <@linkFormLink linkNode linkNode["@id"]?if_exists/>
+    <@linkFormForm linkNode linkNode["@id"]?if_exists urlInfo/>
+    <@linkFormLink linkNode linkNode["@id"]?if_exists urlInfo/>
 </#macro>
-<#macro linkFormLink linkNode linkFormId>
+<#macro linkFormLink linkNode linkFormId urlInfo>
     <#if urlInfo.disableLink>
         <span<#if linkFormId?has_content> id="${linkFormId}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
     <#else>
@@ -219,7 +219,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </#if>
     </#if>
 </#macro>
-<#macro linkFormForm linkNode linkFormId>
+<#macro linkFormForm linkNode linkFormId urlInfo>
     <#if urlInfo.disableLink>
         <#-- do nothing -->
     <#else>
@@ -584,9 +584,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#assign linkNode = fieldSubNode["link"][0]>
             <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
             <#assign linkFormId><@fieldId linkNode/></#assign>
-            <#assign afterFormText><@linkFormForm linkNode linkFormId/></#assign>
+            <#assign afterFormText><@linkFormForm linkNode linkFormId urlInfo/></#assign>
             <#t>${sri.appendToAfterFormWriter(afterFormText)}
-            <@linkFormLink linkNode linkFormId/>
+            <@linkFormLink linkNode linkFormId urlInfo/>
             <#return>
         </#if>
         <#t><#recurse fieldSubNode>

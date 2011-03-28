@@ -74,8 +74,7 @@ class ScreenUrlInfo {
         if (fromSd == null) fromSd = sri.getActiveScreenDef()
 
         fromPathList = fpnl
-        if (fromPathList == null)
-            fromPathList = sri.getActiveScreenPath()
+        if (fromPathList == null) fromPathList = sri.getActiveScreenPath()
 
         fromScreenPath = ssp ?: ""
 
@@ -191,31 +190,40 @@ class ScreenUrlInfo {
         // start the render list with the from/base SD
         screenRenderDefList.add(fromSd)
 
-        // loop through path for various things: check validity, see if we can do a transition short-cut and go right to its response url, etc
+        // loop through path for various things: check validity, see if we can do a transition short-cut and go right
+        //     to its response url, etc
         ScreenDefinition lastSd = sri.rootScreenDef
         List<String> remainingPathList = new ArrayList<String>(fullPathNameList)
         for (String pathName in this.fullPathNameList) {
             String nextLoc = lastSd.getSubscreensItem(pathName)?.location
+
             if (!nextLoc) {
                 // handle case where last one may be a transition name, and not a subscreen name
                 TransitionItem ti = lastSd.getTransitionItem(pathName)
                 if (ti) {
+                    // Screen Transition as a URL Alias:
                     // if fromScreenPath is a transition, and that transition has no condition,
                     // service/actions or conditional-response then use the default-response.url instead
                     // of the name (if type is screen-path or empty, url-type is url or empty)
                     if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&
-                            ti.defaultResponse.urlType == "screen-path") {
-                        String newSubPath = this.fromScreenPath + "/../" + ti.defaultResponse.url
-                        // call this method again, transition will get cleaned out in the cleanupPathNameList()
-                        this.fromScreenPath = newSubPath
+                            ti.defaultResponse.urlType == "screen-path" && sri.ec.web != null) {
+                        List<String> aliasPathList = new ArrayList(fullPathNameList)
+                        // remove transition name
+                        aliasPathList.remove(aliasPathList.size()-1)
+                        // create a ScreenUrlInfo, then copy its info into this
+                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList, ti.defaultResponse.url)
+
+                        // add transition parameters
                         for (ParameterItem pi in ti.defaultResponse.parameterMap.values())
-                            this.addParameter(pi.name, pi.getValue(sri.ec))
-                        initUrl()
+                            aliasUrlInfo.addParameter(pi.name, pi.getValue(sri.ec))
+
+                        aliasUrlInfo.copyUrlInfoInto(this)
                         return
                     }
+
                     this.targetTransition = ti
-                    // if return above, just break out; a transition means we're at the end
+                    // if no return above, just break out; a transition means we're at the end
                     break
                 }
 
@@ -226,7 +234,8 @@ class ScreenUrlInfo {
                     break
                 }
 
-                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName, new Exception("Screen sub-content not found here"))
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName,
+                        new Exception("Screen sub-content not found here"))
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
@@ -354,7 +363,11 @@ class ScreenUrlInfo {
 
     ScreenUrlInfo cloneUrlInfo() {
         ScreenUrlInfo sui = new ScreenUrlInfo()
+        this.copyUrlInfoInto(sui)
+        return sui
+    }
 
+    void copyUrlInfoInto(ScreenUrlInfo sui) {
         sui.sri = this.sri
         sui.fromSd = this.fromSd
         sui.fromPathList = this.fromPathList!=null ? new ArrayList<String>(this.fromPathList) : null
@@ -376,8 +389,6 @@ class ScreenUrlInfo {
         sui.targetScreen = this.targetScreen
         sui.targetTransition = this.targetTransition
         sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList(this.preTransitionPathNameList) : null
-
-        return sui
     }
 
     static List<String> cleanupPathNameList(List<String> inputPathNameList, Map inlineParameters) {

@@ -108,17 +108,6 @@ class ScreenRenderImpl implements ScreenRender {
         this.writer = response.getWriter()
         this.request = request
         this.response = response
-        // we know this is a web request, set defaults if missing
-        Map<String, Object> requestParameters = sfi.ecfi.executionContext.web.requestParameters
-        if (!renderMode) {
-            if (requestParameters.containsKey("renderMode")) {
-                renderMode = requestParameters.get("renderMode")
-                String mimeType = sfi.getMimeTypeByMode(renderMode)
-                if (mimeType) outputContentType = mimeType
-            } else {
-                renderMode = "html"
-            }
-        }
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
@@ -142,8 +131,6 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     protected void internalRender() {
-        if (!renderMode) renderMode = "html"
-
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
         if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
 
@@ -154,6 +141,10 @@ class ScreenRenderImpl implements ScreenRender {
             // clear out the parameters used for special screen URL config
             if (ec.web.requestParameters.lastStandalone) ec.web.requestParameters.lastStandalone = ""
 
+            // if screenUrlInfo has any parameters add them to the request (probably came from a transition acting as an alias)
+            Map<String, String> suiParameterMap = this.screenUrlInfo.parameterMap
+            if (suiParameterMap) ec.web.requestParameters.putAll(suiParameterMap)
+
             // add URL parameters, if there were any in the URL (in path info or after ?)
             this.screenUrlInfo.addParameters(ec.web.requestParameters)
         }
@@ -163,12 +154,23 @@ class ScreenRenderImpl implements ScreenRender {
             if (!checkWebappSettings(checkSd)) return
         }
 
+        // check this here after the ScreenUrlInfo (with transition alias, etc) has already been handled
+        if (ec.web && ec.web.requestParameters.renderMode) {
+            // we know this is a web request, set defaults if missing
+            renderMode = ec.web.requestParameters.renderMode
+            String mimeType = sfi.getMimeTypeByMode(renderMode)
+            if (mimeType) outputContentType = mimeType
+        }
+
         // if these aren't set in any screen (in the checkWebappSettings method), set them here
+        if (!renderMode) renderMode = "html"
         if (!characterEncoding) characterEncoding = "UTF-8"
         if (!outputContentType) outputContentType = "text/html"
 
+
         // before we render, set the character encoding (set the content type later, after we see if there is sub-content with a different type)
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
+
 
         // if there is a transition run that INSTEAD of the screen to render
         if (screenUrlInfo.targetTransition) {
@@ -706,7 +708,6 @@ class ScreenRenderImpl implements ScreenRender {
     boolean isActiveInCurrentMenu() {
         for (SubscreensItem ssi in getActiveScreenDef().subscreensByName.values()) {
             if (!ssi.menuInclude) continue
-            logger.info("Checking isActiveInCurrentMenu for ssi [${ssi.name}] under active screen [${getActiveScreenDef().location}]")
             ScreenUrlInfo urlInfo = buildUrl(ssi.name)
             if (urlInfo.inCurrentScreenPath) return true
         }
