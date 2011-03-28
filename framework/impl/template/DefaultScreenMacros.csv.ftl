@@ -10,9 +10,12 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 
+<#-- NOTE: to change how CSV escaping/etc works change or override this macro: -->
 <#macro csvValue textValue>
-    <#if textValue?contains(",")><#assign useQuotes = true><#else><#assign useQuotes = false></#if>
-    <#t><#if useQuotes>"</#if>${textValue}<#if useQuotes>"</#if>
+    <#-- this default escaping looks for commas or double-quotes and if found surrounds with quotes, always changes
+    double-quotes within the string to 2 double-quotes -->
+    <#if textValue?contains(",") || textValue?contains("\"")><#assign useQuotes = true><#else><#assign useQuotes = false></#if>
+    <#t><#if useQuotes>"</#if>${textValue?replace("\"", "\"\"")}<#if useQuotes>"</#if>
 </#macro>
 
 <#macro @element><#-- do nothing for unknown elements --></#macro>
@@ -84,75 +87,19 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro link>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#macro>
+<#macro link><#if .node?parent?node_name?contains("-field")>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if></#macro>
 
-<#macro image><@csvValue .node["@alt"]!"image"/></#macro>
-<#macro label><#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")><@csvValue labelValue/></#macro>
+<#macro image><#-- do nothing for image, most likely part of screen and is funny in csv file: <@csvValue .node["@alt"]!"image"/> --></#macro>
+<#macro label><#-- do nothing for label, most likely part of screen and is funny in csv file: <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")><@csvValue labelValue/> --></#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
 
 <#-- ====================================================== -->
 <#-- ======================= Form ========================= -->
-<#macro "form-single">
-    <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
-    <#assign formNode = sri.getFtlFormNode(.node["@name"])>
 
-    <#if formNode["field-layout"]?has_content>
-        <#assign fieldLayout = formNode["field-layout"][0]>
-
-            <#list formNode["field-layout"][0]?children as layoutNode>
-                <#if layoutNode?node_name == "field-ref">
-                    <#assign fieldRef = layoutNode["@name"]>
-                    <#assign fieldNode = "invalid">
-                    <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                    <@formSingleSubField fieldNode/>
-                <#elseif layoutNode?node_name == "field-row">
-                    <#list layoutNode["field-ref"] as rowFieldRefNode>
-                        <#assign fieldRef = rowFieldRefNode["@name"]>
-                        <#assign fieldNode = "invalid">
-                        <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                        <@formSingleSubField fieldNode/>
-                    </#list>
-                <#elseif layoutNode?node_name == "field-group">
-                    <#list layoutNode?children as groupNode>
-                        <#if groupNode?node_name == "field-ref">
-                            <#assign fieldRef = groupNode["@name"]>
-                            <#assign fieldNode = "invalid">
-                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                            <@formSingleSubField fieldNode/>
-                        <#elseif groupNode?node_name == "field-row">
-                            <#list groupNode["field-ref"] as rowFieldRefNode>
-                                <#assign fieldRef = rowFieldRefNode["@name"]>
-                                <#assign fieldNode = "invalid">
-                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                <@formSingleSubField fieldNode/>
-                            </#list>
-                        </#if>
-                    </#list>
-                </#if>
-            </#list>
-    <#else>
-        <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
-    </#if>
-</#macro>
-<#macro formSingleSubField fieldNode>
-    <#list fieldNode["conditional-field"] as fieldSubNode>
-        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
-            <@formSingleWidget fieldSubNode/>
-            <#return>
-        </#if>
-    </#list>
-    <#if fieldNode["default-field"]?has_content>
-        <@formSingleWidget fieldNode["default-field"][0]/>
-        <#return>
-    </#if>
-</#macro>
-<#macro formSingleWidget fieldSubNode>
-    <#if fieldSubNode["ignored"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#return></#if>
-    <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#recurse fieldSubNode/><#return></#if>
-    <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
-    <#recurse fieldSubNode/>
-</#macro>
+<#-- NOTE: form-single in a csv file is a bit funny, ignoring in case there is a form-single and form-list
+on the same screen to increase reusability of those screens -->
+<#macro "form-single"></#macro>
 
 <#macro "form-list">
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
@@ -161,6 +108,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign listObject = ec.resource.evaluateContextField(listName, "")>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>
+        <#assign hasPrevColumn = false>
         <#list formListColumnList as fieldListColumn>
             <#list fieldListColumn["field-ref"] as fieldRef>
                 <#assign fieldRef = fieldRef["@name"]>
@@ -169,7 +117,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <#if !(fieldNode["@hide"]?if_exists == "true" ||
                         ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                         (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
-                    <#t><@formListHeaderField fieldNode/><#if fieldRef_has_next || fieldListColumn_has_next>,</#if>
+                    <#t><@formListHeaderField fieldNode/>
                 </#if>
             </#list>
         </#list>
@@ -178,24 +126,26 @@ This Work includes contributions authored by David E. Jones, not as a
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
             ${sri.startFormListRow(formNode["@name"], listEntry)}<#t>
+            <#assign hasPrevColumn = false>
             <#list formNode["form-list-column"] as fieldListColumn>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRef = fieldRef["@name"]>
                     <#assign fieldNode = "invalid">
                     <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                    <#assign formListFieldTag = "div">
-                    <#t><@formListSubField fieldNode/><#if fieldRef_has_next || fieldListColumn_has_next>,</#if>
+                    <#t><@formListSubField fieldNode/>
                 </#list>
             </#list>
+
             ${sri.endFormListRow()}<#t>
         </#list>
         ${sri.safeCloseList(listObject)}<#t><#-- if listObject is an EntityListIterator, close it -->
     <#else>
+        <#assign hasPrevColumn = false>
         <#list formNode["field"] as fieldNode>
             <#if !(fieldNode["@hide"]?if_exists == "true" ||
                     ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                     (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
-                <#t><@formListHeaderField fieldNode/><#if fieldNode_has_next>,</#if>
+                <#t><@formListHeaderField fieldNode/>
             </#if>
         </#list>
 
@@ -203,7 +153,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
             ${sri.startFormListRow(formNode["@name"], listEntry)}<#t>
-            <#lt><#list formNode["field"] as fieldNode><@formListSubField fieldNode/><#if fieldNode_has_next>,</#if></#list>
+            <#assign hasPrevColumn = false>
+            <#list formNode["field"] as fieldNode>
+                <#t><@formListSubField fieldNode/>
+            </#list>
+
             ${sri.endFormListRow()}<#t>
         </#list>
         ${sri.safeCloseList(listObject)}<#t><#-- if listObject is an EntityListIterator, close it -->
@@ -218,7 +172,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <#-- this only makes sense for fields with a single conditional -->
         <#assign fieldSubNode = fieldNode["conditional-field"][0]>
     </#if>
-    <#t><#if fieldSubNode["submit"]?has_content>&nbsp;<#else/><@fieldTitle fieldSubNode/></#if>
+    <#if fieldSubNode["ignored"]?has_content || fieldSubNode["hidden"]?has_content || fieldSubNode["submit"]?has_content><#return/></#if>
+    <#t><#if hasPrevColumn>,<#else><#assign hasPrevColumn = true></#if><@fieldTitle fieldSubNode/>
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
@@ -233,10 +188,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </#if>
 </#macro>
 <#macro formListWidget fieldSubNode>
-    <#if fieldSubNode["ignored"]?has_content><#return/></#if>
-    <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
+    <#if fieldSubNode["ignored"]?has_content || fieldSubNode["hidden"]?has_content || fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
-    <#t><#recurse fieldSubNode>
+    <#t><#if hasPrevColumn>,<#else><#assign hasPrevColumn = true></#if><#recurse fieldSubNode>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
