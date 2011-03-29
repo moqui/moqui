@@ -28,13 +28,16 @@ This release includes:
   - Support URL parameters for renderMode and pageNoLimit which along with
     the lastStandalone parameter make it easy to reuse screens and forms
     meant for user interaction as definitions for CSV output
+- WebApp event actions for after-startup, before-shutdown
 
 Notable features not yet implemented (for 1.0):
 
 - Service Facade
   - Service mail handling (MCA rules, etc)
 - XML Screens
-  - Templates for other non-HTML output (xsl-fo, xml, cwiki, txt)
+  - Template for xsl-fo render mode, FOP transform to PDF
+  - Template for xml render mode
+- Password reset email and forgot password form
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete, view entity
@@ -400,6 +403,7 @@ Features designed, but not to be included in 1.0 series
     credit-card.@types
   - Dynamic Screens (database-driven: DynamicScreen* entities)
   - Dynamic Forms (database-driven: DynForm* entities)
+  - Templates for cwiki and txt render modes
 - Service Facade
   - Service database-driven semaphores
   - Service runners for proxy service calls to another Moqui server via

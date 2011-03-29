@@ -49,6 +49,8 @@
             <after-request><actions><log level="info" message="========================== after-request"/></actions></after-request>
             <after-login><actions><log level="info" message="========================== after-login"/></actions></after-login>
             <before-logout><actions><log level="info" message="========================== before-logout"/></actions></before-logout>
+            <after-startup><actions><log level="info" message="========================== after-startup"/></actions></after-login>
+            <before-shutdown><actions><log level="info" message="========================== before-logout"/></actions></before-logout>
             -->
         </webapp>
     </webapp-list>
@@ -104,14 +106,16 @@
         <screen-text-output type="csv" mime-type="text/csv"
                             macro-template-location="classpath://template/DefaultScreenMacros.csv.ftl"/>
         <!-- TODO not yet implemented:
-        <screen-text-output type="text" mime-type="text/plain"
-                            macro-template-location="classpath://template/DefaultScreenMacros.txt.ftl"/>
-        <screen-text-output type="cwiki" mime-type="text/plain"
-                            macro-template-location="classpath://template/DefaultScreenMacros.cwiki.ftl"/>
         <screen-text-output type="xsl-fo" mime-type="text/xml"
                             macro-template-location="classpath://template/DefaultScreenMacros.xslfo.ftl"/>
         <screen-text-output type="xml" mime-type="text/xml"
                             macro-template-location="classpath://template/DefaultScreenMacros.xml.ftl"/>
+        -->
+        <!-- TABLED: not to include in 1.0
+        <screen-text-output type="text" mime-type="text/plain"
+                            macro-template-location="classpath://template/DefaultScreenMacros.txt.ftl"/>
+        <screen-text-output type="cwiki" mime-type="text/plain"
+                            macro-template-location="classpath://template/DefaultScreenMacros.cwiki.ftl"/>
         -->
     </screen-facade>
 
@@ -135,29 +139,6 @@
         <service-type name="proxy-http" runner-class="org.moqui.impl.service.runner.ProxyHttpServiceRunner"/>
         <service-type name="proxy-jms" runner-class="org.moqui.impl.service.runner.ProxyJmsServiceRunner"/>
         <service-type name="proxy-rmi" runner-class="org.moqui.impl.service.runner.ProxyRmiServiceRunner"/>
-        -->
-
-        <!-- Start-Up Services -->
-        <!--
-           - runtime-data-id refers to the RuntimeData entity for in-parameters
-           - runtime-delay is the milliseconds after startup this service should run
-           - run-in-pool is the name of the pool to run the job in; defaults to the send-to-poll (above)
-
-        <startup-service name="testScv" runtime-data-id="9900" runtime-delay="0" run-in-pool="pool"/>
-        -->
-
-        <!-- JMS ServiceFacade Queue/Topic Configuration -->
-        <!--
-        <jms-service name="serviceMessenger" send-mode="all">
-            <server-jndi context-provider-url="rmi://127.0.0.1:1099"
-                         initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
-                         url-pkg-prefixes="java.naming.rmi.security.manager"
-                         security-principal="" security-credentials=""/>
-            <server-jms jndi-name="jms/TopicConnectionFactory"
-                        topic-queue-name="jms/MyTopic" type="topic"
-                        username="admin" password="admin"
-                        listen="true"/>
-        </jms-service>
         -->
     </service-facade>
 
@@ -323,7 +304,6 @@
         </database>
         <database name="mysql"
                   join-style="ansi-no-parenthesis"
-                  drop-fk-use-foreign-key-keyword="true"
                   table-engine="InnoDB"
                   character-set="utf8"
                   collate="utf8_general_cs"

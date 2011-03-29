@@ -103,6 +103,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="after-request"/>
                 <xs:element minOccurs="0" ref="after-login"/>
                 <xs:element minOccurs="0" ref="before-logout"/>
+                <xs:element minOccurs="0" ref="after-startup"/>
+                <xs:element minOccurs="0" ref="before-shutdown"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
@@ -126,23 +128,24 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="first-hit-in-visit">
-        <!-- TODO use in code -->
         <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="after-request">
-        <!-- TODO use in code -->
         <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="before-request">
-        <!-- TODO use in code -->
         <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="after-login">
-        <!-- TODO use in code -->
         <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="before-logout">
-        <!-- TODO use in code -->
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
+    </xs:element>
+    <xs:element name="after-startup">
+        <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
+    </xs:element>
+    <xs:element name="before-shutdown">
         <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
 
@@ -174,11 +177,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="change-weeks" type="xs:decimal" default="12">
                 <xs:annotation><xs:documentation>Require password change after this many months (0 means don't ever require change)</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="email-require-change" type="boolean" default="true">
-                <!-- TODO use in impl -->
+                <!-- TODO use in impl when password reset email is implemented -->
                 <xs:annotation><xs:documentation>Require password change after a password reset email?</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="email-expire-hours" type="xs:nonNegativeInteger" default="48">
-                <!-- TODO use in impl -->
-                <xs:annotation><xs:documentation>Require password change after a password reset email?</xs:documentation></xs:annotation></xs:attribute>
+                <!-- TODO use in impl when password reset email is implemented -->
+                <xs:annotation><xs:documentation>How long will the new password be valid from the password reset email?</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="login">
@@ -283,15 +286,30 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="service-facade">
         <xs:complexType>
             <xs:sequence>
-                <!-- leaving this out for now, not easily supported by Quartz Scheduler: <xs:element minOccurs="0" ref="thread-pool"/> -->
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-location"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="service-type"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="startup-service"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/>
+                <!-- leaving this out for now, not easily supported by Quartz Scheduler: <xs:element minOccurs="0" ref="thread-pool"/> -->
+                <!-- TABLED: not to include in 1.0: <xs:element minOccurs="0" maxOccurs="unbounded" ref="jms-service"/> -->
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    <!--
+    <xs:element name="service-location">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="service-type">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="runner-class" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Fully qualified name of class that implements the org.moqui.impl.service.ServiceRunner interface.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <!-- TABLED: not to include in 1.0
       Example XML for conf file for using these elements when supported in the future:
         <thread-pool send-to-pool="default">
             <run-from-pool name="default"/>
@@ -311,33 +329,22 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     -->
-    <xs:element name="startup-service">
-        <!-- TODO implement this -->
-        <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="runtime-data-id" type="xs:string"/>
-            <xs:attribute name="runtime-delay" type="xs:nonNegativeInteger" default="0"/>
-            <xs:attribute name="run-in-pool" type="xs:string"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="service-location">
-        <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="location" type="xs:string" use="required"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="service-type">
-        <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="runner-class" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    Fully qualified name of class that implements the org.moqui.impl.service.ServiceRunner interface.
-                </xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
+    <!-- TABLED: not to include in 1.0
+        <!- - JMS ServiceFacade Queue/Topic Configuration - ->
+        <!- -
+        <jms-service name="serviceMessenger" send-mode="all">
+            <server-jndi context-provider-url="rmi://127.0.0.1:1099"
+                         initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
+                         url-pkg-prefixes="java.naming.rmi.security.manager"
+                         security-principal="" security-credentials=""/>
+            <server-jms jndi-name="jms/TopicConnectionFactory"
+                        topic-queue-name="jms/MyTopic" type="topic"
+                        username="admin" password="admin"
+                        listen="true"/>
+        </jms-service>
+        - ->
+
     <xs:element name="jms-service">
-        <!-- TODO implement this -->
         <xs:complexType>
             <xs:sequence>
                 <xs:element ref="server-jndi"/>
@@ -358,15 +365,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <xs:element name="server-jndi">
-        <xs:complexType>
-            <xs:attribute name="context-provider-url" type="xs:string"/>
-            <xs:attribute name="initial-context-factory" type="xs:string"/>
-            <xs:attribute name="url-pkg-prefixes" type="xs:string"/>
-            <xs:attribute name="security-principal" type="xs:string"><xs:annotation><xs:documentation>The username</xs:documentation></xs:annotation></xs:attribute>
-            <xs:attribute name="security-credentials" type="xs:string"><xs:annotation><xs:documentation>The password</xs:documentation></xs:annotation></xs:attribute>
-        </xs:complexType>
-    </xs:element>
     <xs:element name="server-jms">
         <xs:complexType>
             <xs:attribute name="jndi-name" type="xs:string" use="required"/>
@@ -384,7 +382,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="client-id" type="xs:string"/>
             <xs:attribute name="listen" default="false" type="boolean">
             </xs:attribute>
-            <!-- need this? <xs:attribute name="listener-class" type="xs:string"/> -->
+            <!- - need this? <xs:attribute name="listener-class" type="xs:string"/> - ->
+        </xs:complexType>
+    </xs:element>
+    -->
+    <xs:element name="server-jndi">
+        <xs:complexType>
+            <xs:attribute name="context-provider-url" type="xs:string"/>
+            <xs:attribute name="initial-context-factory" type="xs:string"/>
+            <xs:attribute name="url-pkg-prefixes" type="xs:string"/>
+            <xs:attribute name="security-principal" type="xs:string"><xs:annotation><xs:documentation>The username</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="security-credentials" type="xs:string"><xs:annotation><xs:documentation>The password</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -535,8 +543,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="always-use-constraint-keyword" default="false" type="boolean"/>
-            <!-- TODO use in code -->
-            <xs:attribute name="drop-fk-use-foreign-key-keyword" default="false" type="boolean"/>
             <xs:attribute name="table-engine" type="xs:string"/>
             <xs:attribute name="character-set" type="xs:string"/>
             <xs:attribute name="collate" type="xs:string"/>
@@ -586,7 +592,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <!-- this path is relative to the active Moqui runtime directory; start with a forward-slash for an absolute path -->
-                        <!-- TODO: how to support this type? <repository name="default" location="rep/jackrabbit" type="local" workspace="default"/> -->
+                        <!-- how to support this type? <repository name="default" location="rep/jackrabbit" type="local" workspace="default"/> -->
                         <!-- <xs:enumeration value="local"/> -->
                         <xs:enumeration value="jndi"/>
                         <xs:enumeration value="rmi"/>

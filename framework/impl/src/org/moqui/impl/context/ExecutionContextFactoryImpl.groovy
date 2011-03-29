@@ -11,23 +11,21 @@
  */
 package org.moqui.impl.context;
 
+import java.sql.Timestamp
+
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.L10nFacade
+import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.moqui.entity.EntityValue
-import java.sql.Timestamp
-import org.moqui.impl.actions.XmlAction
 import redstone.xmlrpc.XmlRpcServer
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
-    protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
     
     protected boolean destroyed = false
     
@@ -610,6 +608,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         mergeWebappActions(baseNode, overrideNode, "before-request")
         mergeWebappActions(baseNode, overrideNode, "after-login")
         mergeWebappActions(baseNode, overrideNode, "before-logout")
+        mergeWebappActions(baseNode, overrideNode, "after-startup")
+        mergeWebappActions(baseNode, overrideNode, "before-shutdown")
     }
 
     protected void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {
@@ -649,6 +649,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         XmlAction afterRequestActions = null
         XmlAction afterLoginActions = null
         XmlAction beforeLogoutActions = null
+        XmlAction afterStartupActions = null
+        XmlAction beforeShutdownActions = null
 
         WebappInfo(String webappName, ExecutionContextFactoryImpl ecfi) {
             this.webappName = webappName
@@ -657,18 +659,27 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             if (webappNode."first-hit-in-visit")
                 this.firstHitInVisitActions = new XmlAction(ecfi, (Node) webappNode."first-hit-in-visit"[0]."actions"[0],
                         "webapp_${webappName}.first_hit_in_visit.actions")
+
             if (webappNode."before-request")
                 this.beforeRequestActions = new XmlAction(ecfi, (Node) webappNode."before-request"[0]."actions"[0],
                         "webapp_${webappName}.before_request.actions")
             if (webappNode."after-request")
                 this.afterRequestActions = new XmlAction(ecfi, (Node) webappNode."after-request"[0]."actions"[0],
                         "webapp_${webappName}.after_request.actions")
+
             if (webappNode."after-login")
                 this.afterLoginActions = new XmlAction(ecfi, (Node) webappNode."after-login"[0]."actions"[0],
                         "webapp_${webappName}.after_login.actions")
             if (webappNode."before-logout")
                 this.beforeLogoutActions = new XmlAction(ecfi, (Node) webappNode."before-logout"[0]."actions"[0],
                         "webapp_${webappName}.before_logout.actions")
+
+            if (webappNode."after-startup")
+                this.afterStartupActions = new XmlAction(ecfi, (Node) webappNode."after-startup"[0]."actions"[0],
+                        "webapp_${webappName}.after_startup.actions")
+            if (webappNode."before-shutdown")
+                this.beforeShutdownActions = new XmlAction(ecfi, (Node) webappNode."before-shutdown"[0]."actions"[0],
+                        "webapp_${webappName}.before_shutdown.actions")
         }
     }
 }
