@@ -15,11 +15,6 @@ This release includes:
 - All the great features of releases 1.0-preview1 to 1.0-preview3
 - Changed UserAccount so that userId is internal/sequenced and a new
   username field is used for auth/login
-- Some fixes so that Moqui will run in Java on Windows
-- Testing and fixes for EntityFindImpl.count()
-- Testing and fixes for screen.transition.*-response parameters
-- Testing and fixes for screen.transition with no actions or conditional
-  responses to act as an alias, even with parameters/etc
 - Seed data changes to follow the Mantle pattern where enumTypeId is the
   same as entity.relationship.@title for Enumerations
 - XML Screens
@@ -27,6 +22,8 @@ This release includes:
   - Screen form-single field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
   - Template for csv render mode (mainly for form-list report-like output)
+  - Template for xml render mode (like CSV, but more structured and
+    support multiple forms per screen)
   - Support URL parameters for renderMode and pageNoLimit which along with
     the lastStandalone parameter make it easy to reuse screens and forms
     meant for user interaction as definitions for CSV output
@@ -37,14 +34,17 @@ This release includes:
     the EmailServer entity
   - Service (org.moqui.impl.EmailServices.sendEmailTemplate) to send email
     based on settings in the EmailTemplate entity
+- Some fixes so that Moqui will run in Java on Windows
+- Testing and fixes for EntityFindImpl.count()
+- Testing and fixes for screen.transition.*-response parameters
+- Testing and fixes for screen.transition with no actions or conditional
+  responses to act as an alias, even with parameters/etc
 
 Notable features not yet implemented (for 1.0):
 
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
   - Template for text render mode (for email alternative message, etc)
-  - Template for xml render mode (like CSV, but more structured and
-    support multiple forms per screen)
 - Password reset email and forgot password form
 - Tools Screens
   - Entity

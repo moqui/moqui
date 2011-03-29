@@ -21,6 +21,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="lastStandalone" value="true"/>
         </default-response>
     </transition>
+    <transition name="ArtifactHitBinStats.xml">
+        <default-response url=".">
+            <parameter name="renderMode" value="xml"/>
+            <parameter name="pageNoLimit" value="true"/>
+            <parameter name="lastStandalone" value="true"/>
+        </default-response>
+    </transition>
 
     <actions>
         <entity-find entity-name="ArtifactHitBin" list="artifactHitBinList" limit="50">
@@ -28,7 +35,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <container><link url="ArtifactHitBinStats.csv" text="Get as CSV"/></container>
+        <container>
+            <link url="ArtifactHitBinStats.csv" text="Get as CSV"/>
+            <link url="ArtifactHitBinStats.xml" text="Get as XML" target-window="_blank"/>
+        </container>
         <form-list name="ArtifactHitBins" list="artifactHitBinList">
             <row-actions>
                 <set field="averageTime" from="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>
