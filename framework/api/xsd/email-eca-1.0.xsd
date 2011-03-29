@@ -14,19 +14,17 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:include schemaLocation="xml-actions-1.0.xsd"/>
 
     <xs:element name="emecas">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="emeca"/>
-            </xs:sequence>
-        </xs:complexType>
+        <xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" ref="emeca"/></xs:sequence></xs:complexType>
     </xs:element>
     <xs:element name="emeca">
         <xs:annotation>
             <xs:documentation>
-                Whenever an email message is received the actions inline will be run if the condition is met.
+                Whenever an email message is received the actions will be run if the condition is met.
 
-                The context for the condition checking and set operation will include a "headers" Map with all of the
-                email headers in it, and a "fields" Map with all of the email fields in it (to, from, etc).
+                The context for the condition and actions will include a "headers" Map with all of the
+                email headers in it (either String, or List of String if there are more than one of the header), and a
+                "fields" Map with the following: toList, ccList, bccList, from, subject, sentDate, receivedDate,
+                bodyPartList.
             </xs:documentation>
         </xs:annotation>
         <xs:complexType>

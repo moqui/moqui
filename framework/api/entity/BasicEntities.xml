@@ -80,12 +80,16 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="EmailServer" package-name="org.moqui.basic.email" cache="true">
         <field name="emailServerId" type="id" is-pk="true"/>
-        <field name="smtpRelayHost" type="text-long"/>
-        <field name="smtpUsername" type="text-long"/>
-        <field name="smtpPassword" type="text-long" encrypt="true"/>
+        <field name="smtpHost" type="text-long"/>
         <field name="smtpPort" type="text-short"/>
         <field name="smtpStartTls" type="text-indicator"/>
         <field name="smtpSsl" type="text-indicator"/>
+        <field name="storeHost" type="text-long"/>
+        <field name="storePort" type="text-short"/>
+        <field name="storeProtocol" type="text-short"/>
+        <field name="storeDelete" type="text-indicator"/>
+        <field name="mailUsername" type="text-long"/>
+        <field name="mailPassword" type="text-long" encrypt="true"/>
     </entity>
     <entity entity-name="EmailTemplate" package-name="org.moqui.basic.email" cache="true">
         <field name="emailTemplateId" type="id" is-pk="true"/>

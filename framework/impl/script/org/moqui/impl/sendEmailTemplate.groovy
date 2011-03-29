@@ -23,7 +23,10 @@ def emailTemplateAttachmentList = emailTemplate.EmailTemplateAttachment
 def emailServer = emailTemplate.EmailServer
 
 HtmlEmail email = new HtmlEmail()
-email.setHostName(emailServer.smtpRelayHost)
+email.setHostName(emailServer.smtpHost)
+if (emailServer.smtpPort) email.setSmtpPort(emailServer.smtpPort as int)
+if (emailServer.mailUsername) email.setAuthentication(emailServer.mailUsername, emailServer.mailPassword)
+
 email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromName)
 String subject = ec.resource.evaluateStringExpand((String) emailTemplate.subject, "")
 email.setSubject(subject)

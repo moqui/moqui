@@ -104,10 +104,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <fileset dir="impl/conf-default">
                 <include name="*"/>
             </fileset>
-            <fileset dir="impl"><include name="screen/**"/></fileset>
-            <fileset dir="impl"><include name="script/**"/></fileset>
-            <fileset dir="impl"><include name="service/**"/></fileset>
-            <fileset dir="impl"><include name="template/**"/></fileset>
+            <fileset dir="impl">
+                <include name="data/**"/>
+                <include name="screen/**"/>
+                <include name="script/**"/>
+                <include name="service/**"/>
+                <include name="template/**"/>
+            </fileset>
         </jar>
     </target>
 

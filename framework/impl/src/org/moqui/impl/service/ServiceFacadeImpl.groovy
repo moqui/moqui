@@ -25,6 +25,8 @@ import org.moqui.impl.context.reference.ClasspathResourceReference
 
 import org.quartz.Scheduler
 import org.quartz.impl.StdSchedulerFactory
+import javax.mail.internet.MimeMessage
+import org.moqui.context.ExecutionContext
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -32,7 +34,9 @@ class ServiceFacadeImpl implements ServiceFacade {
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache serviceLocationCache
+
     protected final Map<String, List<ServiceEcaRule>> secaRulesByServiceName = new HashMap()
+    protected final List<EmailEcaRule> emecaRuleList = new ArrayList()
 
     protected final Map<String, ServiceRunner> serviceRunners = new HashMap()
 
@@ -45,8 +49,10 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         this.serviceLocationCache = ecfi.getCacheFacade().getCache("service.location")
 
-        // load SECA rule tables
+        // load Service ECA rules
         loadSecaRulesAll()
+        // load Email ECA rules
+        loadEmecaRulesAll()
 
         // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
@@ -166,7 +172,7 @@ class ServiceFacadeImpl implements ServiceFacade {
         return serviceNode
     }
 
-    void loadSecaRulesAll() {
+    protected void loadSecaRulesAll() {
         if (secaRulesByServiceName.size() > 0) secaRulesByServiceName.clear()
 
         // search for the service def XML file in the components
@@ -184,7 +190,7 @@ class ServiceFacadeImpl implements ServiceFacade {
             }
         }
     }
-    void loadSecaRulesFile(ResourceReference rr) {
+    protected void loadSecaRulesFile(ResourceReference rr) {
         InputStream is = null
         try {
             is = rr.openStream()
@@ -216,9 +222,8 @@ class ServiceFacadeImpl implements ServiceFacade {
         // remove the hash if there is one to more consistently match the service name
         if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
-        for (ServiceEcaRule ser in lst) {
-            ser.runIfMatches(serviceName, parameters, results, when, ecfi.executionContext)
-        }
+        ExecutionContext ec = ecfi.executionContext
+        for (ServiceEcaRule ser in lst) ser.runIfMatches(serviceName, parameters, results, when, ec)
     }
 
     void registerTxSecaRules(String serviceName, Map<String, Object> parameters) {
@@ -230,6 +235,49 @@ class ServiceFacadeImpl implements ServiceFacade {
                 ser.registerTx(serviceName, parameters, ecfi)
             }
         }
+    }
+
+    protected void loadEmecaRulesAll() {
+        if (emecaRuleList.size() > 0) emecaRuleList.clear()
+
+        // search for the service def XML file in the components
+        for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            ResourceReference serviceDirRr = this.ecfi.resourceFacade.getLocationReference(location + "/service")
+            if (serviceDirRr.supportsAll()) {
+                // if for some weird reason this isn't a directory, skip it
+                if (!serviceDirRr.isDirectory()) continue
+                for (ResourceReference rr in serviceDirRr.directoryEntries) {
+                    if (!rr.fileName.endsWith(".emecas.xml")) continue
+                    loadEmecaRulesFile(rr)
+                }
+            } else {
+                logger.warn("Can't load Email ECA rules from component at [${serviceDirRr.location}] because it doesn't support exists/directory/etc")
+            }
+        }
+    }
+    protected void loadEmecaRulesFile(ResourceReference rr) {
+        InputStream is = null
+        try {
+            is = rr.openStream()
+            Node emecasRoot = new XmlParser().parse(is)
+            int numLoaded = 0
+            for (Node emecaNode in emecasRoot."emeca") {
+                EmailEcaRule eer = new EmailEcaRule(ecfi, emecaNode, rr.location)
+                emecaRuleList.add(eer)
+                numLoaded++
+            }
+            if (logger.infoEnabled) logger.info("Loaded [${numLoaded}] Email ECA rules from [${rr.location}]")
+        } catch (IOException e) {
+            // probably because there is no resource at that location, so do nothing
+            if (logger.traceEnabled) logger.trace("Error loading Email ECA rules from [${rr.location}]", e)
+        } finally {
+            if (is != null) is.close()
+        }
+    }
+
+    void runEmecaRules(MimeMessage message) {
+        ExecutionContext ec = ecfi.executionContext
+        for (EmailEcaRule eer in emecaRuleList) eer.runIfMatches(message, ec)
     }
 
     @Override

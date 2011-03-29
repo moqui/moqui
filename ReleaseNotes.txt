@@ -31,13 +31,15 @@ This release includes:
     the lastStandalone parameter make it easy to reuse screens and forms
     meant for user interaction as definitions for CSV output
 - WebApp event actions for after-startup, before-shutdown
-- Service (org.moqui.impl.EmailServices.sendEmailTemplate) to send email
-  based on settings in the EmailTemplate entity (in place, needs testing)
+- Service Facade
+  - Incoming email handling with Email ECA Rules (emeca) with the
+    org.moqui.impl.EmailServices.pollEmailServer service, configured with
+    the EmailServer entity
+  - Service (org.moqui.impl.EmailServices.sendEmailTemplate) to send email
+    based on settings in the EmailTemplate entity
 
 Notable features not yet implemented (for 1.0):
 
-- Service Facade
-  - Incoming email handling with Email ECA Rules (emeca)
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
   - Template for text render mode (for email alternative message, etc)
