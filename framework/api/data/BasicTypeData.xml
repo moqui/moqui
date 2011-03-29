@@ -20,12 +20,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- =========================== Email Type Data ========================== -->
     <EmailServer emailServerId="SYSTEM" smtpRelayHost="" smtpUsername="" smtpPassword="" smtpPort="" smtpStartTls="" smtpSsl=""/>
-    <!--
-    <EmailTemplate emailTemplateId="PWD_RESET" description="" emailServerId="SYSTEM"
-                   bodyScreenLocation="" xslfoAttachScreenLocation=""
-                   fromAddresses="" ccAddresses="" bccAddresses=""
-                   subject="" contentType="" sendPartial="Y"/>
-    -->
 
     <EnumerationType description="Email Purpose" enumTypeId="EmailPurpose"/>
     <Enumeration description="System" enumId="EMP_SYSTEM" enumTypeId="EmailPurpose"/>

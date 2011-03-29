@@ -39,6 +39,8 @@ import freemarker.template.TemplateExceptionHandler
 import freemarker.template.TemplateException
 import freemarker.core.Environment
 import freemarker.cache.CacheStorage
+import javax.activation.DataSource
+import org.apache.commons.mail.ByteArrayDataSource
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -179,6 +181,34 @@ public class ResourceFacadeImpl implements ResourceFacade {
         String text = StupidUtilities.getStreamText(getLocationStream(location))
         if (cache) textLocationCache.put(location, text)
         return text
+    }
+
+    DataSource getLocationDataSource(String location) {
+        ResourceReference fileResourceRef = getLocationReference(location)
+
+        String fileName = fileResourceRef.fileName
+        // if it contains .ftl or .cwiki remove those to avoid problems with trying to find content types based on them
+        if (fileName.contains(".ftl")) fileName = fileName.replace(".ftl", "")
+        if (fileName.contains(".cwiki")) fileName = fileName.replace(".cwiki", "")
+        String fileContentType = getContentType(fileName)
+
+        boolean isBinary = isBinaryContentType(fileContentType)
+
+        if (isBinary) {
+            return new ByteArrayDataSource(fileResourceRef.openStream(), fileContentType)
+        } else {
+            // not a binary object (hopefully), get the text and pass it over
+            TemplateRenderer tr = getTemplateRendererByLocation(fileResourceRef.location)
+            if (tr != null) {
+                StringWriter sw = new StringWriter()
+                tr.render(fileResourceRef.location, sw)
+                return new ByteArrayDataSource(sw.toString(), fileContentType)
+            } else {
+                // no renderer found, just grab the text (cached) and throw it to the writer
+                String text = getLocationText(fileResourceRef.location, true)
+                return new ByteArrayDataSource(sw.toString(), fileContentType)
+            }
+        }
     }
 
     /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */

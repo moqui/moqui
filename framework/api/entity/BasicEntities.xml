@@ -96,18 +96,29 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="emailTemplateId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="emailServerId" type="id"/>
-        <field name="bodyScreenLocation" type="text-long"/>
-        <field name="xslfoAttachScreenLocation" type="text-long">
-            <description>Used to generate XSL:FO that is transformed to a PDF and attached to the email.</description>
-        </field>
         <field name="fromAddress" type="text-long"/>
-        <field name="ccAddresses" type="text-very-long"/>
-        <field name="bccAddresses" type="text-very-long"/>
+        <field name="fromName" type="text-long"/>
+        <field name="ccAddresses" type="text-long"/>
+        <field name="bccAddresses" type="text-long"/>
         <field name="subject" type="text-long"/>
-        <field name="contentType" type="text-short">
-            <description>Defaults to "text/html".</description>
-        </field>
+        <field name="bodyScreenLocation" type="text-long"/>
+        <field name="webappName" type="text-long"/>
         <field name="sendPartial" type="text-indicator"/>
+        <relationship type="one" related-entity-name="EmailServer"/>
+    </entity>
+    <entity entity-name="EmailTemplateAttachment" package-name="org.moqui.basic.email" cache="true">
+        <field name="emailTemplateId" type="id" is-pk="true"/>
+        <field name="fileName" type="text-medium" is-pk="true"/>
+        <field name="attachmentLocation" type="text-long">
+        </field>
+        <field name="screenRenderMode" type="text-short">
+            <description>Used to determine the MIME/content type, and which screen render template to use.
+                Can be used to generate XSL:FO that is transformed to a PDF and attached to the email with
+                screenRenderMode=xsl-fo.
+                If empty the attachmentLocation will be sent over as a file whose type depends on its extension.
+            </description>
+        </field>
+        <relationship type="one" related-entity-name="EmailTemplate"/>
     </entity>
 
     <!-- ========================================================= -->

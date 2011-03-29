@@ -62,8 +62,8 @@ public interface ScreenRender {
     ScreenRender baseLinkUrl(String baseLinkUrl);
 
     /** If baseLinkUrl is not specified then this is used along with the webapp-list.webapp configuration to create
-     * a base URL. If this is not specified and the active ExecutionContext is a WebExecutionContext then it will get
-     * it from that (meaning in a WebExecutionContext this is not necessary to get a correct result).
+     * a base URL. If this is not specified and the active ExecutionContext has a WebFacade active then it will get
+     * it from that (meaning with a WebFacade this is not necessary to get a correct result).
      *
      * @param scp The servletContext.contextPath
      * @return Reference to this ScreenRender for convenience

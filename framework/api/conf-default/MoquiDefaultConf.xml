@@ -224,6 +224,7 @@
         <!-- Refer to these explicitly instead of by directory name convention as is done in components.
              There is no reliable way to search within directories on the classpath (if in a file or jar is fine, but
              not in a war/ear file or from special ClassLoaders) -->
+        <!-- in framework/api/entity -->
         <load-entity location="classpath://entity/BasicEntities.xml"/>
         <load-entity location="classpath://entity/EntityEntities.xml"/>
         <load-entity location="classpath://entity/OlapEntities.xml"/>
@@ -232,7 +233,7 @@
         <load-entity location="classpath://entity/ServerEntities.xml"/>
         <load-entity location="classpath://entity/ServiceEntities.xml"/>
         <load-entity location="classpath://entity/TenantEntities.xml"/>
-
+        <!-- in framework/api/data -->
         <load-data location="classpath://data/BasicTypeData.xml"/>
         <load-data location="classpath://data/CommonL10nData.xml"/>
         <load-data location="classpath://data/EntityTypeData.xml"/>
@@ -243,6 +244,8 @@
         <load-data location="classpath://data/ServiceTypeData.xml"/>
         <load-data location="classpath://data/TenantDefaultData.xml"/>
         <load-data location="classpath://data/UnitData.xml"/>
+        <!-- in framework/impl/data -->
+        <load-data location="classpath://data/EmailTypeData.xml"/>
     </entity-facade>
     <database-list>
         <dictionary-type type="id" java-type="java.lang.String" default-sql-type="VARCHAR(20)"/>

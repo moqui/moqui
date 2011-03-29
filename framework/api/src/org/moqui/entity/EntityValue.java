@@ -41,8 +41,8 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      *
      * This method also supports getting related entities using their relationship name, formatted as
      * "${title}${related-entity-name}". When doing so it is like calling
-     * <code>findRelated(relationshipName, null, null, null)</code> for type many relationships, or
-     * <code>findRelatedOne(relationshipName, null)</code> for type one relationships.
+     * <code>findRelated(relationshipName, null, null, null, null)</code> for type many relationships, or
+     * <code>findRelatedOne(relationshipName, null, null)</code> for type one relationships.
      *
      * @param name The field name to get, or the name of the relationship to get one or more related values from.
      * @return Object with the value of the field, or the related EntityValue or EntityList.

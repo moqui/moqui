@@ -20,6 +20,8 @@ This release includes:
 - Testing and fixes for screen.transition.*-response parameters
 - Testing and fixes for screen.transition with no actions or conditional
   responses to act as an alias, even with parameters/etc
+- Seed data changes to follow the Mantle pattern where enumTypeId is the
+  same as entity.relationship.@title for Enumerations
 - XML Screens
   - Screen form-list form-list-column support
   - Screen form-single field-layout support
@@ -29,14 +31,18 @@ This release includes:
     the lastStandalone parameter make it easy to reuse screens and forms
     meant for user interaction as definitions for CSV output
 - WebApp event actions for after-startup, before-shutdown
+- Service (org.moqui.impl.EmailServices.sendEmailTemplate) to send email
+  based on settings in the EmailTemplate entity (in place, needs testing)
 
 Notable features not yet implemented (for 1.0):
 
 - Service Facade
-  - Service mail handling (MCA rules, etc)
+  - Incoming email handling (MCA rules, etc)
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
-  - Template for xml render mode
+  - Template for text render mode (for email alternative message, etc)
+  - Template for xml render mode (like CSV, but more structured and
+    support multiple forms per screen)
 - Password reset email and forgot password form
 - Tools Screens
   - Entity
@@ -403,7 +409,7 @@ Features designed, but not to be included in 1.0 series
     credit-card.@types
   - Dynamic Screens (database-driven: DynamicScreen* entities)
   - Dynamic Forms (database-driven: DynForm* entities)
-  - Templates for cwiki and txt render modes
+  - Templates for cwiki render mode
 - Service Facade
   - Service database-driven semaphores
   - Service runners for proxy service calls to another Moqui server via

@@ -12,15 +12,8 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.0.xsd">
 
-    <service verb="send" noun="EmailTemplate" type="interface">
-        <description>Send Email with settings in EmailTemplate entity record</description>
-        <in-parameters>
-            <parameter name="emailTemplateId" type="String" required="true"/>
-            <parameter name="toAddresses" type="String"/>
-            <parameter name="bodyParameters" type="Map"/>
-        </in-parameters>
-        <out-parameters>
-            <parameter name="messageId" type="String"/>
-        </out-parameters>
+    <service verb="send" noun="EmailTemplate" type="script"
+             location="classpath://script/org/moqui/impl/sendEmailTemplate.groovy">
+        <implements service="org.moqui.BasicServices.sendEmailTemplate"/>
     </service>
 </services>
