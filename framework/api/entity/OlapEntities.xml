@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
-    <entity entity-name="DateDayDimension" package-name="org.moqui.olap.dimension">
+    <entity entity-name="DateDayDimension" package-name="org.moqui.olap.dimension" group-name="analytical">
         <description>Date Day Dimension. The natural key is [dateValue]</description>
         <field name="dimensionId" type="id" is-pk="true"/>
         <field name="dateValue" type="date"/>
@@ -29,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="yearAndMonth" type="text-medium"><description>Format: YYYY-MM</description></field>
         <field name="isWeekEnd" type="text-indicator"/>
     </entity>
-    <entity entity-name="CurrencyDimension" package-name="org.moqui.olap.dimension">
+    <entity entity-name="CurrencyDimension" package-name="org.moqui.olap.dimension" group-name="analytical">
         <description>Currency Dimension. The natural key is [currencyId]</description>
         <field name="dimensionId" type="id" is-pk="true"/>
         <field name="currencyId" type="id"/>

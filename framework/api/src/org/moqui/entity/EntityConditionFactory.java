@@ -43,6 +43,6 @@ public interface EntityConditionFactory {
 
     EntityCondition makeConditionWhere(String sqlWhereClause);
 
-    /** Get a ComparisonOperator using an enumId for enum type "ENTITY_COMP_OP" */
+    /** Get a ComparisonOperator using an enumId for enum type "ComparisonOperator" */
     EntityCondition.ComparisonOperator comparisonOperatorFromEnumId(String enumId);
 }

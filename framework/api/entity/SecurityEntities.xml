@@ -69,11 +69,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="UserGroup"/>
         <relationship type="one" related-entity-name="ArtifactGroup"/>
         <relationship type="one" title="AuthzType" related-entity-name="Enumeration">
-            <description>(enumTypeId = AUTHZ_TYPE)</description>
             <key-map field-name="authzTypeEnumId"/>
         </relationship>
         <relationship type="one" title="AuthzAction" related-entity-name="Enumeration">
-            <description>(enumTypeId = AUTHZ_ACTION)</description>
             <key-map field-name="authzActionEnumId"/>
         </relationship>
     </entity>
@@ -98,8 +96,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="condValue" type="text-long">
             <description>Use ${} syntax to expand from variable in artifact's context.</description>
         </field>
-        <relationship type="one" title="Operator" related-entity-name="Enumeration">
-            <description>(enumTypeId = ENTITY_COMP_OP)</description>
+        <relationship type="one" title="ComparisonOperator" related-entity-name="Enumeration">
             <key-map field-name="operatorEnumId" related-field-name="enumId"/>
         </relationship>
     </entity>
@@ -233,8 +230,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
-        <relationship type="one" title="PreferenceType" related-entity-name="Enumeration">
-            <description>(enumTypeId = USER_PREF_TYPE)</description>
+        <relationship type="one" title="UserPreferenceType" related-entity-name="Enumeration">
             <key-map field-name="preferenceTypeEnumId"/>
         </relationship>
     </entity>
@@ -246,7 +242,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
         <relationship type="one" title="ScreenThemeType" related-entity-name="Enumeration">
-            <description>(enumTypeId = SCREEN_THEME_TYPE)</description>
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
         <relationship type="one" related-entity-name="ScreenTheme"/>

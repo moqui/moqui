@@ -239,7 +239,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenThemeTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
         <relationship type="one" title="ScreenThemeType" related-entity-name="Enumeration">
-            <description>(enumTypeId = SCREEN_THEME_TYPE)</description>
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
     </entity>
@@ -251,8 +250,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>The location, name or other value description the resource.</description>
         </field>
         <relationship type="one" related-entity-name="ScreenTheme"/>
-        <relationship type="one" title="ResourceType" related-entity-name="Enumeration">
-            <description>(enumTypeId = SCREEN_THEME_RESTP)</description>
+        <relationship type="one" title="ScreenThemeResourceType" related-entity-name="Enumeration">
             <key-map field-name="resourceTypeEnumId" related-field-name="enumId"/>
         </relationship>
     </entity>

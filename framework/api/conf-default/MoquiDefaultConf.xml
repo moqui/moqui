@@ -3,8 +3,7 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
 
-    <!-- Settings in this file can be overridden in a runtime file that has a any of the desired sub-elements. -->
-    <!-- TODO: (worth doing?) Settings can also be overridden with similar nodes in the JCR under the "" node in the "" repository. -->
+    <!-- Settings in this file can be overridden in a runtime conf file that has a any of the desired sub-elements. -->
 
     <cache-list>
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
@@ -44,13 +43,13 @@
                 content-prefix-secure="" content-prefix-standard=""
                 cookie-domain="">
             <!-- example only, no default actions right now:
-            <first-hit-in-visit><actions><log level="info" message="========================== first-hit-in-visit"/></actions></first-hit-in-visit>
-            <before-request><actions><log level="info" message="========================== before-request"/></actions></before-request>
-            <after-request><actions><log level="info" message="========================== after-request"/></actions></after-request>
-            <after-login><actions><log level="info" message="========================== after-login"/></actions></after-login>
-            <before-logout><actions><log level="info" message="========================== before-logout"/></actions></before-logout>
-            <after-startup><actions><log level="info" message="========================== after-startup"/></actions></after-login>
-            <before-shutdown><actions><log level="info" message="========================== before-logout"/></actions></before-logout>
+            <first-hit-in-visit><actions><log level="info" message="========================== first-hit-in-visit actions"/></actions></first-hit-in-visit>
+            <before-request><actions><log level="info" message="========================== before-request actions"/></actions></before-request>
+            <after-request><actions><log level="info" message="========================== after-request actions"/></actions></after-request>
+            <after-login><actions><log level="info" message="========================== after-login actions"/></actions></after-login>
+            <before-logout><actions><log level="info" message="========================== before-logout actions"/></actions></before-logout>
+            <after-startup><actions><log level="info" message="========================== after-startup actions"/></actions></after-login>
+            <before-shutdown><actions><log level="info" message="========================== before-shutdown actions"/></actions></before-logout>
             -->
         </webapp>
     </webapp-list>
@@ -275,7 +274,7 @@
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
                   default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">
-            <!-- TODO default-test-query="???" maybe like SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0 -->
+            <!-- default-test-query="???" maybe like SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0 -->
         </database>
         <database name="hsql"
                   use-fk-initially-deferred="false"

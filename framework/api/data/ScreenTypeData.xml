@@ -12,6 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <!-- Dynamic Forms -->
+    <!-- Tabled for now, not to be part of 1.0:
     <EnumerationType description="Dynamic Form Field Type" enumTypeId="DYNFORM_FIELD_TYPE"/>
     <Enumeration description="Boolean (Yes/No)" enumId="DFFT_BOOLEAN" enumTypeId="DYNFORM_FIELD_TYPE"/>
     <Enumeration description="Content Record" enumId="DFFT_CONTENT" enumTypeId="DYNFORM_FIELD_TYPE"/>
@@ -32,20 +33,21 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Text (multi-line)" enumId="DFFT_TEXTAREA" enumTypeId="DYNFORM_FIELD_TYPE"/>
     <Enumeration description="Time String (hh:mm:ss)" enumId="DFFT_TIME" enumTypeId="DYNFORM_FIELD_TYPE"/>
     <Enumeration description="URL" enumId="DFFT_URL" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    -->
 
     <!-- Screen Themes -->
-    <EnumerationType description="Screen Theme Type" enumTypeId="SCREEN_THEME_TYPE"/>
-    <Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL" enumTypeId="SCREEN_THEME_TYPE"/>
-    <Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC" enumTypeId="SCREEN_THEME_TYPE"/>
+    <EnumerationType description="Screen Theme Type" enumTypeId="ScreenThemeType"/>
+    <Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL" enumTypeId="ScreenThemeType"/>
+    <Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC" enumTypeId="ScreenThemeType"/>
 
-    <EnumerationType description="Screen Theme Resource Type" enumTypeId="SCREEN_THEME_RESTP"/>
-    <Enumeration description="Style Sheet (CSS) URL" enumId="STRT_STYLESHEET" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="1"/>
-    <Enumeration description="Script URL" enumId="STRT_SCRIPT" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="2"/>
-    <Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="10"/>
-    <Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="SCREEN_THEME_RESTP" sequenceNum="11"/>
+    <EnumerationType description="Screen Theme Resource Type" enumTypeId="ScreenThemeResourceType"/>
+    <Enumeration description="Style Sheet (CSS) URL" enumId="STRT_STYLESHEET" enumTypeId="ScreenThemeResourceType"/>
+    <Enumeration description="Script URL" enumId="STRT_SCRIPT" enumTypeId="ScreenThemeResourceType"/>
+    <Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="ScreenThemeResourceType"/>
+    <Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="ScreenThemeResourceType"/>
 
     <!-- Default Theme -->
-    <ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL" description="Moqui Plain Theme: simple, flat, default"/>
+    <ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL" description="Moqui Default Theme: simple, flat, default"/>
     <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/default.css"/>
     <!-- <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="10" resourceTypeEnumId="STRT_SCREENSHOT" resourceValue="/theme/screenshot.jpg"/> -->
