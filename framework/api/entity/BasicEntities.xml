@@ -69,9 +69,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="Parent" related-entity-name="EmailMessage">
             <key-map field-name="parentEmailMessageId"/>
         </relationship>
-        <relationship type="many" title="Child" related-entity-name="EmailMessage">
-            <key-map field-name="emailMessageId" related-field-name="parentEmailMessageId"/>
-        </relationship>
         <relationship type="one" title="From" related-entity-name="UserAccount">
             <key-map field-name="fromUserId"/>
         </relationship>
@@ -79,9 +76,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="toUserId"/>
         </relationship>
         <relationship type="one" related-entity-name="EmailTemplate"/>
-        <index name="EMAIL_MSG_ID" unique="true">
-            <index-field name="messageId"/>
-        </index>
+        <index name="EMAIL_MSG_ID" unique="true"><index-field name="messageId"/></index>
     </entity>
     <entity entity-name="EmailServer" package-name="org.moqui.basic.email" cache="true">
         <field name="emailServerId" type="id" is-pk="true"/>

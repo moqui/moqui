@@ -24,8 +24,9 @@ def emailServer = emailTemplate.EmailServer
 
 HtmlEmail email = new HtmlEmail()
 email.setHostName(emailServer.smtpRelayHost)
-email.setFrom(emailTemplate.fromAddress, emailTemplate.fromName)
-email.setSubject(emailTemplate.subject)
+email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromName)
+String subject = ec.resource.evaluateStringExpand((String) emailTemplate.subject, "")
+email.setSubject(subject)
 
 def toList = toAddresses.split(",")
 for (def toAddress in toList) email.addTo(toAddress.trim())
@@ -71,6 +72,14 @@ for (def emailTemplateAttachment in emailTemplateAttachmentList) {
         email.attach(dataSource, (String) emailTemplateAttachment.fileName, "")
     }
 }
+
+// create an EmailMessage record with info about this sent message
+// NOTE: can do anything with: statusId, purposeEnumId, toUserId?
+Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
+        fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
+        ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
+        contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user.userId]
+ec.service.async().name("create", "EmailMessage").parameters(cemParms).call()
 
 // send the email
 email.send()
