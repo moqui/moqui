@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+    <xs:include schemaLocation="xml-actions-1.0.xsd"/>
+
+    <xs:element name="emecas">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" ref="emeca"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="emeca">
+        <xs:annotation>
+            <xs:documentation>
+                Whenever an email message is received the actions inline will be run if the condition is met.
+
+                The context for the condition checking and set operation will include a "headers" Map with all of the
+                email headers in it, and a "fields" Map with all of the email fields in it (to, from, etc).
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="condition"/>
+                <xs:element ref="actions"/>
+            </xs:sequence>
+            <xs:attribute name="rule-name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
