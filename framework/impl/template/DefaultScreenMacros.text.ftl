@@ -10,9 +10,8 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 
-<#macro attributeValue textValue>${Static["org.moqui.impl.StupidUtilities"].encodeForXmlAttribute(textValue)}</#macro>
+<#macro @element></#macro>
 
-<#macro @element><#-- do nothing for unknown elements --></#macro>
 <#macro widgets><#recurse></#macro>
 <#macro "fail-widgets"><#recurse></#macro>
 
@@ -26,7 +25,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "section-iterate">${sri.renderSection(.node["@name"])}</#macro>
 
 <#-- ================ Containers ================ -->
-<#macro container><#recurse></#macro>
+<#macro container>
+
+<#recurse>
+</#macro>
 
 <#macro "container-panel">
     <#if .node["panel-header"]?has_content><#recurse .node["panel-header"][0]></#if>
@@ -36,7 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#if .node["panel-footer"]?has_content><#recurse .node["panel-footer"][0]></#if>
 </#macro>
 
-<#macro "container-dialog"><#recurse></#macro>
+<#macro "container-dialog">${ec.resource.evaluateStringExpand(.node["@button-text"], "")} </#macro>
 
 <#-- ==================== Includes ==================== -->
 <#macro "include-screen">${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}</#macro>
@@ -71,7 +73,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <#assign inlineTemplate = [inlineTemplateSource, sri.getActiveScreenDef().location + ".render_mode.text"]?interpret>
             <@inlineTemplate/>
           <#else/>
-            ${inlineTemplateSource}
+            <#if .node["@encode"]!"false" == "true">${inlineTemplateSource?html}<#else/>${inlineTemplateSource}</#if>
           </#if>
         </#if>
     </#if>
@@ -81,59 +83,151 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro text><#-- do nothing, is used only through "render-mode" --></#macro>
 
 <#-- ================== Standalone Fields ==================== -->
-<#macro link><#if .node?parent?node_name?contains("-field")>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if></#macro>
+<#macro link>${ec.resource.evaluateStringExpand(.node["@text"], "")} </#macro>
 
-<#macro image><#-- do nothing for image, most likely part of screen and is funny in csv file: <@attributeValue .node["@alt"]!"image"/> --></#macro>
-<#macro label><#-- do nothing for label, most likely part of screen and is funny in csv file: <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")><@attributeValue labelValue/> --></#macro>
+<#macro image>${.node["@alt"]!""}</#macro>
+<#macro label><#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>${labelValue} </#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
-
 
 <#-- ====================================================== -->
 <#-- ======================= Form ========================= -->
+<#macro "form-single">
 
-<#-- TODO: do something with form-single for XML output -->
-<#macro "form-single"></#macro>
+    <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
+    <#assign formNode = sri.getFtlFormNode(.node["@name"])>
+    <#if formNode["field-layout"]?has_content>
+        <#assign fieldLayout = formNode["field-layout"][0]>
+        <#list formNode["field-layout"][0]?children as layoutNode>
+            <#if layoutNode?node_name == "field-ref">
+                <#assign fieldRef = layoutNode["@name"]>
+                <#assign fieldNode = "invalid">
+                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                <#lt><@formSingleSubField fieldNode/>
+
+            <#elseif layoutNode?node_name == "field-row">
+                <#list layoutNode["field-ref"] as rowFieldRefNode>
+                    <#assign fieldRef = rowFieldRefNode["@name"]>
+                    <#assign fieldNode = "invalid">
+                    <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                    <#t><@formSingleSubField fieldNode/>
+                </#list>
+
+            <#elseif layoutNode?node_name == "field-group">
+                <#lt>--${layoutNode["@title"]?default("Section " + layoutNode_index)}--
+                <#list layoutNode?children as groupNode>
+                    <#if groupNode?node_name == "field-ref">
+                        <#assign fieldRef = groupNode["@name"]>
+                        <#assign fieldNode = "invalid">
+                        <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                        <#lt><@formSingleSubField fieldNode/>
+
+                    <#elseif groupNode?node_name == "field-row">
+                        <#list groupNode["field-ref"] as rowFieldRefNode>
+                            <#assign fieldRef = rowFieldRefNode["@name"]>
+                            <#assign fieldNode = "invalid">
+                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                            <#t><@formSingleSubField fieldNode/>
+                        </#list>
+
+                    </#if>
+                </#list>
+            </#if>
+        </#list>
+    <#else/>
+        <#list formNode["field"] as fieldNode>
+            <#lt><@formSingleSubField fieldNode/>
+
+        </#list>
+    </#if>
+
+</#macro>
+<#macro formSingleSubField fieldNode>
+    <#list fieldNode["conditional-field"] as fieldSubNode>
+        <#if ec.resource.evaluateCondition(fieldSubNode["@condition"], "")>
+            <#t><@formSingleWidget fieldSubNode/>
+            <#return>
+        </#if>
+    </#list>
+    <#if fieldNode["default-field"]?has_content>
+        <#t><@formSingleWidget fieldNode["default-field"][0]/>
+        <#return>
+    </#if>
+</#macro>
+<#macro formSingleWidget fieldSubNode>
+    <#if fieldSubNode["ignored"]?has_content || fieldSubNode["hidden"]?has_content || fieldSubNode["submit"]?has_content ||
+            fieldSubNode?parent["@hide"]?if_exists == "true"><#return/></#if>
+<@fieldTitle fieldSubNode/>: <#recurse fieldSubNode/> </#macro>
 
 <#macro "form-list">
+
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.evaluateContextField(listName, "")>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
-    <${formNode["@name"]}>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>
+        <#list formListColumnList as fieldListColumn>
+            <#list fieldListColumn["field-ref"] as fieldRef>
+                <#assign fieldRef = fieldRef["@name"]>
+                <#assign fieldNode = "invalid">
+                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                <#if !(fieldNode["@hide"]?if_exists == "true" ||
+                        ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
+                        (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
+                    <#t><@formListHeaderField fieldNode/>${"\t"}
+                </#if>
+            </#list>
+        </#list>
+
         <#list listObject as listEntry>
-        <${formNode["@name"]}Entry<#rt>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-            ${sri.startFormListRow(formNode["@name"], listEntry)}<#t>
-            <#assign hasPrevColumn = false>
+            <#t>${sri.startFormListRow(formNode["@name"], listEntry)}
             <#list formNode["form-list-column"] as fieldListColumn>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRef = fieldRef["@name"]>
                     <#assign fieldNode = "invalid">
                     <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                    <#t><@formListSubField fieldNode/>
+                    <#t><@formListSubField fieldNode/>${"\t"}
                 </#list>
-            <#lt></#list>/>
-            ${sri.endFormListRow()}<#t>
+            </#list>
+
+            <#t>${sri.endFormListRow()}
         </#list>
-        ${sri.safeCloseList(listObject)}<#t><#-- if listObject is an EntityListIterator, close it -->
+        <#t>${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
     <#else>
+        <#list formNode["field"] as fieldNode>
+            <#if !(fieldNode["@hide"]?if_exists == "true" ||
+                    ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
+                    (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
+                <#t><@formListHeaderField fieldNode/>${"\t"}
+            </#if>
+        </#list>
+
         <#list listObject as listEntry>
-        <${formNode["@name"]}Entry<#rt>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-            ${sri.startFormListRow(formNode["@name"], listEntry)}<#t>
-            <#assign hasPrevColumn = false>
+            <#t>${sri.startFormListRow(formNode["@name"], listEntry)}
             <#list formNode["field"] as fieldNode>
-                <#t><@formListSubField fieldNode/>
-            <#lt></#list>/>
-            ${sri.endFormListRow()}<#t>
+                <#t><@formListSubField fieldNode/>${"\t"}
+            </#list>
+
+            <#t>${sri.endFormListRow()}
         </#list>
-        ${sri.safeCloseList(listObject)}<#t><#-- if listObject is an EntityListIterator, close it -->
+        <#t>${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
     </#if>
-    </${formNode["@name"]}>
+
+</#macro>
+<#macro formListHeaderField fieldNode>
+    <#if fieldNode["header-field"]?has_content>
+        <#assign fieldSubNode = fieldNode["header-field"][0]>
+    <#elseif fieldNode["default-field"]?has_content>
+        <#assign fieldSubNode = fieldNode["default-field"][0]>
+    <#else>
+        <#-- this only makes sense for fields with a single conditional -->
+        <#assign fieldSubNode = fieldNode["conditional-field"][0]>
+    </#if>
+    <#t><@fieldTitle fieldSubNode/>
 </#macro>
 <#macro formListSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
@@ -148,9 +242,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </#if>
 </#macro>
 <#macro formListWidget fieldSubNode>
-    <#if fieldSubNode["ignored"]?has_content || fieldSubNode["hidden"]?has_content || fieldSubNode["submit"]?has_content><#return/></#if>
-    <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
- ${fieldSubNode?parent["@name"]}="<#recurse fieldSubNode>"<#rt>
+    <#if fieldSubNode["ignored"]?has_content || fieldSubNode["hidden"]?has_content || fieldSubNode["submit"]?has_content ||
+            fieldSubNode?parent["@hide"]?if_exists == "true"><#return/></#if>
+    <#t><#recurse fieldSubNode>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
@@ -174,7 +268,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
     <#if .node["@format"]?has_content><#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"])></#if>
     <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>
 
 <#macro "display">
@@ -189,11 +283,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <#else>
         <#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>
 
 <#macro "drop-down">
@@ -220,20 +314,20 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro "submit">
     <#assign fieldValue><@fieldTitle .node?parent/></#assign>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>
 
 <#macro "text-area">
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>
 
 <#macro "text-line">
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>
 
 <#macro "text-find">
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
-    <#t><@attributeValue fieldValue/>
+    <#t>${fieldValue}
 </#macro>

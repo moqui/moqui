@@ -22,6 +22,7 @@ This release includes:
   - Screen form-single field-layout support
   - Screen form-list pagination (defaults in search-form-inputs)
   - Template for csv render mode (mainly for form-list report-like output)
+  - Template for text render mode (for email alternative message, etc)
   - Template for xml render mode (like CSV, but more structured and
     support multiple forms per screen)
   - Support URL parameters for renderMode and pageNoLimit which along with
@@ -44,7 +45,6 @@ Notable features not yet implemented (for 1.0):
 
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
-  - Template for text render mode (for email alternative message, etc)
 - Password reset email and forgot password form
 - Tools Screens
   - Entity

@@ -194,7 +194,6 @@ on the same screen to increase reusability of those screens -->
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
-<#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?exists>_${listEntryIndex}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${fieldSubNode["@title"]}<#else/><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -207,8 +206,7 @@ on the same screen to increase reusability of those screens -->
     <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
-    <#assign curName><@fieldName .node/></#assign>
-    <#t>[<#list (options.keySet())?if_exists as key>${key?html}:${options.get(key)?default("")}<#if key_has_next>;</#if></#list>]
+    <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
 </#macro>
 
 <#macro "date-find"></#macro>
@@ -242,8 +240,7 @@ on the same screen to increase reusability of those screens -->
     <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
-    <#assign curName><@fieldName .node/></#assign>
-    <#t>[<#list (options.keySet())?if_exists as key>${key?html}:${options.get(key)?default("")}<#if key_has_next>;</#if></#list>]
+    <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
 </#macro>
 
 <#macro "file"></#macro>
@@ -255,8 +252,7 @@ on the same screen to increase reusability of those screens -->
     <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
-    <#assign curName><@fieldName .node/></#assign>
-    <#t>[<#list (options.keySet())?if_exists as key>${key?html}:${options.get(key)?default("")}<#if key_has_next>;</#if></#list>]
+    <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
 </#macro>
 
 <#macro "range-find"></#macro>

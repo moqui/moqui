@@ -104,11 +104,11 @@
                             macro-template-location="classpath://template/DefaultScreenMacros.csv.ftl"/>
         <screen-text-output type="html" mime-type="text/html"
                             macro-template-location="classpath://template/DefaultScreenMacros.html.ftl"/>
+        <screen-text-output type="text" mime-type="text/plain"
+                            macro-template-location="classpath://template/DefaultScreenMacros.text.ftl"/>
         <screen-text-output type="xml" mime-type="text/xml"
                             macro-template-location="classpath://template/DefaultScreenMacros.xml.ftl"/>
         <!-- TODO not yet implemented:
-        <screen-text-output type="text" mime-type="text/plain"
-                            macro-template-location="classpath://template/DefaultScreenMacros.txt.ftl"/>
         <screen-text-output type="xsl-fo" mime-type="text/xml"
                             macro-template-location="classpath://template/DefaultScreenMacros.xsl-fo.ftl"/>
         -->

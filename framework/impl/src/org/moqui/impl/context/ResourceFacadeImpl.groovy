@@ -356,6 +356,10 @@ public class ResourceFacadeImpl implements ResourceFacade {
     /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
     String evaluateStringExpand(String inputString, String debugLocation) {
         if (!inputString) return ""
+
+        // always localize string before expanding
+        if (inputString.length() < 256) inputString = ecfi.l10nFacade.getLocalizedMessage(inputString)
+
         String expression = '"""' + inputString + '"""'
         try {
             Script script = getGroovyScript(expression)

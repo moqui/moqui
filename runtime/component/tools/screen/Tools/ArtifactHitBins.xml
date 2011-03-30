@@ -15,18 +15,12 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Artifact Hits">
 
     <transition name="ArtifactHitBinStats.csv">
-        <default-response url=".">
-            <parameter name="renderMode" value="csv"/>
-            <parameter name="pageNoLimit" value="true"/>
-            <parameter name="lastStandalone" value="true"/>
-        </default-response>
+        <default-response url="."><parameter name="renderMode" value="csv"/>
+            <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
     </transition>
     <transition name="ArtifactHitBinStats.xml">
-        <default-response url=".">
-            <parameter name="renderMode" value="xml"/>
-            <parameter name="pageNoLimit" value="true"/>
-            <parameter name="lastStandalone" value="true"/>
-        </default-response>
+        <default-response url="."><parameter name="renderMode" value="xml"/>
+            <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
     </transition>
 
     <actions>
