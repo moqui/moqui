@@ -36,6 +36,9 @@ import org.moqui.impl.StupidUtilities
             context.${.node["@out-map"]} = call_service_result
         }
         </#if>
+        <#if !(.node["@ignore-error"]?if_exists == "true")>
+        if (ec.message.errors) return
+        </#if>
     }
 </#macro>
 

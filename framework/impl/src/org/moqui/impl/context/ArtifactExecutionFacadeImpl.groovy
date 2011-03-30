@@ -172,7 +172,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 for (def warnAei in this.stack) warning.append("\n").append(warnAei)
                 logger.warn(warning.toString())
 
-                throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+                throw new IllegalArgumentException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
             }
         } else {
             // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
@@ -194,7 +194,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
             for (def warnAei in this.stack) warning.append("\n").append(warnAei)
             logger.warn(warning.toString())
-            throw new IllegalAccessException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+            throw new IllegalArgumentException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
         }
     }
 

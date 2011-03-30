@@ -113,7 +113,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         if (sd == null) {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
             if ((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
-                Map result = runImplicitEntityAuto(currentParameters)
+                Map result = runImplicitEntityAuto(currentParameters, eci)
 
                 if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(System.currentTimeMillis()-callStartTime)/1000} seconds")
                 long endTime = System.currentTimeMillis()
@@ -230,7 +230,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         return result
     }
 
-    protected Map<String, Object> runImplicitEntityAuto(Map<String, Object> currentParameters) {
+    protected Map<String, Object> runImplicitEntityAuto(Map<String, Object> currentParameters, ExecutionContextImpl eci) {
         // NOTE: no authentication, assume not required for this; security settings can override this and require
         //     permissions, which will require authentication
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
@@ -257,7 +257,14 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
             } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+                tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
+                // add all exception messages to the error messages list
+                eci.message.addError(t.message)
+                Throwable parent = t.cause
+                while (parent != null) {
+                    eci.message.addError(parent.message)
+                    parent = parent.cause
+                }
             } finally {
                 if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")

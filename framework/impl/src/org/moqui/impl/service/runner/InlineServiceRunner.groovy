@@ -34,10 +34,21 @@ public class InlineServiceRunner implements ServiceRunner {
             cs.push()
             // ec is already in place, in the contextRoot, so no need to put here
             // context is handled by the ContextStack itself, always there
-            ec.context.put("result", new HashMap())
+            Map<String, Object> result = new HashMap()
+            ec.context.put("result", result)
 
             XmlAction xa = sd.getXmlAction()
-            return xa.run(ec)
+            Object returnedResult = xa.run(ec)
+            if (returnedResult != null) {
+                if (returnedResult instanceof Map) {
+                    return returnedResult
+                } else {
+                    result.put("returnedValue", returnedResult)
+                    return result
+                }
+            } else {
+                return result
+            }
         } finally {
             // in the push we pushed two Maps to protect the parameters Map, so pop twice
             cs.pop()
