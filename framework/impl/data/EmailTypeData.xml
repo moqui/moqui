@@ -27,12 +27,4 @@ This Work includes contributions authored by David E. Jones, not as a
                    bodyScreenLocation="classpath://screen/PasswordReset.xml" webappName="webroot"
                    fromAddress="" ccAddresses="" bccAddresses=""
                    subject="Password Reset" sendPartial="Y"/>
-
-    <!-- TODO: remove my settings before commit -->
-    <EmailServer emailServerId="SYSTEM"
-                 smtpHost="smtp.me.com" smtpPort="25" smtpStartTls="N" smtpSsl="N"
-                 storeHost="mail.me.com" storePort="143" storeProtocol="imap" storeDelete="N"
-                 mailUsername="dejc" mailPassword="moss283'clid"/>
-    <EmailTemplate emailTemplateId="PASSWORD_RESET" fromAddress="dejc@me.com"/>
-    <UserAccount userId="EX_JOHN_DOE" emailAddress="jonesde@me.com"/>
 </entity-facade-xml>
