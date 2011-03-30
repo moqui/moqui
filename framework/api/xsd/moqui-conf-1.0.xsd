@@ -177,10 +177,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="change-weeks" type="xs:decimal" default="12">
                 <xs:annotation><xs:documentation>Require password change after this many months (0 means don't ever require change)</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="email-require-change" type="boolean" default="true">
-                <!-- TODO use in impl when password reset email is implemented -->
                 <xs:annotation><xs:documentation>Require password change after a password reset email?</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="email-expire-hours" type="xs:nonNegativeInteger" default="48">
-                <!-- TODO use in impl when password reset email is implemented -->
+                <!-- TODO use in impl -->
                 <xs:annotation><xs:documentation>How long will the new password be valid from the password reset email?</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>

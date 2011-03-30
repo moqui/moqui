@@ -27,20 +27,30 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
 
-    <service verb="update" noun="UserAccountPassword">
+    <service verb="update" noun="Password">
         <description>Set a user's password. The userId must match the current user and the oldPassword must match the
             user's currentPassword or special permission is required.</description>
         <in-parameters>
             <parameter name="userId" required="false"><description>Defaults to the current userId in the ExecutionContext.</description></parameter>
-            <parameter name="oldPassword" required="false"><description>Required unless current user has password admin permissions.</description></parameter>
+            <parameter name="username" required="false"><description>May be used instead of userId to identify user.</description></parameter>
+            <parameter name="oldPassword" required="true"><description>Ignored if user has password admin permissions.</description></parameter>
             <parameter name="newPassword" required="true"/>
         </in-parameters>
         <actions>
-            <set field="userId" from="userId ?: ec.user.userId"/>
             <!-- TODO get perm from ? -->
             <set field="hasPwAdminPermission" value="false"/>
 
-            <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
+            <if condition="userId">
+                <then>
+                    <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
+                </then>
+                <else-if condition="username">
+                    <entity-find-one entity-name="UserAccount" value-field="userAccount">
+                        <field-map field-name="username"/>
+                    </entity-find-one>
+                </else-if>
+            </if>
+            <set field="userId" from="userAccount.userId"/>
 
             <!-- compare the passwords, encrypted -->
             <if condition="!hasPwAdminPermission">
@@ -115,6 +125,47 @@ This Work includes contributions authored by David E. Jones, not as a
                            from="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
                 <field-map field-name="passwordSetDate" from="ec.user.nowTimestamp"/>
             </service-call>
+        </actions>
+    </service>
+
+    <service verb="reset" noun="Password" type="inline" authenticate="false">
+        <in-parameters>
+            <parameter name="username" required="true"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="UserAccount" value-field="userAccount">
+                <field-map field-name="username"/>
+            </entity-find-one>
+            <if condition="!userAccount">
+                <return message="Could not find user account with username [${username}]" error="true"/>
+            </if>
+            <if condition="!userAccount.emailAddress">
+                <return message="User account with username [${username}] does not have an email address" error="true"/>
+            </if>
+
+            <!-- reset the password to a random value -->
+            <set field="newPassword" from="org.moqui.impl.StupidUtilities.getRandomString(12)"/>
+
+            <set field="passwordNode" from="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
+            <set field="hashType" from="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
+            <service-call name="update#UserAccount">
+                <field-map field-name="userId" from="userAccount.userId"/>
+                <field-map field-name="currentPassword"
+                           from="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
+                <field-map field-name="passwordSetDate" from="ec.user.nowTimestamp"/>
+                <field-map field-name="requirePasswordChange"
+                           from="(passwordNode.'@email-require-change' == 'false') ? 'N' : 'Y'"/>
+            </service-call>
+
+            <!-- send an email with the new password -->
+            <set field="bodyParameters.userAccount" from="userAccount"/>
+            <set field="bodyParameters.newPassword" from="newPassword"/>
+            <service-call name="org.moqui.impl.EmailServices.sendEmailTemplate">
+                <field-map field-name="emailTemplateId" value="PASSWORD_RESET"/>
+                <field-map field-name="toAddresses" from="userAccount.emailAddress"/>
+                <field-map field-name="bodyParameters"/>
+            </service-call>
+            <message>Password is reset and email sent to: ${userAccount.emailAddress}</message>
         </actions>
     </service>
 </services>

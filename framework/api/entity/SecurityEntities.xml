@@ -161,7 +161,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="UserAccount" package-name="org.moqui.security.user" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>
-        <field name="username" type="text-medium" enable-audit-log="true">
+        <field name="username" type="text-long" enable-audit-log="true">
             <description>The username used along with the password to login</description>
         </field>
         <field name="userFullName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
@@ -188,7 +188,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="Currency" related-entity-name="Uom">
             <key-map field-name="currencyUomId"/>
         </relationship>
+        <!-- NOTE: both username and emailAddress must be unique -->
         <index name="USERACCT_USERNAME" unique="true"><index-field name="username"/></index>
+        <index name="USERACCT_EMAILADDR" unique="true"><index-field name="emailAddress"/></index>
     </entity>
     <entity entity-name="UserGroup" package-name="org.moqui.security.user">
         <field name="userGroupId" type="id" is-pk="true"/>

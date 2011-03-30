@@ -360,6 +360,16 @@ class StupidUtilities {
         return hashString
     }
 
+    public static String getRandomString(int length) {
+        StringBuilder sb = new StringBuilder()
+        for (int i = 0; i < length; i++) {
+            int r = (int) Math.round(Math.random() * 93)
+            char c = (char) r + 33
+            sb.append(c)
+        }
+        return sb.toString()
+    }
+
     public static class CachedClassLoader extends URLClassLoader {
         protected final Map<String, Class> classCache = new HashMap()
         protected final Map<String, URL> resourceCache = new HashMap()
