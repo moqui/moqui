@@ -158,12 +158,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </service-call>
 
             <!-- send an email with the new password -->
-            <set field="bodyParameters.userAccount" from="userAccount"/>
-            <set field="bodyParameters.newPassword" from="newPassword"/>
             <service-call name="org.moqui.impl.EmailServices.sendEmailTemplate">
                 <field-map field-name="emailTemplateId" value="PASSWORD_RESET"/>
                 <field-map field-name="toAddresses" from="userAccount.emailAddress"/>
-                <field-map field-name="bodyParameters"/>
+                <field-map field-name="bodyParameters" from="[userAccount:userAccount, newPassword:newPassword]"/>
             </service-call>
             <message>Password is reset and email sent to: ${userAccount.emailAddress}</message>
         </actions>

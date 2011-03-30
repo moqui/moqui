@@ -53,7 +53,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
                         <field name="submit"><default-field title="Login"><submit/></default-field></field>
                     </form-single>
-                    <label text="Forgot Password?" type="h3"/>
+                    <label text="Forgot Password?" type="h4"/>
                     <form-single name="resetPassword" transition="resetPassword">
                         <field name="username"><default-field><text-line size="20"/></default-field></field>
                         <field name="tenantId"><default-field><text-line size="20"/></default-field></field>

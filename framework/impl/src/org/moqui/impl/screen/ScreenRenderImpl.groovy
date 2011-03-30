@@ -210,8 +210,11 @@ class ScreenRenderImpl implements ScreenRender {
                 sfi.ecfi.transactionFacade.rollback(beganTransaction, "Error running transition in [${screenUrlInfo.url}]", t)
                 throw t
             } finally {
-                if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
-                    sfi.ecfi.transactionFacade.commit(beganTransaction)
+                try {
+                    if (sfi.ecfi.transactionFacade.isTransactionInPlace())
+                        sfi.ecfi.transactionFacade.commit(beganTransaction)
+                } catch (Exception e) {
+                    logger.error("Error committing screen transition transaction", e)
                 }
 
                 if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {

@@ -13,9 +13,26 @@ This Work includes contributions authored by David E. Jones, not as a
 <entity-facade-xml type="seed">
     <!-- NOTE: these are skeleton settings and some fields need to be filled in (probably best with another data file)
         for your specific installation in order to be functional -->
-    <EmailServer emailServerId="SYSTEM" smtpRelayHost="" smtpUsername="" smtpPassword="" smtpPort="" smtpStartTls="" smtpSsl=""/>
+    <EmailServer emailServerId="SYSTEM"
+                 smtpHost="" smtpPort="25" smtpStartTls="N" smtpSsl="N"
+                 storeHost="" storePort="143" storeProtocol="imap" storeDelete="N"
+                 mailUsername="" mailPassword=""/>
+    <!-- Other common values:
+        smtpPort="25" (std) smtpPort="465" (ssmtp) smtpPort="587" (ssmtp?)
+        storeProtocol="imap" storePort="143" (std) storePort="585" (imap4-ssl) storePort="993" (imaps)
+        storeProtocol="pop3" storePort="110" (std) storePort="995" (ssl-pop)
+    -->
+
     <EmailTemplate emailTemplateId="PASSWORD_RESET" description="Default Password Reset" emailServerId="SYSTEM"
                    bodyScreenLocation="classpath://screen/PasswordReset.xml" webappName="webroot"
                    fromAddress="" ccAddresses="" bccAddresses=""
                    subject="Password Reset" sendPartial="Y"/>
+
+    <!-- TODO: remove my settings before commit -->
+    <EmailServer emailServerId="SYSTEM"
+                 smtpHost="smtp.me.com" smtpPort="25" smtpStartTls="N" smtpSsl="N"
+                 storeHost="mail.me.com" storePort="143" storeProtocol="imap" storeDelete="N"
+                 mailUsername="dejc" mailPassword="moss283'clid"/>
+    <EmailTemplate emailTemplateId="PASSWORD_RESET" fromAddress="dejc@me.com"/>
+    <UserAccount userId="EX_JOHN_DOE" emailAddress="jonesde@me.com"/>
 </entity-facade-xml>

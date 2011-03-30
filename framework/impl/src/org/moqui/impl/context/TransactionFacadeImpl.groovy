@@ -189,9 +189,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
 
     /** @see org.moqui.context.TransactionFacade#isTransactionInPlace() */
-    boolean isTransactionInPlace() {
-        return getStatus() != Status.STATUS_NO_TRANSACTION
-    }
+    boolean isTransactionInPlace() { return getStatus() != Status.STATUS_NO_TRANSACTION }
 
     /** @see org.moqui.context.TransactionFacade#begin(Integer) */
     boolean begin(Integer timeout) {
@@ -240,12 +238,15 @@ class TransactionFacadeImpl implements TransactionFacade {
     void commit() {
         try {
             int status = ut.getStatus();
-            if (status != Status.STATUS_NO_TRANSACTION && status != Status.STATUS_COMMITTING &&
+            if (status == Status.STATUS_MARKED_ROLLBACK) {
+                ut.rollback()
+            } else if (status != Status.STATUS_NO_TRANSACTION && status != Status.STATUS_COMMITTING &&
                     status != Status.STATUS_COMMITTED && status != Status.STATUS_ROLLING_BACK &&
                     status != Status.STATUS_ROLLEDBACK) {
                 ut.commit()
             } else {
-                logger.warn("Not committing transaction because status is " + getStatusString(), new Exception("Bad TX status location"))
+                if (status != Status.STATUS_NO_TRANSACTION)
+                    logger.warn("Not committing transaction because status is " + getStatusString(), new Exception("Bad TX status location"))
             }
         } catch (RollbackException e) {
             RollbackInfo rollbackOnlyInfo = getRollbackOnlyInfoStack().get(0)
@@ -282,7 +283,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     void rollback(String causeMessage, Throwable causeThrowable) {
         try {
             if (getStatus() == Status.STATUS_NO_TRANSACTION) {
-                logger.warn("Transaction not rolled back, status is STATUS_NO_TRANSACTION")
+                logger.info("Transaction not rolled back, status is STATUS_NO_TRANSACTION")
                 return
             }
 

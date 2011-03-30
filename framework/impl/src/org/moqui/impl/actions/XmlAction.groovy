@@ -36,7 +36,12 @@ class XmlAction {
         this.location = location
         FtlNodeWrapper ftlNode = FtlNodeWrapper.wrapNode(xmlNode)
         groovyString = makeGroovyString(ecfi, ftlNode, location)
-        groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
+        try {
+            groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
+        } catch (Throwable t) {
+            logger.error("Error parsing groovy String: ${groovyString}")
+            throw t
+        }
     }
 
     XmlAction(ExecutionContextFactoryImpl ecfi, String xmlText, String location) {
@@ -48,7 +53,12 @@ class XmlAction {
             ftlNode = FtlNodeWrapper.makeFromText(ecfi.resourceFacade.getLocationText(location, false))
         }
         groovyString = makeGroovyString(ecfi, ftlNode, location)
-        groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
+        try {
+            groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
+        } catch (Throwable t) {
+            logger.error("Error parsing groovy String: ${groovyString}")
+            throw t
+        }
     }
 
     protected String makeGroovyString(ExecutionContextFactoryImpl ecfi, FtlNodeWrapper ftlNode, String location) {

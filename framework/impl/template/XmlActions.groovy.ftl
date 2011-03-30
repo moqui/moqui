@@ -71,7 +71,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 
 <#-- =================== entity-find elements =================== -->
 <#macro "entity-find-one">    ${.node["@value-field"]} = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if>
-            <#if !.node["@auto-field-map"]?has_content || .node["@auto-field-map"] == "true">.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#else><#if fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else/>${fieldMap["@field-name"]}</#if></#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
+            <#if .node["@auto-field-map"]?if_exists == "true" || ((!.node["@auto-field-map"]?has_content) && (!.node["field-map"]?has_content))>.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
 </#macro>
 <#macro "entity-find">
     ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
@@ -166,7 +166,8 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 
 <#-- NOTE: if there is an error message (in ec.messages.errors) then the actions result is an error, otherwise it is not, so we need a default error message here -->
 <#macro return><#assign returnMessage = .node["@message"]?default("Error in actions")/><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${returnMessage?trim}""")<#else/>    ec.message.addMessage(${returnMessage?trim})</#if>
-    return</#macro>
+    return
+</#macro>
 <#macro assert><#list .node["*"] as childCond>
     if (!(<#visit childCond/>)) ec.message.addError("""<#if .node["@title"]?has_content>[${.node["@title"]}] </#if> Assert failed: <#visit childCond/>""")</#list>
 </#macro>
@@ -184,17 +185,23 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     // TODO impl xml-produce-element
 </#macro>
 
-<#macro if>    if (<#if .node["@condition"]?has_content>${.node["@condition"]}</#if><#if .node["@condition"]?has_content && .node["condition"]?has_content> && </#if><#if .node["condition"]?has_content><#recurse .node["condition"][0]/></#if>) {<#recurse .node/><#if .node.then?has_content>
-    <#recurse .node.then/></#if>
+<#macro if>    if (<#if .node["@condition"]?has_content>${.node["@condition"]}</#if><#if .node["@condition"]?has_content && .node["condition"]?has_content> && </#if><#if .node["condition"]?has_content><#recurse .node["condition"][0]/></#if>) {
+        <#recurse .node/><#if .node.then?has_content>
+        <#recurse .node.then/></#if>
     }<#if .node["else-if"]?has_content><#list .node["else-if"] as elseIf> else if (<#if elseIf["@condition"]?has_content>${elseIf["@condition"]}</#if><#if elseIf["@condition"]?has_content && elseIf["condition"]?has_content> && </#if><#if elseIf["condition"]?has_content><#recurse elseIf["condition"][0]/></#if>) {
-    <#recurse elseIf/><#if elseIf.then?has_content>
-    <#recurse elseIf.then/></#if>
+        <#recurse elseIf/><#if elseIf.then?has_content>
+        <#recurse elseIf.then/></#if>
     }</#list></#if><#if .node["else"]?has_content> else {
-    <#recurse .node["else"][0]/>
-    }</#if></#macro>
+        <#recurse .node["else"][0]/>
+    }</#if>
 
-<#macro while>    while (<#if .node.@condition?has_content>${.node.@condition}</#if><#if .node["@condition"]?has_content && .node["condition"]?has_content> && </#if><#if .node["condition"]?has_content><#recurse .node["condition"][0]/></#if>) {<#recurse .node/>
-    }</#macro>
+</#macro>
+
+<#macro while>    while (<#if .node.@condition?has_content>${.node.@condition}</#if><#if .node["@condition"]?has_content && .node["condition"]?has_content> && </#if><#if .node["condition"]?has_content><#recurse .node["condition"][0]/></#if>) {
+        <#recurse .node/>
+    }
+
+</#macro>
 
 <#-- =================== if/when sub-elements =================== -->
 <#macro condition><#-- do nothing when visiting, only used explicitly inline --></#macro>
