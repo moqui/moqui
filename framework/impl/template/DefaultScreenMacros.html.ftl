@@ -580,16 +580,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <${formListFieldTag!"td"}>
         <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
         <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
-        <#if fieldSubNode["link"]?has_content>
-            <#assign linkNode = fieldSubNode["link"][0]>
-            <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
-            <#assign linkFormId><@fieldId linkNode/></#assign>
-            <#assign afterFormText><@linkFormForm linkNode linkFormId urlInfo/></#assign>
-            <#t>${sri.appendToAfterFormWriter(afterFormText)}
-            <@linkFormLink linkNode linkFormId urlInfo/>
-            <#return>
-        </#if>
-        <#t><#recurse fieldSubNode>
+        <#list fieldSubNode?children as widgetNode>
+            <#if widgetNode?node_name == "link">
+                <#assign linkNode = widgetNode>
+                <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
+                <#assign linkFormId><@fieldId linkNode/></#assign>
+                <#assign afterFormText><@linkFormForm linkNode linkFormId urlInfo/></#assign>
+                <#t>${sri.appendToAfterFormWriter(afterFormText)}
+                <#t><@linkFormLink linkNode linkFormId urlInfo/>
+            <#else>
+                <#t><#visit widgetNode>
+            </#if>
+        </#list>
     </${formListFieldTag!"td"}>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
@@ -663,12 +665,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
     <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
-    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
+    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, fieldValue!"")?html}"></#if>
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
     <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
-    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${(fieldValue!"")?html}"></#if>
+    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, fieldValue!"")?html}"></#if>
 </#macro>
 
 <#macro "drop-down">

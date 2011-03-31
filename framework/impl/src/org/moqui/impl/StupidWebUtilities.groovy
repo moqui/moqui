@@ -111,28 +111,40 @@ class StupidWebUtilities {
     }
 
     static class ServletContextAttributeMap implements Map<String, Object> {
+        protected static final Set<String> keysToIgnore =
+                ["javax.servlet.context.tempdir", "org.apache.catalina.jsp_classpath",
+                "org.apache.commons.fileupload.servlet.FileCleanerCleanup.FileCleaningTracker"]
         protected ServletContext sc
         ServletContextAttributeMap(ServletContext servletContext) { sc = servletContext }
         int size() { return sc.getAttributeNames().toList().size() }
         boolean isEmpty() { return sc.getAttributeNames().toList().size() > 0 }
-        boolean containsKey(Object o) { return sc.getAttributeNames().toList().contains(o) }
+        boolean containsKey(Object o) { return keysToIgnore.contains(o) ? false : sc.getAttributeNames().toList().contains(o) }
         boolean containsValue(Object o) {
-            for (String name in sc.getAttributeNames()) if (sc.getAttribute(name) == o) return true
+            for (String name in sc.getAttributeNames()) if (!keysToIgnore.contains(name) && sc.getAttribute(name) == o) return true
             return false
         }
-        Object get(Object o) { return sc.getAttribute((String) o) }
+        Object get(Object o) { return keysToIgnore.contains(o) ? null : sc.getAttribute((String) o) }
         Object put(String s, Object o) { Object orig = sc.getAttribute(s); sc.setAttribute(s, o); return orig; }
         Object remove(Object o) { Object orig = sc.getAttribute((String) o); sc.removeAttribute((String) o); return orig; }
         void putAll(Map<? extends String, ? extends Object> map) {
             if (!map) return
             for (Map.Entry entry in map.entrySet()) sc.setAttribute((String) entry.getKey(), entry.getValue())
         }
-        void clear() { for (String name in sc.getAttributeNames()) sc.removeAttribute(name) }
-        Set<String> keySet() { Set<String> ks = new HashSet<String>(); ks.addAll(sc.getAttributeNames().toList()); return ks; }
-        Collection<Object> values() { List values = new LinkedList(); for (String name in sc.getAttributeNames()) values.add(sc.getAttribute(name)); return values; }
+        void clear() { for (String name in sc.getAttributeNames()) if (!keysToIgnore.contains(name)) sc.removeAttribute(name) }
+        Set<String> keySet() {
+            Set<String> ks = new HashSet<String>();
+            for (String name in sc.getAttributeNames()) if (!keysToIgnore.contains(name)) ks.add(name);
+            return ks;
+        }
+        Collection<Object> values() {
+            List values = new LinkedList();
+            for (String name in sc.getAttributeNames()) if (!keysToIgnore.contains(name)) values.add(sc.getAttribute(name));
+            return values;
+        }
         Set<Map.Entry<String, Object>> entrySet() {
             Set<Map.Entry<String, Object>> es = new HashSet<Map.Entry<String,Object>>()
-            for (String name in sc.getAttributeNames()) es.add(new SimpleEntry(name, sc.getAttribute(name)))
+            for (String name in sc.getAttributeNames())
+                if (!keysToIgnore.contains(name)) es.add(new SimpleEntry(name, sc.getAttribute(name)))
             return es
         }
     }

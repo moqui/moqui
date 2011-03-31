@@ -15,6 +15,6 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Feature" default-menu-index="2">
     <subscreens default-item="FindExampleFeature"/>
     <widgets>
-        <subscreens-panel id="feature-panel" type="tab" dynamic="true"/>
+        <subscreens-panel id="feature-panel" type="tab" dynamic="false"/>
     </widgets>
 </screen>

@@ -682,4 +682,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                         "webapp_${webappName}.before_shutdown.actions")
         }
     }
+
+    @Override
+    String toString() { return "ExecutionContextFactory" }
 }

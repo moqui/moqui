@@ -127,4 +127,7 @@ class ExecutionContextImpl implements ExecutionContext {
         // clear out the ECFI's reference to this as well
         this.ecfi.activeContext.remove()
     }
+
+    @Override
+    String toString() { return "ExecutionContext" }
 }
