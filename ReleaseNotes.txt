@@ -6,7 +6,9 @@ Release 1.0-beta1 - 01 Apr 2011
 ===========================================================================
 
 The 1.0-beta1 release is the first feature-complete release for the 1.0
-series. Following this release the focus for the framework shifts from
+series. Various tools screens that may be included in the 1.0-final release
+are not yet complete, but the framework itself is feature-complete.
+Following this release the focus for the framework shifts from
 implementation to testing and to building applications and tools based on
 it (in Moqui Framework, Moqui Mantle, and in other Moqui-based projects).
 
