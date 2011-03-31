@@ -24,36 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="username" value="john.doe"/>
             <parameter name="password" value="wrong"/>
         </link>
-        <section name="HeaderUserInfo">
-            <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
-            <actions>
-                <set field="test1" from="ec.user.userId"/>
-                <set field="testV" value="VALUE"/>
-                <script>
-                    test2 = ec.user.userId
 
-                    System.out.println("================== ec.user.userId=" + ec.user.userId)
-                    System.out.println("================== ec.message.messages=" + ec.message.messages)
-                    System.out.println("================== ec.message.errors=" + ec.message.errors)
-                    System.out.println("================== test1=" + test1)
-                    System.out.println("================== test2=" + test2)
-                    System.out.println("================== testV=" + testV)
-                    System.out.println("================== context=" + context.toString())
-                </script>
-            </actions>
-            <widgets>
-                <label text="Inner section:" type="h3"/>
-                <label text="Direct user: ${ec.user}" type="p"/>
-                <label text="Direct userId: ${ec.user.getUserId()}" type="p"/>
-                <label text="Through test1: ${test1}" type="p"/>
-                <label text="Through test2: ${test2}" type="p"/>
-                <label text="testV: ${testV}" type="p"/>
-            </widgets>
-        </section>
-
-        <label text="Outer section:" type="h3"/>
-        <label text="test1: ${context.test1}" type="p"/>
-        <label text="testV: ${context.testV}" type="p"/>
         <label text="User ID: ${ec.user.userId}" type="p"/>
         <label text="User Name: ${ec.user.userAccount?.userFullName}" type="p"/>
         <label text="Messages: ${ec.message.messages}" type="p"/>
