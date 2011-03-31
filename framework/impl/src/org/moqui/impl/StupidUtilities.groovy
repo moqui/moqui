@@ -44,10 +44,10 @@ class StupidUtilities {
             "java.nio.ByteBuffer":java.nio.ByteBuffer.class,
             "java.sql.Clob":java.sql.Clob.class, "Clob":java.sql.Clob.class,
             "java.util.Date":java.util.Date.class,
-            "java.util.Collection":java.util.Collection.class,
-            "java.util.List":java.util.List.class,
-            "java.util.Map":java.util.Map.class,
-            "java.util.Set":java.util.Set.class]
+            "java.util.Collection":java.util.Collection.class, "Collection":java.util.Collection.class,
+            "java.util.List":java.util.List.class, "List":java.util.List.class,
+            "java.util.Map":java.util.Map.class, "Map":java.util.Map.class,
+            "java.util.Set":java.util.Set.class, "Set":java.util.Set.class]
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = commonJavaClassesMap.get(javaType)
         if (theClass == null) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)
@@ -362,9 +362,11 @@ class StupidUtilities {
 
     public static String getRandomString(int length) {
         StringBuilder sb = new StringBuilder()
-        for (int i = 0; i < length; i++) {
+        while (sb.length() <= length) {
             int r = (int) Math.round(Math.random() * 93)
             char c = (char) r + 33
+            // avoid certain characters
+            if ("\"'&<>?0\\".indexOf((int) c) >= 0) continue
             sb.append(c)
         }
         return sb.toString()

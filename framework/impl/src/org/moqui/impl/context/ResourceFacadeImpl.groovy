@@ -11,10 +11,20 @@
  */
 package org.moqui.impl.context
 
+import freemarker.template.Template
+import freemarker.template.Configuration
+import freemarker.ext.beans.BeansWrapper
+import freemarker.template.TemplateExceptionHandler
+import freemarker.template.TemplateException
+import freemarker.core.Environment
+
+import javax.activation.DataSource
+import javax.activation.MimetypesFileTypeMap
 import javax.jcr.Repository
 import javax.jcr.Session
 import javax.naming.InitialContext
 
+import org.apache.commons.mail.ByteArrayDataSource
 import org.apache.jackrabbit.commons.JcrUtils
 
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -27,23 +37,8 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.StupidUtilities
 
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-import javax.activation.MimetypesFileTypeMap
-import freemarker.template.Template
-import org.moqui.impl.context.renderer.FtlTemplateRenderer
-import freemarker.template.Configuration
-import freemarker.ext.beans.BeansWrapper
-import freemarker.cache.TemplateLoader
-import freemarker.template.TemplateExceptionHandler
-import freemarker.template.TemplateException
-import freemarker.core.Environment
-import freemarker.cache.CacheStorage
-import javax.activation.DataSource
-import org.apache.commons.mail.ByteArrayDataSource
-
 public class ResourceFacadeImpl implements ResourceFacade {
-    protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
 
     protected final MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap()
 
@@ -293,7 +288,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected Class loadGroovy(String location) {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) {
-            gc = new GroovyClassLoader().parseClass(getLocationText(location, false), location)
+            String groovyText = getLocationText(location, false)
+            gc = new GroovyClassLoader().parseClass(groovyText, location)
             scriptGroovyLocationCache.put(location, gc)
         }
         return gc

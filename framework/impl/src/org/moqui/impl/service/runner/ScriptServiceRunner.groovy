@@ -21,14 +21,13 @@ import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.ContextStack
 
 public class ScriptServiceRunner implements ServiceRunner {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScriptServiceRunner.class)
+
     protected ServiceFacadeImpl sfi = null
 
     ScriptServiceRunner() { }
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
-
-    static void popScriptContext(ContextStack context) {
-    }
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         ExecutionContext ec = sfi.ecfi.getExecutionContext()
@@ -41,7 +40,7 @@ public class ScriptServiceRunner implements ServiceRunner {
             // context is handled by the ContextStack itself, always there
             ec.context.put("result", new HashMap())
 
-            Object result = ec.resource.runScriptInCurrentContext(sd.location, sd.serviceNode."@method")
+            Object result = ec.resource.runScriptInCurrentContext(sd.serviceNode."@location", sd.serviceNode."@method")
 
             if (result instanceof Map) {
                 return (Map<String, Object>) result

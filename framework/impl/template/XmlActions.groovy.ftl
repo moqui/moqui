@@ -48,8 +48,8 @@ import org.moqui.impl.StupidUtilities
     // end inline script
 </#macro>
 
-<#macro set>    <#if .node["@set-if-empty"]?has_content && .node["@set-if-empty"] == "false">${.node["@field"]}_temp_internal = <#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node.@value}"""</#if><#if .node["@default-value"]?has_content> ?: ${.node["@default-value"]}</#if><#if .node["@type"]?has_content> as ${.node["@type"]}</#if>
-if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_temp_internal<#else/>${.node["@field"]} = <#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: ${.node["@default-value"]}</#if><#if .node["@type"]?has_content> as ${.node["@type"]}</#if></#if>
+<#macro set>    <#if .node["@set-if-empty"]?has_content && .node["@set-if-empty"] == "false">${.node["@field"]}_temp_internal = (<#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node.@value}"""</#if><#if .node["@default-value"]?has_content> ?: "${.node["@default-value"]}"</#if>)<#if .node["@type"]?has_content> as ${.node["@type"]}</#if>
+if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_temp_internal<#else/>${.node["@field"]} = (<#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: "${.node["@default-value"]}"</#if>)<#if .node["@type"]?has_content> as ${.node["@type"]}</#if></#if>
 </#macro>
 
 <#macro "order-map-list">
@@ -84,13 +84,13 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
     </#if>
     <#if .node["limit-range"]?has_content>
-    EntityListIterator ${.node["@list"]}_xafind_eli = null
+    org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = null
     try {
         ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
         ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList(${.node["@start"]}, ${.node["@size"]})
     } finally { if (${.node["@list"]}_xafind_eli != null) ${.node["@list"]}_xafind_eli.close() }
     <#elseif .node["limit-view"]?has_content>
-    EntityListIterator ${.node["@list"]}_xafind_eli = null
+    org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = null
     try {
         ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
         ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList((${.node["@view-index"]} - 1) * ${.node["@view-size"]}, ${.node["@view-size"]})
@@ -143,24 +143,27 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "entity-set">    ${.node["@value-field"]}.setFields(${.node["@map"]?default("context")}, ${.node["@set-if-empty"]?default("true")}, ${.node["@prefix"]?default("null")}, <#if .node["@include"]?has_content && .node["@include"] == "pk">true<#elseif .node["@include"]?has_content && .node["@include"] == "nonpk"/>false<#else/>null</#if>)
 </#macro>
 
-<#macro iterate>    if (${.node["@list"]} instanceof Map) {
+<#macro iterate>
+    <#if .node["@key"]?has_content>
+    if (${.node["@list"]} instanceof Map) {
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}.entrySet()) {
             def ${.node["@entry"]} = ${.node["@entry"]}Entry.getKey()
-            <#if .node["@key"]?has_content>def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()</#if>
+            def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()
         <#recurse/>
         }
     } else if (${.node["@list"]} instanceof Collection<Map.Entry>) {
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}) {
             def ${.node["@entry"]} = ${.node["@entry"]}Entry.getKey()
-            <#if .node["@key"]?has_content>def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()</#if>
+            def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()
         <#recurse/>
         }
     } else {
+    </#if>
         for (def ${.node["@entry"]} in ${.node["@list"]}) {
         <#recurse/>
         }
-        if (${.node["@list"]} instanceof EntityListIterator) ${.node["@list"]}.close()
-    }
+        if (${.node["@list"]} instanceof org.moqui.entity.EntityListIterator) ${.node["@list"]}.close()
+    <#if .node["@key"]?has_content>}</#if>
 </#macro>
 <#macro message><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${.node?trim}""")<#else/>    ec.message.addMessage("""${.node?trim}""")</#if>
 </#macro>
@@ -189,11 +192,11 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#macro if>    if (<#if .node["@condition"]?has_content>${.node["@condition"]}</#if><#if .node["@condition"]?has_content && .node["condition"]?has_content> && </#if><#if .node["condition"]?has_content><#recurse .node["condition"][0]/></#if>) {
-        <#recurse .node/><#if .node.then?has_content>
-        <#recurse .node.then/></#if>
+        <#recurse .node/><#if .node["then"]?has_content>
+        <#recurse .node["then"][0]/></#if>
     }<#if .node["else-if"]?has_content><#list .node["else-if"] as elseIf> else if (<#if elseIf["@condition"]?has_content>${elseIf["@condition"]}</#if><#if elseIf["@condition"]?has_content && elseIf["condition"]?has_content> && </#if><#if elseIf["condition"]?has_content><#recurse elseIf["condition"][0]/></#if>) {
         <#recurse elseIf/><#if elseIf.then?has_content>
-        <#recurse elseIf.then/></#if>
+        <#recurse elseIf["then"][0]/></#if>
     }</#list></#if><#if .node["else"]?has_content> else {
         <#recurse .node["else"][0]/>
     }</#if>

@@ -307,7 +307,7 @@ class UserFacadeImpl implements UserFacade {
 
         // check time since password was last changed, if it has been too long (user-facade.password.@change-weeks default 12) then fail
         if (newUserAccount.passwordSetDate) {
-            int changeWeeks = eci.ecfi.confXmlRoot."user-facade"[0]."password"[0]."@change-weeks" ?: 12 as int
+            int changeWeeks = (eci.ecfi.confXmlRoot."user-facade"[0]."password"[0]."@change-weeks" ?: 12) as int
             int wksSinceChange = (eci.user.nowTimestamp.time - newUserAccount.passwordSetDate.time) / (7*24*60*60*1000)
             if (wksSinceChange > changeWeeks) {
                 eci.message.addError("Authenticate failed for user [${username}] because password was changed [${wksSinceChange}] weeks ago and should be changed every [${changeWeeks}] weeks [PWDTIM].")

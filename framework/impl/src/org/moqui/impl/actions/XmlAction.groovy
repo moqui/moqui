@@ -36,6 +36,7 @@ class XmlAction {
         this.location = location
         FtlNodeWrapper ftlNode = FtlNodeWrapper.wrapNode(xmlNode)
         groovyString = makeGroovyString(ecfi, ftlNode, location)
+        // logger.info("Xml Action [${location}] groovyString: ${groovyString}")
         try {
             groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
         } catch (Throwable t) {

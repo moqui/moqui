@@ -87,8 +87,31 @@ public class EntityDefinition {
     }
 
     Node getRelationshipNode(String relationshipName) {
-        return (Node) this.entityNode."relationship".find(
-                { "${it.'@title'}${it.'@related-entity-name'}" == relationshipName })
+        Node relNode = (Node) this.entityNode."relationship".find(
+                { (it."@title" ?: "") + it."@related-entity-name" == relationshipName })
+
+        // handle automatic reverse-many nodes (based on one node coming the other way)
+        if (relNode == null) {
+            // see if there is an entity matching the relationship name that has a relationship coming this way
+            EntityDefinition ed = efi.getEntityDefinition(relationshipName)
+            if (ed != null) {
+                // don't call ed.getRelationshipNode(), may result in infinite recursion
+                Node reverseRelNode = (Node) ed.entityNode."relationship".find(
+                        { it."@related-entity-name" == this.entityName && (it."@type" == "one" || it."@type" == "one-nofk") })
+                if (reverseRelNode != null) {
+                    Map keyMap = ed.getRelationshipExpandedKeyMap(reverseRelNode)
+                    Node newRelNode = this.entityNode.appendNode("relationship",
+                            ["related-entity-name":relationshipName, "type":"many"])
+                    for (Map.Entry keyEntry in keyMap) {
+                        // add a key-map with the reverse fields
+                        newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
+                    }
+                    relNode = newRelNode
+                }
+            }
+        }
+
+        return relNode
     }
 
     Map getRelationshipExpandedKeyMap(Node relationship) {

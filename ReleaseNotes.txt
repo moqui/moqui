@@ -35,17 +35,21 @@ This release includes:
     the EmailServer entity
   - Service (org.moqui.impl.EmailServices.sendEmailTemplate) to send email
     based on settings in the EmailTemplate entity
+- Entity Facade
+  - Automatic reverse-many relationship for type one relationships coming
+    the other way (done on-demand at run-time)
 - Some fixes so that Moqui will run in Java on Windows
-- Testing and fixes for EntityFindImpl.count()
-- Testing and fixes for screen.transition.*-response parameters
-- Testing and fixes for screen.transition with no actions or conditional
-  responses to act as an alias, even with parameters/etc
+- Password reset email and forgot password form
+- Testing and fixes for EntityFindImpl.count();
+  screen.transition.*-response parameters; screen.transition with no
+  actions or conditional responses to act as an alias, even with
+  parameters/etc; script type services; updatePassword service and various
+  security/password settings
 
 Notable features not yet implemented (for 1.0):
 
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
-- Password reset email and forgot password form
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete, view entity

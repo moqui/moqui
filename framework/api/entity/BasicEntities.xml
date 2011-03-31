@@ -51,8 +51,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="bccAddresses" type="text-very-long"/>
         <field name="contentType" type="text-medium"/>
         <field name="messageId" type="text-long"/>
-        <field name="fromUserId" type="id"/>
-        <field name="toUserId" type="id"/>
+        <field name="fromUserId" type="id-very-long"/>
+        <field name="toUserId" type="id-very-long"/>
         <field name="emailTemplateId" type="id">
             <description>For outgoing messages that came from an EmailTemplate.</description>
         </field>
@@ -64,10 +64,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="purposeEnumId"/>
         </relationship>
         <relationship type="one" title="Root" related-entity-name="EmailMessage">
-            <key-map field-name="rootEmailMessageId"/>
+            <key-map field-name="rootEmailMessageId" related-field-name="emailMessageId"/>
         </relationship>
         <relationship type="one" title="Parent" related-entity-name="EmailMessage">
-            <key-map field-name="parentEmailMessageId"/>
+            <key-map field-name="parentEmailMessageId" related-field-name="emailMessageId"/>
         </relationship>
         <relationship type="one" title="From" related-entity-name="UserAccount">
             <key-map field-name="fromUserId"/>

@@ -58,12 +58,12 @@ class EntityValueImpl implements EntityValue {
 
     EntityFacadeImpl getEntityFacadeImpl() {
         // handle null after deserialize; this requires a static reference in Moqui.java or we'll get an error
-        if (!efi) efi = ((ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()).getEntityFacade()
+        if (efi == null) efi = ((ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()).getEntityFacade()
         return efi
     }
 
     EntityDefinition getEntityDefinition() {
-        if (!entityDefinition) entityDefinition = getEntityFacadeImpl().getEntityDefinition(entityName)
+        if (entityDefinition == null) entityDefinition = getEntityFacadeImpl().getEntityDefinition(entityName)
         return entityDefinition
     }
 
@@ -84,20 +84,20 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#get(String) */
     Object get(String name) {
-        Node fieldNode = getEntityDefinition().getFieldNode(name)
-        if (name == "exampleName") logger.info("Getting field ${name} fieldNode.@enable-localization ${fieldNode?.'@enable-localization'}")
+        EntityDefinition ed = getEntityDefinition()
+        Node fieldNode = ed.getFieldNode(name)
 
         if (!fieldNode) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
-            Node relationship = (Node) this.getEntityDefinition().entityNode.relationship.find({ it."@title" + it."@related-entity-name" == name })
-            if (relationship) {
+            Node relationship = ed.getRelationshipNode(name)
+            if (relationship != null) {
                 if (relationship."@type" == "many") {
                     return this.findRelated(name, null, null, null, null)
                 } else {
                     return this.findRelatedOne(name, null, null)
                 }
             } else {
-                throw new IllegalArgumentException("The name [${name}] is not a valid field name or relationship name for entity [${this.entityName}]")
+                throw new IllegalArgumentException("The name [${name}] is not a valid field name or relationship name for entity [${entityName}]")
             }
         }
 
@@ -105,7 +105,7 @@ class EntityValueImpl implements EntityValue {
         if (fieldNode."@enable-localization" == "true") {
             String localeStr = getEntityFacadeImpl().ecfi.executionContext.user.locale?.toString()
             if (localeStr) {
-                ListOrderedSet pks = this.getEntityDefinition().getFieldNames(true, false)
+                ListOrderedSet pks = ed.getFieldNames(true, false)
                 if (pks.size() == 1) {
                     String pkValue = get(pks.get(0))
                     if (pkValue) {

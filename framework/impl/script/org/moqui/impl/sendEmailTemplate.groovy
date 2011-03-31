@@ -11,8 +11,15 @@
  */
 import org.apache.commons.mail.HtmlEmail
 import org.apache.commons.mail.ByteArrayDataSource
+import javax.activation.DataSource
 
-org.moqui.impl.context.ExecutionContextImpl ec
+org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.moqui.impl.sendEmailTemplate")
+
+try {
+// NOTE: uncomment for autocomplete, comment to avoid causing runtime problems
+// org.moqui.impl.context.ExecutionContextImpl ec
+
+// logger.info("sendEmailTemplate with emailTemplateId [${emailTemplateId}], bodyParameters [${bodyParameters}]")
 
 // add the bodyParameters to the context so they are available throughout this script
 if (bodyParameters) context.putAll(bodyParameters)
@@ -66,12 +73,12 @@ for (def emailTemplateAttachment in emailTemplateAttachmentList) {
 
         } else {
             String mimeType = ec.screen.getMimeTypeByMode(emailTemplateAttachment.screenRenderMode)
-            def dataSource = new ByteArrayDataSource(attachmentText, mimeType)
+            DataSource dataSource = new ByteArrayDataSource(attachmentText, mimeType)
             email.attach(dataSource, (String) emailTemplateAttachment.fileName, "")
         }
     } else {
         // not a screen, get straight data with type depending on extension
-        def dataSource = ec.resource.getLocationDataSource(emailTemplateAttachment.attachmentLocation)
+        DataSource dataSource = ec.resource.getLocationDataSource(emailTemplateAttachment.attachmentLocation)
         email.attach(dataSource, (String) emailTemplateAttachment.fileName, "")
     }
 }
@@ -82,7 +89,15 @@ Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
         fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
         ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
         contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user.userId]
-ec.service.async().name("create", "EmailMessage").parameters(cemParms).call()
+ec.artifactExecution.disableAuthz()
+ec.service.sync().name("create", "EmailMessage").parameters(cemParms).call()
+ec.artifactExecution.enableAuthz()
+
+logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml [${bodyHtml}] bodyText [${bodyText}]")
 
 // send the email
 email.send()
+} catch (Throwable t) {
+    logger.info("Error in groovy", t)
+    throw new Exception("Error in sendEmailTemplate", t)
+}
