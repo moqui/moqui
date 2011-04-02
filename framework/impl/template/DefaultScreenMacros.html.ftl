@@ -282,7 +282,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <#assign fieldRef = layoutNode["@name"]>
                         <#assign fieldNode = "invalid">
                         <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                        <@formSingleSubField fieldNode/>
+                        <#if fieldNode == "invalid">
+                            <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                        <#else>
+                            <@formSingleSubField fieldNode/>
+                        </#if>
                     <#elseif layoutNode?node_name == "field-row">
                       <#if collapsibleOpened>
                         <#assign collapsibleOpened = false>
@@ -296,7 +300,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                 <#assign fieldRef = rowFieldRefNode["@name"]>
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                <@formSingleSubField fieldNode/>
+                                <#if fieldNode == "invalid">
+                                    <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                                <#else>
+                                    <@formSingleSubField fieldNode/>
+                                </#if>
                             </div>
                         </#list>
                         </div>
@@ -319,7 +327,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                             <#assign fieldRef = rowFieldRefNode["@name"]>
                                             <#assign fieldNode = "invalid">
                                             <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                            <@formSingleSubField fieldNode/>
+                                            <#if fieldNode == "invalid">
+                                                <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                                            <#else>
+                                                <@formSingleSubField fieldNode/>
+                                            </#if>
                                         </div>
                                     </#list>
                                     </div>
@@ -412,13 +424,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <#list formListColumnList as fieldListColumn>
                         <th>
                         <#list fieldListColumn["field-ref"] as fieldRef>
-                            <#assign fieldRef = fieldRef["@name"]>
+                            <#assign fieldRefName = fieldRef["@name"]>
                             <#assign fieldNode = "invalid">
-                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                            <#if !(fieldNode["@hide"]?if_exists == "true" ||
-                                    ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
-                                    (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
-                                <div><@formListHeaderField fieldNode/></div>
+                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRefName><#assign fieldNode = fn><#break></#if></#list>
+                            <#if fieldNode == "invalid">
+                                <div>Error: could not find field with name [${fieldRefName}] referred to in a form-list-column.field-ref.@name attribute.</div>
+                            <#else>
+                                <#if !(fieldNode["@hide"]?if_exists == "true" ||
+                                        ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
+                                        (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content)))>
+                                    <div><@formListHeaderField fieldNode/></div>
+                                </#if>
                             </#if>
                         </#list>
                         </th>
@@ -443,11 +459,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <#list formNode["form-list-column"] as fieldListColumn>
                             <td>
                             <#list fieldListColumn["field-ref"] as fieldRef>
-                                <#assign fieldRef = fieldRef["@name"]>
+                                <#assign fieldRefName = fieldRef["@name"]>
                                 <#assign fieldNode = "invalid">
-                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                <#assign formListFieldTag = "div">
-                                <@formListSubField fieldNode/>
+                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRefName><#assign fieldNode = fn><#break></#if></#list>
+                                <#if fieldNode == "invalid">
+                                    <div>Error: could not find field with name [${fieldRefName}] referred to in a form-list-column.field-ref.@name attribute.</div>
+                                <#else>
+                                    <#assign formListFieldTag = "div">
+                                    <@formListSubField fieldNode/>
+                                </#if>
                             </#list>
                             </td>
                         </#list>
