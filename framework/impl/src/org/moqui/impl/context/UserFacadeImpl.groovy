@@ -12,22 +12,16 @@
 package org.moqui.impl.context
 
 import java.sql.Timestamp
-import java.text.NumberFormat
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Cookie
 
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 
-import org.apache.commons.validator.routines.BigDecimalValidator
-import org.apache.commons.validator.routines.CalendarValidator
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.Cookie
-
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
-    final static BigDecimalValidator bigDecimalValidator = new BigDecimalValidator(false)
-    final static CalendarValidator calendarValidator = new CalendarValidator()
 
     protected ExecutionContextImpl eci
     protected Timestamp effectiveTime = null
@@ -166,16 +160,6 @@ class UserFacadeImpl implements UserFacade {
         } else {
             throw new IllegalStateException("No user logged in, can't set Currency")
         }
-    }
-
-    /** @see org.moqui.context.UserFacade#formatCurrency(Object, String, int) */
-    String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
-        if (fractionDigits == null) fractionDigits = 2
-        NumberFormat nf = NumberFormat.getCurrencyInstance(getLocale())
-        nf.setCurrency(Currency.getInstance(uomId))
-        nf.setMaximumFractionDigits(fractionDigits)
-        nf.setMinimumFractionDigits(fractionDigits)
-        return nf.format(amount)
     }
 
     String getPreference(String preferenceTypeEnumId) {
@@ -358,63 +342,5 @@ class UserFacadeImpl implements UserFacade {
     EntityValue getVisit() {
         if (!visitId) return null
         return eci.entity.makeFind("Visit").condition("visitId", visitId).useCache(true).one()
-    }
-
-    java.sql.Time parseTime(String input, String format) {
-        if (!format) format = "HH:mm:ss.SSS"
-        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) return null
-        return new java.sql.Time(cal.getTimeInMillis())
-    }
-    String formatTime(java.sql.Time input, String format) {
-        if (!format) format = "HH:mm:ss.SSS"
-        return calendarValidator.format(input, format, getLocale(), getTimeZone())
-    }
-
-    java.sql.Date parseDate(String input, String format) {
-        if (!format) format = "yyyy-MM-dd"
-        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) return null
-        return new java.sql.Date(cal.getTimeInMillis())
-    }
-    String formatDate(java.sql.Date input, String format) {
-        if (!format) format = "yyyy-MM-dd"
-        return calendarValidator.format(input, format, getLocale(), getTimeZone())
-    }
-
-    java.sql.Timestamp parseTimestamp(String input, String format) {
-        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
-        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) return null
-        return new Timestamp(cal.getTimeInMillis())
-    }
-    String formatTimestamp(java.sql.Timestamp input, String format) {
-        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
-        return calendarValidator.format(input, format, getLocale(), getTimeZone())
-    }
-
-    Calendar parseDateTime(String input, String format) {
-        return calendarValidator.validate(input, format, getLocale(), getTimeZone())
-    }
-    String formatDateTime(Calendar input, String format) {
-        return calendarValidator.format(input, format, getLocale(), getTimeZone())
-    }
-
-    BigDecimal parseNumber(String input, String format) {
-        return bigDecimalValidator.validate(input, format, getLocale())
-    }
-    String formatNumber(Number input, String format) {
-        return bigDecimalValidator.format(input, format, getLocale())
-    }
-
-    String formatValue(Object value, String format) {
-        if (!value) return ""
-        if (value instanceof String) return value
-        if (value instanceof Number) return formatNumber(value, format)
-        if (value instanceof Timestamp) return formatTimestamp(value, format)
-        if (value instanceof java.sql.Date) return formatDate(value, format)
-        if (value instanceof java.sql.Time) return formatTime(value, format)
-        if (value instanceof Calendar) return formatDateTime(value, format)
-        return value as String
     }
 }

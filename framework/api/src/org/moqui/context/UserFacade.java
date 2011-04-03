@@ -43,14 +43,6 @@ public interface UserFacade {
      */
     void setCurrencyUomId(String uomId);
 
-    /** Format currency amount for user to view.
-     * @param amount An object representing the amount, should be a subclass of Number.
-     * @param uomId The uomId (ISO currency code), required.
-     * @param fractionDigits Number of digits after the decimal point to display. If null defaults to 2.
-     * @return The formatted currency amount.
-     */
-    String formatCurrency(Object amount, String uomId, Integer fractionDigits);
-
     /** Get the current date and time in a Timestamp object. This is either the current system time, or the Effective
      * Time if that has been set for this context (allowing testing of past and future system behavior).
      *

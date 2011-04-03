@@ -266,7 +266,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "date-find"></#macro>
 <#macro "date-time">
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
-    <#if .node["@format"]?has_content><#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"])></#if>
+    <#if .node["@format"]?has_content><#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"])></#if>
     <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
     <#t>${fieldValue}
 </#macro>
@@ -279,9 +279,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <#assign fieldValue = sri.getFieldValue(.node?parent?parent, "")>
     </#if>
     <#if .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.user.formatCurrency(fieldValue, .node["@currency-unit-field"], 2)>
+        <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, .node["@currency-unit-field"], 2)>
     <#else>
-        <#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"]?if_exists)>
+        <#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
     <#t>${fieldValue}
 </#macro>

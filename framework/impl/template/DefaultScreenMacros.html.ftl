@@ -657,7 +657,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 <#macro "date-time">
     <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
-    <#if .node["@format"]?has_content><#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"])></#if>
+    <#if .node["@format"]?has_content><#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"])></#if>
     <#if .node["@type"]?if_exists == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]?if_exists == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}">
@@ -680,9 +680,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign fieldValue = sri.getFieldValue(.node?parent?parent, "")>
     </#if>
     <#if .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.user.formatCurrency(fieldValue, .node["@currency-unit-field"], 2)>
+        <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, .node["@currency-unit-field"], 2)>
     <#else>
-        <#assign fieldValue = ec.user.formatValue(fieldValue, .node["@format"]?if_exists)>
+        <#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
     <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
     <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValue(.node?parent?parent, fieldValue!"")?html}"></#if>
