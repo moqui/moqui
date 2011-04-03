@@ -4,7 +4,7 @@ Documentation
 
 X Clean up JavaDoc for framework/api and post to site
 
-- XSD References (use tool to generate HTML from XSD)
+X XSD References (use tool to generate HTML from XSD)
 
 X Introduction to Moqui Framework (doc/book for basic training and
   demonstration of features)
