@@ -2,11 +2,11 @@
 ================================================================
 Documentation
 
-- Clean up JavaDoc/GroovyDoc comments and post to site
+- Clean up JavaDoc for framework/api and post to site
 
 - XSD References (use tool to generate HTML from XSD)
 
-- Introduction to Moqui Framework (doc/book for basic training and
+X Introduction to Moqui Framework (doc/book for basic training and
   demonstration of features)
 
 ================================================================
