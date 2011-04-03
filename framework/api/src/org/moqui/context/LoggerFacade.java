@@ -21,11 +21,8 @@ public interface LoggerFacade {
      *
      * In Java or Groovy classes it is better to use SLF4J directly, with something like:
      * <code>
-     * import org.slf4j.Logger;
-     * import org.slf4j.LoggerFactory;
-     *
      * public class Wombat {
-     *   final static Logger logger = LoggerFactory.getLogger(Wombat.class);
+     *   final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Wombat.class);
      *
      *   public void setTemperature(Integer temperature) {
      *     Integer oldT = t;

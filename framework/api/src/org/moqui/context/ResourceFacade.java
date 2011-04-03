@@ -45,7 +45,23 @@ public interface ResourceFacade {
      */
     Object runScriptInCurrentContext(String location, String method);
 
+    /** Evaluate a Groovy expression as a condition.
+     *
+     * @return boolean representing the result of evaluating the expression
+     */
     boolean evaluateCondition(String expression, String debugLocation);
+    /** Evaluate a Groovy expression as a context field, or more generally as an expression that evaluates to an Object
+     * reference.
+     *
+     * @return Object reference representing result of evaluating the expression
+     */
     Object evaluateContextField(String expression, String debugLocation);
+    /** Evaluate a Groovy expression as a GString to be expanded/interpolated into a simple String.
+     *
+     * NOTE: the inputString is always run through the L10nFacade.getLocalizedMessage() method before evaluating the
+     * expression in order to implicitly internationalize string expansion.
+     *
+     * @return String representing localized and expanded inputString
+     */
     String evaluateStringExpand(String inputString, String debugLocation);
 }

@@ -65,7 +65,7 @@ public interface EntityFacade {
      * the active Transaction.
      *
      * @param groupName The name of entity group to get a connection for.
-     *     Corresponds to the entity.group-name attribute and the datasource.group-name attribute.
+     *     Corresponds to the entity.group-name attribute and the moqui-conf datasource.group-name attribute.
      * @return JDBC Connection object for the associated database
      * @throws EntityException
      */
