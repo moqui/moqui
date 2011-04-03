@@ -68,9 +68,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <include name="service/**"/>
                 <include name="xsd/**"/>
             </fileset>
-            <fileset dir="api/conf-default">
-                <include name="*"/>
-            </fileset>
         </jar>
 
         <!-- make the framework impl classes -->

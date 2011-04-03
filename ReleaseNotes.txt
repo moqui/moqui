@@ -12,6 +12,8 @@ This release includes:
 - All the great features of releases 1.0-preview1 to 1.0-beta1
 - L10nFacade: moved number and date/time parsing and formatting methods
   from UserFacade to L10nFacade
+- Moved MoquiDefaultConf.xml from framework/api to framework/impl since it
+  contains a lot of implementation-specific configuration
 
 
 ===========================================================================
