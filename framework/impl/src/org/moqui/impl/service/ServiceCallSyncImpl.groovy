@@ -161,7 +161,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         boolean userLoggedIn = false
         TransactionFacade tf = sfi.ecfi.getTransactionFacade()
-        Transaction parentTransaction = null
+        boolean suspendedTransaction = false
         Map<String, Object> result = null
         try {
             // authentication
@@ -180,7 +180,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // if error in auth or for other reasons, return now with no results
             if (eci.message.errors) return null
 
-            if (pauseResumeIfNeeded && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(transactionTimeout) : false
             try {
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
@@ -208,7 +208,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             throw e
         } finally {
             try {
-                if (parentTransaction != null) tf.resume(parentTransaction)
+                if (suspendedTransaction) tf.resume()
             } catch (Throwable t) {
                 logger.error("Error resuming parent transaction after call to service [${getServiceName()}]")
             }
@@ -237,10 +237,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
 
         TransactionFacade tf = sfi.ecfi.getTransactionFacade()
-        Transaction parentTransaction = null
+        boolean suspendedTransaction = false
         Map<String, Object> result = new HashMap()
         try {
-            if (requireNewTransaction && tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            if (requireNewTransaction && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(null)
             try {
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
@@ -272,7 +272,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         } catch (TransactionException e) {
             throw e
         } finally {
-            if (parentTransaction != null) tf.resume(parentTransaction)
+            if (suspendedTransaction) tf.resume()
         }
         return result
     }

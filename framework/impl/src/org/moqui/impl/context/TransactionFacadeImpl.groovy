@@ -49,6 +49,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     private ThreadLocal<ArrayList<Exception>> transactionBeginStackList = new ThreadLocal<ArrayList<Exception>>()
     private ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStackList = new ThreadLocal<ArrayList<RollbackInfo>>()
     private ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
+    private ThreadLocal<List<Exception>> suspendedTxLocationStack = new ThreadLocal<List<Exception>>()
 
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -77,6 +78,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         transactionBeginStackList.remove()
         rollbackOnlyInfoStackList.remove()
         suspendedTxStackList.remove()
+        suspendedTxLocationStack.remove()
     }
 
     /** This is called to make sure all transactions, etc are closed for the thread.
@@ -92,7 +94,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             int numSuspended = 0;
             for (Transaction tx in suspendedTxStackList.get()) {
                 if (tx != null) {
-                    this.resume(tx)
+                    this.resume()
                     this.commit()
                     numSuspended++
                 }
@@ -103,6 +105,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         transactionBeginStackList.remove()
         rollbackOnlyInfoStackList.remove()
         suspendedTxStackList.remove()
+        suspendedTxLocationStack.remove()
     }
 
     TransactionManager getTransactionManager() { return tm }
@@ -132,6 +135,15 @@ class TransactionFacadeImpl implements TransactionFacade {
             list = new ArrayList<Transaction>(10)
             list.add(null)
             suspendedTxStackList.set(list)
+        }
+        return list
+    }
+    protected ArrayList<Exception> getSuspendedTxLocationStack() {
+        ArrayList<Exception> list = (ArrayList<Exception>) suspendedTxLocationStack.get()
+        if (!list) {
+            list = new ArrayList<Exception>(10)
+            list.add(null)
+            suspendedTxLocationStack.set(list)
         }
         return list
     }
@@ -325,32 +337,39 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
 
     /** @see org.moqui.context.TransactionFacade#suspend() */
-    Transaction suspend() {
+    boolean suspend() {
         try {
             if (getStatus() == Status.STATUS_NO_TRANSACTION) {
                 logger.warn("No transaction in place, so not suspending.")
-                return null
+                return false
             }
             Transaction tx = tm.suspend()
             // only do these after successful suspend
             getRollbackOnlyInfoStack().add(0, null)
             getTransactionBeginStack().add(0, null)
             getSuspendedTxStack().add(0, tx)
-            return tx
+            getSuspendedTxLocationStack().add(0, new Exception("Transaction Suspend Location"))
+            return true
         } catch (SystemException e) {
             throw new TransactionException("Could not suspend transaction", e)
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#resume(Transaction) */
-    void resume(Transaction parentTx) {
-        if (parentTx == null) return
+    /** @see org.moqui.context.TransactionFacade#resume() */
+    void resume() {
         try {
-            tm.resume(parentTx)
-            // only do these after successful resume
-            getRollbackOnlyInfoStack().remove(0)
-            getTransactionBeginStack().remove(0)
-            getSuspendedTxStack().remove(0)
+            ArrayList<Transaction> sts = getSuspendedTxStack()
+            if (sts.size() > 0 && sts.get(0) != null) {
+                Transaction parentTx = sts.get(0)
+                tm.resume(parentTx)
+                // only do these after successful resume
+                getRollbackOnlyInfoStack().remove(0)
+                getTransactionBeginStack().remove(0)
+                sts.remove(0)
+                getSuspendedTxLocationStack().remove(0)
+            } else {
+                logger.warn("No transaction suspended, so not resuming.")
+            }
         } catch (InvalidTransactionException e) {
             throw new TransactionException("Could not resume transaction", e)
         } catch (SystemException e) {

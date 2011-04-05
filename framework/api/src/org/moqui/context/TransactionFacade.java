@@ -11,12 +11,6 @@
  */
 package org.moqui.context;
 
-import javax.sql.XAConnection;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
-import javax.transaction.xa.XAResource;
-import java.sql.Connection;
-
 /** Use this interface to do transaction demarcation and related operations.
  * This should be used instead of using the JTA UserTransaction and TransactionManager interfaces.
  *
@@ -41,11 +35,9 @@ import java.sql.Connection;
  * When you want to suspend the current transaction and create a new one use something like: 
  *
  * <pre>
- * Transaction parentTransaction = null;
+ * boolean suspendedTransaction = false;
  * try {
- *     if (transactionFacade.isTransactionInPlace()) {
- *         parentTransaction = transactionFacade.suspend();
- *     }
+ *     if (transactionFacade.isTransactionInPlace()) suspendedTransaction = transactionFacade.suspend();
  *
  *     boolean beganTransaction = transactionFacade.begin(timeout);
  *     try {
@@ -60,13 +52,14 @@ import java.sql.Connection;
  * } catch (TransactionException e) {
  *     ...
  * } finally {
- *     if (parentTransaction != null) {
- *         transactionFacade.resume(parentTransaction);
- *     }
+ *     if (suspendedTransaction) transactionFacade.resume();
  * }
  * </pre>
  */
 public interface TransactionFacade {
+
+    javax.transaction.TransactionManager getTransactionManager();
+    javax.transaction.UserTransaction getUserTransaction();
 
     /** Get the status of the current transaction */
     int getStatus() throws TransactionException;
@@ -101,13 +94,13 @@ public interface TransactionFacade {
     /** Mark current transaction as rollback-only (transaction can only be rolled back) */
     void setRollbackOnly(String causeMessage, Throwable causeThrowable) throws TransactionException;
 
-    Transaction suspend() throws TransactionException;
+    boolean suspend() throws TransactionException;
 
-    void resume(Transaction parentTx) throws TransactionException;
+    void resume() throws TransactionException;
 
-    Connection enlistConnection(XAConnection con) throws TransactionException;
+    java.sql.Connection enlistConnection(javax.sql.XAConnection con) throws TransactionException;
 
-    void enlistResource(XAResource resource) throws TransactionException;
+    void enlistResource(javax.transaction.xa.XAResource resource) throws TransactionException;
 
-    void registerSynchronization(Synchronization sync) throws TransactionException;
+    void registerSynchronization(javax.transaction.Synchronization sync) throws TransactionException;
 }

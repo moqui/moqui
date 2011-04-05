@@ -54,10 +54,10 @@ class EntityDbMeta {
         Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
 
         long startTime = System.currentTimeMillis()
-        Transaction parentTransaction = null
+        boolean suspendedTransaction = false
         try {
             if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
-                parentTransaction = efi.ecfi.transactionFacade.suspend()
+                suspendedTransaction = efi.ecfi.transactionFacade.suspend()
             }
             // transaction out of the way, check/create
             if (!tableExists(ed)) {
@@ -77,7 +77,7 @@ class EntityDbMeta {
             }
             entityTablesChecked.put(ed.entityName, new Timestamp(System.currentTimeMillis()))
         } finally {
-            if (parentTransaction != null) efi.ecfi.transactionFacade.resume(parentTransaction)
+            if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
         }
 
         if (logger.infoEnabled) logger.info("Checked table for entity [${ed.entityName}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")

@@ -501,9 +501,9 @@ class EntityFacadeImpl implements EntityFacade {
         // TODO: add support for bins of IDs for performance, ie to avoid going to the db for each one
         Long seqNum = null
         TransactionFacade tf = this.ecfi.getTransactionFacade()
-        Transaction parentTransaction = null
+        boolean suspendedTransaction = false
         try {
-            if (tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = tf.begin(null)
             try {
                 EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName)
@@ -535,7 +535,7 @@ class EntityFacadeImpl implements EntityFacade {
         } catch (TransactionException e) {
             throw e
         } finally {
-            if (parentTransaction != null) tf.resume(parentTransaction)
+            if (suspendedTransaction) tf.resume()
         }
 
         String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"

@@ -117,9 +117,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         }
 
         TransactionFacade tf = efi.ecfi.transactionFacade
-        Transaction parentTransaction = null
+        boolean suspendedTransaction = false
         try {
-            if (tf.isTransactionInPlace()) parentTransaction = tf.suspend()
+            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             // load the XML text in its own transaction
             boolean beganTransaction = tf.begin(transactionTimeout)
             try {
@@ -140,7 +140,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         } catch (TransactionException e) {
             throw e
         } finally {
-            if (parentTransaction != null) tf.resume(parentTransaction)
+            if (suspendedTransaction) tf.resume()
         }
     }
 
