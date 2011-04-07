@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html">
-    <title>Moqui Mantle: UBPL, UDM, USL</title>
+    <title>Moqui Crust: Add-on Components</title>
     <link rel="stylesheet" href="basic.css" type="text/css">
     <link rel="shortcut icon" href="moqui.ico">
-    <meta name="keywords" content="moqui,mantle,ubpl,udm,usl,universal,service,data model,data,model">
+    <meta name="keywords" content="moqui,framework,java,jee,j2ee,enterprise,groovy,freemarker,ofbiz,service,entity,database,transaction,screen,xml">
 </head>
 <body>
 
@@ -16,7 +16,7 @@
 <!-- header start -->
 <div id="header" class="clearfix">
     <div class="left">
-        <h1><a href="http://www.moqui.org/">Moqui Mantle (UBPL, UDM, USL)</a></h1>
+        <h1><a href="http://www.moqui.org/">Moqui Crust: Add-ons</a></h1>
     </div>
     <div class="right">
         <a href="http://sourceforge.net/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=302949&amp;type=16" alt="SourceForge.net"></a>
@@ -50,37 +50,43 @@
         <a href="https://sourceforge.net/tracker/?group_id=302949&atid=1277179">Feature Requests</a>
         <a href="http://sourceforge.net/projects/moqui">SourceForge Site</a>
 
-        <h2>References</h2>
-        <a href="http://www.dejc.com/home/HEMP.html" target="_blank">HEMP</a>
-        <a href="http://silverston.wiley.com/" target="_blank">Data Model Resource Books</a>
-
         <h2>Services</h2>
         <a href="http://www.dejc.com/" target="_blank">David E. Jones Consulting</a>
     </div>
 
     <div id="detail-column">
-        <div id="status">
-            <h2><a href="javascript:toggleView('status_area');" id="status_area_link"><span class="expanded"></span>-</a>
-                Status: Mantle UDM In Progress</h2>
-            <div id="status_area">
-                <p>Moqui Mantle UDM is currently being implemented. No releases are yet available but entity definitions
-                    and other artifacts are available in the GitHub repository.</p>
-                <p>To see the latest models and artifacts look at the
-                    <a href="https://github.com/jonesde/mantle">Mantle GitHub repository</a>.</p>
-                <p>If you would like to help move things along faster, please
-                    <a href="http://sourceforge.net/project/project_donations.php?group_id=302949">Donate</a> or
-                    contact <a href="http://www.dejc.com/">David E. Jones</a> to sponsor specific features.</p>
-            </div>
-        </div>
         <div id="intro">
             <h2><a href="javascript:toggleView('intro_area');" id="intro_area_link"><span class="expanded"></span>-</a>
-                Introduction: What is Moqui Mantle?</h2>
+                Introduction: What is Moqui Crust?</h2>
             <div id="intro_area">
-                <p>Mantle is a business application foundation built on the Moqui Framework and includes a Universal
-                    Data Model, Universal Service Library, and a Universal Business Process Library.</p>
-
-                <p>Mantle is based on the Moqui Framework. For more information please see:</p>
-                <p><a href="framework.html">Framework</a></p>
+                <p>Moqui Crust is the outer layer of Planet Moqui and includes add-on components such as themes, tool
+                    integrations and applications.</p>
+            </div>
+        </div>
+        <div id="choose">
+            <h2><a href="javascript:toggleView('choose_area');" id="choose_area_link"><span class="expanded"></span>-</a>
+                Add-on Component Directory</h2>
+            <div id="choose_area">
+                <p>Email <a href="mailto:dejc@me.com">David Jones (dejc@me.com)</a> to have your component added to this list.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name/Link</th>
+                            <th>Type</th>
+                            <th>Mantle?</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><a href="http://github.com/jonesde/mantle">Mantle</a></td>
+                            <td>Special</td>
+                            <td>N/A</td>
+                            <td>Mantle includes a Universal Data Model (UDM), Universal Service Library (USL), and
+                                a Universal Business Process Library (UBPL)</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -92,7 +98,7 @@
 
 <script language="javascript" type="text/javascript">
 // if JavaScript is supported close the various elements to start
-// toggleView('intro_area');
+// toggleView('choose_area');
 
 function toggleView(item) {
     obj = document.getElementById(item);

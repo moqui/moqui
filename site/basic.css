@@ -39,9 +39,9 @@ ul { margin-top: 0; margin-bottom: 0; }
 #detail-column h3 { margin: 0px 0px 2px 0px; font-size: 0.8em; font-weight: bold; }
 
 #detail-column p { margin: 6px 0px 6px 0px; font-size: 0.7em; }
-#detail-column p a, #detail-column ul li a { padding-left: 2px; padding-right: 2px; display: inline;
+#detail-column p a, #detail-column ul li a, td a { padding-left: 2px; padding-right: 2px; display: inline;
         color: #000033; text-decoration: underline; font-weight: bold; }
-#detail-column p a:hover, #detail-column ul li a:hover { color: #0000CC; text-decoration: underline; background: transparent; }
+#detail-column p a:hover, #detail-column ul li a:hover, td a:hover { color: #0000CC; text-decoration: underline; background: transparent; }
 
 #detail-column ul { margin: 2px 0; padding-left: 20px; }
 #detail-column ul li { font-size: 0.7em; }
@@ -56,3 +56,6 @@ ul { margin-top: 0; margin-bottom: 0; }
 /* required comment for clearfix to work in Opera \*/
 * html .clearfix { height:1%; }
 .clearfix { display:block; }
+
+
+th, td { font-size: 0.65em; border-bottom: 1px solid #DDDDDF; margin: 0px; padding: 0px 4px 0px 4px; }

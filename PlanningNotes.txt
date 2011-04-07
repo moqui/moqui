@@ -2,9 +2,9 @@
 ================================================================
 Documentation and Site
 
-- Add site page for addon/plugin component directory (link in top-left section)
+X Add site page for addon/plugin component directory (link in top-left section)
 
-- Add section to Intro doc about creating add-on components
+X Add section to Intro doc about creating add-on components
 
 X Clean up JavaDoc for framework/api and post to site
 

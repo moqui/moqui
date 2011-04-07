@@ -35,7 +35,7 @@
     </server-stats>
     
     <webapp-list>
-        <!-- The webapp.@moqui-name attribute value is looked up based on the value of the moqui-name context-param in
+        <!-- The webapp.@name attribute value is looked up based on the value of the moqui-name context-param in
         the web.xml file. This configuration will allow the framework to do various things for that webapp. -->
         <webapp name="webroot"
                 http-port="8080" http-host=""
