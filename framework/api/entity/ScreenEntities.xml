@@ -13,20 +13,50 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.screen.dynform -->
+    <!-- org.moqui.screen.form -->
     <!-- ========================================================= -->
+    <!-- An alternative for DynamicForm to mostly modify/personalize existing forms as opposed to the OFBiz Survey* style form:
+    <entity entity-name="DynamicForm" package-name="org.moqui.screen.form">
+        <field name="formId" type="id" is-pk="true"/>
+        <field name="userId" type="id-very-long">
+            <description>These settings are per-user. To apply to all users set this to null.</description>
+        </field>
+        <field name="modifyXmlScreenForm" type="text-long">
+            <description>The screen location and form name (separated by a hash/pound sign) of XML Screen Form to modify.</description>
+        </field>
+    </entity>
+    <entity entity-name="DynamicFormField" package-name="org.moqui.screen.form">
+        <field name="formId" type="id" is-pk="true"/>
+        <field name="fieldName" type="text-long" is-pk="true"/>
+        <field name="entryName" type="text-long"/>
+        <field name="title" type="text-long"/>
+        <field name="fieldTypeEnumId" type="id"/>
+        <field name="optionEnumTypeId" type="id">
+            <description>Get options from Enumeration entity.</description>
+        </field>
+        <relationship type="one" related-entity-name="DynamicForm"/>
+    </entity>
+    <entity entity-name="DynamicFormFieldOption" package-name="org.moqui.screen.form">
+        <field name="formId" type="id" is-pk="true"/>
+        <field name="fieldName" type="text-long" is-pk="true"/>
+        <field name="value" type="text-long" is-pk="true"/>
+        <field name="description" type="text-long"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <relationship type="one" related-entity-name="DynamicFormField"/>
+    </entity>
+    -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="DynForm" package-name="org.moqui.screen.dynform">
-        <field name="dynFormId" type="id" is-pk="true"/>
-        <field name="dynFormName" type="text-medium"/>
+    <entity entity-name="DynamicForm" package-name="org.moqui.screen.form">
+        <field name="dynamicFormId" type="id" is-pk="true"/>
+        <field name="dynamicFormName" type="text-medium"/>
         <field name="entityName" type="text-medium">
             <description>
-                The name of an Entity to save responses to instead of DynFormResponseAnswer records.
+                The name of an Entity to save responses to instead of DynamicFormResponseAnswer records.
 
-                A DynFormResponse record will be created anyway to keep track of the key for the corresponding entity
+                A DynamicFormResponse record will be created anyway to keep track of the key for the corresponding entity
                 value and the userId and other response details.
 
-                If any DynFormFields do not have an entityFieldName value they will be saved in DynFormResponseAnswer
+                If any DynamicFormFields do not have an entityFieldName value they will be saved in DynamicFormResponseAnswer
                 records as normal. If they do have an entityFieldName value the answer for that field will be saved
                 there.
             </description>
@@ -35,10 +65,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="submitCaption" type="text-short"/>
         <field name="submitService" type="text-long"/>
         <field name="isAnonymous" type="text-indicator">
-            <description>Allow response to the dynForm without login?</description>
+            <description>Allow response to the dynamicForm without login?</description>
         </field>
         <field name="allowMultiple" type="text-indicator">
-            <description>Allow multiple responses to this dynForm (if Y), or just a single answer (if N)?</description>
+            <description>Allow multiple responses to this dynamicForm (if Y), or just a single answer (if N)?</description>
         </field>
         <field name="allowUpdate" type="text-indicator">
             <description>Allow change to responses?</description>
@@ -49,34 +79,34 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="modifyXmlForm" type="text-long">
             <description>The location and name (separated by a hash/pound sign) of an XML Form to modify.</description>
         </field>
-        <field name="extendsDynFormId" type="id">
+        <field name="extendsDynamicFormId" type="id">
             <description>
                 If specified this Dynamic Form extends the identified one, or in other words the identified form because
                 a starting point for this Dynamic Form.
             </description>
         </field>
     </entity>
-    <entity entity-name="DynFormPage" package-name="org.moqui.screen.dynform">
-        <field name="dynFormId" type="id" is-pk="true"/>
-        <field name="dynFormPageSeqId" type="id" is-pk="true"/>
+    <entity entity-name="DynamicFormSection" package-name="org.moqui.screen.form">
+        <field name="dynamicFormId" type="id" is-pk="true"/>
+        <field name="dynamicFormSectionSeqId" type="id" is-pk="true"/>
         <field name="pageName" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" related-entity-name="DynForm"/>
+        <relationship type="one" related-entity-name="DynamicForm"/>
     </entity>
-    <entity entity-name="DynFormField" package-name="org.moqui.screen.dynform">
-        <field name="dynFormFieldId" type="id" is-pk="true"/>
-        <field name="dynFormId" type="id"/>
-        <field name="dynFormPageSeqId" type="id"/>
+    <entity entity-name="DynamicFormField" package-name="org.moqui.screen.form">
+        <field name="dynamicFormFieldId" type="id" is-pk="true"/>
+        <field name="dynamicFormId" type="id"/>
+        <field name="dynamicFormSectionSeqId" type="id"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
         <field name="entityFieldName" type="text-medium">
             <description>
-                The name of an Entity Field to save responses to instead of DynFormResponseAnswer records.
-                This is used along with the DynForm.entityName field.
+                The name of an Entity Field to save responses to instead of DynamicFormResponseAnswer records.
+                This is used along with the DynamicForm.entityName field.
             </description>
         </field>
-        <field name="dynFormFieldTypeEnumId" type="id"/>
+        <field name="dynamicFormFieldTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
         <field name="question" type="text-very-long"/>
         <field name="hint" type="text-very-long"/>
@@ -88,66 +118,66 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="externalFieldRef" type="text-long">
             <description>External field ID/reference; for AcroForms used to track the field ID</description>
         </field>
-        <field name="whenDynFormFieldId" type="id">
+        <field name="whenDynamicFormFieldId" type="id">
             <description>
                 These two when* fields are used to specify that this question should only appear if the with option has
                 been selected for the when question.
             </description>
         </field>
-        <field name="whenDynFormOptionSeqId" type="id"/>
-        <relationship type="one" related-entity-name="DynForm"/>
-        <relationship type="one" related-entity-name="DynFormField"/>
-        <relationship type="one" title="DynFormFieldType" related-entity-name="Enumeration">
+        <field name="whenDynamicFormOptionSeqId" type="id"/>
+        <relationship type="one" related-entity-name="DynamicForm"/>
+        <relationship type="one" related-entity-name="DynamicFormField"/>
+        <relationship type="one" title="DynamicFormFieldType" related-entity-name="Enumeration">
             <description>(enumTypeId = DYNFORM_FIELD_TYPE)</description>
-            <key-map field-name="dynFormFieldTypeEnumId"/>
+            <key-map field-name="dynamicFormFieldTypeEnumId"/>
         </relationship>
-        <relationship type="one-nofk" related-entity-name="DynFormPage">
-            <description>This does not have a foreign key because the dynFormId will never be null, and we want the
-                dynFormPageSeqId to be optional.
+        <relationship type="one-nofk" related-entity-name="DynamicFormSection">
+            <description>This does not have a foreign key because the dynamicFormId will never be null, and we want the
+                dynamicFormSectionSeqId to be optional.
             </description>
         </relationship>
-        <relationship type="one" title="When" related-entity-name="DynFormFieldOption">
-            <key-map field-name="whenDynFormFieldId" related-field-name="dynFormFieldId"/>
-            <key-map field-name="whenDynFormOptionSeqId" related-field-name="dynFormOptionSeqId"/>
+        <relationship type="one" title="When" related-entity-name="DynamicFormFieldOption">
+            <key-map field-name="whenDynamicFormFieldId" related-field-name="dynamicFormFieldId"/>
+            <key-map field-name="whenDynamicFormOptionSeqId" related-field-name="dynamicFormOptionSeqId"/>
         </relationship>
         <relationship type="many" related-entity-name="Enumeration">
             <key-map field-name="enumTypeId"/>
         </relationship>
     </entity>
-    <entity entity-name="DynFormFieldOption" package-name="org.moqui.screen.dynform">
-        <field name="dynFormFieldId" type="id" is-pk="true"/>
-        <field name="dynFormOptionSeqId" type="id" is-pk="true"/>
+    <entity entity-name="DynamicFormFieldOption" package-name="org.moqui.screen.form">
+        <field name="dynamicFormFieldId" type="id" is-pk="true"/>
+        <field name="dynamicFormOptionSeqId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" related-entity-name="DynFormField"/>
+        <relationship type="one" related-entity-name="DynamicFormField"/>
     </entity>
-    <entity entity-name="DynFormResponse" package-name="org.moqui.screen.dynform">
-        <field name="dynFormResponseId" type="id" is-pk="true"/>
-        <field name="dynFormId" type="id"/>
+    <entity entity-name="DynamicFormResponse" package-name="org.moqui.screen.form">
+        <field name="dynamicFormResponseId" type="id" is-pk="true"/>
+        <field name="dynamicFormId" type="id"/>
         <field name="userId" type="id"/>
         <field name="responseDate" type="date-time"/>
         <field name="lastModifiedDate" type="date-time"/>
         <field name="externalReferenceId" type="id-very-long"/>
         <field name="statusId" type="id"/>
         <field name="entityPrimaryKeyValue" type="text-very-long">
-            <description>When the DynForm.entityName is used this is the primary key for the value.</description>
+            <description>When the DynamicForm.entityName is used this is the primary key for the value.</description>
         </field>
         <relationship type="one" related-entity-name="UserAccount"/>
-        <relationship type="one" related-entity-name="DynForm"/>
+        <relationship type="one" related-entity-name="DynamicForm"/>
         <relationship type="one" related-entity-name="StatusItem"/>
     </entity>
-    <entity entity-name="DynFormResponseAnswer" package-name="org.moqui.screen.dynform">
-        <field name="dynFormResponseId" type="id" is-pk="true"/>
-        <field name="dynFormFieldId" type="id" is-pk="true"/>
+    <entity entity-name="DynamicFormResponseAnswer" package-name="org.moqui.screen.form">
+        <field name="dynamicFormResponseId" type="id" is-pk="true"/>
+        <field name="dynamicFormFieldId" type="id" is-pk="true"/>
         <field name="booleanResponse" type="text-indicator"/>
         <field name="numericResponse" type="number-decimal"/>
         <field name="textResponse" type="text-very-long"/>
-        <field name="dynFormOptionSeqId" type="id"/>
+        <field name="dynamicFormOptionSeqId" type="id"/>
         <field name="contentLocation" type="id"/>
         <field name="answeredDate" type="date-time"/>
-        <relationship type="one" related-entity-name="DynFormResponse"/>
-        <relationship type="one" related-entity-name="DynFormField"/>
-        <relationship type="one" related-entity-name="DynFormFieldOption"/>
+        <relationship type="one" related-entity-name="DynamicFormResponse"/>
+        <relationship type="one" related-entity-name="DynamicFormField"/>
+        <relationship type="one" related-entity-name="DynamicFormFieldOption"/>
     </entity>
     -->
     <!-- ========================================================= -->
@@ -158,10 +188,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenId" type="id" is-pk="true"/>
         <field name="screenName" type="text-medium"/>
         <field name="userId" type="id-very-long">
-            <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
+            <description>These settings are per-user. To apply to all users set this to null.</description>
         </field>
         <field name="modifyXmlScreen" type="text-long">
-            <description>The location and name (separated by a hash/pound sign) of XML Screen to modify.</description>
+            <description>The location of XML Screen to modify.</description>
         </field>
     </entity>
     <entity entity-name="DynamicScreenInclude" package-name="org.moqui.screen.dynscreen">

@@ -440,7 +440,8 @@ Features designed, but not to be included in 1.0 series
     for matches, number-range, text-length, text-letters, time-range,
     credit-card.@types
   - Dynamic Screens (database-driven: DynamicScreen* entities)
-  - Dynamic Forms (database-driven: DynForm* entities)
+  - Dynamic Forms (database-driven: DynForm* entities) (see Drupal CCK for
+    some similar concepts; focus on extend/override/etc of existing forms)
   - Templates for cwiki render mode
 - Service Facade
   - Service database-driven semaphores
