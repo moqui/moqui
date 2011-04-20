@@ -149,7 +149,7 @@ public class MoquiStart extends ClassLoader {
         // now wait for break...
     }
 
-    protected static void initSystemProperties(ClassLoader cl, boolean useProperties) throws IOException {
+    protected static void initSystemProperties(MoquiStart cl, boolean useProperties) throws IOException {
         Properties moquiInitProperties = new Properties();
         URL initProps = cl.getResource("MoquiInit.properties");
         if (initProps != null) { InputStream is = initProps.openStream(); moquiInitProperties.load(is); is.close(); }
@@ -174,10 +174,20 @@ public class MoquiStart extends ClassLoader {
             runtimePath = ".";
             System.out.println("Determined runtime by defaulting to current directory: " + runtimePath);
         }
-        runtimePath = new File(runtimePath).getCanonicalPath();
+        File runtimeFile = new File(runtimePath);
+        runtimePath = runtimeFile.getCanonicalPath();
         System.out.println("Canonicalized runtimePath: " + runtimePath);
         if (runtimePath.endsWith("/")) runtimePath = runtimePath.substring(0, runtimePath.length()-1);
         System.setProperty("moqui.runtime", runtimePath);
+
+        /* Don't do this here... loads as lower-level that WEB-INF/lib jars and so can't have dependencies on those,
+            and dependencies on those are necessary
+        // add runtime/lib jar files to the class loader
+        File runtimeLibFile = new File(runtimePath + "/lib");
+        for (File jarFile: runtimeLibFile.listFiles()) {
+            if (jarFile.getName().endsWith(".jar")) cl.jarFileList.add(new JarFile(jarFile));
+        }
+        */
 
         // moqui.conf=conf/development/MoquiDevConf.xml
         String confPath = System.getProperty("moqui.conf");

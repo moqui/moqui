@@ -177,6 +177,17 @@ This Work includes contributions authored by David E. Jones, not as a
                     redirect is done for the transition response.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="method" default="any">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="any"/>
+                        <xs:enumeration value="get"/>
+                        <xs:enumeration value="put"/>
+                        <xs:enumeration value="post"/>
+                        <xs:enumeration value="delete"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="conditional-response">

@@ -50,8 +50,10 @@ class ScreenDefinition {
         for (Node parameterNode in screenNode."parameter")
             parameterByName.put(parameterNode."@name", new ParameterItem(parameterNode, location))
         // transition
-        for (Node transitionNode in screenNode."transition")
-            transitionByName.put(transitionNode."@name", new TransitionItem(transitionNode, this))
+        for (Node transitionNode in screenNode."transition") {
+            TransitionItem ti = new TransitionItem(transitionNode, this)
+            transitionByName.put(ti.method == "any" ? ti.name : ti.name + "#" + ti.method, ti)
+        }
         // subscreens
         populateSubscreens()
         // prep pre-actions
@@ -152,7 +154,13 @@ class ScreenDefinition {
 
     Map<String, ParameterItem> getParameterMap() { return parameterByName }
 
-    TransitionItem getTransitionItem(String name) { return (TransitionItem) transitionByName.get(name) }
+    TransitionItem getTransitionItem(String name, String method) {
+        method = method ? method.toLowerCase() : ""
+        TransitionItem ti = (TransitionItem) transitionByName.get(name + "#" + method)
+        // if no ti, try by name only which will catch transitions with "any" or empty method
+        if (ti == null) ti = (TransitionItem) transitionByName.get(name)
+        return ti
+    }
 
     SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
@@ -246,6 +254,7 @@ class ScreenDefinition {
         protected ScreenDefinition parentScreen
 
         protected String name
+        protected String method
         protected String location
         protected XmlAction condition = null
         protected XmlAction actions = null
@@ -257,6 +266,7 @@ class ScreenDefinition {
         TransitionItem(Node transitionNode, ScreenDefinition parentScreen) {
             this.parentScreen = parentScreen
             name = transitionNode."@name"
+            method = transitionNode."@method" ?: "any"
             location = "${parentScreen.location}.transition_${name}"
             // condition
             if (transitionNode.condition?.getAt(0)?.children()) {
@@ -284,6 +294,7 @@ class ScreenDefinition {
         }
 
         String getName() { return name }
+        String getMethod() { return method }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 

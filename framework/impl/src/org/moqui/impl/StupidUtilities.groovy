@@ -27,29 +27,8 @@ import org.w3c.dom.Element
 class StupidUtilities {
     protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
-    protected static final Map<String, Class<?>> commonJavaClassesMap = [
-            "java.lang.String":java.lang.String.class, "String":java.lang.String.class,
-            "java.sql.Timestamp":java.sql.Timestamp.class, "Timestamp":java.sql.Timestamp.class,
-            "java.sql.Time":java.sql.Time.class, "Time":java.sql.Time.class,
-            "java.sql.Date":java.sql.Date.class, "Date":java.sql.Date.class,
-            "java.lang.Integer":java.lang.Integer.class, "Integer":java.lang.Integer.class,
-            "java.lang.Long":java.lang.Long.class,"Long":java.lang.Long.class,
-            "java.lang.Float":java.lang.Float.class, "Float":java.lang.Float.class,
-            "java.lang.Double":java.lang.Double.class, "Double":java.lang.Double.class,
-            "java.math.BigDecimal":java.math.BigDecimal.class, "BigDecimal":java.math.BigDecimal.class,
-            "java.math.BigInteger":java.math.BigInteger.class, "BigInteger":java.math.BigInteger.class,
-            "java.lang.Boolean":java.lang.Boolean.class, "Boolean":java.lang.Boolean.class,
-            "java.lang.Object":java.lang.Object.class, "Object":java.lang.Object.class,
-            "java.sql.Blob":java.sql.Blob.class, "Blob":java.sql.Blob.class,
-            "java.nio.ByteBuffer":java.nio.ByteBuffer.class,
-            "java.sql.Clob":java.sql.Clob.class, "Clob":java.sql.Clob.class,
-            "java.util.Date":java.util.Date.class,
-            "java.util.Collection":java.util.Collection.class, "Collection":java.util.Collection.class,
-            "java.util.List":java.util.List.class, "List":java.util.List.class,
-            "java.util.Map":java.util.Map.class, "Map":java.util.Map.class,
-            "java.util.Set":java.util.Set.class, "Set":java.util.Set.class]
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
-        Class theClass = commonJavaClassesMap.get(javaType)
+        Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)
         if (theClass == null) theClass = StupidUtilities.class.getClassLoader().loadClass(javaType)
         if (theClass == null) theClass = System.getClassLoader().loadClass(javaType)
         if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: ${javaType}")
@@ -58,7 +37,7 @@ class StupidUtilities {
     static Object basicConvert(Object value, String javaType) {
         if (value == null) return null
 
-        Class theClass = commonJavaClassesMap.get(javaType)
+        Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)
         // only support the classes we have pre-configured
         if (theClass == null) return null
         try {
@@ -370,49 +349,5 @@ class StupidUtilities {
             sb.append(c)
         }
         return sb.toString()
-    }
-
-    public static class CachedClassLoader extends URLClassLoader {
-        protected final Map<String, Class> classCache = new HashMap()
-        protected final Map<String, URL> resourceCache = new HashMap()
-        public CachedClassLoader(URL[] url, ClassLoader parent) {
-            super(url, parent)
-
-            List<Class> preLoadClasses = [java.math.BigDecimal.class, java.lang.Object.class, java.lang.String.class,
-                    java.lang.Boolean.class, java.math.BigDecimal.class, java.math.BigInteger.class,
-                    java.lang.Double.class, java.lang.Float.class, java.lang.Long.class, java.lang.Integer.class,
-                    java.lang.Short.class, java.lang.Byte.class, java.lang.Character.class, java.sql.Timestamp.class,
-                    java.sql.Time.class, java.sql.Date.class, java.util.Locale.class, java.util.Date.class,
-                    java.util.Collection.class, java.util.List.class, java.util.Set.class, java.util.HashSet.class,
-                    java.util.Map.class, java.util.HashMap.class, java.util.TimeZone.class, java.util.Locale.class,
-                    Boolean.TYPE, Short.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE, Byte.TYPE,
-                    Character.TYPE]
-            for (Class preLoadClass in preLoadClasses) classCache.put(preLoadClass.getName(), preLoadClass)
-        }
-        Map<String, Class> getClassCache() { return classCache }
-        Map<String, Class> getResourceCache() { return resourceCache }
-        @Override
-        public Class<?> loadClass(String name) throws ClassNotFoundException { return loadClass(name, false) }
-        @Override
-        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            if (classCache.containsKey(name)) {
-                Class c = classCache.get(name)
-                if (c != null) return classCache.get(name)
-                else throw new ClassNotFoundException("Class [" + name + "] not found")
-            }
-            try {
-                Class<?> theClass = super.loadClass(name, resolve)
-                this.classCache.put(name, theClass)
-                // logger.info("CachedClassLoader on put [${name}] classCache size [${classCache.size()}] resourceCache size [${resourceCache.size()}]")
-                return theClass
-            } catch (ClassNotFoundException e) { classCache.put(name, null); throw e; }
-        }
-        @Override
-        public URL getResource(String name) {
-            if (resourceCache.containsKey(name)) resourceCache.get(name)
-            URL url = super.getResource(name)
-            resourceCache.put(name, url)
-            return url
-        }
     }
 }

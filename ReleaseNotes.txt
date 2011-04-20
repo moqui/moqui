@@ -19,6 +19,9 @@ This release includes:
 - Moved MoquiDefaultConf.xml from framework/api to framework/impl since it
   contains a lot of implementation-specific configuration
 - Updated Atomikos TransactionsEssentials to 3.7.0 and ehcache to 2.4.1
+- Support <component>/lib and runtime/lib jar loading in a cached and
+  extended/extensible ClassLoader
+- Screen transition now supports restriction by HTTP request method
 
 
 ===========================================================================
@@ -407,7 +410,6 @@ Additional tools and features planned for 1.0 final:
 ===========================================================================
 
 - Trim stack traces to not include Groovy proxy/etc calls (Sam's idea)
-- Support <component>/lib and runtime/lib jar loading
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
 - Tools Screens

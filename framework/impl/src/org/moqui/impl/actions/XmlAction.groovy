@@ -38,7 +38,7 @@ class XmlAction {
         groovyString = makeGroovyString(ecfi, ftlNode, location)
         // logger.info("Xml Action [${location}] groovyString: ${groovyString}")
         try {
-            groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
+            groovyClass = new GroovyClassLoader(Thread.currentThread().getContextClassLoader()).parseClass(groovyString, location)
         } catch (Throwable t) {
             logger.error("Error parsing groovy String: ${groovyString}")
             throw t

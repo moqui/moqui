@@ -12,15 +12,18 @@
 package org.moqui.impl.context;
 
 import java.sql.Timestamp
+import java.util.jar.JarFile
 
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.L10nFacade
+import org.moqui.context.ResourceReference
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.impl.StupidClassLoader
 
 import redstone.xmlrpc.XmlRpcServer
 
@@ -33,7 +36,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected final String confPath
     protected final Node confXmlRoot
-    
+
+    protected StupidClassLoader cachedClassLoader
+
     protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
 
     protected ThreadLocal<ExecutionContextImpl> activeContext = new ThreadLocal<ExecutionContextImpl>()
@@ -109,6 +114,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         this.confXmlRoot = this.initConfig()
+
         initComponents()
 
         // this init order is important as some facades will use others
@@ -118,6 +124,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui LoggerFacadeImpl Initialized")
         this.resourceFacade = new ResourceFacadeImpl(this)
         logger.info("Moqui ResourceFacadeImpl Initialized")
+
+        initClassLoader()
+
         this.transactionFacade = new TransactionFacadeImpl(this)
         logger.info("Moqui TransactionFacadeImpl Initialized")
         // always init the EntityFacade for tenantId DEFAULT
@@ -154,6 +163,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.confPath = confFullPath
 
         this.confXmlRoot = this.initConfig()
+
         initComponents()
 
         // this init order is important as some facades will use others
@@ -163,6 +173,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui LoggerFacadeImpl Initialized")
         this.resourceFacade = new ResourceFacadeImpl(this)
         logger.info("Moqui ResourceFacadeImpl Initialized")
+
+        initClassLoader()
+
         this.transactionFacade = new TransactionFacadeImpl(this)
         logger.info("Moqui TransactionFacadeImpl Initialized")
         // always init the EntityFacade for tenantId DEFAULT
@@ -215,6 +228,38 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (confXmlRoot."component-list"?.getAt(0)?."component") {
             for (Node componentNode in confXmlRoot."component-list"[0]."component") {
                 this.initComponent(componentNode."@name", componentNode."@location")
+            }
+        }
+    }
+
+    protected void initClassLoader() {
+        // now setup the CachedClassLoader, this should init in the main thread so we can set it properly
+        ClassLoader pcl = (Thread.currentThread().getContextClassLoader() ?: this.class.classLoader) ?: System.classLoader
+        cachedClassLoader = new StupidClassLoader(pcl)
+        Thread.currentThread().setContextClassLoader(cachedClassLoader)
+        // add runtime/lib jar files to the class loader
+        File runtimeLibFile = new File(runtimePath + "/lib")
+        for (File jarFile: runtimeLibFile.listFiles()) {
+            if (jarFile.getName().endsWith(".jar")) {
+                cachedClassLoader.addJarFile(new JarFile(jarFile))
+                logger.info("Added JAR from runtime/lib: ${jarFile.getName()}")
+            }
+        }
+
+        // add <component>/lib jar files to the class loader now that component locations loaded
+        for (Map.Entry componentEntry in componentBaseLocations) {
+            ResourceReference libRr = this.resourceFacade.getLocationReference(componentEntry.value + "/lib")
+            if (libRr.supportsExists() && libRr.exists && libRr.supportsDirectory() && libRr.isDirectory()) {
+                for (ResourceReference jarRr: libRr.getDirectoryEntries()) {
+                    if (jarRr.fileName.endsWith(".jar")) {
+                        try {
+                            cachedClassLoader.addJarFile(new JarFile(new File(jarRr.uri)))
+                            logger.info("Added JAR from [${componentEntry.key}] component: ${jarRr.uri}")
+                        } catch (Exception e) {
+                            logger.info("Could not load JAR from [${componentEntry.key}] component: ${jarRr.location}: ${e.toString()}")
+                        }
+                    }
+                }
             }
         }
     }
@@ -302,6 +347,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             return ec
         } else {
             if (logger.traceEnabled) logger.trace("Creating new ExecutionContext in thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
+            Thread.currentThread().setContextClassLoader(cachedClassLoader)
             ec = new ExecutionContextImpl(this)
             this.activeContext.set(ec)
             return ec
@@ -409,7 +455,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 if (logger.infoEnabled) logger.info("Advancing ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
                 ahb = advanceArtifactHitBin(artifactType, artifactSubType, artifactName, startTime, hitBinLengthMillis)
             } else {
-                // if (logger.infoEnabled) logger.info("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
+                if (logger.traceEnabled) logger.trace("Adding to ArtifactHitBin [${artifactType}.${artifactSubType}:${artifactName}] current hit start [${new Timestamp(startTime)}], bin start [${ahb.get("binStartDateTime")}] bin length ${hitBinLengthMillis/1000} seconds")
             }
 
             ahb.hitCount += 1

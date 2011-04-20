@@ -14,18 +14,15 @@ package org.moqui.impl.webapp
 import javax.servlet.ServletContext
 import javax.servlet.ServletContextEvent
 import javax.servlet.ServletContextListener
+
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
-import org.moqui.Moqui
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
-import org.moqui.impl.StupidUtilities
-import org.moqui.impl.StupidUtilities.CachedClassLoader
+import org.moqui.Moqui
 
 class MoquiContextListener implements ServletContextListener {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiContextListener.class)
-
-    protected CachedClassLoader ccl = null
 
     protected String getId(ServletContext sc) {
         String contextPath = sc.getContextPath()
@@ -33,10 +30,6 @@ class MoquiContextListener implements ServletContextListener {
     }
 
     void contextInitialized(ServletContextEvent servletContextEvent) {
-        // first setup the CachedClassLoader, this should init in the main thread so we can set it properly
-        ccl = new StupidUtilities.CachedClassLoader(new URL[0], Thread.currentThread().getContextClassLoader())
-        Thread.currentThread().setContextClassLoader(ccl)
-
         ServletContext sc = servletContextEvent.servletContext
         String webappId = getId(sc)
         String moquiWebappName = sc.getInitParameter("moqui-name")
@@ -44,10 +37,10 @@ class MoquiContextListener implements ServletContextListener {
         logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${moquiWebappName}], context name [${sc.getServletContextName()}], located at [${sc.getRealPath("/")}]")
         ExecutionContextFactory ecfi = new ExecutionContextFactoryImpl()
         sc.setAttribute("executionContextFactory", ecfi)
-
         // there should always be one ECF that is active for things like deserialize of EntityValue
         // for a servlet that has a factory separate from the rest of the system DON'T call this (ie to have multiple ECFs on a single system)
         Moqui.dynamicInit(ecfi)
+
         logger.info("Loaded Moqui Execution Context Factory for webapp [${webappId}]")
 
         // run after-startup actions
@@ -80,6 +73,5 @@ class MoquiContextListener implements ServletContextListener {
             ecfi.destroy()
         }
         logger.info("Destroyed Moqui Execution Context Factory for webapp [${webappId}]")
-        logger.info("CachedClassLoader on destroy: classCache size [${ccl.classCache.size()}] resourceCache size [${ccl.resourceCache.size()}]")
     }
 }

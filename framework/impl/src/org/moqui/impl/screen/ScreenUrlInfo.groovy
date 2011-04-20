@@ -199,7 +199,7 @@ class ScreenUrlInfo {
 
             if (!nextLoc) {
                 // handle case where last one may be a transition name, and not a subscreen name
-                TransitionItem ti = lastSd.getTransitionItem(pathName)
+                TransitionItem ti = lastSd.getTransitionItem(pathName, sri.ec.web ? sri.ec.web.request.method : "")
                 if (ti) {
                     // Screen Transition as a URL Alias:
                     // if fromScreenPath is a transition, and that transition has no condition,
@@ -269,7 +269,7 @@ class ScreenUrlInfo {
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
             if (!nextLoc) {
                 // handle case where last one may be a transition name, and not a subscreen name
-                targetTransition = lastSd.getTransitionItem(subscreenName)
+                targetTransition = lastSd.getTransitionItem(subscreenName, sri.ec.web ? sri.ec.web.request.method : "")
                 if (targetTransition) {
                     break
                 } else {

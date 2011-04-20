@@ -11,17 +11,15 @@
  */
 package org.moqui.impl.webapp
 
+import java.sql.Timestamp
 import javax.servlet.http.HttpSessionListener
 import javax.servlet.http.HttpSession
 import javax.servlet.http.HttpSessionEvent
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-import java.sql.Timestamp
 
 class MoquiSessionListener implements HttpSessionListener {
-    protected final static Logger logger = LoggerFactory.getLogger(MoquiSessionListener.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiSessionListener.class)
 
     void sessionCreated(HttpSessionEvent event) {
         HttpSession session = event.getSession()

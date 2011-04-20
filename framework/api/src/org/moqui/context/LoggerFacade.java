@@ -11,10 +11,18 @@
  */
 package org.moqui.context;
 
-import java.util.logging.Level;
-
 /** For trace, error, etc logging to the console, files, etc. */
 public interface LoggerFacade {
+    /** Log level copied from org.org.apache.log4j.Level to avoid requiring that on the classpath. */
+    public static final int	TRACE_INT = 5000;
+    public static final int	ALL_INT = -2147483648;
+    public static final int	DEBUG_INT = 10000;
+    public static final int	ERROR_INT = 40000;
+    public static final int	FATAL_INT = 50000;
+    public static final int	INFO_INT = 20000;
+    public static final int	OFF_INT = 2147483647;
+    public static final int	WARN_INT = 30000;
+
     /** Log a message and/or Throwable error at the given level.
      *
      * This is meant to be used for scripts, xml-actions, etc.

@@ -14,28 +14,29 @@ package org.moqui.impl.webapp
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.ServletConfig
 import javax.servlet.ServletException
 
-import org.moqui.Moqui
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
-import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 class MoquiServlet extends HttpServlet {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiServlet.class)
 
-    public MoquiServlet() { super(); }
+    MoquiServlet() { super(); }
 
-    /** @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
-    }
+    void doPost(HttpServletRequest request, HttpServletResponse response) { doScreenRequest(request, response) }
 
-    /** @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse) */
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    void doGet(HttpServletRequest request, HttpServletResponse response) { doScreenRequest(request, response) }
+
+    @Override
+    void doPut(HttpServletRequest request, HttpServletResponse response) { doScreenRequest(request, response) }
+
+    @Override
+    void doDelete(HttpServletRequest request, HttpServletResponse response) { doScreenRequest(request, response) }
+
+    void doScreenRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         ExecutionContextFactory executionContextFactory =
                 (ExecutionContextFactory) getServletContext().getAttribute("executionContextFactory")
         String moquiWebappName = getServletContext().getInitParameter("moqui-name")
