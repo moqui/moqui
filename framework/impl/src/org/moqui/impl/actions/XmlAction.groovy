@@ -95,7 +95,7 @@ class XmlAction {
             Object result = script.run()
             return result
         } catch (Throwable t) {
-            logger.error("Error running groovy script [${groovyString}]", t)
+            logger.error("Error running groovy script [${groovyString}]: ${t.toString()}")
             throw t
         }
     }

@@ -22,6 +22,8 @@ This release includes:
 - Support <component>/lib and runtime/lib jar loading in a cached and
   extended/extensible ClassLoader
 - Screen transition now supports restriction by HTTP request method
+- Trim stack traces to not include Groovy proxy/etc calls (Sam's idea);
+  implemented for now in BaseException, will use in other areas over time
 
 
 ===========================================================================
@@ -409,7 +411,6 @@ Notable features not yet implemented:
 Additional tools and features planned for 1.0 final:
 ===========================================================================
 
-- Trim stack traces to not include Groovy proxy/etc calls (Sam's idea)
 - XML Screens
   - Template for xsl-fo render mode, FOP transform to PDF
 - Tools Screens
