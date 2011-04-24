@@ -420,7 +420,8 @@ Additional tools and features planned for 1.0 final:
     - Entity Data Import and Export screens
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
-    - Database meta-data check/report against entity definitions
+    - Database meta-data check/report against entity definitions; NOTE:
+      use LiquiBase for this
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
   - Security screens (consider making Entity Data UI good enough for these)
@@ -450,6 +451,7 @@ Features designed, but not to be included in 1.0 series
   - Service runners for proxy service calls to another Moqui server via
     HTTP, JMS, and RMI (TX enlisted), email, XMPP
 - Entity Facade
+  - LiquiBase integration, entity.change-set element
   - EntitySync tool
   - Database-driven dynamic view entity
   - Entity complex aliases in views

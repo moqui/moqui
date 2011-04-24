@@ -41,6 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element maxOccurs="unbounded" ref="field"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="relationship"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="index"/>
+                <!-- TABLED not to be part of 1.0: <xs:element minOccurs="0" maxOccurs="unbounded" ref="change-set"/> -->
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
             <xs:attribute name="table-name" type="xs:string"/>
@@ -78,7 +79,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <!-- ==================== field ===================== -->
+
     <xs:element name="field">
         <xs:complexType>
             <xs:sequence><xs:element minOccurs="0" ref="description"/></xs:sequence>
@@ -125,7 +126,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <!-- ==================== relationship ====================== -->
+
     <xs:element name="relationship">
         <xs:complexType>
             <xs:sequence>
@@ -152,7 +153,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="related-field-name" type="xs:string"/>
         </xs:complexType>
     </xs:element>
-    <!-- ==================== index ===================== -->
+
     <xs:element name="index">
         <xs:complexType>
             <xs:sequence>
@@ -166,6 +167,61 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="index-field">
         <xs:complexType><xs:attribute name="name" type="xs:string" use="required"/></xs:complexType>
     </xs:element>
+
+    <!-- TABLED not to be part of 1.0:
+    <xs:element name="change-set">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice maxOccurs="unbounded">
+                    <xs:element name="drop-table">
+                        <xs:complexType>
+                            <xs:attribute name="table-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="rename-table">
+                        <xs:complexType>
+                            <xs:attribute name="old-table-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="rename-column">
+                        <xs:complexType>
+                            <xs:attribute name="old-column-name"/>
+                            <xs:attribute name="field-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="drop-column">
+                        <xs:complexType>
+                            <xs:attribute name="column-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="merge-columns">
+                        <xs:complexType>
+                            <xs:attribute name="column-1-name"/>
+                            <xs:attribute name="column-2-name"/>
+                            <xs:attribute name="field-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="modify-data-type">
+                        <xs:complexType>
+                            <xs:attribute name="field-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="drop-index">
+                        <xs:complexType>
+                            <xs:attribute name="index-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                    <xs:element name="drop-foreign-key-constraint">
+                        <xs:complexType>
+                            <xs:attribute name="constraint-name"/>
+                        </xs:complexType>
+                    </xs:element>
+                </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    -->
 
     <!-- ================== view-entity ===================== -->
 
