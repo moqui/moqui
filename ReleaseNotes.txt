@@ -412,7 +412,7 @@ Notable features not yet implemented:
 - I18n (calls to L10nFacade, in String expand, pre-expand) in XML Screens
 
 ===========================================================================
-Additional tools and features planned for 1.0 final:
+Tools probable for 1.0 final:
 ===========================================================================
 
 - Tools Screens
