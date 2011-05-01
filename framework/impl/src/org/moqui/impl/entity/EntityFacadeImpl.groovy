@@ -44,6 +44,7 @@ import org.slf4j.Logger
 import org.w3c.dom.Element
 import org.moqui.entity.EntityDataLoader
 import org.moqui.context.ResourceReference
+import org.moqui.entity.EntityException
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -198,7 +199,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 this.dataSourceByGroupMap.put(datasource."@group-name", ads)
             } else {
-                throw new IllegalArgumentException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasource."@group-name"}])")
+                throw new EntityException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasource."@group-name"}])")
             }
         }
     }
@@ -276,7 +277,7 @@ class EntityFacadeImpl implements EntityFacade {
             entityLocationList = (List<String>) entityLocationCache.get(entityName)
             // no locations found for this entity, entity probably doesn't exist
             if (!entityLocationList) {
-                throw new IllegalArgumentException("No definition found for entity-name [${entityName}]")
+                throw new EntityException("No definition found for entity-name [${entityName}]")
             }
         }
 
@@ -297,7 +298,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        if (!entityNode) throw new IllegalArgumentException("No definition found for entity-name [${entityName}]")
+        if (!entityNode) throw new EntityException("No definition found for entity-name [${entityName}]")
 
         // merge the extend-entity nodes
         for (Node extendEntity in extendEntityNodes) {
@@ -392,13 +393,28 @@ class EntityFacadeImpl implements EntityFacade {
     /** This uses the data from the loadAllEntityLocations() method, so that must be called first (it is called in the
      * constructor, and the cache must not have been cleared since. */
     Set<String> getAllEntityNames() {
-        return new HashSet(entityLocationCache.keySet())
+        return new TreeSet(entityLocationCache.keySet())
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
         if (ed) return ed
         return loadEntityDefinition(entityName)
+    }
+
+    List<Map<String, Object>> getAllEntitiesInfo(String orderByField) {
+        List<Map<String, Object>> eil = new LinkedList()
+        for (String en in getAllEntityNames()) {
+            try {
+                EntityDefinition ed = getEntityDefinition(en)
+                eil.add((Map<String, Object>) [name:ed.entityName, "package":ed.entityNode."@package-name",
+                        isView:ed.isViewEntity()])
+            } catch (EntityException e) {
+                logger.warn("Problem finding entity definition", e)
+            }
+        }
+        if (orderByField) StupidUtilities.orderMapList((List<Map>) eil, [orderByField])
+        return eil
     }
 
     Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.one.${entityName}") }
@@ -481,7 +497,7 @@ class EntityFacadeImpl implements EntityFacade {
     EntityValue makeValue(String entityName) {
         EntityDefinition entityDefinition = this.getEntityDefinition(entityName)
         if (!entityDefinition) {
-            throw new IllegalArgumentException("Entity not found for name [${entityName}]")
+            throw new EntityException("Entity not found for name [${entityName}]")
         }
         return new EntityValueImpl(entityDefinition, this)
     }
@@ -553,7 +569,7 @@ class EntityFacadeImpl implements EntityFacade {
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
     Connection getConnection(String groupName) {
         DataSource ds = this.dataSourceByGroupMap.get(groupName)
-        if (!ds) throw new IllegalArgumentException("DataSource not initialized for group-name [${groupName}]")
+        if (!ds) throw new EntityException("DataSource not initialized for group-name [${groupName}]")
         if (ds instanceof XADataSource) {
             return this.ecfi.transactionFacade.enlistConnection(((XADataSource) ds).getXAConnection())
         } else {
@@ -622,7 +638,7 @@ class EntityFacadeImpl implements EntityFacade {
             } else {
                 // get the default field java type
                 String defaultJavaType = fieldTypeMap[fieldType]
-                if (!defaultJavaType) throw new IllegalArgumentException("Could not find Java type for field type [${fieldType}] on entity [${entityName}]")
+                if (!defaultJavaType) throw new EntityException("Could not find Java type for field type [${fieldType}] on entity [${entityName}]")
                 return defaultJavaType
             }
         }
@@ -638,7 +654,7 @@ class EntityFacadeImpl implements EntityFacade {
             if (sqlType) {
                 return sqlType
             } else {
-                throw new IllegalArgumentException("Could not find SQL type for field type [${fieldType}] on entity [${entityName}]")
+                throw new EntityException("Could not find SQL type for field type [${fieldType}] on entity [${entityName}]")
             }
         }
     }
@@ -661,7 +677,7 @@ class EntityFacadeImpl implements EntityFacade {
             "java.util.ArrayList":15, "java.util.HashSet":15, "java.util.LinkedHashSet":15, "java.util.LinkedList":15]
     public static int getJavaTypeInt(String javaType) {
         Integer typeInt = javaTypeMap[javaType]
-        if (!typeInt) throw new IllegalArgumentException("Java type " + javaType + " not supported for entity fields")
+        if (!typeInt) throw new EntityException("Java type " + javaType + " not supported for entity fields")
         return typeInt
     }
 }

@@ -75,7 +75,7 @@ class ScreenForm {
             throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${formNode."@name"}] of screen [${sd.location}]")
         }
         for (Node afeNode in baseFormNode."auto-fields-entity") {
-            String entityName = afeNode."@entity-name"
+            String entityName = ecfi.resourceFacade.evaluateStringExpand((String) afeNode."@entity-name", "")
             EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
             if (ed != null) {
                 addEntityFields(ed, afeNode."@field-type"?:"find-display", null, formNode)

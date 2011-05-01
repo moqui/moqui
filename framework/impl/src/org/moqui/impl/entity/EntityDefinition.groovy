@@ -12,14 +12,16 @@
 package org.moqui.impl.entity
 
 import java.sql.Timestamp
+
 import org.apache.commons.collections.set.ListOrderedSet
-import org.moqui.entity.EntityCondition.JoinOperator
+
 import org.moqui.entity.EntityCondition
+import org.moqui.entity.EntityCondition.JoinOperator
+import org.moqui.entity.EntityException
 import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldValueCondition
-import org.apache.commons.collections.map.ListOrderedMap
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -42,7 +44,7 @@ public class EntityDefinition {
             // set @type, set is-pk on all alias Nodes if the related field is-pk
             for (Node aliasNode in entityNode."alias") {
                 Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
-                if (memberEntity == null) throw new IllegalArgumentException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${entityName}]")
+                if (memberEntity == null) throw new EntityException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${entityName}]")
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
                 Node fieldNode = memberEd.getFieldNode(aliasNode."@field" ?: aliasNode."@name")
                 aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
@@ -117,7 +119,7 @@ public class EntityDefinition {
     Map getRelationshipExpandedKeyMap(Node relationship) {
         Map eKeyMap = new HashMap()
         EntityDefinition relEd = this.efi.getEntityDefinition(relationship."@related-entity-name")
-        if (!relEd) throw new IllegalArgumentException("Could not find entity [${relationship."@related-entity-name"}] referred to in a relationship in entity [${entityName}]")
+        if (!relEd) throw new EntityException("Could not find entity [${relationship."@related-entity-name"}] referred to in a relationship in entity [${entityName}]")
         if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
             // go through pks of related entity, assume field names match
             ListOrderedSet pkFieldNames = relEd.getFieldNames(true, false)
@@ -139,7 +141,7 @@ public class EntityDefinition {
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
         Node fieldNode = this.getFieldNode(fieldName)
         if (!fieldNode) {
-            throw new IllegalArgumentException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
+            throw new EntityException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
         }
 
         if (isViewEntity()) {
@@ -404,7 +406,7 @@ public class EntityDefinition {
                 ConditionField field
                 if (econdition."@entity-alias") {
                     Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
-                    if (!memberEntity) throw new IllegalArgumentException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.entityName}]")
+                    if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.entityName}]")
                     EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
                     field = new ConditionField(econdition."@entity-alias", econdition."@field-name", aliasEntityDef)
                 } else {
@@ -417,7 +419,7 @@ public class EntityDefinition {
                 ConditionField field
                 if (econdition."@entity-alias") {
                     Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
-                    if (!memberEntity) throw new IllegalArgumentException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.entityName}]")
+                    if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.entityName}]")
                     EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
                     field = new ConditionField(econdition."@entity-alias", econdition."@field-name", aliasEntityDef)
                 } else {
@@ -426,7 +428,7 @@ public class EntityDefinition {
                 ConditionField toField
                 if (econdition."@to-entity-alias") {
                     Node memberEntity = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
-                    if (!memberEntity) throw new IllegalArgumentException("The entity-alias [${econdition."@to-entity-alias"}] was not found in view-entity [${this.entityName}]")
+                    if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@to-entity-alias"}] was not found in view-entity [${this.entityName}]")
                     EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
                     toField = new ConditionField(econdition."@to-entity-alias", econdition."@to-field-name", aliasEntityDef)
                 } else {

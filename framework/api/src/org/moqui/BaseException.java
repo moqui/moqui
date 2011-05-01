@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * BaseException - the base/root exception for all exception classes in the Moqui framework.
  */
-public class BaseException extends Throwable {
+public class BaseException extends RuntimeException {
     public BaseException(String message) {
         super(message);
     }
@@ -58,11 +58,11 @@ public class BaseException extends Throwable {
             String cn = ste.getClassName();
             if (cn.startsWith("freemarker.core.") || cn.startsWith("freemarker.ext.beans.") ||
                     cn.startsWith("java.lang.reflect.") || cn.startsWith("sun.reflect.") ||
-                    cn.startsWith("org.codehaus.groovy.runtime.")) {
+                    cn.startsWith("org.codehaus.groovy.runtime.") || cn.startsWith("org.codehaus.groovy.reflection.")) {
                 continue;
             }
-            // if ("renderSingle".equals(ste.getMethodName()) && cn.startsWith("org.moqui.impl.screen.ScreenSection")) continue;
-            // if (("internalRender".equals(ste.getMethodName()) || "doActualRender".equals(ste.getMethodName())) && cn.startsWith("org.moqui.impl.screen.ScreenRenderImpl")) continue;
+            if ("renderSingle".equals(ste.getMethodName()) && cn.startsWith("org.moqui.impl.screen.ScreenSection")) continue;
+            if (("internalRender".equals(ste.getMethodName()) || "doActualRender".equals(ste.getMethodName())) && cn.startsWith("org.moqui.impl.screen.ScreenRenderImpl")) continue;
             if (("call".equals(ste.getMethodName()) || "callCurrent".equals(ste.getMethodName())) && ste.getLineNumber() == -1) continue;
             //System.out.println("Adding className: " + cn + ", line: " + ste.getLineNumber());
             newList.add(ste);
@@ -71,4 +71,3 @@ public class BaseException extends Throwable {
         return newList.toArray(new StackTraceElement[0]);
     }
 }
-
