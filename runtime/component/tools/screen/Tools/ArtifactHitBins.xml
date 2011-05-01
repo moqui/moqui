@@ -22,6 +22,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."><parameter name="renderMode" value="xml"/>
             <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
     </transition>
+    <transition name="ArtifactHitBinStats.pdf">
+        <default-response url="/fop/apps/tools/ArtifactHitBins" url-type="plain">
+            <parameter name="renderMode" value="xsl-fo"/>
+            <parameter name="pageNoLimit" value="true"/>
+            <!--<parameter name="lastStandalone" value="true"/>-->
+        </default-response>
+    </transition>
 
     <actions>
         <entity-find entity-name="ArtifactHitBin" list="artifactHitBinList" limit="50">
@@ -32,6 +39,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <container>
             <link url="ArtifactHitBinStats.csv" text="Get as CSV"/>
             <link url="ArtifactHitBinStats.xml" text="Get as XML" target-window="_blank"/>
+            <link url="ArtifactHitBinStats.pdf" text="Get as PDF" target-window="_blank"/>
         </container>
         <form-list name="ArtifactHitBins" list="artifactHitBinList">
             <row-actions>

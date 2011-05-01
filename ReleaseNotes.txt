@@ -24,6 +24,10 @@ This release includes:
 - Screen transition now supports restriction by HTTP request method
 - Trim stack traces to not include Groovy proxy/etc calls (Sam's idea);
   implemented for now in BaseException, will use in other areas over time
+- XML Screens
+  - Template for xsl-fo render mode
+- Resource Facade
+  - Method for FOP transform to PDF, etc
 
 
 ===========================================================================
@@ -411,8 +415,6 @@ Notable features not yet implemented:
 Additional tools and features planned for 1.0 final:
 ===========================================================================
 
-- XML Screens
-  - Template for xsl-fo render mode, FOP transform to PDF
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete, view entity

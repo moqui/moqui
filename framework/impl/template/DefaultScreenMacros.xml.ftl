@@ -83,8 +83,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ================== Standalone Fields ==================== -->
 <#macro link><#if .node?parent?node_name?contains("-field")>${ec.resource.evaluateStringExpand(.node["@text"], "")}</#if></#macro>
 
-<#macro image><#-- do nothing for image, most likely part of screen and is funny in csv file: <@attributeValue .node["@alt"]!"image"/> --></#macro>
-<#macro label><#-- do nothing for label, most likely part of screen and is funny in csv file: <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")><@attributeValue labelValue/> --></#macro>
+<#macro image><#-- do nothing for image, most likely part of screen and is funny in xml file: <@attributeValue .node["@alt"]!"image"/> --></#macro>
+<#macro label><#-- do nothing for label, most likely part of screen and is funny in xml file: <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")><@attributeValue labelValue/> --></#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
 

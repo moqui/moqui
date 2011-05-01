@@ -11,23 +11,16 @@
  */
 package org.moqui.impl.screen
 
-import freemarker.ext.beans.BeansWrapper
-import freemarker.template.Configuration
 import freemarker.template.Template
 
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ScreenRender
 import org.moqui.context.Cache
 
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.impl.context.ResourceFacadeImpl
-import org.moqui.impl.context.renderer.FtlTemplateRenderer
 
 public class ScreenFacadeImpl implements ScreenFacade {
-    protected final static Logger logger = LoggerFactory.getLogger(ScreenFacadeImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 
@@ -104,21 +97,20 @@ public class ScreenFacadeImpl implements ScreenFacade {
             <#recurse widgetsNode>
             """
 
-        Template newTemplate = null
+        Template newTemplate
         try {
             newTemplate = new Template("moqui.automatic.${renderMode}", new StringReader(rootTemplate), ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         }
 
-        if (newTemplate) screenTemplateModeCache.put(renderMode, newTemplate)
+        screenTemplateModeCache.put(renderMode, newTemplate)
         return newTemplate
     }
 
     Template getTemplateByLocation(String templateLocation) {
         Template template = (Template) screenTemplateLocationCache.get(templateLocation)
         if (template) return template
-
         return makeTemplateByLocation(templateLocation)
     }
 
@@ -130,7 +122,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, FtlTemplateRenderer.getFtlConfiguration())
+            newTemplate = new Template(templateLocation, templateReader, ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
             logger.error("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         } finally {

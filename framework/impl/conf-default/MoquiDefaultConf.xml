@@ -108,10 +108,8 @@
                             macro-template-location="classpath://template/DefaultScreenMacros.text.ftl"/>
         <screen-text-output type="xml" mime-type="text/xml"
                             macro-template-location="classpath://template/DefaultScreenMacros.xml.ftl"/>
-        <!-- TODO not yet implemented:
         <screen-text-output type="xsl-fo" mime-type="text/xml"
                             macro-template-location="classpath://template/DefaultScreenMacros.xsl-fo.ftl"/>
-        -->
         <!-- TABLED: not to include in 1.0
         <screen-text-output type="cwiki" mime-type="text/plain"
                             macro-template-location="classpath://template/DefaultScreenMacros.cwiki.ftl"/>

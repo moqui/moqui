@@ -24,8 +24,19 @@ import javax.jcr.Repository
 import javax.jcr.Session
 import javax.naming.InitialContext
 
+import javax.xml.transform.stream.StreamSource
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.Transformer
+import javax.xml.transform.URIResolver
+import javax.xml.transform.sax.SAXResult
+import javax.xml.transform.Source
+
+import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
 import org.apache.commons.mail.ByteArrayDataSource
 import org.apache.jackrabbit.commons.JcrUtils
+import org.apache.fop.apps.FOUserAgent
+import org.apache.fop.apps.Fop
+import org.apache.fop.apps.FopFactory
 
 import org.codehaus.groovy.runtime.InvokerHelper
 
@@ -60,6 +71,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
     protected final Template xmlActionsTemplate
+
+    protected final FopFactory fopFactory
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -103,7 +116,16 @@ public class ResourceFacadeImpl implements ResourceFacade {
             }
         }
 
+        // setup XmlActions FTL Template
         this.xmlActionsTemplate = makeXmlActionsTemplate()
+
+        // setup FopFactory
+        fopFactory = FopFactory.newInstance()
+        // Limit the validation for backwards compatibility
+        fopFactory.setStrictValidation(false)
+        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder()
+        fopFactory.setUserConfig(cfgBuilder.build(getLocationStream("classpath://fop.xconf")))
+        fopFactory.getFontManager().setFontBaseURL(ecfi.runtimePath + "/conf")
     }
 
     void destroyAllInThread() {
@@ -377,20 +399,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return script
     }
 
-    /*
-    // NOTE: this isn't currently used, but leave it here for now just in case we want to go back to this from the
-    // cached expression approach above
-    protected final ThreadLocal<GroovyShell> localGroovyShell = new ThreadLocal<GroovyShell>()
-    protected GroovyShell getGroovyShell() {
-
-        if (localGroovyShell.get()) return localGroovyShell.get()
-        GroovyShell gs = new GroovyShell(new Binding(ecfi.executionContext.context))
-        localGroovyShell.set(gs)
-        return gs
-    }
-    // add this to destroyAllInThread() if the GroovyShell stuff is ever used again: localGroovyShell.remove()
-    */
-
     static String stripLocationPrefix(String location) {
         if (!location) return ""
 
@@ -518,6 +526,34 @@ public class ResourceFacadeImpl implements ResourceFacade {
             } catch (IOException e) {
                 throw new TemplateException("Failed to print error message. Cause: " + e, env)
             }
+        }
+    }
+
+    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType) {
+        FOUserAgent foUserAgent = fopFactory.newFOUserAgent()
+        Fop fop = fopFactory.newFop(contentType, foUserAgent, out)
+
+        TransformerFactory factory = TransformerFactory.newInstance()
+        Transformer transformer = xsltSrc == null ? factory.newTransformer() : factory.newTransformer(xsltSrc)
+        transformer.setURIResolver(new LocalResolver(ecfi, transformer.getURIResolver()))
+        transformer.transform(xslFoSrc, new SAXResult(fop.getDefaultHandler()))
+    }
+
+    static class LocalResolver implements URIResolver {
+        protected ExecutionContextFactoryImpl ecfi
+        protected URIResolver defaultResolver
+
+        protected LocalResolver() {}
+
+        public LocalResolver(ExecutionContextFactoryImpl ecfi, URIResolver defaultResolver) {
+            this.ecfi = ecfi
+            this.defaultResolver = defaultResolver
+        }
+
+        public Source resolve(String href, String base) {
+            InputStream is = ecfi.resourceFacade.getLocationStream(href)
+            if (is != null) return new StreamSource(is)
+            return defaultResolver.resolve(href, base)
         }
     }
 }

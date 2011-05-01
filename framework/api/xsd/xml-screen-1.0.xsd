@@ -660,6 +660,11 @@ This Work includes contributions authored by David E. Jones, not as a
                             HTML-specific characters are escaped.
                         </xs:documentation></xs:annotation>
                     </xs:attribute>
+                    <xs:attribute name="no-boundary-comment" type="boolean" default="false">
+                        <xs:annotation><xs:documentation>
+                            Don't ever put boundary comments before this (for opening ?xml tag, etc).
+                        </xs:documentation></xs:annotation>
+                    </xs:attribute>
                 </xs:extension>
             </xs:simpleContent>
         </xs:complexType>

@@ -636,7 +636,7 @@ class ScreenRenderImpl implements ScreenRender {
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
          */
-        ScreenUrlInfo sui = null
+        ScreenUrlInfo sui
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
             case "transition": sui = new ScreenUrlInfo(this, null, null, url); break;

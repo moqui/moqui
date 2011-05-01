@@ -11,7 +11,9 @@
  */
 package org.moqui.context;
 
+import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.net.URL;
 
@@ -64,4 +66,6 @@ public interface ResourceFacade {
      * @return String representing localized and expanded inputString
      */
     String evaluateStringExpand(String inputString, String debugLocation);
+
+    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType);
 }
