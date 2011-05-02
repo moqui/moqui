@@ -30,20 +30,32 @@ class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
 
     protected ExecutionContextFactoryImpl ecfi
-    protected Node formNode
+    protected ScreenDefinition sd
+    protected Node internalFormNode
     protected String location
     protected Boolean isUploadForm = null
     protected Boolean isFormHeaderFormVal = null
+    protected boolean isDynamic = false
 
     protected XmlAction rowActions = null
 
     ScreenForm(ExecutionContextFactoryImpl ecfi, ScreenDefinition sd, Node baseFormNode, String location) {
         this.ecfi = ecfi
+        this.sd = sd
         this.location = location
 
-        // settings parent to null so that this isn't found in addition to the literal form-* element
-        formNode = new Node(null, baseFormNode.name())
+        isDynamic = (baseFormNode."@dynamic" == "true")
 
+        if (!isDynamic) {
+            // setting parent to null so that this isn't found in addition to the literal form-* element
+            internalFormNode = new Node(null, baseFormNode.name())
+            initForm(baseFormNode, internalFormNode)
+        } else {
+            internalFormNode = baseFormNode
+        }
+    }
+
+    void initForm(Node baseFormNode, Node newFormNode) {
         // if there is an extends, put that in first (everything else overrides it)
         if (baseFormNode."@extends") {
             String extendsForm = baseFormNode."@extends"
@@ -54,44 +66,56 @@ class ScreenForm {
             } else {
                 esf = sd.getForm(extendsForm)
             }
-            if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${formNode."@name"}] of screen [${sd.location}]")
-            mergeFormNodes(formNode, esf.formNode, true)
+            if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${newFormNode."@name"}] of screen [${sd.location}]")
+            mergeFormNodes(newFormNode, esf.formNode, true)
         }
 
         for (Node afsNode in baseFormNode."auto-fields-service") {
             String serviceName = afsNode."@service-name"
             ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
             if (serviceDef != null) {
-                addServiceFields(serviceDef, afsNode."@field-type"?:"edit", formNode, ecfi)
+                addServiceFields(serviceDef, afsNode."@field-type"?:"edit", newFormNode, ecfi)
                 continue
             }
             if (serviceName.contains("#")) {
                 EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
                 if (ed != null) {
-                    addEntityFields(ed, afsNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), formNode)
+                    addEntityFields(ed, afsNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), newFormNode)
                     continue
                 }
             }
-            throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${formNode."@name"}] of screen [${sd.location}]")
+            throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${newFormNode."@name"}] of screen [${sd.location}]")
         }
         for (Node afeNode in baseFormNode."auto-fields-entity") {
-            String entityName = ecfi.resourceFacade.evaluateStringExpand((String) afeNode."@entity-name", "")
+            String entityName = afeNode."@entity-name"
+            if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
             EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
             if (ed != null) {
-                addEntityFields(ed, afeNode."@field-type"?:"find-display", null, formNode)
+                addEntityFields(ed, afeNode."@field-type"?:"find-display", null, newFormNode)
                 continue
             }
-            throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-fields-entity of form [${formNode."@name"}] of screen [${sd.location}]")
+            throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-fields-entity of form [${newFormNode."@name"}] of screen [${sd.location}]")
         }
 
         // merge original formNode to override any applicable settings
-        mergeFormNodes(formNode, baseFormNode, false)
+        mergeFormNodes(newFormNode, baseFormNode, false)
 
-        if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(formNode).toString())
+        if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
 
         // prep row-actions
-        if (formNode."row-actions") {
-            rowActions = new XmlAction(ecfi, (Node) formNode."row-actions"[0], location + ".row_actions")
+        if (newFormNode."row-actions") {
+            rowActions = new XmlAction(ecfi, (Node) newFormNode."row-actions"[0], location + ".row_actions")
+        }
+    }
+
+    Node getFormNode() {
+        if (isDynamic) {
+            // TODO: cache this within the context or something as it may be called multiple times for a single form render
+            Node newFormNode = new Node(null, internalFormNode.name())
+            initForm(internalFormNode, newFormNode)
+            return newFormNode
+        } else {
+            return internalFormNode
         }
     }
 

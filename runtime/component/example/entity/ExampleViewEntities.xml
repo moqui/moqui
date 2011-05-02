@@ -65,14 +65,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="exampleFeatureApplEnumId"/>
         </view-link>
     </view-entity>
-    <view-entity entity-name="ExampleFeatureAndApplAndType" package-name="org.moqui.example.example">
+    <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="org.moqui.example.example">
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
         <member-entity entity-alias="EFAAE" entity-name="ExampleFeatureApplAndEnum"/>
         <alias-all entity-alias="EXFT"/>
         <alias-all entity-alias="EFAAE">
             <exclude field="description"/>
         </alias-all>
-        <alias name="typeDescription" entity-alias="EFAAT" field="description"/>
+        <alias name="typeDescription" entity-alias="EFAAE" field="description"/>
         <view-link entity-alias="EXFT" related-entity-alias="EFAAE">
             <key-map field-name="exampleFeatureId"/>
         </view-link>

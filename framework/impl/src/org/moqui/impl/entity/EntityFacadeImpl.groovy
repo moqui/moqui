@@ -407,8 +407,8 @@ class EntityFacadeImpl implements EntityFacade {
         for (String en in getAllEntityNames()) {
             try {
                 EntityDefinition ed = getEntityDefinition(en)
-                eil.add((Map<String, Object>) [name:ed.entityName, "package":ed.entityNode."@package-name",
-                        isView:ed.isViewEntity()])
+                eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
+                        isView:(ed.isViewEntity() ? "true" : "false")])
             } catch (EntityException e) {
                 logger.warn("Problem finding entity definition", e)
             }
