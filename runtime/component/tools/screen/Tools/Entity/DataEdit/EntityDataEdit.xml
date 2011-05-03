@@ -19,8 +19,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
     <transition name="update">
-        <actions><service-call name="update#${ec.web.parameters.entityName}" in-map="ec.web.parameters"/></actions>
-        <default-response url="."/>
+        <actions><service-call name="update#${ec.web.requestParameters.entityName}" in-map="ec.web.requestParameters"/></actions>
+        <!-- TODO: only pass pk fields, prep map in actions or inline expression -->
+        <default-response url="." parameter-map="ec.web.requestParameters"/>
     </transition>
 
     <actions>
@@ -32,9 +33,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="list" text="Entity List"/>
             <link url="find" text="Find"/>
         </container>
-        <label text="Request Parameters: ${ec.web.requestParameters}"/>
         <form-single name="UpdateEntityValue" transition="update" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" field-type="edit"/>
+            <!-- TODO: display pk fields, edit non-pk fields (currently does edit on all) -->
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="submit"><default-field title="Update"><submit/></default-field></field>
         </form-single>

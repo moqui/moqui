@@ -324,15 +324,17 @@ class ScreenDefinition {
 
             ResponseItem ri = null
             // if there is an error-response and there are errors, we have a winner
-            if (errorResponse && sri.ec.message.errors) ri = errorResponse
+            if (sri.ec.message.errors && errorResponse) ri = errorResponse
+
             // check all conditional-response, if condition then return that response
-            for (ResponseItem condResp in conditionalResponseList) {
+            if (ri == null) for (ResponseItem condResp in conditionalResponseList) {
                 if (condResp.checkCondition(sri.ec)) ri = condResp
             }
             // no errors, no conditionals, return default
-            ri = defaultResponse
+            if (ri == null) ri = defaultResponse
 
-            // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
+            // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally
+            // clause because if there is an error this will help us know how we got there
             sri.ec.artifactExecution.pop()
 
             return ri
@@ -346,20 +348,23 @@ class ScreenDefinition {
         protected String type
         protected String url
         protected String urlType
+        protected Class parameterMapNameGroovy = null
         // deferred for future version: protected boolean saveLastScreen
         protected boolean saveCurrentScreen
 
         ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
             String location = "${parentScreen.location}.transition_${ti.name}.${responseNode.name().replace("-","_")}"
-            if (responseNode.condition && responseNode.condition[0].children()) {
+            if (responseNode."condition" && responseNode."condition"[0].children()) {
                 // the script is effectively the first child of the condition element
-                condition = new XmlAction(parentScreen.sfi.ecfi, (Node) responseNode.condition[0].children()[0],
+                condition = new XmlAction(parentScreen.sfi.ecfi, (Node) responseNode."condition"[0].children()[0],
                         location + ".condition")
             }
 
             type = responseNode."@type" ?: "url"
             url = responseNode."@url"
             urlType = responseNode."@url-type" ?: "screen-path"
+            if (responseNode."@parameter-map") parameterMapNameGroovy = new GroovyClassLoader().parseClass(
+                    (String) responseNode."@parameter-map", "${location}.parameter_map")
             // deferred for future version: saveLastScreen = responseNode."@save-last-screen" == "true"
             saveCurrentScreen = responseNode."@save-current-screen" == "true"
 
@@ -374,6 +379,17 @@ class ScreenDefinition {
         String getUrlType() { return urlType }
         boolean getSaveLastScreen() { return saveLastScreen }
         boolean getSaveCurrentScreen() { return saveCurrentScreen }
+
+        Map expandParameters(ExecutionContext ec) {
+            Map ep = new HashMap()
+            for (ParameterItem pi in parameterMap.values()) ep.put(pi.name, pi.getValue(ec))
+            if (parameterMapNameGroovy != null) {
+                Object pm = InvokerHelper.createScript(parameterMapNameGroovy, new Binding(ec.context)).run()
+                if (pm && pm instanceof Map) ep.putAll(pm)
+            }
+            // logger.info("Expanded response map to url [${url}] to: ${ep}; parameterMapNameGroovy=[${parameterMapNameGroovy}]")
+            return ep
+        }
     }
 
     static class SubscreensItem {
@@ -400,7 +416,7 @@ class ScreenDefinition {
             menuInclude = true
 
             if (subscreensItem."@disable-when") disableWhenGroovy = new GroovyClassLoader().parseClass(
-                    (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens-item[${name}].@disable-when")
+                    (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens_item[${name}].disable_when")
         }
 
         SubscreensItem(EntityValue subscreensItem) {
@@ -418,7 +434,7 @@ class ScreenDefinition {
         boolean getMenuInclude() { return menuInclude }
         boolean getDisable(ExecutionContext ec) {
             if (!disableWhenGroovy) return false
-            return InvokerHelper.createScript(disableWhenGroovy, new Binding(ec.context)) as boolean
+            return InvokerHelper.createScript(disableWhenGroovy, new Binding(ec.context)).run() as boolean
         }
     }
 

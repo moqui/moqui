@@ -24,16 +24,14 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="listSubmit">
         <actions>
-            <log level="info" message="Request Parameters: ${ec.web.requestParameters}"/>
             <if condition="ec.web.requestParameters.submit=='Delete'">
                 <service-call name="delete#${ec.web.requestParameters.entityName}" in-map="ec.web.requestParameters"/>
             </if>
         </actions>
         <conditional-response url=".">
-            <!-- TODO: see why this conditional response isn't working, is always going to EntityDataEdit -->
             <condition><expression>ec.web.requestParameters.submit=="Delete"</expression></condition>
         </conditional-response>
-        <!-- TODO: add support for parameter-map attribute -->
+        <!-- TODO: only pass pk fields, prep map in actions or inline expression -->
         <default-response url="../EntityDataEdit" parameter-map="ec.web.requestParameters"/>
     </transition>
 

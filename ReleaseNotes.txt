@@ -28,6 +28,10 @@ This release includes:
   - Template for xsl-fo render mode
 - Resource Facade
   - Method for FOP transform to PDF, etc
+- Tools Screens
+  - Entity
+    - Entity Data UI (entity list, find on entity with delete,
+      create/update entity record)
 
 
 ===========================================================================
@@ -417,8 +421,7 @@ Tools probable for 1.0 final:
 
 - Tools Screens
   - Entity
-    - Entity Data UI (entity list, find on entity with delete, view entity
-      record with related, create/update entity record with tabs for
+    - Entity Data UI (view entity record with related,
       list/update/delete/add dependent entities)
     - Entity Data Import and Export screens
     - SQL Query Run/View

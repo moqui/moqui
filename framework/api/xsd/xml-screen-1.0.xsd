@@ -289,6 +289,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
+        <xs:attribute name="parameter-map" type="xs:string"/>
         <!-- deferred for future version, pending finding a good reason that it is needed:
         <xs:attribute name="save-last-screen" default="false" type="boolean">
             <xs:annotation><xs:documentation>

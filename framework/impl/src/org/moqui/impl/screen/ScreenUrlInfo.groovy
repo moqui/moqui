@@ -17,6 +17,7 @@ import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.codehaus.groovy.runtime.InvokerHelper
 
 class ScreenUrlInfo {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenUrlInfo.class)
@@ -215,8 +216,7 @@ class ScreenUrlInfo {
                         ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList, ti.defaultResponse.url)
 
                         // add transition parameters
-                        for (ParameterItem pi in ti.defaultResponse.parameterMap.values())
-                            aliasUrlInfo.addParameter(pi.name, pi.getValue(sri.ec))
+                        aliasUrlInfo.addParameters(ti.defaultResponse.expandParameters(sri.ec))
 
                         aliasUrlInfo.copyUrlInfoInto(this)
                         return

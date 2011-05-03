@@ -263,7 +263,7 @@ class ScreenRenderImpl implements ScreenRender {
                 } else {
                     // default is screen-path
                     ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
-                    for (ParameterItem pi in ri.parameterMap.values()) fullUrl.addParameter(pi.name, pi.getValue(ec))
+                    fullUrl.addParameters(ri.expandParameters(ec))
                     response.sendRedirect(fullUrl.getUrlWithParams())
                 }
             } else {
