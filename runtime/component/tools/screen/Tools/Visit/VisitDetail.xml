@@ -14,7 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
 
     <actions>
-        <set field="visitId" from="ec.web.requestParameters.visitId"/>
         <entity-find-one entity-name="Visit" value-field="fieldValues"/>
         <entity-find entity-name="ArtifactHit" list="artifactHitList">
             <econdition field-name="visitId"/>

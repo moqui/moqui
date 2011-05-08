@@ -112,6 +112,15 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="auto-fields-entity">
         <xs:complexType>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="include" default="all">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="pk"/>
+                        <xs:enumeration value="nonpk"/>
+                        <xs:enumeration value="all"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
             <xs:attribute name="field-type" default="find-display">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">

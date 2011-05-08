@@ -28,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
                 <!-- for purposes of the example, get this as a parameter instead of the inline value: <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/> -->
-                <econdition field-name="enumTypeId" from="ec.web.requestParameters.enumTypeId"/>
+                <econdition field-name="enumTypeId" from="enumTypeId"/>
                 <order-by field-name="description"/>
             </entity-find>
             <script>ec.web.sendJsonResponse([exampleTypeEnumList:exampleTypeEnumList])</script>
@@ -37,7 +37,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="exampleId" from="ec.web.parameters.exampleId"/>
         <entity-find-one entity-name="Example" value-field="fieldValues"/>
         <log message="EditExample exampleId [${exampleId}] fieldValues [${fieldValues}]"/>
 

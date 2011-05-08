@@ -16,8 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="login">
         <actions><script>
-            ec.user.loginUser(ec.web.requestParameters.username, ec.web.requestParameters.password,
-                    ec.web.requestParameters.tenantId)
+            ec.user.loginUser(username, password, tenantId)
         </script></actions>
         <default-response type="screen-last"/>
         <error-response url="."/>

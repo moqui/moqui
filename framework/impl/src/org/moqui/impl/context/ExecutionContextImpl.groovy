@@ -104,6 +104,9 @@ class ExecutionContextImpl implements ExecutionContext {
         this.webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
         this.getUser().initFromHttpRequest(request, response)
 
+        // perhaps debatable whether or not this is a good idea, but makes things much easier
+        this.context.putAll(this.webFacade.requestParameters)
+
         // this is the beginning of a request, so trigger before-request actions
         this.webFacade.runBeforeRequestActions()
     }

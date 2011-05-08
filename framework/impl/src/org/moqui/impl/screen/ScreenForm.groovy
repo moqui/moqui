@@ -16,6 +16,7 @@ import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityFindImpl
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.context.ExecutionContext
@@ -25,8 +26,6 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.impl.entity.EntityValueImpl
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.moqui.entity.EntityFind
-import org.moqui.impl.entity.EntityFindImpl
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -84,7 +83,7 @@ class ScreenForm {
             if (serviceName.contains("#")) {
                 EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
                 if (ed != null) {
-                    addEntityFields(ed, afsNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), newFormNode)
+                    addEntityFields(ed, "all", afsNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), newFormNode)
                     continue
                 }
             }
@@ -95,7 +94,7 @@ class ScreenForm {
             if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
             EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
             if (ed != null) {
-                addEntityFields(ed, afeNode."@field-type"?:"find-display", null, newFormNode)
+                addEntityFields(ed, afeNode."@include"?:"all", afeNode."@field-type"?:"find-display", null, newFormNode)
                 continue
             }
             throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-fields-entity of form [${newFormNode."@name"}] of screen [${sd.location}]")
@@ -227,9 +226,9 @@ class ScreenForm {
         }
     }
 
-    protected void addEntityFields(EntityDefinition ed, String fieldType, String serviceVerb, Node baseFormNode) {
+    protected void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         ListOrderedSet pkFieldNameSet = ed.getFieldNames(true, false)
-        for (String fieldName in ed.getFieldNames(true, true)) {
+        for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk")) {
             String efType = ed.getFieldNode(fieldName)."@type"
 
             // to see if this should be a drop-down with data from another entity,

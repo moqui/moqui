@@ -32,7 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-            <econdition field-name="exampleId" from="ec.web.parameters.exampleId"/>
+            <econdition field-name="exampleId" from="exampleId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
 

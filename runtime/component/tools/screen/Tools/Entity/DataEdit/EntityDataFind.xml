@@ -19,24 +19,22 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="."/></transition>
     <transition name="create">
-        <actions><service-call name="create#${ec.web.requestParameters.entityName}" in-map="ec.web.requestParameters"/></actions>
+        <actions><service-call name="create#${entityName}" in-map="true"/></actions>
         <default-response url="."/>
     </transition>
     <transition name="listSubmit">
         <actions>
-            <if condition="ec.web.requestParameters.submit=='Delete'">
-                <service-call name="delete#${ec.web.requestParameters.entityName}" in-map="ec.web.requestParameters"/>
+            <if condition="submit=='Delete'">
+                <service-call name="delete#${entityName}" in-map="true"/>
             </if>
         </actions>
         <conditional-response url=".">
-            <condition><expression>ec.web.requestParameters.submit=="Delete"</expression></condition>
+            <condition><expression>submit=="Delete"</expression></condition>
         </conditional-response>
-        <!-- TODO: only pass pk fields, prep map in actions or inline expression -->
-        <default-response url="../EntityDataEdit" parameter-map="ec.web.requestParameters"/>
+        <default-response url="../EntityDataEdit" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
 
     <actions>
-        <set field="entityName" from="ec.web.requestParameters.entityName"/>
         <entity-find entity-name="${entityName}" list="entityValueList" offset="0" limit="50">
             <search-form-inputs/>
         </entity-find>

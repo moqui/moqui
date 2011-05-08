@@ -203,7 +203,7 @@ on the same screen to increase reusability of those screens -->
 <#-- ================== Form Field Widgets ==================== -->
 
 <#macro "check">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
@@ -237,7 +237,7 @@ on the same screen to increase reusability of those screens -->
 </#macro>
 
 <#macro "drop-down">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
@@ -249,7 +249,7 @@ on the same screen to increase reusability of those screens -->
 <#macro "password"></#macro>
 
 <#macro "radio">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>

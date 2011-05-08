@@ -31,7 +31,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="getExampleList">
         <actions>
-            <set field="term" from="ec.web.requestParameters.term"/>
             <entity-find entity-name="Example" list="exampleList" limit="20">
                 <econditions combine="or">
                     <econdition field-name="exampleId" operator="like" value="%${term}%"/>
@@ -51,7 +50,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList">
-            <econdition field-name="exampleFeatureId" from="ec.web.parameters.exampleFeatureId"/>
+            <econdition field-name="exampleFeatureId" from="exampleFeatureId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
 

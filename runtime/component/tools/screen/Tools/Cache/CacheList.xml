@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
 
     <transition name="clearCache">
-        <actions><script>ec.cache.getCache(ec.web.requestParameters.cacheName).clear()</script></actions>
+        <actions><script>ec.cache.getCache(cacheName).clear()</script></actions>
         <default-response url="."/>
     </transition>
     <transition name="clearAllCaches">
@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="cacheList" from="ec.cache.getAllCachesInfo(ec.web.requestParameters.orderByField?:'+name')"/>
+        <set field="cacheList" from="ec.cache.getAllCachesInfo(orderByField?:'+name')"/>
     </actions>
     <widgets>
         <container>

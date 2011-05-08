@@ -19,13 +19,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="../EntityDataFind"/></transition>
     <transition name="update">
-        <actions><service-call name="update#${ec.web.requestParameters.entityName}" in-map="ec.web.requestParameters"/></actions>
-        <!-- TODO: only pass pk fields, prep map in actions or inline expression -->
-        <default-response url="." parameter-map="ec.web.requestParameters"/>
+        <actions><service-call name="update#${entityName}" in-map="true"/></actions>
+        <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
 
     <actions>
-        <set field="entityName" from="ec.web.parameters.entityName"/>
         <entity-find-one entity-name="${entityName}" value-field="fieldValues"/>
     </actions>
     <widgets>
@@ -34,8 +32,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="find" text="Find"/>
         </container>
         <form-single name="UpdateEntityValue" transition="update" dynamic="true">
-            <auto-fields-entity entity-name="${entityName}" field-type="edit"/>
-            <!-- TODO: display pk fields, edit non-pk fields (currently does edit on all) -->
+            <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
+            <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="submit"><default-field title="Update"><submit/></default-field></field>
         </form-single>

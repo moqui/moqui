@@ -257,7 +257,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ================== Form Field Widgets ==================== -->
 
 <#macro "check">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
@@ -291,7 +291,7 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "drop-down">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
@@ -303,7 +303,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "password"></#macro>
 
 <#macro "radio">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>

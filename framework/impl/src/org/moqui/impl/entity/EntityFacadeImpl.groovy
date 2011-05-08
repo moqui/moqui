@@ -503,9 +503,7 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     /** @see org.moqui.entity.EntityFacade#makeFind(String) */
-    EntityFind makeFind(String entityName) {
-        return new EntityFindImpl(this, entityName)
-    }
+    EntityFind makeFind(String entityName) { return new EntityFindImpl(this, entityName) }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, long) */
     synchronized String sequencedIdPrimary(String seqName, Long staggerMax) {

@@ -627,7 +627,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#-- ================== Form Field Widgets ==================== -->
 
 <#macro "check">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#assign id><@fieldId .node/></#assign>
@@ -694,7 +694,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 
 <#macro "drop-down">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)/>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#assign currentDescription = (options.get(currentValue))?if_exists/>
@@ -747,7 +747,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"></#macro>
 
 <#macro "radio">
-    <#assign options = []/><#assign options = sri.getFieldOptions(.node)/>
+    <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)/>
     <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")/>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#assign id><@fieldId .node/></#assign>

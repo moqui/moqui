@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleItem" list="exampleItemList">
-            <econdition field-name="exampleId" from="ec.web.parameters.exampleId"/>
+            <econdition field-name="exampleId" from="exampleId"/>
             <order-by field-name="exampleItemSeqId"/>
         </entity-find>
 
