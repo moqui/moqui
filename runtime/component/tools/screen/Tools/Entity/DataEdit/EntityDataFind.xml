@@ -57,6 +57,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </form-single>
             </container-dialog>
         </container>
+        <container><label text="Find '${entityName}' Entity Value" type="h3"/></container>
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" field-type="display"/>
             <field name="entityName"><default-field><hidden/></default-field></field>

@@ -23,15 +23,18 @@ import javax.sql.XADataSource
 import javax.naming.InitialContext
 import javax.naming.Context
 import javax.naming.NamingException
-import javax.transaction.Transaction
 
 import org.moqui.context.Cache
+import org.moqui.context.ResourceReference
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
-import org.moqui.entity.EntityFacade
-import org.moqui.entity.EntityConditionFactory
-import org.moqui.entity.EntityValue
+
 import org.moqui.entity.EntityCondition
+import org.moqui.entity.EntityConditionFactory
+import org.moqui.entity.EntityDataLoader
+import org.moqui.entity.EntityException
+import org.moqui.entity.EntityFacade
+import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityList
 
@@ -42,9 +45,6 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 import org.w3c.dom.Element
-import org.moqui.entity.EntityDataLoader
-import org.moqui.context.ResourceReference
-import org.moqui.entity.EntityException
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -149,7 +149,7 @@ class EntityFacadeImpl implements EntityFacade {
                     if (tenantDataSourceXaPropList) {
                         for (EntityValue tenantDataSourceXaProp in tenantDataSourceXaPropList) {
                             String propValue = tenantDataSourceXaProp.propValue
-                            // TODO consider changing this to expand for all system properties using groovy or something
+                            // NOTE: consider changing this to expand for all system properties using groovy or something
                             if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
                             p.setProperty((String) tenantDataSourceXaProp.propName, propValue)
                         }
@@ -157,7 +157,7 @@ class EntityFacadeImpl implements EntityFacade {
                         for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
                             // the Derby "databaseName" property has a ${moqui.runtime} which is a System property, others may have it too
                             String propValue = entry.getValue()
-                            // TODO consider changing this to expand for all system properties using groovy or something
+                            // NOTE: consider changing this to expand for all system properties using groovy or something
                             if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
                             p.setProperty(entry.getKey(), propValue)
                         }
@@ -323,6 +323,39 @@ class EntityFacadeImpl implements EntityFacade {
         entityDefinitionCache.put(entityName, ed)
         // send it on its way
         return ed
+    }
+
+    /** This method is called only when the tools need all automatic reverse-many relationships.
+     *
+     * During normal operation reverse-many relationships are only needed when explicitly referenced, and these are
+     * handled in the EntityDefinition.getRelationshipNode() method one at a time (only those used are loaded).
+     */
+    synchronized void createAllAutoReverseManyRelationships() {
+        int relationshipsCreated = 0
+        Set<String> entityNameSet = getAllEntityNames()
+        for (String entityName in entityNameSet) {
+            EntityDefinition ed = getEntityDefinition(entityName)
+            for (Node relNode in ed.entityNode."relationship") {
+                if (relNode."@type" == "many") continue
+
+                EntityDefinition reverseEd = getEntityDefinition(relNode."@related-entity-name")
+                // does a many relationship coming back already exist?
+                Node reverseRelNode = (Node) reverseEd.entityNode."relationship".find(
+                        { it."@related-entity-name" == ed.entityName && it."@type" == "many" })
+                if (reverseRelNode != null) continue
+
+                Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
+                Node newRelNode = reverseEd.entityNode.appendNode("relationship",
+                        ["related-entity-name":ed.entityName, "type":"many"])
+                for (Map.Entry keyEntry in keyMap) {
+                    // add a key-map with the reverse fields
+                    newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
+                }
+                relationshipsCreated++
+            }
+        }
+
+        logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
     }
 
     void loadEecaRulesAll() {
@@ -513,7 +546,7 @@ class EntityFacadeImpl implements EntityFacade {
         // NOTE: simple approach with forUpdate, not using the update/select "ethernet" approach used in OFBiz; consider
         // that in the future if there are issues with this approach
         // TODO: add support for bins of IDs for performance, ie to avoid going to the db for each one
-        Long seqNum = null
+        Long seqNum
         TransactionFacade tf = this.ecfi.getTransactionFacade()
         boolean suspendedTransaction = false
         try {

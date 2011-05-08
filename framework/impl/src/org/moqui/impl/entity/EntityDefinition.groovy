@@ -139,6 +139,23 @@ public class EntityDefinition {
         return eKeyMap
     }
 
+    List<Map> getRelationshipsInfo(Map valueSource) {
+        // make sure this is done before as this isn't done by default
+        efi.createAllAutoReverseManyRelationships()
+
+        List<Map> infoList = new ArrayList()
+        for (Node relNode in this.entityNode."relationship") {
+            Map keyMap = getRelationshipExpandedKeyMap(relNode)
+            Map targetParameterMap = new HashMap()
+            if (valueSource)
+                for (Map.Entry keyEntry in keyMap) targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
+
+            infoList.add([type:relNode."@type", title:relNode."@title", relatedEntityName:relNode."@related-entity-name",
+                    keyMap:keyMap, targetParameterMap:targetParameterMap])
+        }
+        return infoList
+    }
+
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
         Node fieldNode = this.getFieldNode(fieldName)
         if (!fieldNode) {

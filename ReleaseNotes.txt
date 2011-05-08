@@ -47,8 +47,11 @@ This release includes:
     done automatically
 - Tools Screens
   - Entity
-    - Entity Data UI (entity list, find on entity with delete,
-      create/update entity record)
+    - Entity Data UI
+      - entity list
+      - find on entity with delete
+      - create/update entity record
+      - view entity record with related entities and links to them
 
 
 ===========================================================================
@@ -439,7 +442,6 @@ Tools probable for 1.0 final:
 - Tools Screens
   - Entity
     - Entity Data UI
-      - view entity record with related
       - list/update/delete/add dependent entities
     - Entity Data Import and Export screens
     - SQL Query Run/View

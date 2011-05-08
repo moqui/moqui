@@ -281,7 +281,7 @@ class ScreenForm {
                                 entityFindNode.appendNode("order-by", ["field-name":"description"])
                             } else {
                                 // no description? find the first *Name
-                                for (String fn in relatedEd.getFieldNodes(false, true))
+                                for (String fn in relatedEd.getFieldNames(false, true))
                                     if (fn.endsWith("Name")) {
                                         entityOptionsNode.attributes().put("text", "\${" + fn + "}")
                                         entityFindNode.appendNode("order-by", ["field-name":fn])
