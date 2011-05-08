@@ -11,25 +11,25 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <EnumerationType description="Example Type" enumTypeId="EXAMPLE_TYPE"/>
-    <Enumeration description="Real World" enumId="EXT_REAL_WORLD" enumTypeId="EXAMPLE_TYPE"/>
-    <Enumeration description="Made Up" enumId="EXT_MADE_UP" enumTypeId="EXAMPLE_TYPE"/>
-    <Enumeration description="Contrived" enumId="EXT_CONTRIVED" parentEnumId="EXT_MADE_UP" enumTypeId="EXAMPLE_TYPE"/>
-    <Enumeration description="Inspired" enumId="EXT_INSPIRED" parentEnumId="EXT_MADE_UP" enumTypeId="EXAMPLE_TYPE"/>
+    <EnumerationType description="Example Type" enumTypeId="ExampleType"/>
+    <Enumeration description="Real World" enumId="EXT_REAL_WORLD" enumTypeId="ExampleType"/>
+    <Enumeration description="Made Up" enumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
+    <Enumeration description="Contrived" enumId="EXT_CONTRIVED" parentEnumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
+    <Enumeration description="Inspired" enumId="EXT_INSPIRED" parentEnumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
 
-    <EnumerationType description="Example Feature Application" enumTypeId="EXAMPLE_FEATURE_APPL"/>
-    <Enumeration description="Required" enumId="EFA_REQUIRED" enumTypeId="EXAMPLE_FEATURE_APPL"/>
-    <Enumeration description="Desired" enumId="EFA_DESIRED" enumTypeId="EXAMPLE_FEATURE_APPL"/>
-    <Enumeration description="Not Allowed" enumId="EFA_NOT_ALLOWED" enumTypeId="EXAMPLE_FEATURE_APPL"/>
+    <EnumerationType description="Example Feature Application" enumTypeId="ExampleFeatureAppl"/>
+    <Enumeration description="Required" enumId="EFA_REQUIRED" enumTypeId="ExampleFeatureAppl"/>
+    <Enumeration description="Desired" enumId="EFA_DESIRED" enumTypeId="ExampleFeatureAppl"/>
+    <Enumeration description="Not Allowed" enumId="EFA_NOT_ALLOWED" enumTypeId="ExampleFeatureAppl"/>
 
-    <StatusType description="Example" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="In Design" sequenceNum="1" statusCode="IN_DESIGN" statusId="EXST_IN_DESIGN" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="Defined" sequenceNum="2" statusCode="DEFINED" statusId="EXST_DEFINED" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="Approved" sequenceNum="3" statusCode="APPROVED" statusId="EXST_APPROVED" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="Implemented" sequenceNum="4" statusCode="IMPLEMENTED" statusId="EXST_IMPLEMENTED" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="Tested" sequenceNum="5" statusCode="TESTED" statusId="EXST_TESTED" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="Complete" sequenceNum="6" statusCode="COMPLETE" statusId="EXST_COMPLETE" statusTypeId="EXAMPLE_STATUS"/>
-    <StatusItem description="Cancelled" sequenceNum="99" statusCode="CANCELLED" statusId="EXST_CANCELLED" statusTypeId="EXAMPLE_STATUS"/>
+    <StatusType description="Example" statusTypeId="Example"/>
+    <StatusItem description="In Design" sequenceNum="1" statusCode="IN_DESIGN" statusId="EXST_IN_DESIGN" statusTypeId="Example"/>
+    <StatusItem description="Defined" sequenceNum="2" statusCode="DEFINED" statusId="EXST_DEFINED" statusTypeId="Example"/>
+    <StatusItem description="Approved" sequenceNum="3" statusCode="APPROVED" statusId="EXST_APPROVED" statusTypeId="Example"/>
+    <StatusItem description="Implemented" sequenceNum="4" statusCode="IMPLEMENTED" statusId="EXST_IMPLEMENTED" statusTypeId="Example"/>
+    <StatusItem description="Tested" sequenceNum="5" statusCode="TESTED" statusId="EXST_TESTED" statusTypeId="Example"/>
+    <StatusItem description="Complete" sequenceNum="6" statusCode="COMPLETE" statusId="EXST_COMPLETE" statusTypeId="Example"/>
+    <StatusItem description="Cancelled" sequenceNum="99" statusCode="CANCELLED" statusId="EXST_CANCELLED" statusTypeId="Example"/>
     <StatusValidChange statusId="EXST_IN_DESIGN" statusIdTo="EXST_DEFINED" transitionName="Definition Complete"/>
     <StatusValidChange statusId="EXST_DEFINED" statusIdTo="EXST_APPROVED" transitionName="Approve"/>
     <StatusValidChange statusId="EXST_APPROVED" statusIdTo="EXST_IMPLEMENTED" transitionName="Implementation Complete"/>
@@ -41,8 +41,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <StatusValidChange statusId="EXST_IMPLEMENTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
     <StatusValidChange statusId="EXST_TESTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
 
-    <EnumerationType description="Example Feature Source" enumTypeId="EXMPL_FEAT_SOURCE"/>
-    <Enumeration description="Customer" enumId="EXFTSRC_CUSTOMER" sequenceNum="1" enumTypeId="EXMPL_FEAT_SOURCE"/>
-    <Enumeration description="Partner" enumId="EXFTSRC_PARTNER" sequenceNum="2" enumTypeId="EXMPL_FEAT_SOURCE"/>
-    <Enumeration description="Employee" enumId="EXFTSRC_EMPLOYEE" sequenceNum="3" enumTypeId="EXMPL_FEAT_SOURCE"/>
+    <EnumerationType description="Example Feature Source" enumTypeId="ExampleFeatureSource"/>
+    <Enumeration description="Customer" enumId="EXFTSRC_CUSTOMER" sequenceNum="1" enumTypeId="ExampleFeatureSource"/>
+    <Enumeration description="Partner" enumId="EXFTSRC_PARTNER" sequenceNum="2" enumTypeId="ExampleFeatureSource"/>
+    <Enumeration description="Employee" enumId="EXFTSRC_EMPLOYEE" sequenceNum="3" enumTypeId="ExampleFeatureSource"/>
 </entity-facade-xml>

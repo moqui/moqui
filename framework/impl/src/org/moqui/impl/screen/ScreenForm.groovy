@@ -25,6 +25,8 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.impl.entity.EntityValueImpl
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.moqui.entity.EntityFind
+import org.moqui.impl.entity.EntityFindImpl
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -59,6 +61,7 @@ class ScreenForm {
         // if there is an extends, put that in first (everything else overrides it)
         if (baseFormNode."@extends") {
             String extendsForm = baseFormNode."@extends"
+            if (isDynamic) extendsForm = ecfi.resourceFacade.evaluateStringExpand(extendsForm, "")
             ScreenForm esf
             if (extendsForm.contains("#")) {
                 ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(extendsForm.substring(0, extendsForm.indexOf("#")))
@@ -72,6 +75,7 @@ class ScreenForm {
 
         for (Node afsNode in baseFormNode."auto-fields-service") {
             String serviceName = afsNode."@service-name"
+            if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
             ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
             if (serviceDef != null) {
                 addServiceFields(serviceDef, afsNode."@field-type"?:"edit", newFormNode, ecfi)
@@ -228,6 +232,14 @@ class ScreenForm {
         for (String fieldName in ed.getFieldNames(true, true)) {
             String efType = ed.getFieldNode(fieldName)."@type"
 
+            // to see if this should be a drop-down with data from another entity,
+            // find first relationship that has this field as the only key map and is not a many relationship
+            Node oneRelNode = null
+            for (Node rn in ed.entityNode."relationship") {
+                Map km = ed.getRelationshipExpandedKeyMap(rn)
+                if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many") oneRelNode = rn
+            }
+
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
@@ -242,7 +254,43 @@ class ScreenForm {
                     } else if (efType == "text-very-long") {
                         subFieldNode.appendNode("text-area")
                     } else {
-                        subFieldNode.appendNode("text-line")
+                        if (oneRelNode != null) {
+                            String relatedEntityName = oneRelNode."@related-entity-name"
+                            EntityDefinition relatedEd = ecfi.entityFacade.getEntityDefinition(relatedEntityName)
+                            String title = oneRelNode."@title"
+
+                            if (relatedEd == null) subFieldNode.appendNode("text-line")
+
+                            // use the combo-box just in case the drop-down as a default is over-constrained
+                            Node dropDownNode = subFieldNode.appendNode("drop-down", ["combo-box":"true"])
+                            Node entityOptionsNode = dropDownNode.appendNode("entity-options")
+                            Node entityFindNode = entityOptionsNode.appendNode("entity-find",
+                                    ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
+                            if (relatedEntityName == "Enumeration") {
+                                // make sure the title is an actual enumTypeId before adding condition
+                                if (ecfi.entityFacade.makeFind("EnumerationType").condition("enumTypeId", title).count() > 0) {
+                                    entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
+                                }
+                            } else if (relatedEntityName == "StatusItem") {
+                                // make sure the title is an actual statusTypeId before adding condition
+                                if (ecfi.entityFacade.makeFind("StatusType").condition("statusTypeId", title).count() > 0) {
+                                    entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
+                                }
+                            }
+                            if (relatedEd.isField("description")) {
+                                entityOptionsNode.attributes().put("text", "\${description}")
+                                entityFindNode.appendNode("order-by", ["field-name":"description"])
+                            } else {
+                                // no description? find the first *Name
+                                for (String fn in relatedEd.getFieldNodes(false, true))
+                                    if (fn.endsWith("Name")) {
+                                        entityOptionsNode.attributes().put("text", "\${" + fn + "}")
+                                        entityFindNode.appendNode("order-by", ["field-name":fn])
+                                    }
+                            }
+                        } else {
+                            subFieldNode.appendNode("text-line")
+                        }
                     }
                 }
                 break;
@@ -351,25 +399,24 @@ class ScreenForm {
         Node fieldNode = widgetNode.parent().parent()
         ListOrderedMap options = new ListOrderedMap()
         for (Node childNode in widgetNode.children()) {
-            /* tabled for now, not to include in 1.0:
             if (childNode.name() == "entity-options") {
+                Node entityFindNode = childNode."entity-find"[0]
+                EntityFindImpl ef = (EntityFindImpl) ec.entity.makeFind((String) entityFindNode."@entity-name")
+                ef.findNode(entityFindNode)
+
                 EntityListIterator eli
                 try {
-                    ef = ec.entity.makeFind(childNode."@entity-name")
-                    // still need to build find options...
                     eli = ef.iterator()
                     EntityValue ev
                     while ((ev = eli.next()) != null) {
                         ec.context.push(ev)
-                        String key = ec.resource.evaluateStringExpand(childNode."@key"?:"\${${fieldNode."@name"}}", null)
-                        options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
+                        addFieldOption(options, fieldNode, childNode, ev, ec)
                         ec.context.pop()
                     }
                 } finally {
                     eli.close()
                 }
-            } else */
-            if (childNode.name() == "list-options") {
+            } else if (childNode.name() == "list-options") {
                 Object listObject = ec.resource.evaluateContextField(childNode."@list", null)
                 if (listObject instanceof EntityListIterator) {
                     EntityListIterator eli

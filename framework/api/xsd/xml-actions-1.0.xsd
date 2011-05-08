@@ -356,8 +356,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="entity-name" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Name of entity to find instances of.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="list" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>Name of the list to put results in.</xs:documentation></xs:annotation>
+            <xs:attribute name="list" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>Name of the list to put results in. Required unless the entity-find
+                is used under the entity-options element in a XML Screen Form.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="cache" type="boolean">
                 <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for

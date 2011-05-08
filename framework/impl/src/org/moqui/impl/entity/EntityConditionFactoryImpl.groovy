@@ -92,6 +92,8 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     EntityCondition makeActionCondition(String fieldName, String operator, String fromExpr, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
+        logger.info("TOREMOVE makeActionCondition(fieldName ${fieldName}, operator ${operator}, fromExpr ${fromExpr}, value ${value}, toFieldName ${toFieldName}, ignoreCase ${ignoreCase}, ignoreIfEmpty ${ignoreIfEmpty}, ignore ${ignore})")
+
         if (ignore) return null
 
         if (toFieldName) {
@@ -112,6 +114,19 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             if (ignoreCase) ec.ignoreCase()
             return ec
         }
+    }
+
+    EntityCondition makeActionCondition(Node node) {
+        return makeActionCondition((String) node["@field-name"],
+                (String) node["@operator"] ?: "equals", (String) (node["@from"] ?: node["@field-name"]),
+                (String) node["@value"], (String) node["@to-field-name"], (node["@ignore-case"] ?: "false") == "true",
+                (node["@ignore-if-empty"] ?: "false") == "true", (node["@ignore"] ?: "false") == "true")
+    }
+
+    EntityCondition makeActionConditions(Node node) {
+        List<EntityCondition> condList = new ArrayList()
+        for (Node subCond in node.children()) condList.add(makeActionCondition(subCond))
+        return makeCondition(condList, EntityConditionFactoryImpl.getJoinOperator((String) node["@combine"]))
     }
 
     public static abstract class EntityConditionImplBase implements EntityCondition {

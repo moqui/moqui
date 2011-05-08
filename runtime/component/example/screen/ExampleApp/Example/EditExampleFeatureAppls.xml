@@ -37,7 +37,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
 
         <entity-find entity-name="Enumeration" list="exampleFeatureApplEnumList">
-            <econdition field-name="enumTypeId" value="EXAMPLE_FEATURE_APPL"/>
+            <econdition field-name="enumTypeId" value="ExampleFeatureAppl"/>
             <order-by field-name="description"/>
         </entity-find>
 

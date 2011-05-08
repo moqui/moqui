@@ -24,8 +24,17 @@ This release includes:
 - Screen transition now supports restriction by HTTP request method
 - Trim stack traces to not include Groovy proxy/etc calls (Sam's idea);
   implemented for now in BaseException, will use in other areas over time
+- Changed Example entities and seed data to follow pattern to be used in
+  Moqui and Mantle where the relationship.title is the enumTypeId or the
+  statusTypeId
 - XML Screens
   - Template for xsl-fo render mode
+  - Added support for drop-down.entity-options in Screen Form
+  - Auto create drop-downs for fields with a relationship to Enumeration
+    using relationship.title as the enumTypeId, check to see if is valid
+    enumTypeId before creating drop-down
+  - Auto create drop-downs for fields with a type one relationship, with
+    limit of 200 to avoid crazy drop-downs
 - Resource Facade
   - Method for FOP transform to PDF, etc
 - Tools Screens
@@ -419,10 +428,14 @@ Notable features not yet implemented:
 Tools probable for 1.0 final:
 ===========================================================================
 
+- Entity Facade
+  - More intelligent group by fields, ie add all fields in view-entity and
+    DynamicViewEntity to group by list if they don't have a function
 - Tools Screens
   - Entity
-    - Entity Data UI (view entity record with related,
-      list/update/delete/add dependent entities)
+    - Entity Data UI
+      - view entity record with related
+      - list/update/delete/add dependent entities
     - Entity Data Import and Export screens
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)

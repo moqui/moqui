@@ -28,6 +28,8 @@ import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ListCondition
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.context.ExecutionContext
+import java.sql.Timestamp
 
 class EntityFindImpl implements EntityFind {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindImpl.class)
@@ -250,6 +252,42 @@ class EntityFindImpl implements EntityFind {
 
     int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
     int getPageSize() { return limit ?: 20 }
+
+    EntityFind findNode(Node node) {
+        ExecutionContext ec = this.efi.ecfi.executionContext
+
+        this.entity((String) node["@entity-name"])
+        if (node["@cache"]) this.useCache(node["@cache"])
+        if (node["@for-update"]) this.forUpdate(node["@for-update"])
+        if (node["@distinct"]) this.distinct(node["@distinct"])
+        if (node["@offset"]) this.offset(node["@offset"])
+        if (node["@limit"]) this.limit(node["@limit"])
+        for (Node sf in node["select-field"]) this.selectField((String) sf["@field-name"])
+        for (Node ob in node["order-by"]) this.orderBy((String) ob["@field-name"])
+
+        for (Node df in node["date-filter"])
+            this.condition(ec.entity.conditionFactory.makeConditionDate((String) node["@from-field-name"] ?: "fromDate",
+                    (String) node["@thru-field-name"] ?: "thruDate",
+                    (node["@valid-date"] ? ec.resource.evaluateContextField((String) node["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
+
+        for (Node ecn in node["econdition"]) this.condition(efi.conditionFactory.makeActionCondition(ecn))
+        for (Node ecs in node["econditions"]) this.condition(efi.conditionFactory.makeActionConditions(ecs))
+        for (Node eco in node["econdition-object"])
+            this.condition((EntityCondition) ec.resource.evaluateContextField((String) eco["@field"], null))
+
+        if (node["search-form-inputs"]) {
+            Node sfiNode = (Node) node["search-form-inputs"][0]
+            searchFormInputs((String) sfiNode["@input-fields-map"], (String) sfiNode["@default-order-by"], (sfiNode["@paginate"] ?: "true") as boolean)
+        }
+        if (node["having-econditions"]) {
+            for (Node havingCond in node["having-econditions"])
+                this.havingCondition(efi.conditionFactory.makeActionCondition(havingCond))
+        }
+
+        logger.info("TOREMOVE Added findNode\n${node}\n${this.toString()}")
+
+        return this
+    }
 
     // ======================== General/Common Options ========================
 
@@ -779,5 +817,12 @@ class EntityFindImpl implements EntityFind {
         if (this.dynamicView) return false
         String entityCache = this.getEntityDef().getEntityNode()."@use-cache"
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
+    }
+
+    @Override
+    String toString() {
+        return "Find ${entityName} WHERE [${simpleAndMap}] [${whereEntityCondition}] HAVING [${havingEntityCondition}] " +
+                "SELECT [${fieldsToSelect}] ORDER BY [${orderByFields}] CACHE [${useCache}] DISTINCT [${distinct}] " +
+                "OFFSET [${offset}] LIMIT [${limit}] FOR UPDATE [${forUpdate}]"
     }
 }

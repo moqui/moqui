@@ -37,12 +37,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="anotherText" type="text-long"/>
         -->
         <relationship type="one" title="ExampleType" related-entity-name="Enumeration">
-            <description>(enumTypeId = EXAMPLE_TYPE)</description>
             <key-map field-name="exampleTypeEnumId"/>
         </relationship>
-        <relationship type="one" related-entity-name="StatusItem">
-            <description>(statusTypeId = EXAMPLE_STATUS)</description>
-        </relationship>
+        <relationship type="one" title="Example" related-entity-name="StatusItem"/>
     </entity>
     <entity entity-name="ExampleItem" package-name="org.moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"/>
@@ -64,8 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="FeatureSource" related-entity-name="Enumeration">
-            <description>(enumTypeId = EXMPL_FEAT_SOURCE)</description>
+        <relationship type="one" title="ExampleFeatureSource" related-entity-name="Enumeration">
             <key-map field-name="featureSourceEnumId"/>
         </relationship>
     </entity>
@@ -79,7 +75,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="Example"/>
         <relationship type="one" related-entity-name="ExampleFeature"/>
         <relationship type="one" title="ExampleFeatureAppl" related-entity-name="Enumeration">
-            <description>(enumTypeId = EXAMPLE_FEATURE_APPL)</description>
             <key-map field-name="exampleFeatureApplEnumId"/>
         </relationship>
     </entity>

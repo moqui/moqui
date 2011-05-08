@@ -362,7 +362,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="check" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
+                <xs:element ref="entity-options"/>
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>
@@ -454,7 +454,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:choice minOccurs="0" maxOccurs="unbounded">
-                    <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
+                    <xs:element ref="entity-options"/>
                     <xs:element ref="list-options"/>
                     <xs:element ref="option"/>
                 </xs:choice>
@@ -509,7 +509,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="radio" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-                <!-- TABLED, not to be part of 1.0: <xs:element ref="entity-options"/> -->
+                <xs:element ref="entity-options"/>
                 <xs:element ref="list-options"/>
                 <xs:element ref="option"/>
             </xs:choice>
@@ -588,7 +588,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <!-- ================== Field Sub-Sub-Elements ==================== -->
-    <!-- TABLED, not to be part of 1.0, use entity-find and list-options instead
     <xs:element name="entity-options">
         <xs:annotation>
             <xs:documentation>Look up options for the field using the named entity.</xs:documentation>
@@ -599,7 +598,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="key" type="xs:string">
                 <xs:annotation><xs:documentation>The text representing the key. Use the ${} syntax to insert entries
-                    from the entity value or from the context. If empty defaults to the value of the field this is in.</xs:documentation></xs:annotation>
+                    from the entity value or from the context. If empty will use the first primary key field name to
+                    lookup a value in the context.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="text" type="xs:string">
                 <xs:annotation><xs:documentation>Actual text shown to the user. Use the ${} syntax to insert variables.
@@ -607,7 +607,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    -->
     <xs:element name="list-options">
         <xs:annotation><xs:documentation>Create options based on data in a List of Maps.</xs:documentation></xs:annotation>
         <xs:complexType>
