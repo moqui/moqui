@@ -62,7 +62,8 @@
 .ui-widget { font-size: 1em; }
 .ui-widget .ui-widget { font-size: 1em; }
 /* use moqui defaults: .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-size: 0.8em; } */
-.ui-widget-content { border: 0px solid #aaaaaa; background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
+/* was: .ui-widget-content { border: 1px solid #aaaaaa; background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; } */
+.ui-widget-content { background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
 .ui-widget-content a { color: #222222; }
 /*  original, with bg image: .ui-widget-header { border: 1px solid #aaaaaa; background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; } */
 .ui-widget-header { border-bottom: 1px solid #ddd; color: #222222; font-weight: bold; }
@@ -354,6 +355,7 @@
  * http://docs.jquery.com/UI/Autocomplete#theming
  */
 .ui-autocomplete { position: absolute; cursor: default; }	
+.ui-autocomplete-input { border: 1px solid #aaaaaa; }
 
 /* workarounds */
 * html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */
