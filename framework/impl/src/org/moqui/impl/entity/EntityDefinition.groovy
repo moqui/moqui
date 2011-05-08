@@ -64,6 +64,7 @@ public class EntityDefinition {
     Node getEntityNode() { return this.entityNode }
 
     boolean isViewEntity() { return this.entityNode.name() == "view-entity" }
+    boolean hasFunctionAlias() { return isViewEntity() && this.entityNode."alias".find({ it."@function" }) }
 
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal
@@ -379,8 +380,7 @@ public class EntityDefinition {
                 Node newAlias = this.entityNode.appendNode("alias",
                         [name:aliasName, field:fieldNode."@name",
                         "entity-alias":aliasAll."@entity-alias",
-                        "if-from-alias-all":true,
-                        "group-by":aliasAll."@group-by"])
+                        "if-from-alias-all":true])
                 if (fieldNode.description) newAlias.appendNode(fieldNode."description")
             }
         }

@@ -53,8 +53,8 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     }
 
     @Override
-    EntityDynamicView addAlias(String entityAlias, String name, String field, Boolean groupBy, String function) {
-        this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "name":name, "field":field, "group-by":(groupBy ? "true" : "false"), "function":function])
+    EntityDynamicView addAlias(String entityAlias, String name, String field, String function) {
+        this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "name":name, "field":field, "function":function])
         return this
     }
 

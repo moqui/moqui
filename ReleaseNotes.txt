@@ -37,6 +37,11 @@ This release includes:
     limit of 200 to avoid crazy drop-downs
 - Resource Facade
   - Method for FOP transform to PDF, etc
+- Entity Facade
+  - More intelligent group by fields, ie add all fields in view-entity and
+    DynamicViewEntity to group by list if they don't have a function; with
+    support for this get rid of alias.@group-by attribute, not needed when
+    done automatically
 - Tools Screens
   - Entity
     - Entity Data UI (entity list, find on entity with delete,
@@ -428,9 +433,6 @@ Notable features not yet implemented:
 Tools probable for 1.0 final:
 ===========================================================================
 
-- Entity Facade
-  - More intelligent group by fields, ie add all fields in view-entity and
-    DynamicViewEntity to group by list if they don't have a function
 - Tools Screens
   - Entity
     - Entity Data UI

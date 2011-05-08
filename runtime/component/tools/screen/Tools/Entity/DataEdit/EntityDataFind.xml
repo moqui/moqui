@@ -62,11 +62,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" field-type="display"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
-            <!-- <field name="edit">
-                <default-field>
-                    <link text="Edit" url="edit"/>
-                </default-field>
-            </field> -->
             <field name="edit"><default-field title="Edit"><submit/></default-field></field>
             <field name="delete"><default-field title="Delete"><submit/></default-field></field>
         </form-list>

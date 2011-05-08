@@ -284,7 +284,7 @@ class EntityFindImpl implements EntityFind {
                 this.havingCondition(efi.conditionFactory.makeActionCondition(havingCond))
         }
 
-        logger.info("TOREMOVE Added findNode\n${node}\n${this.toString()}")
+        // logger.info("TOREMOVE Added findNode\n${node}\n${this.toString()}")
 
         return this
     }
@@ -602,7 +602,7 @@ class EntityFindImpl implements EntityFind {
         }
 
         // group by clause
-        efb.makeGroupByClause()
+        efb.makeGroupByClause(this.fieldsToSelect)
 
         // having clause
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
@@ -708,7 +708,7 @@ class EntityFindImpl implements EntityFind {
         }
 
         // group by clause
-        efb.makeGroupByClause()
+        efb.makeGroupByClause(this.fieldsToSelect)
 
         // having clause
         EntityConditionImplBase havingCondition = this.getHavingEntityCondition()

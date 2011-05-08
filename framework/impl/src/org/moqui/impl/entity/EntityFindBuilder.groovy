@@ -49,10 +49,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
     void makeCountFunction() {
         boolean isDistinct = this.entityFindImpl.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&
                 "true" == this.mainEntityDefinition.getEntityNode()."entity-condition"[0]."@distinct")
-        boolean isGroupBy = false
-        if (this.mainEntityDefinition.isViewEntity()) {
-            if (this.mainEntityDefinition.getEntityNode().alias.find({ it."@group-by" == "true" })) isGroupBy = true
-        }
+        boolean isGroupBy = this.mainEntityDefinition.hasFunctionAlias()
 
         if (isGroupBy) {
             this.sqlTopLevel.append("COUNT(1) FROM (SELECT ")
@@ -87,11 +84,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
     }
 
     void closeCountFunctionIfGroupBy() {
-        boolean isGroupBy = false
-        if (this.mainEntityDefinition.isViewEntity()) {
-            if (this.mainEntityDefinition.getEntityNode().alias.find({ it."@group-by" == "true" })) isGroupBy = true
-        }
-        if (isGroupBy) {
+        if (this.mainEntityDefinition.hasFunctionAlias()) {
             this.sqlTopLevel.append(") TEMP_NAME")
         }
     }
@@ -226,7 +219,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
             localBuilder.append("(SELECT ")
 
             boolean isFirst = true
-            for (Node aliasNode in localEntityDefinition.entityNode.alias) {
+            Set<String> fieldsToSelect = new HashSet<String>()
+            for (Node aliasNode in localEntityDefinition.entityNode."alias") {
+                fieldsToSelect.add(aliasNode."@name")
                 if (isFirst) isFirst = false else localBuilder.append(", ")
                 localBuilder.append(localEntityDefinition.getColumnName(aliasNode."@name", true))
                 // TODO: are the next two lines really needed? have removed AS stuff elsewhere since it is not commonly used and not needed
@@ -236,14 +231,20 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
             makeSqlFromClause(localEntityDefinition, localBuilder)
 
-            def groupByAliases = localEntityDefinition.entityNode.alias.findAll({ it."@group-by" == "true" })
-            if (groupByAliases) {
-                localBuilder.append(" GROUP BY ")
-                boolean isFirstGroupBy = true
-                for (Node groupByAlias in groupByAliases) {
-                    if (isFirstGroupBy) isFirstGroupBy = false else localBuilder.append(", ")
-                    localBuilder.append(localEntityDefinition.getColumnName(groupByAlias."@name", true));
+
+            StringBuilder gbClause = new StringBuilder()
+            if (localEntityDefinition.hasFunctionAlias()) {
+                // do a different approach to GROUP BY: add all fields that are selected and don't have a function
+                for (Node aliasNode in localEntityDefinition.getEntityNode()."alias") {
+                    if (fieldsToSelect.contains(aliasNode."@name") && !aliasNode."@function") {
+                        if (gbClause) gbClause.append(", ")
+                        gbClause.append(localEntityDefinition.getColumnName(aliasNode."@name", false))
+                    }
                 }
+            }
+            if (gbClause) {
+                localBuilder.append(" GROUP BY ")
+                localBuilder.append(gbClause.toString())
             }
 
             localBuilder.append(")");
@@ -256,17 +257,21 @@ class EntityFindBuilder extends EntityQueryBuilder {
         this.sqlTopLevel.append(" WHERE ")
     }
 
-    void makeGroupByClause() {
+    void makeGroupByClause(Set<String> fieldsToSelect) {
         if (this.mainEntityDefinition.isViewEntity()) {
-            List groupByAliasNodes = (List) this.mainEntityDefinition.getEntityNode().alias.findAll({ it."@group-by" == "true" })
-            if (groupByAliasNodes) {
-                this.sqlTopLevel.append(" GROUP BY ")
-
-                boolean isFirstGroupBy = true
-                for (Node aliasNode in groupByAliasNodes) {
-                    if (isFirstGroupBy) isFirstGroupBy = false else this.sqlTopLevel.append(", ")
-                    this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(aliasNode."@name", false))
+            StringBuilder gbClause = new StringBuilder()
+            if (this.mainEntityDefinition.hasFunctionAlias()) {
+                // do a different approach to GROUP BY: add all fields that are selected and don't have a function
+                for (Node aliasNode in this.mainEntityDefinition.getEntityNode()."alias") {
+                    if (fieldsToSelect.contains(aliasNode."@name") && !aliasNode."@function") {
+                        if (gbClause) gbClause.append(", ")
+                        gbClause.append(this.mainEntityDefinition.getColumnName(aliasNode."@name", false))
+                    }
                 }
+            }
+            if (gbClause) {
+                this.sqlTopLevel.append(" GROUP BY ")
+                this.sqlTopLevel.append(gbClause.toString())
             }
         }
     }
