@@ -453,12 +453,6 @@ Tools probable for 1.0 final:
       use LiquiBase for this
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
-  - Security screens (consider making Entity Data UI good enough for these)
-    - UserAccount screens (find/delete, edit UA (with tabs for preferences,
-      themes, login, history, visit history, groups, change password))
-    - UserGroup screens (find/delete, edit (tab for users in group))
-    - Artifact Group (find/delete, edit (tab for artifacts in group))
-    - Authorization screen (find/delete, edit (tabs for record, service))
   - Artifact Info screens (with in/out references for all)
 
 ===========================================================================
@@ -496,3 +490,9 @@ Features designed, but not to be included in 1.0 series
   - Security screens
     - Tarpit screen (find/update/delete,add screen)
     - Tarpitted screen (find/update/delete,add screen)
+  - Security screens (Auto Screen UI probably good enough for these)
+    - UserAccount screens (find/delete, edit UA (with tabs for preferences,
+      themes, login, history, visit history, groups, change password))
+    - UserGroup screens (find/delete, edit (tab for users in group))
+    - Artifact Group (find/delete, edit (tab for artifacts in group))
+    - Authorization screen (find/delete, edit (tabs for record, service))
