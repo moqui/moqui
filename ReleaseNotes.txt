@@ -46,6 +46,11 @@ This release includes:
     support for this get rid of alias.@group-by attribute, not needed when
     done automatically
 - Tools Screens
+  - Auto Screen
+    - Master Entity List (entities with dependents)
+    - AutoFind Screen (find, create, delete master entity records)
+    - AutoEditMaster (tab to edit master entity record)
+    - AutoEditDetail (tab for each dependent entity with CrUD)
   - Entity
     - Entity Data UI
       - entity list
@@ -441,8 +446,6 @@ Tools probable for 1.0 final:
 
 - Tools Screens
   - Entity
-    - Entity Data UI
-      - list/update/delete/add dependent entities
     - Entity Data Import and Export screens
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)

@@ -15,9 +15,10 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Edit" default-menu-index="3">
 
     <parameter name="entityName"/>
+    <parameter name="detailEntityName"/>
 
-    <transition name="list"><default-response url="../EntityList"/></transition>
-    <transition name="find"><default-response url="../EntityDataFind"/></transition>
+    <transition name="list"><default-response url="../MainEntityList"/></transition>
+    <transition name="find"><default-response url="../AutoFind"/></transition>
     <transition name="edit"><default-response url="."/></transition>
     <transition name="update">
         <actions><service-call name="update#${entityName}" in-map="true"/></actions>
@@ -25,38 +26,35 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(context, true)"/>
+
         <entity-find-one entity-name="${entityName}" value-field="fieldValues"/>
-        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(fieldValues, false)"/>
     </actions>
     <widgets>
+        <render-mode>
+            <text type="html" template="true"><![CDATA[
+    <div class="ui-tabs ui-tabs-collapsible">
+        <ul id="auto-edit-tabs" class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
+            <#assign urlInfo = sri.buildUrl("../AutoEditMaster").addParameter("entityName", entityName).addParameters(masterPrimaryKeyMap)>
+            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}</a></li>
+        <#list relationshipInfoList as relationshipInfo>
+            <#assign urlInfo = sri.buildUrl("../AutoEditDetail").addParameter("detailEntityName", relationshipInfo.relatedEntityName).addParameter("entityName", entityName).addParameters(relationshipInfo.targetParameterMap)>
+            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath && relationshipInfo.relatedEntityName == detailEntityName?if_exists> ui-tabs-selected ui-state-active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${relationshipInfo.prettyName}</a></li>
+        </#list>
+        </ul>
+    </div>
+            ]]></text>
+        </render-mode>
         <container>
             <link url="list" text="Entity List"/>
-            <link url="find" text="Find"/>
+            <link url="find" text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/>
         </container>
-        <container><label text="Edit '${entityName}' Entity Value" type="h3"/></container>
         <form-single name="UpdateEntityValue" transition="update" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
             <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="submit"><default-field title="Update"><submit/></default-field></field>
         </form-single>
-        <form-list name="RelatedEntities" list="relationshipInfoList">
-            <field name="title"><default-field><display/></default-field></field>
-            <field name="relatedEntityName"><default-field><display/></default-field></field>
-            <field name="type"><default-field><display/></default-field></field>
-            <field name="targetParameterMap"><default-field title="ID Map"><display/></default-field></field>
-            <field name="link">
-                <conditional-field condition="type == 'many'">
-                    <link text="Find" url="find" parameter-map="targetParameterMap">
-                        <parameter name="entityName" from="relatedEntityName"/>
-                    </link>
-                </conditional-field>
-                <default-field>
-                    <link text="Edit" url="edit" parameter-map="targetParameterMap">
-                        <parameter name="entityName" from="relatedEntityName"/>
-                    </link>
-                </default-field>
-            </field>
-        </form-list>
     </widgets>
 </screen>

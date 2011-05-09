@@ -66,6 +66,19 @@ public class EntityDefinition {
     boolean isViewEntity() { return this.entityNode.name() == "view-entity" }
     boolean hasFunctionAlias() { return isViewEntity() && this.entityNode."alias".find({ it."@function" }) }
 
+    String getDefaultDescriptionField() {
+        ListOrderedSet nonPkFields = getFieldNames(false, true)
+        // find the first *Name
+        for (String fn in nonPkFields)
+            if (fn.endsWith("Name")) return fn
+
+        // no name? try literal description
+        if (isField("description")) return "description"
+
+        // no description? just use the first non-pk field
+        return nonPkFields.get(0)
+    }
+
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal
         needsAuditLogVal = false
@@ -139,21 +152,37 @@ public class EntityDefinition {
         return eKeyMap
     }
 
-    List<Map> getRelationshipsInfo(Map valueSource) {
+    List<Map> getRelationshipsInfo(Map valueSource, boolean dependentsOnly) {
         // make sure this is done before as this isn't done by default
         efi.createAllAutoReverseManyRelationships()
 
         List<Map> infoList = new ArrayList()
         for (Node relNode in this.entityNode."relationship") {
+            // for now dependent entities are just those of type many
+            if (dependentsOnly && relNode."@type" != "many") continue
+
             Map keyMap = getRelationshipExpandedKeyMap(relNode)
             Map targetParameterMap = new HashMap()
             if (valueSource)
                 for (Map.Entry keyEntry in keyMap) targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
 
+            String prettyName = efi.getEntityDefinition(relNode."@related-entity-name").getPrettyName(relNode."@title", entityName)
+
             infoList.add([type:relNode."@type", title:relNode."@title", relatedEntityName:relNode."@related-entity-name",
-                    keyMap:keyMap, targetParameterMap:targetParameterMap])
+                    keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName])
         }
         return infoList
+    }
+
+    String getPrettyName(String prefix, String baseName) {
+        String initial = prefix?:"" + entityName
+        StringBuilder prettyName = new StringBuilder()
+        for (String part in initial.split("(?=[A-Z])")) {
+            if (baseName && part == baseName) continue
+            if (prettyName) prettyName.append(" ")
+            prettyName.append(part)
+        }
+        return prettyName.toString()
     }
 
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {

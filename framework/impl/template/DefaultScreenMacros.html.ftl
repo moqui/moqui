@@ -123,7 +123,7 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "container-dialog">
-    <#assign buttonText = ec.l10n.getLocalizedMessage(.node["@button-text"])>
+    <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <button id="${.node["@id"]}-button">${buttonText}</button>
     <script>
 	$(function() {

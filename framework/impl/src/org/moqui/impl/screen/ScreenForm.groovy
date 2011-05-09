@@ -26,6 +26,7 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.impl.entity.EntityValueImpl
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import org.moqui.entity.EntityList
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -113,7 +114,7 @@ class ScreenForm {
 
     Node getFormNode() {
         if (isDynamic) {
-            // TODO: cache this within the context or something as it may be called multiple times for a single form render
+            // NOTE: maybe cache this within the context or something as it may be called multiple times for a single form render
             Node newFormNode = new Node(null, internalFormNode.name())
             initForm(internalFormNode, newFormNode)
             return newFormNode
@@ -227,102 +228,106 @@ class ScreenForm {
     }
 
     protected void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
-        ListOrderedSet pkFieldNameSet = ed.getFieldNames(true, false)
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk")) {
-            String efType = ed.getFieldNode(fieldName)."@type"
-
-            // to see if this should be a drop-down with data from another entity,
-            // find first relationship that has this field as the only key map and is not a many relationship
-            Node oneRelNode = null
-            for (Node rn in ed.entityNode."relationship") {
-                Map km = ed.getRelationshipExpandedKeyMap(rn)
-                if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many") oneRelNode = rn
-            }
 
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
-            switch (fieldType) {
-            case "edit":
-                if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
-                    subFieldNode.appendNode("hidden")
-                } else {
-                    if (efType.startsWith("date") || efType.startsWith("time")) {
-                        Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
-                        if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
-                    } else if (efType == "text-very-long") {
-                        subFieldNode.appendNode("text-area")
-                    } else {
-                        if (oneRelNode != null) {
-                            String relatedEntityName = oneRelNode."@related-entity-name"
-                            EntityDefinition relatedEd = ecfi.entityFacade.getEntityDefinition(relatedEntityName)
-                            String title = oneRelNode."@title"
-
-                            if (relatedEd == null) subFieldNode.appendNode("text-line")
-
-                            // use the combo-box just in case the drop-down as a default is over-constrained
-                            Node dropDownNode = subFieldNode.appendNode("drop-down", ["combo-box":"true"])
-                            Node entityOptionsNode = dropDownNode.appendNode("entity-options")
-                            Node entityFindNode = entityOptionsNode.appendNode("entity-find",
-                                    ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
-                            if (relatedEntityName == "Enumeration") {
-                                // make sure the title is an actual enumTypeId before adding condition
-                                if (ecfi.entityFacade.makeFind("EnumerationType").condition("enumTypeId", title).count() > 0) {
-                                    entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
-                                }
-                            } else if (relatedEntityName == "StatusItem") {
-                                // make sure the title is an actual statusTypeId before adding condition
-                                if (ecfi.entityFacade.makeFind("StatusType").condition("statusTypeId", title).count() > 0) {
-                                    entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
-                                }
-                            }
-                            if (relatedEd.isField("description")) {
-                                entityOptionsNode.attributes().put("text", "\${description}")
-                                entityFindNode.appendNode("order-by", ["field-name":"description"])
-                            } else {
-                                // no description? find the first *Name
-                                for (String fn in relatedEd.getFieldNames(false, true))
-                                    if (fn.endsWith("Name")) {
-                                        entityOptionsNode.attributes().put("text", "\${" + fn + "}")
-                                        entityFindNode.appendNode("order-by", ["field-name":fn])
-                                    }
-                            }
-                        } else {
-                            subFieldNode.appendNode("text-line")
-                        }
-                    }
-                }
-                break;
-            case "find":
-                if (efType.startsWith("date") || efType.startsWith("time")) {
-                    subFieldNode.appendNode("date-find", [type:efType])
-                } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
-                    subFieldNode.appendNode("range-find")
-                } else {
-                    subFieldNode.appendNode("text-find")
-                }
-                break;
-            case "display":
-                subFieldNode.appendNode("display")
-                break;
-            case "find-display":
-                Node headerFieldNode = newFieldNode.appendNode("header-field")
-                if (efType.startsWith("date") || efType.startsWith("time")) {
-                    headerFieldNode.appendNode("date-find", [type:efType])
-                } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
-                    headerFieldNode.appendNode("range-find")
-                } else {
-                    headerFieldNode.appendNode("text-find")
-                }
-                subFieldNode.appendNode("display")
-                break;
-            case "hidden":
-                subFieldNode.appendNode("hidden")
-                break;
-            }
+            addAutoEntityField(ed, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode)
 
             // logger.info("Adding form auto entity field [${fieldName}] of type [${efType}], fieldType [${fieldType}] serviceVerb [${serviceVerb}], node: ${newFieldNode}")
             mergeFieldNode(baseFormNode, newFieldNode, false)
+        }
+    }
+
+    void addAutoEntityField(EntityDefinition ed, String fieldName, String fieldType, String serviceVerb,
+                            Node newFieldNode, Node subFieldNode) {
+        ListOrderedSet pkFieldNameSet = ed.getFieldNames(true, false)
+
+        String efType = ed.getFieldNode(fieldName)."@type"
+
+        // to see if this should be a drop-down with data from another entity,
+        // find first relationship that has this field as the only key map and is not a many relationship
+        Node oneRelNode = null
+        for (Node rn in ed.entityNode."relationship") {
+            Map km = ed.getRelationshipExpandedKeyMap(rn)
+            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many") oneRelNode = rn
+        }
+
+        switch (fieldType) {
+        case "edit":
+            if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
+                subFieldNode.appendNode("hidden")
+            } else {
+                if (efType.startsWith("date") || efType.startsWith("time")) {
+                    Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
+                    if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
+                } else if (efType == "text-very-long") {
+                    subFieldNode.appendNode("text-area")
+                } else {
+                    if (oneRelNode != null) {
+                        String relatedEntityName = oneRelNode."@related-entity-name"
+                        EntityDefinition relatedEd = ecfi.entityFacade.getEntityDefinition(relatedEntityName)
+                        String title = oneRelNode."@title"
+
+                        if (relatedEd == null) subFieldNode.appendNode("text-line")
+
+                        // use the combo-box just in case the drop-down as a default is over-constrained
+                        Node dropDownNode = subFieldNode.appendNode("drop-down", ["combo-box":"true"])
+                        Node entityOptionsNode = dropDownNode.appendNode("entity-options")
+                        Node entityFindNode = entityOptionsNode.appendNode("entity-find",
+                                ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
+                        if (relatedEntityName == "Enumeration") {
+                            // make sure the title is an actual enumTypeId before adding condition
+                            if (ecfi.entityFacade.makeFind("EnumerationType").condition("enumTypeId", title).count() > 0) {
+                                entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
+                            }
+                        } else if (relatedEntityName == "StatusItem") {
+                            // make sure the title is an actual statusTypeId before adding condition
+                            if (ecfi.entityFacade.makeFind("StatusType").condition("statusTypeId", title).count() > 0) {
+                                entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
+                            }
+                        }
+
+                        String defaultDescriptionField = relatedEd.getDefaultDescriptionField()
+                        if (defaultDescriptionField) {
+                            entityOptionsNode.attributes().put("text", "\${" + defaultDescriptionField + "}")
+                            entityFindNode.appendNode("order-by", ["field-name":defaultDescriptionField])
+                        }
+                    } else {
+                        subFieldNode.appendNode("text-line")
+                    }
+                }
+            }
+            break;
+        case "find":
+            if (efType.startsWith("date") || efType.startsWith("time")) {
+                subFieldNode.appendNode("date-find", [type:efType])
+            } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
+                subFieldNode.appendNode("range-find")
+            } else {
+                subFieldNode.appendNode("text-find")
+            }
+            break;
+        case "display":
+            if (oneRelNode != null) subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name"])
+            else subFieldNode.appendNode("display")
+            break;
+        case "find-display":
+            Node headerFieldNode = newFieldNode.appendNode("header-field")
+            if (efType.startsWith("date") || efType.startsWith("time")) {
+                headerFieldNode.appendNode("date-find", [type:efType])
+            } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
+                headerFieldNode.appendNode("range-find")
+            } else {
+                headerFieldNode.appendNode("text-find")
+            }
+            if (oneRelNode != null) subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name"])
+            else subFieldNode.appendNode("display")
+            break;
+        case "hidden":
+            subFieldNode.appendNode("hidden")
+            break;
         }
     }
 
@@ -403,17 +408,11 @@ class ScreenForm {
                 EntityFindImpl ef = (EntityFindImpl) ec.entity.makeFind((String) entityFindNode."@entity-name")
                 ef.findNode(entityFindNode)
 
-                EntityListIterator eli
-                try {
-                    eli = ef.iterator()
-                    EntityValue ev
-                    while ((ev = eli.next()) != null) {
-                        ec.context.push(ev)
-                        addFieldOption(options, fieldNode, childNode, ev, ec)
-                        ec.context.pop()
-                    }
-                } finally {
-                    eli.close()
+                EntityList eli = ef.list()
+                for (EntityValue ev in eli) {
+                    ec.context.push(ev)
+                    addFieldOption(options, fieldNode, childNode, ev, ec)
+                    ec.context.pop()
                 }
             } else if (childNode.name() == "list-options") {
                 Object listObject = ec.resource.evaluateContextField(childNode."@list", null)
@@ -452,7 +451,9 @@ class ScreenForm {
         if (!key) key = ec.context.get(fieldNode."@name")
         if (!key) return
 
-        options.put(key, ec.resource.evaluateStringExpand(childNode."@text", null)?:key)
+        String value = childNode."@text" ? ec.resource.evaluateStringExpand(childNode."@text", null) : key
+        if (value == "null") value = key
+        options.put(key, value)
         ec.context.pop()
     }
 }

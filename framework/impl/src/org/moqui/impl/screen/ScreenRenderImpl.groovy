@@ -33,6 +33,8 @@ import org.moqui.context.TemplateRenderer
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
+import org.moqui.impl.entity.EntityDefinition
+import org.apache.commons.collections.set.ListOrderedSet
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -685,15 +687,28 @@ class ScreenRenderImpl implements ScreenRender {
         Object fieldValue = getFieldValue(fieldNodeWrapper, "")
         if (!fieldValue) return ""
         Node widgetNode = widgetNodeWrapper.getGroovyNode()
+        EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(widgetNode."@entity-name")
+
         // find the entity value
-        EntityValue ev = ec.entity.makeFind(widgetNode."@entity-name")
-                .condition(widgetNode."@key-field-name"?:fieldNodeWrapper.groovyNode."@name", fieldValue)
+        String keyFieldName = widgetNode."@key-field-name"
+        if (!keyFieldName) {
+            keyFieldName = ed.getFieldNames(true, false)?.get(0)
+        }
+        EntityValue ev = ec.entity.makeFind(widgetNode."@entity-name").condition(keyFieldName, fieldValue)
                 .useCache(widgetNode."@use-cache"?:"true" == "true").one()
         if (ev == null) return ""
-        // push onto the context and then expand the text
-        ec.context.push(ev)
-        String value = ec.resource.evaluateStringExpand(widgetNode."@text"?:"\${description}", null)
-        ec.context.pop()
+
+        String value = ""
+        if (widgetNode."@text") {
+            // push onto the context and then expand the text
+            ec.context.push(ev)
+            value = ec.resource.evaluateStringExpand(widgetNode."@text", null)
+            ec.context.pop()
+        } else {
+            // get the value of the default description field for the entity
+            String defaultDescriptionField = ed.getDefaultDescriptionField()
+            if (defaultDescriptionField) value = ev.get(defaultDescriptionField)
+        }
         return value
     }
 

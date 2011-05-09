@@ -10,11 +10,11 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        include-child-content="true">
-    <subscreens default-item="AutoScreen">
-    </subscreens>
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Auto Screen">
+    <subscreens default-item="MainEntityList"/>
     <widgets>
-        <subscreens-panel id="tools-app" type="tab"/>
+        <subscreens-active/>
     </widgets>
 </screen>

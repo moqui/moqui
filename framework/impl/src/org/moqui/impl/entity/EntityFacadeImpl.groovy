@@ -344,6 +344,10 @@ class EntityFacadeImpl implements EntityFacade {
                         { it."@related-entity-name" == ed.entityName && it."@type" == "many" })
                 if (reverseRelNode != null) continue
 
+                // track the fact that the related entity has others pointing back to it
+                if (!ed.isViewEntity()) reverseEd.entityNode.attributes().put("has-dependents", "true")
+
+                // create a new reverse-many relationship
                 Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
                         ["related-entity-name":ed.entityName, "type":"many"])
@@ -435,17 +439,22 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
-    List<Map<String, Object>> getAllEntitiesInfo(String orderByField) {
+    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean hasDependentsOnly) {
+        if (hasDependentsOnly) createAllAutoReverseManyRelationships()
+
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
-            try {
-                EntityDefinition ed = getEntityDefinition(en)
-                eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
-                        isView:(ed.isViewEntity() ? "true" : "false")])
-            } catch (EntityException e) {
-                logger.warn("Problem finding entity definition", e)
-            }
+            EntityDefinition ed = null
+            try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
+            if (ed == null) continue
+
+            if (hasDependentsOnly && (!(ed.entityNode."@has-dependents" == "true") || en.endsWith("Type") ||
+                    en == "Enumeration" || en == "StatusItem")) continue
+
+            eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
+                    isView:(ed.isViewEntity() ? "true" : "false")])
         }
+
         if (orderByField) StupidUtilities.orderMapList((List<Map>) eil, [orderByField])
         return eil
     }
