@@ -233,15 +233,16 @@ class ScreenForm {
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
-            addAutoEntityField(ed, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode)
+            addAutoEntityField(ed, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
 
             // logger.info("Adding form auto entity field [${fieldName}] of type [${efType}], fieldType [${fieldType}] serviceVerb [${serviceVerb}], node: ${newFieldNode}")
             mergeFieldNode(baseFormNode, newFieldNode, false)
         }
+        // logger.info("TOREMOVE: after addEntityFields formNode is: ${baseFormNode}")
     }
 
     void addAutoEntityField(EntityDefinition ed, String fieldName, String fieldType, String serviceVerb,
-                            Node newFieldNode, Node subFieldNode) {
+                            Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         ListOrderedSet pkFieldNameSet = ed.getFieldNames(true, false)
 
         String efType = ed.getFieldNode(fieldName)."@type"
@@ -249,9 +250,13 @@ class ScreenForm {
         // to see if this should be a drop-down with data from another entity,
         // find first relationship that has this field as the only key map and is not a many relationship
         Node oneRelNode = null
+        Map oneRelKeyMap = null
         for (Node rn in ed.entityNode."relationship") {
             Map km = ed.getRelationshipExpandedKeyMap(rn)
-            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many") oneRelNode = rn
+            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many") {
+                oneRelNode = rn
+                oneRelKeyMap = km
+            }
         }
 
         switch (fieldType) {
@@ -273,7 +278,7 @@ class ScreenForm {
                         if (relatedEd == null) subFieldNode.appendNode("text-line")
 
                         // use the combo-box just in case the drop-down as a default is over-constrained
-                        Node dropDownNode = subFieldNode.appendNode("drop-down", ["combo-box":"true"])
+                        Node dropDownNode = subFieldNode.appendNode("drop-down", ["combo-box":"true", "allow-empty":"true"])
                         Node entityOptionsNode = dropDownNode.appendNode("entity-options")
                         Node entityFindNode = entityOptionsNode.appendNode("entity-find",
                                 ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
@@ -328,6 +333,21 @@ class ScreenForm {
         case "hidden":
             subFieldNode.appendNode("hidden")
             break;
+        }
+
+        // NOTE: don't like where this is located, would be nice to have a generic way for forms to add this sort of thing
+        if (oneRelNode != null) {
+            if (internalFormNode."@name" == "UpdateMasterEntityValue") {
+                String relatedEntityName = oneRelNode."@related-entity-name"
+                EntityDefinition relatedEd = ecfi.entityFacade.getEntityDefinition(relatedEntityName)
+                String keyField = oneRelKeyMap.keySet().iterator().next()
+                String relKeyField = oneRelKeyMap.values().iterator().next()
+
+                Node linkNode = subFieldNode.appendNode("link",
+                        ["url":"edit", "text":"Edit ${relatedEd.getPrettyName(null, null)} [\${fieldValues." + keyField + "}]"])
+                linkNode.appendNode("parameter", [name:"entityName", value:relatedEntityName])
+                linkNode.appendNode("parameter", [name:relKeyField, from:"fieldValues.${keyField}"])
+            }
         }
     }
 

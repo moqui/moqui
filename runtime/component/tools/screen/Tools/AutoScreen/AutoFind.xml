@@ -61,7 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <auto-fields-entity entity-name="${entityName}" field-type="display"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="edit"><default-field title="Edit"><submit/></default-field></field>
-            <field name="delete"><default-field title="Delete"><submit/></default-field></field>
+            <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
         </form-list>
     </widgets>
 </screen>

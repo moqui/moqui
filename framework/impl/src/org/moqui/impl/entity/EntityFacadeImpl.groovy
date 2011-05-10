@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 
 import org.w3c.dom.Element
+import org.apache.commons.collections.set.ListOrderedSet
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -439,8 +440,8 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
-    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean hasDependentsOnly) {
-        if (hasDependentsOnly) createAllAutoReverseManyRelationships()
+    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly) {
+        if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
 
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
@@ -448,8 +449,12 @@ class EntityFacadeImpl implements EntityFacade {
             try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (ed == null) continue
 
-            if (hasDependentsOnly && (!(ed.entityNode."@has-dependents" == "true") || en.endsWith("Type") ||
-                    en == "Enumeration" || en == "StatusItem")) continue
+            if (masterEntitiesOnly) {
+                if (!(ed.entityNode."@has-dependents" == "true") || en.endsWith("Type") ||
+                        en == "Enumeration" || en == "StatusItem") continue
+                ListOrderedSet pks = ed.getFieldNames(true, false)
+                if (pks.size() > 1) continue
+            }
 
             eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
                     isView:(ed.isViewEntity() ? "true" : "false")])

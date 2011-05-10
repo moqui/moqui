@@ -50,7 +50,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="list" text="Entity List"/>
             <link url="find" text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/>
         </container>
-        <form-single name="UpdateEntityValue" transition="update" dynamic="true">
+        <form-single name="UpdateMasterEntityValue" transition="update" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
             <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
             <field name="entityName"><default-field><hidden/></default-field></field>

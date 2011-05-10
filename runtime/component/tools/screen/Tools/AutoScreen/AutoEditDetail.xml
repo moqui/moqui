@@ -29,14 +29,15 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="listSubmit">
         <actions>
-            <if condition="submit=='Delete'">
-                <service-call name="delete#${detailEntityName}" in-map="true"/>
-            </if>
+            <if condition="submit=='Delete'"><service-call name="delete#${detailEntityName}" in-map="true"/></if>
         </actions>
         <conditional-response url=".">
             <condition><expression>submit=="Delete"</expression></condition>
         </conditional-response>
-        <default-response url="../AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <default-response url="../AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(detailEntityName).getPrimaryKeys(context)">
+            <parameter name="detailEntityName" from="entityName"/>
+            <parameter name="entityName" from="detailEntityName"/>
+        </default-response>
     </transition>
 
     <actions>
@@ -79,7 +80,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="detailEntityName"><default-field><hidden/></default-field></field>
             <field name="edit"><default-field title="Edit"><submit/></default-field></field>
-            <field name="delete"><default-field title="Delete"><submit/></default-field></field>
+            <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
         </form-list>
     </widgets>
 </screen>
