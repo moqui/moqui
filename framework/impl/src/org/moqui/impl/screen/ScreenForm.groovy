@@ -258,6 +258,11 @@ class ScreenForm {
                 oneRelKeyMap = km
             }
         }
+        String relatedEntityName = oneRelNode?."@related-entity-name"
+        EntityDefinition relatedEd = relatedEntityName ? ecfi.entityFacade.getEntityDefinition(relatedEntityName) : null
+        String keyField = oneRelKeyMap?.keySet()?.iterator()?.next()
+        String relKeyField = oneRelKeyMap?.values()?.iterator()?.next()
+        String relDefaultDescriptionField = relatedEd?.getDefaultDescriptionField()
 
         switch (fieldType) {
         case "edit":
@@ -271,8 +276,6 @@ class ScreenForm {
                     subFieldNode.appendNode("text-area")
                 } else {
                     if (oneRelNode != null) {
-                        String relatedEntityName = oneRelNode."@related-entity-name"
-                        EntityDefinition relatedEd = ecfi.entityFacade.getEntityDefinition(relatedEntityName)
                         String title = oneRelNode."@title"
 
                         if (relatedEd == null) subFieldNode.appendNode("text-line")
@@ -294,10 +297,9 @@ class ScreenForm {
                             }
                         }
 
-                        String defaultDescriptionField = relatedEd.getDefaultDescriptionField()
-                        if (defaultDescriptionField) {
-                            entityOptionsNode.attributes().put("text", "\${" + defaultDescriptionField + "}")
-                            entityFindNode.appendNode("order-by", ["field-name":defaultDescriptionField])
+                        if (relDefaultDescriptionField) {
+                            entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]")
+                            entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
                         }
                     } else {
                         subFieldNode.appendNode("text-line")
@@ -315,7 +317,8 @@ class ScreenForm {
             }
             break;
         case "display":
-            if (oneRelNode != null) subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name"])
+            if (oneRelNode != null) subFieldNode.appendNode("display-entity",
+                    ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
             else subFieldNode.appendNode("display")
             break;
         case "find-display":
@@ -327,7 +330,8 @@ class ScreenForm {
             } else {
                 headerFieldNode.appendNode("text-find")
             }
-            if (oneRelNode != null) subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name"])
+            if (oneRelNode != null) subFieldNode.appendNode("display-entity",
+                    ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
             else subFieldNode.appendNode("display")
             break;
         case "hidden":
@@ -338,11 +342,6 @@ class ScreenForm {
         // NOTE: don't like where this is located, would be nice to have a generic way for forms to add this sort of thing
         if (oneRelNode != null) {
             if (internalFormNode."@name" == "UpdateMasterEntityValue") {
-                String relatedEntityName = oneRelNode."@related-entity-name"
-                EntityDefinition relatedEd = ecfi.entityFacade.getEntityDefinition(relatedEntityName)
-                String keyField = oneRelKeyMap.keySet().iterator().next()
-                String relKeyField = oneRelKeyMap.values().iterator().next()
-
                 Node linkNode = subFieldNode.appendNode("link",
                         ["url":"edit", "text":"Edit ${relatedEd.getPrettyName(null, null)} [\${fieldValues." + keyField + "}]"])
                 linkNode.appendNode("parameter", [name:"entityName", value:relatedEntityName])

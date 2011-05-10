@@ -447,6 +447,7 @@ Tools probable for 1.0 final:
 - Tools Screens
   - Entity
     - Entity Data Import and Export screens
+    - Entity Master data export (master record and all detail records)
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE:
