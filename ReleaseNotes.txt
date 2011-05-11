@@ -51,6 +51,7 @@ This release includes:
     - AutoFind Screen (find, create, delete master entity records)
     - AutoEditMaster (tab to edit master entity record)
     - AutoEditDetail (tab for each dependent entity with CrUD)
+    - Entity Master data export (master record and all dependent records)
   - Entity
     - Entity Data UI
       - entity list
@@ -447,7 +448,6 @@ Tools probable for 1.0 final:
 - Tools Screens
   - Entity
     - Entity Data Import and Export screens
-    - Entity Master data export (master record and all detail records)
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE:

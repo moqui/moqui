@@ -336,22 +336,31 @@ class EntityFacadeImpl implements EntityFacade {
         Set<String> entityNameSet = getAllEntityNames()
         for (String entityName in entityNameSet) {
             EntityDefinition ed = getEntityDefinition(entityName)
+            ListOrderedSet pkSet = ed.getFieldNames(true, false)
             for (Node relNode in ed.entityNode."relationship") {
                 if (relNode."@type" == "many") continue
 
                 EntityDefinition reverseEd = getEntityDefinition(relNode."@related-entity-name")
+                ListOrderedSet reversePkSet = reverseEd.getFieldNames(true, false)
+                String relType = reversePkSet.equals(pkSet) ? "one-nofk" : "many"
+
                 // does a many relationship coming back already exist?
                 Node reverseRelNode = (Node) reverseEd.entityNode."relationship".find(
-                        { it."@related-entity-name" == ed.entityName && it."@type" == "many" })
-                if (reverseRelNode != null) continue
+                        { it."@related-entity-name" == ed.entityName && it."@type" == relType })
+                if (reverseRelNode != null) {
+                    // make sure has is-auto-reverse="true"
+                    reverseRelNode.attributes().put("is-one-reverse", "true")
+                    continue
+                }
 
                 // track the fact that the related entity has others pointing back to it
                 if (!ed.isViewEntity()) reverseEd.entityNode.attributes().put("has-dependents", "true")
 
                 // create a new reverse-many relationship
                 Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
+
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
-                        ["related-entity-name":ed.entityName, "type":"many"])
+                        ["related-entity-name":ed.entityName, "type":relType, "is-one-reverse":"true"])
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields
                     newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
@@ -360,7 +369,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
+        if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
     }
 
     void loadEecaRulesAll() {

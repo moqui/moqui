@@ -35,6 +35,7 @@ import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.entity.EntityDefinition
 import org.apache.commons.collections.set.ListOrderedSet
+import org.moqui.entity.EntityException
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -675,7 +676,11 @@ class ScreenRenderImpl implements ScreenRender {
         if (fieldNode."@entry-name") return ec.resource.evaluateContextField(fieldNode."@entry-name", null)
         String fieldName = fieldNode."@name"
         Object value = ec.context.get(fieldName)
-        if (!value && ec.context.fieldValues && fieldNode.parent().name() == "form-single") value = ec.context.fieldValues.get(fieldName)
+        if (!value && ec.context.fieldValues && fieldNode.parent().name() == "form-single") {
+            try {
+                value = ec.context.fieldValues.get(fieldName)
+            } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
+        }
         if (!value && ec.web) value = ec.web.parameters.get(fieldName)
 
         if (value) return value as String

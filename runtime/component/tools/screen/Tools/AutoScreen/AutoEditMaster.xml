@@ -24,6 +24,24 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions><service-call name="update#${entityName}" in-map="true"/></actions>
         <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
+    <transition name="export"><actions>
+        <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
+        <script><![CDATA[
+        File outFile = new File(filename)
+        if (!outFile.createNewFile()) {
+            ec.messages.addError("File ${filename} already exists.")
+        } else {
+            PrintWriter pw = new PrintWriter(outFile)
+            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            pw.println("<entity-facade-xml>")
+            int valuesWritten = entityValue.writeXmlWithDependents(pw)
+            pw.println("</entity-facade-xml>")
+            pw.close()
+            ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
+        }
+        ]]></script>
+    </actions><default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+    </transition>
 
     <actions>
         <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
@@ -55,6 +73,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="submit"><default-field title="Update"><submit/></default-field></field>
+        </form-single>
+        <form-single name="ExportMasterEntity" transition="export" dynamic="true">
+            <auto-fields-entity entity-name="${entityName}" include="pk" field-type="hidden"/>
+            <field name="entityName"><default-field><hidden/></default-field></field>
+            <field name="filename"><default-field><text-line size="100"/></default-field></field>
+            <field name="submit"><default-field title="Export with Dependents to File"><submit/></default-field></field>
         </form-single>
     </widgets>
 </screen>

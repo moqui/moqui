@@ -238,6 +238,20 @@ class StupidUtilities {
         theList.add(value)
     }
 
+    static boolean addToSetInMap(String key, Object value, Map theMap) {
+        if (!theMap) return
+        Set theSet = (Set) theMap.get(key)
+        if (!theSet) { theSet = new HashSet(); theMap.put(key, theSet) }
+        return theSet.add(value)
+    }
+
+    static void addToMapInMap(String keyOuter, String keyInner, Object value, Map theMap) {
+        if (!theMap) return
+        Map innerMap = (Map) theMap.get(keyOuter)
+        if (!innerMap) { innerMap = new HashMap(); theMap.put(keyOuter, innerMap) }
+        innerMap.put(keyInner, value)
+    }
+
     static Node deepCopyNode(Node original) {
         // always pass in a null parent and expect this to be appended to the parent node by the caller if desired
         Node newNode = new Node(null, original.name(), original.attributes())

@@ -192,4 +192,10 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      * @param prefix A prefix to put in front of the entity name in the tag name
      */
     void writeXmlText(PrintWriter writer, String prefix);
+
+    /** Writes XML text using writeXmlText() for the current record and all dependent (descendant) records.
+     * @param pw A PrintWriter to write to
+     * @return The number of records written
+     */
+    int writeXmlWithDependents(PrintWriter pw);
 }

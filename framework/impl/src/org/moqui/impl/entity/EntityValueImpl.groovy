@@ -811,6 +811,41 @@ class EntityValueImpl implements EntityValue {
         }
     }
 
+    int writeXmlWithDependents(PrintWriter pw) {
+        // to avoid loops (shouldn't happen but could)
+        Map<String, Set> entityPksVisited = new HashMap()
+        int valuesWritten = this.writeXmlWithDependentsInternal(pw, entityPksVisited)
+        return valuesWritten
+    }
+
+    int writeXmlWithDependentsInternal(PrintWriter pw, Map<String, Set> entityPksVisited) {
+        int valuesWritten = 0
+        String en = this.getEntityName()
+        Map pkMap = this.getPrimaryKeys()
+        if (entityPksVisited.get(en)?.contains(pkMap)) {
+            if (logger.infoEnabled) logger.info("Tried to visit entity [${entityName}] pk [${pkMap}] more than once in writeXmlWithDependents()")
+            return valuesWritten
+        }
+        // track that we visited this record
+        StupidUtilities.addToSetInMap(en, pkMap, entityPksVisited)
+        // write this
+        this.writeXmlText(pw, null)
+        valuesWritten++
+
+        // get only dependent entity relationships
+        List<Map> relInfoList = this.getEntityDefinition().getRelationshipsInfo(this, true)
+        if (relInfoList) for (Map relInfo in relInfoList) {
+            if (relInfo.type == "many") {
+                EntityListImpl el = (EntityListImpl) findRelated((relInfo.title?:"") + relInfo.relatedEntityName, null, null, false, false)
+                for (EntityValueImpl ev in el) valuesWritten += ev.writeXmlWithDependentsInternal(pw, entityPksVisited)
+            } else {
+                EntityValueImpl ev = (EntityValueImpl) findRelatedOne((relInfo.title?:"") + relInfo.relatedEntityName, false, false)
+                valuesWritten += ev.writeXmlWithDependentsInternal(pw, entityPksVisited)
+            }
+        }
+        return valuesWritten
+    }
+
     // ========== Map Interface Methods ==========
 
     /** @see java.util.Map#size() */

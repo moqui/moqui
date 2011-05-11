@@ -159,7 +159,7 @@ public class EntityDefinition {
         List<Map> infoList = new ArrayList()
         for (Node relNode in this.entityNode."relationship") {
             // for now dependent entities are just those of type many
-            if (dependentsOnly && relNode."@type" != "many") continue
+            if (dependentsOnly && relNode."@is-one-reverse" != "true") continue
 
             Map keyMap = getRelationshipExpandedKeyMap(relNode)
             Map targetParameterMap = new HashMap()
