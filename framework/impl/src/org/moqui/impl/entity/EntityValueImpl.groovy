@@ -823,7 +823,7 @@ class EntityValueImpl implements EntityValue {
         String en = this.getEntityName()
         Map pkMap = this.getPrimaryKeys()
         if (entityPksVisited.get(en)?.contains(pkMap)) {
-            if (logger.infoEnabled) logger.info("Tried to visit entity [${entityName}] pk [${pkMap}] more than once in writeXmlWithDependents()")
+            if (logger.infoEnabled) logger.info("Tried to visit entity [${en}] pk [${pkMap}] more than once in writeXmlWithDependents()")
             return valuesWritten
         }
         // track that we visited this record
