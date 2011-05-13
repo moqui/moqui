@@ -19,6 +19,7 @@ import groovy.util.slurpersupport.GPathResult
 import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ResourceReference
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.impl.StupidUtilities
 
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
@@ -159,6 +160,14 @@ class ScreenDefinition {
         TransitionItem ti = (TransitionItem) transitionByName.get(name + "#" + method)
         // if no ti, try by name only which will catch transitions with "any" or empty method
         if (ti == null) ti = (TransitionItem) transitionByName.get(name)
+        // still none? try each one to see if it matches as a regular expression (first one to match wins)
+        if (ti == null) for (TransitionItem curTi in transitionByName.values()) {
+            if (method && curTi.method && (curTi.method == "any" || curTi.method == method)) {
+                if (name == curTi.name) { ti = curTi; break }
+                if (name.matches(curTi.name)) { ti = curTi; break }
+            }
+            // logger.info("In getTransitionItem() transition with name [${curTi.name}] method [${curTi.method}] did not match name [${name}] method [${method}]")
+        }
         return ti
     }
 
@@ -267,7 +276,7 @@ class ScreenDefinition {
             this.parentScreen = parentScreen
             name = transitionNode."@name"
             method = transitionNode."@method" ?: "any"
-            location = "${parentScreen.location}.transition_${name}"
+            location = "${parentScreen.location}.transition_${StupidUtilities.cleanStringForJavaName(name)}"
             // condition
             if (transitionNode.condition?.getAt(0)?.children()) {
                 // the script is effectively the first child of the condition element
@@ -320,7 +329,10 @@ class ScreenDefinition {
                 return defaultResponse
             }
 
+            sri.ec.context.push()
+            sri.ec.context.put("sri", sri)
             if (actions) actions.run(sri.ec)
+            sri.ec.context.pop()
 
             ResponseItem ri = null
             // if there is an error-response and there are errors, we have a winner

@@ -13,6 +13,12 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Tests" default-menu-index="9" require-authentication="false">
+
+    <transition name=".*">
+        <actions><script>ec.message.addMessage("Transition name was [${sri.getCurrentScreenUrl().targetTransitionActualName}]")</script></actions>
+        <default-response url="."/>
+    </transition>
+
     <pre-actions>
         <set field="html_title" value="A Silly Test Title"/>
         <set field="html_description" value="This page was made for testing, and that's just what it'll do."/>

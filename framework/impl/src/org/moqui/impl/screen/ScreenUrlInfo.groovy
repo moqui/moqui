@@ -15,9 +15,9 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
+
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
-import org.codehaus.groovy.runtime.InvokerHelper
 
 class ScreenUrlInfo {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenUrlInfo.class)
@@ -59,6 +59,7 @@ class ScreenUrlInfo {
     ScreenDefinition targetScreen = null
     /** If a transition is specified, the target transition within the targetScreen */
     TransitionItem targetTransition = null
+    String targetTransitionActualName = null
     List<String> preTransitionPathNameList = new ArrayList<String>()
 
     protected ScreenUrlInfo() { }
@@ -223,6 +224,7 @@ class ScreenUrlInfo {
                     }
 
                     this.targetTransition = ti
+                    this.targetTransitionActualName = pathName
                     // if no return above, just break out; a transition means we're at the end
                     break
                 }
@@ -271,6 +273,7 @@ class ScreenUrlInfo {
                 // handle case where last one may be a transition name, and not a subscreen name
                 targetTransition = lastSd.getTransitionItem(subscreenName, sri.ec.web ? sri.ec.web.request.method : "")
                 if (targetTransition) {
+                    this.targetTransitionActualName = subscreenName
                     break
                 } else {
                     throw new IllegalArgumentException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
@@ -388,6 +391,7 @@ class ScreenUrlInfo {
         sui.screenRenderDefList = this.screenRenderDefList!=null ? new ArrayList(this.screenRenderDefList) : null
         sui.targetScreen = this.targetScreen
         sui.targetTransition = this.targetTransition
+        sui.targetTransitionActualName = this.targetTransitionActualName
         sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList(this.preTransitionPathNameList) : null
     }
 

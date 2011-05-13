@@ -31,6 +31,7 @@ This release includes:
   Moqui and Mantle where the relationship.title is the enumTypeId or the
   statusTypeId
 - XML Screens
+  - Dynamic transition name handling (support regex transition names)
   - Template for xsl-fo render mode
   - Added support for drop-down.entity-options in Screen Form
   - Auto create drop-downs for fields with a relationship to Enumeration
@@ -448,9 +449,6 @@ Notable features not yet implemented:
 Tools probable for 1.0 final:
 ===========================================================================
 
-- XML Screens
-  - Dynamic transition name handling (allow code to decide what to do based
-    on unknown transition names)
 - Tools Screens
   - Entity
     - Entity Data Import and Export screens

@@ -306,6 +306,16 @@ class StupidUtilities {
         return newValue.toString()
     }
 
+    public static String cleanStringForJavaName(String original) {
+        String badChars = "\\*&?![]^+-.\$:<>()"
+        StringBuilder newValue = new StringBuilder(original)
+        for (int i = 0; i < newValue.length(); i++) {
+            char curChar = newValue.charAt(i)
+            if (badChars.contains(curChar as String)) newValue.replace(i, i+1, "_")
+        }
+        return newValue.toString()
+    }
+
     public static String paddedNumber(long number, Integer desiredLength) {
         StringBuilder outStrBfr = new StringBuilder(Long.toString(number))
         if (!desiredLength) return outStrBfr.toString()
