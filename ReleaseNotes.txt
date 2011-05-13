@@ -45,13 +45,16 @@ This release includes:
     DynamicViewEntity to group by list if they don't have a function; with
     support for this get rid of alias.@group-by attribute, not needed when
     done automatically
+  - Entity Master data export (master record and all dependent records)
+  - Entity and Dependents export: if an entity is a dependent of another,
+    and of the master then export it after the other entity it is a
+    dependent of
 - Tools Screens
   - Auto Screen
     - Master Entity List (entities with dependents)
     - AutoFind Screen (find, create, delete master entity records)
     - AutoEditMaster (tab to edit master entity record)
     - AutoEditDetail (tab for each dependent entity with CrUD)
-    - Entity Master data export (master record and all dependent records)
   - Entity
     - Entity Data UI
       - entity list
@@ -445,6 +448,9 @@ Notable features not yet implemented:
 Tools probable for 1.0 final:
 ===========================================================================
 
+- XML Screens
+  - Dynamic transition name handling (allow code to decide what to do based
+    on unknown transition names)
 - Tools Screens
   - Entity
     - Entity Data Import and Export screens

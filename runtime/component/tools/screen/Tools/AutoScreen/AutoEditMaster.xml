@@ -29,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <script><![CDATA[
         File outFile = new File(filename)
         if (!outFile.createNewFile()) {
-            ec.messages.addError("File ${filename} already exists.")
+            ec.message.addError("File ${filename} already exists.")
         } else {
             PrintWriter pw = new PrintWriter(outFile)
             pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")

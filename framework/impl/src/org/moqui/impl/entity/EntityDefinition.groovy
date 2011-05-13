@@ -33,6 +33,8 @@ public class EntityDefinition {
     protected Boolean needsAuditLogVal = null
     protected Boolean needsEncryptVal = null
 
+    protected List<Node> expandedRelationshipList = null
+
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
         this.entityName = entityNode."@entity-name"
@@ -153,11 +155,14 @@ public class EntityDefinition {
     }
 
     List<Map> getRelationshipsInfo(Map valueSource, boolean dependentsOnly) {
-        // make sure this is done before as this isn't done by default
-        efi.createAllAutoReverseManyRelationships()
+        if (!this.expandedRelationshipList) {
+            // make sure this is done before as this isn't done by default
+            efi.createAllAutoReverseManyRelationships()
+            this.expandedRelationshipList = this.entityNode."relationship"
+        }
 
         List<Map> infoList = new ArrayList()
-        for (Node relNode in this.entityNode."relationship") {
+        for (Node relNode in this.expandedRelationshipList) {
             // for now dependent entities are just those of type many
             if (dependentsOnly && relNode."@is-one-reverse" != "true") continue
 
@@ -168,10 +173,42 @@ public class EntityDefinition {
 
             String prettyName = efi.getEntityDefinition(relNode."@related-entity-name").getPrettyName(relNode."@title", entityName)
 
-            infoList.add([type:relNode."@type", title:relNode."@title", relatedEntityName:relNode."@related-entity-name",
+            infoList.add([type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
                     keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName])
         }
         return infoList
+    }
+
+    EntityDependents getDependentsTree(Deque<String> ancestorEntities) {
+        EntityDependents edp = new EntityDependents()
+        edp.entityName = entityName
+        edp.ed = this
+
+        ancestorEntities.addFirst(this.entityName)
+
+        List<Map> relInfoList = getRelationshipsInfo(null, true)
+        for (Map relInfo in relInfoList) {
+            edp.allDescendants.add(relInfo.relatedEntityName)
+            edp.relationshipInfos.put(relInfo.title+relInfo.relatedEntityName, relInfo)
+            EntityDefinition relEd = efi.getEntityDefinition(relInfo.relatedEntityName)
+            if (!edp.dependentEntities.containsKey(relEd.entityName) && !ancestorEntities.contains(relEd.entityName)) {
+                EntityDependents relEpd = relEd.getDependentsTree(ancestorEntities)
+                edp.allDescendants.addAll(relEpd.allDescendants)
+                edp.dependentEntities.put(relInfo.relatedEntityName, relEpd)
+            }
+        }
+
+        ancestorEntities.removeFirst()
+
+        return edp
+    }
+
+    static class EntityDependents {
+        String entityName
+        EntityDefinition ed
+        Map<String, EntityDependents> dependentEntities = new HashMap()
+        Set<String> allDescendants = new HashSet()
+        Map<String, Map> relationshipInfos = new HashMap()
     }
 
     String getPrettyName(String prefix, String baseName) {
