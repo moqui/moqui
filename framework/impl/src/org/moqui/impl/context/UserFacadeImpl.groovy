@@ -66,7 +66,7 @@ class UserFacadeImpl implements UserFacade {
                     }
                 }
                 if (!cookieVisitorId) {
-                    Map cvResult = eci.service.sync().name("create", "Visitor").parameter("fromVisitId", this.visitId).call()
+                    Map cvResult = eci.service.sync().name("create", "Visitor").parameter("createdDate", getNowTimestamp()).call()
                     cookieVisitorId = cvResult.visitorId
                     logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
                 }
