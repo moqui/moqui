@@ -118,18 +118,22 @@ public class ScreenFacadeImpl implements ScreenFacade {
         Template template = (Template) screenTemplateLocationCache.get(templateLocation)
         if (template) return template
 
-        Template newTemplate = null
-        Reader templateReader = null
+        // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
+        String rootTemplate = """<#include "${templateLocation}"/>
+            <#recurse widgetsNode>
+            """
+
+
+        Template newTemplate
         try {
-            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, ecfi.resourceFacade.getFtlConfiguration())
+            // this location needs to look like a filename in the runtime directory, otherwise FTL will look for includes under the directory it looks like instead
+            String filename = templateLocation.substring(templateLocation.lastIndexOf("/")+1)
+            newTemplate = new Template(filename, new StringReader(rootTemplate), ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
-            logger.error("Error while initializing Screen Widgets template at [${templateLocation}]", e)
-        } finally {
-            if (templateReader) templateReader.close()
+            throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         }
 
-        if (newTemplate) screenTemplateLocationCache.put(templateLocation, newTemplate)
+        screenTemplateLocationCache.put(templateLocation, newTemplate)
         return newTemplate
     }
 

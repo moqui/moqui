@@ -513,7 +513,17 @@ class ScreenRenderImpl implements ScreenRender {
         if (macroTemplateLocation) {
             return sfi.getTemplateByLocation(macroTemplateLocation)
         } else {
-            return sfi.getTemplateByMode(renderMode)
+            String overrideTemplateLocation = null
+            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+                // go through entire list and set all found, basically we want the last one if there are more than one
+                Node mt = (Node) sd.screenNode."macro-template".find({ it."@type" == renderMode })
+                if (mt != null) overrideTemplateLocation = mt."@location"
+            }
+            if (overrideTemplateLocation) {
+                return sfi.getTemplateByLocation(overrideTemplateLocation)
+            } else {
+                return sfi.getTemplateByMode(renderMode)
+            }
         }
     }
 

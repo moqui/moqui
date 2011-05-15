@@ -41,6 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="macro-template" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="web-settings" minOccurs="0"/>
                 <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
@@ -91,6 +92,20 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>If set to false no ArtifactHit or ArtifactHitBin data will be kept for
                     this screen and for any content or transitions under the screen.</xs:documentation></xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="macro-template">
+        <xs:annotation><xs:documentation>
+            A location here will override the settings in the moqui-conf.screen-facade.screen-text-output, but will be
+            overridden by a value set with the ScreenRender.macroTemplate() method.
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:attribute name="type" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Can be anything. Default supported values include: text, html, xsl-fo, xml, and csv.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="web-settings">

@@ -33,9 +33,9 @@ public interface ScreenRender {
      * element and the default macro template (if one is not specified for this render).
      *
      * If macroTemplateLocation is not specified is also used to determine the default macro template
-     * based on configuration. Can be anything. Default supported values include: text, html, xsl-fo,
-     * xml, and csv.
+     * based on configuration.
      *
+     * @param outputType Can be anything. Default supported values include: text, html, xsl-fo, xml, and csv.
      * @return Reference to this ScreenRender for convenience
      */
     ScreenRender renderMode(String outputType);

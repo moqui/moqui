@@ -32,6 +32,7 @@ This release includes:
   statusTypeId
 - XML Screens
   - Dynamic transition name handling (support regex transition names)
+  - Specify macro template in screen def to override default in moqui-conf
   - Template for xsl-fo render mode
   - Added support for drop-down.entity-options in Screen Form
   - Auto create drop-downs for fields with a relationship to Enumeration
