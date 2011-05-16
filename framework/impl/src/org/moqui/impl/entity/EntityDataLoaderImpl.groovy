@@ -58,7 +58,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     EntityDataLoader location(String location) { this.locationList.add(location); return this }
     EntityDataLoader locationList(List<String> ll) { this.locationList.addAll(ll); return this }
     EntityDataLoader xmlText(String xmlText) { this.xmlText = xmlText; return this }
-    EntityDataLoader dataTypes(Set<String> dataTypes) { this.dataTypes.addAll(dataTypes); return this }
+    EntityDataLoader dataTypes(Set<String> dataTypes) {
+        for (String dt in dataTypes) this.dataTypes.add(dt.trim())
+        return this
+    }
 
     EntityDataLoader transactionTimeout(int tt) { this.transactionTimeout = tt; return this }
     EntityDataLoader useTryInsert(boolean useTryInsert) { this.useTryInsert = useTryInsert; return this }

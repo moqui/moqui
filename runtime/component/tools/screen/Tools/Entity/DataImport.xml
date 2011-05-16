@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Import">
+
+    <transition name="load">
+        <actions>
+            <script><![CDATA[
+                org.moqui.entity.EntityDataLoader edl = ec.entity.makeDataLoader()
+                String source = ""
+                if (context.types) {
+                    edl.dataTypes(new HashSet(Arrays.asList(context.types.split(","))))
+                    source = context.types
+                } else if (context.location) {
+                    edl.location(context.location)
+                    source = context.location
+                } else if (context.xmlText) {
+                    edl.xmlText(context.xmlText)
+                    source = "XML Text Box"
+                }
+                if (context.timeout) edl.transactionTimeout(context.timeout as Integer)
+                if (context.dummyFks) edl.dummyFks(true)
+                if (context.useTryInsert) edl.useTryInsert(true)
+
+                if (context.checkOnly) {
+                    ec.message.messages.addAll(edl.check())
+                } else {
+                    long recordsLoaded = edl.load()
+                    ec.message.addMessage("Loaded ${recordsLoaded} records from [${source}]")
+                }
+            ]]></script>
+        </actions>
+        <default-response url="."/>
+    </transition>
+
+    <widgets>
+        <form-single name="ImportData" transition="load">
+            <field name="timeout"><default-field title="Timeout Seconds"><text-line size="5" default-value="60"/></default-field></field>
+            <field name="dummyFks"><default-field title=""><check><option key="true" text="Dummy FKs?"/></check></default-field></field>
+            <field name="useTryInsert"><default-field title=""><check><option key="true" text="Use Try Insert?"/></check></default-field></field>
+            <field name="checkOnly"><default-field title=""><check><option key="true" text="Check Only"/></check></default-field></field>
+
+            <field name="types"><default-field><text-line size="60"/></default-field></field>
+            <field name="location"><default-field><text-line size="80"/></default-field></field>
+            <field name="xmlText"><default-field title="Text">
+                <text-area rows="10" cols="80" default-value="&lt;entity-facade-xml&gt;\n&lt;/entity-facade-xml&gt;"/>
+            </default-field></field>
+
+            <field name="submit"><default-field><submit/></default-field></field>
+
+            <field-layout collapsible="true">
+                <field-ref name="timeout"/>
+                <field-row><field-ref name="dummyFks"/><field-ref name="useTryInsert"/><field-ref name="checkOnly"/></field-row>
+
+                <field-group title="Data Types, Comma Separated (from entity-facade-xml.@type)"><field-ref name="types"/></field-group>
+                <field-group title="Resource Location"><field-ref name="location"/></field-group>
+                <field-group title="XML Text"><field-ref name="xmlText"/></field-group>
+
+                <field-ref name="submit"/>
+            </field-layout>
+        </form-single>
+    </widgets>
+</screen>

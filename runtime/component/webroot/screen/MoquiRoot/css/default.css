@@ -118,7 +118,9 @@ table.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-spac
 .form-header-field { white-space: nowrap; }
 tr.form-header th, th div.form-title { vertical-align: top; }
 
-.single-form-field {  padding-right: 10px; }
+.single-form-field { padding-right: 10px; }
+.single-form-field span { font-size: 0.8em; }
+.single-form-field span input { margin-right: 4px; }
 label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
 
 .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select, tr.form-row td { font-size: 0.8em; }

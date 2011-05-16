@@ -63,6 +63,7 @@ This release includes:
       - find on entity with delete
       - create/update entity record
       - view entity record with related entities and links to them
+    - Entity Data Import screen
 
 
 ===========================================================================
@@ -452,7 +453,7 @@ Tools probable for 1.0 final:
 
 - Tools Screens
   - Entity
-    - Entity Data Import and Export screens
+    - Entity Data Export screen
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE:
@@ -474,7 +475,7 @@ Features designed, but not to be included in 1.0 series
   - Dynamic Screens (database-driven: DynamicScreen* entities)
   - Dynamic Forms (database-driven: DynForm* entities) (see Drupal CCK for
     some similar concepts; focus on extend/override/etc of existing forms)
-  - Templates for cwiki render mode
+  - Template for cwiki render mode
 - Service Facade
   - Service database-driven semaphores
   - Service runners for proxy service calls to another Moqui server via

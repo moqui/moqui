@@ -269,7 +269,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#assign fieldLayout = formNode["field-layout"][0]>
             <fieldset class="form-single-outer">
                 <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
-                <#assign collapsible = (fieldLayout["@collapsible"] == "true")>
+                <#assign collapsible = (fieldLayout["@collapsible"]?if_exists == "true")>
                 <#assign collapsibleOpened = false>
                 <#list formNode["field-layout"][0]?children as layoutNode>
                     <#if layoutNode?node_name == "field-ref">
