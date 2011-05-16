@@ -34,7 +34,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 if (context.useTryInsert) edl.useTryInsert(true)
 
                 if (context.checkOnly) {
-                    ec.message.messages.addAll(edl.check())
+                    List messages = edl.check()
+                    if (messages) {
+                        ec.message.messages.addAll(messages)
+                    } else {
+                        ec.message.addMessage("No differences found in check")
+                    }
                 } else {
                     long recordsLoaded = edl.load()
                     ec.message.addMessage("Loaded ${recordsLoaded} records from [${source}]")

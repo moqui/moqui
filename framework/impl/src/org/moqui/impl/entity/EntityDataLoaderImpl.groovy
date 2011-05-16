@@ -185,9 +185,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected List<String> messageList = new LinkedList()
         CheckValueHandler(EntityDataLoaderImpl edli) { super(edli) }
         List<String> getMessageList() { return messageList }
-        void handleValue(EntityValue value) {
-            value.checkAgainstDatabase(messageList)
-        }
+        void handleValue(EntityValue value) { value.checkAgainstDatabase(messageList) }
     }
     static class LoadValueHandler extends ValueHandler {
         LoadValueHandler(EntityDataLoaderImpl edli) { super(edli) }
@@ -315,8 +313,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     if (!currentValue.containsPrimaryKey()) {
                         ListOrderedSet pkFieldList = currentValue.getEntityDefinition().getFieldNames(true, false)
                         if (pkFieldList.size() == 1) {
-                            String newSeq = edli.efi.sequencedIdPrimary(currentValue.getEntityName(), null)
-                            currentValue.setString((String) pkFieldList.get(0), newSeq)
+                            currentValue.setSequencedIdPrimary()
                         } else {
                             throw new SAXException("Cannot store value with incomplete primary key with more than 1 primary key field: " + currentValue)
                         }
