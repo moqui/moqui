@@ -225,7 +225,7 @@ class EntityValueImpl implements EntityValue {
             this.getEntityFacadeImpl().ecfi.executionContext.artifactExecution.enableAuthz()
         }
 
-        Integer highestSeqVal = null;
+        Integer highestSeqVal = null
         for (EntityValue curValue in allValues) {
             String currentSeqId = curValue.getString(seqFieldName)
             if (currentSeqId) {
