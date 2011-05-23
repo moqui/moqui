@@ -225,7 +225,10 @@ class TransactionFacadeImpl implements TransactionFacade {
                 }
             }
 
-            this.beginWithTimeout(timeout)
+            // NOTE: Since JTA 1.1 setTransactionTimeout() is local to the thread, so this doesn't need to be synchronized.
+            if (timeout) ut.setTransactionTimeout(timeout)
+            ut.begin()
+
             getTransactionBeginStack().set(0, new Exception("Tx Begin Placeholder"))
 
             return true
@@ -233,14 +236,10 @@ class TransactionFacadeImpl implements TransactionFacade {
             throw new TransactionException("Could not begin transaction (could be a nesting problem)", e)
         } catch (SystemException e) {
             throw new TransactionException("Could not begin transaction", e)
+        } finally {
+            // make sure the timeout always gets reset to the default
+            if (timeout) ut.setTransactionTimeout(0)
         }
-    }
-
-    /** This is a synchronized method since we can only set the timeout for the whole system, and this will allow us to do it just for this transaction */
-    private synchronized void beginWithTimeout(Integer timeout) {
-        if (timeout) ut.setTransactionTimeout(timeout)
-        ut.begin()
-        if (timeout) ut.setTransactionTimeout(0)
     }
 
     /** @see org.moqui.context.TransactionFacade#commit(boolean) */
