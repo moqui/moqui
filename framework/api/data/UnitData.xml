@@ -11,7 +11,6 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-
     <!-- =============== Data Size =============== -->
     <Uom abbreviation="b" description="Bit of Data" uomId="DATA_b" uomTypeEnumId="UT_DATA_MEASURE"/>
     <Uom abbreviation="Kb" description="Kilobit of Data" uomId="DATA_Kb" uomTypeEnumId="UT_DATA_MEASURE"/>
@@ -26,17 +25,17 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="TB" description="Terabyte of Data" uomId="DATA_TB" uomTypeEnumId="UT_DATA_MEASURE"/>
     <Uom abbreviation="PB" description="Petabyte of Data" uomId="DATA_PB" uomTypeEnumId="UT_DATA_MEASURE"/>
 
-    <UomConversion uomId="DATA_Kb" uomIdTo="DATA_b" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_Mb" uomIdTo="DATA_Kb" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_Gb" uomIdTo="DATA_Mb" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_Tb" uomIdTo="DATA_Gb" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_Kb_b" uomId="DATA_Kb" uomIdTo="DATA_b" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_Mb_Kb" uomId="DATA_Mb" uomIdTo="DATA_Kb" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_Gb_Mb" uomId="DATA_Gb" uomIdTo="DATA_Mb" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_Tb_Gb" uomId="DATA_Tb" uomIdTo="DATA_Gb" conversionFactor="1024"/>
 
-    <UomConversion uomId="DATA_B" uomIdTo="DATA_b" conversionFactor="8"/>
-    <UomConversion uomId="DATA_KB" uomIdTo="DATA_B" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_MB" uomIdTo="DATA_KB" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_GB" uomIdTo="DATA_MB" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_TB" uomIdTo="DATA_GB" conversionFactor="1024"/>
-    <UomConversion uomId="DATA_PB" uomIdTo="DATA_TB" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_B_b" uomId="DATA_B" uomIdTo="DATA_b" conversionFactor="8"/>
+    <UomConversion uomConversionId="DATA_SIZE_KB_B" uomId="DATA_KB" uomIdTo="DATA_B" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_MB_KB" uomId="DATA_MB" uomIdTo="DATA_KB" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_GM_MB" uomId="DATA_GB" uomIdTo="DATA_MB" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_TB_GB" uomId="DATA_TB" uomIdTo="DATA_GB" conversionFactor="1024"/>
+    <UomConversion uomConversionId="DATA_SIZE_PB_TB" uomId="DATA_PB" uomIdTo="DATA_TB" conversionFactor="1024"/>
 
     <!-- =============== Data Speed =============== -->
     <Uom abbreviation="bps" description="Bit-per-second of Data" uomId="DATASPD_bps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
@@ -45,10 +44,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="Gbps" description="Gigabit-per-second of Data" uomId="DATASPD_Gbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
     <Uom abbreviation="Tbps" description="Terabit-per-second of Data" uomId="DATASPD_Tbps" uomTypeEnumId="UT_DATASPD_MEASURE"/>
 
-    <UomConversion uomId="DATASPD_Kbps" uomIdTo="DATASPD_bps" conversionFactor="1000"/>
-    <UomConversion uomId="DATASPD_Mbps" uomIdTo="DATASPD_Kbps" conversionFactor="1000"/>
-    <UomConversion uomId="DATASPD_Gbps" uomIdTo="DATASPD_Mbps" conversionFactor="1000"/>
-    <UomConversion uomId="DATASPD_Tbps" uomIdTo="DATASPD_Gbps" conversionFactor="1000"/>
+    <UomConversion uomConversionId="DATA_SPD_Kbps_bps" uomId="DATASPD_Kbps" uomIdTo="DATASPD_bps" conversionFactor="1000"/>
+    <UomConversion uomConversionId="DATA_SPD_Mbps_Kbps" uomId="DATASPD_Mbps" uomIdTo="DATASPD_Kbps" conversionFactor="1000"/>
+    <UomConversion uomConversionId="DATA_SPD_Gbps_Mbps" uomId="DATASPD_Gbps" uomIdTo="DATASPD_Mbps" conversionFactor="1000"/>
+    <UomConversion uomConversionId="DATA_SPD_Tbps_Gbps" uomId="DATASPD_Tbps" uomIdTo="DATASPD_Gbps" conversionFactor="1000"/>
 
     <!-- =============== Time/Frequency =============== -->
     <Uom abbreviation="ms" description="Time in Milli-Seconds" uomId="TF_ms" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
@@ -64,16 +63,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="century" description="Time in Centuries" uomId="TF_century" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
     <Uom abbreviation="millenium" description="Time in Millenia" uomId="TF_millenium" uomTypeEnumId="UT_TIME_FREQ_MEASURE"/>
 
-    <UomConversion uomId="TF_s" uomIdTo="TF_ms" conversionFactor="1000"/>
-    <UomConversion uomId="TF_min" uomIdTo="TF_s" conversionFactor="60"/>
-    <UomConversion uomId="TF_hr" uomIdTo="TF_min" conversionFactor="60"/>
-    <UomConversion uomId="TF_day" uomIdTo="TF_hr" conversionFactor="24"/>
-    <UomConversion uomId="TF_wk" uomIdTo="TF_day" conversionFactor="7"/>
-    <UomConversion uomId="TF_yr" uomIdTo="TF_day" conversionFactor="365"/>
-    <UomConversion uomId="TF_decade" uomIdTo="TF_yr" conversionFactor="10"/>
-    <UomConversion uomId="TF_score" uomIdTo="TF_yr" conversionFactor="20"/>
-    <UomConversion uomId="TF_century" uomIdTo="TF_yr" conversionFactor="100"/>
-    <UomConversion uomId="TF_millenium" uomIdTo="TF_yr" conversionFactor="1000"/>
+    <UomConversion uomConversionId="TIME_FREQ_s_ms" uomId="TF_s" uomIdTo="TF_ms" conversionFactor="1000"/>
+    <UomConversion uomConversionId="TIME_FREQ_min_s" uomId="TF_min" uomIdTo="TF_s" conversionFactor="60"/>
+    <UomConversion uomConversionId="TIME_FREQ_hr_min" uomId="TF_hr" uomIdTo="TF_min" conversionFactor="60"/>
+    <UomConversion uomConversionId="TIME_FREQ_day_hr" uomId="TF_day" uomIdTo="TF_hr" conversionFactor="24"/>
+    <UomConversion uomConversionId="TIME_FREQ_wk_day" uomId="TF_wk" uomIdTo="TF_day" conversionFactor="7"/>
+    <UomConversion uomConversionId="TIME_FREQ_yr_day" uomId="TF_yr" uomIdTo="TF_day" conversionFactor="365"/>
+    <UomConversion uomConversionId="TIME_FREQ_decade_yr" uomId="TF_decade" uomIdTo="TF_yr" conversionFactor="10"/>
+    <UomConversion uomConversionId="TIME_FREQ_score_yr" uomId="TF_score" uomIdTo="TF_yr" conversionFactor="20"/>
+    <UomConversion uomConversionId="TIME_FREQ_century_yr" uomId="TF_century" uomIdTo="TF_yr" conversionFactor="100"/>
+    <UomConversion uomConversionId="TIME_FREQ_mill_yr" uomId="TF_millenium" uomIdTo="TF_yr" conversionFactor="1000"/>
 
     <!-- =============== Length =============== -->
     <Uom abbreviation="A" description="Angstrom" uomId="LEN_A" uomTypeEnumId="UT_LENGTH_MEASURE"/>
@@ -103,55 +102,55 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="rd" description="Rod" uomId="LEN_rd" uomTypeEnumId="UT_LENGTH_MEASURE"/>
     <Uom abbreviation="yd" description="Yard" uomId="LEN_yd" uomTypeEnumId="UT_LENGTH_MEASURE"/>
 
-    <UomConversion uomId="LEN_A" uomIdTo="LEN_m" conversionFactor="0.0000000001"/> <!-- 10 to the -10 meters -->
-    <UomConversion uomId="LEN_A" uomIdTo="LEN_in" conversionFactor="0.000000004"/>
+    <UomConversion uomConversionId="LEN_A_m" uomId="LEN_A" uomIdTo="LEN_m" conversionFactor="0.0000000001"/> <!-- 10 to the -10 meters -->
+    <UomConversion uomConversionId="LEN_A_in" uomId="LEN_A" uomIdTo="LEN_in" conversionFactor="0.000000004"/>
 
-    <UomConversion uomId="LEN_cb" uomIdTo="LEN_fm" conversionFactor="120"/>
-    <UomConversion uomId="LEN_cb" uomIdTo="LEN_ft" conversionFactor="720"/>
+    <UomConversion uomConversionId="LEN_cb_fm" uomId="LEN_cb" uomIdTo="LEN_fm" conversionFactor="120"/>
+    <UomConversion uomConversionId="LEN_cb_ft" uomId="LEN_cb" uomIdTo="LEN_ft" conversionFactor="720"/>
 
-    <UomConversion uomId="LEN_cm" uomIdTo="LEN_m" conversionFactor="0.01"/>
+    <UomConversion uomConversionId="LEN_cm_m" uomId="LEN_cm" uomIdTo="LEN_m" conversionFactor="0.01"/>
 
-    <UomConversion uomId="LEN_chG" uomIdTo="LEN_ft" conversionFactor="66"/>
-    <UomConversion uomId="LEN_chG" uomIdTo="LEN_rd" conversionFactor="4"/>
-    <UomConversion uomId="LEN_chR" uomIdTo="LEN_ft" conversionFactor="100"/>
+    <UomConversion uomConversionId="LEN_chG_ft" uomId="LEN_chG" uomIdTo="LEN_ft" conversionFactor="66"/>
+    <UomConversion uomConversionId="LEN_chG_rd" uomId="LEN_chG" uomIdTo="LEN_rd" conversionFactor="4"/>
+    <UomConversion uomConversionId="LEN_chR_ft" uomId="LEN_chR" uomIdTo="LEN_ft" conversionFactor="100"/>
 
-    <UomConversion uomId="LEN_dm" uomIdTo="LEN_m" conversionFactor="0.1"/>
-    <UomConversion uomId="LEN_dam" uomIdTo="LEN_m" conversionFactor="10"/>
+    <UomConversion uomConversionId="LEN_dm_m" uomId="LEN_dm" uomIdTo="LEN_m" conversionFactor="0.1"/>
+    <UomConversion uomConversionId="LEN_dam_m" uomId="LEN_dam" uomIdTo="LEN_m" conversionFactor="10"/>
 
-    <UomConversion uomId="LEN_fm" uomIdTo="LEN_ft" conversionFactor="6"/>
-    <UomConversion uomId="LEN_ft" uomIdTo="LEN_in" conversionFactor="12"/>
-    <UomConversion uomId="LEN_ft" uomIdTo="LEN_m" conversionFactor="0.3048"/>
-    <UomConversion uomId="LEN_fur" uomIdTo="LEN_mi" conversionFactor="0.125"/>
-    <UomConversion uomId="LEN_mi" uomIdTo="LEN_fur" conversionFactor="8"/>
-    <UomConversion uomId="LEN_hand" uomIdTo="LEN_in" conversionFactor="4"/>
-    <UomConversion uomId="LEN_in" uomIdTo="LEN_cm" conversionFactor="2.54"/>
-    <UomConversion uomId="LEN_in" uomIdTo="LEN_mm" conversionFactor="25.4"/>
-    <UomConversion uomId="LEN_in" uomIdTo="LEN_u" conversionFactor="25400"/>
+    <UomConversion uomConversionId="LEN_fm_ft" uomId="LEN_fm" uomIdTo="LEN_ft" conversionFactor="6"/>
+    <UomConversion uomConversionId="LEN_ft_in" uomId="LEN_ft" uomIdTo="LEN_in" conversionFactor="12"/>
+    <UomConversion uomConversionId="LEN_ft_m" uomId="LEN_ft" uomIdTo="LEN_m" conversionFactor="0.3048"/>
+    <UomConversion uomConversionId="LEN_fur_mi" uomId="LEN_fur" uomIdTo="LEN_mi" conversionFactor="0.125"/>
+    <UomConversion uomConversionId="LEN_mi_fur" uomId="LEN_mi" uomIdTo="LEN_fur" conversionFactor="8"/>
+    <UomConversion uomConversionId="LEN_hand_in" uomId="LEN_hand" uomIdTo="LEN_in" conversionFactor="4"/>
+    <UomConversion uomConversionId="LEN_in_cm" uomId="LEN_in" uomIdTo="LEN_cm" conversionFactor="2.54"/>
+    <UomConversion uomConversionId="LEN_in_mm" uomId="LEN_in" uomIdTo="LEN_mm" conversionFactor="25.4"/>
+    <UomConversion uomConversionId="LEN_in_u" uomId="LEN_in" uomIdTo="LEN_u" conversionFactor="25400"/>
 
-    <UomConversion uomId="LEN_km" uomIdTo="LEN_m" conversionFactor="1000"/>
+    <UomConversion uomConversionId="LEN_km_m" uomId="LEN_km" uomIdTo="LEN_m" conversionFactor="1000"/>
 
-    <UomConversion uomId="LEN_league" uomIdTo="LEN_mi" conversionFactor="3"/>
-    <UomConversion uomId="LEN_lnG" uomIdTo="LEN_in" conversionFactor="7.92"/>
-    <UomConversion uomId="LEN_lnR" uomIdTo="LEN_in" conversionFactor="12"/>
+    <UomConversion uomConversionId="LEN_league_mi" uomId="LEN_league" uomIdTo="LEN_mi" conversionFactor="3"/>
+    <UomConversion uomConversionId="LEN_lnG_in" uomId="LEN_lnG" uomIdTo="LEN_in" conversionFactor="7.92"/>
+    <UomConversion uomConversionId="LEN_lnR_in" uomId="LEN_lnR" uomIdTo="LEN_in" conversionFactor="12"/>
 
-    <UomConversion uomId="LEN_m" uomIdTo="LEN_in" conversionFactor="39.37"/>
-    <UomConversion uomId="LEN_u" uomIdTo="LEN_mm" conversionFactor="0.001"/>
-    <UomConversion uomId="LEN_mm" uomIdTo="LEN_u" conversionFactor="1000"/>
+    <UomConversion uomConversionId="LEN_m_in" uomId="LEN_m" uomIdTo="LEN_in" conversionFactor="39.37"/>
+    <UomConversion uomConversionId="LEN_u_mm" uomId="LEN_u" uomIdTo="LEN_mm" conversionFactor="0.001"/>
+    <UomConversion uomConversionId="LEN_mm_u" uomId="LEN_mm" uomIdTo="LEN_u" conversionFactor="1000"/>
 
-    <UomConversion uomId="LEN_mi" uomIdTo="LEN_km" conversionFactor="1.609"/>
-    <UomConversion uomId="LEN_mi" uomIdTo="LEN_ft" conversionFactor="5280"/>
-    <UomConversion uomId="LEN_nmi" uomIdTo="LEN_km" conversionFactor="1.85"/>
-    <UomConversion uomId="LEN_nmi" uomIdTo="LEN_ft" conversionFactor="6076.11549"/>
+    <UomConversion uomConversionId="LEN_mi_km" uomId="LEN_mi" uomIdTo="LEN_km" conversionFactor="1.609"/>
+    <UomConversion uomConversionId="LEN_mi_ft" uomId="LEN_mi" uomIdTo="LEN_ft" conversionFactor="5280"/>
+    <UomConversion uomConversionId="LEN_nmi_km" uomId="LEN_nmi" uomIdTo="LEN_km" conversionFactor="1.85"/>
+    <UomConversion uomConversionId="LEN_nmi_ft" uomId="LEN_nmi" uomIdTo="LEN_ft" conversionFactor="6076.11549"/>
 
-    <UomConversion uomId="LEN_mm" uomIdTo="LEN_m" conversionFactor="0.001"/>
-    <UomConversion uomId="LEN_mil" uomIdTo="LEN_in" conversionFactor="0.001"/>
+    <UomConversion uomConversionId="LEN_mm_m" uomId="LEN_mm" uomIdTo="LEN_m" conversionFactor="0.001"/>
+    <UomConversion uomConversionId="LEN_mil_in" uomId="LEN_mil" uomIdTo="LEN_in" conversionFactor="0.001"/>
 
-    <UomConversion uomId="LEN_point" uomIdTo="LEN_mm" conversionFactor="0.351"/>
-    <UomConversion uomId="LEN_point" uomIdTo="LEN_in" conversionFactor="0.0138"/>
-    <UomConversion uomId="LEN_pica" uomIdTo="LEN_point" conversionFactor="12"/>
+    <UomConversion uomConversionId="LEN_point_mm" uomId="LEN_point" uomIdTo="LEN_mm" conversionFactor="0.351"/>
+    <UomConversion uomConversionId="LEN_point_in" uomId="LEN_point" uomIdTo="LEN_in" conversionFactor="0.0138"/>
+    <UomConversion uomConversionId="LEN_pica_point" uomId="LEN_pica" uomIdTo="LEN_point" conversionFactor="12"/>
 
-    <UomConversion uomId="LEN_rd" uomIdTo="LEN_ft" conversionFactor="16.5"/>
-    <UomConversion uomId="LEN_yd" uomIdTo="LEN_ft" conversionFactor="3"/>
+    <UomConversion uomConversionId="LEN_rd_ft" uomId="LEN_rd" uomIdTo="LEN_ft" conversionFactor="16.5"/>
+    <UomConversion uomConversionId="LEN_yd_ft" uomId="LEN_yd" uomIdTo="LEN_ft" conversionFactor="3"/>
 
     <!-- =============== Area =============== -->
     <Uom abbreviation="A" description="Acre" uomId="AREA_A" uomTypeEnumId="UT_AREA_MEASURE"/>
@@ -167,18 +166,18 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="rd2" description="Square Rod" uomId="AREA_rd2" uomTypeEnumId="UT_AREA_MEASURE"/>
     <Uom abbreviation="yd2" description="Square Yard" uomId="AREA_yd2" uomTypeEnumId="UT_AREA_MEASURE"/>
 
-    <UomConversion uomId="AREA_A" uomIdTo="AREA_ft2" conversionFactor="43560"/>
-    <UomConversion uomId="AREA_a" uomIdTo="AREA_m2" conversionFactor="100"/>
-    <UomConversion uomId="AREA_ha" uomIdTo="AREA_m2" conversionFactor="10000"/>
-    <UomConversion uomId="AREA_ha" uomIdTo="AREA_A" conversionFactor="2.471"/>
-    <UomConversion uomId="AREA_cm2" uomIdTo="AREA_mm2" conversionFactor="100"/>
-    <UomConversion uomId="AREA_cm2" uomIdTo="AREA_in2" conversionFactor=".155"/>
-    <UomConversion uomId="AREA_ft2" uomIdTo="AREA_in2" conversionFactor="144"/>
-    <UomConversion uomId="AREA_km2" uomIdTo="AREA_m2" conversionFactor="1000000"/>
-    <UomConversion uomId="AREA_m2" uomIdTo="AREA_cm2" conversionFactor="10000"/>
-    <UomConversion uomId="AREA_mi2" uomIdTo="AREA_A" conversionFactor="639.8"/>
-    <UomConversion uomId="AREA_rd2" uomIdTo="AREA_ft2" conversionFactor="272.25"/>
-    <UomConversion uomId="AREA_yd2" uomIdTo="AREA_ft2" conversionFactor="9"/>
+    <UomConversion uomConversionId="AREA_A_ft2" uomId="AREA_A" uomIdTo="AREA_ft2" conversionFactor="43560"/>
+    <UomConversion uomConversionId="AREA_a_m2" uomId="AREA_a" uomIdTo="AREA_m2" conversionFactor="100"/>
+    <UomConversion uomConversionId="AREA_ha_m2" uomId="AREA_ha" uomIdTo="AREA_m2" conversionFactor="10000"/>
+    <UomConversion uomConversionId="AREA_ha_A" uomId="AREA_ha" uomIdTo="AREA_A" conversionFactor="2.471"/>
+    <UomConversion uomConversionId="AREA_cm2_mm2" uomId="AREA_cm2" uomIdTo="AREA_mm2" conversionFactor="100"/>
+    <UomConversion uomConversionId="AREA_cm2_in2" uomId="AREA_cm2" uomIdTo="AREA_in2" conversionFactor=".155"/>
+    <UomConversion uomConversionId="AREA_ft2_in2" uomId="AREA_ft2" uomIdTo="AREA_in2" conversionFactor="144"/>
+    <UomConversion uomConversionId="AREA_km2_m2" uomId="AREA_km2" uomIdTo="AREA_m2" conversionFactor="1000000"/>
+    <UomConversion uomConversionId="AREA_m2_cm2" uomId="AREA_m2" uomIdTo="AREA_cm2" conversionFactor="10000"/>
+    <UomConversion uomConversionId="AREA_mi2_A" uomId="AREA_mi2" uomIdTo="AREA_A" conversionFactor="639.8"/>
+    <UomConversion uomConversionId="AREA_rd2_ft2" uomId="AREA_rd2" uomIdTo="AREA_ft2" conversionFactor="272.25"/>
+    <UomConversion uomConversionId="AREA_yd2_ft2" uomId="AREA_yd2" uomIdTo="AREA_ft2" conversionFactor="9"/>
 
     <!-- =============== Volume (Liquid) =============== -->
     <Uom abbreviation="bbl" description="Barrel (US)" uomId="VLIQ_bbl" uomTypeEnumId="UT_VOLUME_LIQ_MEAS"/>
@@ -197,23 +196,23 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="Tbs" description="Tablespoon" uomId="VLIQ_Tbs" uomTypeEnumId="UT_VOLUME_LIQ_MEAS"/>
     <Uom abbreviation="tsp" description="Teaspoon" uomId="VLIQ_tsp" uomTypeEnumId="UT_VOLUME_LIQ_MEAS"/>
 
-    <UomConversion uomId="VLIQ_bbl" uomIdTo="VLIQ_galUS" conversionFactor="31.5"/>
-    <UomConversion uomId="VLIQ_ozUS" uomIdTo="VLIQ_dr" conversionFactor="8"/>
-    <UomConversion uomId="VLIQ_ptUK" uomIdTo="VLIQ_gi" conversionFactor="4"/>
-    <UomConversion uomId="VLIQ_galUK" uomIdTo="VLIQ_galUS" conversionFactor="1.2009"/>
-    <UomConversion uomId="VLIQ_galUS" uomIdTo="VLIQ_qt" conversionFactor="4"/>
-    <UomConversion uomId="VLIQ_galUS" uomIdTo="VLIQ_L" conversionFactor="3.785"/>
-    <UomConversion uomId="VLIQ_L" uomIdTo="VLIQ_qt" conversionFactor="1.056"/>
-    <UomConversion uomId="VLIQ_ml" uomIdTo="VLIQ_L" conversionFactor="0.001"/>
-    <UomConversion uomId="VLIQ_L" uomIdTo="VLIQ_ml" conversionFactor="1000"/>
-    <UomConversion uomId="VLIQ_ozUK" uomIdTo="VLIQ_L" conversionFactor="0.029"/>
-    <UomConversion uomId="VLIQ_ozUK" uomIdTo="VLIQ_ozUS" conversionFactor="0.96"/>
-    <UomConversion uomId="VLIQ_ozUS" uomIdTo="VLIQ_Tbs" conversionFactor="2"/>
-    <UomConversion uomId="VLIQ_Tbs" uomIdTo="VLIQ_tsp" conversionFactor="3"/>
-    <UomConversion uomId="VLIQ_cup" uomIdTo="VLIQ_Tbs" conversionFactor="16"/>
-    <UomConversion uomId="VLIQ_ptUK" uomIdTo="VLIQ_ptUS" conversionFactor="1.2"/>
-    <UomConversion uomId="VLIQ_ptUS" uomIdTo="VLIQ_ozUS" conversionFactor="16"/>
-    <UomConversion uomId="VLIQ_qt" uomIdTo="VLIQ_ptUS" conversionFactor="2"/>
+    <UomConversion uomConversionId="VLIQ_bbl_galUS" uomId="VLIQ_bbl" uomIdTo="VLIQ_galUS" conversionFactor="31.5"/>
+    <UomConversion uomConversionId="VLIQ_ozUS_dr" uomId="VLIQ_ozUS" uomIdTo="VLIQ_dr" conversionFactor="8"/>
+    <UomConversion uomConversionId="VLIQ_ptUK_gi" uomId="VLIQ_ptUK" uomIdTo="VLIQ_gi" conversionFactor="4"/>
+    <UomConversion uomConversionId="VLIQ_galUK_galUS" uomId="VLIQ_galUK" uomIdTo="VLIQ_galUS" conversionFactor="1.2009"/>
+    <UomConversion uomConversionId="VLIQ_galUS_qt" uomId="VLIQ_galUS" uomIdTo="VLIQ_qt" conversionFactor="4"/>
+    <UomConversion uomConversionId="VLIQ_galUS_L" uomId="VLIQ_galUS" uomIdTo="VLIQ_L" conversionFactor="3.785"/>
+    <UomConversion uomConversionId="VLIQ_L_qt" uomId="VLIQ_L" uomIdTo="VLIQ_qt" conversionFactor="1.056"/>
+    <UomConversion uomConversionId="VLIQ_ml_L" uomId="VLIQ_ml" uomIdTo="VLIQ_L" conversionFactor="0.001"/>
+    <UomConversion uomConversionId="VLIQ_L_ml" uomId="VLIQ_L" uomIdTo="VLIQ_ml" conversionFactor="1000"/>
+    <UomConversion uomConversionId="VLIQ_ozUK_L" uomId="VLIQ_ozUK" uomIdTo="VLIQ_L" conversionFactor="0.029"/>
+    <UomConversion uomConversionId="VLIQ_ozUK_ozUS" uomId="VLIQ_ozUK" uomIdTo="VLIQ_ozUS" conversionFactor="0.96"/>
+    <UomConversion uomConversionId="VLIQ_ozUS_Tbs" uomId="VLIQ_ozUS" uomIdTo="VLIQ_Tbs" conversionFactor="2"/>
+    <UomConversion uomConversionId="VLIQ_Tbs_tsp" uomId="VLIQ_Tbs" uomIdTo="VLIQ_tsp" conversionFactor="3"/>
+    <UomConversion uomConversionId="VLIQ_cup_Tbs" uomId="VLIQ_cup" uomIdTo="VLIQ_Tbs" conversionFactor="16"/>
+    <UomConversion uomConversionId="VLIQ_ptUK_ptUS" uomId="VLIQ_ptUK" uomIdTo="VLIQ_ptUS" conversionFactor="1.2"/>
+    <UomConversion uomConversionId="VLIQ_ptUS_ozUS" uomId="VLIQ_ptUS" uomIdTo="VLIQ_ozUS" conversionFactor="16"/>
+    <UomConversion uomConversionId="VLIQ_qt_ptUS" uomId="VLIQ_qt" uomIdTo="VLIQ_ptUS" conversionFactor="2"/>
 
     <!-- =============== Volume (Dry) =============== -->
     <Uom abbreviation="cm3" description="Cubic centimeter" uomId="VDRY_cm3" uomTypeEnumId="UT_VOLUME_DRY_MEAS"/>
@@ -224,14 +223,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="ST" description="Stere (cubic meter)" uomId="VDRY_ST" uomTypeEnumId="UT_VOLUME_DRY_MEAS"/>
     <Uom abbreviation="yd3" description="Cubic yard" uomId="VDRY_yd3" uomTypeEnumId="UT_VOLUME_DRY_MEAS"/>
 
-    <UomConversion uomId="VLIQ_L" uomIdTo="VDRY_m3" conversionFactor="0.001"/>
-    <UomConversion uomId="VLIQ_galUK" uomIdTo="VDRY_m3" conversionFactor="0.4546"/>
-    <UomConversion uomId="VDRY_cm3" uomIdTo="VDRY_mm3" conversionFactor="1000"/>
-    <UomConversion uomId="VDRY_cm3" uomIdTo="VDRY_in3" conversionFactor="0.061"/>
-    <UomConversion uomId="VDRY_ft3" uomIdTo="VDRY_in3" conversionFactor="1728"/>
-    <UomConversion uomId="VDRY_ST" uomIdTo="VDRY_m3" conversionFactor="1"/>
-    <UomConversion uomId="VDRY_m3" uomIdTo="VDRY_yd3" conversionFactor="1.3"/>
-    <UomConversion uomId="VDRY_yd3" uomIdTo="VDRY_ft3" conversionFactor="27"/>
+    <UomConversion uomConversionId="VLIQ_L_m3" uomId="VLIQ_L" uomIdTo="VDRY_m3" conversionFactor="0.001"/>
+    <UomConversion uomConversionId="VLIQ_galUK_m3" uomId="VLIQ_galUK" uomIdTo="VDRY_m3" conversionFactor="0.4546"/>
+    <UomConversion uomConversionId="VDRY_cm3_mm3" uomId="VDRY_cm3" uomIdTo="VDRY_mm3" conversionFactor="1000"/>
+    <UomConversion uomConversionId="VDRY_cm3_in3" uomId="VDRY_cm3" uomIdTo="VDRY_in3" conversionFactor="0.061"/>
+    <UomConversion uomConversionId="VDRY_ft3_in3" uomId="VDRY_ft3" uomIdTo="VDRY_in3" conversionFactor="1728"/>
+    <UomConversion uomConversionId="VDRY_ST_m3" uomId="VDRY_ST" uomIdTo="VDRY_m3" conversionFactor="1"/>
+    <UomConversion uomConversionId="VDRY_m3_yd3" uomId="VDRY_m3" uomIdTo="VDRY_yd3" conversionFactor="1.3"/>
+    <UomConversion uomConversionId="VDRY_yd3_ft3" uomId="VDRY_yd3" uomIdTo="VDRY_ft3" conversionFactor="27"/>
 
     <!-- =============== Weight =============== -->
     <Uom abbreviation="dr avdp" description="Dram (avdp)" uomId="WT_dr_avdp" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
@@ -248,23 +247,23 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="mt" description="Ton (metric)" uomId="WT_mt" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
     <Uom abbreviation="sh t" description="Ton (short)" uomId="WT_sh_t" uomTypeEnumId="UT_WEIGHT_MEASURE"/>
 
-    <UomConversion uomId="WT_dr_avdp" uomIdTo="WT_oz" conversionFactor="0.0625"/>
-    <UomConversion uomId="WT_gr" uomIdTo="WT_oz" conversionFactor="0.00229"/>
-    <UomConversion uomId="WT_gr" uomIdTo="WT_g" conversionFactor="0.0648"/>
-    <UomConversion uomId="WT_kg" uomIdTo="WT_g" conversionFactor="1000"/>
-    <UomConversion uomId="WT_kg" uomIdTo="WT_lb" conversionFactor="2.2"/>
-    <UomConversion uomId="WT_g" uomIdTo="WT_mg" conversionFactor="1000"/>
-    <UomConversion uomId="WT_g" uomIdTo="WT_oz" conversionFactor="0.03527"/>
-    <UomConversion uomId="WT_oz" uomIdTo="WT_lb" conversionFactor="0.0625"/>
-    <UomConversion uomId="WT_oz" uomIdTo="WT_g" conversionFactor="28"/>
-    <UomConversion uomId="WT_oz_tr" uomIdTo="WT_g" conversionFactor="30"/>
-    <UomConversion uomId="WT_dwt" uomIdTo="WT_g" conversionFactor="1.555"/>
-    <UomConversion uomId="WT_lb" uomIdTo="WT_oz" conversionFactor="16"/>
-    <UomConversion uomId="WT_st" uomIdTo="WT_lb" conversionFactor="14"/>
-    <UomConversion uomId="WT_lt" uomIdTo="WT_mt" conversionFactor="1.02"/>
-    <UomConversion uomId="WT_lt" uomIdTo="WT_lb" conversionFactor="2240"/>
-    <UomConversion uomId="WT_mt" uomIdTo="WT_kg" conversionFactor="1000"/>
-    <UomConversion uomId="WT_sh_t" uomIdTo="WT_lb" conversionFactor="2000"/>
+    <UomConversion uomConversionId="WT_dr_avdp_oz" uomId="WT_dr_avdp" uomIdTo="WT_oz" conversionFactor="0.0625"/>
+    <UomConversion uomConversionId="WT_gr_oz" uomId="WT_gr" uomIdTo="WT_oz" conversionFactor="0.00229"/>
+    <UomConversion uomConversionId="WT_gr_g" uomId="WT_gr" uomIdTo="WT_g" conversionFactor="0.0648"/>
+    <UomConversion uomConversionId="WT_kg_g" uomId="WT_kg" uomIdTo="WT_g" conversionFactor="1000"/>
+    <UomConversion uomConversionId="WT_kg_lb" uomId="WT_kg" uomIdTo="WT_lb" conversionFactor="2.2"/>
+    <UomConversion uomConversionId="WT_g_mg" uomId="WT_g" uomIdTo="WT_mg" conversionFactor="1000"/>
+    <UomConversion uomConversionId="WT_g_oz" uomId="WT_g" uomIdTo="WT_oz" conversionFactor="0.03527"/>
+    <UomConversion uomConversionId="WT_oz_lb" uomId="WT_oz" uomIdTo="WT_lb" conversionFactor="0.0625"/>
+    <UomConversion uomConversionId="WT_oz_g" uomId="WT_oz" uomIdTo="WT_g" conversionFactor="28"/>
+    <UomConversion uomConversionId="WT_oz_tr_g" uomId="WT_oz_tr" uomIdTo="WT_g" conversionFactor="30"/>
+    <UomConversion uomConversionId="WT_dwt_g" uomId="WT_dwt" uomIdTo="WT_g" conversionFactor="1.555"/>
+    <UomConversion uomConversionId="WT_lb_oz" uomId="WT_lb" uomIdTo="WT_oz" conversionFactor="16"/>
+    <UomConversion uomConversionId="WT_st_lb" uomId="WT_st" uomIdTo="WT_lb" conversionFactor="14"/>
+    <UomConversion uomConversionId="WT_lt_mt" uomId="WT_lt" uomIdTo="WT_mt" conversionFactor="1.02"/>
+    <UomConversion uomConversionId="WT_lt_lb" uomId="WT_lt" uomIdTo="WT_lb" conversionFactor="2240"/>
+    <UomConversion uomConversionId="WT_mt_kg" uomId="WT_mt" uomIdTo="WT_kg" conversionFactor="1000"/>
+    <UomConversion uomConversionId="WT_sh_t_lb" uomId="WT_sh_t" uomIdTo="WT_lb" conversionFactor="2000"/>
 
     <!-- =============== Power =============== -->
     <Uom abbreviation="kw" description="Kilowatt" uomId="PW_kw" uomTypeEnumId="UT_POWER_MEASURE"/>
@@ -274,12 +273,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="cal/sec" description="Calorie per second" uomId="PW_cal_sec" uomTypeEnumId="UT_POWER_MEASURE"/>
     <Uom abbreviation="bhp" description="Boiler horsepower" uomId="PW_bhp" uomTypeEnumId="UT_POWER_MEASURE"/>
 
-    <UomConversion uomId="PW_kw" uomIdTo="PW_w" conversionFactor="1000"/>
-    <UomConversion uomId="PW_hp" uomIdTo="PW_w" conversionFactor="745.7"/>
-    <UomConversion uomId="PW_kw" uomIdTo="PW_hp" conversionFactor="1.341021858"/>
-    <UomConversion uomId="PW_kw" uomIdTo="PW_BTU_hr" conversionFactor="3412.14245"/>
-    <UomConversion uomId="PW_kw" uomIdTo="PW_cal_sec" conversionFactor="238.845897"/>
-    <UomConversion uomId="PW_kw" uomIdTo="PW_bhp" conversionFactor="0.101929972"/>
+    <UomConversion uomConversionId="PW_kw_w" uomId="PW_kw" uomIdTo="PW_w" conversionFactor="1000"/>
+    <UomConversion uomConversionId="PW_hp_w" uomId="PW_hp" uomIdTo="PW_w" conversionFactor="745.7"/>
+    <UomConversion uomConversionId="PW_kw_hp" uomId="PW_kw" uomIdTo="PW_hp" conversionFactor="1.341021858"/>
+    <UomConversion uomConversionId="PW_kw_BTU_hr" uomId="PW_kw" uomIdTo="PW_BTU_hr" conversionFactor="3412.14245"/>
+    <UomConversion uomConversionId="PW_kw_cal_sec" uomId="PW_kw" uomIdTo="PW_cal_sec" conversionFactor="238.845897"/>
+    <UomConversion uomConversionId="PW_kw_bhp" uomId="PW_kw" uomIdTo="PW_bhp" conversionFactor="0.101929972"/>
 
     <!-- =============== Energy =============== -->
     <Uom abbreviation="J" description="Joule (absolute)" uomId="EN_J" uomTypeEnumId="UT_ENERGY_MEASURE"/>
@@ -290,21 +289,21 @@ This Work includes contributions authored by David E. Jones, not as a
     <Uom abbreviation="kw*h" description="Kilowatt-hour" uomId="EN_kw_h" uomTypeEnumId="UT_ENERGY_MEASURE"/>
     <Uom abbreviation="ft*lbf" description="Foot-pound(force)" uomId="EN_ft_lbf" uomTypeEnumId="UT_ENERGY_MEASURE"/>
 
-    <UomConversion uomId="EN_cal" uomIdTo="EN_J" conversionFactor="4.1868"/>
-    <UomConversion uomId="EN_kcal" uomIdTo="EN_cal" conversionFactor="1000"/>
-    <UomConversion uomId="EN_kw_h" uomIdTo="EN_hp_h" conversionFactor="1.34102209"/>
-    <UomConversion uomId="EN_kw_h" uomIdTo="EN_BTU" conversionFactor="3412.1416416"/>
-    <UomConversion uomId="EN_kw_h" uomIdTo="EN_J" conversionFactor="3600000"/>
-    <UomConversion uomId="EN_kw_h" uomIdTo="EN_kcal" conversionFactor="859.845228"/>
-    <UomConversion uomId="EN_kw_h" uomIdTo="EN_ft_lbf" conversionFactor="2655223.73748"/>
+    <UomConversion uomConversionId="EN_cal_J" uomId="EN_cal" uomIdTo="EN_J" conversionFactor="4.1868"/>
+    <UomConversion uomConversionId="EN_kcal_cal" uomId="EN_kcal" uomIdTo="EN_cal" conversionFactor="1000"/>
+    <UomConversion uomConversionId="EN_kw_h_hp_h" uomId="EN_kw_h" uomIdTo="EN_hp_h" conversionFactor="1.34102209"/>
+    <UomConversion uomConversionId="EN_kw_h_BTU" uomId="EN_kw_h" uomIdTo="EN_BTU" conversionFactor="3412.1416416"/>
+    <UomConversion uomConversionId="EN_kw_h_J" uomId="EN_kw_h" uomIdTo="EN_J" conversionFactor="3600000"/>
+    <UomConversion uomConversionId="EN_kw_h_kcal" uomId="EN_kw_h" uomIdTo="EN_kcal" conversionFactor="859.845228"/>
+    <UomConversion uomConversionId="EN_kw_h_ft_lbf" uomId="EN_kw_h" uomIdTo="EN_ft_lbf" conversionFactor="2655223.73748"/>
 
     <!-- =============== Temperature =============== -->
     <Uom abbreviation="K" description="Kelvin" uomId="TEMP_K" uomTypeEnumId="UT_TEMP_MEASURE"/>
     <Uom abbreviation="C" description="Degrees Celsius" uomId="TEMP_C" uomTypeEnumId="UT_TEMP_MEASURE"/>
     <Uom abbreviation="F" description="Degrees Fahrenheit" uomId="TEMP_F" uomTypeEnumId="UT_TEMP_MEASURE"/>
 
-    <UomConversion uomId="TEMP_C" uomIdTo="TEMP_K" conversionFactor="1" conversionOffset="273.15"/>
-    <UomConversion uomId="TEMP_C" uomIdTo="TEMP_F" conversionFactor="1.8" conversionOffset="32"/>
+    <UomConversion uomConversionId="TEMP_C_K" uomId="TEMP_C" uomIdTo="TEMP_K" conversionFactor="1" conversionOffset="273.15"/>
+    <UomConversion uomConversionId="TEMP_C_F" uomId="TEMP_C" uomIdTo="TEMP_F" conversionFactor="1.8" conversionOffset="32"/>
 
     <!-- =============== Other =============== -->
     <Uom abbreviation="A" description="Amphere - Electric current" uomId="OTH_A" uomTypeEnumId="UT_OTHER_MEASURE"/>
