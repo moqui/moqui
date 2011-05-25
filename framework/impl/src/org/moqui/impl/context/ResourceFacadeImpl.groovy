@@ -205,8 +205,11 @@ public class ResourceFacadeImpl implements ResourceFacade {
     DataSource getLocationDataSource(String location) {
         ResourceReference fileResourceRef = getLocationReference(location)
 
+        TemplateRenderer tr = getTemplateRendererByLocation(fileResourceRef.location)
+
         String fileName = fileResourceRef.fileName
-        String fileContentType = getContentType(fileName)
+        // strip template extension(s) to avoid problems with trying to find content types based on them
+        String fileContentType = getContentType(tr != null ? tr.stripTemplateExtension(fileName) : fileName)
 
         boolean isBinary = isBinaryContentType(fileContentType)
 
@@ -214,11 +217,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
             return new ByteArrayDataSource(fileResourceRef.openStream(), fileContentType)
         } else {
             // not a binary object (hopefully), get the text and pass it over
-            TemplateRenderer tr = getTemplateRendererByLocation(fileResourceRef.location)
             if (tr != null) {
-                // strip template extension(s) to avoid problems with trying to find content types based on them
-                fileContentType = getContentType(tr.stripTemplateExtension(fileName))
-
                 StringWriter sw = new StringWriter()
                 tr.render(fileResourceRef.location, sw)
                 return new ByteArrayDataSource(sw.toString(), fileContentType)

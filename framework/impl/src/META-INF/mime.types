@@ -1227,7 +1227,7 @@ text/csv					csv
 text/html					html htm
 # text/javascript
 # text/parityfec
-text/plain					txt text conf def list log in ftl cwiki gstring
+text/plain					txt text conf def list log in
 # text/prs.fallenstein.rst
 text/prs.lines.tag				dsc
 # text/vnd.radisys.msml-basic-layout

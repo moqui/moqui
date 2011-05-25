@@ -281,9 +281,13 @@ class ScreenRenderImpl implements ScreenRender {
             }
         } else if (screenUrlInfo.fileResourceRef != null) {
             long resourceStartTime = System.currentTimeMillis()
+
+            TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
+
             // use the fileName to determine the content/mime type
             String fileName = screenUrlInfo.fileResourceRef.fileName
-            String fileContentType = sfi.ecfi.resourceFacade.getContentType(fileName)
+            // strip template extension(s) to avoid problems with trying to find content types based on them
+            String fileContentType = sfi.ecfi.resourceFacade.getContentType(tr != null ? tr.stripTemplateExtension(fileName) : fileName)
 
             boolean isBinary = sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)
             // if (logger.traceEnabled) logger.trace("Content type for screen sub-content filename [${fileName}] is [${fileContentType}], default [${this.outputContentType}], is binary? ${isBinary}")
@@ -327,26 +331,17 @@ class ScreenRenderImpl implements ScreenRender {
             // not binary, render as text
             if (screenUrlInfo.targetScreen.screenNode."@include-child-content" != "true") {
                 // not a binary object (hopefully), read it and write it to the writer
-                TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
-                if (tr != null) {
-                    // strip template extension(s) to avoid problems with trying to find content types based on them
-                    fileContentType = sfi.ecfi.resourceFacade.getContentType(tr.stripTemplateExtension(fileName))
-                    if (fileContentType) this.outputContentType = fileContentType
-                    if (response != null) {
-                        response.setContentType(this.outputContentType)
-                        response.setCharacterEncoding(this.characterEncoding)
-                    }
+                if (fileContentType) this.outputContentType = fileContentType
+                if (response != null) {
+                    response.setContentType(this.outputContentType)
+                    response.setCharacterEncoding(this.characterEncoding)
+                }
 
+                if (tr != null) {
                     // if requires a render, don't cache and make it private
                     if (response != null) response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
                     tr.render(screenUrlInfo.fileResourceRef.location, writer)
                 } else {
-                    if (fileContentType) this.outputContentType = fileContentType
-                    if (response != null) {
-                        response.setContentType(this.outputContentType)
-                        response.setCharacterEncoding(this.characterEncoding)
-                    }
-
                     // static text, tell the browser to cache it
                     // NOTE: make this configurable?
                     if (response != null) response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
