@@ -15,7 +15,8 @@ This Work includes contributions authored by David E. Jones, not as a
         include-child-content="true">
     <subscreens default-item="Example">
         <!-- these are actually links to content to add to the menu since content is not automatically added to the menu -->
-        <subscreens-item name="ExamplePolicies" menu-index="5" menu-title="Policies"/>
+        <subscreens-item name="ExamplePolicies" menu-index="4" menu-title="Policies"/>
+        <subscreens-item name="ExampleTerms" menu-index="5" menu-title="Terms"/>
         <subscreens-item name="ExampleWiki" menu-index="6" menu-title="Wiki"/>
     </subscreens>
     <widgets>

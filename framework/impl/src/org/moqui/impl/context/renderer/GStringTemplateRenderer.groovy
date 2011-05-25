@@ -11,18 +11,16 @@
  */
 package org.moqui.impl.context.renderer
 
-import freemarker.template.Template
-
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.TemplateRenderer
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
-class FtlTemplateRenderer implements TemplateRenderer {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FtlTemplateRenderer.class)
+class GStringTemplateRenderer implements TemplateRenderer {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GStringTemplateRenderer.class)
 
     protected ExecutionContextFactoryImpl ecfi
 
-    FtlTemplateRenderer() { }
+    GStringTemplateRenderer() { }
 
     TemplateRenderer init(ExecutionContextFactory ecf) {
         this.ecfi = (ExecutionContextFactoryImpl) ecf
@@ -30,12 +28,13 @@ class FtlTemplateRenderer implements TemplateRenderer {
     }
 
     void render(String location, Writer writer) {
-        Template theTemplate = ecfi.resourceFacade.getFtlTemplateByLocation(location)
-        theTemplate.createProcessingEnvironment(ecfi.executionContext.context, writer).process()
+        groovy.text.Template theTemplate = ecfi.resourceFacade.getGStringTemplateByLocation(location)
+        Writable writable = theTemplate.make(ecfi.executionContext.context)
+        writable.writeTo(writer)
     }
 
     String stripTemplateExtension(String fileName) {
-        return fileName.contains(".ftl") ? fileName.replace(".ftl", "") : fileName
+        return fileName.contains(".gstring") ? fileName.replace(".gstring", "") : fileName
     }
 
     void destroy() { }

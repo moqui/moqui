@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.context
 
-import freemarker.template.Template
 import freemarker.template.Configuration
 import freemarker.ext.beans.BeansWrapper
 import freemarker.template.TemplateExceptionHandler
@@ -47,6 +46,7 @@ import org.moqui.context.ResourceFacade
 import org.moqui.context.ResourceReference
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.StupidUtilities
+import groovy.text.GStringTemplateEngine
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -60,6 +60,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Cache scriptGroovyExpressionCache
     protected final Cache scriptXmlActionLocationCache
     protected final Cache templateFtlLocationCache
+    protected final Cache templateGStringLocationCache
     protected final Cache textLocationCache
 
     protected final Map<String, Class> resourceReferenceClasses = new HashMap()
@@ -70,7 +71,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
-    protected final Template xmlActionsTemplate
+    protected final freemarker.template.Template xmlActionsTemplate
 
     protected final FopFactory fopFactory
 
@@ -80,6 +81,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
         this.templateFtlLocationCache = ecfi.cacheFacade.getCache("resource.ftl.location")
+        this.templateGStringLocationCache = ecfi.cacheFacade.getCache("resource.gstring.location")
 
         this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
         this.scriptGroovyExpressionCache = ecfi.getCacheFacade().getCache("resource.groovy.expression")
@@ -204,9 +206,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
         ResourceReference fileResourceRef = getLocationReference(location)
 
         String fileName = fileResourceRef.fileName
-        // if it contains .ftl or .cwiki remove those to avoid problems with trying to find content types based on them
-        if (fileName.contains(".ftl")) fileName = fileName.replace(".ftl", "")
-        if (fileName.contains(".cwiki")) fileName = fileName.replace(".cwiki", "")
         String fileContentType = getContentType(fileName)
 
         boolean isBinary = isBinaryContentType(fileContentType)
@@ -217,13 +216,16 @@ public class ResourceFacadeImpl implements ResourceFacade {
             // not a binary object (hopefully), get the text and pass it over
             TemplateRenderer tr = getTemplateRendererByLocation(fileResourceRef.location)
             if (tr != null) {
+                // strip template extension(s) to avoid problems with trying to find content types based on them
+                fileContentType = getContentType(tr.stripTemplateExtension(fileName))
+
                 StringWriter sw = new StringWriter()
                 tr.render(fileResourceRef.location, sw)
                 return new ByteArrayDataSource(sw.toString(), fileContentType)
             } else {
                 // no renderer found, just grab the text (cached) and throw it to the writer
                 String text = getLocationText(fileResourceRef.location, true)
-                return new ByteArrayDataSource(sw.toString(), fileContentType)
+                return new ByteArrayDataSource(text, fileContentType)
             }
         }
     }
@@ -257,21 +259,23 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return tr
     }
 
-    Template getFtlTemplateByLocation(String location) {
-        Template theTemplate = (Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
+    freemarker.template.Template getFtlTemplateByLocation(String location) {
+        freemarker.template.Template theTemplate =
+                (freemarker.template.Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
         if (!theTemplate) theTemplate = makeTemplate(location)
         if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
         return theTemplate
     }
-    protected Template makeTemplate(String location) {
-        Template theTemplate = (Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
+    protected freemarker.template.Template makeTemplate(String location) {
+        freemarker.template.Template theTemplate =
+                (freemarker.template.Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
         if (theTemplate) return theTemplate
 
-        Template newTemplate = null
+        freemarker.template.Template newTemplate = null
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
-            newTemplate = new Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
+            newTemplate = new freemarker.template.Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
         } finally {
@@ -279,6 +283,34 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
 
         if (newTemplate) ecfi.resourceFacade.templateFtlLocationCache.put(location, newTemplate)
+        return newTemplate
+    }
+
+    groovy.text.Template getGStringTemplateByLocation(String location) {
+        groovy.text.Template theTemplate =
+                (groovy.text.Template) ecfi.resourceFacade.templateGStringLocationCache.get(location)
+        if (!theTemplate) theTemplate = makeGStringTemplate(location)
+        if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
+        return theTemplate
+    }
+    protected groovy.text.Template makeGStringTemplate(String location) {
+        groovy.text.Template theTemplate =
+                (groovy.text.Template) ecfi.resourceFacade.templateGStringLocationCache.get(location)
+        if (theTemplate) return theTemplate
+
+        groovy.text.Template newTemplate = null
+        Reader templateReader = null
+        try {
+            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
+            GStringTemplateEngine gste = new GStringTemplateEngine()
+            newTemplate = gste.createTemplate(templateReader)
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
+        } finally {
+            if (templateReader != null) templateReader.close()
+        }
+
+        if (newTemplate) ecfi.resourceFacade.templateGStringLocationCache.put(location, newTemplate)
         return newTemplate
     }
 
@@ -330,14 +362,14 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
         return xa
     }
-    Template getXmlActionsTemplate() { return xmlActionsTemplate }
-    protected Template makeXmlActionsTemplate() {
+    freemarker.template.Template getXmlActionsTemplate() { return xmlActionsTemplate }
+    protected freemarker.template.Template makeXmlActionsTemplate() {
         String templateLocation = ecfi.confXmlRoot."resource-facade"[0]."@xml-actions-template-location"
-        Template newTemplate = null
+        freemarker.template.Template newTemplate = null
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(this.getLocationStream(templateLocation))
-            newTemplate = new Template(templateLocation, templateReader, getFtlConfiguration())
+            newTemplate = new freemarker.template.Template(templateLocation, templateReader, getFtlConfiguration())
         } catch (Exception e) {
             logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
         } finally {
@@ -461,15 +493,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
             this.ecfi = ecfi
         }
         @Override
-        Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
+        freemarker.template.Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
             //return super.getTemplate(name, locale, encoding, parse)
             // NOTE: doing this because template loading behavior with cache/etc not desired and was having issues
-            Template theTemplate
+            freemarker.template.Template theTemplate
             if (parse) {
                 theTemplate = ecfi.resourceFacade.getFtlTemplateByLocation(name)
             } else {
                 String text = ecfi.resourceFacade.getLocationText(name, true)
-                theTemplate = Template.getPlainTextTemplate(name, text, this)
+                theTemplate = freemarker.template.Template.getPlainTextTemplate(name, text, this)
             }
             // NOTE: this is the same exception the standard FreeMarker code returns
             if (theTemplate == null) throw new FileNotFoundException("Template [${name}] not found.")

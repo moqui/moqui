@@ -32,5 +32,7 @@ class NoTemplateRenderer implements TemplateRenderer {
         if (text) writer.write(text)
     }
 
+    String stripTemplateExtension(String fileName) { return fileName }
+
     void destroy() { }
 }

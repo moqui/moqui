@@ -1,0 +1,7 @@
+<div id="ExampleTerms">
+    <h1>Example Terms</h1>
+    <p>These are example terms, or more accurately an example HTML GString template with the theme of terms as an excuse
+        for their existence.</p>
+    <p>In a template like this any variable in the context is available, including your userId:
+        ${ec.user.userId ?: "[No User Logged In]"}</p>
+</div>

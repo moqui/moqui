@@ -56,5 +56,9 @@ class CwikiTemplateRenderer implements TemplateRenderer {
         }
     }
 
+    String stripTemplateExtension(String fileName) {
+        return fileName.contains(".cwiki") ? fileName.replace(".cwiki", "") : fileName
+    }
+
     void destroy() { }
 }

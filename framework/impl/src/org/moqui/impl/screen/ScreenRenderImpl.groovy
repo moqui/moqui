@@ -283,9 +283,6 @@ class ScreenRenderImpl implements ScreenRender {
             long resourceStartTime = System.currentTimeMillis()
             // use the fileName to determine the content/mime type
             String fileName = screenUrlInfo.fileResourceRef.fileName
-            // if it contains .ftl or .cwiki remove those to avoid problems with trying to find content types based on them
-            if (fileName.contains(".ftl")) fileName = fileName.replace(".ftl", "")
-            if (fileName.contains(".cwiki")) fileName = fileName.replace(".cwiki", "")
             String fileContentType = sfi.ecfi.resourceFacade.getContentType(fileName)
 
             boolean isBinary = sfi.ecfi.resourceFacade.isBinaryContentType(fileContentType)
@@ -329,18 +326,27 @@ class ScreenRenderImpl implements ScreenRender {
 
             // not binary, render as text
             if (screenUrlInfo.targetScreen.screenNode."@include-child-content" != "true") {
-                if (fileContentType) this.outputContentType = fileContentType
-                if (response != null) {
-                    response.setContentType(this.outputContentType)
-                    response.setCharacterEncoding(this.characterEncoding)
-                }
                 // not a binary object (hopefully), read it and write it to the writer
                 TemplateRenderer tr = sfi.ecfi.resourceFacade.getTemplateRendererByLocation(screenUrlInfo.fileResourceRef.location)
                 if (tr != null) {
+                    // strip template extension(s) to avoid problems with trying to find content types based on them
+                    fileContentType = sfi.ecfi.resourceFacade.getContentType(tr.stripTemplateExtension(fileName))
+                    if (fileContentType) this.outputContentType = fileContentType
+                    if (response != null) {
+                        response.setContentType(this.outputContentType)
+                        response.setCharacterEncoding(this.characterEncoding)
+                    }
+
                     // if requires a render, don't cache and make it private
                     if (response != null) response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
                     tr.render(screenUrlInfo.fileResourceRef.location, writer)
                 } else {
+                    if (fileContentType) this.outputContentType = fileContentType
+                    if (response != null) {
+                        response.setContentType(this.outputContentType)
+                        response.setCharacterEncoding(this.characterEncoding)
+                    }
+
                     // static text, tell the browser to cache it
                     // NOTE: make this configurable?
                     if (response != null) response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
@@ -514,7 +520,9 @@ class ScreenRenderImpl implements ScreenRender {
             return sfi.getTemplateByLocation(macroTemplateLocation)
         } else {
             String overrideTemplateLocation = null
-            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+            // go through the screenPathDefList instead screenRenderDefList so that parent screen can override template
+            //     even if it isn't rendered to decorate subscreen
+            for (ScreenDefinition sd in screenUrlInfo.screenPathDefList) {
                 // go through entire list and set all found, basically we want the last one if there are more than one
                 Node mt = (Node) sd.screenNode."macro-template".find({ it."@type" == renderMode })
                 if (mt != null) overrideTemplateLocation = mt."@location"

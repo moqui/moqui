@@ -68,5 +68,10 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
         return newTemplate
     }
 
+    String stripTemplateExtension(String fileName) {
+        String stripped = fileName.contains(".cwiki") ? fileName.replace(".cwiki", "") : fileName
+        return stripped.contains(".ftl") ? stripped.replace(".ftl", "") : stripped
+    }
+
     void destroy() { }
 }

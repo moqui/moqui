@@ -92,6 +92,8 @@
         <!-- renderer class needs to implement the org.moqui.context.TemplateRenderer interface -->
         <template-renderer extension=".ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
         <template-renderer extension=".html.ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
+        <template-renderer extension=".gstring" class="org.moqui.impl.context.renderer.GStringTemplateRenderer"/>
+        <template-renderer extension=".html.gstring" class="org.moqui.impl.context.renderer.GStringTemplateRenderer"/>
         <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.CwikiTemplateRenderer"/>
         <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
         <!-- a renderer for .html isn't necessary because the default is to write the text as-is, however this is useful
