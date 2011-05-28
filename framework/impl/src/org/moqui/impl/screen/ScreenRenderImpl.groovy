@@ -455,8 +455,15 @@ class ScreenRenderImpl implements ScreenRender {
                 // save messages in session before redirecting so they can be displayed on the next screen
                 ((WebFacadeImpl) ec.web).saveMessagesToSession()
             }
+
+            // find the last login path from screens in path (whether rendered or not)
+            String loginPath = "/Login"
+            for (ScreenDefinition sd in screenUrlInfo.screenPathDefList) {
+                if (sd.screenNode."@login-path") loginPath = sd.screenNode."@login-path"
+            }
+
             // now prepare and send the redirect
-            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], "Login")
+            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], loginPath)
             response.sendRedirect(sui.url)
             return false
         }

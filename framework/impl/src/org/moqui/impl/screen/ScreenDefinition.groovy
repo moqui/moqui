@@ -417,15 +417,15 @@ class ScreenDefinition {
             this.location = location
             menuTitle = screen."@default-menu-title"[0]
             menuIndex = (screen."@default-menu-index"[0] as String ?: "5") as Integer
-            menuInclude = (!screen."@default-menu-include"[0] || screen."@default-menu-include"[0] == "true")
+            menuInclude = (!screen."@default-menu-include"?.getAt(0) || screen."@default-menu-include"[0] == "true")
         }
 
         SubscreensItem(Node subscreensItem, ScreenDefinition parentScreen) {
             name = subscreensItem."@name"
             location = subscreensItem."@location"
             menuTitle = subscreensItem."@menu-title"
-            menuIndex = subscreensItem."@menu-index" as int
-            menuInclude = true
+            menuIndex = (subscreensItem."@menu-index" ?: "5") as int
+            menuInclude = (!subscreensItem."@menu-include"?.getAt(0) || subscreensItem."@menu-include"[0] == "true")
 
             if (subscreensItem."@disable-when") disableWhenGroovy = new GroovyClassLoader().parseClass(
                     (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens_item[${name}].disable_when")

@@ -1,0 +1,32 @@
+/*
+ * This Work is in the public domain and is provided on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+ * including, without limitation, any warranties or conditions of TITLE,
+ * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+ * You are solely responsible for determining the appropriateness of using
+ * this Work and assume any risks associated with your use of this Work.
+ *
+ * This Work includes contributions authored by David E. Jones, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
+ */
+
+/* ========================== body, etc ========================== */
+
+body { background: #DDDDDF; margin: 0px; }
+
+#apps-container {
+background: white;
+margin: 0px auto 0px auto; border: 2% solid #DDDDDF; padding: 2%;
+-moz-border-radius: 15px; -webkit-border-radius: 15px; border-radius: 15px;
+width: 92%; overflow: auto;
+}
+
+#header-logo { float: left; width: 300px; height: 30px; }
+#header-logo h1 { font-size: 1.5em; font-family: Courier, "Courier New", monospace; font-weight: bold; }
+#header-user { float: right; }
+
+div.message { width: 60%; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }
+div.message span { font-size: 0.9em; }
+div.error span { color: red; }
+
+#apps-container-footer { margin: 0px auto 0px auto; border-top: 1px solid #DDDDDF; padding: 2px; width: 200px; text-align: center; }

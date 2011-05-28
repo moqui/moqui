@@ -92,6 +92,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>If set to false no ArtifactHit or ArtifactHitBin data will be kept for
                     this screen and for any content or transitions under the screen.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="login-path" type="xs:string" default="/Login">
+                <xs:annotation><xs:documentation>If specified will be used as the login screen path for this screen and
+                    any subscreens, otherwise defaults to "/Login".</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="macro-template">
@@ -408,6 +412,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     entity load).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="menu-include" type="boolean" default="true"/>
             <xs:attribute name="disable-when" type="xs:positiveInteger">
                 <xs:annotation><xs:documentation>
                     This condition is run the subscreens menu is rendered to see if the item is available

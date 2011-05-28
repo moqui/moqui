@@ -15,9 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-include="false" require-authentication="false">
 
     <transition name="login">
-        <actions><script>
-            ec.user.loginUser(username, password, tenantId)
-        </script></actions>
+        <actions><script>ec.user.loginUser(username, password, tenantId)</script></actions>
         <default-response type="screen-last"/>
         <error-response url="."/>
     </transition>

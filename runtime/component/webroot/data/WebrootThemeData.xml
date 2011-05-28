@@ -34,6 +34,8 @@ This Work includes contributions authored by David E. Jones, not as a
                          resourceValue="/css/default.css"/>
     <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/smoothness/jquery-ui-1.8.10.custom.css"/>
+    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"
+                         resourceValue="/ipad/css/ipad.css"/>
     <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-1.5.1.min.js"/>
     <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"

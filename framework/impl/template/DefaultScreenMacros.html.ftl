@@ -127,7 +127,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <button id="${.node["@id"]}-button">${buttonText}</button>
     <script>
 	$(function() {
-		$("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"800"}, modal:true
+		$("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:true
 		    <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
 			<#--, close: function() { } -->
 		});
