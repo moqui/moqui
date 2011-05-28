@@ -71,7 +71,7 @@ button:active, input[type="reset"]:active, input[type="submit"]:active, input[ty
 border-color: #999 #bbb #ddd; color: #666;
 }
 
-input[type="text"], input[type="password"], textarea, select {
+input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select {
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
 margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
 font-size: 0.8em; font-family: Lucida Console, Monaco, monospace;

@@ -19,6 +19,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="exampleTypeEnumId" required="true"/>
             <parameter name="statusId" required="true"/>
             <parameter name="exampleName" required="true"/>
+            <!-- This is automatic based on parameter type: <parameter name="exampleSize"><number-decimal/></parameter> -->
             <parameter name="exampleEmail"><text-email/></parameter>
             <parameter name="exampleUrl"><text-url/></parameter>
         </in-parameters>

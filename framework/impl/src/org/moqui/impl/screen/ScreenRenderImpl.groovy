@@ -585,6 +585,11 @@ class ScreenRenderImpl implements ScreenRender {
         if (parameterNode."text-digits") vcs.add("digits")
         if (parameterNode."credit-card") vcs.add("creditcard")
 
+        String type = parameterNode."@type"
+        if (type.endsWith("BigDecimal") || type.endsWith("BigInteger") || type.endsWith("Long") ||
+                type.endsWith("Integer") || type.endsWith("Double") || type.endsWith("Float") ||
+                type.endsWith("Number")) vcs.add("number")
+
         StringBuilder sb = new StringBuilder()
         for (String vc in vcs) { if (sb) sb.append(" "); sb.append(vc); }
         return sb.toString()
