@@ -34,6 +34,7 @@ import org.moqui.impl.FtlNodeWrapper
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.entity.EntityCondition.ComparisonOperator
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -343,7 +344,7 @@ class ScreenRenderImpl implements ScreenRender {
                     tr.render(screenUrlInfo.fileResourceRef.location, writer)
                 } else {
                     // static text, tell the browser to cache it
-                    // NOTE: make this configurable?
+                    // TODO: make this configurable?
                     if (response != null) response.addHeader("Cache-Control", "max-age=3600, must-revalidate, public")
                     // no renderer found, just grab the text (cached) and throw it to the writer
                     String text = sfi.ecfi.resourceFacade.getLocationText(screenUrlInfo.fileResourceRef.location, true)
@@ -752,29 +753,30 @@ class ScreenRenderImpl implements ScreenRender {
 
     String getCurrentThemeId() {
         String stteId = null
-        if (screenUrlInfo.screenRenderDefList) {
-            // start with the second screen to render (makes it easier to have themes there to allow for different branches with different themes)
-            if (screenUrlInfo.screenRenderDefList.size() > 1)
-                stteId = screenUrlInfo.screenRenderDefList[1].screenNode?."@screen-theme-type-enum-id"
-            // if nothing there, try the first screen to render, the root screen
-            if (!stteId) stteId = screenUrlInfo.screenRenderDefList[0].screenNode?."@screen-theme-type-enum-id"
+        // loop through entire screenRenderDefList and look for @screen-theme-type-enum-id, use last one found
+        if (screenUrlInfo.screenRenderDefList) for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+            if (sd.screenNode?."@screen-theme-type-enum-id") stteId = sd.screenNode?."@screen-theme-type-enum-id"
         }
         // if no setting default to STT_INTERNAL
         if (!stteId) stteId = "STT_INTERNAL"
 
         // see if there is a user setting for the theme
         String themeId = sfi.ecfi.entityFacade.makeFind("UserScreenTheme")
-                .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId]).useCache(true)
+                .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId])
                 .one()?.screenThemeId
         // default theme
-        if (!themeId) themeId = "DEFAULT"
+        if (!themeId) {
+            EntityValue stv = sfi.ecfi.entityFacade.makeFind("ScreenTheme").condition("screenThemeTypeEnumId", stteId)
+                    .condition("screenThemeId", ComparisonOperator.LIKE, "%DEFAULT%").one()
+            if (stv) themeId = stv.screenThemeId
+        }
         return themeId
     }
 
     List<String> getThemeValues(String resourceTypeEnumId) {
         EntityList strList = sfi.ecfi.entityFacade.makeFind("ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId])
-                .orderBy("sequenceNum").useCache(true).list()
+                .orderBy("sequenceNum").list()
         List<String> values = new LinkedList()
         for (EntityValue str in strList) values.add(str.resourceValue as String)
         return values

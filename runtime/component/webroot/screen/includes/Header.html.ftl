@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html">
+    <meta name="viewport" content="width=device-width">
     <meta name="keywords" content="${html_keywords?if_exists}">
     <meta name="description" content="${html_description?if_exists}">
     <title>${html_title!("Moqui - " + (sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</title>

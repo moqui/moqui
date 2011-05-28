@@ -12,8 +12,9 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        require-authentication="false" screen-theme-type-enum-id="STT_INTERNAL">
-    <!-- NOTE: require-authentication=false is required to allow sub-screens to decide. -->
+        require-authentication="false" screen-theme-type-enum-id="STT_INTERNAL_IPAD" standalone="true">
+    <!-- NOTE: require-authentication=false is required to allow sub-screens to decide -->
+    <!-- NOTE: standalone=true is used so that we can have our own HTML header/etc and here instead of in parent (MoquiRoot.xml) -->
 
     <subscreens default-item="example">
         <!-- refer to the various app roots here -->
@@ -24,6 +25,11 @@ This Work includes contributions authored by David E. Jones, not as a
     </subscreens>
 
     <widgets>
+        <render-mode>
+            <text type="html" location="component://webroot/screen/includes/Header.html.ftl"/>
+            <text type="xsl-fo" location="component://webroot/screen/includes/Header.xsl-fo.ftl" no-boundary-comment="true"/>
+        </render-mode>
+
         <container-panel id="apps-container">
             <panel-header>
                 <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
@@ -49,9 +55,14 @@ This Work includes contributions authored by David E. Jones, not as a
                 <subscreens-active id="apps-active"/>
             </panel-center>
             <panel-footer>
-                <render-mode><text type="html"><![CDATA[<h6>Built on <a href="http://www.moqui.org/">Moqui</a></h6>]]></text></render-mode>
+                <render-mode><text type="html"><![CDATA[<h6>Built on <a href="http://www.moqui.org/">Moqui</a> for Apple iPad</h6>]]></text></render-mode>
                 <render-mode><text type="html"><![CDATA[<div><a href="http://sourceforge.net/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=302949&type=10" alt="SourceForge.net" width="80" height="15"></a></div>]]></text></render-mode>
             </panel-footer>
         </container-panel>
+
+        <render-mode>
+            <text type="html"><![CDATA[</body></html>]]></text>
+            <text type="xsl-fo"><![CDATA[</fo:flow></fo:page-sequence></fo:root>]]></text>
+        </render-mode>
     </widgets>
 </screen>

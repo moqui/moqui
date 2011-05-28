@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.screen
 
+import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
@@ -161,6 +162,8 @@ class ScreenUrlInfo {
     }
 
     void initUrl() {
+        ExecutionContext ec = sri.ec
+
         if (this.fromScreenPath.startsWith("/")) {
             this.fromSd = sri.rootScreenDef
             this.fromPathList = []
@@ -201,7 +204,7 @@ class ScreenUrlInfo {
 
             if (!nextLoc) {
                 // handle case where last one may be a transition name, and not a subscreen name
-                TransitionItem ti = lastSd.getTransitionItem(pathName, sri.ec.web ? sri.ec.web.request.method : "")
+                TransitionItem ti = lastSd.getTransitionItem(pathName, ec.web ? ec.web.request.method : "")
                 if (ti) {
                     // Screen Transition as a URL Alias:
                     // if fromScreenPath is a transition, and that transition has no condition,
@@ -209,7 +212,7 @@ class ScreenUrlInfo {
                     // of the name (if type is screen-path or empty, url-type is url or empty)
                     if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&
-                            ti.defaultResponse.urlType == "screen-path" && sri.ec.web != null) {
+                            ti.defaultResponse.urlType == "screen-path" && ec.web != null) {
                         List<String> aliasPathList = new ArrayList(fullPathNameList)
                         // remove transition name
                         aliasPathList.remove(aliasPathList.size()-1)
@@ -217,7 +220,7 @@ class ScreenUrlInfo {
                         ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList, ti.defaultResponse.url)
 
                         // add transition parameters
-                        aliasUrlInfo.addParameters(ti.defaultResponse.expandParameters(sri.ec))
+                        aliasUrlInfo.addParameters(ti.defaultResponse.expandParameters(ec))
 
                         aliasUrlInfo.copyUrlInfoInto(this)
                         return
@@ -247,7 +250,7 @@ class ScreenUrlInfo {
 
             // if standalone, clear out screenRenderDefList before adding this to it
             if (nextSd.screenNode?."@standalone" == "true" ||
-                    (sri.ec.web != null && sri.ec.web.requestParameters.lastStandalone == "true")) {
+                    (ec.web != null && ec.web.requestParameters.lastStandalone == "true")) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -268,10 +271,19 @@ class ScreenUrlInfo {
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
         while (targetTransition == null && fileResourceRef == null && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
             String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
+            // if any conditional-default.@condition eval to true, use that conditional-default.@item instead
+            for (Node conditionalDefaultNode in lastSd.screenNode."subscreens"."conditional-default") {
+                if (!conditionalDefaultNode."@condition") continue
+                if (ec.resource.evaluateCondition(conditionalDefaultNode."@condition", null)) {
+                    subscreenName = conditionalDefaultNode."@item"
+                    break
+                }
+            }
+
             String nextLoc = lastSd.getSubscreensItem(subscreenName)?.location
             if (!nextLoc) {
                 // handle case where last one may be a transition name, and not a subscreen name
-                targetTransition = lastSd.getTransitionItem(subscreenName, sri.ec.web ? sri.ec.web.request.method : "")
+                targetTransition = lastSd.getTransitionItem(subscreenName, ec.web ? ec.web.request.method : "")
                 if (targetTransition) {
                     this.targetTransitionActualName = subscreenName
                     break
@@ -287,7 +299,7 @@ class ScreenUrlInfo {
 
             // if standalone, clear out screenRenderDefList before adding this to it
             if (nextSd.screenNode?."@standalone" == "true" ||
-                    (sri.ec.web != null && sri.ec.web.requestParameters.lastStandalone == "true")) {
+                    (ec.web != null && ec.web.requestParameters.lastStandalone == "true")) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -315,8 +327,8 @@ class ScreenUrlInfo {
                     if (webappNode."@https-host") {
                         urlBuilder.append(webappNode."@https-host")
                     } else {
-                        if (sri.ec.web) {
-                            urlBuilder.append(sri.ec.web.request.serverName)
+                        if (ec.web) {
+                            urlBuilder.append(ec.web.request.serverName)
                         } else {
                             // uh-oh, no web context, default to localhost
                             urlBuilder.append("localhost")
@@ -328,8 +340,8 @@ class ScreenUrlInfo {
                     if (webappNode."@http-host") {
                         urlBuilder.append(webappNode."@http-host")
                     } else {
-                        if (sri.ec.web) {
-                            urlBuilder.append(sri.ec.web.request.serverName)
+                        if (ec.web) {
+                            urlBuilder.append(ec.web.request.serverName)
                         } else {
                             // uh-oh, no web context, default to localhost
                             urlBuilder.append("localhost")
@@ -345,8 +357,8 @@ class ScreenUrlInfo {
 
             // add servletContext.contextPath
             String servletContextPath = sri.servletContextPath
-            if (!servletContextPath && sri.ec.web)
-                servletContextPath = sri.ec.web.servletContext.contextPath
+            if (!servletContextPath && ec.web)
+                servletContextPath = ec.web.servletContext.contextPath
             if (servletContextPath) {
                 if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
                 urlBuilder.append(servletContextPath)

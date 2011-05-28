@@ -347,6 +347,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="conditional-default" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="subscreens-item" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
             <xs:attribute name="default-item" type="xs:string">
@@ -356,6 +357,18 @@ This Work includes contributions authored by David E. Jones, not as a
 
                     If empty the first subscreen-item will be the default.
                 </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="conditional-default">
+        <xs:complexType>
+            <xs:attribute name="condition" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>Groovy condition expression (evaluates to a boolean) used to determine
+                    if the specified subscreens item is the one to use by default instead of the on specified in the
+                    subscreens.@default-item attribute.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="item" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The subscreens item to make the default.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

@@ -15,6 +15,9 @@ This Work includes contributions authored by David E. Jones, not as a
         require-authentication="false">
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide, and because the Login screen is below this. -->
     <subscreens default-item="apps">
+        <!-- if the client is an iPad, default to the ipad subscreens item instead of apps, but allow either to be used explicitly -->
+        <conditional-default condition="(ec.web.request.getHeader('User-Agent')?:'').matches('.*iPad.*')" item="ipad"/>
+
         <!-- refer to the UNDECORATED (or self-decorating) app roots here -->
     </subscreens>
     <widgets>
