@@ -42,6 +42,7 @@ This release includes:
     limit of 200 to avoid crazy drop-downs
   - Choose default subscreen (override by path) based on user agent or
     other condition (using any data available in the ec)
+  - Override login path in screen (use value from deepest screen in path)
 - Resource Facade
   - Method for FOP transform to PDF, etc
   - Support .gstring templates (groovy.codehaus.org/Groovy+Templates)
@@ -459,8 +460,6 @@ Tools probable for 1.0 final:
     - Dynamic tabs (partial page load)
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-- XML Screens
-  - Override login path in screen (use value from deepest screen in path)
 - Tools Screens
   - Entity
     - Entity Data Export screen
