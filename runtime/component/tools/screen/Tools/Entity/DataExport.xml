@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Export">
+
+    <transition name="EntityExport.xml">
+        <actions>
+            <script><![CDATA[
+                org.moqui.entity.EntityDataWriter edw = ec.entity.makeDataWriter()
+
+                // handle entityNames
+                if (!context.entityNames) {
+                    ec.message.addError("No entity names specified, not exporting anything.")
+                    return
+                }
+                edw.entityNames(entityNames)
+
+                if (context.dependents) edw.dependentRecords(true)
+                if (context.fromDate) edw.fromDate(context.fromDate as Timestamp)
+                if (context.thruDate) edw.fromDate(context.thruDate as Timestamp)
+
+                noResponse = false
+                if (context.output == "file") {
+                    edw.file(path)
+                } else if (context.output == "dir") {
+                    edw.directory(path)
+                } else if (context.output == "browser") {
+                    // stream to ec.web.response
+                    def response = ec.web.response
+                    response.setContentType("text/xml")
+                    response.setCharacterEncoding("UTF-8")
+                    response.addHeader("Cache-Control", "no-cache, must-revalidate, private")
+                    edw.writer(response.getWriter())
+                    noResponse = true
+                }
+            ]]></script>
+        </actions>
+        <conditional-response type="none"><condition><expression>noResponse</expression></condition></conditional-response>
+        <default-response url="."/>
+    </transition>
+
+    <widgets>
+        <form-single name="ImportData" transition="EntityExport.xml">
+            <field name="entityNames">
+                <default-field><drop-down allow-multiple="true" size="20">
+                    <list-options list="ec.entity.getAllEntitiesInfo('entityName', false)" key="${entityName}"/>
+                </drop-down></default-field>
+            </field>
+
+            <field name="dependents"><default-field title=""><check><option key="true" text="Write dependents of each value?"/></check></default-field></field>
+
+            <field name="fromDate"><default-field><date-time/></default-field></field>
+            <field name="thruDate"><default-field><date-time/></default-field></field>
+
+            <field name="path"><default-field><text-line size="80"/></default-field></field>
+            <field name="output">
+                <default-field><radio no-current-selected-key="file">
+                    <option key="file" text="Single File"/>
+                    <option key="dir" text="Directory (one file per entity)"/>
+                    <option key="browser" text="Out to Browser"/>
+                </radio></default-field>
+            </field>
+
+            <field name="submit"><default-field><submit/></default-field></field>
+        </form-single>
+    </widgets>
+</screen>

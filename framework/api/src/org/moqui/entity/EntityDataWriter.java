@@ -22,29 +22,46 @@ import java.util.Map;
  */
 public interface EntityDataWriter {
     /** A List of entity names to write.
+     * @param entityNames The list of entity names
      * @return Reference to this for convenience.
      */
     EntityDataWriter entityNames(List<String> entityNames);
     /** Should the dependent records of each record be written?
+     * @param dependents The boolean dependents indicator
      * @return Reference to this for convenience.
      */
     EntityDataWriter dependentRecords(boolean dependents);
     /** Field name, value pairs to filter the results by. Each name/value only used on entities with a field matching
      * the name.
+     * @param filterMap The map with name/value pairs to filter by
      * @return Reference to this for convenience.
      */
     EntityDataWriter filterMap(Map<String, Object> filterMap);
 
-    /** From date for lastUpdatedStamp on each entity.
+    /** From date for lastUpdatedStamp on each entity (lastUpdatedStamp must be greater than or equal (>=) to fromDate).
+     * @param fromDate The from date
      * @return Reference to this for convenience.
      */
     EntityDataWriter fromDate(Timestamp fromDate);
-    /** Thru date for lastUpdatedStamp on each entity.
+    /** Thru date for lastUpdatedStamp on each entity (lastUpdatedStamp must be less than (<) to thruDate).
+     * @param thruDate The thru date
      * @return Reference to this for convenience.
      */
     EntityDataWriter thruDate(Timestamp thruDate);
 
-    void file(String filename);
-    void directory(String path);
-    void writer(Writer writer);
+    /** Write all results to a single file.
+     * @param filename The path and name of the file to write values to
+     * @return Count of values written
+     */
+    int file(String filename);
+    /** Write the results to a file for each entity in the specified directory.
+     * @param path The path of the directory to create files in
+     * @return Count of values written
+     */
+    int directory(String path);
+    /** Write the results to a Writer.
+     * @param writer The Writer to write to
+     * @return Count of values written
+     */
+    int writer(Writer writer);
 }

@@ -46,6 +46,7 @@ import org.slf4j.Logger
 
 import org.w3c.dom.Element
 import org.apache.commons.collections.set.ListOrderedSet
+import org.moqui.entity.EntityDataWriter
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -632,9 +633,10 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     /** @see org.moqui.entity.EntityFacade#makeDataLoader() */
-    EntityDataLoader makeDataLoader() {
-        return new EntityDataLoaderImpl(this)
-    }
+    EntityDataLoader makeDataLoader() { return new EntityDataLoaderImpl(this) }
+
+    /** @see org.moqui.entity.EntityFacade#makeDataWriter() */
+    EntityDataWriter makeDataWriter() { return new EntityDataWriterImpl(this) }
 
     /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
     EntityValue makeValue(Element element) {

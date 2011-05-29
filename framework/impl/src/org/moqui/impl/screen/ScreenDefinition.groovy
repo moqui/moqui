@@ -332,7 +332,6 @@ class ScreenDefinition {
             sri.ec.context.push()
             sri.ec.context.put("sri", sri)
             if (actions) actions.run(sri.ec)
-            sri.ec.context.pop()
 
             ResponseItem ri = null
             // if there is an error-response and there are errors, we have a winner
@@ -344,6 +343,9 @@ class ScreenDefinition {
             }
             // no errors, no conditionals, return default
             if (ri == null) ri = defaultResponse
+
+            // don't pop the context until after evaluating conditions so that data set in the actions can be used
+            sri.ec.context.pop()
 
             // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally
             // clause because if there is an error this will help us know how we got there

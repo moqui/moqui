@@ -86,6 +86,14 @@ public interface EntityFacade {
      */
     EntityDataLoader makeDataLoader();
 
+    /** Used to write XML entity data from the database to a writer.
+     *
+     * The document will have a root element like <code>&lt;entity-facade-xml&gt;</code>.
+     *
+     * @return EntityDataWriter instance
+     */
+    EntityDataWriter makeDataWriter();
+
     /** Make an EntityValue and populate it with the data (attributes and sub-elements) from the given XML element.
      *
      * @param element A XML DOM element representing a single value/record for an entity.

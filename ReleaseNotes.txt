@@ -68,6 +68,7 @@ This release includes:
       - create/update entity record
       - view entity record with related entities and links to them
     - Entity Data Import screen
+    - Entity Data Export screen
 
 
 ===========================================================================
@@ -461,7 +462,6 @@ Tools probable for 1.0 final:
       related entities
 - Tools Screens
   - Entity
-    - Entity Data Export screen
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE:

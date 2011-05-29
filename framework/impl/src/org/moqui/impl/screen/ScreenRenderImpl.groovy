@@ -712,7 +712,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     String getFieldEntityValue(FtlNodeWrapper widgetNodeWrapper) {
-        FtlNodeWrapper fieldNodeWrapper = widgetNodeWrapper.parentNode.parentNode
+        FtlNodeWrapper fieldNodeWrapper = (FtlNodeWrapper) widgetNodeWrapper.parentNode.parentNode
         Object fieldValue = getFieldValue(fieldNodeWrapper, "")
         if (!fieldValue) return ""
         Node widgetNode = widgetNodeWrapper.getGroovyNode()

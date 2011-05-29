@@ -871,7 +871,7 @@ class EntityValueImpl implements EntityValue {
                     if (finishedRelationshipNames.contains(relInfo.title+relInfo.relatedEntityName)) continue
                     if (checkEn == relInfo.relatedEntityName) continue
                     EntityDependents checkEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
-                    if (checkEdp.allDescendants.contains(checkEn)) { deferredEntityNames.add(checkEn); break }
+                    if (checkEdp && checkEdp.allDescendants.contains(checkEn)) { deferredEntityNames.add(checkEn); break }
                 }
             }
         }
@@ -882,6 +882,7 @@ class EntityValueImpl implements EntityValue {
             if (finishedRelationshipNames.contains(relInfo.title+relInfo.relatedEntityName)) continue
 
             EntityDependents relEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
+            if (relEdp == null) continue
             if (relInfo.type == "many") {
                 EntityListImpl el = (EntityListImpl) findRelated((relInfo.title?:"") + relInfo.relatedEntityName, null, null, false, false)
                 for (EntityValueImpl ev in el) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
