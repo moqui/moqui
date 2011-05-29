@@ -2,10 +2,20 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0-beta2 - Date not yet decided
+Release 1.0-beta2 - 30 May 2011
 ===========================================================================
 
-The 1.0-beta2 release ... TODO
+The 1.0-beta2 release includes a number of new tools, most notably the Auto
+Screen UI that creates a user interface based on entity and relationship
+definitions for master entities, and tabs for the detail and associated
+entities of each. This release also includes a number of smaller new
+features and bug fixes found while building a variety of functionality
+with Moqui Framework. One notable example of that is automatic or explicit
+alternate screen selection based on the HTTP request User-Agent header, and
+there is an example of alternate screens for the iPad.
+
+Overall release 1.0-beta2 is more robust, functional, and reliable than the
+previous release.
 
 This release includes:
 
