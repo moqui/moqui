@@ -77,6 +77,9 @@ margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
 font-size: 0.8em; font-family: Lucida Console, Monaco, monospace;
 }
 
+input:required:invalid, input:invalid, textarea:invalid { background-color: #FDD; }
+input:focus:valid, textarea:focus:valid { background-color: #EEE; }
+
 th { text-align: left; padding: 0px 4px 0px 2px; }
 td { padding: 0px 4px 0px 2px; }
 
