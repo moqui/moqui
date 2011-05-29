@@ -17,8 +17,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="entityName"/>
     <parameter name="detailEntityName"/>
 
-    <transition name="list"><default-response url="../MainEntityList"/></transition>
-    <transition name="find"><default-response url="../AutoFind"/></transition>
+    <transition name="list"><default-response url="../../MainEntityList"/></transition>
+    <transition name="find"><default-response url="../../AutoFind"/></transition>
     <transition name="create">
         <actions><service-call name="create#${detailEntityName}" in-map="true"/></actions>
         <default-response url="."/>
@@ -41,28 +41,11 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
-        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(context, true)"/>
-
         <entity-find entity-name="${detailEntityName}" list="entityValueList" offset="0" limit="50">
             <search-form-inputs/>
         </entity-find>
     </actions>
     <widgets>
-        <render-mode>
-            <text type="html" template="true"><![CDATA[
-    <div class="ui-tabs ui-tabs-collapsible">
-        <ul id="auto-edit-tabs" class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
-            <#assign urlInfo = sri.buildUrl("../AutoEditMaster").addParameter("entityName", entityName).addParameters(masterPrimaryKeyMap)>
-            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}</a></li>
-        <#list relationshipInfoList as relationshipInfo>
-            <#assign urlInfo = sri.buildUrl("../AutoEditDetail").addParameter("detailEntityName", relationshipInfo.relatedEntityName).addParameter("entityName", entityName).addParameters(relationshipInfo.targetParameterMap)>
-            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath && relationshipInfo.relatedEntityName == detailEntityName?if_exists> ui-tabs-selected ui-state-active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${relationshipInfo.prettyName}</a></li>
-        </#list>
-        </ul>
-    </div>
-            ]]></text>
-        </render-mode>
         <container>
             <link url="list" text="Entity List"/>
             <link url="find" text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/>

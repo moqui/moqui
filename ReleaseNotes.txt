@@ -457,7 +457,6 @@ Tools probable for 1.0 final:
 
 - Tools Screens
   - Auto Screen
-    - Dynamic tabs (partial page load)
     - Editable data grid, created by form-list, for detail and assoc
       related entities
 - Tools Screens

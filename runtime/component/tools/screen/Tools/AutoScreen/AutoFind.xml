@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <conditional-response url=".">
             <condition><expression>submit=="Delete"</expression></condition>
         </conditional-response>
-        <default-response url="../AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
 
     <actions>

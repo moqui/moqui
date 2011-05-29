@@ -17,53 +17,38 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="entityName"/>
     <parameter name="detailEntityName"/>
 
-    <transition name="list"><default-response url="../MainEntityList"/></transition>
-    <transition name="find"><default-response url="../AutoFind"/></transition>
+    <transition name="list"><default-response url="../../MainEntityList"/></transition>
+    <transition name="find"><default-response url="../../AutoFind"/></transition>
     <transition name="edit"><default-response url="."/></transition>
     <transition name="update">
         <actions><service-call name="update#${entityName}" in-map="true"/></actions>
         <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
-    <transition name="export"><actions>
-        <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
-        <script><![CDATA[
-        File outFile = new File(filename)
-        if (!outFile.createNewFile()) {
-            ec.message.addError("File ${filename} already exists.")
-        } else {
-            PrintWriter pw = new PrintWriter(outFile)
-            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-            pw.println("<entity-facade-xml>")
-            int valuesWritten = entityValue.writeXmlWithDependents(pw)
-            pw.println("</entity-facade-xml>")
-            pw.close()
-            ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
-        }
-        ]]></script>
-    </actions><default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+    <transition name="export">
+        <actions>
+            <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
+            <script><![CDATA[
+            File outFile = new File(filename)
+            if (!outFile.createNewFile()) {
+                ec.message.addError("File ${filename} already exists.")
+            } else {
+                PrintWriter pw = new PrintWriter(outFile)
+                pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+                pw.println("<entity-facade-xml>")
+                int valuesWritten = entityValue.writeXmlWithDependents(pw)
+                pw.println("</entity-facade-xml>")
+                pw.close()
+                ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
+            }
+            ]]></script>
+        </actions>
+        <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
 
     <actions>
-        <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
-        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(context, true)"/>
-
         <entity-find-one entity-name="${entityName}" value-field="fieldValues"/>
     </actions>
     <widgets>
-        <render-mode>
-            <text type="html" template="true"><![CDATA[
-    <div class="ui-tabs ui-tabs-collapsible">
-        <ul id="auto-edit-tabs" class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
-            <#assign urlInfo = sri.buildUrl("../AutoEditMaster").addParameter("entityName", entityName).addParameters(masterPrimaryKeyMap)>
-            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}</a></li>
-        <#list relationshipInfoList as relationshipInfo>
-            <#assign urlInfo = sri.buildUrl("../AutoEditDetail").addParameter("detailEntityName", relationshipInfo.relatedEntityName).addParameter("entityName", entityName).addParameters(relationshipInfo.targetParameterMap)>
-            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath && relationshipInfo.relatedEntityName == detailEntityName?if_exists> ui-tabs-selected ui-state-active</#if>"><a href="${urlInfo.minimalPathUrlWithParams}">${relationshipInfo.prettyName}</a></li>
-        </#list>
-        </ul>
-    </div>
-            ]]></text>
-        </render-mode>
         <container>
             <link url="list" text="Entity List"/>
             <link url="find" text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/>
