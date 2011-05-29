@@ -86,6 +86,13 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
+    int writeXmlText(Writer writer, String prefix, boolean dependents) {
+        int recordsWritten = 0
+        for (EntityValue ev in this) recordsWritten += ev.writeXmlText(writer, prefix, dependents)
+        return recordsWritten
+    }
+
+    @Override
     Iterator<EntityValue> iterator() {
         return this.valueList.iterator()
     }
@@ -185,6 +192,8 @@ class EntityListImpl implements EntityList {
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
+        int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }
+
         EntityList cloneList() { return this }
 
         // ========== List Interface Methods ==========

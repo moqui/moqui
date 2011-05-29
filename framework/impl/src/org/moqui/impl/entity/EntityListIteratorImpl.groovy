@@ -263,6 +263,24 @@ class EntityListIteratorImpl implements EntityListIterator {
     }
 
     @Override
+    int writeXmlText(Writer writer, String prefix, boolean dependents) {
+        int recordsWritten = 0
+        try {
+            // move back to before first if we need to
+            if (haveMadeValue && !rs.isBeforeFirst()) {
+                rs.beforeFirst()
+            }
+            EntityValue value
+            while ((value = this.next()) != null) {
+                recordsWritten += value.writeXmlText(writer, prefix, dependents)
+            }
+        } catch (SQLException e) {
+            throw new EntityException("Error getting all results", e)
+        }
+        return recordsWritten
+    }
+
+    @Override
     Iterator<EntityValue> iterator() {
         return this
     }

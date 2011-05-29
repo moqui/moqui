@@ -49,9 +49,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     boolean useTryInsert = false
     boolean dummyFks = false
 
-    EntityDataLoaderImpl(EntityFacadeImpl efi) {
-        this.efi = efi
-    }
+    EntityDataLoaderImpl(EntityFacadeImpl efi) { this.efi = efi }
 
     EntityFacadeImpl getEfi() { return efi }
 

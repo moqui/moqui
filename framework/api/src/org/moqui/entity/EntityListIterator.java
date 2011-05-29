@@ -11,6 +11,7 @@
  */
 package org.moqui.entity;
 
+import java.io.Writer;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -101,6 +102,15 @@ public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<
      * Start is a one based value, ie 1 is the first element.
      */
     EntityList getPartialList(int offset, int limit) throws EntityException;
+
+    /** Writes XML text with an attribute or CDATA element for each field of each record. If dependents is true also
+     * writes all dependent (descendant) records.
+     * @param writer A Writer object to write to
+     * @param prefix A prefix to put in front of the entity name in the tag name
+     * @param dependents Write dependent (descendant) records as well?
+     * @return The number of records written
+     */
+    int writeXmlText(Writer writer, String prefix, boolean dependents);
 
     /** Method to implement the Iterable interface to allow an EntityListIterator to be used in a foreach loop. Just
      * returns this.

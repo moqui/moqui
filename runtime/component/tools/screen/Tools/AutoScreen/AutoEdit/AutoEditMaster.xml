@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 PrintWriter pw = new PrintWriter(outFile)
                 pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
                 pw.println("<entity-facade-xml>")
-                int valuesWritten = entityValue.writeXmlWithDependents(pw)
+                int valuesWritten = entityValue.writeXmlText(pw, null, true)
                 pw.println("</entity-facade-xml>")
                 pw.close()
                 ec.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")

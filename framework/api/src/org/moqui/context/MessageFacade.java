@@ -17,10 +17,15 @@ import java.util.List;
 public interface MessageFacade {
     /** A freely modifiable List of general (non-error) messages that will be shown to the user. */
     List<String> getMessages();
+    /** Add a non-error message for the user to see. */
     void addMessage(String message);
 
     /** A freely modifiable List of error messages that will be shown to the user. */
     List<String> getErrors();
+    /** Add a error message for the user to see.
+     * NOTE: system errors not meant for the user should be thrown as exceptions instead.
+     * @param error The error message
+     */
     void addError(String error);
 
     /** A freely modifiable List of ValidationError objects that will be shown to the user in the context of the

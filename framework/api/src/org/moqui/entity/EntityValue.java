@@ -14,11 +14,10 @@ package org.moqui.entity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 
@@ -187,15 +186,12 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     Element makeXmlElement(Document document, String prefix);
 
-    /** Writes XML text with an attribute or CDATA element for each field of the entity
-     * @param writer A PrintWriter to write to
+    /** Writes XML text with an attribute or CDATA element for each field of the entity. If dependents is true also
+     * writes all dependent (descendant) records.
+     * @param writer A Writer object to write to
      * @param prefix A prefix to put in front of the entity name in the tag name
-     */
-    void writeXmlText(PrintWriter writer, String prefix);
-
-    /** Writes XML text using writeXmlText() for the current record and all dependent (descendant) records.
-     * @param pw A PrintWriter to write to
+     * @param dependents Write dependent (descendant) records as well?
      * @return The number of records written
      */
-    int writeXmlWithDependents(PrintWriter pw);
+    int writeXmlText(Writer writer, String prefix, boolean dependents);
 }
