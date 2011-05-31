@@ -7,6 +7,10 @@ Release 1.0-beta3 - TBD
 
 The 1.0-beta3 release...
 
+This release includes:
+
+- All the great features of the preview releases, 1.0-beta1, and 1.0-beta2
+
 ===========================================================================
 Release 1.0-beta2 - 30 May 2011
 ===========================================================================
@@ -214,36 +218,6 @@ This release includes:
   performance (WAY faster, but more room for improvement), transactions,
   style, etc
 
-Notable features not yet implemented (for 1.0):
-
-- XML Screens
-  - Screen form client JS validation for service in-parameters for matches,
-    number-range, text-length, text-letters, time-range, credit-card.@types
-  - Screen form-single field-layout support
-  - Screen form-list field-layout support
-  - Screen form-list pagination (defaults in search-form-inputs)
-  - Screen section-iterate pagination
-  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
-- Service Facade
-  - Service mail handling (MCA rules, etc)
-- Tools Screens
-  - Entity
-    - Entity Data UI (entity list, find on entity with delete, view entity
-      record with related, create/update entity record with tabs for
-      list/update/delete/add dependent entities)
-    - Entity Data Import and Export screens
-    - SQL Query Run/View
-    - Database meta-data check/report against entity definitions
-  - Scheduler (view scheduled services with cancel, add scheduled service)
-  - Script Run (or groovy shell?)
-  - Security screens (consider making Entity Data UI good enough for these)
-    - UserAccount screens (find/delete, edit UA (with tabs for preferences,
-      themes, login, history, visit history, groups, change password))
-    - UserGroup screens (find/delete, edit (tab for users in group))
-    - Artifact Group (find/delete, edit (tab for artifacts in group))
-    - Authorization screen (find/delete, edit (tabs for record, service))
-  - Artifact Info screens (with in/out references for all)
-
 ===========================================================================
 Release 1.0-preview2 - 01 Mar 2011
 ===========================================================================
@@ -324,34 +298,6 @@ This release includes:
     where both tables exist; useful to run once all desired tables have
     been created (through a data load, test script, etc) to round out the
     DB meta-data
-
-Notable features not yet implemented:
-
-- XML Screens
-  - Screen form AJAX/DHTML for lookup
-  - Screen form auto-complete for drop-down and lookup
-  - Screen form field-layout support
-  - Screen form client JS validation based on target transition service
-    definition (define once, run on client and server)
-  - Screen form-list pagination
-  - Screen tree elements
-  - Screen section-iterate pagination
-  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
-- Service Facade
-  - Service runners for remote service calls (HTTP, JMS, RMI proxies)
-  - Service runners for web service standards (XML-RPC, REST, JSON, etc)
-  - Service mail handling (MCA rules)
-  - Service async/scheduled max-retry in Quartz
-- Entity Facade
-  - Entity complex aliases in views
-  - Database meta-data check/report against entity definitions
-- ArtifactExecutionFacade for artifact stack tracking
-- Artifact Authorization, Tar-pitting based on configuration in db
-- ServerHit and ServerHitBin tracking
-- Visitor tracking
-- Multi-tenant support (shared app server, separate databases)
-- Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
-- Clean up JavaDoc/GroovyDoc comments and post to site
 
 ===========================================================================
 Release 1.0-preview1 - 09 Feb 2011
@@ -434,39 +380,6 @@ This release includes:
   entities and services, demo app and security and l10n data, etc
 - Sample configurations for development, staging, and production
 - Configurable "root" screen with sample HTML wrappers, login, menus, etc
-
-Notable features not yet implemented:
-
-- XML Screens
-  - Renderers for non-HTML output (XML, XSL-FO, CSV, etc, etc)
-  - Screen tree nodes
-  - Screen form elements (for now comments show in rendered output)
-  - Dynamic Screens (database-driven: DynamicScreen*)
-  - Dynamic Forms (database-driven: DynForm*)
-  - ESAPI output encoding
-- Entity Facade
-  - Entity ECA rules
-  - Entity encryption, audit-logging, complex aliases in views
-  - Automatic cache clearing
-  - Entity extension
-  - Database meta-data support for adding columns, fks, indexes
-  - EntitySync tool
-  - Database-driven dynamic view entity
-- Service Facade
-  - Service ECA rules
-  - Service validation, authentication, semaphores
-  - Service runners for remote service calls (HTTP, JMS, RMI proxies)
-  - Service runners for web service standards (XML-RPC, REST, JSON, etc)
-  - Expand auto-parameters
-  - Service run on commit and on rollback of current tx (ServiceCallSpecial)
-  - Service async or scheduled max-retry
-- ArtifactExecutionFacade for artifact stack tracking
-- Artifact Authorization, Tar-pitting based on configuration in db
-- ServerHit and ServerHitBin tracking
-- Visitor tracking
-- Multi-tenant support (shared app server, separate databases)
-- Web Tools UI for Cache, Scheduler, Entity Data UI, SQL/Script Run, etc
-- I18n (calls to L10nFacade, in String expand, pre-expand) in XML Screens
 
 ===========================================================================
 Tools probable for 1.0 final:
