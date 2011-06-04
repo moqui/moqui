@@ -47,6 +47,18 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="currencyUomId" type="id" is-pk="true"/>
         <relationship type="one" related-entity-name="Tenant"/>
     </entity>
+    <entity entity-name="TenantEmail" package-name="org.moqui.entity.tenant">
+        <field name="tenantId" type="id" is-pk="true"/>
+        <field name="emailTypeEnumId" type="id" is-pk="true"/>
+        <field name="fromDate" type="date-time" is-pk="true"/>
+        <field name="thruDate" type="date-time"/>
+        <field name="emailTemplateId" type="id"/>
+        <relationship type="one" related-entity-name="Tenant"/>
+        <relationship type="one" title="TenantEmailType" related-entity-name="Enumeration">
+            <key-map field-name="emailTypeEnumId"/>
+        </relationship>
+        <relationship type="one" related-entity-name="EmailTemplate"/>
+    </entity>
     <entity entity-name="TenantLocale" package-name="org.moqui.entity.tenant" group-name="tenantcommon">
         <description>Each record represents a Locale to be available to the tenant.
             If no records are present all system locales will be available.</description>
