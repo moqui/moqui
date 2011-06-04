@@ -54,7 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="thruDate" type="date-time"/>
         <field name="emailTemplateId" type="id"/>
         <relationship type="one" related-entity-name="Tenant"/>
-        <relationship type="one" title="TenantEmailType" related-entity-name="Enumeration">
+        <relationship type="one" title="EmailType" related-entity-name="Enumeration">
             <key-map field-name="emailTypeEnumId"/>
         </relationship>
         <relationship type="one" related-entity-name="EmailTemplate"/>

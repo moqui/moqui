@@ -38,7 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>For threaded messages, this points to the previous message in the thread.</description>
         </field>
         <field name="statusId" type="id" enable-audit-log="true"/>
-        <field name="purposeEnumId" type="id"/>
+        <field name="emailTypeEnumId" type="id" is-pk="true"/>
         <field name="sentDate" type="date-time"/>
         <field name="receivedDate" type="date-time"/>
         <field name="subject" type="text-long"/>
@@ -60,8 +60,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="StatusItem">
             <description>(statusTypeId = EmailMessage)</description>
         </relationship>
-        <relationship type="one" title="EmailPurpose" related-entity-name="Enumeration">
-            <key-map field-name="purposeEnumId"/>
+        <relationship type="one" title="EmailType" related-entity-name="Enumeration">
+            <key-map field-name="emailTypeEnumId"/>
         </relationship>
         <relationship type="one" title="Root" related-entity-name="EmailMessage">
             <key-map field-name="rootEmailMessageId" related-field-name="emailMessageId"/>

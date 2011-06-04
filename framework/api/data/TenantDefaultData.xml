@@ -11,13 +11,6 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <EnumerationType description="Tenant Email Type" enumTypeId="TenantEmailType"/>
-    <Enumeration description="Registration Confirmation" enumId="REG_CONFIRM" enumTypeId="TenantEmailType"/>
-    <Enumeration description="Update Personal Info Confirmation" enumId="UPD_INFO_CONFIRM" enumTypeId="TenantEmailType"/>
-    <Enumeration description="Email Address Verification" enumId="EMAIL_VERIFY" enumTypeId="TenantEmailType"/>
-    <Enumeration description="Account Invitation" enumId="ACCOUNT_INVITE" enumTypeId="TenantEmailType"/>
-    <Enumeration description="Contact Us Notification" enumId="CONACT_US_NOT" enumTypeId="TenantEmailType"/>
-
     <!-- The DEFAULT Tenant is used when no other tenant is active, ie this is for the base database. -->
     <Tenant tenantId="DEFAULT" tenantName="Default" isEnabled="Y"
             defaultCurrencyUomId="USD" defaultLocale="en" defaultTimeZone="" defaultCountryGeoId="USA"
