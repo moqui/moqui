@@ -13,14 +13,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.entity.group -->
+    <!-- moqui.entity.group -->
     <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="EntityGroup" package-name="org.moqui.entity.group">
+    <entity entity-name="EntityGroup" package-name="moqui.entity.group">
         <field name="entityGroupId" type="id" is-pk="true"/>
         <field name="entityGroupName" type="text-medium"/>
     </entity>
-    <entity entity-name="EntityGroupEntry" package-name="org.moqui.entity.group">
+    <entity entity-name="EntityGroupEntry" package-name="moqui.entity.group">
         <field name="entityGroupId" type="id" is-pk="true"/>
         <field name="entityOrPackage" type="text-long" is-pk="true"/>
         <field name="applEnumId" type="id"/>
@@ -28,10 +28,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     -->
     <!-- ========================================================= -->
-    <!-- org.moqui.entity.misc -->
+    <!-- moqui.entity.misc -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EntityAuditLog" package-name="org.moqui.entity.misc" authorize-skip="create">
+    <entity entity-name="EntityAuditLog" package-name="moqui.entity.misc" authorize-skip="create">
         <field name="auditHistorySeqId" type="id" is-pk="true"/>
         <field name="changedEntityName" type="text-medium"/>
         <field name="changedFieldName" type="text-long"/>
@@ -44,16 +44,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="changedByUserId" type="text-long"/>
         <field name="changedInVisitId" type="text-long"/>
     </entity>
-    <entity entity-name="SequenceValueItem" package-name="org.moqui.entity.misc" authorize-skip="true">
+    <entity entity-name="SequenceValueItem" package-name="moqui.entity.misc" authorize-skip="true">
         <field name="seqName" type="id-long" is-pk="true"/>
         <field name="seqNum" type="number-integer"/>
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.entity.synchronization -->
+    <!-- moqui.entity.synchronization -->
     <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="EntitySync" package-name="org.moqui.entity.synchronization">
+    <entity entity-name="EntitySync" package-name="moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="runStatusId" type="id"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
@@ -70,7 +70,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="lastHistoryStartDate" related-field-name="startDate"/>
         </relationship>
     </entity>
-    <entity entity-name="EntitySyncHistory" package-name="org.moqui.entity.synchronization">
+    <entity entity-name="EntitySyncHistory" package-name="moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="startDate" type="date-time" is-pk="true"/>
         <field name="runStatusId" type="id"/>
@@ -94,33 +94,33 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="perSplitMaxItems" type="number-integer"/>
         <relationship type="one" related-entity-name="EntitySync"/>
     </entity>
-    <entity entity-name="EntitySyncIncludeGroup" package-name="org.moqui.entity.synchronization">
+    <entity entity-name="EntitySyncIncludeGroup" package-name="moqui.entity.synchronization">
         <field name="entitySyncId" type="id" is-pk="true"/>
         <field name="entityGroupId" type="id" is-pk="true"/>
         <relationship type="one" related-entity-name="EntityGroup"/>
         <relationship type="one" related-entity-name="EntitySync"/>
     </entity>
-    <entity entity-name="EntitySyncRemove" package-name="org.moqui.entity.synchronization">
+    <entity entity-name="EntitySyncRemove" package-name="moqui.entity.synchronization">
         <field name="entitySyncRemoveId" type="id" is-pk="true"/>
         <field name="primaryKeyRemoved" type="text-very-long"/>
     </entity>
     -->
     <!-- ========================================================= -->
-    <!-- org.moqui.entity.dynamic -->
+    <!-- moqui.entity.dynamic -->
     <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="DynamicViewEntity" package-name="org.moqui.entity.dynamic">
+    <entity entity-name="DynamicViewEntity" package-name="moqui.entity.dynamic">
         <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
         <field name="packageName" type="text-long"/>
         <field name="cache" type="text-indicator"/>
     </entity>
-    <entity entity-name="DynamicViewEntityMember" package-name="org.moqui.entity.dynamic">
+    <entity entity-name="DynamicViewEntityMember" package-name="moqui.entity.dynamic">
         <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="entityName" type="text-medium"/>
         <relationship type="one" related-entity-name="DynamicViewEntity"/>
     </entity>
-    <entity entity-name="DynamicViewEntityAlias" package-name="org.moqui.entity.dynamic">
+    <entity entity-name="DynamicViewEntityAlias" package-name="moqui.entity.dynamic">
         <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="fieldAlias" type="text-medium" is-pk="true"/>
@@ -129,14 +129,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="groupBy" type="text-indicator"/>
         <relationship type="one" related-entity-name="DynamicViewEntityMember"/>
     </entity>
-    <entity entity-name="DynamicViewEntityJoin" package-name="org.moqui.entity.dynamic">
+    <entity entity-name="DynamicViewEntityJoin" package-name="moqui.entity.dynamic">
         <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
         <field name="relatedOptional" type="text-indicator"/>
         <relationship type="one" related-entity-name="DynamicViewEntityMember"/>
     </entity>
-    <entity entity-name="DynamicViewEntityKeyMap" package-name="org.moqui.entity.dynamic">
+    <entity entity-name="DynamicViewEntityKeyMap" package-name="moqui.entity.dynamic">
         <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="relatedEntityAlias" type="text-short" is-pk="true"/>

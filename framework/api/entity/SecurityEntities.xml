@@ -13,14 +13,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.security.artifact -->
+    <!-- moqui.security.artifact -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ArtifactGroup" package-name="org.moqui.security.artifact">
+    <entity entity-name="ArtifactGroup" package-name="moqui.security.artifact">
         <field name="artifactGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-medium"/>
     </entity>
-    <entity entity-name="ArtifactGroupMember" package-name="org.moqui.security.artifact">
+    <entity entity-name="ArtifactGroupMember" package-name="moqui.security.artifact">
         <field name="artifactGroupId" type="id" is-pk="true"/>
         <field name="artifactName" type="text-long" is-pk="true">
             <description>Full artifact location/name, or a pattern if nameIsPattern=Y.</description>
@@ -45,10 +45,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.security.authz -->
+    <!-- moqui.security.authz -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ArtifactAuthz" package-name="org.moqui.security.authz">
+    <entity entity-name="ArtifactAuthz" package-name="moqui.security.authz">
         <description>If an artifact in the group specified is accessed by any user in the AuthzGroup maxHitsCount
             times in maxHitsDuration seconds then the user/artifact will be blocked fir tarputDuration seconds.
         </description>
@@ -75,7 +75,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="authzActionEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="ArtifactAuthzRecord" package-name="org.moqui.security.authz">
+    <entity entity-name="ArtifactAuthzRecord" package-name="moqui.security.authz">
         <field name="artifactAuthzId" type="id" is-pk="true"/>
         <field name="viewEntityName" type="text-medium"/>
         <field name="filterByDate" type="text-indicator"/>
@@ -88,7 +88,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </description>
         </field>
     </entity>
-    <entity entity-name="ArtifactAuthzRecordCond" package-name="org.moqui.security.authz">
+    <entity entity-name="ArtifactAuthzRecordCond" package-name="moqui.security.authz">
         <field name="artifactAuthzId" type="id" is-pk="true"/>
         <field name="artifactAuthzCondSeqId" type="id" is-pk="true"/>
         <field name="fieldName" type="text-medium"/>
@@ -100,7 +100,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="operatorEnumId" related-field-name="enumId"/>
         </relationship>
     </entity>
-    <view-entity entity-name="ArtifactAuthzCheckView" package-name="org.moqui.security.authz">
+    <view-entity entity-name="ArtifactAuthzCheckView" package-name="moqui.security.authz">
         <member-entity entity-alias="UGM" entity-name="UserGroupMember"/>
         <member-entity entity-alias="AAZ" entity-name="ArtifactAuthz"/>
         <member-entity entity-alias="AGM" entity-name="ArtifactGroupMember"/>
@@ -127,10 +127,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.security.tarpit -->
+    <!-- moqui.security.tarpit -->
     <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="ArtifactTarpit" package-name="org.moqui.security.tarpit">
+    <entity entity-name="ArtifactTarpit" package-name="moqui.security.tarpit">
         <description>If an artifact in the group specified is accessed by any user in the UserGroup maxHitsCount
             times in maxHitsDuration seconds then the user/artifact will be blocked fir tarpitDuration seconds.
         </description>
@@ -142,7 +142,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="UserGroup"/>
         <relationship type="one" related-entity-name="ArtifactGroup"/>
     </entity>
-    <entity entity-name="ArtifactTarpitted" package-name="org.moqui.security.tarpit">
+    <entity entity-name="ArtifactTarpitted" package-name="moqui.security.tarpit">
         <description>Deny access to the artifact for the user until releaseDateTime is reached.</description>
         <field name="userId" type="id" is-pk="true"/>
         <field name="artifactName" type="text-long" is-pk="true"/>
@@ -156,10 +156,10 @@ This Work includes contributions authored by David E. Jones, not as a
     -->
 
     <!-- ========================================================= -->
-    <!-- org.moqui.security.user -->
+    <!-- moqui.security.user -->
     <!-- ========================================================= -->
 
-    <entity entity-name="UserAccount" package-name="org.moqui.security.user" authorize-skip="view">
+    <entity entity-name="UserAccount" package-name="moqui.security.user" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="username" type="text-long" enable-audit-log="true">
             <description>The username used along with the password to login</description>
@@ -192,11 +192,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <index name="USERACCT_USERNAME" unique="true"><index-field name="username"/></index>
         <index name="USERACCT_EMAILADDR" unique="true"><index-field name="emailAddress"/></index>
     </entity>
-    <entity entity-name="UserGroup" package-name="org.moqui.security.user">
+    <entity entity-name="UserGroup" package-name="moqui.security.user">
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
-    <entity entity-name="UserGroupMember" package-name="org.moqui.security.user">
+    <entity entity-name="UserGroupMember" package-name="moqui.security.user">
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
@@ -206,7 +206,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
-    <entity entity-name="UserLoginHistory" package-name="org.moqui.security.user" cache="never" authorize-skip="create">
+    <entity entity-name="UserLoginHistory" package-name="moqui.security.user" cache="never" authorize-skip="create">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
@@ -217,7 +217,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
-    <entity entity-name="UserPasswordHistory" package-name="org.moqui.security.user" cache="never">
+    <entity entity-name="UserPasswordHistory" package-name="moqui.security.user" cache="never">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="password" type="text-medium" encrypt="true"/>
@@ -225,7 +225,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
-    <entity entity-name="UserPreference" package-name="org.moqui.security.user">
+    <entity entity-name="UserPreference" package-name="moqui.security.user">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="preferenceTypeEnumId" type="id" is-pk="true"/>
         <field name="userPrefValue" type="text-long"/>
@@ -236,7 +236,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="preferenceTypeEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="UserScreenTheme" package-name="org.moqui.screen.theme" authorize-skip="view">
+    <entity entity-name="UserScreenTheme" package-name="moqui.screen.theme" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id" is-pk="true"/>
         <field name="screenThemeId" type="id"/>

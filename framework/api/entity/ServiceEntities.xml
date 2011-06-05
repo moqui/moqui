@@ -15,10 +15,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- NOTE: there is no ScheduledService or ScheduledServiceData entity any more because Quartz Scheduler will be used and it has its own data model, etc -->
 
     <!-- ========================================================= -->
-    <!-- org.moqui.service.semaphore -->
+    <!-- moqui.service.semaphore -->
     <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="ServiceSemaphore" package-name="org.moqui.service.semaphore" sequence-bank-size="100">
+    <entity entity-name="ServiceSemaphore" package-name="moqui.service.semaphore" sequence-bank-size="100">
         <field name="serviceName" type="text-medium" is-pk="true"/>
         <field name="lockThread" type="text-medium"/>
         <field name="lockTime" type="date-time"/>

@@ -13,10 +13,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.screen.form -->
+    <!-- moqui.screen.form -->
     <!-- ========================================================= -->
     <!-- An alternative for DynamicForm to mostly modify/personalize existing forms as opposed to the OFBiz Survey* style form:
-    <entity entity-name="DynamicForm" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicForm" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
         <field name="userId" type="id-very-long">
             <description>These settings are per-user. To apply to all users set this to null.</description>
@@ -25,7 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>The screen location and form name (separated by a hash/pound sign) of XML Screen Form to modify.</description>
         </field>
     </entity>
-    <entity entity-name="DynamicFormField" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormField" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
         <field name="fieldName" type="text-long" is-pk="true"/>
         <field name="entryName" type="text-long"/>
@@ -36,7 +36,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <relationship type="one" related-entity-name="DynamicForm"/>
     </entity>
-    <entity entity-name="DynamicFormFieldOption" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormFieldOption" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
         <field name="fieldName" type="text-long" is-pk="true"/>
         <field name="value" type="text-long" is-pk="true"/>
@@ -46,7 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="DynamicForm" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicForm" package-name="moqui.screen.form">
         <field name="dynamicFormId" type="id" is-pk="true"/>
         <field name="dynamicFormName" type="text-medium"/>
         <field name="entityName" type="text-medium">
@@ -86,14 +86,14 @@ This Work includes contributions authored by David E. Jones, not as a
             </description>
         </field>
     </entity>
-    <entity entity-name="DynamicFormSection" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormSection" package-name="moqui.screen.form">
         <field name="dynamicFormId" type="id" is-pk="true"/>
         <field name="dynamicFormSectionSeqId" type="id" is-pk="true"/>
         <field name="pageName" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" related-entity-name="DynamicForm"/>
     </entity>
-    <entity entity-name="DynamicFormField" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormField" package-name="moqui.screen.form">
         <field name="dynamicFormFieldId" type="id" is-pk="true"/>
         <field name="dynamicFormId" type="id"/>
         <field name="dynamicFormSectionSeqId" type="id"/>
@@ -144,14 +144,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="enumTypeId"/>
         </relationship>
     </entity>
-    <entity entity-name="DynamicFormFieldOption" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormFieldOption" package-name="moqui.screen.form">
         <field name="dynamicFormFieldId" type="id" is-pk="true"/>
         <field name="dynamicFormOptionSeqId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" related-entity-name="DynamicFormField"/>
     </entity>
-    <entity entity-name="DynamicFormResponse" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormResponse" package-name="moqui.screen.form">
         <field name="dynamicFormResponseId" type="id" is-pk="true"/>
         <field name="dynamicFormId" type="id"/>
         <field name="userId" type="id"/>
@@ -166,7 +166,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="DynamicForm"/>
         <relationship type="one" related-entity-name="StatusItem"/>
     </entity>
-    <entity entity-name="DynamicFormResponseAnswer" package-name="org.moqui.screen.form">
+    <entity entity-name="DynamicFormResponseAnswer" package-name="moqui.screen.form">
         <field name="dynamicFormResponseId" type="id" is-pk="true"/>
         <field name="dynamicFormFieldId" type="id" is-pk="true"/>
         <field name="booleanResponse" type="text-indicator"/>
@@ -181,10 +181,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     -->
     <!-- ========================================================= -->
-    <!-- org.moqui.screen.dynscreen -->
+    <!-- moqui.screen.dynscreen -->
     <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="DynamicScreen" package-name="org.moqui.screen.dynscreen">
+    <entity entity-name="DynamicScreen" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="screenName" type="text-medium"/>
         <field name="userId" type="id-very-long">
@@ -194,7 +194,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>The location of XML Screen to modify.</description>
         </field>
     </entity>
-    <entity entity-name="DynamicScreenInclude" package-name="org.moqui.screen.dynscreen">
+    <entity entity-name="DynamicScreenInclude" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="includeSeqId" type="id" is-pk="true"/>
         <field name="sequenceNum" type="number-integer"/>
@@ -204,20 +204,20 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <field name="screenLocation" type="text-long"/>
     </entity>
-    <entity entity-name="DynamicScreenIncludeParam" package-name="org.moqui.screen.dynscreen">
+    <entity entity-name="DynamicScreenIncludeParam" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="includeSeqId" type="id" is-pk="true"/>
         <field name="parameterName" type="text-medium" is-pk="true"/>
         <field name="parameterValue" type="text-long"/>
     </entity>
-    <entity entity-name="DynamicScreenPanel" package-name="org.moqui.screen.dynscreen">
+    <entity entity-name="DynamicScreenPanel" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="panelSeqId" type="id" is-pk="true"/>
         <field name="areaSizeUnit" type="id">
             <description>Options include: px, and em (defaults to px).</description>
         </field>
     </entity>
-    <entity entity-name="DynamicScreenPanelArea" package-name="org.moqui.screen.dynscreen">
+    <entity entity-name="DynamicScreenPanelArea" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="panelSeqId" type="id" is-pk="true"/>
         <field name="areaEnumId" type="id" is-pk="true">
@@ -230,10 +230,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     -->
     <!-- ========================================================= -->
-    <!-- org.moqui.screen.subscreen -->
+    <!-- moqui.screen.subscreen -->
     <!-- ========================================================= -->
 
-    <entity entity-name="SubscreensItem" package-name="org.moqui.screen.subscreen" authorize-skip="view" cache="true">
+    <entity entity-name="SubscreensItem" package-name="moqui.screen.subscreen" authorize-skip="view" cache="true">
         <field name="screenLocation" type="text-long" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
         <field name="userId" type="id-very-long" is-pk="true">
@@ -261,10 +261,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.screen.theme -->
+    <!-- moqui.screen.theme -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ScreenTheme" package-name="org.moqui.screen.theme" authorize-skip="true" cache="true">
+    <entity entity-name="ScreenTheme" package-name="moqui.screen.theme" authorize-skip="true" cache="true">
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
@@ -272,7 +272,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="ScreenThemeResource" package-name="org.moqui.screen.theme" authorize-skip="view" cache="true">
+    <entity entity-name="ScreenThemeResource" package-name="moqui.screen.theme" authorize-skip="view" cache="true">
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="resourceTypeEnumId" type="id"/>

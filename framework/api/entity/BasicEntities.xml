@@ -13,10 +13,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.datasource -->
+    <!-- moqui.basic.datasource -->
     <!-- ========================================================= -->
 
-    <entity entity-name="DataSource" package-name="org.moqui.basic.datasource" cache="true">
+    <entity entity-name="DataSource" package-name="moqui.basic.datasource" cache="true">
         <field name="dataSourceId" type="id" is-pk="true"/>
         <field name="dataSourceTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
@@ -26,10 +26,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.email -->
+    <!-- moqui.basic.email -->
     <!-- ========================================================= -->
 
-    <entity entity-name="EmailMessage" package-name="org.moqui.basic.email" cache="false">
+    <entity entity-name="EmailMessage" package-name="moqui.basic.email" cache="false">
         <field name="emailMessageId" type="id" is-pk="true"/>
         <field name="rootEmailMessageId" type="id">
             <description>For threaded messages, this points to the message that started the thread.</description>
@@ -78,7 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="EmailTemplate"/>
         <index name="EMAIL_MSG_ID" unique="true"><index-field name="messageId"/></index>
     </entity>
-    <entity entity-name="EmailServer" package-name="org.moqui.basic.email" cache="true">
+    <entity entity-name="EmailServer" package-name="moqui.basic.email" cache="true">
         <field name="emailServerId" type="id" is-pk="true"/>
         <field name="smtpHost" type="text-long"/>
         <field name="smtpPort" type="text-short"/>
@@ -91,7 +91,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="mailUsername" type="text-long"/>
         <field name="mailPassword" type="text-long" encrypt="true"/>
     </entity>
-    <entity entity-name="EmailTemplate" package-name="org.moqui.basic.email" cache="true">
+    <entity entity-name="EmailTemplate" package-name="moqui.basic.email" cache="true">
         <field name="emailTemplateId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="emailServerId" type="id"/>
@@ -105,7 +105,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="sendPartial" type="text-indicator"/>
         <relationship type="one" related-entity-name="EmailServer"/>
     </entity>
-    <entity entity-name="EmailTemplateAttachment" package-name="org.moqui.basic.email" cache="true">
+    <entity entity-name="EmailTemplateAttachment" package-name="moqui.basic.email" cache="true">
         <field name="emailTemplateId" type="id" is-pk="true"/>
         <field name="fileName" type="text-medium" is-pk="true"/>
         <field name="attachmentLocation" type="text-long">
@@ -121,10 +121,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.enumeration -->
+    <!-- moqui.basic.enumeration -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Enumeration" package-name="org.moqui.basic.enumeration" cache="true">
+    <entity entity-name="Enumeration" package-name="moqui.basic.enumeration" cache="true">
         <field name="enumId" type="id" is-pk="true"/>
         <field name="enumTypeId" type="id-long"/>
         <field name="parentEnumId" type="id"/>
@@ -136,16 +136,16 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="parentEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="EnumerationType" package-name="org.moqui.basic.enumeration" cache="true">
+    <entity entity-name="EnumerationType" package-name="moqui.basic.enumeration" cache="true">
         <field name="enumTypeId" type="id-long" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.geo -->
+    <!-- moqui.basic.geo -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Geo" package-name="org.moqui.basic.geo" cache="true">
+    <entity entity-name="Geo" package-name="moqui.basic.geo" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoTypeEnumId" type="id"/>
         <field name="geoName" type="text-medium"/>
@@ -157,7 +157,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="geoTypeEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="GeoAssoc" package-name="org.moqui.basic.geo" cache="true">
+    <entity entity-name="GeoAssoc" package-name="moqui.basic.geo" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoIdTo" type="id" is-pk="true"/>
         <field name="geoAssocTypeEnumId" type="id"/>
@@ -169,7 +169,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="geoAssocTypeEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="GeoPoint" package-name="org.moqui.basic.geo">
+    <entity entity-name="GeoPoint" package-name="moqui.basic.geo">
         <field name="geoPointId" type="id" is-pk="true"/>
         <field name="dataSourceId" type="id"/>
         <field name="latitude" type="number-float"/>
@@ -184,15 +184,15 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.l10n -->
+    <!-- moqui.basic.l10n -->
     <!-- ========================================================= -->
 
-    <entity entity-name="LocalizedMessage" package-name="org.moqui.basic.l10n" cache="true" authorize-skip="view">
+    <entity entity-name="LocalizedMessage" package-name="moqui.basic.l10n" cache="true" authorize-skip="view">
         <field name="original" type="text-long" is-pk="true"/>
         <field name="locale" type="text-short" is-pk="true"/>
         <field name="localized" type="text-very-long"/>
     </entity>
-    <entity entity-name="LocalizedEntityField" package-name="org.moqui.basic.l10n" cache="true" authorize-skip="view">
+    <entity entity-name="LocalizedEntityField" package-name="moqui.basic.l10n" cache="true" authorize-skip="view">
         <field name="entityName" type="text-medium" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="pkValue" type="text-medium" is-pk="true"/>
@@ -201,10 +201,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.status -->
+    <!-- moqui.basic.status -->
     <!-- ========================================================= -->
 
-    <entity entity-name="StatusItem" package-name="org.moqui.basic.status" cache="true">
+    <entity entity-name="StatusItem" package-name="moqui.basic.status" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
         <field name="statusTypeId" type="id"/>
         <field name="statusCode" type="text-medium"/>
@@ -212,7 +212,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="description" type="text-long" enable-localization="true"/>
         <relationship type="one" related-entity-name="StatusType"/>
     </entity>
-    <entity entity-name="StatusType" package-name="org.moqui.basic.status">
+    <entity entity-name="StatusType" package-name="moqui.basic.status">
         <field name="statusTypeId" type="id" is-pk="true"/>
         <field name="parentTypeId" type="id"/>
         <field name="description" type="text-long"/>
@@ -220,7 +220,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="parentTypeId" related-field-name="statusTypeId"/>
         </relationship>
     </entity>
-    <entity entity-name="StatusValidChange" package-name="org.moqui.basic.status" cache="true">
+    <entity entity-name="StatusValidChange" package-name="moqui.basic.status" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
         <field name="statusIdTo" type="id" is-pk="true"/>
         <field name="conditionExpression" type="text-long"/>
@@ -230,7 +230,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="statusIdTo" related-field-name="statusId"/>
         </relationship>
     </entity>
-    <view-entity entity-name="StatusValidChangeToDetail" package-name="org.moqui.basic.status">
+    <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic.status">
         <member-entity entity-alias="SVC" entity-name="StatusValidChange"/>
         <member-entity entity-alias="SI" entity-name="StatusItem"/>
         <alias-all entity-alias="SVC"/>
@@ -246,10 +246,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.basic.uom -->
+    <!-- moqui.basic.uom -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Uom" package-name="org.moqui.basic.uom" cache="true">
+    <entity entity-name="Uom" package-name="moqui.basic.uom" cache="true">
         <field name="uomId" type="id" is-pk="true"/>
         <field name="uomTypeEnumId" type="id"/>
         <field name="abbreviation" type="text-medium"/>
@@ -258,7 +258,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="uomTypeEnumId"/>
         </relationship>
     </entity>
-    <view-entity entity-name="UomAndType" package-name="org.moqui.basic.uom" cache="true">
+    <view-entity entity-name="UomAndType" package-name="moqui.basic.uom" cache="true">
         <member-entity entity-alias="UOM" entity-name="Uom"/>
         <member-entity entity-alias="UTE" entity-name="Enumeration"/>
         <alias entity-alias="UOM" name="uomId"/>
@@ -269,7 +269,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
         </view-link>
     </view-entity>
-    <entity entity-name="UomConversion" package-name="org.moqui.basic.uom" cache="true">
+    <entity entity-name="UomConversion" package-name="moqui.basic.uom" cache="true">
         <field name="uomConversionId" type="id" is-pk="true"/>
         <field name="uomId" type="id"/>
         <field name="uomIdTo" type="id"/>
@@ -286,11 +286,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="uomIdTo" related-field-name="uomId"/>
         </relationship>
     </entity>
-    <entity entity-name="UomGroup" package-name="org.moqui.basic.uom" cache="true">
+    <entity entity-name="UomGroup" package-name="moqui.basic.uom" cache="true">
         <field name="uomGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
-    <entity entity-name="UomGroupMember" package-name="org.moqui.basic.uom" cache="true">
+    <entity entity-name="UomGroupMember" package-name="moqui.basic.uom" cache="true">
         <field name="uomGroupId" type="id" is-pk="true"/>
         <field name="uomId" type="id" is-pk="true"/>
         <relationship type="one" related-entity-name="UomGroup"/>

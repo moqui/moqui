@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- org.moqui.example.example -->
+    <!-- moqui.example.example -->
     <!-- ========================================================= -->
 
     <extend-entity entity-name="Example">
@@ -22,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleEmail" type="text-long"/>
         <field name="exampleUrl" type="text-long"/>
     </extend-entity>
-    <entity entity-name="Example" package-name="org.moqui.example.example">
+    <entity entity-name="Example" package-name="moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="exampleTypeEnumId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
@@ -41,7 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
         <relationship type="one" title="Example" related-entity-name="StatusItem"/>
     </entity>
-    <entity entity-name="ExampleItem" package-name="org.moqui.example.example">
+    <entity entity-name="ExampleItem" package-name="moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="exampleItemSeqId" type="id" is-pk="true"><description>secondary sequenced ID</description></field>
         <field name="description" type="text-long"/>
@@ -54,10 +54,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
 
     <!-- ========================================================= -->
-    <!-- org.moqui.example.feature -->
+    <!-- moqui.example.feature -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ExampleFeature" package-name="org.moqui.example.feature">
+    <entity entity-name="ExampleFeature" package-name="moqui.example.feature">
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-long"/>
@@ -65,7 +65,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="featureSourceEnumId"/>
         </relationship>
     </entity>
-    <entity entity-name="ExampleFeatureAppl" package-name="org.moqui.example.feature">
+    <entity entity-name="ExampleFeatureAppl" package-name="moqui.example.feature">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="exampleFeatureId" type="id" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
