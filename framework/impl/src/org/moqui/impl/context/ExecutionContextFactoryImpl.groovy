@@ -211,9 +211,23 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void initComponents() {
+        // the default directory for components
+        initComponentsRuntimeDir("component")
+        // a little special treatment for mantle components
+        initComponentsRuntimeDir("mantle")
+
+        // init components referred to in component-list.component elements in the conf file
+        if (confXmlRoot."component-list"?.getAt(0)?."component") {
+            for (Node componentNode in confXmlRoot."component-list"[0]."component") {
+                this.initComponent(componentNode."@name", componentNode."@location")
+            }
+        }
+    }
+
+    protected void initComponentsRuntimeDir(String dirName) {
         // init all components in the runtime/component directory
-        File componentDir = new File(this.runtimePath + "/component")
-        // if directory doesn't exist skip it, component doesn't have an entity directory
+        File componentDir = new File(this.runtimePath + "/" + dirName)
+        // if directory doesn't exist skip it, runtime doesn't always have an component directory
         if (componentDir.exists() && componentDir.isDirectory()) {
             // get all files in the directory
             for (File componentSubDir in componentDir.listFiles()) {
@@ -221,13 +235,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
                     this.initComponent(null, componentSubDir.toURI().toURL().toString())
                 }
-            }
-        }
-
-        // init components referred to in component-list.component elements in the conf file
-        if (confXmlRoot."component-list"?.getAt(0)?."component") {
-            for (Node componentNode in confXmlRoot."component-list"[0]."component") {
-                this.initComponent(componentNode."@name", componentNode."@location")
             }
         }
     }

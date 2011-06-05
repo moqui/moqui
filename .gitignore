@@ -6,4 +6,4 @@ runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
 runtime/db/derby/derby.log
 runtime/log/
-
+runtime/mantle/
