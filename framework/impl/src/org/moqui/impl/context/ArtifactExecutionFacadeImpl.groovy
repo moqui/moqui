@@ -64,7 +64,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         artifactExecutionInfoHistory.add(aeii)
 
         // never do this for the view-entity we use below, would cause infinite recursion
-        if (aeii.name == "org.moqui.security.authz.ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
+        if (aeii.name == "moqui.security.authz.ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
             return
