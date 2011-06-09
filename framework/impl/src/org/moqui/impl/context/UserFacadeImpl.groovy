@@ -162,15 +162,15 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    String getPreference(String preferenceTypeEnumId) {
+    String getPreference(String preferenceKey) {
         EntityValue up = eci.entity.makeFind("UserPreference").condition("userId", getUserId())
-                .condition("preferenceTypeEnumId", preferenceTypeEnumId).useCache(true).one()
-        return up ? up.userPrefValue : null
+                .condition("preferenceKey", preferenceKey).useCache(true).one()
+        return up ? up.preferenceValue : null
     }
 
-    void setPreference(String preferenceTypeEnumId, String userPrefValue) {
+    void setPreference(String preferenceKey, String preferenceValue) {
         eci.entity.makeValue("UserPreference").set("userId", getUserId())
-                .set("preferenceTypeEnumId", preferenceTypeEnumId).createOrUpdate()
+                .set("preferenceKey", preferenceKey).set("preferenceValue", preferenceValue).createOrUpdate()
     }
 
     /** @see org.moqui.context.UserFacade#getNowTimestamp() */

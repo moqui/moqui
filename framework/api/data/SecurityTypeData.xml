@@ -44,7 +44,4 @@ This Work includes contributions authored by David E. Jones, not as a
     <UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
     
     <UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
-
-    <EnumerationType description="User Preference Types" enumTypeId="UserPreferenceType"/>
-    <!-- <Enumeration description="My Preference" enumId="UPT_MY_PREF" enumTypeId="UserPreferenceType"/> -->
 </entity-facade-xml>

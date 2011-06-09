@@ -226,14 +226,12 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="UserPreference" package-name="moqui.security.user">
+        <description>Use this entity for user-specific preferences (or properties). For default preferences use userId="_NA_".</description>
         <field name="userId" type="id-very-long" is-pk="true"/>
-        <field name="preferenceTypeEnumId" type="id" is-pk="true"/>
-        <field name="userPrefValue" type="text-long"/>
+        <field name="preferenceKey" type="text-long" is-pk="true"/>
+        <field name="preferenceValue" type="text-long"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
-        </relationship>
-        <relationship type="one" title="UserPreferenceType" related-entity-name="Enumeration">
-            <key-map field-name="preferenceTypeEnumId"/>
         </relationship>
     </entity>
     <entity entity-name="UserScreenTheme" package-name="moqui.screen.theme" authorize-skip="view">
