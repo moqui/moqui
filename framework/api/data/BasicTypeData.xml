@@ -95,6 +95,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Weight" enumId="UT_WEIGHT_MEASURE" enumTypeId="UomType"/>
     <Enumeration description="Energy" enumId="UT_ENERGY_MEASURE" enumTypeId="UomType"/>
     <Enumeration description="Power" enumId="UT_POWER_MEASURE" enumTypeId="UomType"/>
-    <Enumeration description="Temperature" enumId="UT_TEMT_MEASURE" enumTypeId="UomType"/>
+    <Enumeration description="Temperature" enumId="UT_TEMP_MEASURE" enumTypeId="UomType"/>
     <Enumeration description="Other" enumId="UT_OTHER_MEASURE" enumTypeId="UomType"/>
 </entity-facade-xml>
