@@ -114,7 +114,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
         }
         if (locationList && logger.infoEnabled) {
-            logger.info("Loading entity XML data from the following locations: " + locationList)
+            StringBuilder lm = new StringBuilder("Loading entity XML data from the following locations: ")
+            for (String loc in locationList) lm.append("\n - ").append(loc)
+            logger.info(lm.toString())
         }
 
         TransactionFacade tf = efi.ecfi.transactionFacade
