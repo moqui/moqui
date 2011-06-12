@@ -233,6 +233,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
+        <relationship type="one-nofk" title="UserPreferenceKey" related-entity-name="Enumeration">
+            <description>No FK because any key can be used whether or not there is an Enumeration record for it.</description>
+            <key-map field-name="preferenceKey"/>
+        </relationship>
     </entity>
     <entity entity-name="UserScreenTheme" package-name="moqui.screen.theme" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>

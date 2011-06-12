@@ -41,6 +41,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AuthzAction"/>
     <Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AuthzAction"/>
 
+    <!-- User Preference Keys can be declared in Enumeration records, but they don't have to be -->
+    <EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
+
     <UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
     
     <UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
