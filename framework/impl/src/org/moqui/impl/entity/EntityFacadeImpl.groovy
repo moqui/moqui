@@ -341,7 +341,13 @@ class EntityFacadeImpl implements EntityFacade {
             for (Node relNode in ed.entityNode."relationship") {
                 if (relNode."@type" == "many") continue
 
-                EntityDefinition reverseEd = getEntityDefinition(relNode."@related-entity-name")
+                EntityDefinition reverseEd
+                try {
+                    reverseEd = getEntityDefinition(relNode."@related-entity-name")
+                } catch (EntityException e) {
+                    logger.warn("Error getting definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]: ${e.toString()}")
+                    continue
+                }
                 ListOrderedSet reversePkSet = reverseEd.getFieldNames(true, false)
                 String relType = reversePkSet.equals(pkSet) ? "one-nofk" : "many"
 
