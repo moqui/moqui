@@ -19,9 +19,20 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="allEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', false)"/>
         <set field="entityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', true)"/>
     </actions>
     <widgets>
+        <form-single name="SelectEntity" transition="find">
+            <field name="entityName"><default-field title="All Entities">
+                <drop-down>
+                    <list-options list="allEntityList" key="${entityName}"
+                                  text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
+                </drop-down>
+            </default-field></field>
+            <field name="submit"><default-field title="Select"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="entityName"/><field-ref name="submit"/></field-row></field-layout>
+        </form-single>
         <form-list name="EntityList" list="entityList">
             <field name="entityName">
                 <header-field title="Master Entity" show-order-by="true"/>
