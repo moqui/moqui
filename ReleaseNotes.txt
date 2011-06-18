@@ -10,6 +10,8 @@ The 1.0-beta3 release...
 This release includes:
 
 - All the great features of the preview releases, 1.0-beta1, and 1.0-beta2
+- UserPreference records refined so that keys can be defined with
+  Enumeration records, but don't have to be
 
 ===========================================================================
 Release 1.0-beta2 - 30 May 2011
