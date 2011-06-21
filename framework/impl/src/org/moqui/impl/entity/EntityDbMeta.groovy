@@ -252,7 +252,18 @@ class EntityDbMeta {
 
             StringBuilder indexName = new StringBuilder()
             if (relNode."@fk-name") indexName.append(relNode."@fk-name")
-            if (!indexName) indexName.append(ed.entityName).append(relNode."@title"?:"").append(relNode."@related-entity-name")
+            if (!indexName) {
+                String title = relNode."@title"?:""
+                int commonChars = 0
+                while (title.length() > commonChars && ed.entityName.length() > commonChars &&
+                        title.charAt(commonChars) == ed.entityName.charAt(commonChars)) commonChars++
+                if (commonChars > 0) {
+                    indexName.append(ed.entityName).append(title.substring(commonChars)).append(relNode."@related-entity-name")
+                } else {
+                    indexName.append(ed.entityName).append(title).append(relNode."@related-entity-name")
+                }
+                // logger.warn("ed.entityName=${ed.entityName}, title=${title}, commonChars=${commonChars}, indexName=${indexName}")
+            }
             shrinkName(indexName, constraintNameClipLength-3)
             indexName.insert(0, "IDX")
 
@@ -357,7 +368,18 @@ class EntityDbMeta {
 
             StringBuilder constraintName = new StringBuilder()
             if (relNode."@fk-name") constraintName.append(relNode."@fk-name")
-            if (!constraintName) constraintName.append(ed.entityName).append(relNode."@title"?:"").append(relNode."@related-entity-name")
+            if (!constraintName) {
+                String title = relNode."@title"?:""
+                int commonChars = 0
+                while (title.length() > commonChars && ed.entityName.length() > commonChars &&
+                        title.charAt(commonChars) == ed.entityName.charAt(commonChars)) commonChars++
+                if (commonChars > 0) {
+                    constraintName.append(ed.entityName).append(title.substring(commonChars)).append(relNode."@related-entity-name")
+                } else {
+                    constraintName.append(ed.entityName).append(title).append(relNode."@related-entity-name")
+                }
+                // logger.warn("ed.entityName=${ed.entityName}, title=${title}, commonChars=${commonChars}, constraintName=${constraintName}")
+            }
             shrinkName(constraintName, constraintNameClipLength)
 
             Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)

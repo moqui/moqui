@@ -179,7 +179,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="information" type="text-long"/>
         <relationship type="one" related-entity-name="DataSource"/>
         <relationship type="one" title="Elevation" related-entity-name="Uom">
-            <key-map field-name="elevationUomId" related-field-name="uomId"/>
+            <key-map field-name="elevationUomId"/>
         </relationship>
     </entity>
 
@@ -206,17 +206,19 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="StatusItem" package-name="moqui.basic.status" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
-        <field name="statusTypeId" type="id"/>
+        <field name="statusTypeId" type="id-long"/>
         <field name="statusCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-long" enable-localization="true"/>
         <relationship type="one" related-entity-name="StatusType"/>
     </entity>
     <entity entity-name="StatusType" package-name="moqui.basic.status">
-        <field name="statusTypeId" type="id" is-pk="true"/>
-        <field name="parentTypeId" type="id"/>
+        <field name="statusTypeId" type="id-long" is-pk="true"/>
+        <field name="parentTypeId" type="id-long"/>
         <field name="description" type="text-long"/>
         <relationship type="one" title="Parent" related-entity-name="StatusType">
+            <!-- NOTE: the related-field-name is necessary here because it is a reference back to the same entity and
+                 will find the parentTypeId as the related field because it matches by name. -->
             <key-map field-name="parentTypeId" related-field-name="statusTypeId"/>
         </relationship>
     </entity>
