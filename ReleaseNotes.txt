@@ -12,6 +12,11 @@ This release includes:
 - All the great features of the preview releases, 1.0-beta1, and 1.0-beta2
 - UserPreference records refined so that keys can be defined with
   Enumeration records, but don't have to be
+- Some changes to better support the Mantle UDM (Universal Data Model),
+  including better automatic foreign key names, looking for a "mantle"
+  directory under the runtime directory where the mantle components can go
+  (can actually have the GIT checkout of mantle right there)
+
 
 ===========================================================================
 Release 1.0-beta2 - 30 May 2011
@@ -389,9 +394,14 @@ Tools probable for 1.0 final:
 
 - Tools Screens
   - Auto Screen
+    - Order by links in column headers by default
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-- Tools Screens
+  - Ad-hoc Reports
+    - Choose master entity, select fields from all related entities, save
+      as DynamicViewEntity and related records
+    - Choose column(s) to order by
+    - View in webapp or export to CSV
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
@@ -400,6 +410,12 @@ Tools probable for 1.0 final:
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
   - Artifact Info screens (with in/out references for all)
+  - OFBiz Artifact Migration
+    - entity def -> entity def
+    - service def -> service def
+    - service impl in simple-method -> XML Actions
+    - controller request/view, screen widget, form widget -> XML Screen,
+      with screen hierarchy based on menu widget
 
 ===========================================================================
 Features designed, but not to be included in 1.0 series
