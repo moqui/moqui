@@ -233,6 +233,7 @@ class ScreenForm {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk")) {
 
             Node newFieldNode = new Node(null, "field", [name:fieldName])
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
             addAutoEntityField(ed, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
@@ -324,7 +325,7 @@ class ScreenForm {
             else subFieldNode.appendNode("display")
             break;
         case "find-display":
-            Node headerFieldNode = newFieldNode.appendNode("header-field")
+            Node headerFieldNode = newFieldNode."header-field" ?: newFieldNode.appendNode("header-field")
             if (efType.startsWith("date") || efType.startsWith("time")) {
                 headerFieldNode.appendNode("date-find", [type:efType])
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {

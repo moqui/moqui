@@ -16,6 +16,10 @@ This release includes:
   including better automatic foreign key names, looking for a "mantle"
   directory under the runtime directory where the mantle components can go
   (can actually have the GIT checkout of mantle right there)
+- Tools Screens
+  - Auto Screen
+    - Order by links in column headers by default (by default for all
+      auto fields entity as well)
 
 
 ===========================================================================
@@ -394,10 +398,9 @@ Tools probable for 1.0 final:
 
 - Tools Screens
   - Auto Screen
-    - Order by links in column headers by default
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-  - Ad-hoc Reports
+  - Ad-hoc Query/Export
     - Choose master entity, select fields from all related entities, save
       as DynamicViewEntity and related records
     - Choose column(s) to order by
