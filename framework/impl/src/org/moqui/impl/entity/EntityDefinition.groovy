@@ -22,6 +22,7 @@ import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldValueCondition
+import org.apache.commons.collections.map.ListOrderedMap
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -133,7 +134,7 @@ public class EntityDefinition {
     }
 
     Map getRelationshipExpandedKeyMap(Node relationship) {
-        Map eKeyMap = new HashMap()
+        ListOrderedMap eKeyMap = new ListOrderedMap()
         EntityDefinition relEd = this.efi.getEntityDefinition(relationship."@related-entity-name")
         if (!relEd) throw new EntityException("Could not find entity [${relationship."@related-entity-name"}] referred to in a relationship in entity [${entityName}]")
         if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
