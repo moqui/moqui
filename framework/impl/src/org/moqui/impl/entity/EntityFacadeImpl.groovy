@@ -78,7 +78,7 @@ class EntityFacadeImpl implements EntityFacade {
         // init entity meta-data
         this.entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
         this.entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
-        this.loadAllEntityLocations()
+        // NOTE: don't try to load entity locations before constructor is complete; this.loadAllEntityLocations()
 
         // EECA rule tables
         loadEecaRulesAll()
@@ -245,6 +245,18 @@ class EntityFacadeImpl implements EntityFacade {
                 logger.warn("Cannot load entity directory in component location [${location}] because protocol [${entityDirRr.uri.scheme}] is not supported.")
             }
         }
+
+        // look for view-entity definitions in the database (DbViewEntity)
+        if (entityLocationCache.get("DbViewEntity")) {
+            int numDbViewEntities = 0
+            for (EntityValue dbViewEntity in makeFind("DbViewEntity").list()) {
+                this.entityLocationCache.put((String) dbViewEntity.dbViewEntityName, ["_DB_VIEW_ENTITY_"])
+                numDbViewEntities++
+            }
+            if (logger.infoEnabled) logger.info("Found [${numDbViewEntities}] view-entity definitions in database (DbViewEntity)")
+        } else {
+            logger.warn("Could not find view-entity definitions in database (DbViewEntity), no location found for the DbViewEntity entity.")
+        }
     }
 
     protected synchronized void loadEntityFileLocations(ResourceReference entityRr) {
@@ -281,6 +293,47 @@ class EntityFacadeImpl implements EntityFacade {
             if (!entityLocationList) {
                 throw new EntityException("No definition found for entity-name [${entityName}]")
             }
+        }
+
+        // If this is a DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
+        if (entityLocationList.size() == 1 && entityLocationList[0] == "_DB_VIEW_ENTITY_") {
+            EntityValue dbViewEntity = makeFind("DbViewEntity").condition("dbViewEntityName", entityName).one()
+            Node dbViewNode = new Node(null, "view-entity", ["entity-name":entityName, "package-name":dbViewEntity.packageName])
+            if (dbViewEntity.cache == "Y") dbViewNode.attributes().put("cache", "true")
+            else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
+
+            for (EntityValue dbViewEntityMember in makeFind("DbViewEntityMember").condition("dbViewEntityName", entityName).list()) {
+                dbViewNode.appendNode("member-entity",
+                        ["entity-alias":dbViewEntityMember.entityAlias, "entity-name":dbViewEntityMember.entityName])
+            }
+            for (EntityValue dbViewEntityAlias in makeFind("DbViewEntityAlias").condition("dbViewEntityName", entityName).list()) {
+                Node aliasNode = dbViewNode.appendNode("alias",
+                        ["name":dbViewEntityAlias.fieldAlias, "entity-alias":dbViewEntityAlias.entityAlias])
+                if (dbViewEntityAlias.fieldName) aliasNode.attributes().put("field", dbViewEntityAlias.fieldName)
+                if (dbViewEntityAlias.functionName) aliasNode.attributes().put("function", dbViewEntityAlias.functionName)
+            }
+            for (EntityValue dbViewEntityViewLink in makeFind("DbViewEntityViewLink").condition("dbViewEntityName", entityName).list()) {
+                Node viewLinkNode = dbViewNode.appendNode("view-link", ["entity-alias":dbViewEntityViewLink.entityAlias,
+                        "related-entity-alias":dbViewEntityViewLink.relatedEntityAlias])
+                if (dbViewEntityViewLink.relatedOptional == "Y") viewLinkNode.attributes().put("related-optional", "true")
+
+                EntityList dbViewEntityKeyMapList = makeFind("DbViewEntityKeyMap")
+                        .condition(["dbViewEntityName":entityName, "entityAlias":dbViewEntityViewLink.entityAlias,
+                            "relatedEntityAlias":dbViewEntityViewLink.relatedEntityAlias])
+                        .list()
+                for (EntityValue dbViewEntityKeyMap in dbViewEntityKeyMapList) {
+                    Node keyMapNode = viewLinkNode.appendNode("key-map", ["field-name":dbViewEntityKeyMap.fieldName])
+                    if (dbViewEntityKeyMap.relatedFieldName)
+                        keyMapNode.attributes().put("related-field-name", dbViewEntityKeyMap.relatedFieldName)
+                }
+            }
+
+            // create the new EntityDefinition
+            ed = new EntityDefinition(this, dbViewNode)
+            // cache it
+            entityDefinitionCache.put(entityName, ed)
+            // send it on its way
+            return ed
         }
 
         // get entity, view-entity and extend-entity Nodes for entity from each location

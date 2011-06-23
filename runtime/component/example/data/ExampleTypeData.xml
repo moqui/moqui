@@ -11,25 +11,28 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
+    <!-- Example Type -->
     <EnumerationType description="Example Type" enumTypeId="ExampleType"/>
     <Enumeration description="Real World" enumId="EXT_REAL_WORLD" enumTypeId="ExampleType"/>
     <Enumeration description="Made Up" enumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
     <Enumeration description="Contrived" enumId="EXT_CONTRIVED" parentEnumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
     <Enumeration description="Inspired" enumId="EXT_INSPIRED" parentEnumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
 
+    <!-- Example Feature Application -->
     <EnumerationType description="Example Feature Application" enumTypeId="ExampleFeatureAppl"/>
     <Enumeration description="Required" enumId="EFA_REQUIRED" enumTypeId="ExampleFeatureAppl"/>
     <Enumeration description="Desired" enumId="EFA_DESIRED" enumTypeId="ExampleFeatureAppl"/>
     <Enumeration description="Not Allowed" enumId="EFA_NOT_ALLOWED" enumTypeId="ExampleFeatureAppl"/>
 
+    <!-- Example Status -->
     <StatusType description="Example" statusTypeId="Example"/>
-    <StatusItem description="In Design" sequenceNum="1" statusCode="IN_DESIGN" statusId="EXST_IN_DESIGN" statusTypeId="Example"/>
-    <StatusItem description="Defined" sequenceNum="2" statusCode="DEFINED" statusId="EXST_DEFINED" statusTypeId="Example"/>
-    <StatusItem description="Approved" sequenceNum="3" statusCode="APPROVED" statusId="EXST_APPROVED" statusTypeId="Example"/>
-    <StatusItem description="Implemented" sequenceNum="4" statusCode="IMPLEMENTED" statusId="EXST_IMPLEMENTED" statusTypeId="Example"/>
-    <StatusItem description="Tested" sequenceNum="5" statusCode="TESTED" statusId="EXST_TESTED" statusTypeId="Example"/>
-    <StatusItem description="Complete" sequenceNum="6" statusCode="COMPLETE" statusId="EXST_COMPLETE" statusTypeId="Example"/>
-    <StatusItem description="Cancelled" sequenceNum="99" statusCode="CANCELLED" statusId="EXST_CANCELLED" statusTypeId="Example"/>
+    <StatusItem description="In Design" sequenceNum="1" statusId="EXST_IN_DESIGN" statusTypeId="Example"/>
+    <StatusItem description="Defined" sequenceNum="2" statusId="EXST_DEFINED" statusTypeId="Example"/>
+    <StatusItem description="Approved" sequenceNum="3" statusId="EXST_APPROVED" statusTypeId="Example"/>
+    <StatusItem description="Implemented" sequenceNum="4" statusId="EXST_IMPLEMENTED" statusTypeId="Example"/>
+    <StatusItem description="Tested" sequenceNum="5" statusId="EXST_TESTED" statusTypeId="Example"/>
+    <StatusItem description="Complete" sequenceNum="6" statusId="EXST_COMPLETE" statusTypeId="Example"/>
+    <StatusItem description="Cancelled" sequenceNum="99" statusId="EXST_CANCELLED" statusTypeId="Example"/>
     <StatusValidChange statusId="EXST_IN_DESIGN" statusIdTo="EXST_DEFINED" transitionName="Definition Complete"/>
     <StatusValidChange statusId="EXST_DEFINED" statusIdTo="EXST_APPROVED" transitionName="Approve"/>
     <StatusValidChange statusId="EXST_APPROVED" statusIdTo="EXST_IMPLEMENTED" transitionName="Implementation Complete"/>
@@ -41,8 +44,20 @@ This Work includes contributions authored by David E. Jones, not as a
     <StatusValidChange statusId="EXST_IMPLEMENTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
     <StatusValidChange statusId="EXST_TESTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
 
+    <!-- Example Feature Source -->
     <EnumerationType description="Example Feature Source" enumTypeId="ExampleFeatureSource"/>
     <Enumeration description="Customer" enumId="EXFTSRC_CUSTOMER" sequenceNum="1" enumTypeId="ExampleFeatureSource"/>
     <Enumeration description="Partner" enumId="EXFTSRC_PARTNER" sequenceNum="2" enumTypeId="ExampleFeatureSource"/>
     <Enumeration description="Employee" enumId="EXFTSRC_EMPLOYEE" sequenceNum="3" enumTypeId="ExampleFeatureSource"/>
+
+    <!-- In the seed data since code may rely on it: and example DbViewEntity -->
+    <DbViewEntity dbViewEntityName="StatusItemAndTypeDb" packageName="moqui.example" cache="Y"/>
+    <DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" entityName="StatusItem"/>
+    <DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" entityName="StatusType"/>
+    <DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="statusId"/>
+    <DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="description"/>
+    <DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="sequenceNum"/>
+    <DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" fieldAlias="typeDescription" fieldName="description"/>
+    <DbViewEntityViewLink dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" relatedEntityAlias="ST"/>
+    <DbViewEntityKeyMap dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" relatedEntityAlias="ST" fieldName="statusTypeId"/>
 </entity-facade-xml>

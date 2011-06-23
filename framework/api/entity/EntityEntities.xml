@@ -106,43 +106,45 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     -->
     <!-- ========================================================= -->
-    <!-- moqui.entity.dynamic -->
+    <!-- moqui.entity.view -->
     <!-- ========================================================= -->
-    <!-- Tabled for now, not to be part of 1.0:
-    <entity entity-name="DynamicViewEntity" package-name="moqui.entity.dynamic">
-        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+
+    <entity entity-name="DbViewEntity" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="packageName" type="text-long"/>
         <field name="cache" type="text-indicator"/>
     </entity>
-    <entity entity-name="DynamicViewEntityMember" package-name="moqui.entity.dynamic">
-        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+    <entity entity-name="DbViewEntityMember" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="entityName" type="text-medium"/>
-        <relationship type="one" related-entity-name="DynamicViewEntity"/>
+        <relationship type="one" related-entity-name="DbViewEntity"/>
     </entity>
-    <entity entity-name="DynamicViewEntityAlias" package-name="moqui.entity.dynamic">
-        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+    <entity entity-name="DbViewEntityAlias" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="fieldAlias" type="text-medium" is-pk="true"/>
         <field name="fieldName" type="text-medium"/>
-        <field name="functionEnumId" type="id"/>
-        <field name="groupBy" type="text-indicator"/>
-        <relationship type="one" related-entity-name="DynamicViewEntityMember"/>
+        <field name="functionName" type="text-medium"/>
+        <relationship type="one" related-entity-name="DbViewEntityMember"/>
     </entity>
-    <entity entity-name="DynamicViewEntityJoin" package-name="moqui.entity.dynamic">
-        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+    <entity entity-name="DbViewEntityViewLink" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
         <field name="relatedOptional" type="text-indicator"/>
-        <relationship type="one" related-entity-name="DynamicViewEntityMember"/>
+        <relationship type="one" related-entity-name="DbViewEntityMember"/>
+        <relationship type="one" title="Related" related-entity-name="DbViewEntityMember">
+            <key-map field-name="dbViewEntityName"/>
+            <key-map field-name="relatedEntityAlias" related-field-name="entityAlias"/>
+        </relationship>
     </entity>
-    <entity entity-name="DynamicViewEntityKeyMap" package-name="moqui.entity.dynamic">
-        <field name="dynamicViewEntityName" type="text-medium" is-pk="true"/>
+    <entity entity-name="DbViewEntityKeyMap" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
-        <field name="keyName" type="text-medium" is-pk="true"/>
-        <field name="relatedKeyName" type="text-medium"/>
-        <relationship type="one" related-entity-name="DynamicViewEntityJoin"/>
+        <field name="fieldName" type="text-medium" is-pk="true"/>
+        <field name="relatedFieldName" type="text-medium"/>
+        <relationship type="one" related-entity-name="DbViewEntityViewLink"/>
     </entity>
-    -->
 </entities>

@@ -16,6 +16,8 @@ This release includes:
   including better automatic foreign key names, looking for a "mantle"
   directory under the runtime directory where the mantle components can go
   (can actually have the GIT checkout of mantle right there)
+- Entity Facade
+  - Database-driven view entity
 - Tools Screens
   - Auto Screen
     - Order by links in column headers by default (by default for all
@@ -441,7 +443,6 @@ Features designed, but not to be included in 1.0 series
 - Entity Facade
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
-  - Database-driven dynamic view entity
   - Entity complex aliases in views
   - View entity view-link.econdition* support (EntityFindBuilder:196)
 - Artifact Execution Facade

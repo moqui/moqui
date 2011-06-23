@@ -48,7 +48,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
     void makeCountFunction() {
         boolean isDistinct = this.entityFindImpl.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&
-                "true" == this.mainEntityDefinition.getEntityNode()."entity-condition"[0]."@distinct")
+                "true" == this.mainEntityDefinition.getEntityNode()."entity-condition"?.getAt(0)?."@distinct")
         boolean isGroupBy = this.mainEntityDefinition.hasFunctionAlias()
 
         if (isGroupBy) {
