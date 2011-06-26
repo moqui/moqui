@@ -56,9 +56,9 @@ class MoquiSessionListener implements HttpSessionListener {
 
         if (ecfi.confXmlRoot."server-stats"[0]."@visit-enabled" == "false") return
 
-        String visitId = session.getAttribute("visitId")
+        String visitId = session.getAttribute("moqui.visitId")
         if (!visitId) {
-            logger.warn("Not updating (closing) visit for session [${session.id}], no visitId attribute found")
+            logger.warn("Not updating (closing) visit for session [${session.id}], no moqui.visitId attribute found")
             return
         }
         // set thruDate on Visit
