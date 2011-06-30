@@ -112,7 +112,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         if (sd == null) {
             // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
-            if ((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
+            if ((verb == "create" || verb == "update" || verb == "delete" || verb == "store") &&
+                    sfi.ecfi.entityFacade.getEntityDefinition(noun) != null) {
                 Map result = runImplicitEntityAuto(currentParameters, eci)
 
                 if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(System.currentTimeMillis()-callStartTime)/1000} seconds")
@@ -250,9 +251,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 if (verb == "create") {
                     EntityAutoServiceRunner.createEntity(sfi, ed, currentParameters, result, null)
                 } else if (verb == "update") {
-                    EntityAutoServiceRunner.updateEntity(sfi, ed, currentParameters, result, null)
+                    EntityAutoServiceRunner.updateEntity(sfi, ed, currentParameters, result, null, null)
                 } else if (verb == "delete") {
                     EntityAutoServiceRunner.deleteEntity(sfi, ed, currentParameters)
+                } else if (verb == "store") {
+                    EntityAutoServiceRunner.storeEntity(sfi, ed, currentParameters, result, null)
                 }
 
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")

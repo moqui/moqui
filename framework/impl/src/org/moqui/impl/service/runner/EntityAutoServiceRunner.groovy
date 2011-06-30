@@ -33,7 +33,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         // check the verb and noun
-        if (!sd.verb || ("create" != sd.verb && "update" != sd.verb && "delete" != sd.verb))
+        if (!sd.verb || ("create" != sd.verb && "update" != sd.verb && "delete" != sd.verb && "store" != sd.verb))
             throw new ServiceException("In service [${sd.serviceName}] the verb must be create, update, or delete for entity-auto type services.")
         if (!sd.noun)  throw new ServiceException("In service [${sd.serviceName}] you must specify a noun for entity-auto engine")
 
@@ -54,11 +54,13 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             } else if ("update" == sd.verb) {
                 /* <auto-attributes include="pk" mode="IN" optional="false"/> */
                 if (!allPksInOnly) throw new ServiceException("In entity-auto type service [${sd.serviceName}] with update noun, not all pk fields have the mode IN")
-                updateEntity(sfi, ed, parameters, result, sd.getOutParameterNames())
+                updateEntity(sfi, ed, parameters, result, sd.getOutParameterNames(), null)
             } else if ("delete" == sd.verb) {
                 /* <auto-attributes include="pk" mode="IN" optional="false"/> */
                 if (!allPksInOnly) throw new ServiceException("In entity-auto type service [${sd.serviceName}] with delete noun, not all pk fields have the mode IN")
                 deleteEntity(sfi, ed, parameters)
+            } else if ("store" == sd.verb) {
+                storeEntity(sfi, ed, parameters, result, sd.getOutParameterNames())
             }
         } catch (BaseException e) {
             throw new ServiceException("Error doing entity-auto operation for entity [${ed.entityName}] in service [${sd.serviceName}]", e)
@@ -67,7 +69,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         return result
     }
 
-    public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
+    public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
+                                    Map<String, Object> result, Set<String> outParamNames) {
         EntityValue newEntityValue = sfi.ecfi.entityFacade.makeValue(ed.entityName)
 
         ListOrderedSet pkFieldNames = ed.getFieldNames(true, false)
@@ -120,8 +123,10 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         newEntityValue.create()
     }
 
-    public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
+    public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
+                                    Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
+        EntityValue lookedUpValue = preLookedUpValue ?:
+                sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] value not found, cannot update; using parameters [${parameters}]")
         }
@@ -158,6 +163,16 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
         EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).one()
         if (lookedUpValue != null) lookedUpValue.delete()
+    }
+
+    /** Does a create if record does not exist, or update if it does. */
+    public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
+        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
+        if (lookedUpValue == null) {
+            createEntity(sfi, ed, parameters, result, outParamNames)
+        } else {
+            updateEntity(sfi, ed, parameters, result, outParamNames, lookedUpValue)
+        }
     }
 
     public void destroy() { }
