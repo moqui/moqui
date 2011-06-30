@@ -20,12 +20,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <set field="allEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', false)"/>
-        <set field="entityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', true)"/>
+        <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', true)"/>
     </actions>
     <widgets>
         <form-single name="SelectEntity" transition="find">
             <field name="entityName"><default-field title="All Entities">
-                <drop-down>
+                <drop-down combo-box="true" allow-empty="true">
                     <list-options list="allEntityList" key="${entityName}"
                                   text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
                 </drop-down>
@@ -33,7 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="submit"><default-field title="Select"><submit/></default-field></field>
             <field-layout><field-row><field-ref name="entityName"/><field-ref name="submit"/></field-row></field-layout>
         </form-single>
-        <form-list name="EntityList" list="entityList">
+        <form-list name="EntityList" list="masterEntityList">
             <field name="entityName">
                 <header-field title="Master Entity" show-order-by="true"/>
                 <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/></default-field>
