@@ -790,6 +790,7 @@ class EntityFindImpl implements EntityFind {
         // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
         // NOTE: consider expanding this to do a bulk delete in the DB if there are no EECAs for the entity
         this.useCache(false).forUpdate(true)
+        this.resultSetConcurrency(ResultSet.CONCUR_UPDATABLE)
         EntityListIterator eli = null
         long totalDeleted = 0
         try {
