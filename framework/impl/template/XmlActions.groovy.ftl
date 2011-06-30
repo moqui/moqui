@@ -135,7 +135,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 <#macro "entity-delete">    ${.node["@value-field"]}.delete()
 </#macro>
-<#macro "entity-delete-related">    ${.node["@value-field"]}.deleteRelated(${.node["@relationship-name"]})
+<#macro "entity-delete-related">    ${.node["@value-field"]}.deleteRelated("${.node["@relationship-name"]}")
 </#macro>
 <#macro "entity-delete-by-condition">    ec.entity.makeFind("${.node["@entity-name"]}")
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>.deleteAll()
