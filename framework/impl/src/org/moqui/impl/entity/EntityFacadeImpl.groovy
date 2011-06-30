@@ -408,7 +408,7 @@ class EntityFacadeImpl implements EntityFacade {
                 Node reverseRelNode = (Node) reverseEd.entityNode."relationship".find(
                         { it."@related-entity-name" == ed.entityName && it."@type" == relType })
                 if (reverseRelNode != null) {
-                    // make sure has is-auto-reverse="true"
+                    // make sure has is-one-reverse="true"
                     reverseRelNode.attributes().put("is-one-reverse", "true")
                     continue
                 }
@@ -421,6 +421,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
                         ["related-entity-name":ed.entityName, "type":relType, "is-one-reverse":"true"])
+                if (relNode."@title") newRelNode.attributes().title = relNode."@title"
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields
                     newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
@@ -504,6 +505,7 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
+        if (!entityName) return null
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
         if (ed) return ed
         return loadEntityDefinition(entityName)
@@ -531,6 +533,40 @@ class EntityFacadeImpl implements EntityFacade {
 
         if (orderByField) StupidUtilities.orderMapList((List<Map>) eil, [orderByField])
         return eil
+    }
+
+    List<Map<String, Object>> getAllEntityRelatedFields(String en, String orderByField) {
+        // make sure reverse-one many relationships exist
+        createAllAutoReverseManyRelationships()
+
+        List<Map<String, Object>> efl = new LinkedList()
+        EntityDefinition ed = null
+        try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
+        if (ed == null) return efl
+
+        // first get fields of the main entity
+        for (String fn in ed.getFieldNames(true, true)) {
+            Node fieldNode = ed.getFieldNode(fn)
+            efl.add((Map<String, Object>) [entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one"])
+        }
+
+        // loop through all related entities and get their fields too
+        for (Map relInfo in ed.getRelationshipsInfo(null, false)) {
+            //[type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
+            //        keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName]
+            EntityDefinition red = null
+            try { red = getEntityDefinition(relInfo.relatedEntityName) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
+            if (red == null) continue
+
+            for (String fn in red.getFieldNames(true, true)) {
+                Node fieldNode = red.getFieldNode(fn)
+                efl.add((Map<String, Object>) [entityName:relInfo.relatedEntityName, fieldName:fn, type:fieldNode."@type",
+                        cardinality:relInfo.type, title:relInfo.title])
+            }
+        }
+
+        if (orderByField) StupidUtilities.orderMapList((List<Map>) efl, [orderByField])
+        return efl
     }
 
     Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.one.${entityName}") }
