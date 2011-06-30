@@ -455,7 +455,9 @@ class ScreenForm {
                     }
                 }
             } else if (childNode.name() == "option") {
-                options.put(childNode."@key", childNode."@text"?:childNode."@key")
+                String key = ec.resource.evaluateStringExpand(childNode."@key", null)
+                String text = ec.resource.evaluateStringExpand(childNode."@text", null)
+                options.put(key, text ?: key)
             }
         }
         return options
