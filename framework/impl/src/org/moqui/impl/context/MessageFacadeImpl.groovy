@@ -23,13 +23,23 @@ public class MessageFacadeImpl implements MessageFacade {
     MessageFacadeImpl() { }
 
     /** @see org.moqui.context.MessageFacade#getMessages() */
-    public List<String> getMessages() { return this.messageList }
+    List<String> getMessages() { return this.messageList }
+    String getMessagesString() {
+        StringBuilder messageBuilder = new StringBuilder()
+        for (String message in errorList) messageBuilder.append(message).append("\n")
+        return messageBuilder.toString()
+    }
     void addMessage(String message) { if (message) this.messageList.add(message) }
 
     /** @see org.moqui.context.MessageFacade#getErrors() */
-    public List<String> getErrors() { return this.errorList }
+    List<String> getErrors() { return this.errorList }
+    String getErrorsString() {
+        StringBuilder errorBuilder = new StringBuilder()
+        for (String errorMessage in errorList) errorBuilder.append(errorMessage).append("\n")
+        return errorBuilder.toString()
+    }
     void addError(String error) { if (error) this.errorList.add(error) }
 
     /** @see org.moqui.context.MessageFacade#getValidationErrors() */
-    public List<ValidationError> getValidationErrors() { return this.validationErrorList }
+    List<ValidationError> getValidationErrors() { return this.validationErrorList }
 }

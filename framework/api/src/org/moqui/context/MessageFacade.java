@@ -17,14 +17,24 @@ import java.util.List;
 public interface MessageFacade {
     /** A freely modifiable List of general (non-error) messages that will be shown to the user. */
     List<String> getMessages();
-    /** Add a non-error message for the user to see. */
+    /** Make a single String with all messages separated by the new-line character.
+     * @return String with all messages.
+     */
+    String getMessagesString();
+    /** Add a non-error message for the user to see.
+     * @param message The message to add.
+     */
     void addMessage(String message);
 
     /** A freely modifiable List of error messages that will be shown to the user. */
     List<String> getErrors();
+    /** Make a single String with all error messages separated by the new-line character.
+     * @return String with all error messages.
+     */
+    String getErrorsString();
     /** Add a error message for the user to see.
      * NOTE: system errors not meant for the user should be thrown as exceptions instead.
-     * @param error The error message
+     * @param error The error message to add
      */
     void addError(String error);
 
