@@ -22,6 +22,7 @@ import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.service.ServiceException
+import org.moqui.context.ArtifactAuthorizationException
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
@@ -194,6 +195,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 if (eci.message.errors) {
                     tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.message.errors[0], null)
                 }
+            } catch (ArtifactAuthorizationException e) {
+                // this is a local call, pass certain exceptions through
+                throw e
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
                 // add all exception messages to the error messages list
@@ -261,6 +265,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 }
 
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
+            } catch (ArtifactAuthorizationException e) {
+                // this is a local call, pass certain exceptions through
+                throw e
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
                 // add all exception messages to the error messages list
