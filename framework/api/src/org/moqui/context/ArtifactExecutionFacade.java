@@ -37,6 +37,18 @@ public interface ArtifactExecutionFacade {
 
     List<ArtifactExecutionInfo> getHistory();
 
-    void disableAuthz();
+    /** Disable authorization checks for the current ExecutionContext only.
+     * This should be used when the system automatically does something (possible based on a user action) that the user
+     * would not generally have permission to do themselves.
+     *
+     * @return boolean representing previous state of disable authorization (true if was disabled, false if not)
+     */
+    boolean disableAuthz();
+
+    /** Enable authorization after a disableAuthz() call. Not that this should be done in a finally block with the code
+     * following the disableAuthz() in the corresponding try block. If this is not in a finally block an exception may
+     * result in authorizations being disabled for the rest of the scope of the ExecutionContext (a potential security
+     * whole).
+     */
     void enableAuthz();
 }

@@ -20,6 +20,7 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.context.ArtifactAuthorizationException
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
@@ -172,7 +173,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 for (def warnAei in this.stack) warning.append("\n").append(warnAei)
                 logger.warn(warning.toString())
 
-                throw new IllegalArgumentException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+                throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
             }
         } else {
             // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
@@ -193,8 +194,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             StringBuilder warning = new StringBuilder()
             warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
             for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-            logger.warn(warning.toString())
-            throw new IllegalArgumentException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+            logger.warn(warning.toString(), new Exception("Authz failure location"))
+            throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
         }
     }
 
@@ -204,6 +205,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
 
-    void disableAuthz() { this.disableAuthz = true }
+    boolean disableAuthz() { boolean alreadyDisabled = this.disableAuthz; this.disableAuthz = true; return alreadyDisabled }
     void enableAuthz() { this.disableAuthz = false }
 }
