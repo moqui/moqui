@@ -40,10 +40,17 @@ class MoquiSessionListener implements HttpSessionListener {
             parameters.serverIpAddress = address.getHostAddress()
             parameters.serverHostName = address.getHostName()
         }
-        Map result = ecfi.serviceFacade.sync().name("create", "Visit").parameters((Map<String, Object>) parameters).call()
 
-        // put visitId in session as "moqui.visitId"
-        session.setAttribute("moqui.visitId", result.visitId)
+        try {
+            ecfi.executionContext.artifactExecution.disableAuthz()
+
+            Map result = ecfi.serviceFacade.sync().name("create", "Visit").parameters((Map<String, Object>) parameters).call()
+
+            // put visitId in session as "moqui.visitId"
+            session.setAttribute("moqui.visitId", result.visitId)
+        } finally {
+            ecfi.executionContext.artifactExecution.enableAuthz()
+        }
     }
 
     void sessionDestroyed(HttpSessionEvent event) {
@@ -61,9 +68,17 @@ class MoquiSessionListener implements HttpSessionListener {
             logger.warn("Not updating (closing) visit for session [${session.id}], no moqui.visitId attribute found")
             return
         }
-        // set thruDate on Visit
-        ecfi.serviceFacade.sync().name("update", "Visit")
-                .parameters((Map<String, Object>) [visitId:visitId, thruDate:new Timestamp(System.currentTimeMillis())])
-                .call()
+
+
+        try {
+            ecfi.executionContext.artifactExecution.disableAuthz()
+
+            // set thruDate on Visit
+            ecfi.serviceFacade.sync().name("update", "Visit")
+                    .parameters((Map<String, Object>) [visitId:visitId, thruDate:new Timestamp(System.currentTimeMillis())])
+                    .call()
+        } finally {
+            ecfi.executionContext.artifactExecution.enableAuthz()
+        }
     }
 }
