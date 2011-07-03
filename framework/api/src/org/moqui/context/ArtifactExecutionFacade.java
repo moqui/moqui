@@ -41,7 +41,9 @@ public interface ArtifactExecutionFacade {
      * This should be used when the system automatically does something (possible based on a user action) that the user
      * would not generally have permission to do themselves.
      *
-     * @return boolean representing previous state of disable authorization (true if was disabled, false if not)
+     * @return boolean representing previous state of disable authorization (true if was disabled, false if not). If
+     *         this is true, you should not enableAuthz when you are done and instead allow whichever code first did the
+     *         disable to enable it.
      */
     boolean disableAuthz();
 
