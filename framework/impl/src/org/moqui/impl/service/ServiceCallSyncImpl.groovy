@@ -21,6 +21,7 @@ import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.service.ServiceException
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
@@ -120,17 +121,18 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 long endTime = System.currentTimeMillis()
                 sfi.ecfi.countArtifactHit("service", "entity-implicit", getServiceName(), currentParameters, callStartTime, endTime, null)
 
+                eci.artifactExecution.pop()
                 return result
             } else {
-                throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+                throw new ServiceException("Could not find service with name [${getServiceName()}]")
             }
         }
 
         String serviceType = sd.serviceNode."@type" ?: "inline"
-        if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")
+        if (serviceType == "interface") throw new ServiceException("Cannot run interface service [${getServiceName()}]")
 
         ServiceRunner sr = sfi.getServiceRunner(serviceType)
-        if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
+        if (sr == null) throw new ServiceException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
 
         // start with the settings for the default: use-or-begin
         boolean pauseResumeIfNeeded = false
