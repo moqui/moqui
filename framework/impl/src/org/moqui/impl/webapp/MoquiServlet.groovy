@@ -18,6 +18,7 @@ import javax.servlet.ServletException
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
+import org.moqui.context.ArtifactAuthorizationException
 
 class MoquiServlet extends HttpServlet {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiServlet.class)
@@ -58,9 +59,20 @@ class MoquiServlet extends HttpServlet {
 
         try {
             ec.screen.makeRender().render(request, response)
+        } catch (ArtifactAuthorizationException e) {
+            logger.warn("Web Access Unauthorized: " + e.message)
+            response.sendError(401, e.message)
         } catch (ScreenResourceNotFoundException e) {
-            logger.warn("Resource Not Found: " + e.message)
+            logger.warn("Web Resource Not Found: " + e.message)
             response.sendError(404, e.message)
+        } catch (Throwable t) {
+            if (ec.message.errors) {
+                String errorsString = ec.message.errorsString
+                logger.error(errorsString, t)
+                response.sendError(500, errorsString)
+            } else {
+                throw t
+            }
         }
 
         // make sure everything is cleaned up
