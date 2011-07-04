@@ -98,7 +98,7 @@ class EntityValueImpl implements EntityValue {
                     return this.findRelatedOne(name, null, null)
                 }
             } else {
-                throw new IllegalArgumentException("The name [${name}] is not a valid field name or relationship name for entity [${entityName}]")
+                throw new EntityException("The name [${name}] is not a valid field name or relationship name for entity [${entityName}]")
             }
         }
 
@@ -147,9 +147,9 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#set(String, Object) */
     EntityValue set(String name, Object value) {
-        if (!mutable) throw new IllegalArgumentException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
+        if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         if (!getEntityDefinition().isField(name)) {
-            throw new IllegalArgumentException("The name [${name}] is not a valid field name for entity [${entityName}]")
+            throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
         }
         if (valueMap[name] != value) {
             modified = true
@@ -206,7 +206,7 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#setSequencedIdSecondary() */
     void setSequencedIdSecondary() {
         ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
-        if (pkFields.size() < 2) throw new IllegalArgumentException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
+        if (pkFields.size() < 2) throw new EntityException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
         // sequenced field will be the last pk
         String seqFieldName = pkFields.get(pkFields.size()-1)
         int paddedLength  = (getEntityDefinition().entityNode."@sequence-secondary-padded-length" as Integer) ?: 2
@@ -289,7 +289,7 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", true)
 
         if (ed.isViewEntity()) {
-            throw new IllegalArgumentException("Create not yet implemented for view-entity")
+            throw new EntityException("Create not yet implemented for view-entity")
         } else {
             if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
                 this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
@@ -376,7 +376,7 @@ class EntityValueImpl implements EntityValue {
 
         Map oldValues = this.getDbValueMap()
         if (ed.isViewEntity()) {
-            throw new IllegalArgumentException("Update not yet implemented for view-entity")
+            throw new EntityException("Update not yet implemented for view-entity")
         } else {
             ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
 
@@ -508,7 +508,7 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", true)
 
         if (ed.isViewEntity()) {
-            throw new IllegalArgumentException("Delete not implemented for view-entity")
+            throw new EntityException("Delete not implemented for view-entity")
         } else {
             ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
 
@@ -565,7 +565,7 @@ class EntityValueImpl implements EntityValue {
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
-        if (!pkFieldList) throw new IllegalArgumentException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+        if (!pkFieldList) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
         ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true)
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
@@ -642,10 +642,10 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, Boolean, Boolean) */
     EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
-        if (!relationship) throw new IllegalArgumentException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
 
         Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
-        if (!keyMap) throw new IllegalArgumentException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
+        if (!keyMap) throw new EntityException("Relationship [${relationshipName}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
@@ -659,13 +659,13 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#findRelatedOne(String, Boolean, Boolean) */
     EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
-        if (!relationship) throw new IllegalArgumentException("Relationship [${relationshipName}] not found in entity [${entityName}]")
+        if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
         return findRelatedOne(relationship, useCache, forUpdate)
     }
 
     protected EntityValue findRelatedOne(Node relationship, Boolean useCache, Boolean forUpdate) {
         Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(relationship)
-        if (!keyMap) throw new IllegalArgumentException("Relationship [${relationship."@title"}${relationship."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
+        if (!keyMap) throw new EntityException("Relationship [${relationship."@title"}${relationship."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
         // make a Map where the key is the related entity's field name, and the value is the value from this entity
         Map condMap = new HashMap()
@@ -690,7 +690,7 @@ class EntityValueImpl implements EntityValue {
                 if (insertDummy) {
                     EntityValue newValue = getEntityFacadeImpl().makeValue((String) oneRel."@related-entity-name")
                     Map keyMap = getEntityDefinition().getRelationshipExpandedKeyMap(oneRel)
-                    if (!keyMap) throw new IllegalArgumentException("Relationship [${oneRel."@title"}${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
+                    if (!keyMap) throw new EntityException("Relationship [${oneRel."@title"}${oneRel."@related-entity-name"}] in entity [${entityName}] has no key-map sub-elements and no default values")
 
                     // make a Map where the key is the related entity's field name, and the value is the value from this entity
                     for (Map.Entry entry in keyMap.entrySet())
@@ -910,7 +910,7 @@ class EntityValueImpl implements EntityValue {
 
     Object get(Object o) {
         if (o instanceof String) {
-            // This may throw an exception, and let it; the Map interface doesn't provide for IllegalArgumentException
+            // This may throw an exception, and let it; the Map interface doesn't provide for EntityException
             //   but it is far more useful than a log message that is likely to be ignored.
             return this.get((String) o)
         } else {
