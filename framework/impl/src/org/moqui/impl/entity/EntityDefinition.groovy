@@ -112,7 +112,12 @@ public class EntityDefinition {
         // handle automatic reverse-many nodes (based on one node coming the other way)
         if (relNode == null) {
             // see if there is an entity matching the relationship name that has a relationship coming this way
-            EntityDefinition ed = efi.getEntityDefinition(relationshipName)
+            EntityDefinition ed
+            try {
+                ed = efi.getEntityDefinition(relationshipName)
+            } catch (EntityException e) {
+                // probably means not a valid entity name, which may happen a lot since we're checking here to see, so just ignore
+            }
             if (ed != null) {
                 // don't call ed.getRelationshipNode(), may result in infinite recursion
                 Node reverseRelNode = (Node) ed.entityNode."relationship".find(
