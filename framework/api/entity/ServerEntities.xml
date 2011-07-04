@@ -59,8 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.server.visit -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Visit" package-name="moqui.server.visit"
-            sequence-bank-size="100" authorize-skip="view-create">
+    <entity entity-name="Visit" package-name="moqui.server.visit" sequence-bank-size="100">
         <field name="visitId" type="id" is-pk="true"/>
         <field name="visitorId" type="id"/>
         <field name="userId" type="id-very-long"/>
@@ -94,8 +93,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <index-field name="thruDate"/>
         </index>
     </entity>
-    <entity entity-name="Visitor" package-name="moqui.server.visit"
-            sequence-bank-size="100" authorize-skip="view-create">
+    <entity entity-name="Visitor" package-name="moqui.server.visit" sequence-bank-size="100">
         <field name="visitorId" type="id" is-pk="true"/>
         <field name="createdDate" type="date-time"/>
     </entity>

@@ -82,7 +82,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="filterByDateFromField" type="text-medium"/>
         <field name="filterByDateThruField" type="text-medium"/>
         <field name="userIdField" type="text-medium">
-            <description>Will lookup in recordViewEntityName view-entity for the currently logged in userId, and
+            <description>Will lookup in viewEntityName view-entity for the currently logged in userId, and
                 if this field is set it will use this field name to match against, otherwise it will automatically
                 use the userId field in the view-entity.
             </description>
@@ -101,11 +101,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <view-entity entity-name="ArtifactAuthzCheckView" package-name="moqui.security.authz">
-        <member-entity entity-alias="UGM" entity-name="UserGroupMember"/>
         <member-entity entity-alias="AAZ" entity-name="ArtifactAuthz"/>
         <member-entity entity-alias="AGM" entity-name="ArtifactGroupMember"/>
         <member-entity entity-alias="AAR" entity-name="ArtifactAuthzRecord"/>
-        <alias entity-alias="UGM" name="userId"/>
+        <alias entity-alias="AAZ" name="userGroupId"/>
         <alias entity-alias="AAZ" name="artifactAuthzId"/>
         <alias entity-alias="AAZ" name="authzActionEnumId"/>
         <alias entity-alias="AAZ" name="authzTypeEnumId"/>
@@ -115,9 +114,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias entity-alias="AGM" name="nameIsPattern"/>
         <alias entity-alias="AGM" name="inheritAuthz"/>
         <alias entity-alias="AAR" name="viewEntityName"/>
-        <view-link entity-alias="UGM" related-entity-alias="AAZ">
-            <key-map field-name="userGroupId"/>
-        </view-link>
         <view-link entity-alias="AAZ" related-entity-alias="AGM">
             <key-map field-name="artifactGroupId"/>
         </view-link>
@@ -159,7 +155,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.security.user -->
     <!-- ========================================================= -->
 
-    <entity entity-name="UserAccount" package-name="moqui.security.user" authorize-skip="view">
+    <entity entity-name="UserAccount" package-name="moqui.security.user">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="username" type="text-long" enable-audit-log="true">
             <description>The username used along with the password to login</description>
@@ -196,7 +192,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="description" type="text-long"/>
     </entity>
-    <entity entity-name="UserGroupMember" package-name="moqui.security.user">
+    <entity entity-name="UserGroupMember" package-name="moqui.security.user" cache="true">
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
@@ -206,7 +202,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
-    <entity entity-name="UserLoginHistory" package-name="moqui.security.user" cache="never" authorize-skip="create">
+    <entity entity-name="UserLoginHistory" package-name="moqui.security.user" cache="never">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
@@ -238,7 +234,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="preferenceKey"/>
         </relationship>
     </entity>
-    <entity entity-name="UserScreenTheme" package-name="moqui.screen.theme" authorize-skip="view">
+    <entity entity-name="UserScreenTheme" package-name="moqui.security.user" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id" is-pk="true"/>
         <field name="screenThemeId" type="id"/>

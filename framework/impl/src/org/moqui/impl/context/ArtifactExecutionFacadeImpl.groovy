@@ -64,8 +64,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
         artifactExecutionInfoHistory.add(aeii)
 
-        // never do this for the view-entity we use below, would cause infinite recursion
-        if (aeii.name == "moqui.security.authz.ArtifactAuthzCheckView" && aeii.typeEnumId == "AT_ENTITY") {
+        // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
+        if (this.disableAuthz && aeii.typeEnumId == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
             return
@@ -80,88 +80,103 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             return
         }
 
-        EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
-                .condition([userId:userId, artifactTypeEnumId:aeii.typeEnumId])
-        aacvFind.condition(eci.entity.conditionFactory.makeCondition(
-                eci.entity.conditionFactory.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.name),
-                JoinOperator.OR,
-                eci.entity.conditionFactory.makeCondition("nameIsPattern", ComparisonOperator.EQUALS, "Y")))
-        if (aeii.actionEnumId) {
-            aacvFind.condition("authzActionEnumId", ComparisonOperator.IN, [aeii.actionEnumId, "AUTHZA_ALL"])
-        } else {
-            aacvFind.condition("authzActionEnumId", "AUTHZA_ALL")
-        }
-        EntityList aacvList = aacvFind.useCache(true).list()
-
+        EntityList aacvList
         EntityValue denyAacv = null
-        if (aacvList.size() > 0) {
-            for (EntityValue aacv in aacvList) {
-                if (aacv.nameIsPattern == "Y" && !aeii.name.matches((String) aacv.artifactName)) continue
-                // check the record-level permission
-                if (aacv.viewEntityName) {
-                    EntityValue artifactAuthzRecord = eci.entity.makeFind("ArtifactAuthzRecord")
-                            .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).one()
-                    EntityDefinition ed = eci.entity.getEntityDefinition((String) aacv.viewEntityName)
-                    EntityFind ef = eci.entity.makeFind((String) aacv.viewEntityName)
-                    if (artifactAuthzRecord.userIdField) {
-                        ef.condition((String) artifactAuthzRecord.userIdField, userId)
-                    } else if (ed.isField("userId")) {
-                        ef.condition("userId", userId)
-                    }
-                    if (artifactAuthzRecord.filterByDate == "Y") {
-                        ef.conditionDate((String) artifactAuthzRecord.filterByDateFromField,
-                                (String) artifactAuthzRecord.filterByDateThruField, eci.user.nowTimestamp)
-                    }
-                    EntityList condList = eci.entity.makeFind("ArtifactAuthzRecordCond")
-                            .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
-                    for (EntityValue cond in condList) {
-                        String expCondValue = eci.resource.evaluateStringExpand((String) cond.condValue,
-                                "ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
-                        if (expCondValue) {
-                            ef.condition((String) cond.fieldName,
-                                    eci.entity.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
-                                    expCondValue)
+
+        // don't check authz for these queries, would cause infinite recursion
+        boolean alreadyDisabled = disableAuthz()
+        try {
+            // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
+            Set userGroupIdSet = new HashSet()
+            userGroupIdSet.add("ALL_USERS")
+            for (EntityValue userGroupMember in eci.entity.makeFind("UserGroupMember").condition("userId", userId).list().filterByDate(null, null, null))
+                userGroupIdSet.add(userGroupMember.userGroupId)
+
+            // check authorizations for those groups (separately cached for more cache hits)
+            EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
+                    .condition("artifactTypeEnumId", aeii.typeEnumId)
+                    .condition(eci.entity.conditionFactory.makeCondition(
+                        eci.entity.conditionFactory.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.name),
+                        JoinOperator.OR,
+                        eci.entity.conditionFactory.makeCondition("nameIsPattern", ComparisonOperator.EQUALS, "Y")))
+            if (userGroupIdSet.size() == 1) aacvFind.condition("userGroupId", userGroupIdSet.iterator().next())
+            else aacvFind.condition("userGroupId", ComparisonOperator.IN, userGroupIdSet)
+            if (aeii.actionEnumId) aacvFind.condition("authzActionEnumId", ComparisonOperator.IN, [aeii.actionEnumId, "AUTHZA_ALL"])
+            else aacvFind.condition("authzActionEnumId", "AUTHZA_ALL")
+
+            aacvList = aacvFind.useCache(true).list()
+
+            if (aacvList.size() > 0) {
+                for (EntityValue aacv in aacvList) {
+                    if (aacv.nameIsPattern == "Y" && !aeii.name.matches((String) aacv.artifactName)) continue
+                    // check the record-level permission
+                    if (aacv.viewEntityName) {
+                        EntityValue artifactAuthzRecord = eci.entity.makeFind("ArtifactAuthzRecord")
+                                .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).one()
+                        EntityDefinition ed = eci.entity.getEntityDefinition((String) aacv.viewEntityName)
+                        EntityFind ef = eci.entity.makeFind((String) aacv.viewEntityName)
+                        if (artifactAuthzRecord.userIdField) {
+                            ef.condition((String) artifactAuthzRecord.userIdField, userId)
+                        } else if (ed.isField("userId")) {
+                            ef.condition("userId", userId)
                         }
+                        if (artifactAuthzRecord.filterByDate == "Y") {
+                            ef.conditionDate((String) artifactAuthzRecord.filterByDateFromField,
+                                    (String) artifactAuthzRecord.filterByDateThruField, eci.user.nowTimestamp)
+                        }
+                        EntityList condList = eci.entity.makeFind("ArtifactAuthzRecordCond")
+                                .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
+                        for (EntityValue cond in condList) {
+                            String expCondValue = eci.resource.evaluateStringExpand((String) cond.condValue,
+                                    "ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
+                            if (expCondValue) {
+                                ef.condition((String) cond.fieldName,
+                                        eci.entity.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
+                                        expCondValue)
+                            }
+                        }
+
+                        // anything found? if not it fails this condition, so skip the authz
+                        if (ef.useCache(true).count() == 0) continue
                     }
-                    EntityList el = ef.useCache(true).list()
-                    // anything found? if not it fails this condition, so skip the authz
-                    if (el.size() == 0) continue
-                }
 
-                String authzTypeEnumId = aacv.authzTypeEnumId
-                if (aacv.authzServiceName) {
-                    Map result = eci.service.sync().name((String) aacv.authzServiceName).parameters((Map<String, Object>)
-                            [userId:userId, authzActionEnumId:aeii.actionEnumId,
-                            artifactTypeEnumId:aeii.typeEnumId, artifactName:aeii.name]).call()
-                    if (result?.authzTypeEnumId) authzTypeEnumId = result.authzTypeEnumId
-                }
+                    String authzTypeEnumId = aacv.authzTypeEnumId
+                    if (aacv.authzServiceName) {
+                        Map result = eci.service.sync().name((String) aacv.authzServiceName).parameters((Map<String, Object>)
+                                [userId:userId, authzActionEnumId:aeii.actionEnumId,
+                                artifactTypeEnumId:aeii.typeEnumId, artifactName:aeii.name]).call()
+                        if (result?.authzTypeEnumId) authzTypeEnumId = result.authzTypeEnumId
+                    }
 
-                if (authzTypeEnumId == "AUTHZT_DENY") {
-                    // we already know last was not always allow (checked above), so keep going in loop just in case we
-                    // find an always allow in the query
-                    denyAacv = aacv
-                } else if (authzTypeEnumId == "AUTHZT_ALWAYS") {
-                    aeii.copyAacvInfo(aacv)
-                    this.artifactExecutionInfoStack.addFirst(aeii)
-                    return
-                } else if (authzTypeEnumId == "AUTHZT_ALLOW" && denyAacv == null) {
-                    // see if there are any denies in AEIs on lower on the stack
-                    boolean ancestorDeny = false
-                    for (ArtifactExecutionInfoImpl ancestorAeii in artifactExecutionInfoStack)
-                        if (ancestorAeii.authorizedAuthzTypeId == "AUTHZT_DENY") ancestorDeny = true
-
-                    if (!ancestorDeny) {
-                        aeii.copyAacvInfo(aacv)
+                    if (authzTypeEnumId == "AUTHZT_DENY") {
+                        // we already know last was not always allow (checked above), so keep going in loop just in case we
+                        // find an always allow in the query
+                        denyAacv = aacv
+                    } else if (authzTypeEnumId == "AUTHZT_ALWAYS") {
+                        aeii.copyAacvInfo(aacv, userId)
                         this.artifactExecutionInfoStack.addFirst(aeii)
                         return
+                    } else if (authzTypeEnumId == "AUTHZT_ALLOW" && denyAacv == null) {
+                        // see if there are any denies in AEIs on lower on the stack
+                        boolean ancestorDeny = false
+                        for (ArtifactExecutionInfoImpl ancestorAeii in artifactExecutionInfoStack)
+                            if (ancestorAeii.authorizedAuthzTypeId == "AUTHZT_DENY") ancestorDeny = true
+
+                        if (!ancestorDeny) {
+                            aeii.copyAacvInfo(aacv, userId)
+                            this.artifactExecutionInfoStack.addFirst(aeii)
+                            return
+                        }
                     }
                 }
             }
+        } finally {
+            if (!alreadyDisabled) enableAuthz()
         }
 
         if (denyAacv != null) {
             // record that this was an explicit deny (for push or exception in case something catches and handles it)
-            aeii.copyAacvInfo(denyAacv)
+            aeii.copyAacvInfo(denyAacv, userId)
 
             if (!requiresAuthz || this.disableAuthz) {
                 // if no authz required, just push it even though it was a failure
@@ -195,6 +210,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
             for (def warnAei in this.stack) warning.append("\n").append(warnAei)
             logger.warn(warning.toString(), new Exception("Authz failure location"))
+
             throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
         }
     }

@@ -95,12 +95,12 @@ class UserFacadeImpl implements UserFacade {
                 if (cookieVisitorId) uvParms.visitorId = cookieVisitorId
 
                 // NOTE: disable authz for this call, don't normally want to allow update of Visit, but this is special case
-                eci.artifactExecution.disableAuthz()
+                boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
                 try {
-                // called this sync so it is ready next time referred to, like on next request
-                eci.service.sync().name("update", "Visit").parameters(uvParms).call()
+                    // called this sync so it is ready next time referred to, like on next request
+                    eci.service.sync().name("update", "Visit").parameters(uvParms).call()
                 } finally {
-                    eci.artifactExecution.enableAuthz()
+                    if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
                 }
 
                 // consider this the first hit in the visit, so trigger the actions
@@ -198,7 +198,7 @@ class UserFacadeImpl implements UserFacade {
             // NOTE: special case, for this thread only and for the section of code below need to turn off artifact
             //     authz since normally the user above would have authorized with something higher up, but that can't
             //     be done at this point
-            eci.artifactExecution.disableAuthz()
+            boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
             try {
                 EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("username", username)
                         .useCache(true).one()
@@ -220,7 +220,7 @@ class UserFacadeImpl implements UserFacade {
                             .parameters((Map<String, Object>) [visitId:getVisitId(), userId:userId]).call()
                 }
             } finally {
-                eci.artifactExecution.enableAuthz()
+                if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
             }
 
             // if WebExecutionContext add to session
@@ -236,7 +236,12 @@ class UserFacadeImpl implements UserFacade {
             Map<String, Object> ulhContext =
                     (Map<String, Object>) [userId:userId, visitId:getVisitId(), successfulLogin:(successful?"Y":"N")]
             if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = password
-            eci.service.sync().name("create", "UserLoginHistory").parameters(ulhContext).call()
+            boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+            try {
+                eci.service.sync().name("create", "UserLoginHistory").parameters(ulhContext).call()
+            } finally {
+                if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+            }
         }
 
         if (successful && eci.web) {
@@ -249,7 +254,13 @@ class UserFacadeImpl implements UserFacade {
 
     /** @see org.moqui.context.UserFacade#authenticateUser(String, String) */
     boolean authenticateUser(String username, String password) {
-        EntityValue newUserAccount = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
+        EntityValue newUserAccount
+        boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+        try {
+            newUserAccount = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
+        } finally {
+            if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+        }
         if (!newUserAccount) {
             eci.message.addError("Login failed. Username [${username}] and/or password incorrect.")
             logger.warn("Login failure: ${eci.message.errors}")
@@ -341,6 +352,14 @@ class UserFacadeImpl implements UserFacade {
     /** @see org.moqui.context.UserFacade#getVisit() */
     EntityValue getVisit() {
         if (!visitId) return null
-        return eci.entity.makeFind("Visit").condition("visitId", visitId).useCache(true).one()
+
+        EntityValue vst
+        boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+        try {
+            vst = eci.entity.makeFind("Visit").condition("visitId", visitId).useCache(true).one()
+        } finally {
+            if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+        }
+        return vst
     }
 }

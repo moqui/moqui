@@ -51,8 +51,8 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     boolean isAuthorizationInheritable() { return this.isAuthorizationInheritable }
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.isAuthorizationInheritable = isAuthorizationInheritable}
 
-    void copyAacvInfo(EntityValue aacv) {
-        setAuthorizedUserId((String) aacv.userId)
+    void copyAacvInfo(EntityValue aacv, String userId) {
+        setAuthorizedUserId((String) userId)
         setAuthorizedAuthzTypeId((String) aacv.authzTypeEnumId)
         setAuthorizedActionEnumId((String) aacv.authzActionEnumId)
         setAuthorizationInheritable(aacv.inheritAuthz == "Y")
