@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Example" default-menu-index="1">
+
+    <parameter name="dbViewEntityName"/>
+    <parameter name="dbViewEntityName_0"/>
+
+    <transition name="view">
+        <default-response url="../ViewDbView"/>
+    </transition>
+    <transition name="update">
+        <service-call name="update#DbViewEntity"/>
+        <default-response url="."/>
+    </transition>
+    <transition name="setMasterEntity">
+        <service-call name="store#DbViewEntityMember"/>
+        <default-response url="."/>
+    </transition>
+    <transition name="setMasterFields">
+        <actions>
+            <set field="dbViewEntityName" from="dbViewEntityName_0"/>
+            <entity-find-one entity-name="DbViewEntity" value-field="dbViewEntity"/>
+            <entity-find-one entity-name="DbViewEntityMember" value-field="masterDbViewEntityMember">
+                <field-map field-name="dbViewEntityName" from="dbViewEntityName"/>
+                <field-map field-name="entityAlias" value="MASTER"/>
+            </entity-find-one>
+            <set field="masterEntityName" from="masterDbViewEntityMember.entityName"/>
+
+            <!-- clean out DbViewEntity* records -->
+            <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityAlias"/>
+            <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityKeyMap"/>
+            <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityViewLink"/>
+            <entity-delete-by-condition entity-name="DbViewEntityMember">
+                <econdition field-name="dbViewEntityName" from="dbViewEntityName"/>
+                <econdition field-name="entityAlias" operator="not-equals" value="MASTER"/>
+            </entity-delete-by-condition>
+
+            <!-- add DbViewEntityAlias record, and DbViewEntityMember/ViewLink if needed -->
+            <script>
+                // make sure reverse-one many relationships exist
+                ec.entity.createAllAutoReverseManyRelationships()
+
+                org.moqui.impl.entity.EntityDefinition masterEd = ec.entity.getEntityDefinition(masterEntityName)
+
+                Map members = [:]
+                int memberIndex = 1
+                Map aliasIndexes = [:]
+                int parameterIndex = 0
+                while (ec.web.parameters.get("dbViewEntityName_" + parameterIndex)) {
+                    String field = ec.web.parameters.get("field_" + parameterIndex)
+                    // ec.logger.log(ec.logger.WARN_INT, "Field field_${parameterIndex}, value: ${field}", null)
+                    parameterIndex++
+
+                    if (!field) continue
+
+                    String entityName
+                    String fieldName
+
+                    String relationshipName = field.substring(0, field.indexOf('.'))
+                    Node relNode = masterEd.getRelationshipNode(relationshipName)
+                    if (relNode != null) {
+                        entityName = relNode."@related-entity-name"
+                        fieldName = field.substring(field.indexOf('.') + 1)
+                    } else if (relationshipName == masterEntityName) {
+                        entityName = masterEntityName
+                        fieldName = field.substring(field.indexOf('.') + 1)
+                    } else {
+                        ec.message.addError("No relationship definition found for name ${relationshipName}")
+                        continue
+                    }
+
+                    def memberValue = (relationshipName == masterDbViewEntityMember.entityName) ?
+                            masterDbViewEntityMember : members.get(entityName)
+                    if (!memberValue) {
+                        memberValue = ec.entity.makeValue("DbViewEntityMember")
+                        memberValue.dbViewEntityName = dbViewEntityName
+                        memberValue.entityName = entityName
+                        memberValue.entityAlias = "MEMBER${memberIndex}"
+                        memberIndex++
+                        memberValue.create()
+                        members.put(entityName, memberValue)
+
+                        // added a member, add the ViewLink and KeyMap(s)
+                        def viewLinkValue = ec.entity.makeValue("DbViewEntityViewLink")
+                        viewLinkValue.dbViewEntityName = dbViewEntityName
+                        viewLinkValue.entityAlias = "MASTER"
+                        viewLinkValue.relatedEntityAlias = memberValue.entityAlias
+                        viewLinkValue.relatedOptional = "Y"
+                        viewLinkValue.create()
+                        Map relExpKeyMap = masterEd.getRelationshipExpandedKeyMap(relNode)
+                        for (Map.Entry keyMapEntry in relExpKeyMap) {
+                            def keyMapValue = ec.entity.makeValue("DbViewEntityKeyMap")
+                            keyMapValue.dbViewEntityName = dbViewEntityName
+                            keyMapValue.entityAlias = "MASTER"
+                            keyMapValue.relatedEntityAlias = memberValue.entityAlias
+                            keyMapValue.fieldName = keyMapEntry.getKey()
+                            keyMapValue.relatedFieldName = keyMapEntry.getValue()
+                            keyMapValue.create()
+                        }
+                    }
+
+                    int fieldAliasIndex = aliasIndexes.get(fieldName) ?: 0
+                    fieldAliasIndex++
+                    aliasIndexes.put(fieldName, fieldAliasIndex)
+
+                    def aliasValue = ec.entity.makeValue("DbViewEntityAlias")
+                    aliasValue.dbViewEntityName = dbViewEntityName
+                    aliasValue.fieldAlias = fieldName + (fieldAliasIndex > 1 ? fieldAliasIndex : '')
+                    aliasValue.entityAlias = memberValue.entityAlias
+                    aliasValue.fieldName = fieldName
+                    aliasValue.create()
+                }
+
+                // clear the entity definition cache for dbViewEntityName
+                ec.entity.clearEntityDefinitionFromCache(dbViewEntityName)
+            </script>
+        </actions>
+        <default-response url="."/>
+    </transition>
+
+    <actions>
+        <set field="dbViewEntityName" from="dbViewEntityName ?: dbViewEntityName_0"/>
+    </actions>
+    <widgets>
+        <container><link url="view" text="View ${dbViewEntityName}"/></container>
+        <section name="Update">
+            <actions><entity-find-one entity-name="DbViewEntity" value-field="fieldValues"/></actions>
+            <widgets>
+                <form-single name="UpdateDbViewEntity" transition="update">
+                    <field name="dbViewEntityName"><default-field title="View Name"><display/></default-field></field>
+                    <field name="packageName"><default-field title="Package"><text-line/></default-field></field>
+                    <field name="submit"><default-field title="Update"><submit/></default-field></field>
+                    <field-layout><field-row><field-ref name="dbViewEntityName"/><field-ref name="packageName"/><field-ref name="submit"/></field-row></field-layout>
+                </form-single>
+            </widgets>
+        </section>
+        <section name="Master">
+            <actions>
+                <entity-find-one entity-name="DbViewEntityMember" value-field="fieldValues">
+                    <field-map field-name="dbViewEntityName"/>
+                    <field-map field-name="entityAlias" value="MASTER"/>
+                </entity-find-one>
+                <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo('+entityName', true)"/>
+                <set field="masterFieldList"
+                      from="ec.entity.getAllEntityRelatedFields(fieldValues?.entityName, orderByField?:'+fieldName', dbViewEntityName)"/>
+            </actions>
+            <widgets>
+                <form-single name="SetMasterEntity" transition="setMasterEntity">
+                    <field name="dbViewEntityName"><default-field><hidden/></default-field></field>
+                    <field name="entityAlias"><default-field><hidden default-value="MASTER"/></default-field></field>
+                    <field name="entityName">
+                        <default-field><drop-down combo-box="true" allow-empty="true">
+                            <list-options list="masterEntityList" key="${entityName}"
+                                          text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
+                        </drop-down></default-field>
+                    </field>
+                    <field name="submit"><default-field title="Set Master"><submit/></default-field></field>
+
+                    <field-layout><field-row>
+                        <field-ref name="dbViewEntityName"/><field-ref name="entityAlias"/>
+                        <field-ref name="entityName"/><field-ref name="submit"/>
+                    </field-row></field-layout>
+                </form-single>
+                <form-list name="SetMasterFields" list="masterFieldList" transition="setMasterFields" multi="true">
+                    <field name="dbViewEntityName"><default-field><hidden/></default-field></field>
+                    <field name="field"><default-field>
+                        <check all-checked="${inDbView?'true':'false'}"><option key="${title?:''}${entityName}.${fieldName}" text=" "/></check>
+                    </default-field></field>
+                    <field name="fieldName">
+                        <header-field show-order-by="true"/>
+                        <default-field><display also-hidden="false"/></default-field>
+                    </field>
+                    <field name="relatedEntityName">
+                        <header-field show-order-by="true"/>
+                        <default-field><display text="${entityName}${title ? ' (' + title + ')' : ''}" also-hidden="false"/></default-field>
+                    </field>
+                    <field name="type"><default-field><display also-hidden="false"/></default-field></field>
+                    <field name="cardinality"><default-field><display also-hidden="false"/></default-field></field>
+                    <field name="submit"><default-field title="Select Fields"><submit/></default-field></field>
+                </form-list>
+            </widgets>
+        </section>
+    </widgets>
+</screen>

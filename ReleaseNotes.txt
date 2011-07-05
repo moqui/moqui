@@ -16,12 +16,25 @@ This release includes:
   including better automatic foreign key names, looking for a "mantle"
   directory under the runtime directory where the mantle components can go
   (can actually have the GIT checkout of mantle right there)
+- Added a UserGroup (ALL_USERS) that all users are automatically members of
+- Security: tightened permissions, using the entity.@authorize-skip much
+  less by adding disable/enableAuthz calls to framework code, and adding an
+  authorization for users to view their own UserAccount record.
 - Entity Facade
   - Database-driven view entity
+- Service Facade
+  - Added entity-auto support for the verb "store" which does a create if
+    record does not exist and update if it does
 - Tools Screens
   - Auto Screen
     - Order by links in column headers by default (by default for all
       auto fields entity as well)
+  - Data View
+    - Choose master entity, select fields from all related entities, save
+      as DbViewEntity and related records
+    - Choose column(s) to order by
+    - Specify search constraints
+    - View in webapp
 
 
 ===========================================================================
@@ -398,15 +411,18 @@ This release includes:
 Tools probable for 1.0 final:
 ===========================================================================
 
+- Entity Facade
+  - view-entity: merge the view-link element into the member element (also
+    for DynamicViewEntity, DbViewEntity, *DbView screens)
+- Screen Facade
+  - Auto field for indicator: drop-down or radio button pair instead of
+    plain text-line
 - Tools Screens
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-  - Ad-hoc Query/Export
-    - Choose master entity, select fields from all related entities, save
-      as DynamicViewEntity and related records
-    - Choose column(s) to order by
-    - View in webapp or export to CSV
+  - Data View
+    - Export to CSV
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)

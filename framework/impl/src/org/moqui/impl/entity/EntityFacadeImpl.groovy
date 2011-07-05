@@ -511,6 +511,8 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
+    void clearEntityDefinitionFromCache(String entityName) { this.entityDefinitionCache.remove(entityName) }
+
     List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly) {
         if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
 
@@ -535,9 +537,11 @@ class EntityFacadeImpl implements EntityFacade {
         return eil
     }
 
-    List<Map<String, Object>> getAllEntityRelatedFields(String en, String orderByField) {
+    List<Map<String, Object>> getAllEntityRelatedFields(String en, String orderByField, String dbViewEntityName) {
         // make sure reverse-one many relationships exist
         createAllAutoReverseManyRelationships()
+
+        EntityValue dbViewEntity = dbViewEntityName ? makeFind("DbViewEntity").condition("dbViewEntityName", dbViewEntityName).one() : null
 
         List<Map<String, Object>> efl = new LinkedList()
         EntityDefinition ed = null
@@ -547,7 +551,12 @@ class EntityFacadeImpl implements EntityFacade {
         // first get fields of the main entity
         for (String fn in ed.getFieldNames(true, true)) {
             Node fieldNode = ed.getFieldNode(fn)
-            efl.add((Map<String, Object>) [entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one"])
+            boolean inDbView = false
+            if (dbViewEntity && makeFind("DbViewEntityAlias")
+                    .condition([dbViewEntityName:dbViewEntityName, entityAlias:"MASTER", fieldName:fn]).count()) {
+                inDbView = true
+            }
+            efl.add((Map<String, Object>) [entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one", inDbView:inDbView])
         }
 
         // loop through all related entities and get their fields too
@@ -560,8 +569,17 @@ class EntityFacadeImpl implements EntityFacade {
 
             for (String fn in red.getFieldNames(true, true)) {
                 Node fieldNode = red.getFieldNode(fn)
+                boolean inDbView = false
+                if (dbViewEntity) {
+                    EntityValue dbViewEntityMember = makeFind("DbViewEntityMember")
+                            .condition([dbViewEntityName:dbViewEntityName, entityName:red.entityName]).one()
+                    if (dbViewEntityMember && makeFind("DbViewEntityAlias")
+                            .condition([dbViewEntityName:dbViewEntityName, entityAlias:dbViewEntityMember.entityAlias, fieldName:fn]).count()) {
+                        inDbView = true
+                    }
+                }
                 efl.add((Map<String, Object>) [entityName:relInfo.relatedEntityName, fieldName:fn, type:fieldNode."@type",
-                        cardinality:relInfo.type, title:relInfo.title])
+                        cardinality:relInfo.type, title:relInfo.title, inDbView:inDbView])
             }
         }
 

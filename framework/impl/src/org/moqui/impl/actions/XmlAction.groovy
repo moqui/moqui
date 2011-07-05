@@ -95,7 +95,11 @@ class XmlAction {
             Object result = script.run()
             return result
         } catch (Throwable t) {
-            logger.error("Error running groovy script [${groovyString}]: ${t.toString()}")
+            StringBuilder groovyWithLines = new StringBuilder()
+            int lineNo = 1
+            for (String line in groovyString.split("\n")) groovyWithLines.append(lineNo++).append(" : ").append(line).append("\n")
+
+            logger.error("Error running groovy script [\n${groovyWithLines}\n]: ${t.toString()}")
             throw t
         }
     }

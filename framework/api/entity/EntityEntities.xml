@@ -113,6 +113,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="packageName" type="text-long"/>
         <field name="cache" type="text-indicator"/>
+        <field name="isDataView" type="text-indicator"/>
     </entity>
     <entity entity-name="DbViewEntityMember" package-name="moqui.entity.view" cache="true" authorize-skip="view">
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
@@ -122,10 +123,11 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="DbViewEntityAlias" package-name="moqui.entity.view" cache="true" authorize-skip="view">
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="fieldAlias" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short"/>
         <field name="fieldName" type="text-medium"/>
         <field name="functionName" type="text-medium"/>
+        <relationship type="one" related-entity-name="DbViewEntity"/>
         <relationship type="one" related-entity-name="DbViewEntityMember"/>
     </entity>
     <entity entity-name="DbViewEntityViewLink" package-name="moqui.entity.view" cache="true" authorize-skip="view">
@@ -133,6 +135,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
         <field name="relatedOptional" type="text-indicator"/>
+        <relationship type="one" related-entity-name="DbViewEntity"/>
         <relationship type="one" related-entity-name="DbViewEntityMember"/>
         <relationship type="one" title="Related" related-entity-name="DbViewEntityMember">
             <key-map field-name="dbViewEntityName"/>
@@ -145,6 +148,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="relatedFieldName" type="text-medium"/>
+        <relationship type="one" related-entity-name="DbViewEntity"/>
         <relationship type="one" related-entity-name="DbViewEntityViewLink"/>
     </entity>
 </entities>
