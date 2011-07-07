@@ -12,14 +12,13 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-title="Example" default-menu-index="1">
+        default-menu-title="Edit DB-View" default-menu-index="1">
 
     <parameter name="dbViewEntityName"/>
     <parameter name="dbViewEntityName_0"/>
 
-    <transition name="view">
-        <default-response url="../ViewDbView"/>
-    </transition>
+    <transition name="view"><default-response url="../ViewDbView"/></transition>
+    <transition name="DbView.csv"><default-response url="../ViewDbView/DbView.csv"></default-response></transition>
     <transition name="update">
         <service-call name="update#DbViewEntity"/>
         <default-response url="."/>
@@ -134,7 +133,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <set field="dbViewEntityName" from="dbViewEntityName ?: dbViewEntityName_0"/>
     </actions>
     <widgets>
-        <container><link url="view" text="View ${dbViewEntityName}"/></container>
+        <container>
+            <link url="view" text="View ${dbViewEntityName}"/>
+            <link url="DbView.csv" text="Get as CSV"/>
+        </container>
         <section name="Update">
             <actions><entity-find-one entity-name="DbViewEntity" value-field="fieldValues"/></actions>
             <widgets>

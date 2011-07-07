@@ -35,6 +35,7 @@ This release includes:
     - Choose column(s) to order by
     - Specify search constraints
     - View in webapp
+    - Export to CSV
 
 
 ===========================================================================
@@ -421,8 +422,6 @@ Tools probable for 1.0 final:
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-  - Data View
-    - Export to CSV
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
