@@ -303,29 +303,28 @@ class EntityFacadeImpl implements EntityFacade {
             else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
 
             for (EntityValue dbViewEntityMember in makeFind("DbViewEntityMember").condition("dbViewEntityName", entityName).list()) {
-                dbViewNode.appendNode("member-entity",
+                Node memberEntity = dbViewNode.appendNode("member-entity",
                         ["entity-alias":dbViewEntityMember.entityAlias, "entity-name":dbViewEntityMember.entityName])
+                if (dbViewEntityMember.joinFromAlias) {
+                    memberEntity.attributes().put("join-from-alias", dbViewEntityMember.joinFromAlias)
+                    if (dbViewEntityMember.joinOptional == "Y") memberEntity.attributes().put("join-optional", "true")
+                }
+
+                EntityList dbViewEntityKeyMapList = makeFind("DbViewEntityKeyMap")
+                        .condition(["dbViewEntityName":entityName, "joinFromAlias":dbViewEntityMember.joinFromAlias,
+                            "entityAlias":dbViewEntityMember.entityAlias])
+                        .list()
+                for (EntityValue dbViewEntityKeyMap in dbViewEntityKeyMapList) {
+                    Node keyMapNode = memberEntity.appendNode("key-map", ["field-name":dbViewEntityKeyMap.fieldName])
+                    if (dbViewEntityKeyMap.relatedFieldName)
+                        keyMapNode.attributes().put("related-field-name", dbViewEntityKeyMap.relatedFieldName)
+                }
             }
             for (EntityValue dbViewEntityAlias in makeFind("DbViewEntityAlias").condition("dbViewEntityName", entityName).list()) {
                 Node aliasNode = dbViewNode.appendNode("alias",
                         ["name":dbViewEntityAlias.fieldAlias, "entity-alias":dbViewEntityAlias.entityAlias])
                 if (dbViewEntityAlias.fieldName) aliasNode.attributes().put("field", dbViewEntityAlias.fieldName)
                 if (dbViewEntityAlias.functionName) aliasNode.attributes().put("function", dbViewEntityAlias.functionName)
-            }
-            for (EntityValue dbViewEntityViewLink in makeFind("DbViewEntityViewLink").condition("dbViewEntityName", entityName).list()) {
-                Node viewLinkNode = dbViewNode.appendNode("view-link", ["entity-alias":dbViewEntityViewLink.entityAlias,
-                        "related-entity-alias":dbViewEntityViewLink.relatedEntityAlias])
-                if (dbViewEntityViewLink.relatedOptional == "Y") viewLinkNode.attributes().put("related-optional", "true")
-
-                EntityList dbViewEntityKeyMapList = makeFind("DbViewEntityKeyMap")
-                        .condition(["dbViewEntityName":entityName, "entityAlias":dbViewEntityViewLink.entityAlias,
-                            "relatedEntityAlias":dbViewEntityViewLink.relatedEntityAlias])
-                        .list()
-                for (EntityValue dbViewEntityKeyMap in dbViewEntityKeyMapList) {
-                    Node keyMapNode = viewLinkNode.appendNode("key-map", ["field-name":dbViewEntityKeyMap.fieldName])
-                    if (dbViewEntityKeyMap.relatedFieldName)
-                        keyMapNode.attributes().put("related-field-name", dbViewEntityKeyMap.relatedFieldName)
-                }
             }
 
             // create the new EntityDefinition

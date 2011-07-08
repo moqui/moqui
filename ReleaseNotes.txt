@@ -22,6 +22,8 @@ This release includes:
   authorization for users to view their own UserAccount record.
 - Entity Facade
   - Database-driven view entity
+  - view-entity: merge the view-link element into the member element (also
+    for DynamicViewEntity, DbViewEntity, *DbView screens)
 - Service Facade
   - Added entity-auto support for the verb "store" which does a create if
     record does not exist and update if it does
@@ -412,12 +414,6 @@ This release includes:
 Tools probable for 1.0 final:
 ===========================================================================
 
-- Entity Facade
-  - view-entity: merge the view-link element into the member element (also
-    for DynamicViewEntity, DbViewEntity, *DbView screens)
-- Screen Facade
-  - Auto field for indicator: drop-down or radio button pair instead of
-    plain text-line
 - Tools Screens
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc

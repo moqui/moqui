@@ -40,7 +40,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- clean out DbViewEntity* records -->
             <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityAlias"/>
             <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityKeyMap"/>
-            <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityViewLink"/>
             <entity-delete-by-condition entity-name="DbViewEntityMember">
                 <econdition field-name="dbViewEntityName" from="dbViewEntityName"/>
                 <econdition field-name="entityAlias" operator="not-equals" value="MASTER"/>
@@ -87,23 +86,19 @@ This Work includes contributions authored by David E. Jones, not as a
                         memberValue.dbViewEntityName = dbViewEntityName
                         memberValue.entityName = entityName
                         memberValue.entityAlias = "MEMBER${memberIndex}"
+                        memberValue.joinFromAlias = "MASTER"
+                        memberValue.joinOptional = "Y"
                         memberIndex++
                         memberValue.create()
                         members.put(entityName, memberValue)
 
-                        // added a member, add the ViewLink and KeyMap(s)
-                        def viewLinkValue = ec.entity.makeValue("DbViewEntityViewLink")
-                        viewLinkValue.dbViewEntityName = dbViewEntityName
-                        viewLinkValue.entityAlias = "MASTER"
-                        viewLinkValue.relatedEntityAlias = memberValue.entityAlias
-                        viewLinkValue.relatedOptional = "Y"
-                        viewLinkValue.create()
+                        // added a member, add KeyMap(s)
                         Map relExpKeyMap = masterEd.getRelationshipExpandedKeyMap(relNode)
                         for (Map.Entry keyMapEntry in relExpKeyMap) {
                             def keyMapValue = ec.entity.makeValue("DbViewEntityKeyMap")
                             keyMapValue.dbViewEntityName = dbViewEntityName
-                            keyMapValue.entityAlias = "MASTER"
-                            keyMapValue.relatedEntityAlias = memberValue.entityAlias
+                            keyMapValue.joinFromAlias = memberValue.joinFromAlias
+                            keyMapValue.entityAlias = memberValue.entityAlias
                             keyMapValue.fieldName = keyMapEntry.getKey()
                             keyMapValue.relatedFieldName = keyMapEntry.getValue()
                             keyMapValue.create()

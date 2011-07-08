@@ -102,8 +102,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <view-entity entity-name="ArtifactAuthzCheckView" package-name="moqui.security.authz">
         <member-entity entity-alias="AAZ" entity-name="ArtifactAuthz"/>
-        <member-entity entity-alias="AGM" entity-name="ArtifactGroupMember"/>
-        <member-entity entity-alias="AAR" entity-name="ArtifactAuthzRecord"/>
+        <member-entity entity-alias="AGM" entity-name="ArtifactGroupMember" join-from-alias="AAZ">
+            <key-map field-name="artifactGroupId"/>
+        </member-entity>
+        <member-entity entity-alias="AAR" entity-name="ArtifactAuthzRecord" join-from-alias="AAZ" join-optional="true">
+            <key-map field-name="artifactAuthzId"/>
+        </member-entity>
         <alias entity-alias="AAZ" name="userGroupId"/>
         <alias entity-alias="AAZ" name="artifactAuthzId"/>
         <alias entity-alias="AAZ" name="authzActionEnumId"/>
@@ -114,12 +118,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias entity-alias="AGM" name="nameIsPattern"/>
         <alias entity-alias="AGM" name="inheritAuthz"/>
         <alias entity-alias="AAR" name="viewEntityName"/>
-        <view-link entity-alias="AAZ" related-entity-alias="AGM">
-            <key-map field-name="artifactGroupId"/>
-        </view-link>
-        <view-link entity-alias="AAZ" related-entity-alias="AAR" related-optional="true">
-            <key-map field-name="artifactAuthzId"/>
-        </view-link>
     </view-entity>
 
     <!-- ========================================================= -->

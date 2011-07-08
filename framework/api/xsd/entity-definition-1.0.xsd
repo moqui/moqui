@@ -244,9 +244,15 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="member-entity">
         <xs:complexType>
-            <xs:sequence><xs:element minOccurs="0" ref="description"/></xs:sequence>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="description"/>
+                <xs:element maxOccurs="unbounded" ref="key-map"/>
+                <!-- TABLED not to be part of 1.0: <xs:element minOccurs="0" ref="entity-condition"/> -->
+            </xs:sequence>
             <xs:attribute name="entity-alias" type="xs:string" use="required"/>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="join-from-alias" type="xs:string" use="optional"/>
+            <xs:attribute name="join-optional" type="xs:string" use="optional"/>
         </xs:complexType>
     </xs:element>
 
@@ -309,18 +315,6 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     -->
 
-    <xs:element name="view-link">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" ref="description"/>
-                <xs:element maxOccurs="unbounded" ref="key-map"/>
-                <!-- TABLED not to be part of 1.0: <xs:element minOccurs="0" ref="entity-condition"/> -->
-            </xs:sequence>
-            <xs:attribute name="entity-alias" type="xs:string" use="required"/>
-            <xs:attribute name="related-entity-alias" type="xs:string" use="required"/>
-            <xs:attribute name="related-optional" default="false" type="boolean"/>
-        </xs:complexType>
-    </xs:element>
     <xs:element name="entity-condition">
         <xs:complexType>
             <xs:sequence>

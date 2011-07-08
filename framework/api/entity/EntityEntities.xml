@@ -119,7 +119,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
         <field name="entityName" type="text-medium"/>
+        <field name="joinFromAlias" type="text-short"/>
+        <field name="joinOptional" type="text-indicator"/>
         <relationship type="one" related-entity-name="DbViewEntity"/>
+        <relationship type="one" title="JoinFrom" related-entity-name="DbViewEntityMember">
+            <key-map field-name="dbViewEntityName"/>
+            <key-map field-name="joinFromAlias" related-field-name="entityAlias"/>
+        </relationship>
     </entity>
     <entity entity-name="DbViewEntityAlias" package-name="moqui.entity.view" cache="true" authorize-skip="view">
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
@@ -130,25 +136,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="DbViewEntity"/>
         <relationship type="one" related-entity-name="DbViewEntityMember"/>
     </entity>
-    <entity entity-name="DbViewEntityViewLink" package-name="moqui.entity.view" cache="true" authorize-skip="view">
-        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="entityAlias" type="text-short" is-pk="true"/>
-        <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
-        <field name="relatedOptional" type="text-indicator"/>
-        <relationship type="one" related-entity-name="DbViewEntity"/>
-        <relationship type="one" related-entity-name="DbViewEntityMember"/>
-        <relationship type="one" title="Related" related-entity-name="DbViewEntityMember">
-            <key-map field-name="dbViewEntityName"/>
-            <key-map field-name="relatedEntityAlias" related-field-name="entityAlias"/>
-        </relationship>
-    </entity>
     <entity entity-name="DbViewEntityKeyMap" package-name="moqui.entity.view" cache="true" authorize-skip="view">
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="joinFromAlias" type="text-short" is-pk="true"/>
         <field name="entityAlias" type="text-short" is-pk="true"/>
-        <field name="relatedEntityAlias" type="text-short" is-pk="true"/>
-        <field name="fieldName" type="text-medium" is-pk="true"/>
-        <field name="relatedFieldName" type="text-medium"/>
+        <field name="fieldName" type="text-medium" is-pk="true">
+            <description>The name of the field corresponding to the joinFromAlias.</description>
+        </field>
+        <field name="relatedFieldName" type="text-medium">
+            <description>The name of the field corresponding to the entityAlias, ie the related field.</description>
+        </field>
         <relationship type="one" related-entity-name="DbViewEntity"/>
-        <relationship type="one" related-entity-name="DbViewEntityViewLink"/>
+        <relationship type="one" related-entity-name="DbViewEntityMember"/>
     </entity>
 </entities>

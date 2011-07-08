@@ -35,8 +35,15 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     }
 
     @Override
-    EntityDynamicView addMemberEntity(String entityAlias, String entityName) {
-        this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":entityName])
+    EntityDynamicView addMemberEntity(String entityAlias, String entityName, String joinFromAlias, Boolean joinOptional, Map<String, String> entityKeyMaps) {
+        Node memberEntity = this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":entityName])
+        if (joinFromAlias) {
+            memberEntity.attributes().put("join-from-alias", joinFromAlias)
+            memberEntity.attributes().put("join-optional", (joinOptional ? "true" : "false"))
+        }
+        for (Map.Entry keyMapEntry in entityKeyMaps.entrySet()) {
+            memberEntity.appendNode("key-map", ["field-name":keyMapEntry.getKey(), "related-field-name":keyMapEntry.getValue()])
+        }
         return this
     }
 
@@ -55,15 +62,6 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     @Override
     EntityDynamicView addAlias(String entityAlias, String name, String field, String function) {
         this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "name":name, "field":field, "function":function])
-        return this
-    }
-
-    @Override
-    EntityDynamicView addViewLink(String entityAlias, String relatedEntityAlias, Boolean relatedOptional, Map<String, String> entityKeyMaps) {
-        Node viewLink = this.entityNode.appendNode("alias", ["entity-alias":entityAlias, "related-entity-alias":relatedEntityAlias, "related-optional":(relatedOptional ? "true" : "false")])
-        for (Map.Entry keyMapEntry in entityKeyMaps.entrySet()) {
-            viewLink.appendNode("key-map", ["field-name":keyMapEntry.getKey(), "related-field-name":keyMapEntry.getValue()])
-        }
         return this
     }
 

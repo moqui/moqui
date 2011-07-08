@@ -234,12 +234,11 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic.status">
         <member-entity entity-alias="SVC" entity-name="StatusValidChange"/>
-        <member-entity entity-alias="SI" entity-name="StatusItem"/>
+        <member-entity entity-alias="SI" entity-name="StatusItem" join-from-alias="SVC">
+            <key-map field-name="statusIdTo" related-field-name="statusId"/>
+        </member-entity>
         <alias-all entity-alias="SVC"/>
         <alias-all entity-alias="SI"/>
-        <view-link entity-alias="SVC" related-entity-alias="SI">
-            <key-map field-name="statusIdTo" related-field-name="statusId"/>
-        </view-link>
         <relationship type="one" related-entity-name="StatusValidChange"/>
         <relationship type="one" related-entity-name="StatusItem"/>
         <entity-condition>
@@ -262,14 +261,13 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <view-entity entity-name="UomAndType" package-name="moqui.basic.uom" cache="true">
         <member-entity entity-alias="UOM" entity-name="Uom"/>
-        <member-entity entity-alias="UTE" entity-name="Enumeration"/>
+        <member-entity entity-alias="UTE" entity-name="Enumeration" join-from-alias="UOM">
+            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
+        </member-entity>
         <alias entity-alias="UOM" name="uomId"/>
         <alias entity-alias="UOM" name="description"/>
         <alias entity-alias="UOM" name="abbreviation"/>
         <alias entity-alias="UTE" name="typeDescription" field="description"/>
-        <view-link entity-alias="UOM" related-entity-alias="UTE">
-            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
-        </view-link>
     </view-entity>
     <entity entity-name="UomConversion" package-name="moqui.basic.uom" cache="true">
         <field name="uomConversionId" type="id" is-pk="true"/>

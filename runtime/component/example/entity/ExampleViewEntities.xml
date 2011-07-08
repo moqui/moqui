@@ -14,8 +14,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <view-entity entity-name="ExampleStatusDetail" package-name="moqui.example.example">
         <member-entity entity-alias="EXPL" entity-name="Example"/>
-        <member-entity entity-alias="EAL" entity-name="EntityAuditLog"/>
-        <member-entity entity-alias="STIT" entity-name="StatusItem"/>
+        <member-entity entity-alias="EAL" entity-name="EntityAuditLog" join-from-alias="EXPL">
+            <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/>
+        </member-entity>
+        <member-entity entity-alias="STIT" entity-name="StatusItem" join-from-alias="EAL">
+            <key-map field-name="pkPrimaryValue" related-field-name="statusId"/>
+        </member-entity>
         <alias-all entity-alias="EXPL">
             <exclude field="statusId"/>
         </alias-all>
@@ -33,13 +37,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </complex-alias>
         </alias>
         -->
-        <view-link entity-alias="EXPL" related-entity-alias="EAL">
-            <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/>
-
-        </view-link>
-        <view-link entity-alias="EAL" related-entity-alias="STIT">
-            <key-map field-name="pkPrimaryValue" related-field-name="statusId"/>
-        </view-link>
         <entity-condition>
             <econdition field-name="changedEntityName" operator="equals" value="Example"/>
             <econdition field-name="changedFieldName" operator="equals" value="statusId"/>
@@ -58,36 +55,33 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- Some examples of nested views and conditions for report -->
     <view-entity entity-name="ExampleFeatureApplAndEnum" package-name="moqui.example.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
-        <member-entity entity-alias="ENUM" entity-name="Enumeration"/>
+        <member-entity entity-alias="ENUM" entity-name="Enumeration" join-from-alias="EXFTAP">
+            <key-map field-name="exampleFeatureApplEnumId"/>
+        </member-entity>
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM"/>
-        <view-link entity-alias="EXFTAP" related-entity-alias="ENUM">
-            <key-map field-name="exampleFeatureApplEnumId"/>
-        </view-link>
     </view-entity>
     <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="moqui.example.example">
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
-        <member-entity entity-alias="EFAAE" entity-name="ExampleFeatureApplAndEnum"/>
+        <member-entity entity-alias="EFAAE" entity-name="ExampleFeatureApplAndEnum" join-from-alias="EXFT">
+            <key-map field-name="exampleFeatureId"/>
+        </member-entity>
         <alias-all entity-alias="EXFT"/>
         <alias-all entity-alias="EFAAE">
             <exclude field="description"/>
         </alias-all>
         <alias name="typeDescription" entity-alias="EFAAE" field="description"/>
-        <view-link entity-alias="EXFT" related-entity-alias="EFAAE">
-            <key-map field-name="exampleFeatureId"/>
-        </view-link>
     </view-entity>
     <view-entity entity-name="ExampleFeatureAndApplFullView" package-name="moqui.example.example">
         <member-entity entity-alias="EX" entity-name="Example"/>
-        <member-entity entity-alias="EFAAAE" entity-name="ExampleFeatureAndApplAndEnum"/>
+        <member-entity entity-alias="EFAAAE" entity-name="ExampleFeatureAndApplAndEnum" join-from-alias="EX">
+            <key-map field-name="exampleId"/>
+        </member-entity>
         <alias-all entity-alias="EX"/>
         <alias-all entity-alias="EFAAAE">
             <exclude field="description"/>
         </alias-all>
         <alias name="featureDescription" entity-alias="EFAAAE" field="description"/>
-        <view-link entity-alias="EX" related-entity-alias="EFAAAE">
-            <key-map field-name="exampleId"/>
-        </view-link>
     </view-entity>
     <view-entity entity-name="ContrivedExamplesWithRequiredFeaturesReport" package-name="moqui.example.example">
         <member-entity entity-alias="EFAAFV" entity-name="ExampleFeatureAndApplFullView"/>
@@ -104,35 +98,32 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- example for nested view-entity with conditions on nested views -->
     <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="moqui.example.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
-        <member-entity entity-alias="ENUM" entity-name="Enumeration"/>
+        <member-entity entity-alias="ENUM" entity-name="Enumeration" join-from-alias="EXFTAP">
+            <key-map field-name="exampleFeatureApplEnumId"/>
+        </member-entity>
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM">
             <exclude field="description"/>
         </alias-all>
         <alias name="typeDescription" entity-alias="ENUM" field="description"/>
-        <view-link entity-alias="EXFTAP" related-entity-alias="ENUM">
-            <key-map field-name="exampleFeatureApplEnumId"/>
-        </view-link>
         <entity-condition>
             <econdition field-name="exampleFeatureApplEnumId" value="DESIRED"/>
         </entity-condition>
     </view-entity>
     <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="moqui.example.example">
         <member-entity entity-alias="EFAATD" entity-name="ExampleFeatureApplAndTypeDesired"/>
-        <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
-        <member-entity entity-alias="EX" entity-name="Example"/>
+        <member-entity entity-alias="EXFT" entity-name="ExampleFeature" join-from-alias="EFAATD">
+            <key-map field-name="exampleFeatureId"/>
+        </member-entity>
+        <member-entity entity-alias="EX" entity-name="Example" join-from-alias="EFAATD">
+            <key-map field-name="exampleId"/>
+        </member-entity>
         <alias-all entity-alias="EFAATD"/>
         <alias-all entity-alias="EXFT">
             <exclude field="description"/>
         </alias-all>
         <alias-all entity-alias="EX"/>
         <alias name="featureDescription" entity-alias="EXFT" field="description"/>
-        <view-link entity-alias="EFAATD" related-entity-alias="EXFT">
-            <key-map field-name="exampleFeatureId"/>
-        </view-link>
-        <view-link entity-alias="EFAATD" related-entity-alias="EX">
-            <key-map field-name="exampleId"/>
-        </view-link>
         <entity-condition>
             <econdition field-name="featureSourceEnumId" value="EXFTSRC_CUSTOMER"/>
             <order-by field-name="exampleName"/>

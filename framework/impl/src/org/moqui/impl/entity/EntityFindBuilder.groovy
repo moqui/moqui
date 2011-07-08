@@ -126,33 +126,35 @@ class EntityFindBuilder extends EntityQueryBuilder {
             // on initial pass only add opening parenthesis since easier than going back and inserting them, then insert the rest
             StringBuilder restOfStatement = new StringBuilder()
             boolean isFirst = true
-            for (Node viewLink in entityNode."view-link") {
+            for (Node relatedMemberEntity in entityNode."member-entity") {
+                if (!relatedMemberEntity."@join-from-alias") continue
+
                 if (useParenthesis) localBuilder.append('(')
 
-                String linkEntityName = entityNode."member-entity".find({ it."@entity-alias" == viewLink."@entity-alias" })."@entity-name"
+                String linkEntityName = entityNode."member-entity".find({ it."@entity-alias" == relatedMemberEntity."@join-from-alias" })."@entity-name"
                 EntityDefinition linkEntityDefinition = this.efi.getEntityDefinition(linkEntityName)
-                String relatedLinkEntityName = entityNode."member-entity".find({ it."@entity-alias" == viewLink."@related-entity-alias" })."@entity-name"
+                String relatedLinkEntityName = relatedMemberEntity."@entity-name"
                 EntityDefinition relatedLinkEntityDefinition = this.efi.getEntityDefinition(relatedLinkEntityName)
 
                 if (isFirst) {
                     // first link, add link entity for this one only, for others add related link entity
                     makeSqlViewTableName(linkEntityDefinition, restOfStatement)
                     restOfStatement.append(" ")
-                    restOfStatement.append(viewLink."@entity-alias")
+                    restOfStatement.append(relatedMemberEntity."@join-from-alias")
 
-                    joinedAliasSet.add(viewLink."@entity-alias")
+                    joinedAliasSet.add(relatedMemberEntity."@join-from-alias")
                 } else {
                     // make sure the left entity alias is already in the join...
-                    if (!joinedAliasSet.contains(viewLink."@entity-alias")) {
-                        throw new IllegalArgumentException("Tried to link the " + viewLink."@entity-alias" +
-                                " alias to the " + viewLink."@related-entity-alias" + " alias of the " +
+                    if (!joinedAliasSet.contains(relatedMemberEntity."@join-from-alias")) {
+                        throw new IllegalArgumentException("Tried to link the " + relatedMemberEntity."@join-from-alias" +
+                                " alias to the " + relatedMemberEntity."@entity-alias" + " alias of the " +
                                 localEntityDefinition.getEntityName() + " view-entity, but it is not the first view-link and has not been included in a previous view-link. In other words, the left/main alias isn't connected to the rest of the member-entities yet.")
                     }
                 }
                 // now put the rel (right) entity alias into the set that is in the join
-                joinedAliasSet.add(viewLink."@related-entity-alias")
+                joinedAliasSet.add(relatedMemberEntity."@entity-alias")
 
-                if (viewLink."@related-optional" == "true") {
+                if (relatedMemberEntity."@join-optional" == "true") {
                     restOfStatement.append(" LEFT OUTER JOIN ")
                 } else {
                     restOfStatement.append(" INNER JOIN ")
@@ -160,32 +162,32 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                 makeSqlViewTableName(relatedLinkEntityDefinition, restOfStatement)
                 restOfStatement.append(" ")
-                restOfStatement.append(viewLink."@related-entity-alias")
+                restOfStatement.append(relatedMemberEntity."@entity-alias")
                 restOfStatement.append(" ON ")
 
-                if (!viewLink."key-map") {
+                if (!relatedMemberEntity."key-map") {
                     throw new IllegalArgumentException("No view-link/join key-maps found for the " +
-                            viewLink."@entity-alias" + " and the " + viewLink."@related-entity-alias" + 
+                            relatedMemberEntity."@join-from-alias" + " and the " + relatedMemberEntity."@entity-alias" +
                             " member-entities of the " + localEntityDefinition.getEntityName() + " view-entity.")
                 }
 
                 boolean isFirstKeyMap = true
-                for (Node keyMap in viewLink."key-map") {
+                for (Node keyMap in relatedMemberEntity."key-map") {
                     if (isFirstKeyMap) isFirstKeyMap = false else restOfStatement.append(" AND ")
 
-                    restOfStatement.append(viewLink."@entity-alias")
+                    restOfStatement.append(relatedMemberEntity."@join-from-alias")
                     restOfStatement.append(".")
                     restOfStatement.append(sanitizeColumnName(linkEntityDefinition.getColumnName(keyMap."@field-name", false)))
 
                     restOfStatement.append(" = ")
 
                     String relatedFieldName = keyMap."@related-field-name" ?: keyMap."@field-name"
-                    restOfStatement.append(viewLink."@related-entity-alias")
+                    restOfStatement.append(relatedMemberEntity."@entity-alias")
                     restOfStatement.append(".")
                     restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
                 }
 
-                if (viewLink."entity-condition") {
+                if (relatedMemberEntity."entity-condition") {
                     // TABLED: add any additional manual conditions for the view-link here
                 }
 
