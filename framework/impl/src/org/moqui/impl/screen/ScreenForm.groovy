@@ -277,6 +277,10 @@ class ScreenForm {
                     if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
                 } else if (efType == "text-very-long") {
                     subFieldNode.appendNode("text-area")
+                } else if (efType == "text-indicator") {
+                    Node dropDownNode = subFieldNode.appendNode("drop-down", ["allow-empty":"true"])
+                    dropDownNode.appendNode("option", ["key":"Y"])
+                    dropDownNode.appendNode("option", ["key":"N"])
                 } else {
                     if (oneRelNode != null) {
                         String title = oneRelNode."@title"
