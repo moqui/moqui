@@ -11,12 +11,6 @@
  */
 package org.moqui.impl.context
 
-import freemarker.template.Configuration
-import freemarker.ext.beans.BeansWrapper
-import freemarker.template.TemplateExceptionHandler
-import freemarker.template.TemplateException
-import freemarker.core.Environment
-
 import javax.activation.DataSource
 import javax.activation.MimetypesFileTypeMap
 import javax.jcr.Repository
@@ -32,10 +26,11 @@ import javax.xml.transform.Source
 
 import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
 import org.apache.commons.mail.ByteArrayDataSource
-import org.apache.jackrabbit.commons.JcrUtils
 import org.apache.fop.apps.FOUserAgent
 import org.apache.fop.apps.Fop
 import org.apache.fop.apps.FopFactory
+
+import org.apache.jackrabbit.commons.JcrUtils
 
 import org.codehaus.groovy.runtime.InvokerHelper
 
@@ -44,9 +39,11 @@ import org.moqui.context.ExecutionContext
 import org.moqui.context.TemplateRenderer
 import org.moqui.context.ResourceFacade
 import org.moqui.context.ResourceReference
+import org.moqui.context.ScriptRunner
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.StupidUtilities
-import groovy.text.GStringTemplateEngine
+import org.moqui.impl.context.renderer.FtlTemplateRenderer
+import org.moqui.impl.context.runner.XmlActionsScriptRunner
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -54,38 +51,36 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap()
 
     protected final ExecutionContextFactoryImpl ecfi
-    protected final Configuration defaultFtlConfiguration
 
-    protected final Cache scriptGroovyLocationCache
+    final FtlTemplateRenderer ftlTemplateRenderer
+    final XmlActionsScriptRunner xmlActionsScriptRunner
+
     protected final Cache scriptGroovyExpressionCache
-    protected final Cache scriptXmlActionLocationCache
-    protected final Cache templateFtlLocationCache
-    protected final Cache templateGStringLocationCache
     protected final Cache textLocationCache
 
     protected final Map<String, Class> resourceReferenceClasses = new HashMap()
     protected final Map<String, TemplateRenderer> templateRenderers = new HashMap()
+    protected final Map<String, ScriptRunner> scriptRunners = new HashMap()
 
     protected final Map<String, Repository> contentRepositories = new HashMap()
     protected final Map<String, String> contentRepositoryWorkspaces = new HashMap()
 
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
-    protected final freemarker.template.Template xmlActionsTemplate
-
     protected final FopFactory fopFactory
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
-        defaultFtlConfiguration = makeFtlConfiguration(ecfi)
+
+        this.ftlTemplateRenderer = new FtlTemplateRenderer()
+        this.ftlTemplateRenderer.init(ecfi)
+
+        this.xmlActionsScriptRunner = new XmlActionsScriptRunner()
+        this.xmlActionsScriptRunner.init(ecfi)
 
         this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
-        this.templateFtlLocationCache = ecfi.cacheFacade.getCache("resource.ftl.location")
-        this.templateGStringLocationCache = ecfi.cacheFacade.getCache("resource.gstring.location")
 
-        this.scriptGroovyLocationCache = ecfi.getCacheFacade().getCache("resource.groovy.location")
         this.scriptGroovyExpressionCache = ecfi.getCacheFacade().getCache("resource.groovy.expression")
-        this.scriptXmlActionLocationCache = ecfi.getCacheFacade().getCache("resource.xml-actions.location")
 
         // Setup resource reference classes
         for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
@@ -97,6 +92,12 @@ public class ResourceFacadeImpl implements ResourceFacade {
         for (Node templateRendererNode in ecfi.confXmlRoot."resource-facade"[0]."template-renderer") {
             TemplateRenderer tr = (TemplateRenderer) this.getClass().getClassLoader().loadClass(templateRendererNode."@class").newInstance()
             templateRenderers.put(templateRendererNode."@extension", tr.init(ecfi))
+        }
+
+        // Setup script runners
+        for (Node scriptRunnerNode in ecfi.confXmlRoot."resource-facade"[0]."script-runner") {
+            ScriptRunner sr = (ScriptRunner) this.getClass().getClassLoader().loadClass(scriptRunnerNode."@class").newInstance()
+            scriptRunners.put(scriptRunnerNode."@extension", sr.init(ecfi))
         }
 
         // Setup content repositories
@@ -118,9 +119,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
             }
         }
 
-        // setup XmlActions FTL Template
-        this.xmlActionsTemplate = makeXmlActionsTemplate()
-
         // setup FopFactory
         fopFactory = FopFactory.newInstance()
         // Limit the validation for backwards compatibility
@@ -138,7 +136,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
     Map<String, TemplateRenderer> getTemplateRenderers() { return templateRenderers }
-    Cache getTemplateFtlLocationCache() { return templateFtlLocationCache }
 
     Repository getContentRepository(String name) { return contentRepositories.get(name) }
 
@@ -258,125 +255,16 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return tr
     }
 
-    freemarker.template.Template getFtlTemplateByLocation(String location) {
-        freemarker.template.Template theTemplate =
-                (freemarker.template.Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
-        if (!theTemplate) theTemplate = makeTemplate(location)
-        if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
-        return theTemplate
-    }
-    protected freemarker.template.Template makeTemplate(String location) {
-        freemarker.template.Template theTemplate =
-                (freemarker.template.Template) ecfi.resourceFacade.templateFtlLocationCache.get(location)
-        if (theTemplate) return theTemplate
-
-        freemarker.template.Template newTemplate = null
-        Reader templateReader = null
-        try {
-            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
-            newTemplate = new freemarker.template.Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
-        } finally {
-            if (templateReader != null) templateReader.close()
-        }
-
-        if (newTemplate) ecfi.resourceFacade.templateFtlLocationCache.put(location, newTemplate)
-        return newTemplate
-    }
-
-    groovy.text.Template getGStringTemplateByLocation(String location) {
-        groovy.text.Template theTemplate =
-                (groovy.text.Template) ecfi.resourceFacade.templateGStringLocationCache.get(location)
-        if (!theTemplate) theTemplate = makeGStringTemplate(location)
-        if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
-        return theTemplate
-    }
-    protected groovy.text.Template makeGStringTemplate(String location) {
-        groovy.text.Template theTemplate =
-                (groovy.text.Template) ecfi.resourceFacade.templateGStringLocationCache.get(location)
-        if (theTemplate) return theTemplate
-
-        groovy.text.Template newTemplate = null
-        Reader templateReader = null
-        try {
-            templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
-            GStringTemplateEngine gste = new GStringTemplateEngine()
-            newTemplate = gste.createTemplate(templateReader)
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
-        } finally {
-            if (templateReader != null) templateReader.close()
-        }
-
-        if (newTemplate) ecfi.resourceFacade.templateGStringLocationCache.put(location, newTemplate)
-        return newTemplate
-    }
-
     /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */
     Object runScriptInCurrentContext(String location, String method) {
         ExecutionContext ec = ecfi.executionContext
-        if (location.endsWith(".groovy")) {
-            Script script = InvokerHelper.createScript(getGroovyByLocation(location), new Binding(ec.context))
-            Object result
-            if (method) {
-                result = script.invokeMethod(method, {})
-            } else {
-                result = script.run()
-            }
-            return result
-        } else if (location.endsWith(".xml")) {
-            XmlAction xa = getXmlActionByLocation(location)
-            return xa.run(ec)
-        } else {
-            throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
-        }
-    }
+        String extension = location.substring(location.lastIndexOf("."))
+        ScriptRunner sr = this.scriptRunners.get(extension)
 
-    Class getGroovyByLocation(String location) {
-        Class gc = (Class) scriptGroovyLocationCache.get(location)
-        if (!gc) gc = loadGroovy(location)
-        return gc
-    }
-    protected Class loadGroovy(String location) {
-        Class gc = (Class) scriptGroovyLocationCache.get(location)
-        if (!gc) {
-            String groovyText = getLocationText(location, false)
-            gc = new GroovyClassLoader().parseClass(groovyText, location)
-            scriptGroovyLocationCache.put(location, gc)
-        }
-        return gc
-    }
+        if (sr == null) throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
 
-    XmlAction getXmlActionByLocation(String location) {
-        XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
-        if (!xa) loadXmlAction(location)
-        return xa
+        return sr.run(location, method, ec)
     }
-    protected XmlAction loadXmlAction(String location) {
-        XmlAction xa = (XmlAction) scriptGroovyLocationCache.get(location)
-        if (!xa) {
-            xa = new XmlAction(ecfi, getLocationText(location, false), location)
-            scriptXmlActionLocationCache.put(location, xa)
-        }
-        return xa
-    }
-    freemarker.template.Template getXmlActionsTemplate() { return xmlActionsTemplate }
-    protected freemarker.template.Template makeXmlActionsTemplate() {
-        String templateLocation = ecfi.confXmlRoot."resource-facade"[0]."@xml-actions-template-location"
-        freemarker.template.Template newTemplate = null
-        Reader templateReader = null
-        try {
-            templateReader = new InputStreamReader(this.getLocationStream(templateLocation))
-            newTemplate = new freemarker.template.Template(templateLocation, templateReader, getFtlConfiguration())
-        } catch (Exception e) {
-            logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
-        } finally {
-            if (templateReader) templateReader.close()
-        }
-        return newTemplate
-    }
-
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
     boolean evaluateCondition(String expression, String debugLocation) {
@@ -465,99 +353,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (contentType == "application/xml") return false
         if (contentType == "application/xml-dtd") return false
         return true
-    }
-
-    public Configuration getFtlConfiguration() { return defaultFtlConfiguration }
-
-    protected static Configuration makeFtlConfiguration(ExecutionContextFactoryImpl ecfi) {
-        Configuration newConfig = new MoquiConfiguration(ecfi)
-        BeansWrapper defaultWrapper = BeansWrapper.getDefaultInstance()
-        newConfig.setObjectWrapper(defaultWrapper)
-        newConfig.setSharedVariable("Static", defaultWrapper.getStaticModels())
-
-        // not needed, using getTemplate override instead: newConfig.setCacheStorage(new NullCacheStorage())
-        // not needed, using getTemplate override instead: newConfig.setTemplateUpdateDelay(1)
-        // not needed, using getTemplate override instead: newConfig.setTemplateLoader(new MoquiResourceTemplateLoader(ecfi))
-        // not needed, using getTemplate override instead: newConfig.setLocalizedLookup(false)
-
-        newConfig.setTemplateExceptionHandler(new MoquiTemplateExceptionHandler())
-        newConfig.setWhitespaceStripping(true)
-        return newConfig
-    }
-
-    static class MoquiConfiguration extends Configuration {
-        ExecutionContextFactoryImpl ecfi
-        MoquiConfiguration(ExecutionContextFactoryImpl ecfi) {
-            super()
-            this.ecfi = ecfi
-        }
-        @Override
-        freemarker.template.Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
-            //return super.getTemplate(name, locale, encoding, parse)
-            // NOTE: doing this because template loading behavior with cache/etc not desired and was having issues
-            freemarker.template.Template theTemplate
-            if (parse) {
-                theTemplate = ecfi.resourceFacade.getFtlTemplateByLocation(name)
-            } else {
-                String text = ecfi.resourceFacade.getLocationText(name, true)
-                theTemplate = freemarker.template.Template.getPlainTextTemplate(name, text, this)
-            }
-            // NOTE: this is the same exception the standard FreeMarker code returns
-            if (theTemplate == null) throw new FileNotFoundException("Template [${name}] not found.")
-            return theTemplate
-        }
-    }
-
-    /* This is not needed with the getTemplate override
-    static class NullCacheStorage implements CacheStorage {
-        Object get(Object o) { return null }
-        void put(Object o, Object o1) { }
-        void remove(Object o) { }
-        void clear() { }
-    }
-
-    static class MoquiResourceTemplateLoader implements TemplateLoader {
-        ExecutionContextFactoryImpl ecfi
-        MoquiResourceTemplateLoader(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }
-
-        public Object findTemplateSource(String name) throws IOException {
-            String text = ecfi.resourceFacade.getLocationText(name, true)
-            if (text) return name
-            return null
-        }
-        public long getLastModified(Object templateSource) {
-            ResourceReference rr = ecfi.resourceFacade.getLocationReference((String) templateSource)
-            return rr.supportsLastModified() ? rr.getLastModified() : -1
-        }
-        public Reader getReader(Object templateSource, String encoding) throws IOException {
-            String text = ecfi.resourceFacade.getLocationText((String) templateSource, true)
-            if (!text) {
-                logger.warn("Could not find text at location [${templateSource}] reffered to in an FTL template.")
-                text = ""
-            }
-            return new StringReader(text)
-        }
-        public void closeTemplateSource(Object templateSource) throws IOException { }
-    }
-    */
-
-    static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
-        public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
-                throws TemplateException {
-            try {
-                // TODO: encode error, something like: StringUtil.SimpleEncoder simpleEncoder = FreeMarkerWorker.getWrappedObject("simpleEncoder", env);
-                // stackTrace = simpleEncoder.encode(stackTrace);
-                if (te.cause) {
-                    logger.error("Error in FTL render", te.cause)
-                    out.write("[Error: ${te.cause.message}]")
-                } else {
-                    logger.error("Error in FTL render", te)
-                    out.write("[Template Error: ${te.message}]")
-                }
-            } catch (IOException e) {
-                throw new TemplateException("Failed to print error message. Cause: " + e, env)
-            }
-        }
     }
 
     void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType) {

@@ -12,20 +12,16 @@
 package org.moqui.impl.actions
 
 import freemarker.core.Environment
-import freemarker.template.Template
-import freemarker.ext.beans.BeansWrapper
-import freemarker.template.Configuration
 
 import org.codehaus.groovy.runtime.InvokerHelper
+
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.FtlNodeWrapper
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
 
 class XmlAction {
-    protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(XmlAction.class)
 
     /** The Groovy class compiled from the script transformed from the XML actions text using the FTL template. */
     protected final Class groovyClass
@@ -70,7 +66,7 @@ class XmlAction {
             Map root = ["xmlActionsRoot":ftlNode]
 
             Writer outWriter = new StringWriter()
-            Environment env = ecfi.resourceFacade.getXmlActionsTemplate()
+            Environment env = ecfi.resourceFacade.xmlActionsScriptRunner.getXmlActionsTemplate()
                     .createProcessingEnvironment(root, (Writer) outWriter)
             env.process()
 

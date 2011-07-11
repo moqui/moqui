@@ -250,6 +250,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:sequence>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="resource-reference"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="template-renderer"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="script-runner"/>
             </xs:sequence>
             <xs:attribute name="xml-actions-template-location" type="xs:string"/>
         </xs:complexType>
@@ -261,6 +262,12 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="template-renderer">
+        <xs:complexType>
+            <xs:attribute name="extension" type="xs:string" use="required"/>
+            <xs:attribute name="class" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="script-runner">
         <xs:complexType>
             <xs:attribute name="extension" type="xs:string" use="required"/>
             <xs:attribute name="class" type="xs:string" use="required"/>

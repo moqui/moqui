@@ -99,7 +99,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         Template newTemplate
         try {
-            newTemplate = new Template("moqui.automatic.${renderMode}", new StringReader(rootTemplate), ecfi.resourceFacade.getFtlConfiguration())
+            newTemplate = new Template("moqui.automatic.${renderMode}", new StringReader(rootTemplate),
+                    ecfi.resourceFacade.ftlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         }
@@ -128,7 +129,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
         try {
             // this location needs to look like a filename in the runtime directory, otherwise FTL will look for includes under the directory it looks like instead
             String filename = templateLocation.substring(templateLocation.lastIndexOf("/")+1)
-            newTemplate = new Template(filename, new StringReader(rootTemplate), ecfi.resourceFacade.getFtlConfiguration())
+            newTemplate = new Template(filename, new StringReader(rootTemplate),
+                    ecfi.resourceFacade.ftlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing Screen Widgets template at [${templateLocation}]", e)
         }

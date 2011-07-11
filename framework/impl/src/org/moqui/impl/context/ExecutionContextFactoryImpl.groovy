@@ -548,7 +548,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."resource-facade") {
+            mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "resource-reference", "scheme")
             mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "template-renderer", "extension")
+            mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "script-runner", "extension")
         }
 
         if (overrideNode."screen-facade") {

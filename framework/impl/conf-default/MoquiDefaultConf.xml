@@ -99,6 +99,9 @@
         <!-- a renderer for .html isn't necessary because the default is to write the text as-is, however this is useful
             so that the extension becomes a default extension and doesn't have to be in the URL -->
         <template-renderer extension=".html" class="org.moqui.impl.context.renderer.NoTemplateRenderer"/>
+
+        <script-runner extension=".groovy" class="org.moqui.impl.context.runner.GroovyScriptRunner"/>
+        <script-runner extension=".xml" class="org.moqui.impl.context.runner.XmlActionsScriptRunner"/>
     </resource-facade>
 
     <screen-facade boundary-comments="false" default-autocomplete-rows="20" default-paginate-rows="20">

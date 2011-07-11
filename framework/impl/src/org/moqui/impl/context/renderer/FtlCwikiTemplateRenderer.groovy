@@ -59,7 +59,7 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
             parser.parse(ecfi.resourceFacade.getLocationText(location, false))
 
             Reader templateReader = new StringReader(cwikiWriter.toString())
-            newTemplate = new Template(location, templateReader, ecfi.resourceFacade.getFtlConfiguration())
+            newTemplate = new Template(location, templateReader, ecfi.resourceFacade.ftlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
         }
