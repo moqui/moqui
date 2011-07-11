@@ -49,7 +49,7 @@ class MoquiFopServlet extends HttpServlet {
         try {
             Node webappNode = ecfi.getWebappNode(moquiWebappName)
             ScreenRender sr = ec.screen.makeRender().webappName(moquiWebappName).renderMode("xsl-fo")
-                    .rootScreen(webappNode."@root-screen-location").screenPath(pathInfo.split("/") as List)
+                    .rootScreenFromHost(request.getServerName()).screenPath(pathInfo.split("/") as List)
             xslFoText = sr.render()
         } catch (ScreenResourceNotFoundException e) {
             logger.warn("Resource Not Found: ${e.message}")

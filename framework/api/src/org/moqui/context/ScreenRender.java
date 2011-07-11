@@ -23,6 +23,13 @@ public interface ScreenRender {
      */
     ScreenRender rootScreen(String screenLocation);
 
+    /** Determine location of the root XML Screen file to render based on a host name.
+     *
+     * @param host The host name, usually from ServletRequest.getServerName()
+     * @return Reference to this ScreenRender for convenience
+     */
+    ScreenRender rootScreenFromHost(String host);
+
     /** A list of screen names used to determine which screens to use when rendering subscreens.
      *
      * @return Reference to this ScreenRender for convenience

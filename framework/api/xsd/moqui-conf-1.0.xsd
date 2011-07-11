@@ -98,6 +98,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="webapp">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="root-screen"/>
                 <xs:element minOccurs="0" ref="first-hit-in-visit"/>
                 <xs:element minOccurs="0" ref="before-request"/>
                 <xs:element minOccurs="0" ref="after-request"/>
@@ -125,6 +126,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="content-prefix-standard" type="xs:string"/>
             <!-- TODO use in code -->
             <xs:attribute name="cookie-domain" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="root-screen">
+        <xs:complexType>
+            <xs:attribute name="host" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>A pattern to match the host name against (from ServletRequest.getServerName())</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="location" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The location of the root screen XML file</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="first-hit-in-visit">

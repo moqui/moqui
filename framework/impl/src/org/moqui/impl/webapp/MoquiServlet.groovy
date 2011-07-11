@@ -54,7 +54,7 @@ class MoquiServlet extends HttpServlet {
          * for a web page render because if we call render(request, response) it can figure all of this out as defaults
          *
          * ScreenRender render = ec.screen.makeRender().webappName(webappMoquiName).renderMode("html")
-         *         .rootScreen(webappDef.webappNode."@root-screen-location").screenPath(pathInfo.split("/") as List)
+         *         .rootScreenFromHost(request.getServerName()).screenPath(pathInfo.split("/") as List)
          */
 
         try {

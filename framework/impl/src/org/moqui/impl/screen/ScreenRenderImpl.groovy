@@ -81,6 +81,12 @@ class ScreenRenderImpl implements ScreenRender {
     @Override
     ScreenRender rootScreen(String rootScreenLocation) { this.rootScreenLocation = rootScreenLocation; return this }
 
+    ScreenRender rootScreenFromHost(String host) {
+        for (Node rootScreenNode in getWebappNode()."root-screen") {
+            if (host.matches(rootScreenNode."@host")) return this.rootScreen(rootScreenNode."@location")
+        }
+    }
+
     @Override
     ScreenRender screenPath(List<String> screenNameList) { this.originalScreenPathNameList.addAll(screenNameList); return this }
 
@@ -111,7 +117,7 @@ class ScreenRenderImpl implements ScreenRender {
         this.request = request
         this.response = response
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
-        if (webappName && !rootScreenLocation) rootScreen(getWebappNode()."@root-screen-location")
+        if (webappName && !rootScreenLocation) rootScreenFromHost(request.getServerName())
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
         // now render
         internalRender()

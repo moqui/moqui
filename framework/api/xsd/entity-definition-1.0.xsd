@@ -33,7 +33,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    <!-- ================== entity ===================== -->
+
+    <!-- ================== entity and extend-entity ===================== -->
+
     <xs:element name="entity">
         <xs:complexType>
             <xs:sequence>
@@ -77,6 +79,22 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="extend-entity">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="relationship"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="index"/>
+            </xs:sequence>
+            <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="table-name" type="xs:string"/>
+            <xs:attribute name="group-name" type="xs:string" use="optional"/>
+            <xs:attribute name="sequence-bank-size" type="xs:string"/>
+            <xs:attribute name="optimistic-lock" default="false" type="boolean"/>
+            <xs:attribute name="no-update-stamp" default="false" type="boolean"/>
+            <xs:attribute name="cache" default="false" type="cache-options"/>
         </xs:complexType>
     </xs:element>
 
@@ -390,24 +408,5 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="order-by">
         <xs:complexType><xs:attribute name="field-name" type="xs:string" use="required"/></xs:complexType>
-    </xs:element>
-
-    <!-- ================== extend-entity ===================== -->
-
-    <xs:element name="extend-entity">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="relationship"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="index"/>
-            </xs:sequence>
-            <xs:attribute name="entity-name" type="xs:string" use="required"/>
-            <xs:attribute name="table-name" type="xs:string"/>
-            <xs:attribute name="group-name" type="xs:string" use="optional"/>
-            <xs:attribute name="sequence-bank-size" type="xs:string"/>
-            <xs:attribute name="optimistic-lock" default="false" type="boolean"/>
-            <xs:attribute name="no-update-stamp" default="false" type="boolean"/>
-            <xs:attribute name="cache" default="false" type="cache-options"/>
-        </xs:complexType>
     </xs:element>
 </xs:schema>

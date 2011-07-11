@@ -655,6 +655,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void mergeWebappChildNodes(Node baseNode, Node overrideNode) {
+        mergeNodeWithChildKey(baseNode, overrideNode, "root-screen", "host")
         // handle webapp -> first-hit-in-visit[1], after-request[1], before-request[1], after-login[1], before-logout[1], root-screen[1]
         mergeWebappActions(baseNode, overrideNode, "first-hit-in-visit")
         mergeWebappActions(baseNode, overrideNode, "after-request")

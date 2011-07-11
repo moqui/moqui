@@ -12,7 +12,9 @@
     </server-stats>
 
     <webapp-list>
-        <webapp name="webroot" root-screen-location="component://webroot/screen/MoquiRoot.xml"/>
+        <webapp name="webroot">
+            <root-screen host=".*" location="component://webroot/screen/MoquiRoot.xml"/>
+        </webapp>
     </webapp-list>
 
     <screen-facade boundary-comments="false"/>
