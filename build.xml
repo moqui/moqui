@@ -93,6 +93,31 @@ This Work includes contributions authored by David E. Jones, not as a
             </manifest>
         </war>
     </target>
+    <target name="war-runtime" depends="build">
+        <war destfile="moqui-with-runtime-${version}.war" webxml="framework/webapp/WEB-INF/web.xml">
+            <!-- no html/etc webapp files for now: <fileset dir="html"/> -->
+            <lib dir="framework/api/lib">
+                <exclude name="winstone-0.9.10.jar"/>
+            </lib>
+            <lib dir="framework/impl/lib"/>
+            <lib dir="framework/build/lib"/>
+            <classes file="MoquiInit.properties"/>
+
+            <!-- copy the start files, setup the manifest for war acting like executable jar -->
+            <fileset dir="framework/build/start/classes"/>
+            <file file="framework/api/lib/winstone-0.9.10.jar"/>
+            <!-- for this variation of the war file, also copy in the runtime directory -->
+            <fileset dir="." includes="runtime/"/>
+
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0"/>
+                <attribute name="Implementation-Title" value="Moqui Start"/>
+                <attribute name="Implementation-Vendor" value="Moqui Framework"/>
+                <attribute name="Main-Class" value="MoquiStart"/>
+            </manifest>
+        </war>
+    </target>
+
     <target name="war-tomcat" depends="war">
         <delete verbose="on" failonerror="false" dir="${tomcat.home}/runtime"/>
         <delete verbose="on" failonerror="false" dir="${tomcat.home}/webapps/moqui"/>

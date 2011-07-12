@@ -74,12 +74,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // if there is a system property use that, otherwise from the properties file
         this.runtimePath = System.getProperty("moqui.runtime")
-        if (!this.runtimePath) {
-            this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
-        }
-        if (!this.runtimePath) {
+        if (!this.runtimePath) this.runtimePath = moquiInitProperties.getProperty("moqui.runtime")
+        if (!this.runtimePath)
             throw new IllegalArgumentException("No moqui.runtime property found in MoquiInit.properties or in a system property (with: -Dmoqui.runtime=... on the command line).")
-        }
+
         if (this.runtimePath.endsWith("/")) this.runtimePath = this.runtimePath.substring(0, this.runtimePath.length()-1)
 
         // setup the runtimeFile
@@ -95,12 +93,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // get the moqui configuration file path
         String confPartialPath = System.getProperty("moqui.conf")
-        if (!confPartialPath) {
-            confPartialPath = moquiInitProperties.getProperty("moqui.conf")
-        }
-        if (!confPartialPath) {
+        if (!confPartialPath) confPartialPath = moquiInitProperties.getProperty("moqui.conf")
+        if (!confPartialPath)
             throw new IllegalArgumentException("No moqui.conf property found in MoquiInit.properties or in a system property (with: -Dmoqui.conf=... on the command line).")
-        }
 
         // setup the confFile
         if (confPartialPath.startsWith("/")) confPartialPath = confPartialPath.substring(1)

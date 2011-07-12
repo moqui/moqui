@@ -33,8 +33,13 @@ class MoquiContextListener implements ServletContextListener {
         ServletContext sc = servletContextEvent.servletContext
         String webappId = getId(sc)
         String moquiWebappName = sc.getInitParameter("moqui-name")
+        String webappRealPath = sc.getRealPath("/")
 
-        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${moquiWebappName}], context name [${sc.getServletContextName()}], located at [${sc.getRealPath("/")}]")
+        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${moquiWebappName}], context name [${sc.getServletContextName()}], located at [${webappRealPath}]")
+
+        // before we init the ECF, see if there is a runtime directory in the webappRealPath, and if so set that as the moqui.runtime System property
+        if (new File(webappRealPath + "/runtime").exists()) System.setProperty("moqui.runtime", webappRealPath + "/runtime")
+
         ExecutionContextFactory ecfi = new ExecutionContextFactoryImpl()
         sc.setAttribute("executionContextFactory", ecfi)
         // there should always be one ECF that is active for things like deserialize of EntityValue

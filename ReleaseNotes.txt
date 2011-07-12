@@ -21,8 +21,10 @@ This release includes:
 - Security: tightened permissions, using the entity.@authorize-skip much
   less by adding disable/enableAuthz calls to framework code, and adding an
   authorization for users to view their own UserAccount record.
+- Small changes to make it easier to include the runtime directory inside
+  the deployed war file.
 - Resource Facade
-  - Added ServiceRunner interface to allow for easily adding scripting
+  - Added ScriptRunner interface to allow for easily adding scripting
     languages to be supported by the ResourceFacade
 - Entity Facade
   - Database-driven view entity
@@ -422,6 +424,7 @@ Tools probable for 1.0 final:
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
       related entities
+    ** Fix bug with tabs showing only relationship title and not entity name
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
@@ -430,12 +433,6 @@ Tools probable for 1.0 final:
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
   - Artifact Info screens (with in/out references for all)
-  - OFBiz Artifact Migration
-    - entity def -> entity def
-    - service def -> service def
-    - service impl in simple-method -> XML Actions
-    - controller request/view, screen widget, form widget -> XML Screen,
-      with screen hierarchy based on menu widget
 
 ===========================================================================
 Features designed, but not to be included in 1.0 series
