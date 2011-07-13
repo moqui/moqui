@@ -311,7 +311,7 @@
                   join-style="ansi-no-parenthesis"
                   table-engine="InnoDB"
                   character-set="utf8"
-                  collate="utf8_general_cs"
+                  collate="utf8_general_ci"
                   default-isolation-level="ReadCommitted"
                   default-jdbc-driver="com.mysql.jdbc.Driver"
                   default-test-query="SELECT 1">
