@@ -101,6 +101,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </lib>
             <lib dir="framework/impl/lib"/>
             <lib dir="framework/build/lib"/>
+            <lib dir="runtime/lib"/>
             <classes file="MoquiInit.properties"/>
 
             <!-- copy the start files, setup the manifest for war acting like executable jar -->
