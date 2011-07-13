@@ -14,7 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
 <project name="Moqui Main Build" default="build" basedir=".">
     <property environment="env"/>
     <property name="version" value="1.0-beta3"/>
-    <property name="tomcat.home" value="../apache-tomcat-7.0.6"/>
 
     <target name="init">
         <!-- just a place holder for now -->
@@ -54,6 +53,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </subant>
         <delete verbose="on">
             <fileset file="moqui-${version}.war"/>
+            <fileset file="moqui-with-runtime-${version}.war"/>
         </delete>
     </target>
 
@@ -117,16 +117,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <attribute name="Main-Class" value="MoquiStart"/>
             </manifest>
         </war>
-    </target>
-
-    <target name="war-tomcat" depends="war">
-        <delete verbose="on" failonerror="false" dir="${tomcat.home}/runtime"/>
-        <delete verbose="on" failonerror="false" dir="${tomcat.home}/webapps/moqui"/>
-        <delete verbose="on" failonerror="false" file="${tomcat.home}/webapps/moqui.war"/>
-        <delete verbose="on" failonerror="false">
-            <fileset dir="${tomcat.home}/logs" includes="*"/>
-        </delete>
-        <copy file="moqui-${version}.war" tofile="${tomcat.home}/webapps/moqui.war"/>
     </target>
 
     <target name="run" depends="war" description="Run Moqui Web server with Embedded Winstone (run the executable war file)">

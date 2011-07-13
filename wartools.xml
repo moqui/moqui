@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+
+<project name="Moqui Main Build" default="build" basedir=".">
+    <property environment="env"/>
+    <property name="version" value="1.0-beta3"/>
+    <property name="tomcat.home" value="../apache-tomcat-7.0.6"/>
+
+    <target name="add-runtime">
+        <!-- unzip the "moqui-${version}.war" file to the wartemp directory -->
+        <mkdir dir="wartemp"/>
+        <unzip src="moqui-${version}.war" dest="wartemp"/>
+
+        <copy todir="wartemp"><fileset dir="." includes="runtime/**" excludes="**/*.jar"/></copy>
+        <copy todir="wartemp/WEB-INF/lib"><fileset dir="runtime/lib" includes="*.jar"/></copy>
+        <copy file="MoquiInit.properties" todir="wartemp/WEB-INF/classes"/>
+
+        <!-- zip it up again as moqui-with-runtime-${version}.war -->
+        <zip destfile="moqui-with-runtime-${version}.war" basedir="wartemp"/>
+
+        <delete verbose="off" failonerror="false" dir="wartemp"/>
+    </target>
+
+    <target name="deploy-tomcat">
+        <delete verbose="on" failonerror="false" dir="${tomcat.home}/runtime"/>
+        <delete verbose="on" failonerror="false" dir="${tomcat.home}/webapps/ROOT"/>
+        <delete verbose="on" failonerror="false" file="${tomcat.home}/webapps/ROOT.war"/>
+        <delete verbose="on" failonerror="false">
+            <fileset dir="${tomcat.home}/logs" includes="*"/>
+        </delete>
+        <copy file="moqui-${version}.war" tofile="${tomcat.home}/webapps/ROOT.war"/>
+    </target>
+
+    <target name="run" description="Run Moqui Web server with Embedded Winstone (run the executable war file)">
+        <java jar="moqui-${version}.war" fork="true">
+            <jvmarg value="-server"/>
+            <jvmarg value="-Xmx256M"/>
+            <jvmarg value="-XX:MaxPermSize=64m"/>
+        </java>
+    </target>
+    <target name="load" description="Run Moqui data loader (run the executable war file with -load)">
+        <java jar="moqui-${version}.war" fork="true">
+            <jvmarg value="-server"/>
+            <jvmarg value="-Xmx256M"/>
+            <arg value="-load"/>
+        </java>
+    </target>
+</project>
