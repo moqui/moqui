@@ -192,7 +192,7 @@ public class StupidClassLoader extends ClassLoader {
                     System.out.println("Could not get bytes for [" + jarEntry.getName() + "] in [" + jarFile.getName() + "]");
                     continue;
                 }
-                System.out.println("Class [" + classFileName + "] FOUND in jarFile [" + jarFile.getName() + "], size is " + jeBytes.length);
+                // System.out.println("Class [" + classFileName + "] FOUND in jarFile [" + jarFile.getName() + "], size is " + jeBytes.length);
                 c = defineClass(className, jeBytes, 0, jeBytes.length, pd);
                 break;
             }
