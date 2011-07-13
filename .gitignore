@@ -2,6 +2,7 @@
 moqui.iml
 framework/build/
 moqui-1.0-beta3.war
+moqui-with-runtime-1.0-beta3.war
 runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
 runtime/db/derby/derby.log
