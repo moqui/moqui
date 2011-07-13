@@ -215,7 +215,7 @@ class EntityQueryBuilder {
                     value = rs.getString(index)
                 }
                 break
-            case 2: value = rs.getTimestamp(index); break
+            case 2: try { value = rs.getTimestamp(index) } catch (SQLException e) { /* leave value null; found this in MySQL with a date/time value of "0000-00-00 00:00:00" */ }; break
             case 3: value = rs.getTime(index); break
             case 4: value = rs.getDate(index); break
             case 5: int intValue = rs.getInt(index); if (!rs.wasNull()) value = intValue; break
