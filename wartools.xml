@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <copy todir="wartemp"><fileset dir="." includes="runtime/**" excludes="**/*.jar"/></copy>
         <copy todir="wartemp/WEB-INF/lib"><fileset dir="runtime/lib" includes="*.jar"/></copy>
-        <copy file="MoquiInit.properties" todir="wartemp/WEB-INF/classes"/>
+        <copy file="MoquiInit.properties" todir="wartemp/WEB-INF/classes" overwrite="true"/>
 
         <!-- zip it up again as moqui-with-runtime-${version}.war -->
         <zip destfile="moqui-with-runtime-${version}.war" basedir="wartemp"/>
@@ -41,7 +41,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <copy file="moqui-${version}.war" tofile="${tomcat.home}/webapps/ROOT.war"/>
     </target>
 
-    <target name="run" description="Run Moqui Web server with Embedded Winstone (run the executable war file)">
+    <target name="run" description="Run Moqui Web server in production mode">
+        <java jar="moqui-${version}.war" fork="true">
+            <jvmarg value="-server"/>
+            <jvmarg value="-Xms1024M"/>
+            <jvmarg value="-Xmx1024M"/>
+            <jvmarg value="-XX:MaxPermSize=64m"/>
+            <jvmarg value="-Dmoqui.conf=conf/production/MoquiProductionConf.xml"/>
+        </java>
+    </target>
+    <target name="run-dev" description="Run Moqui Web server in dev/default mode with Embedded Winstone (run the executable war file)">
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
             <jvmarg value="-Xmx256M"/>

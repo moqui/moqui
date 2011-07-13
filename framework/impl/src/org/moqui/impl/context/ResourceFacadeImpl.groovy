@@ -170,6 +170,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     /** @see org.moqui.context.ResourceFacade#getLocationReference(String) */
     ResourceReference getLocationReference(String location) {
+        if (location == null) return null
         String scheme = "file"
         // how to get the scheme for windows? the Java URI class doesn't like spaces, the if we look for the first ":"
         //    it may be a drive letter instead of a scheme/protocol

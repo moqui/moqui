@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse
 import org.apache.commons.codec.net.URLCodec
 import org.apache.commons.collections.map.ListOrderedMap
 
+import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ScreenRender
 import org.moqui.context.TemplateRenderer
@@ -83,8 +84,9 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenRender rootScreenFromHost(String host) {
         for (Node rootScreenNode in getWebappNode()."root-screen") {
-            if (host.matches(rootScreenNode."@host")) return this.rootScreen(rootScreenNode."@location")
+            if (host.matches((String) rootScreenNode."@host")) return this.rootScreen(rootScreenNode."@location")
         }
+        throw new BaseException("Could not find root screen for host [${host}]")
     }
 
     @Override
@@ -140,7 +142,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected void internalRender() {
         rootScreenDef = sfi.getScreenDefinition(rootScreenLocation)
-        if (!rootScreenDef) throw new IllegalArgumentException("Could not find screen at location [${rootScreenLocation}]")
+        if (!rootScreenDef) throw new BaseException("Could not find screen at location [${rootScreenLocation}]")
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 

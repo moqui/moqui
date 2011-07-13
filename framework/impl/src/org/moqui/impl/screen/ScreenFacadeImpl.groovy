@@ -38,6 +38,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
     ScreenDefinition getScreenDefinition(String location) {
+        if (!location) return null
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)
         if (sd) return sd
 
