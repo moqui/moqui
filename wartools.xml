@@ -21,7 +21,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <mkdir dir="wartemp"/>
         <unzip src="moqui-${version}.war" dest="wartemp"/>
 
-        <copy todir="wartemp"><fileset dir="." includes="runtime/**" excludes="**/*.jar"/></copy>
+        <copy todir="wartemp">
+            <fileset dir="." includes="runtime/**" excludes="**/*.jar,runtime/db/**,runtime/log/**"/>
+        </copy>
         <copy todir="wartemp/WEB-INF/lib"><fileset dir="runtime/lib" includes="*.jar"/></copy>
         <copy file="MoquiInit.properties" todir="wartemp/WEB-INF/classes" overwrite="true"/>
 
