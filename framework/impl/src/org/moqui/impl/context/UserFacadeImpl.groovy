@@ -66,9 +66,15 @@ class UserFacadeImpl implements UserFacade {
                     }
                 }
                 if (!cookieVisitorId) {
-                    Map cvResult = eci.service.sync().name("create", "Visitor").parameter("createdDate", getNowTimestamp()).call()
-                    cookieVisitorId = cvResult.visitorId
-                    logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
+                    // NOTE: disable authz for this call, don't normally want to allow create of Visitor, but this is a special case
+                    boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+                    try {
+                        Map cvResult = eci.service.sync().name("create", "Visitor").parameter("createdDate", getNowTimestamp()).call()
+                        cookieVisitorId = cvResult.visitorId
+                        logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
+                    } finally {
+                        if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+                    }
                 }
                 // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
                 Cookie visitorCookie = new Cookie("moqui.visitor", cookieVisitorId)
