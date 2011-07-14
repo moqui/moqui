@@ -275,18 +275,13 @@
         <dictionary-type type="binary-very-long" java-type="java.sql.Blob" default-sql-type="BLOB"/>
 
         <database name="derby"
-                  use-pk-constraint-names="false"
-                  use-indexes-unique="false"
-                  default-isolation-level="ReadCommitted"
+                  use-pk-constraint-names="false" use-indexes-unique="false" default-isolation-level="ReadCommitted"
                   default-jdbc-driver="org.apache.derby.jdbc.EmbeddedDriver"
                   default-xa-ds-class="org.apache.derby.jdbc.EmbeddedXADataSource">
             <!-- default-test-query="???" maybe like SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0 -->
         </database>
-        <database name="hsql"
-                  use-fk-initially-deferred="false"
-                  join-style="ansi-no-parenthesis"
-                  default-isolation-level="ReadUncommitted"
-                  default-jdbc-driver="org.hsqldb.jdbcDriver"
+        <database name="hsql" use-fk-initially-deferred="false" join-style="ansi-no-parenthesis"
+                  default-isolation-level="ReadUncommitted" default-jdbc-driver="org.hsqldb.jdbcDriver"
                   default-test-query="SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0">
             <database-type type="id" sql-type="VARCHAR"/>
             <database-type type="id-long" sql-type="VARCHAR"/>
@@ -307,13 +302,9 @@
 
             <database-type type="binary-very-long" sql-type="OBJECT" sql-type-alias="OTHER"/>
         </database>
-        <database name="mysql"
-                  join-style="ansi-no-parenthesis"
-                  table-engine="InnoDB"
-                  character-set="utf8"
-                  collate="utf8_general_ci"
-                  default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="com.mysql.jdbc.Driver"
+        <database name="mysql" join-style="ansi-no-parenthesis" offset-style="limit"
+                  table-engine="InnoDB" character-set="utf8" collate="utf8_general_ci"
+                  default-isolation-level="ReadCommitted" default-jdbc-driver="com.mysql.jdbc.Driver"
                   default-test-query="SELECT 1">
             <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
             <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
@@ -326,12 +317,9 @@
 
             <database-type type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
-        <database name="oracle"
-                  join-style="ansi"
-                  default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
-                  default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource"
-                  default-test-query="SELECT 1 FROM DUAL">
+        <database name="oracle" join-style="ansi" default-isolation-level="ReadCommitted"
+                  default-test-query="SELECT 1 FROM DUAL" default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
+                  default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource">
             <database-type type="id" sql-type="VARCHAR2(20)"/>
             <database-type type="id-long" sql-type="VARCHAR2(60)"/>
             <database-type type="id-very-long" sql-type="VARCHAR2(255)"/>
@@ -347,14 +335,9 @@
             <database-type type="text-medium" sql-type="VARCHAR2(100)"/>
             <database-type type="text-long" sql-type="VARCHAR2(255)"/>
         </database>
-        <database name="postgres"
-                  use-fk-initially-deferred="false"
-                  join-style="ansi"
-                  result-fetch-size="50"
-                  default-isolation-level="ReadCommitted"
-                  default-jdbc-driver="org.postgresql.Driver"
-                  default-xa-ds-class="org.postgresql.xa.PGXADataSource"
-                  default-test-query="SELECT 1">
+        <database name="postgres" use-fk-initially-deferred="false" join-style="ansi" result-fetch-size="50"
+                  default-isolation-level="ReadCommitted" default-test-query="SELECT 1"
+                  default-jdbc-driver="org.postgresql.Driver" default-xa-ds-class="org.postgresql.xa.PGXADataSource">
             <database-type type="id" sql-type="TEXT"/>
             <database-type type="id-long" sql-type="TEXT"/>
             <database-type type="id-very-long" sql-type="TEXT"/>
