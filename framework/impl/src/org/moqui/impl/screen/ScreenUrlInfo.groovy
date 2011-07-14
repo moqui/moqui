@@ -285,9 +285,16 @@ class ScreenUrlInfo {
                 // handle case where last one may be a transition name, and not a subscreen name
                 targetTransition = lastSd.getTransitionItem(subscreenName, ec.web ? ec.web.request.method : "")
                 if (targetTransition) {
-                    this.targetTransitionActualName = subscreenName
+                    targetTransitionActualName = subscreenName
                     break
                 } else {
+                    // is this a file under the screen?
+                    ResourceReference existingFileRef = lastSd.getSubContentRef([subscreenName])
+                    if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
+                        fileResourceRef = existingFileRef
+                        break
+                    }
+
                     throw new IllegalArgumentException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
                 }
             }
