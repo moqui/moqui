@@ -42,6 +42,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected final static URLCodec urlCodec = new URLCodec()
 
     protected final ScreenFacadeImpl sfi
+    protected boolean rendering = false
 
     protected String rootScreenLocation = null
     protected ScreenDefinition rootScreenDef = null
@@ -66,14 +67,21 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected HttpServletRequest request = null
     protected HttpServletResponse response = null
-    protected Writer writer = null
+    protected Writer internalWriter = null
     protected Writer afterFormWriter = null
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
     }
 
-    Writer getWriter() { return this.writer }
+    Writer getWriter() {
+        if (internalWriter != null) return internalWriter
+        if (response != null) {
+            internalWriter = response.getWriter()
+            return internalWriter
+        }
+        throw new BaseException("Could not render screen, no writer available")
+    }
 
     ExecutionContext getEc() { return sfi.ecfi.getExecutionContext() }
     ScreenFacadeImpl getSfi() { return sfi }
@@ -114,10 +122,11 @@ class ScreenRenderImpl implements ScreenRender {
 
     @Override
     void render(HttpServletRequest request, HttpServletResponse response) {
-        if (this.writer) throw new IllegalStateException("This screen render has already been used")
-        this.writer = response.getWriter()
+        if (rendering) throw new IllegalStateException("This screen render has already been used")
+        rendering = true
         this.request = request
         this.response = response
+        // NOTE: don't get the writer at this point, we don't yet know if we're writing text or binary
         if (!webappName) webappName(request.session.servletContext.getInitParameter("moqui-name"))
         if (webappName && !rootScreenLocation) rootScreenFromHost(request.getServerName())
         if (!originalScreenPathNameList) screenPath(request.getPathInfo().split("/") as List)
@@ -127,17 +136,19 @@ class ScreenRenderImpl implements ScreenRender {
 
     @Override
     void render(Writer writer) {
-        if (this.writer) throw new IllegalStateException("This screen render has already been used")
-        this.writer = writer
+        if (rendering) throw new IllegalStateException("This screen render has already been used")
+        rendering = true
+        internalWriter = writer
         internalRender()
     }
 
     @Override
     String render() {
-        if (this.writer) throw new IllegalStateException("This screen render has already been used")
-        this.writer = new StringWriter()
+        if (rendering) throw new IllegalStateException("This screen render has already been used")
+        rendering = true
+        internalWriter = new StringWriter()
         internalRender()
-        return this.writer.toString()
+        return internalWriter.toString()
     }
 
     protected void internalRender() {
