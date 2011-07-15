@@ -57,19 +57,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </classpath>
         </javac>
 
-        <!-- make the API lib -->
-        <echo message="===== Making api jar"/>
-        <jar jarfile="build/lib/moqui-api-${version}.jar">
-            <fileset dir="build/classes/api"/>
-            <!-- include XSDs, default-conf, etc in the API file for runtime reference -->
-            <fileset dir="api">
-                <include name="data/**"/>
-                <include name="entity/**"/>
-                <include name="service/**"/>
-                <include name="xsd/**"/>
-            </fileset>
-        </jar>
-
         <!-- make the framework impl classes -->
         <echo message="===== Building impl classes"/>
         <javac srcdir="impl/src/main/java" destdir="build/classes/impl" includeantruntime="false"
@@ -78,7 +65,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <classpath>
                 <fileset dir="api/lib" includes="*.jar"/>
                 <fileset dir="impl/lib" includes="*.jar"/>
-                <fileset dir="build/lib" includes="*.jar"/>
+                <pathelement location="build/classes/api"/>
             </classpath>
         </javac>
         <groovyc srcdir="impl/src/main/groovy" destdir="build/classes/impl">
@@ -87,14 +74,25 @@ This Work includes contributions authored by David E. Jones, not as a
                 <fileset dir="api/lib" includes="*.jar"/>
                 <fileset dir="impl/lib" includes="*.jar"/>
                 <fileset dir="impl/lib/fop" includes="*.jar"/>
-                <fileset dir="build/lib" includes="*.jar"/>
+                <pathelement location="build/classes/api"/>
                 <pathelement location="build/classes/impl"/>
             </classpath>
         </groovyc>
 
-        <!-- make the framework impl lib -->
-        <echo message="===== Making impl jar"/>
-        <jar jarfile="build/lib/moqui-impl-${version}.jar">
+        <!-- make the framework lib (combined api and impl) -->
+        <echo message="===== Making framework jar"/>
+        <jar jarfile="build/lib/moqui-framework-${version}.jar">
+            <!-- api resources -->
+            <fileset dir="build/classes/api"/>
+            <fileset dir="api">
+                <!-- include XSDs, default-conf, etc in the API file for runtime reference -->
+                <include name="data/**"/>
+                <include name="entity/**"/>
+                <include name="service/**"/>
+                <include name="xsd/**"/>
+            </fileset>
+
+            <!-- impl resources -->
             <fileset dir="build/classes/impl"/>
             <fileset dir="impl/src/main/resources">
                 <include name="**/*"/>
