@@ -27,6 +27,7 @@ import org.quartz.Scheduler
 import org.quartz.impl.StdSchedulerFactory
 import javax.mail.internet.MimeMessage
 import org.moqui.context.ExecutionContext
+import org.moqui.BaseException
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -81,28 +82,31 @@ class ServiceFacadeImpl implements ServiceFacade {
         String verb = ServiceDefinition.getVerbFromName(serviceName)
         String noun = ServiceDefinition.getNounFromName(serviceName)
 
-        ServiceDefinition sd = (ServiceDefinition) serviceLocationCache.get(makeCacheKey(path, verb, noun))
-        if (sd) return sd
+        String cacheKey = makeCacheKey(path, verb, noun)
+        if (serviceLocationCache.containsKey(cacheKey)) {
+            // NOTE: this could be null if it's a known non-existing service
+            return (ServiceDefinition) serviceLocationCache.get(cacheKey)
+        }
 
         return makeServiceDefinition(path, verb, noun)
     }
 
     protected ServiceDefinition makeServiceDefinition(String path, String verb, String noun) {
         String cacheKey = makeCacheKey(path, verb, noun)
-        ServiceDefinition sd = null
         if (serviceLocationCache.containsKey(cacheKey)) {
-            sd = (ServiceDefinition) serviceLocationCache.get(cacheKey)
             // NOTE: this could be null if it's a known non-existing service
-            return sd
+            return (ServiceDefinition) serviceLocationCache.get(cacheKey)
         }
 
         Node serviceNode = findServiceNode(path, verb, noun)
-        // NOTE: don't throw an exception for service not found (this is where we know there is no def), let service caller handle that
-        // use this to remember the non-existing service
-        serviceLocationCache.put(cacheKey, null)
-        if (serviceNode == null) return null
+        if (serviceNode == null) {
+            // NOTE: don't throw an exception for service not found (this is where we know there is no def), let service caller handle that
+            // Put null in the cache to remember the non-existing service
+            serviceLocationCache.put(cacheKey, null)
+            return null
+        }
 
-        sd = new ServiceDefinition(this, path, serviceNode)
+        ServiceDefinition sd = new ServiceDefinition(this, path, serviceNode)
         serviceLocationCache.put(cacheKey, sd)
         return sd
     }
@@ -114,6 +118,8 @@ class ServiceFacadeImpl implements ServiceFacade {
     }
 
     protected Node findServiceNode(String path, String verb, String noun) {
+        if (!path) return null
+
         // make a file location from the path
         String partialLocation = path.replace('.', '/') + ".xml"
         String servicePathLocation = "service/" + partialLocation
@@ -164,11 +170,14 @@ class ServiceFacadeImpl implements ServiceFacade {
             }
         } catch (IOException e) {
             // probably because there is no resource at that location, so do nothing
-            logger.trace("Error finding service in URL ${serviceComponentRr.location}", e)
+            logger.trace("Error finding service in URL [${serviceComponentRr.location}]", e)
             return null
+        } catch (Exception e) {
+            throw new BaseException("Error finding service in [${serviceComponentRr.location}]", e)
         } finally {
             if (serviceFileIs != null) serviceFileIs.close()
         }
+
         return serviceNode
     }
 
