@@ -85,7 +85,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <classes file="MoquiInit.properties"/>
 
             <!-- copy the start files, setup the manifest for war acting like executable jar -->
-            <fileset dir="framework/build/start/classes"/>
+            <fileset dir="framework/build/classes/start"/>
             <file file="framework/api/lib/winstone-0.9.10.jar"/>
             <manifest>
                 <attribute name="Manifest-Version" value="1.0"/>
