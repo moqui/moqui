@@ -17,19 +17,7 @@ import javax.jcr.Repository
 import javax.jcr.Session
 import javax.naming.InitialContext
 
-import javax.xml.transform.stream.StreamSource
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.Transformer
-import javax.xml.transform.URIResolver
-import javax.xml.transform.sax.SAXResult
-import javax.xml.transform.Source
-
-import org.apache.avalon.framework.configuration.DefaultConfigurationBuilder
 import org.apache.commons.mail.ByteArrayDataSource
-import org.apache.fop.apps.FOUserAgent
-import org.apache.fop.apps.Fop
-import org.apache.fop.apps.FopFactory
-
 import org.apache.jackrabbit.commons.JcrUtils
 
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -40,7 +28,6 @@ import org.moqui.context.TemplateRenderer
 import org.moqui.context.ResourceFacade
 import org.moqui.context.ResourceReference
 import org.moqui.context.ScriptRunner
-import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.context.runner.XmlActionsScriptRunner
@@ -66,8 +53,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Map<String, String> contentRepositoryWorkspaces = new HashMap()
 
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
-
-    protected final FopFactory fopFactory
 
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -118,14 +103,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 logger.error("Error getting JCR content repository with name [${repositoryNode."@name"}], is of type [${repositoryNode."@type"}] at location [${repositoryNode."@location"}]: ${e.toString()}")
             }
         }
-
-        // setup FopFactory
-        fopFactory = FopFactory.newInstance()
-        // Limit the validation for backwards compatibility
-        fopFactory.setStrictValidation(false)
-        DefaultConfigurationBuilder cfgBuilder = new DefaultConfigurationBuilder()
-        fopFactory.setUserConfig(cfgBuilder.build(getLocationStream("classpath://fop.xconf")))
-        fopFactory.getFontManager().setFontBaseURL(ecfi.runtimePath + "/conf")
     }
 
     void destroyAllInThread() {
@@ -354,33 +331,5 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (contentType == "application/xml") return false
         if (contentType == "application/xml-dtd") return false
         return true
-    }
-
-    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType) {
-        FOUserAgent foUserAgent = fopFactory.newFOUserAgent()
-        Fop fop = fopFactory.newFop(contentType, foUserAgent, out)
-
-        TransformerFactory factory = TransformerFactory.newInstance()
-        Transformer transformer = xsltSrc == null ? factory.newTransformer() : factory.newTransformer(xsltSrc)
-        transformer.setURIResolver(new LocalResolver(ecfi, transformer.getURIResolver()))
-        transformer.transform(xslFoSrc, new SAXResult(fop.getDefaultHandler()))
-    }
-
-    static class LocalResolver implements URIResolver {
-        protected ExecutionContextFactoryImpl ecfi
-        protected URIResolver defaultResolver
-
-        protected LocalResolver() {}
-
-        public LocalResolver(ExecutionContextFactoryImpl ecfi, URIResolver defaultResolver) {
-            this.ecfi = ecfi
-            this.defaultResolver = defaultResolver
-        }
-
-        public Source resolve(String href, String base) {
-            InputStream is = ecfi.resourceFacade.getLocationStream(href)
-            if (is != null) return new StreamSource(is)
-            return defaultResolver.resolve(href, base)
-        }
     }
 }

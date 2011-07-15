@@ -99,9 +99,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <fileset dir="impl/src/main/resources">
                 <include name="**/*"/>
             </fileset>
-            <fileset dir="impl/conf-default">
-                <include name="*"/>
-            </fileset>
             <fileset dir="impl">
                 <include name="data/**"/>
                 <include name="screen/**"/>

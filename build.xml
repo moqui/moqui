@@ -53,7 +53,6 @@ This Work includes contributions authored by David E. Jones, not as a
         </subant>
         <delete verbose="on">
             <fileset file="moqui-${version}.war"/>
-            <fileset file="moqui-with-runtime-${version}.war"/>
         </delete>
     </target>
 
@@ -78,8 +77,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <lib dir="framework/api/lib">
                 <exclude name="winstone-0.9.10.jar"/>
             </lib>
-            <lib dir="framework/impl/lib"/>
-            <!-- NOTE: comment out the following line to save the space (nearly 4MB) for the FOP libraries -->
+            <lib dir="framework/impl/lib" excludes="fop/*"/>
+            <!-- NOTE: comment out the following line to save the space (nearly 4MB), ie to remove FOP libraries -->
             <lib dir="framework/impl/lib/fop"/>
             <lib dir="framework/build/lib"/>
             <classes file="MoquiInit.properties"/>
@@ -95,32 +94,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </manifest>
         </war>
     </target>
-    <target name="war-runtime" depends="build">
-        <war destfile="moqui-with-runtime-${version}.war" webxml="framework/webapp/WEB-INF/web.xml">
-            <!-- no html/etc webapp files for now: <fileset dir="html"/> -->
-            <lib dir="framework/api/lib">
-                <exclude name="winstone-0.9.10.jar"/>
-            </lib>
-            <lib dir="framework/impl/lib"/>
-            <lib dir="framework/build/lib"/>
-            <lib dir="runtime/lib"/>
-            <classes file="MoquiInit.properties"/>
 
-            <!-- copy the start files, setup the manifest for war acting like executable jar -->
-            <fileset dir="framework/build/start/classes"/>
-            <file file="framework/api/lib/winstone-0.9.10.jar"/>
-            <!-- for this variation of the war file, also copy in the runtime directory -->
-            <fileset dir="." includes="runtime/"/>
-
-            <manifest>
-                <attribute name="Manifest-Version" value="1.0"/>
-                <attribute name="Implementation-Title" value="Moqui Start"/>
-                <attribute name="Implementation-Vendor" value="Moqui Framework"/>
-                <attribute name="Main-Class" value="MoquiStart"/>
-            </manifest>
-        </war>
-    </target>
-
+    <!-- ========== run targets ========== -->
     <target name="run" depends="war" description="Run Moqui Web server with Embedded Winstone (run the executable war file)">
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>

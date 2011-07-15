@@ -66,6 +66,4 @@ public interface ResourceFacade {
      * @return String representing localized and expanded inputString
      */
     String evaluateStringExpand(String inputString, String debugLocation);
-
-    void xslFoTransform(StreamSource xslFoSrc, StreamSource xsltSrc, OutputStream out, String contentType);
 }

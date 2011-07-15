@@ -28,6 +28,7 @@
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
+    <!-- NOTE: comment this out if you remove FOP -->
     <servlet>
         <servlet-name>MoquiFopServlet</servlet-name>
         <display-name>MoquiFopServlet</display-name>
@@ -40,33 +41,5 @@
         <url-pattern>/fop/*</url-pattern>
     </servlet-mapping>
 
-    <session-config>
-        <!-- default to 30 minutes, good for PCI compliance and general good practice -->
-        <session-timeout>30</session-timeout>
-    </session-config>
-
-<!-- HTTP Response Code definitions:
-| "400"   ; Bad Request
-| "401"   ; Unauthorized
-| "402"   ; Payment Required
-| "403"   ; Forbidden
-| "404"   ; Not Found
-| "405"   ; Method Not Allowed
-| "406"   ; Not Acceptable
-| "407"   ; Proxy Authentication Required
-| "408"   ; Request Time-out
-| "409"   ; Conflict
-| "410"   ; Gone
-| "411"   ; Length Required
-| "412"   ; Precondition Failed
-| "413"   ; Request Entity Too Large
-| "414"   ; Request-URI Too Large
-| "415"   ; Unsupported Media Type
-| "500"   ; Internal Server Error
-| "501"   ; Not Implemented
-| "502"   ; Bad Gateway
-| "503"   ; Service Unavailable
-| "504"   ; Gateway Time-out
-| "505"   ; HTTP Version not supported
--->
+    <session-config><session-timeout>15</session-timeout></session-config>
 </web-app>
