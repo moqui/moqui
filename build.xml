@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========== war targets ========== -->
     <target name="war" depends="build">
-        <war destfile="moqui-${version}.war" webxml="framework/webapp/WEB-INF/web.xml">
+        <war destfile="moqui-${version}.war" webxml="framework/impl/src/main/webapp/WEB-INF/web.xml">
             <!-- no html/etc webapp files for now: <fileset dir="html"/> -->
             <lib dir="framework/api/lib">
                 <exclude name="winstone-0.9.10.jar"/>
