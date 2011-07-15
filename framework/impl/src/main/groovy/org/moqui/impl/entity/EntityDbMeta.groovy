@@ -51,6 +51,9 @@ class EntityDbMeta {
         }
     }
     synchronized void internalCheckTable(EntityDefinition ed) {
+        // if it's in this table we've already checked it
+        if (entityTablesChecked.containsKey(ed.entityName)) return
+
         Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
 
         long startTime = System.currentTimeMillis()
