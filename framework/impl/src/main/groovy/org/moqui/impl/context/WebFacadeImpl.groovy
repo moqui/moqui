@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import groovy.json.JsonBuilder
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
@@ -22,17 +24,12 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload
 import org.apache.commons.fileupload.FileItemFactory
 import org.apache.commons.fileupload.FileItem
 import org.apache.commons.io.FileCleaningTracker
+
 import org.moqui.context.WebFacade
 import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
-import org.moqui.impl.service.ServiceDefinition
-import org.moqui.impl.StupidWebUtilities
-
-import org.json.simple.JSONValue
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
-import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
-import redstone.xmlrpc.XmlRpcServer
 import org.moqui.impl.service.ServiceXmlRpcDispatcher
+import org.moqui.impl.StupidWebUtilities
+import org.moqui.impl.service.ServiceJsonRpcDispatcher
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -214,16 +211,9 @@ class WebFacadeImpl implements WebFacade {
 
     /** @see org.moqui.context.WebFacade#sendJsonResponse(Object) */
     void sendJsonResponse(Object responseObj) {
-        String jsonStr = null
-        if (responseObj instanceof Collection || responseObj instanceof Map || responseObj instanceof Number || responseObj instanceof Boolean) {
-            // TODO: it may be necessary to handle non-String/Number/Boolean types that might be in the Map or Collection
-            jsonStr = JSONValue.toJSONString(responseObj)
-        } else if (responseObj instanceof Object[]) {
-            // put in a List and treat the same
-            jsonStr = JSONValue.toJSONString(Arrays.asList(responseObj))
-        } else {
-            throw new IllegalArgumentException("Cannot JSON serialize object of type [${responseObj.class.name}]")
-        }
+        JsonBuilder jb = new JsonBuilder()
+        jb.call(responseObj)
+        String jsonStr = jb.toString()
 
         if (!jsonStr) return
 
@@ -236,70 +226,19 @@ class WebFacadeImpl implements WebFacade {
         if (logger.infoEnabled) logger.info("Sending JSON response of length [${length}] with [${charset}] encoding")
 
         try {
-            Writer out = response.getWriter()
-            out.write(jsonStr)
-            out.flush()
+            response.writer.write(jsonStr)
+            response.writer.flush()
         } catch (IOException e) {
-            logger.error("Error sending JSON string response")
+            logger.error("Error sending JSON string response", e)
         }
     }
 
     void handleXmlRpcServiceCall() {
-        ServiceXmlRpcDispatcher dispatcher = new ServiceXmlRpcDispatcher(eci)
-        dispatcher.dispatch(request.getInputStream(), response.writer)
+        new ServiceXmlRpcDispatcher(eci).dispatch(request.getInputStream(), response.writer)
     }
 
     void handleJsonRpcServiceCall() {
-        InputStream is = request.getInputStream()
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, (String) request.getCharacterEncoding() ?: "UTF-8"))
-        StringBuilder jsonBuilder = new StringBuilder()
-        String currentLine = null
-        while ((currentLine = br.readLine()) != null) jsonBuilder.append(currentLine).append('\n');
-
-        JSONRPC2Request jrr = JSONRPC2Request.parse(jsonBuilder.toString())
-        String method = jrr.getMethod()
-
-        ServiceDefinition sd = eci.service.getServiceDefinition(method)
-        if (sd == null)
-            throw new IllegalArgumentException("Received JSON-RPC service call for unknown service [${method}]")
-        if (sd.serviceNode."@allow-remote" != "true")
-            throw new IllegalArgumentException("Received JSON-RPC service call to service [${sd.serviceName}] that does not allow remote calls.")
-
-        // We expect named parameters (JSON object)
-        JSONRPC2ParamsType paramsType = jrr.getParamsType();
-        if (paramsType != JSONRPC2ParamsType.OBJECT) {
-            throw new IllegalArgumentException("Received JSON-RPC service call with parameters of type [${paramsType.toString()}], we need an OBJECT (Map) type")
-        }
-
-        Map params = (Map) jrr.getParams();
-        // probably don't need this: NamedParamsRetriever np = new NamedParamsRetriever(params);
-
-        Map result = eci.service.sync().name(sd.serviceName).parameters(params).call()
-        String jsonStr = null
-        if (eci.message.errors) {
-            logger.warn("Got errors in JSON-RPC call to service [${sd.serviceName}]: ${eci.message.errors}")
-            JSONRPC2Response respOut = new JSONRPC2Response(eci.message.errors, jrr.getID())
-            jsonStr = respOut.toString()
-        } else {
-            JSONRPC2Response respOut = new JSONRPC2Response(result, jrr.getID())
-            jsonStr = respOut.toString()
-        }
-
-        response.setContentType("application/x-json")
-        // NOTE: String.length not correct for byte length
-        String charset = response.getCharacterEncoding() ?: "UTF-8"
-        int length = jsonStr.getBytes(charset).length
-        response.setContentLength(length)
-
-        if (logger.infoEnabled) logger.info("Sending JSON-RPC response of length [${length}] with [${charset}] encoding")
-
-        try {
-            Writer out = response.getWriter()
-            out.write(jsonStr)
-            out.flush()
-        } catch (IOException e) {
-            logger.error("Error sending JSON-RPC string response")
-        }
+        new ServiceJsonRpcDispatcher(eci).dispatch(request.inputStream, response)
     }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
