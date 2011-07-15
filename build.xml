@@ -79,6 +79,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <exclude name="winstone-0.9.10.jar"/>
             </lib>
             <lib dir="framework/impl/lib"/>
+            <!-- NOTE: comment out the following line to save the space (nearly 4MB) for the FOP libraries -->
+            <lib dir="framework/impl/lib/fop"/>
             <lib dir="framework/build/lib"/>
             <classes file="MoquiInit.properties"/>
 
