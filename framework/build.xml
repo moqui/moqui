@@ -42,14 +42,14 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the API classes -->
         <echo message="===== Building start classes"/>
-        <javac destdir="build/start/classes" srcdir="start/src" includeantruntime="false"
+        <javac srcdir="start/src/main/java" destdir="build/start/classes" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
         </javac>
 
         <!-- make the API classes -->
         <echo message="===== Building api classes"/>
-        <javac srcdir="api/src" destdir="build/api/classes" includeantruntime="false"
+        <javac srcdir="api/src/main/java" destdir="build/api/classes" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
             <classpath>
@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- make the framework impl classes -->
         <echo message="===== Building impl classes"/>
-        <javac srcdir="impl/src" destdir="build/impl/classes" includeantruntime="false"
+        <javac srcdir="impl/src/main/java" destdir="build/impl/classes" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
             <classpath>
@@ -81,7 +81,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <fileset dir="build/lib" includes="*.jar"/>
             </classpath>
         </javac>
-        <groovyc srcdir="impl/src" destdir="build/impl/classes">
+        <groovyc srcdir="impl/src/main/groovy" destdir="build/impl/classes">
             <include name="**/*.groovy"/>
             <classpath>
                 <fileset dir="api/lib" includes="*.jar"/>
@@ -95,7 +95,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <echo message="===== Making impl jar"/>
         <jar jarfile="build/lib/moqui-impl-${version}.jar">
             <fileset dir="build/impl/classes"/>
-            <fileset dir="impl/src">
+            <fileset dir="impl/src/main/java">
                 <include name="META-INF/**"/>
             </fileset>
             <fileset dir="impl/conf-default">
