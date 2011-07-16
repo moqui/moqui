@@ -424,7 +424,6 @@ Tools probable for 1.0 final:
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-    ** Fix bug with tabs showing only relationship title and not entity name
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
@@ -432,6 +431,9 @@ Tools probable for 1.0 final:
       use LiquiBase for this
   - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
+  - Service
+    - Select and run service from service-based form
+    - Configure and run preconfigured chain of services (dynamic wizard)
   - Artifact Info screens (with in/out references for all)
 
 ===========================================================================

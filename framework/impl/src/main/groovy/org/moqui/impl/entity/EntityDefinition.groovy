@@ -217,13 +217,19 @@ public class EntityDefinition {
         Map<String, Map> relationshipInfos = new HashMap()
     }
 
-    String getPrettyName(String prefix, String baseName) {
-        String initial = prefix?:"" + entityName
+    String getPrettyName(String title, String baseName) {
         StringBuilder prettyName = new StringBuilder()
-        for (String part in initial.split("(?=[A-Z])")) {
+        for (String part in entityName.split("(?=[A-Z])")) {
             if (baseName && part == baseName) continue
             if (prettyName) prettyName.append(" ")
             prettyName.append(part)
+        }
+        if (title) {
+            boolean addParens = prettyName as boolean
+            if (addParens) prettyName.append(" (")
+            for (String part in title.split("(?=[A-Z])")) prettyName.append(part).append(" ")
+            prettyName.deleteCharAt(prettyName.length()-1)
+            if (addParens) prettyName.append(")")
         }
         return prettyName.toString()
     }
