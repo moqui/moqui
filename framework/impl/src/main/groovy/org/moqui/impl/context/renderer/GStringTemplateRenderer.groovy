@@ -33,7 +33,7 @@ class GStringTemplateRenderer implements TemplateRenderer {
     }
 
     void render(String location, Writer writer) {
-        groovy.text.Template theTemplate = ecfi.resourceFacade.getGStringTemplateByLocation(location)
+        groovy.text.Template theTemplate = getGStringTemplateByLocation(location)
         Writable writable = theTemplate.make(ecfi.executionContext.context)
         writable.writeTo(writer)
     }
@@ -46,14 +46,14 @@ class GStringTemplateRenderer implements TemplateRenderer {
 
     groovy.text.Template getGStringTemplateByLocation(String location) {
         groovy.text.Template theTemplate =
-                (groovy.text.Template) ecfi.resourceFacade.templateGStringLocationCache.get(location)
+                (groovy.text.Template) templateGStringLocationCache.get(location)
         if (!theTemplate) theTemplate = makeGStringTemplate(location)
         if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
         return theTemplate
     }
     protected groovy.text.Template makeGStringTemplate(String location) {
         groovy.text.Template theTemplate =
-                (groovy.text.Template) ecfi.resourceFacade.templateGStringLocationCache.get(location)
+                (groovy.text.Template) templateGStringLocationCache.get(location)
         if (theTemplate) return theTemplate
 
         groovy.text.Template newTemplate = null
@@ -68,7 +68,7 @@ class GStringTemplateRenderer implements TemplateRenderer {
             if (templateReader != null) templateReader.close()
         }
 
-        if (newTemplate) ecfi.resourceFacade.templateGStringLocationCache.put(location, newTemplate)
+        if (newTemplate) templateGStringLocationCache.put(location, newTemplate)
         return newTemplate
     }
 
