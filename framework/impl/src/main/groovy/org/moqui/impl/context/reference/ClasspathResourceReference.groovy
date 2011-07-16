@@ -16,11 +16,14 @@ import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.ResourceFacadeImpl
 
 class ClasspathResourceReference extends UrlResourceReference {
+
+    protected String strippedLocation
+
     ClasspathResourceReference() { super() }
 
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
-        String strippedLocation = ResourceFacadeImpl.stripLocationPrefix(location)
+        strippedLocation = ResourceFacadeImpl.stripLocationPrefix(location)
         // first try the ClassLoader that loaded this class
         locationUrl = this.getClass().getClassLoader().getResource(strippedLocation)
         // no luck? try the system ClassLoader

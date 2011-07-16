@@ -28,6 +28,7 @@ import org.quartz.impl.StdSchedulerFactory
 import javax.mail.internet.MimeMessage
 import org.moqui.context.ExecutionContext
 import org.moqui.BaseException
+import org.apache.commons.collections.set.ListOrderedSet
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -179,6 +180,41 @@ class ServiceFacadeImpl implements ServiceFacade {
         }
 
         return serviceNode
+    }
+
+    Set<String> getKnownServiceNames() {
+        Set<String> sns = new TreeSet()
+
+        // search for service def XML files in the components
+        for (String componentName in this.ecfi.getComponentBaseLocations().keySet()) {
+            String location = "component://${componentName}/service"
+            ResourceReference serviceRr = this.ecfi.resourceFacade.getLocationReference(location)
+            if (serviceRr.supportsExists() && serviceRr.exists && serviceRr.supportsDirectory()) {
+                findServicesInDir(serviceRr, sns)
+            }
+        }
+
+        // TODO: how to search for service def XML files in the classpath? perhaps keep a list of service files that
+        //     have been found on the classpath so we at least have those?
+
+        return sns
+    }
+
+    protected void findServicesInDir(ResourceReference dir, Set<String> sns) {
+        logger.warn("Finding services in [${dir.location}]")
+        for (ResourceReference entryRr in dir.directoryEntries) {
+            if (entryRr.directory) {
+                findServicesInDir(entryRr, sns)
+            } else if (entryRr.fileName.endsWith(".xml")) {
+                logger.warn("Finding services in [${entryRr.location}]")
+                Node serviceRoot = new XmlParser().parse(entryRr.openStream())
+                if (serviceRoot.name() != "services") continue
+                for (Node serviceNode in serviceRoot."service") {
+                    sns.add(entryRr.location.substring(0, entryRr.location.lastIndexOf(".")) + "." +
+                            serviceNode."@verb" + (serviceNode."@noun" ? "#" + serviceNode."@noun" : ""))
+                }
+            }
+        }
     }
 
     protected void loadSecaRulesAll() {

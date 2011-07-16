@@ -17,10 +17,16 @@ import org.moqui.impl.context.ResourceFacadeImpl
 
 class ComponentResourceReference extends WrapperResourceReference {
 
+    protected String componentLocation
+
     ComponentResourceReference() { super() }
 
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
+
+        if (location.endsWith("/")) location = location.substring(0, location.length()-1)
+        this.componentLocation = location
+
         String strippedLocation = ResourceFacadeImpl.stripLocationPrefix(location)
 
         // turn this into another URL using the component location
@@ -43,5 +49,22 @@ class ComponentResourceReference extends WrapperResourceReference {
         this.rr = ec.resource.getLocationReference(baseLocation.toString())
 
         return this
+    }
+
+    @Override
+    String getLocation() { return componentLocation?.toString() }
+
+    @Override
+    List<ResourceReference> getDirectoryEntries() {
+        // a little extra work to keep the directory entries as component-based locations
+        List<ResourceReference> nestedList = this.rr.getDirectoryEntries()
+        List<ResourceReference> newList = new ArrayList(nestedList.size())
+        for (ResourceReference entryRr in nestedList) {
+            String entryLoc = entryRr.location
+            if (entryLoc.endsWith("/")) entryLoc = entryLoc.substring(0, entryLoc.length()-1)
+            String newLocation = this.componentLocation + "/" + entryLoc.substring(entryLoc.lastIndexOf("/")+1)
+            newList.add(new ComponentResourceReference().init(newLocation, ec))
+        }
+        return newList
     }
 }

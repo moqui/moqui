@@ -25,6 +25,7 @@ class UrlResourceReference implements ResourceReference {
     
     @Override
     ResourceReference init(String location, ExecutionContext ec) {
+        this.ec = ec
         if (location.startsWith("/") || location.indexOf(":") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
             if (location.charAt(0) != '/') location = ec.ecfi.runtimePath + '/' + location
@@ -34,7 +35,6 @@ class UrlResourceReference implements ResourceReference {
             locationUrl = new URL(location)
             isFile = (locationUrl?.protocol == "file")
         }
-        this.ec = ec
         return this
     }
 
@@ -78,7 +78,7 @@ class UrlResourceReference implements ResourceReference {
             File f = new File(locationUrl.toURI())
             return f.isFile()
         } else {
-            throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl.protocol}]")
+            throw new IllegalArgumentException("Is file not supported for resource with protocol [${locationUrl.protocol}]")
         }
     }
     @Override
@@ -87,7 +87,7 @@ class UrlResourceReference implements ResourceReference {
             File f = new File(locationUrl.toURI())
             return f.isDirectory()
         } else {
-            throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl.protocol}]")
+            throw new IllegalArgumentException("Is directory not supported for resource with protocol [${locationUrl.protocol}]")
         }
     }
     @Override
@@ -96,7 +96,7 @@ class UrlResourceReference implements ResourceReference {
             File f = new File(locationUrl.toURI())
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
-                children.add(ec.resource.getLocationReference(dirFile.toURI().toString()))
+                children.add(new UrlResourceReference().init(dirFile.toURI().toString(), ec))
             }
             return children
         } else {

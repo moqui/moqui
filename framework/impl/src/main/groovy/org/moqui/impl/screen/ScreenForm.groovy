@@ -454,8 +454,12 @@ class ScreenForm {
                         eli.close()
                     }
                 } else {
-                    for (Map listOption in listObject) {
-                        addFieldOption(options, fieldNode, childNode, listOption, ec)
+                    for (Object listOption in listObject) {
+                        if (listOption instanceof Map) {
+                            addFieldOption(options, fieldNode, childNode, listOption, ec)
+                        } else {
+                            addFieldOption(options, fieldNode, childNode, [entry:listOption], ec)
+                        }
                     }
                 }
             } else if (childNode.name() == "option") {
