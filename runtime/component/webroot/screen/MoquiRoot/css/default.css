@@ -146,18 +146,13 @@ a.active { color: red; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
     font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 0.8em; }
 
-.ui-widget-content { border: 1px solid #aaaaaa; background: #ffffff url(images/ui-bg_flat_75_ffffff_40x100.png) 50% 50% repeat-x; color: #222222; }
-
-.ui-widget-header { border: 0 0 1px 0 solid #aaaaaa; background: #cccccc url(images/ui-bg_highlight-soft_75_cccccc_1x100.png) 50% 50% repeat-x; color: #222222; font-weight: bold; }
-.ui-widget-header a, .ui-widget-header a span { color: #222222; }
-
-.ui-button-icon-only { width: 1.1em; } /* to make room for the icon, a width needs to be set here */
-button.ui-button-icon-only { width: 1.1em; } /* button elements seem to need a little more width */
+.ui-button-icon-only { width: 1.1em; }
+button.ui-button-icon-only { width: 1.1em; }
 .ui-button-icons-only { width: 1.5em; }
 button.ui-button-icons-only { width: 1.5em; }
 .ui-button .ui-button-text { display: block; line-height: .4;  }
 
-.ui-tabs { position: relative; padding: 0em; zoom: 1; }
+.ui-tabs { position: relative; padding: 0em; zoom: 1; border: 0px; }
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .1em .2em 0; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .1em .5em; text-decoration: none; }
 .ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 4px 0px; background: none; }
