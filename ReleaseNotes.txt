@@ -44,7 +44,8 @@ This release includes:
     - Specify search constraints
     - View in webapp
     - Export to CSV
-
+  - Service
+    - Select and run service from form based on service
 
 ===========================================================================
 Release 1.0-beta2 - 30 May 2011
@@ -429,11 +430,10 @@ Tools probable for 1.0 final:
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE:
       use LiquiBase for this
-  - Scheduler (view scheduled services with cancel, add scheduled service)
   - Script Run (or groovy shell?)
   - Service
-    - Select and run service from service-based form
     - Configure and run preconfigured chain of services (dynamic wizard)
+    - Scheduler (view scheduled services w/cancel, add scheduled service)
   - Artifact Info screens (with in/out references for all)
 
 ===========================================================================

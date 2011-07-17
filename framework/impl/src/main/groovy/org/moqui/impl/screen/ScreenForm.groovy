@@ -27,6 +27,7 @@ import org.moqui.impl.entity.EntityValueImpl
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.moqui.entity.EntityList
+import org.moqui.entity.EntityException
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -78,7 +79,7 @@ class ScreenForm {
             if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
             ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
             if (serviceDef != null) {
-                addServiceFields(serviceDef, afsNode."@field-type"?:"edit", newFormNode, ecfi)
+                addServiceFields(serviceDef, afsNode."@include"?:"in", afsNode."@field-type"?:"edit", newFormNode, ecfi)
                 continue
             }
             if (serviceName.contains("#")) {
@@ -153,13 +154,30 @@ class ScreenForm {
         return null
     }
 
-    protected void addServiceFields(ServiceDefinition sd, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
+    protected void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
         String serviceVerb = sd.verb
         String serviceType = sd.serviceNode."@type"
         EntityDefinition ed = null
-        if (serviceType == "entity-auto") ed = ecfi.entityFacade.getEntityDefinition(sd.noun)
+        try {
+            ed = ecfi.entityFacade.getEntityDefinition(sd.noun)
+        } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
 
-        for (Node parameterNode in sd.serviceNode."in-parameters"[0]."parameter") {
+        List<Node> parameterNodes = []
+        if (include == "in" || include == "all") parameterNodes.addAll(sd.serviceNode."in-parameters"[0]."parameter")
+        if (include == "out" || include == "all") parameterNodes.addAll(sd.serviceNode."out-parameters"[0]."parameter")
+
+        for (Node parameterNode in parameterNodes) {
+            // if the parameter corresponds to an entity field, we can do better with that
+            if (ed != null && ed.getFieldNode(parameterNode."@name") != null) {
+                Node newFieldNode = new Node(null, "field", [name:parameterNode."@name"])
+                if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
+                Node subFieldNode = newFieldNode.appendNode("default-field")
+                addAutoEntityField(ed, parameterNode."@name", fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
+                mergeFieldNode(baseFormNode, newFieldNode, false)
+                continue
+            }
+
+            // otherwise use the old approach and do what we can with the service def
             String spType = parameterNode."@type" ?: "String"
             String efType = ed != null ? ed.getFieldNode(parameterNode."@name")?."@type" : null
 

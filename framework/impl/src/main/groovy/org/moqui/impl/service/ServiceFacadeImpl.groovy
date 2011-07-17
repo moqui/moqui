@@ -28,7 +28,6 @@ import org.quartz.impl.StdSchedulerFactory
 import javax.mail.internet.MimeMessage
 import org.moqui.context.ExecutionContext
 import org.moqui.BaseException
-import org.apache.commons.collections.set.ListOrderedSet
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -82,7 +81,7 @@ class ServiceFacadeImpl implements ServiceFacade {
         String path = ServiceDefinition.getPathFromName(serviceName)
         String verb = ServiceDefinition.getVerbFromName(serviceName)
         String noun = ServiceDefinition.getNounFromName(serviceName)
-        logger.warn("Getting service definition for [${serviceName}], path=[${path}] verb=[${verb}] noun=[${noun}]")
+        // logger.warn("Getting service definition for [${serviceName}], path=[${path}] verb=[${verb}] noun=[${noun}]")
 
         String cacheKey = makeCacheKey(path, verb, noun)
         if (serviceLocationCache.containsKey(cacheKey)) {
@@ -130,7 +129,7 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         // search for the service def XML file in the components
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
-            logger.warn("Finding service node for location=[${location}], servicePathLocation=[${servicePathLocation}]")
+            // logger.warn("Finding service node for location=[${location}], servicePathLocation=[${servicePathLocation}]")
             ResourceReference serviceComponentRr = this.ecfi.resourceFacade.getLocationReference(location + "/" + servicePathLocation)
             if (serviceComponentRr.supportsExists()) {
                 if (serviceComponentRr.exists) serviceNode = findServiceNode(serviceComponentRr, verb, noun)
@@ -208,12 +207,15 @@ class ServiceFacadeImpl implements ServiceFacade {
             if (entryRr.directory) {
                 findServicesInDir(baseLocation, entryRr, sns)
             } else if (entryRr.fileName.endsWith(".xml")) {
-                logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
+                // logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
                 Node serviceRoot = new XmlParser().parse(entryRr.openStream())
                 if (serviceRoot.name() != "services") continue
+
+                // get the service file location without the .xml and without everything up to the "service" directory
+                String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
+                if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
+
                 for (Node serviceNode in serviceRoot."service") {
-                    String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
-                    if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
                     sns.add(location + "." + serviceNode."@verb" +
                             (serviceNode."@noun" ? "#" + serviceNode."@noun" : ""))
                 }

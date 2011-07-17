@@ -15,6 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Service Run">
 
     <parameter name="serviceName"/>
+    <parameter name="doingRun"/>
 
     <transition name="select">
         <default-response url="."/>
@@ -30,19 +31,32 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <form-single name="SelectService" transition="select">
             <field name="serviceName"><default-field title="Service Name (path.verb#noun)">
-                <drop-down combo-box="true" allow-empty="true">
+                <drop-down combo-box="true" allow-empty="true" current="selected">
                     <list-options list="knownServiceNames" key="${entry}"/>
                 </drop-down>
             </default-field></field>
             <field name="submit"><default-field title="Select"><submit/></default-field></field>
             <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submit"/></field-row></field-layout>
         </form-single>
+        <section name="ServiceResultsSection">
+            <condition><expression><![CDATA[serviceName && doingRun=="Y"]]></expression></condition>
+            <widgets>
+                <label text="Results for Service: ${serviceName}" type="h3"/>
+                <form-single name="ServiceResults" dynamic="true">
+                    <auto-fields-service service-name="${serviceName}" field-type="display" include="out"/>
+                    <field name="serviceName"><default-field><hidden/></default-field></field>
+                </form-single>
+            </widgets>
+        </section>
         <section name="ServiceParametersSection">
             <condition><expression>serviceName</expression></condition>
             <widgets>
                 <label text="Run Service: ${serviceName}" type="h3"/>
                 <form-single name="ServiceParameters" transition="run" dynamic="true">
-                    <auto-fields-service service-name="${serviceName}"/>
+                    <auto-fields-service service-name="${serviceName}" field-type="edit"/>
+                    <field name="serviceName"><default-field><hidden/></default-field></field>
+                    <field name="doingRun"><default-field><hidden default-value="Y"/></default-field></field>
+                    <field name="submit"><default-field title="Submit"><submit/></default-field></field>
                 </form-single>
             </widgets>
         </section>
