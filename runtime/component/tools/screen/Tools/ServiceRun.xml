@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Service Run">
+
+    <parameter name="serviceName"/>
+
+    <transition name="select">
+        <default-response url="."/>
+    </transition>
+    <transition name="run">
+        <service-call name="${serviceName}"/>
+        <default-response url="."/>
+    </transition>
+
+    <actions>
+        <set field="knownServiceNames" from="ec.service.knownServiceNames"/>
+    </actions>
+    <widgets>
+        <form-single name="SelectService" transition="select">
+            <field name="serviceName"><default-field title="Service Name (path.verb#noun)">
+                <drop-down combo-box="true" allow-empty="true">
+                    <list-options list="knownServiceNames" key="${entry}"/>
+                </drop-down>
+            </default-field></field>
+            <field name="submit"><default-field title="Select"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submit"/></field-row></field-layout>
+        </form-single>
+        <section name="ServiceParametersSection">
+            <condition><expression>serviceName</expression></condition>
+            <widgets>
+                <label text="Run Service: ${serviceName}" type="h3"/>
+                <form-single name="ServiceParameters" transition="run" dynamic="true">
+                    <auto-fields-service service-name="${serviceName}"/>
+                </form-single>
+            </widgets>
+        </section>
+    </widgets>
+</screen>

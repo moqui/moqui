@@ -82,6 +82,7 @@ class ServiceFacadeImpl implements ServiceFacade {
         String path = ServiceDefinition.getPathFromName(serviceName)
         String verb = ServiceDefinition.getVerbFromName(serviceName)
         String noun = ServiceDefinition.getNounFromName(serviceName)
+        logger.warn("Getting service definition for [${serviceName}], path=[${path}] verb=[${verb}] noun=[${noun}]")
 
         String cacheKey = makeCacheKey(path, verb, noun)
         if (serviceLocationCache.containsKey(cacheKey)) {
@@ -129,6 +130,7 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         // search for the service def XML file in the components
         for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            logger.warn("Finding service node for location=[${location}], servicePathLocation=[${servicePathLocation}]")
             ResourceReference serviceComponentRr = this.ecfi.resourceFacade.getLocationReference(location + "/" + servicePathLocation)
             if (serviceComponentRr.supportsExists()) {
                 if (serviceComponentRr.exists) serviceNode = findServiceNode(serviceComponentRr, verb, noun)
@@ -186,11 +188,11 @@ class ServiceFacadeImpl implements ServiceFacade {
         Set<String> sns = new TreeSet()
 
         // search for service def XML files in the components
-        for (String componentName in this.ecfi.getComponentBaseLocations().keySet()) {
-            String location = "component://${componentName}/service"
-            ResourceReference serviceRr = this.ecfi.resourceFacade.getLocationReference(location)
+        for (String location in this.ecfi.getComponentBaseLocations().values()) {
+            //String location = "component://${componentName}/service"
+            ResourceReference serviceRr = this.ecfi.resourceFacade.getLocationReference(location + "/service")
             if (serviceRr.supportsExists() && serviceRr.exists && serviceRr.supportsDirectory()) {
-                findServicesInDir(serviceRr, sns)
+                findServicesInDir(serviceRr.location, serviceRr, sns)
             }
         }
 
@@ -200,18 +202,20 @@ class ServiceFacadeImpl implements ServiceFacade {
         return sns
     }
 
-    protected void findServicesInDir(ResourceReference dir, Set<String> sns) {
-        logger.warn("Finding services in [${dir.location}]")
+    protected void findServicesInDir(String baseLocation, ResourceReference dir, Set<String> sns) {
+        // logger.warn("Finding services in [${dir.location}]")
         for (ResourceReference entryRr in dir.directoryEntries) {
             if (entryRr.directory) {
-                findServicesInDir(entryRr, sns)
+                findServicesInDir(baseLocation, entryRr, sns)
             } else if (entryRr.fileName.endsWith(".xml")) {
-                logger.warn("Finding services in [${entryRr.location}]")
+                logger.warn("Finding services in [${entryRr.location}], baseLocation=[${baseLocation}]")
                 Node serviceRoot = new XmlParser().parse(entryRr.openStream())
                 if (serviceRoot.name() != "services") continue
                 for (Node serviceNode in serviceRoot."service") {
-                    sns.add(entryRr.location.substring(0, entryRr.location.lastIndexOf(".")) + "." +
-                            serviceNode."@verb" + (serviceNode."@noun" ? "#" + serviceNode."@noun" : ""))
+                    String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
+                    if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
+                    sns.add(location + "." + serviceNode."@verb" +
+                            (serviceNode."@noun" ? "#" + serviceNode."@noun" : ""))
                 }
             }
         }
