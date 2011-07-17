@@ -10,7 +10,8 @@ The 1.0-beta3 release...
 This release includes:
 
 - All the great features of the preview releases, 1.0-beta1, and 1.0-beta2
-- Support for multiple root screens determined by host name using regexp
+- Support for multiple root screens determined by host name using regexp,
+  or in other words virtual host support
 - UserPreference records refined so that keys can be defined with
   Enumeration records, but don't have to be
 - Some changes to better support the Mantle UDM (Universal Data Model),
@@ -21,6 +22,8 @@ This release includes:
 - Security: tightened permissions, using the entity.@authorize-skip much
   less by adding disable/enableAuthz calls to framework code, and adding an
   authorization for users to view their own UserAccount record.
+- Directory structure and build changes to simplify and be more consistent
+  with de-facto standards from Maven/Gradle/etc
 - Small changes to make it easier to include the runtime directory inside
   the deployed war file.
 - Resource Facade
@@ -45,7 +48,7 @@ This release includes:
     - View in webapp
     - Export to CSV
   - Service
-    - Select and run service from form based on service
+    - Select and run service from form based on service definition
 
 ===========================================================================
 Release 1.0-beta2 - 30 May 2011
@@ -421,10 +424,14 @@ This release includes:
 Tools probable for 1.0 final:
 ===========================================================================
 
+- Service Facade
+  - Support pre-configured scheduled jobs (can't be from data, so how?)
 - Tools Screens
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
       related entities
+  - Data View
+    - Support functions on aliased fields
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
