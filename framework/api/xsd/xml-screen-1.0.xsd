@@ -299,10 +299,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:simpleType>
                 <xs:restriction base="xs:token">
                     <xs:enumeration value="screen-path">
-                        <xs:annotation><xs:documentation>
-                            URI to another screen, either relative or from server root. See documentation on url
-                            attribute for more details.
-                        </xs:documentation></xs:annotation>
+                        <xs:annotation><xs:documentation>URI to another screen, either relative or from server root.
+                            See documentation on url attribute for more details.</xs:documentation></xs:annotation>
                     </xs:enumeration>
                     <xs:enumeration value="plain"/>
                 </xs:restriction>
@@ -317,9 +315,13 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:documentation></xs:annotation>
         </xs:attribute> -->
         <xs:attribute name="save-current-screen" default="false" type="boolean">
-            <xs:annotation><xs:documentation>
-                Saves the current screen's path and parameters for future use, generally with the screen-last type of response.
-            </xs:documentation></xs:annotation>
+            <xs:annotation><xs:documentation>Save the current screen's path and parameters for future use, generally
+                with the screen-last type of response.</xs:documentation></xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="save-parameters" default="false" type="boolean">
+            <xs:annotation><xs:documentation>Save the current parameters (and request attributes) before doing a
+                redirect so that the screen rendered after the redirect renders in a context similar to the original
+                request to the transition.</xs:documentation></xs:annotation>
         </xs:attribute>
     </xs:attributeGroup>
 

@@ -260,6 +260,13 @@ class WebFacadeImpl implements WebFacade {
         if (eci.message.messages) session.setAttribute("moqui.message.messages", eci.message.messages)
         if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
     }
+    /** Save request parameters and attributes to a Map in the moqui.saved.parameters session attribute */
+    void saveRequestParametersToSession() {
+        Map parms = new HashMap()
+        parms.putAll(this.requestParameters)
+        parms.putAll(this.requestAttributes)
+        session.setAttribute("moqui.saved.parameters", parms)
+    }
 
     static DiskFileItemFactory makeDiskFileItemFactory(ServletContext context) {
         // NOTE: consider keeping this factory somewhere to be more efficient, if it even makes a difference...

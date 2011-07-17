@@ -365,6 +365,7 @@ class ScreenDefinition {
         protected Class parameterMapNameGroovy = null
         // deferred for future version: protected boolean saveLastScreen
         protected boolean saveCurrentScreen
+        protected boolean saveParameters
 
         ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
             String location = "${parentScreen.location}.transition_${ti.name}.${responseNode.name().replace("-","_")}"
@@ -381,6 +382,7 @@ class ScreenDefinition {
                     (String) responseNode."@parameter-map", "${location}.parameter_map")
             // deferred for future version: saveLastScreen = responseNode."@save-last-screen" == "true"
             saveCurrentScreen = responseNode."@save-current-screen" == "true"
+            saveParameters = responseNode."@save-parameters" == "true"
 
             for (Node parameterNode in responseNode."parameter")
                 parameterMap.put(parameterNode."@name", new ParameterItem(parameterNode, location))
@@ -391,8 +393,9 @@ class ScreenDefinition {
         String getType() { return type }
         String getUrl() { return url }
         String getUrlType() { return urlType }
-        boolean getSaveLastScreen() { return saveLastScreen }
+        // deferred for future version: boolean getSaveLastScreen() { return saveLastScreen }
         boolean getSaveCurrentScreen() { return saveCurrentScreen }
+        boolean getSaveParameters() { return saveParameters }
 
         Map expandParameters(ExecutionContext ec) {
             Map ep = new HashMap()

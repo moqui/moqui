@@ -22,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="run">
         <service-call name="${serviceName}"/>
-        <default-response url="."/>
+        <default-response url="." save-parameters="true"/>
     </transition>
 
     <actions>

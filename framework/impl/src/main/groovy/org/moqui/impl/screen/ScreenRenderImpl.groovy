@@ -277,7 +277,10 @@ class ScreenRenderImpl implements ScreenRender {
             // either send a redirect for the response, if possible, or just render the response now
             if (this.response != null) {
                 // save messages in session before redirecting so they can be displayed on the next screen
-                if (ec.web) ((WebFacadeImpl) ec.web).saveMessagesToSession()
+                if (ec.web) {
+                    ((WebFacadeImpl) ec.web).saveMessagesToSession()
+                    if (ri.saveParameters) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
+                }
 
                 if (urlType == "plain") {
                     response.sendRedirect(url)
