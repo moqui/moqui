@@ -15,10 +15,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <property environment="env"/>
 
     <path id="groovy.class.path">
-        <pathelement location="impl/lib/commons-cli-1.2.jar"/>
-        <pathelement location="impl/lib/antlr-2.7.7.jar"/>
-        <pathelement location="impl/lib/asm-3.2.jar"/>
-        <pathelement location="impl/lib/groovy-all-1.8.0.jar"/>
+        <pathelement location="lib/commons-cli-1.2.jar"/>
+        <pathelement location="lib/antlr-2.7.7.jar"/>
+        <pathelement location="lib/asm-3.2.jar"/>
+        <pathelement location="lib/groovy-all-1.8.0.jar"/>
     </path>
     <taskdef name="groovyc" classname="org.codehaus.groovy.ant.Groovyc" classpathref="groovy.class.path"/>
     <taskdef name="groovydoc" classname="org.codehaus.groovy.ant.Groovydoc" classpathref="groovy.class.path"/>
@@ -37,71 +37,62 @@ This Work includes contributions authored by David E. Jones, not as a
     <target name="build" depends="init">
         <mkdir dir="build/classes/start"/>
         <mkdir dir="build/classes/api"/>
-        <mkdir dir="build/classes/impl"/>
+        <mkdir dir="build/classes/main"/>
         <mkdir dir="build/lib"/>
 
         <!-- make the API classes -->
         <echo message="===== Building start classes"/>
-        <javac srcdir="start/src/main/java" destdir="build/classes/start" includeantruntime="false"
+        <javac srcdir="src/start/java" destdir="build/classes/start" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
         </javac>
 
         <!-- make the API classes -->
         <echo message="===== Building api classes"/>
-        <javac srcdir="api/src/main/java" destdir="build/classes/api" includeantruntime="false"
+        <javac srcdir="src/api/java" destdir="build/classes/api" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
             <classpath>
-                <fileset dir="api/lib" includes="*.jar"/>
+                <fileset dir="lib" includes="*.jar"/>
             </classpath>
         </javac>
 
         <!-- make the framework impl classes -->
         <echo message="===== Building impl classes"/>
-        <javac srcdir="impl/src/main/java" destdir="build/classes/impl" includeantruntime="false"
+        <javac srcdir="src/main/java" destdir="build/classes/main" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">
             <include name="**/*.java"/>
             <classpath>
-                <fileset dir="api/lib" includes="*.jar"/>
-                <fileset dir="impl/lib" includes="*.jar"/>
+                <fileset dir="lib" includes="*.jar"/>
                 <pathelement location="build/classes/api"/>
             </classpath>
         </javac>
-        <groovyc srcdir="impl/src/main/groovy" destdir="build/classes/impl">
+        <groovyc srcdir="src/main/groovy" destdir="build/classes/main">
             <include name="**/*.groovy"/>
             <classpath>
-                <fileset dir="api/lib" includes="*.jar"/>
-                <fileset dir="impl/lib" includes="*.jar"/>
-                <fileset dir="impl/lib/fop" includes="*.jar"/>
+                <fileset dir="lib" includes="*.jar"/>
+                <fileset dir="lib/fop" includes="*.jar"/>
                 <pathelement location="build/classes/api"/>
-                <pathelement location="build/classes/impl"/>
+                <pathelement location="build/classes/main"/>
             </classpath>
         </groovyc>
 
         <!-- make the framework lib (combined api and impl) -->
         <echo message="===== Making framework jar"/>
         <jar jarfile="build/lib/moqui-framework-${version}.jar">
-            <!-- api resources -->
             <fileset dir="build/classes/api"/>
-            <fileset dir="api">
-                <!-- include XSDs, default-conf, etc in the API file for runtime reference -->
-                <include name="data/**"/>
-                <include name="entity/**"/>
-                <include name="service/**"/>
-                <include name="xsd/**"/>
-            </fileset>
+            <fileset dir="build/classes/main"/>
 
-            <!-- impl resources -->
-            <fileset dir="build/classes/impl"/>
-            <fileset dir="impl/src/main/resources">
+            <fileset dir="src/main/resources">
                 <include name="**/*"/>
             </fileset>
-            <fileset dir="impl">
+            <fileset dir=".">
                 <include name="data/**"/>
+                <include name="entity/**"/>
                 <include name="screen/**"/>
                 <include name="service/**"/>
                 <include name="template/**"/>
+                <include name="xsd/**"/>
             </fileset>
         </jar>
     </target>
@@ -109,10 +100,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========== javadoc targets ========== -->
 
     <target name="docs" depends="init">
-        <mkdir dir="build/javadoc-impl"/>
-        <groovydoc destdir="build/javadoc-impl" sourcepath="impl/src"
+        <mkdir dir="build/javadoc-main"/>
+        <groovydoc destdir="build/javadoc-main" sourcepath="src/main/groovy"
                 packagenames="**.*" use="true" private="true"
-                windowtitle="Moqui Framework Implementation" doctitle="Moqui Framework Implementation">
+                windowtitle="Moqui Framework Main" doctitle="Moqui Framework Main">
             <link packages="java.,org.xml.,javax." href="http://download.oracle.com/javase/6/docs/api/"/>
             <link packages="groovy.,org.codehaus.groovy." href="http://groovy.codehaus.org/api/"/>
         </groovydoc>
@@ -123,7 +114,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 maxmemory="256M"
                 windowtitle="Moqui Framework API"
                 useexternalfile="yes">
-            <fileset dir="api/src">
+            <fileset dir="src/api/java">
                 <include name="**/*.java"/>
             </fileset>
             <link href="http://download.oracle.com/javase/6/docs/api/"/>

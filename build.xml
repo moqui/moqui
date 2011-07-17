@@ -72,20 +72,19 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========== war targets ========== -->
     <target name="war" depends="build">
-        <war destfile="moqui-${version}.war" webxml="framework/impl/src/main/webapp/WEB-INF/web.xml">
+        <war destfile="moqui-${version}.war" webxml="framework/src/main/webapp/WEB-INF/web.xml">
             <!-- no html/etc webapp files for now: <fileset dir="html"/> -->
-            <lib dir="framework/api/lib">
+            <lib dir="framework/lib" excludes="fop/*">
                 <exclude name="winstone-0.9.10.jar"/>
             </lib>
-            <lib dir="framework/impl/lib" excludes="fop/*"/>
-            <!-- NOTE: comment out the following line to save the space (nearly 4MB), ie to remove FOP libraries -->
-            <lib dir="framework/impl/lib/fop"/>
+            <!-- NOTE: comment out the following line to remove FOP libraries and save space (nearly 4MB) -->
+            <lib dir="framework/lib/fop"/>
             <lib dir="framework/build/lib"/>
             <classes file="MoquiInit.properties"/>
 
             <!-- copy the start files, setup the manifest for war acting like executable jar -->
             <fileset dir="framework/build/classes/start"/>
-            <file file="framework/api/lib/winstone-0.9.10.jar"/>
+            <file file="framework/lib/winstone-0.9.10.jar"/>
             <manifest>
                 <attribute name="Manifest-Version" value="1.0"/>
                 <attribute name="Implementation-Title" value="Moqui Start"/>
