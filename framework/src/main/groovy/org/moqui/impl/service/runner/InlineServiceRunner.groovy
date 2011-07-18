@@ -19,6 +19,8 @@ import org.moqui.impl.context.ContextStack
 import org.moqui.impl.actions.XmlAction
 
 public class InlineServiceRunner implements ServiceRunner {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(InlineServiceRunner.class)
+
     protected ServiceFacadeImpl sfi = null
 
     InlineServiceRunner() {}
@@ -46,6 +48,9 @@ public class InlineServiceRunner implements ServiceRunner {
             } else {
                 return null
             }
+        } catch (Throwable t) {
+            logger.error("Error running inline XML Actions in service [${sd.serviceName}]: ", t)
+            throw t
         } finally {
             // in the push we pushed two Maps to protect the parameters Map, so pop twice
             cs.pop()

@@ -42,6 +42,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <!-- TODO get perm from ? -->
             <set field="hasPwAdminPermission" from="false"/>
+            <!-- for ALL of this we don't want authz checks, though normally for services we would -->
+            <script>
+                alreadyDisabled = ec.artifactExecution.disableAuthz()
+                try {
+            </script>
 
             <if condition="userId">
                 <then>
@@ -67,10 +72,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <script>
                     def token = new org.apache.shiro.authc.UsernamePasswordToken(userAccount.username, oldPassword)
                     def info = new org.apache.shiro.authc.SimpleAuthenticationInfo(username, userAccount.currentPassword,
-                            new org.apache.shiro.util.SimpleByteSource((String) userAccount.passwordSalt), "moquiRealm")
+                            userAccount.passwordSalt ? new org.apache.shiro.util.SimpleByteSource((String) userAccount.passwordSalt) : null,
+                            "moquiRealm")
                 </script>
-                <if condition="ec.ecfi.getCredentialsMatcher(userAccount.passwordHashType).doCredentialsMatch(token, info)">
-                    <return message="Current passwords did not match" error="true"/>
+                <if condition="!ec.ecfi.getCredentialsMatcher(userAccount.passwordHashType).doCredentialsMatch(token, info)">
+                    <return message="Current password did not match" error="true"/>
                 </if>
             </if>
 
@@ -98,16 +104,14 @@ This Work includes contributions authored by David E. Jones, not as a
                 <message error="true">Password needs ${minOthers} other characters (not letter or digit)</message>
             </if>
 
-            <log level="info" message="newPassword=${newPassword}, length=${newPassword.length()}, digits=${digits}, others=${others}"/>
+            <!-- don't log this by default, security hole: <log level="info" message="newPassword=${newPassword}, length=${newPassword.length()}, digits=${digits}, others=${others}"/> -->
 
             <!-- if password is in the history don't allow it -->
             <set field="historyLimit" from="passwordNode.'@history-limit'" default-value="5" type="Integer"/>
-            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
             <entity-find entity-name="UserPasswordHistory" list="duplicateUserPasswordHistoryList">
                 <econdition field-name="userId" from="userId"/>
                 <!-- can't query by this field since it is encrypted: <econdition field-name="password" from="newPassword"/> -->
             </entity-find>
-            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
             <iterate list="duplicateUserPasswordHistoryList" entry="duplicateUserPasswordHistory">
                 <if condition="duplicateUserPasswordHistory.password == newPassword">
                     <message error="true">Password was used in last ${historyLimit} passwords</message>
@@ -116,9 +120,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <check-errors/>
             <!-- from here on the newPassword is considered okay -->
-
-            <!-- for the rest of this we don't want authz checks, though normally for these services we would -->
-            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
 
             <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
             <service-call name="create#UserPasswordHistory">
@@ -145,7 +146,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-map field-name="disabled" value="N"/>
             </service-call>
 
-            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
+            <script>
+                } finally {
+                    if (!alreadyDisabled) ec.artifactExecution.enableAuthz()
+                }
+            </script>
         </actions>
     </service>
 
