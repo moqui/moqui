@@ -16,8 +16,6 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Cookie
 
-import org.moqui.context.UserFacade
-import org.moqui.entity.EntityValue
 import org.apache.shiro.subject.Subject
 import org.apache.shiro.web.subject.WebSubjectContext
 import org.apache.shiro.web.subject.support.DefaultWebSubjectContext
@@ -27,6 +25,10 @@ import org.apache.shiro.authc.IncorrectCredentialsException
 import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.UnknownAccountException
 import org.apache.shiro.authc.UsernamePasswordToken
+
+import org.moqui.context.UserFacade
+import org.moqui.entity.EntityValue
+import org.apache.shiro.web.session.HttpServletSession
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -54,6 +56,7 @@ class UserFacadeImpl implements UserFacade {
 
         WebSubjectContext wsc = new DefaultWebSubjectContext()
         wsc.setServletRequest(request); wsc.setServletResponse(response)
+        wsc.setSession(new HttpServletSession(request.getSession(), request.getServerName()))
         currentUser = eci.ecfi.securityManager.createSubject(wsc)
 
         if (currentUser.authenticated) {
@@ -207,7 +210,7 @@ class UserFacadeImpl implements UserFacade {
         if (tenantId) {
             eci.changeTenant(tenantId)
             this.visitId = null
-            if (this.eci.web != null) this.eci.web.session.removeAttribute("moqui.visitId")
+            if (eci.web != null) eci.web.session.removeAttribute("moqui.visitId")
         }
 
         UsernamePasswordToken token = new UsernamePasswordToken(username, password)
@@ -220,7 +223,7 @@ class UserFacadeImpl implements UserFacade {
             this.usernameStack.addFirst(username)
 
             // after successful login trigger the after-login actions
-            if (eci.web) eci.web.runAfterLoginActions()
+            if (eci.web != null) eci.web.runAfterLoginActions()
         } catch (UnknownAccountException uae) {
             eci.message.addError(uae.message)
             logger.warn("Login failure: ${eci.message.errors}")
@@ -248,11 +251,11 @@ class UserFacadeImpl implements UserFacade {
 
     void logoutUser() {
         // before logout trigger the before-logout actions
-        if (eci.web) eci.web.runBeforeLogoutActions()
+        if (eci.web != null) eci.web.runBeforeLogoutActions()
 
         if (usernameStack) usernameStack.removeFirst()
 
-        if (eci.web) {
+        if (eci.web != null) {
             eci.web.session.removeAttribute("moqui.tenantId")
             eci.web.session.removeAttribute("moqui.visitId")
         }
