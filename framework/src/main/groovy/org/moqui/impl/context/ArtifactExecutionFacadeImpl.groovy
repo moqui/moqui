@@ -15,7 +15,6 @@ import org.moqui.context.ArtifactExecutionFacade
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityFind
-import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition.JoinOperator
@@ -58,7 +57,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access
-        String userId = eci.user.userId
+        String userId = eci.user.username
+
         ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
 
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
@@ -69,6 +69,15 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
             return
+        }
+
+        // see if there is a UserAccount for the username, and if so get its userId as a more permanent identifier
+        boolean alreadyDisabled = disableAuthz()
+        try {
+            EntityValue ua = eci.entity.makeFind("UserAccount").condition("username", userId).useCache(true).one()
+            if (ua) userId = ua.userId
+        } finally {
+            if (!alreadyDisabled) enableAuthz()
         }
 
         // if last was an always allow, then don't bother checking for deny/etc
@@ -84,7 +93,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         EntityValue denyAacv = null
 
         // don't check authz for these queries, would cause infinite recursion
-        boolean alreadyDisabled = disableAuthz()
+        alreadyDisabled = disableAuthz()
         try {
             // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
             Set userGroupIdSet = new HashSet()

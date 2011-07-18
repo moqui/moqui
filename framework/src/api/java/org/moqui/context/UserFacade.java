@@ -67,18 +67,14 @@ public interface UserFacade {
      */
     boolean loginUser(String username, String password, String tenantId);
 
-    /** Only authenticate the user, do not make active in current context.
-     * @param username An ID to match the UserAccount.username field.
-     * @param password The user's current password.
-     * @return true if user was authenticated successfully, otherwise false
-     */
-    boolean authenticateUser(String username, String password);
-
     /** Remove (logout) active user. */
     void logoutUser();
 
     /** @return ID of the current active user (from the UserAccount entity). */
     String getUserId();
+
+    /** @return Username of the current active user (NOT the UserAccount.userId, may even be a username from another system). */
+    String getUsername();
 
     /** @return EntityValue for the current active user (the UserAccount entity). */
     EntityValue getUserAccount();

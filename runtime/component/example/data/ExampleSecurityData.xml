@@ -13,7 +13,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <entity-facade-xml type="seed">
     <!-- password=moqui -->
     <UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe"
-                 currentPassword="{SHA}16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHint="framework name, lowercase"
+                 currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394"
+                 passwordHashType="SHA" passwordHint="framework name, lowercase"
                  currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
     <UserGroupMember userGroupId="ADMIN" userId="EX_JOHN_DOE" fromDate="2010-02-03 00:00:00.000"/>
 
@@ -38,7 +39,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- A user group with just view access for the ExampleApp -->
     <UserGroup userGroupId="EXAMPLE_VIEWER" description="Example Viewers (view only)"/>
     <UserAccount userId="EX_VIEWER" username="example.viewer" userFullName="Example Viewer"
-                 currentPassword="{SHA}16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHint="framework name, lowercase"
+                 currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394"
+                 passwordHashType="SHA" passwordHint="framework name, lowercase"
                  currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
     <UserGroupMember userGroupId="EXAMPLE_VIEWER" userId="EX_VIEWER" fromDate="2010-02-03 00:00:00.000"/>
     <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_VW" userGroupId="EXAMPLE_VIEWER" artifactGroupId="EXAMPLE_APP"
@@ -50,7 +52,8 @@ This Work includes contributions authored by David E. Jones, not as a
                          artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
     <UserGroup userGroupId="EXAMPLE_LTD" description="Example Limited Group"/>
     <UserAccount userId="EX_TLD" username="example.ltd" userFullName="Example Limited User"
-                 currentPassword="{SHA}16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHint="framework name, lowercase"
+                 currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394"
+                 passwordHashType="SHA" passwordHint="framework name, lowercase"
                  currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
     <UserGroupMember userGroupId="EXAMPLE_LTD" userId="EX_TLD" fromDate="2010-02-03 00:00:00.000"/>
     <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_LTD" userGroupId="EXAMPLE_LTD" artifactGroupId="EXAMPLE_LTD"

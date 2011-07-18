@@ -15,6 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="increment" noun="UserAccountFailedLogins" authenticate="false">
         <in-parameters><parameter name="userId" type="String" required="true"/></in-parameters>
         <actions>
+            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
             <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
             <set field="userAccount.successiveFailedLogins" from="userAccount.successiveFailedLogins ? userAccount.successiveFailedLogins + 1 : 1"/>
             <!-- if successiveFailedLogins is greater than max in conf then disable account -->
@@ -23,9 +24,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <set field="userAccount.disabled" value="Y"/>
                 <set field="userAccount.disabledDateTime" from="ec.user.nowTimestamp"/>
             </compare>
-            <script>ec.artifactExecution.disableAuthz()</script>
             <entity-update value-field="userAccount"/>
-            <script>ec.artifactExecution.enableAuthz()</script>
+            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
         </actions>
     </service>
 
@@ -65,13 +65,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 </if>
 
                 <script>
-                    String oldPasswordFullHash = org.moqui.impl.StupidUtilities.getHashDigest(oldPassword,
-                            org.moqui.impl.StupidUtilities.getHashSaltFromFull((String) userAccount.currentPassword),
-                            org.moqui.impl.StupidUtilities.getHashTypeFromFull((String) userAccount.currentPassword))
-                    String oldPasswordHashOnly = org.moqui.impl.StupidUtilities.getHashHashFromFull(oldPasswordFullHash)
-                    String currentPasswordHashOnly = org.moqui.impl.StupidUtilities.getHashHashFromFull(userAccount.currentPassword)
+                    def token = new org.apache.shiro.authc.UsernamePasswordToken(userAccount.username, oldPassword)
+                    def info = new org.apache.shiro.authc.SimpleAuthenticationInfo(username, userAccount.currentPassword,
+                            new org.apache.shiro.util.SimpleByteSource((String) userAccount.passwordSalt), "moquiRealm")
                 </script>
-                <if condition="oldPasswordHashOnly != currentPasswordHashOnly">
+                <if condition="ec.ecfi.getCredentialsMatcher(userAccount.passwordHashType).doCredentialsMatch(token, info)">
                     <return message="Current passwords did not match" error="true"/>
                 </if>
             </if>
@@ -104,12 +102,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- if password is in the history don't allow it -->
             <set field="historyLimit" from="passwordNode.'@history-limit'" default-value="5" type="Integer"/>
-            <script>ec.artifactExecution.disableAuthz()</script>
+            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
             <entity-find entity-name="UserPasswordHistory" list="duplicateUserPasswordHistoryList">
                 <econdition field-name="userId" from="userId"/>
                 <!-- can't query by this field since it is encrypted: <econdition field-name="password" from="newPassword"/> -->
             </entity-find>
-            <script>ec.artifactExecution.enableAuthz()</script>
+            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
             <iterate list="duplicateUserPasswordHistoryList" entry="duplicateUserPasswordHistory">
                 <if condition="duplicateUserPasswordHistory.password == newPassword">
                     <message error="true">Password was used in last ${historyLimit} passwords</message>
@@ -120,7 +118,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- from here on the newPassword is considered okay -->
 
             <!-- for the rest of this we don't want authz checks, though normally for these services we would -->
-            <script>ec.artifactExecution.disableAuthz()</script>
+            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
 
             <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
             <service-call name="create#UserPasswordHistory">
@@ -136,17 +134,18 @@ This Work includes contributions authored by David E. Jones, not as a
             </while>
 
             <!-- encrypt password (using password.@encrypt-hash-type default SHA) and save -->
-            <set field="hashType" from="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
+            <set field="salt" from="ec.ecfi.randomSalt"/>
             <service-call name="update#UserAccount">
                 <field-map field-name="userId"/>
-                <field-map field-name="currentPassword"
-                           from="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
+                <field-map field-name="currentPassword" from="ec.ecfi.getSimpleHash(newPassword, salt)"/>
+                <field-map field-name="passwordSalt" from="salt"/>
+                <field-map field-name="passwordHashType" from="ec.ecfi.passwordHashType"/>
                 <field-map field-name="passwordSetDate" from="ec.user.nowTimestamp"/>
                 <field-map field-name="requirePasswordChange" value="N"/>
                 <field-map field-name="disabled" value="N"/>
             </service-call>
 
-            <script>ec.artifactExecution.enableAuthz()</script>
+            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
         </actions>
     </service>
 
@@ -166,17 +165,18 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
 
             <!-- for the rest of this we don't want authz checks, though normally for these services we would -->
-            <script>ec.artifactExecution.disableAuthz()</script>
+            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
 
             <!-- reset the password to a random value -->
             <set field="newPassword" from="org.moqui.impl.StupidUtilities.getRandomString(12)"/>
 
             <set field="passwordNode" from="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
-            <set field="hashType" from="passwordNode.'@encrypt-hash-type'" default-value="SHA"/>
+            <set field="salt" from="ec.ecfi.randomSalt"/>
             <service-call name="update#UserAccount">
                 <field-map field-name="userId" from="userAccount.userId"/>
-                <field-map field-name="currentPassword"
-                           from="org.moqui.impl.StupidUtilities.getHashDigest(newPassword, null, hashType)"/>
+                <field-map field-name="currentPassword" from="ec.ecfi.getSimpleHash(newPassword, salt)"/>
+                <field-map field-name="passwordSalt" from="salt"/>
+                <field-map field-name="passwordHashType" from="ec.ecfi.passwordHashType"/>
                 <field-map field-name="passwordSetDate" from="ec.user.nowTimestamp"/>
                 <field-map field-name="requirePasswordChange"
                            from="(passwordNode.'@email-require-change' == 'false') ? 'N' : 'Y'"/>
@@ -191,7 +191,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </service-call>
             <message>Your password was reset and emailed to: ${userAccount.emailAddress}</message>
 
-            <script>ec.artifactExecution.enableAuthz()</script>
+            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
         </actions>
     </service>
 </services>

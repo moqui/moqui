@@ -14,6 +14,9 @@ package org.moqui.impl.context;
 import java.sql.Timestamp
 import java.util.jar.JarFile
 
+import org.apache.shiro.config.IniSecurityManagerFactory
+import org.apache.shiro.SecurityUtils
+
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
@@ -26,6 +29,10 @@ import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.StupidClassLoader
 
 import redstone.xmlrpc.XmlRpcServer
+import org.apache.shiro.authc.credential.CredentialsMatcher
+import org.apache.shiro.authc.credential.HashedCredentialsMatcher
+import org.apache.shiro.crypto.hash.SimpleHash
+import org.moqui.impl.StupidUtilities
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -51,6 +58,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** The server object for Redstone XML-RPC; to be shared by various things, especially ServiceXmlRpcDispatchers. */
     protected XmlRpcServer xmlRpcServer = new XmlRpcServer()
+
+    /** The SecurityManager for Apache Shiro */
+    protected org.apache.shiro.mgt.SecurityManager internalSecurityManager
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -303,10 +313,37 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     String getRuntimePath() { return runtimePath }
-
     Node getConfXmlRoot() { return confXmlRoot }
-
     XmlRpcServer getXmlRpcServer() { return xmlRpcServer }
+
+    org.apache.shiro.mgt.SecurityManager getSecurityManager() {
+        if (internalSecurityManager != null) return internalSecurityManager
+
+        // init Apache Shiro; NOTE: init must be done here so that ecfi will be fully initialized and in the static context
+        org.apache.shiro.util.Factory<org.apache.shiro.mgt.SecurityManager> factory =
+                new IniSecurityManagerFactory("classpath:shiro.ini")
+        internalSecurityManager = factory.getInstance()
+        // NOTE: setting this statically just in case something uses it, but for Moqui we'll be getting the SecurityManager from the ecfi
+        SecurityUtils.setSecurityManager(internalSecurityManager)
+
+        return internalSecurityManager
+    }
+    CredentialsMatcher getCredentialsMatcher(String hashType) {
+        HashedCredentialsMatcher hcm = new HashedCredentialsMatcher()
+        if (hashType) {
+            hcm.setHashAlgorithmName(hashType)
+        } else {
+            Node passwordNode = confXmlRoot."user-facade"[0]."password"[0]
+            hcm.setHashAlgorithmName(defaultPasswordHashType)
+        }
+        return hcm
+    }
+    String getRandomSalt() { return StupidUtilities.getRandomString(8) }
+    String getPasswordHashType() {
+        Node passwordNode = confXmlRoot."user-facade"[0]."password"[0]
+        return passwordNode."@encrypt-hash-type" ?: "SHA-256"
+    }
+    String getSimpleHash(String source, String salt) { return new SimpleHash(passwordHashType, source, salt).toString() }
 
     // ========== Getters ==========
 
