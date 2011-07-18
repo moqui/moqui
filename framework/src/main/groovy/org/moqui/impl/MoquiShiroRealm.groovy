@@ -114,7 +114,7 @@ class MoquiShiroRealm implements Realm {
 
             // at this point the user is successfully authenticated
             successful = true
-            logger.warn("User [${username}] successfully authc'ed")
+            // logger.warn("User [${username}] successfully authc'ed")
 
             // NOTE: special case, for this thread only and for the section of code below need to turn off artifact
             //     authz since normally the user above would have authorized with something higher up, but that can't
@@ -137,8 +137,6 @@ class MoquiShiroRealm implements Realm {
             } finally {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
             }
-
-            // TODO: Shiro automatically adds to session?
         } finally {
             // track the UserLoginHistory, whether the above succeeded or failed (ie even if an exception was thrown)
             Node loginNode = ecfi.confXmlRoot."user-facade"[0]."login"[0]
