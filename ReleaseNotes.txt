@@ -31,6 +31,10 @@ This release includes:
 - Resource Facade
   - Added ScriptRunner interface to allow for easily adding scripting
     languages to be supported by the ResourceFacade
+- User Facade
+  - Incorporated Apache Shiro, which is now used for all authentication in
+    Moqui, by default through the MoquiShiroRealm and other realms such
+    as for LDAP or ActiveDirectory can be configured with shiro.ini
 - Entity Facade
   - Database-driven view entity
   - view-entity: merge the view-link element into the member element (also
