@@ -586,10 +586,11 @@ class EntityFacadeImpl implements EntityFacade {
         return efl
     }
 
-    Cache getCacheOne(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.one.${entityName}") }
-    Cache getCacheList(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.list.${entityName}") }
-    Cache getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.list_ra.${entityName}") }
-    Cache getCacheCount(String entityName) { return ecfi.getCacheFacade().getCache("entity.${tenantId}.count.${entityName}") }
+    Cache getCacheOne(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.one.${entityName}") }
+    Cache getCacheOneRa(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.one_ra.${entityName}") }
+    Cache getCacheList(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.list.${entityName}") }
+    Cache getCacheListRa(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.list_ra.${entityName}") }
+    Cache getCacheCount(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
@@ -599,7 +600,19 @@ class EntityFacadeImpl implements EntityFacade {
         // clear one cache
         if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.one.${entityName}")) {
             Cache entityOneCache = getCacheOne(entityName)
+            // clear by PK, most common scenario
             if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
+            // also see if there are any one RA entries
+            Cache oneRaCache = getCacheOneRa(entityName)
+            if (oneRaCache.containsKey(pkCondition)) {
+                List raKeyList = (List) oneRaCache.get(pkCondition)
+                for (EntityCondition ec in raKeyList) {
+                    // check it one last time before removing, may have been cleared by something else
+                    if (entityOneCache.containsKey(ec)) entityOneCache.remove(ec)
+                }
+                // we've cleared all entries that this was referring to, so clean it out too
+                oneRaCache.remove(pkCondition)
+            }
         }
 
         // clear list cache, use reverse-associative Map (also a Cache)
@@ -624,6 +637,19 @@ class EntityFacadeImpl implements EntityFacade {
                 if (ec.mapMatches(evi)) entityCountCache.remove(ec)
             }
         }
+    }
+    void registerCacheOneRa(String entityName, EntityCondition ec, EntityValue ev) {
+        if (ev == null) return
+        Cache oneRaCache = getCacheOneRa(entityName)
+        EntityCondition pkCondition = conditionFactory.makeCondition(ev.getPrimaryKeys())
+        // if the condition matches the primary key, no need for an RA entry
+        if (pkCondition == ec) return
+        List raKeyList = (List) oneRaCache.get(pkCondition)
+        if (!raKeyList) {
+            raKeyList = new ArrayList()
+            oneRaCache.put(pkCondition, raKeyList)
+        }
+        raKeyList.add(ec)
     }
     void registerCacheListRa(String entityName, EntityCondition ec, EntityList el) {
         Cache listRaCache = getCacheListRa(entityName)

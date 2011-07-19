@@ -465,7 +465,11 @@ class EntityFindImpl implements EntityFind {
         }
 
         // put it in whether null or not
-        if (doCache) entityOneCache.put(whereCondition, newEntityValue)
+        if (doCache) {
+            entityOneCache.put(whereCondition, newEntityValue)
+            // need to register an RA just in case the condition was not actually a primary key
+            efi.registerCacheOneRa(this.entityName, whereCondition, newEntityValue)
+        }
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
 
