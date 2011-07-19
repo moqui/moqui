@@ -113,7 +113,8 @@ class EntityFindImpl implements EntityFind {
             if (whereEntityCondition instanceof ListCondition) {
                 ((ListCondition) whereEntityCondition).addCondition((EntityConditionImplBase) condition)
             } else {
-                whereEntityCondition = efi.conditionFactory.makeCondition([whereEntityCondition, condition])
+                whereEntityCondition =
+                    (EntityConditionImplBase) efi.conditionFactory.makeCondition([whereEntityCondition, condition])
             }
         } else {
             whereEntityCondition = (EntityConditionImplBase) condition
@@ -134,7 +135,8 @@ class EntityFindImpl implements EntityFind {
             if (havingEntityCondition instanceof ListCondition) {
                 ((ListCondition) havingEntityCondition).addCondition((EntityConditionImplBase) condition)
             } else {
-                havingEntityCondition = efi.conditionFactory.makeCondition([havingEntityCondition, condition])
+                havingEntityCondition =
+                    (EntityConditionImplBase) efi.conditionFactory.makeCondition([havingEntityCondition, condition])
             }
         } else {
             havingEntityCondition = (EntityConditionImplBase) condition
@@ -258,11 +260,11 @@ class EntityFindImpl implements EntityFind {
         ExecutionContext ec = this.efi.ecfi.executionContext
 
         this.entity((String) node["@entity-name"])
-        if (node["@cache"]) this.useCache(node["@cache"])
-        if (node["@for-update"]) this.forUpdate(node["@for-update"])
-        if (node["@distinct"]) this.distinct(node["@distinct"])
-        if (node["@offset"]) this.offset(node["@offset"])
-        if (node["@limit"]) this.limit(node["@limit"])
+        if (node["@cache"]) this.useCache(node["@cache"] == "true")
+        if (node["@for-update"]) this.forUpdate(node["@for-update"] == "true")
+        if (node["@distinct"]) this.distinct(node["@distinct"] == "true")
+        if (node["@offset"]) this.offset(node["@offset"] as Integer)
+        if (node["@limit"]) this.limit(node["@limit"] as Integer)
         for (Node sf in node["select-field"]) this.selectField((String) sf["@field-name"])
         for (Node ob in node["order-by"]) this.orderBy((String) ob["@field-name"])
 
@@ -271,8 +273,10 @@ class EntityFindImpl implements EntityFind {
                     (String) node["@thru-field-name"] ?: "thruDate",
                     (node["@valid-date"] ? ec.resource.evaluateContextField((String) node["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
 
-        for (Node ecn in node["econdition"]) this.condition(efi.conditionFactory.makeActionCondition(ecn))
-        for (Node ecs in node["econditions"]) this.condition(efi.conditionFactory.makeActionConditions(ecs))
+        for (Node ecn in node["econdition"])
+            this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(ecn))
+        for (Node ecs in node["econditions"])
+            this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionConditions(ecs))
         for (Node eco in node["econdition-object"])
             this.condition((EntityCondition) ec.resource.evaluateContextField((String) eco["@field"], null))
 
@@ -399,9 +403,9 @@ class EntityFindImpl implements EntityFind {
         // if over-constrained (anything in addition to a full PK), just use the full PK
         EntityConditionImplBase whereCondition
         if (ed.containsPrimaryKey(simpleAndMap)) {
-            whereCondition = this.efi.conditionFactory.makeCondition(ed.getPrimaryKeys(simpleAndMap))
+            whereCondition = (EntityConditionImplBase) efi.conditionFactory.makeCondition(ed.getPrimaryKeys(simpleAndMap))
         } else {
-            whereCondition = this.getWhereEntityCondition()
+            whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         }
 
         // no condition means no condition/parameter set, so return null for find.one()
@@ -441,7 +445,8 @@ class EntityFindImpl implements EntityFind {
         // WHERE clause only for one/pk query
         // NOTE: do this here after caching because this will always be added on and isn't a part of the original where
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (viewWhere) whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
+        if (viewWhere) whereCondition =
+            (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         efb.startWhereClause()
         whereCondition.makeSqlWhere(efb)
 
@@ -452,17 +457,15 @@ class EntityFindImpl implements EntityFind {
         try {
             efi.entityDbMeta.checkTableRuntime(ed)
 
-            newEntityValue = internalOne(efb, whereCondition.toString())
+            newEntityValue = (EntityValueImpl) internalOne(efb, whereCondition.toString())
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)
         } finally {
             efb.closeAll()
         }
 
-        if (doCache) {
-            // put it in whether null or not
-            entityOneCache.put(whereCondition, newEntityValue)
-        }
+        // put it in whether null or not
+        if (doCache) entityOneCache.put(whereCondition, newEntityValue)
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
 
@@ -511,7 +514,7 @@ class EntityFindImpl implements EntityFind {
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", true)
 
-        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         Cache entityListCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
@@ -525,13 +528,13 @@ class EntityFindImpl implements EntityFind {
             }
         }
 
-        EntityListIterator eli = null
-        EntityList el = null
+        EntityListIterator eli
+        EntityList el
         try {
             eli = this.iteratorPlain()
             el = eli.getCompleteList()
         } finally {
-            if (eli != null) eli.close()
+            eli.close()
         }
 
         if (doCache) {
@@ -590,10 +593,11 @@ class EntityFindImpl implements EntityFind {
         efb.makeSqlFromClause()
 
         // where clause
-        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
-            whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
+            whereCondition =
+                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         } else if (viewWhere) {
             whereCondition = viewWhere
         }
@@ -606,10 +610,11 @@ class EntityFindImpl implements EntityFind {
         efb.makeGroupByClause(this.fieldsToSelect)
 
         // having clause
-        EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
+        EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
         EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
-            havingCondition = this.efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
+            havingCondition =
+                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
@@ -630,7 +635,7 @@ class EntityFindImpl implements EntityFind {
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
-        EntityListIterator eli = null
+        EntityListIterator eli
         try {
             efi.entityDbMeta.checkTableRuntime(ed)
 
@@ -672,7 +677,7 @@ class EntityFindImpl implements EntityFind {
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", true)
 
-        EntityConditionImplBase whereCondition = this.getWhereEntityCondition()
+        EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         Cache entityCountCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
@@ -699,7 +704,8 @@ class EntityFindImpl implements EntityFind {
         // where clause
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
-            whereCondition = this.efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
+            whereCondition =
+                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         } else if (viewWhere) {
             whereCondition = viewWhere
         }
@@ -712,10 +718,11 @@ class EntityFindImpl implements EntityFind {
         efb.makeGroupByClause(this.fieldsToSelect)
 
         // having clause
-        EntityConditionImplBase havingCondition = this.getHavingEntityCondition()
+        EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
         EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
-            havingCondition = this.efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
+            havingCondition =
+                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, JoinOperator.AND, viewHaving)
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
@@ -766,7 +773,7 @@ class EntityFindImpl implements EntityFind {
         // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
         // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
         this.useCache(false).forUpdate(true)
-        EntityListIterator eli = null
+        EntityListIterator eli
         long totalUpdated = 0
         try {
             eli = iterator()
@@ -791,7 +798,7 @@ class EntityFindImpl implements EntityFind {
         // NOTE: consider expanding this to do a bulk delete in the DB if there are no EECAs for the entity
         this.useCache(false).forUpdate(true)
         this.resultSetConcurrency(ResultSet.CONCUR_UPDATABLE)
-        EntityListIterator eli = null
+        EntityListIterator eli
         long totalDeleted = 0
         try {
             eli = iterator()
