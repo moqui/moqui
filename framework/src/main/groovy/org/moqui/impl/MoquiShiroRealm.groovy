@@ -18,11 +18,14 @@ import org.apache.shiro.authc.AuthenticationToken
 import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.credential.CredentialsMatcher
 import org.apache.shiro.authc.IncorrectCredentialsException
-import org.apache.shiro.authc.LockedAccountException
 import org.apache.shiro.authc.SaltedAuthenticationInfo
 import org.apache.shiro.authc.SimpleAuthenticationInfo
 import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.authc.UnknownAccountException
+import org.apache.shiro.authc.ExpiredCredentialsException
+import org.apache.shiro.authc.DisabledAccountException
+import org.apache.shiro.authc.CredentialsException
+import org.apache.shiro.authc.ExcessiveAttemptsException
 import org.apache.shiro.authz.Permission
 import org.apache.shiro.realm.Realm
 import org.apache.shiro.subject.PrincipalCollection
@@ -74,16 +77,38 @@ class MoquiShiroRealm implements Realm {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
             }
 
+            // no account found?
             if (!newUserAccount) throw new UnknownAccountException("Username [${username}] and/or password incorrect.")
+
+            // check for disabled account before checking password (otherwise even after disable could determine if
+            //    password is correct or not
+            if (newUserAccount.disabled == "Y") {
+                if (newUserAccount.disabledDateTime != null) {
+                    // account temporarily disabled (probably due to excessive attempts
+                    Integer disabledMinutes = ecfi.confXmlRoot."user-facade"[0]."login"[0]."@disable-minutes" as Integer ?: 30
+                    Timestamp reEnableTime = new Timestamp(newUserAccount.getTimestamp("disabledDateTime").getTime() + (disabledMinutes*60*1000))
+                    if (reEnableTime > ecfi.executionContext.user.nowTimestamp) {
+                        // only blow up if the re-enable time is not passed
+                        ecfi.serviceFacade.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
+                                .parameters((Map<String, Object>) [userId:newUserAccount.userId]).requireNewTransaction(true).call()
+                        throw new ExcessiveAttemptsException("Authenticate failed for user [${username}] because account is disabled and will not be re-enabled until [${reEnableTime}] [DISTMP].")
+                    }
+                } else {
+                    // account permanently disabled
+                    ecfi.serviceFacade.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
+                            .parameters((Map<String, Object>) [userId:newUserAccount.userId]).requireNewTransaction(true).call()
+                    throw new DisabledAccountException("Authenticate failed for user [${username}] because account is disabled and is not schedule to be automatically re-enabled [DISPRM].")
+                }
+            }
 
             // create the SaltedAuthenticationInfo object
             info = new SimpleAuthenticationInfo(username, newUserAccount.currentPassword,
                     newUserAccount.passwordSalt ? new SimpleByteSource((String) newUserAccount.passwordSalt) : null,
                     realmName)
-
+            // check the password (credentials for this case)
             CredentialsMatcher cm = ecfi.getCredentialsMatcher((String) newUserAccount.passwordHashType)
             if (!cm.doCredentialsMatch(token, info)) {
-                // only if failed on password, increment in new transaction to make sure it sticks
+                // if failed on password, increment in new transaction to make sure it sticks
                 ecfi.serviceFacade.sync().name("org.moqui.impl.UserServices.incrementUserAccountFailedLogins")
                         .parameters((Map<String, Object>) [userId:newUserAccount.userId]).requireNewTransaction(true).call()
                 throw new IncorrectCredentialsException("Username [${username}] and/or password incorrect.")
@@ -91,30 +116,21 @@ class MoquiShiroRealm implements Realm {
 
             // the password did match, but check a few additional things
             if (newUserAccount.requirePasswordChange == "Y") {
-                throw new LockedAccountException("Authenticate failed for user [${username}] because account requires password change [PWDCHG].")
-            }
-            if (newUserAccount.disabled == "Y") {
-                Timestamp reEnableTime = null
-                if (newUserAccount.disabledDateTime) {
-                    Integer disabledMinutes = ecfi.confXmlRoot."user-facade"[0]."login"[0]."@disable-minutes" as Integer ?: 30
-                    reEnableTime = new Timestamp(newUserAccount.getTimestamp("disabledDateTime").getTime() + (disabledMinutes*60*1000))
-                }
-                if (!reEnableTime || reEnableTime < getNowTimestamp()) {
-                    throw new LockedAccountException("Authenticate failed for user [${username}] because account is disabled and will not be re-enabled until [${reEnableTime}] [ACTDIS].")
-                }
+                // NOTE: don't call incrementUserAccountFailedLogins here (don't need compounding reasons to stop access)
+                throw new CredentialsException("Authenticate failed for user [${username}] because account requires password change [PWDCHG].")
             }
             // check time since password was last changed, if it has been too long (user-facade.password.@change-weeks default 12) then fail
             if (newUserAccount.passwordSetDate) {
                 int changeWeeks = (ecfi.confXmlRoot."user-facade"[0]."password"[0]."@change-weeks" ?: 12) as int
                 int wksSinceChange = (ecfi.executionContext.user.nowTimestamp.time - newUserAccount.passwordSetDate.time) / (7*24*60*60*1000)
                 if (wksSinceChange > changeWeeks) {
-                    throw new LockedAccountException("Authenticate failed for user [${username}] because password was changed [${wksSinceChange}] weeks ago and should be changed every [${changeWeeks}] weeks [PWDTIM].")
+                    // NOTE: don't call incrementUserAccountFailedLogins here (don't need compounding reasons to stop access)
+                    throw new ExpiredCredentialsException("Authenticate failed for user [${username}] because password was changed [${wksSinceChange}] weeks ago and must be changed every [${changeWeeks}] weeks [PWDTIM].")
                 }
             }
 
             // at this point the user is successfully authenticated
             successful = true
-            // logger.warn("User [${username}] successfully authc'ed")
 
             // NOTE: special case, for this thread only and for the section of code below need to turn off artifact
             //     authz since normally the user above would have authorized with something higher up, but that can't
@@ -160,75 +176,66 @@ class MoquiShiroRealm implements Realm {
     // ========== Authorization Methods ==========
 
     boolean isPermitted(PrincipalCollection principalCollection, String s) {
-        // TODO
-        return false
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean isPermitted(PrincipalCollection principalCollection, Permission permission) {
-        // TODO
-        return false
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean[] isPermitted(PrincipalCollection principalCollection, String... strings) {
-        // TODO
-        return new boolean[0]
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean[] isPermitted(PrincipalCollection principalCollection, List<Permission> permissions) {
-        // TODO
-        return new boolean[0]
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean isPermittedAll(PrincipalCollection principalCollection, String... strings) {
-        // TODO
-        return false
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean isPermittedAll(PrincipalCollection principalCollection, Collection<Permission> permissions) {
-        // TODO
-        return false
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkPermission(PrincipalCollection principalCollection, String s) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkPermission(PrincipalCollection principalCollection, Permission permission) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkPermissions(PrincipalCollection principalCollection, String... strings) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkPermissions(PrincipalCollection principalCollection, Collection<Permission> permissions) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean hasRole(PrincipalCollection principalCollection, String s) {
-        // TODO
-        return false
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean[] hasRoles(PrincipalCollection principalCollection, List<String> strings) {
-        // TODO
-        return new boolean[0]
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     boolean hasAllRoles(PrincipalCollection principalCollection, Collection<String> strings) {
-        // TODO
-        return false
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkRole(PrincipalCollection principalCollection, String s) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkRoles(PrincipalCollection principalCollection, Collection<String> strings) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 
     void checkRoles(PrincipalCollection principalCollection, String... strings) {
-        // TODO
+        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
     }
 }

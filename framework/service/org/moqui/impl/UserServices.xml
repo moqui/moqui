@@ -17,13 +17,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
             <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
-            <set field="userAccount.successiveFailedLogins" from="userAccount.successiveFailedLogins ? userAccount.successiveFailedLogins + 1 : 1"/>
+            <set field="userAccount.successiveFailedLogins"
+                 from="userAccount.successiveFailedLogins ? userAccount.successiveFailedLogins + 1 : 1"/>
+            <set field="maxFailures" from="(ec.ecfi.confXmlRoot.'user-facade'[0].login[0].'@max-failures' ?: 3) as Integer"/>
             <!-- if successiveFailedLogins is greater than max in conf then disable account -->
-            <compare field="userAccount.successiveFailedLogins" operator="greater"
-                     to-field="ec.ecfi.confXmlRoot.'user-facade'[0].login[0].'@max-failures' ?: 3" type="Integer">
+            <if condition="userAccount.successiveFailedLogins > maxFailures &amp;&amp; userAccount.disabled != 'Y'">
                 <set field="userAccount.disabled" value="Y"/>
                 <set field="userAccount.disabledDateTime" from="ec.user.nowTimestamp"/>
-            </compare>
+            </if>
+            <log level="warn" message="================ Failed logins [${userAccount.successiveFailedLogins}], maxFailures [${maxFailures}], disabled [${userAccount.disabled}]"/>
             <entity-update value-field="userAccount"/>
             <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
         </actions>

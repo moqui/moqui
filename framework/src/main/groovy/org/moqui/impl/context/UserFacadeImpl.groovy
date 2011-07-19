@@ -29,6 +29,7 @@ import org.apache.shiro.authc.UsernamePasswordToken
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
 import org.apache.shiro.web.session.HttpServletSession
+import org.apache.shiro.authc.ExpiredCredentialsException
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -224,23 +225,10 @@ class UserFacadeImpl implements UserFacade {
 
             // after successful login trigger the after-login actions
             if (eci.web != null) eci.web.runAfterLoginActions()
-        } catch (UnknownAccountException uae) {
-            eci.message.addError(uae.message)
-            logger.warn("Login failure: ${eci.message.errors}")
-            return false
-        } catch (IncorrectCredentialsException ice) {
-            eci.message.addError(ice.message)
-            logger.warn("Login failure: ${eci.message.errors}")
-            return false
-        } catch (LockedAccountException lae) {
-            eci.message.addError(lae.message)
-            logger.warn("Login failure: ${eci.message.errors}")
-            return false
-        } catch (ExcessiveAttemptsException eae) {
-            eci.message.addError(eae.message)
-            logger.warn("Login failure: ${eci.message.errors}")
-            return false
         } catch (AuthenticationException ae) {
+            // others to consider handling differently (these all inherit from AuthenticationException):
+            //     UnknownAccountException, IncorrectCredentialsException, ExpiredCredentialsException,
+            //     CredentialsException, LockedAccountException, DisabledAccountException, ExcessiveAttemptsException
             eci.message.addError(ae.message)
             logger.warn("Login failure: ${eci.message.errors}", ae)
             return false

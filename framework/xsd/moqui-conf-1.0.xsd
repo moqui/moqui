@@ -169,8 +169,11 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="password">
         <xs:complexType>
-            <xs:attribute name="encrypt-hash-type" default="SHA">
+            <xs:attribute name="encrypt-hash-type" default="SHA-256">
                 <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="SHA-256"/>
+                    <xs:enumeration value="SHA-384"/>
+                    <xs:enumeration value="SHA-512"/>
                     <xs:enumeration value="SHA"/>
                     <xs:enumeration value="MD5"/>
                 </xs:restriction></xs:simpleType>
