@@ -5,13 +5,17 @@ allprojects {
     version = '1.0-beta3'
 }
 
+warName = 'moqui-' + version + '.war'
+
 // ========== clean tasks ==========
 
+task clean(type: Delete) { delete file(warName) }
 task cleanDb(type: Delete) { delete fileTree(dir: 'runtime/db/derby', include: '**/*', exclude: 'derby.properties') }
 task cleanLog(type: Delete) { delete fileTree(dir: 'runtime/log', include: '*') }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
 task cleanAll {
+    dependsOn clean
     dependsOn cleanDb
     dependsOn cleanLog
     dependsOn cleanOther
@@ -19,22 +23,26 @@ task cleanAll {
 
 // ========== run tasks ==========
 task run(type: JavaExec) {
+    dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    main = '-jar'; args = ['moqui-' + version + '.war']
+    // NOTE: this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
+    main = '-jar'; args = [warName]
 }
 task runStaging(type: JavaExec) {
+    dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '1024M'
     systemProperties = ['moqui.conf':'conf/staging/MoquiStagingConf.xml']
-    main = '-jar'; args = ['moqui-' + version + '.war']
+    main = '-jar'; args = [warName]
 }
 task runProduction(type: JavaExec) {
+    dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '1024M'
     systemProperties = ['moqui.conf':'conf/production/MoquiProductionConf.xml']
-    main = '-jar'; args = ['moqui-' + version + '.war']
+    main = '-jar'; args = [warName]
 }
 
 task load(type: JavaExec) {
-    // this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
+    dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    main = '-jar'; args = ['moqui-' + version + '.war', '-load']
+    main = '-jar'; args = [warName]
 }
