@@ -99,7 +99,7 @@ public class MoquiStart extends ClassLoader {
 
             try {
                 Class c = moquiStartLoader.loadClass("org.moqui.Moqui");
-                Method m = c.getMethod("loadData", new Class<?>[] { Map.class });
+                Method m = c.getMethod("loadData", new Class[] { Map.class });
                 m.invoke(null, argMap);
             } catch (Exception e) {
                 System.out.println("Error loading or running Moqui.loadData with args [" + argMap + "]: " + e.toString());
@@ -131,12 +131,12 @@ public class MoquiStart extends ClassLoader {
             System.out.println("Running Winstone embedded server with args [" + argMap + "]");
 
             Class c = moquiStartLoader.loadClass("winstone.Launcher");
-            Method initLogger = c.getMethod("initLogger", new Class<?>[] { Map.class });
+            Method initLogger = c.getMethod("initLogger", new Class[] { Map.class });
             Method shutdown = c.getMethod("shutdown");
             // init the Winstone logger
             initLogger.invoke(null, argMap);
             // start Winstone with a new instance of the server
-            Constructor wlc = c.getConstructor(new Class<?>[] { Map.class });
+            Constructor wlc = c.getConstructor(new Class[] { Map.class });
             Object winstone = wlc.newInstance(argMap);
 
             // now that we have an object to shutdown, set the hook
