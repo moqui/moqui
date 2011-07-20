@@ -1,9 +1,7 @@
-apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'war'
 
-sourceCompatibility = 1.6
-version = '1.0-beta3'
+sourceCompatibility = '1.6'
 archivesBaseName = 'moqui'
 
 sourceSets {
@@ -13,21 +11,20 @@ sourceSets {
 
 // maybe in the future: repositories { mavenCentral() }
 repositories {
-    flatDir name: 'localLib', dirs: 'lib'
-    flatDir name: 'localLibFop', dirs: 'lib/fop'
-    localLib { addArtifactPattern(file('lib').absolutePath + '/[name]-[version].jar') }
-    localLibFop { addArtifactPattern(file('lib/fop').absolutePath + '/[name]-[version].jar') }
+    flatDir name: 'localLib', dirs: projectDir.absolutePath + '/lib'
+    flatDir name: 'localLibFop', dirs: projectDir.absolutePath + '/lib/fop'
 }
 
 dependencies {
     compile name: 'antisamy', version: '1.4'
 
-    compile name: 'atomikos-transactions', version: '3.7.0'
+    compile module(name: 'atomikos-transactions', version: '3.7.0') {
+        dependencies module(name: 'atomikos-util', version: '3.7.0')
+    }
     compile name: 'atomikos-transactions-api', version: '3.7.0'
     compile name: 'atomikos-transactions-jdbc', version: '3.7.0'
-    compile name: 'atomikos-transactions-jms', version: '3.7.0'
+    //runtime name: 'atomikos-transactions-jms', version: '3.7.0'
     compile name: 'atomikos-transactions-jta', version: '3.7.0'
-    compile name: 'atomikos-util', version: '3.7.0'
 
     compile name: 'commons-codec', version: '1.4'
     compile name: 'commons-collections', version: '3.2.1'
@@ -119,15 +116,15 @@ jar {
 }
 
 war {
-    // TODO: how to get it to include the built war file instead of including classes/etc directly? or add a classpath fileTree for those resources... again...
-    // TODO: missing extra resource dirs, api classes
-
+    dependsOn jar
     // put the war file in the parent directory, ie the moqui dir instead of the framework dir
     destinationDir = file('..')
     // add MoquiInit.properties to the WEB-INF/classes dir for the deployed war mode of operation
-    // TODO: get this to the classes dir, is in the lib dir somehow
+    // TODO: get this to the classes dir, is going to the lib dir somehow
     classpath fileTree(dir: '..', includes: ['MoquiInit.properties'])
-    classpath file('build/libs/*.jar')
+    // TODO: how to exclude?: classpath sourceSets.main.classes
+    classpath file(jar.archivePath)
+
     // put start classes and winstone in the root of the war file for the executable war/jar mode of operation
     from sourceSets.start.classes
     from file('./lib/winstone-0.9.10.jar')

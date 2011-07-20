@@ -1,0 +1,40 @@
+
+dependsOnChildren()
+
+allprojects {
+    version = '1.0-beta3'
+}
+
+// ========== clean tasks ==========
+
+task cleanDb(type: Delete) { delete fileTree(dir: 'runtime/db/derby', include: '**/*', exclude: 'derby.properties') }
+task cleanLog(type: Delete) { delete fileTree(dir: 'runtime/log', include: '*') }
+task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
+
+task cleanAll {
+    dependsOn cleanDb
+    dependsOn cleanLog
+    dependsOn cleanOther
+}
+
+// ========== run tasks ==========
+task run(type: JavaExec) {
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
+    main = '-jar'; args = ['moqui-' + version + '.war']
+}
+task runStaging(type: JavaExec) {
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '1024M'
+    systemProperties = ['moqui.conf':'conf/staging/MoquiStagingConf.xml']
+    main = '-jar'; args = ['moqui-' + version + '.war']
+}
+task runProduction(type: JavaExec) {
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '1024M'
+    systemProperties = ['moqui.conf':'conf/production/MoquiProductionConf.xml']
+    main = '-jar'; args = ['moqui-' + version + '.war']
+}
+
+task load(type: JavaExec) {
+    // this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
+    main = '-jar'; args = ['moqui-' + version + '.war', '-load']
+}

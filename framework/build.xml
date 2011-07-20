@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <mkdir dir="build/classes/main"/>
         <mkdir dir="build/lib"/>
 
-        <!-- make the API classes -->
+        <!-- make the start classes -->
         <echo message="===== Building start classes"/>
         <javac srcdir="src/start/java" destdir="build/classes/start" includeantruntime="false"
                 debug="on" deprecation="on" compiler="javac1.6" target="1.6" source="1.6" encoding="UTF-8">

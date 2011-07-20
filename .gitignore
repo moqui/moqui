@@ -1,6 +1,8 @@
 .idea/
+.gradle/
 moqui.iml
 framework/build/
+framework/.gradle/
 moqui-*.war
 runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
