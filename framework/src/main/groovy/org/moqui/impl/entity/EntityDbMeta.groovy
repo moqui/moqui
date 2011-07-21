@@ -17,14 +17,13 @@ import java.sql.Statement
 import java.sql.DatabaseMetaData
 import java.sql.ResultSet
 import java.sql.Timestamp
-import javax.transaction.Transaction
 
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.context.Cache
 import org.moqui.entity.EntityException
 
 class EntityDbMeta {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDbMeta.class)
 
     protected Cache entityTablesChecked
 
