@@ -544,7 +544,7 @@ class EntityFindImpl implements EntityFind {
             eli = this.iteratorPlain()
             el = eli.getCompleteList()
         } finally {
-            eli.close()
+            if (eli != null) eli.close()
         }
 
         if (doCache) {
