@@ -20,7 +20,7 @@ warName = 'moqui-' + version + '.war'
 // ========== clean tasks ==========
 
 task clean(type: Delete) { delete file(warName) }
-task cleanDb(type: Delete) { delete fileTree(dir: 'runtime/db/derby', include: '**/*', exclude: 'derby.properties') }
+task cleanDb(type: Delete) { delete files(file('runtime/db/derby').listFiles()) - files('runtime/db/derby/derby.properties') }
 task cleanLog(type: Delete) { delete fileTree(dir: 'runtime/log', include: '*') }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
@@ -56,7 +56,7 @@ task runProduction(type: JavaExec) {
 task load(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    main = '-jar'; args = [warName]
+    main = '-jar'; args = [warName, '-load']
 }
 
 // ========== deploy tasks ==========
