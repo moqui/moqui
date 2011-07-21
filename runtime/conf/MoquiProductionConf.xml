@@ -13,7 +13,7 @@
 
     <webapp-list>
         <webapp name="webroot">
-            <root-screen host=".*" location="component://webroot/screen/MoquiRoot.xml"/>
+            <root-screen host=".*" location="component://webroot/screen/webroot.xml"/>
         </webapp>
     </webapp-list>
 

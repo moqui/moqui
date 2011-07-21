@@ -15,7 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         require-authentication="false" screen-theme-type-enum-id="STT_INTERNAL_IPAD"
         standalone="true" login-path="/ipad/Login">
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide -->
-    <!-- NOTE: standalone=true is used so that we can have our own HTML header/etc and here instead of in parent (MoquiRoot.xml) -->
+    <!-- NOTE: standalone=true is used so that we can have our own HTML header/etc and here instead of in parent (webroot.xml) -->
 
     <subscreens default-item="example">
         <!-- refer to the various app roots here -->
