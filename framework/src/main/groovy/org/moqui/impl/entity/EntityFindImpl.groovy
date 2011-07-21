@@ -394,6 +394,9 @@ class EntityFindImpl implements EntityFind {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
 
+        if (ed.isViewEntity() && !ed.entityNode."member-entity")
+            throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities.")
+
         efi.ecfi.executionContext.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
@@ -511,6 +514,9 @@ class EntityFindImpl implements EntityFind {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
 
+        if (ed.isViewEntity() && !ed.entityNode."member-entity")
+            throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities.")
+
         efi.ecfi.executionContext.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
@@ -560,6 +566,9 @@ class EntityFindImpl implements EntityFind {
     EntityListIterator iterator() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
+
+        if (ed.isViewEntity() && !ed.entityNode."member-entity")
+            throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities.")
 
         efi.ecfi.executionContext.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),

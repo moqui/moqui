@@ -302,7 +302,8 @@ class EntityFacadeImpl implements EntityFacade {
             if (dbViewEntity.cache == "Y") dbViewNode.attributes().put("cache", "true")
             else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
 
-            for (EntityValue dbViewEntityMember in makeFind("DbViewEntityMember").condition("dbViewEntityName", entityName).list()) {
+            EntityList memberList = makeFind("DbViewEntityMember").condition("dbViewEntityName", entityName).list()
+            for (EntityValue dbViewEntityMember in memberList) {
                 Node memberEntity = dbViewNode.appendNode("member-entity",
                         ["entity-alias":dbViewEntityMember.entityAlias, "entity-name":dbViewEntityMember.entityName])
                 if (dbViewEntityMember.joinFromAlias) {
