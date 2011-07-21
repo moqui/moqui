@@ -34,7 +34,7 @@ dependencies {
         dependencies module(name: 'atomikos-util', version: '3.7.0') }
     compile name: 'atomikos-transactions-api', version: '3.7.0'
     compile name: 'atomikos-transactions-jdbc', version: '3.7.0'
-    //runtime name: 'atomikos-transactions-jms', version: '3.7.0'
+    // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.7.0'
     compile name: 'atomikos-transactions-jta', version: '3.7.0'
 
     compile name: 'commons-codec', version: '1.4'
@@ -76,7 +76,7 @@ dependencies {
     compile name: 'redstone-xmlrpc-client', version: '1.1.1'
 
     compile module(name: 'shiro-core', version: '1.1.0') {
-        dependencies module(name: 'commons-beanutils', version: '1.8.3') }
+        dependencies module(name: 'commons-beanutils', version: '1.8.3'), module(name: 'commons-logging', version: '1.1.1') }
     compile name: 'shiro-web', version: '1.1.0'
 
     compile module(name: 'slf4j-api', version: '1.6.0') {
@@ -91,14 +91,8 @@ dependencies {
 
     // groovy dependencies (just the library to compile with?)
     groovy name: 'groovy-all', version: '1.8.0'
-    groovy name: 'antlr', version: '2.7.7'
-    groovy name: 'asm', version: '3.2'
 
-    // runtime dependencies
-
-    runtime name: 'commons-cli', version: '1.2'
-    runtime name: 'commons-logging', version: '1.1.1'
-
+    // ========== runtime-only dependencies ==========
     runtime name: 'derby', version: '10.8.1.2'
     runtime name: 'jakarta-oro', version: '2.0.8'
     runtime name: 'shiro-ehcache', version: '1.1.0'

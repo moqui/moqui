@@ -16,6 +16,7 @@ allprojects {
     version = '1.0-beta3'
 }
 
+tomcatHome = '../apache-tomcat-7.0.6'
 warName = 'moqui-' + version + '.war'
 
 // ========== clean tasks ==========
@@ -57,4 +58,31 @@ task load(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
     main = '-jar'; args = [warName]
+}
+
+task deployTomcat {
+
+}
+
+task addRuntime << {
+    // unzip the "moqui-${version}.war" file to the wartemp directory
+    //directory { dir = file('wartemp') }
+    copy { from zipTree(warName); into file('wartemp') }
+    // copy runtime directory (with a few exceptions) into a runtime directory in the war
+    copy {
+        from fileTree(dir: '.', include: 'runtime/**', excludes: ['**/*.jar', 'runtime/lib/**', 'runtime/db/**', 'runtime/log/**'])
+        into file('wartemp')
+    }
+    // copy the jar files from runtime/lib
+    copy { from fileTree(dir: 'runtime/lib', include: '*.jar'); into 'wartemp/WEB-INF/lib' }
+    // copy the jar files from components
+    // this copies whole directory tree, how to just get files? copy { from fileTree(dir: 'runtime/component', include: '**/*.jar'); into 'wartemp/WEB-INF/lib' }
+    // add MoquiInit.properties fresh copy, just in case it was changed
+    copy { from file('MoquiInit.properties'); into 'wartemp/WEB-INF/classes' }
+
+    // zip it up again
+    ant.zip(destfile: 'moqui-plus-runtime.war') { fileset(dir: 'wartemp') { include(name: '**/*') } }
+    // alternative once supported: zip { archiveName 'moqui-plus-runtime.war'; from fileTree(dir: 'wartemp', include: '**/*') }
+    // clean up the temporary directory
+    delete file('wartemp')
 }
