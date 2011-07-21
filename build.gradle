@@ -12,9 +12,7 @@
 
 dependsOnChildren()
 
-allprojects {
-    version = '1.0-beta3'
-}
+allprojects { version = '1.0-beta3' }
 
 tomcatHome = '../apache-tomcat-7.0.6'
 warName = 'moqui-' + version + '.war'
@@ -34,6 +32,7 @@ task cleanAll {
 }
 
 // ========== run tasks ==========
+
 task run(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
@@ -60,8 +59,16 @@ task load(type: JavaExec) {
     main = '-jar'; args = [warName]
 }
 
-task deployTomcat {
+// ========== deploy tasks ==========
 
+task deployTomcat << {
+    // remove runtime directory, may have been added for logs/etc
+    delete file(tomcatHome + '/runtime')
+    // remove ROOT directory and war to avoid conflicts
+    delete file(tomcatHome + '/webapps/ROOT')
+    delete file(tomcatHome + '/webapps/ROOT.war')
+    // copy the war file to ROOT.war
+    copy { from file(warName); into file(tomcatHome + '/webapps'); rename(warName, 'ROOT.war') }
 }
 
 task addRuntime << {

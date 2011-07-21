@@ -11,6 +11,12 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 
+<!--
+README: These are just tools for using the Moqui WAR file.
+
+The actual build is done with Gradle.
+ -->
+
 <project name="Moqui WAR Tools" default="run" basedir=".">
     <property environment="env"/>
     <property name="version" value="1.0-beta3"/>
@@ -43,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <copy file="moqui-${version}.war" tofile="${tomcat.home}/webapps/ROOT.war"/>
     </target>
 
-    <target name="run" description="Run Moqui Web server in production mode">
+    <target name="run-prod" description="Run Moqui Web server in production mode">
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
             <jvmarg value="-Xms1024M"/>
@@ -52,7 +58,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <jvmarg value="-Dmoqui.conf=conf/MoquiProductionConf.xml"/>
         </java>
     </target>
-    <target name="run-dev" description="Run Moqui Web server in dev/default mode with Embedded Winstone (run the executable war file)">
+    <target name="run" description="Run Moqui Web server in dev/default mode with Embedded Winstone (run the executable war file)">
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
             <jvmarg value="-Xmx256M"/>
