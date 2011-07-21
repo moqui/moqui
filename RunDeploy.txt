@@ -96,23 +96,23 @@ you unzip the archive this is what you'll have.
 Run the commands below to use the default settings:
 
 - moqui.runtime=runtime
-- moqui.conf=conf/development/MoquiDevConf.xml (related to runtime)
+- moqui.conf=conf/MoquiDevConf.xml (related to runtime)
 
 1. Load Data  : $ java -jar moqui-${version}.war -load
 2. Run Server : $ java -jar moqui-${version}.war
 
 -- Common Alternate - Specify a Configuration File on Command Line
 
-1. Load Data  : $ java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml
+1. Load Data  : $ java -Dmoqui.conf=conf/MoquiStagingConf.xml
                        -jar moqui-${version}.war -load
-2. Run Server : $ java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml
+2. Run Server : $ java -Dmoqui.conf=conf/MoquiStagingConf.xml
                        -jar moqui-${version}.war
 
 -- Create a Custom WAR File with Settings Inside
 
 To do this requires that you have the source files available.
 
-1. Edit the moqui/MoquiInit.properties file, change as desired
+1. Edit the ${moqui.home}/MoquiInit.properties file, change as desired
 2. Rebuild the WAR file with: $ ant war
 3. Copy the WAR file to the deployment target
 4. Run server (or kick to deploy live WAR)
@@ -121,17 +121,20 @@ To do this requires that you have the source files available.
 5. Build and Run From Source
 ===========================================================================
 
-There are various useful ant targets in the top-level build.xml file for
-the Moqui Framework.
+Moqui Framework uses Gradle for building from source. There are various
+custom tasks to automate frequent things, but most work is done with the
+built-in tasks from Gradle.
 
-- Build JARs only     : $ ant build
-- Build WAR           : $ ant war
-- Load All Data       : $ ant load
-- Run Embedded Server : $ ant run
-- Clean up JARs, WAR  : $ ant clean
-- Clean up ALL built and runtime files (logs, dbs, etc) : $ ant clean-all
+There is also an Ant build file for a few common tasks, but not for
+building from source.
 
-Note that the load and run targets depend on the war target. The easiest
+- Build JAR, WAR      : $ gradle build
+- Load All Data       : $ gradle load   OR ant load
+- Run Embedded Server : $ gradle run    OR ant run
+- Clean up JARs, WAR  : $ gradle clean
+- Clean up ALL built and runtime files (logs, dbs, etc) : $ gradle cleanAll
+
+Note that the load and run tasks depend on the build task. The easiest
 to get a new development system running with a populated database is:
 
 $ ant load run
@@ -143,13 +146,24 @@ stop it just press <ctrl-c> (or your preferred alternative).
 6. Project Directory Structure
 ===========================================================================
 
-- moqui (from https://moqui.svn.sourceforge.net/svnroot/moqui/trunk/moqui)
+- moqui (from https://github.com/jonesde/moqui)
   - framework
-    - api       : Java API, standard entities, services, data, XSDs, etc
     - build     : Results of framework build go here (classes, jars, etc)
-    - impl      : Implementation of the framework
-    - start     : Startup code for the executable WAR
-    - webapp    : The WEB-INF/web.xml file lives here
+    - data      : Seed data
+    - entity    : Framework entity definitions
+    - lib       : Libraries (JAR files) used in Moqui
+    - screen    : Framework screens
+    - service   : Framework services
+    - src       : Java API, standard entities, services, data, XSDs, etc
+      - api     : Java source for the Moqui Framework API
+      - main    : Main implement source
+        - groovy    : Groovy source (bulk of the implementation)
+        - java      : Java source (a few special classes)
+        - resources : Classpath resources, placed in JAR as-is
+        - webapp    : Base webapp, mostly just a WEB-INF/web.xml file
+      - start   : Java source for MoquiStart, used for executable WAR
+    - template  : Framework templates (screen/form, xml-actions FTLs)
+    - xsd       : Framework XML Schema files
   - runtime
     - component : Components to deploy
       - example : An example application
@@ -159,6 +173,6 @@ stop it just press <ctrl-c> (or your preferred alternative).
     - db        : Database files for Derby, etc will go here
     - lib       : JAR files to add to classpath
     - log       : Log files will go here
-    - rep       : JCR Repositories
+    - mantle    : The Mantle root can go here, with components under it
     - template  : General Templates
     - tmp       : Temporary files
