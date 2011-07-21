@@ -64,7 +64,7 @@ class EntityQueryBuilder {
     }
 
     protected void handleSqlException(Exception e, String sql) {
-        throw new EntityException("SQL Exception with statement:" + sql, e)
+        throw new EntityException("SQL Exception with statement:" + sql + "; " + e.toString(), e)
     }
 
     PreparedStatement makePreparedStatement() {
