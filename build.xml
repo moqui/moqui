@@ -33,8 +33,8 @@ The actual build is done with Gradle.
         <copy todir="wartemp/WEB-INF/lib"><fileset dir="runtime/lib" includes="*.jar"/></copy>
         <copy file="MoquiInit.properties" todir="wartemp/WEB-INF/classes" overwrite="true"/>
 
-        <!-- zip it up again as moqui-with-runtime-${version}.war -->
-        <zip destfile="moqui-with-runtime-${version}.war" basedir="wartemp"/>
+        <!-- zip it up again -->
+        <zip destfile="moqui-plus-runtime.war" basedir="wartemp"/>
 
         <delete verbose="off" failonerror="false" dir="wartemp"/>
     </target>

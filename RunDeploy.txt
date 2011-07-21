@@ -110,12 +110,18 @@ Run the commands below to use the default settings:
 
 -- Create a Custom WAR File with Settings Inside
 
-To do this requires that you have the source files available.
+1. Add components and other resources as needed to the runtime directory
+2. Change ${moqui.home}/MoquiInit.properties with desired settings
+3. Change Moqui conf file (runtime/conf/Moqui*Conf.xml) as needed
+4. Create a derived WAR file based on the moqui.war file and with your
+   runtime directory contents and MoquiInit.properties file with:
 
-1. Edit the ${moqui.home}/MoquiInit.properties file, change as desired
-2. Rebuild the WAR file with: $ ant war
-3. Copy the WAR file to the deployment target
-4. Run server (or kick to deploy live WAR)
+$ gradle addRuntime
+OR
+$ ant add-runtime
+
+5. Copy the created WAR file (moqui-plus-runtime.war) to deployment target
+6. Run server (or kick to deploy live WAR)
 
 ===========================================================================
 5. Build and Run From Source
@@ -137,7 +143,7 @@ building from source.
 Note that the load and run tasks depend on the build task. The easiest
 to get a new development system running with a populated database is:
 
-$ ant load run
+$ gradle load run
 
 This will build the war file, run the data loader, then run the server. To
 stop it just press <ctrl-c> (or your preferred alternative).
