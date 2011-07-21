@@ -32,7 +32,7 @@ import java.util.jar.Manifest;
  */
 public class MoquiStart extends ClassLoader {
     // this default is for development and is here instead of having a buried properties file that might cause conflicts when trying to override
-    static final String defaultConf = "conf/development/MoquiDevConf.xml";
+    static final String defaultConf = "conf/MoquiDevConf.xml";
 
     public static void main(String[] args) throws IOException {
         // now grab the first arg and see if it is a known command
@@ -53,7 +53,7 @@ public class MoquiStart extends ClassLoader {
             System.out.println("------------------------------------------------");
             System.out.println("Current runtime directory (moqui.runtime): " + System.getProperty("moqui.runtime"));
             System.out.println("Current configuration file (moqui.conf): " + System.getProperty("moqui.conf"));
-            System.out.println("To set these properties use something like: java -Dmoqui.conf=conf/staging/MoquiStagingConf.xml -jar moqui.jar ...");
+            System.out.println("To set these properties use something like: java -Dmoqui.conf=conf/MoquiStagingConf.xml -jar moqui.jar ...");
             System.out.println("------------------------------------------------");
             System.out.println("Usage: java -jar moqui.war [command] [arguments]");
             System.out.println("-help, -? ---- Help (this text)");

@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <jvmarg value="-Xms1024M"/>
             <jvmarg value="-Xmx1024M"/>
             <jvmarg value="-XX:MaxPermSize=64m"/>
-            <jvmarg value="-Dmoqui.conf=conf/production/MoquiProductionConf.xml"/>
+            <jvmarg value="-Dmoqui.conf=conf/MoquiProductionConf.xml"/>
         </java>
     </target>
     <target name="run-dev" description="Run Moqui Web server in dev/default mode with Embedded Winstone (run the executable war file)">

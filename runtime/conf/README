@@ -1,8 +1,5 @@
 
 README for the runtime/conf Directory
 
-A configuration directory under this directory will be selected at runtime. Having multiple configuration directories
+A configuration file under this directory will be selected at runtime. Having multiple configuration file
 facilitates differing configurations for different environments, such as: development, staging, and production.
-
-Place files in the configuration directory to override those in the framework/conf-default directory.
-Any configuration files not present in the active directory will be used from the framework/conf-default directory.

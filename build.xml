@@ -100,6 +100,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <jvmarg value="-server"/>
             <jvmarg value="-Xmx256M"/>
             <jvmarg value="-XX:MaxPermSize=64m"/>
+            <jvmarg value="-Dmoqui.conf=conf/MoquiDevConf.xml"/>
         </java>
     </target>
     <target name="run-staging" depends="war" description="Run Moqui Web server in production mode">
@@ -108,7 +109,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <jvmarg value="-Xms1024M"/>
             <jvmarg value="-Xmx1024M"/>
             <jvmarg value="-XX:MaxPermSize=64m"/>
-            <jvmarg value="-Dmoqui.conf=conf/staging/MoquiStagingConf.xml"/>
+            <jvmarg value="-Dmoqui.conf=conf/MoquiStagingConf.xml"/>
         </java>
     </target>
     <target name="run-production" depends="war" description="Run Moqui Web server in production mode">
@@ -117,7 +118,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <jvmarg value="-Xms1024M"/>
             <jvmarg value="-Xmx1024M"/>
             <jvmarg value="-XX:MaxPermSize=64m"/>
-            <jvmarg value="-Dmoqui.conf=conf/production/MoquiProductionConf.xml"/>
+            <jvmarg value="-Dmoqui.conf=conf/MoquiProductionConf.xml"/>
         </java>
     </target>
     <target name="load" depends="war" description="Run Moqui data loader (run the executable war file with -load)">

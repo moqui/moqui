@@ -25,19 +25,20 @@ task cleanAll {
 task run(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
+    systemProperties = ['moqui.conf':'conf/MoquiDevConf.xml']
     // NOTE: this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
     main = '-jar'; args = [warName]
 }
 task runStaging(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '1024M'
-    systemProperties = ['moqui.conf':'conf/staging/MoquiStagingConf.xml']
+    systemProperties = ['moqui.conf':'conf/MoquiStagingConf.xml']
     main = '-jar'; args = [warName]
 }
 task runProduction(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '1024M'
-    systemProperties = ['moqui.conf':'conf/production/MoquiProductionConf.xml']
+    systemProperties = ['moqui.conf':'conf/MoquiProductionConf.xml']
     main = '-jar'; args = [warName]
 }
 
