@@ -12,6 +12,7 @@ This release includes:
 - All the great features of the preview releases, 1.0-beta1, and 1.0-beta2
 - More testing and bug fixes
 - Updated all libraries with updates available as of 15 July 2011
+- Changed build to use Gradle instead of Ant
 - Support for multiple root screens determined by host name using regexp,
   or in other words virtual host support
 - UserPreference records refined so that keys can be defined with
