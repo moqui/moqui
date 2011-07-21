@@ -570,16 +570,21 @@ class EntityFacadeImpl implements EntityFacade {
             for (String fn in red.getFieldNames(true, true)) {
                 Node fieldNode = red.getFieldNode(fn)
                 boolean inDbView = false
+                String functionName = null
                 if (dbViewEntity) {
                     EntityValue dbViewEntityMember = makeFind("DbViewEntityMember")
                             .condition([dbViewEntityName:dbViewEntityName, entityName:red.entityName]).one()
-                    if (dbViewEntityMember && makeFind("DbViewEntityAlias")
-                            .condition([dbViewEntityName:dbViewEntityName, entityAlias:dbViewEntityMember.entityAlias, fieldName:fn]).count()) {
-                        inDbView = true
+                    if (dbViewEntityMember) {
+                        EntityValue aliasVal = makeFind("DbViewEntityAlias")
+                            .condition([dbViewEntityName:dbViewEntityName, entityAlias:dbViewEntityMember.entityAlias, fieldName:fn]).one()
+                        if (aliasVal) {
+                            inDbView = true
+                            functionName = aliasVal.functionName
+                        }
                     }
                 }
                 efl.add((Map<String, Object>) [entityName:relInfo.relatedEntityName, fieldName:fn, type:fieldNode."@type",
-                        cardinality:relInfo.type, title:relInfo.title, inDbView:inDbView])
+                        cardinality:relInfo.type, title:relInfo.title, inDbView:inDbView, functionName:functionName])
             }
         }
 

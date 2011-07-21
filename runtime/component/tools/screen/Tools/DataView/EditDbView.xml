@@ -58,6 +58,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 int parameterIndex = 0
                 while (ec.web.parameters.get("dbViewEntityName_" + parameterIndex)) {
                     String field = ec.web.parameters.get("field_" + parameterIndex)
+                    String functionName = ec.web.parameters.get("functionName_" + parameterIndex)
                     // ec.logger.log(ec.logger.WARN_INT, "Field field_${parameterIndex}, value: ${field}", null)
                     parameterIndex++
 
@@ -114,6 +115,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     aliasValue.fieldAlias = fieldName + (fieldAliasIndex > 1 ? fieldAliasIndex : '')
                     aliasValue.entityAlias = memberValue.entityAlias
                     aliasValue.fieldName = fieldName
+                    if (functionName) aliasValue.functionName = functionName
                     aliasValue.create()
                 }
 
@@ -185,6 +187,12 @@ This Work includes contributions authored by David E. Jones, not as a
                     </field>
                     <field name="type"><default-field><display also-hidden="false"/></default-field></field>
                     <field name="cardinality"><default-field><display also-hidden="false"/></default-field></field>
+                    <field name="functionName">
+                        <default-field><drop-down allow-empty="true" current="selected">
+                            <option key="min"/><option key="max"/><option key="sum"/><option key="avg"/>
+                            <option key="count"/><option key="count-distinct"/><option key="upper"/><option key="lower"/>
+                        </drop-down></default-field>
+                    </field>
                     <field name="submit"><default-field title="Select Fields"><submit/></default-field></field>
                 </form-list>
             </widgets>
