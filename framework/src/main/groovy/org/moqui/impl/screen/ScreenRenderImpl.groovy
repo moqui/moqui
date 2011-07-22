@@ -452,19 +452,6 @@ class ScreenRenderImpl implements ScreenRender {
         if (currentSd.webSettingsNode?."@mime-type") this.outputContentType = currentSd.webSettingsNode?."@mime-type"
         if (currentSd.webSettingsNode?."@character-encoding") this.characterEncoding = currentSd.webSettingsNode?."@character-encoding"
 
-        // if request not secure and screens requires secure redirect to https
-        if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
-                !request.isSecure()) {
-            logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure, sending redirect to secure.")
-            if (ec.web) {
-                // save messages in session before redirecting so they can be displayed on the next screen
-                ((WebFacadeImpl) ec.web).saveMessagesToSession()
-            }
-            // redirect to the same URL this came to
-            response.sendRedirect(screenUrlInfo.getUrlWithParams())
-            return false
-        }
-
         // if screen requires auth and there is not active user redirect to login screen, save this request
         if (logger.traceEnabled) logger.trace("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
         if (currentSd.screenNode?."@require-authentication" != "false" && !ec.user.userId) {
@@ -487,6 +474,17 @@ class ScreenRenderImpl implements ScreenRender {
             // now prepare and send the redirect
             ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], loginPath)
             response.sendRedirect(sui.url)
+            return false
+        }
+
+        // if request not secure and screens requires secure redirect to https
+        if (currentSd.webSettingsNode?."@require-encryption" != "false" && getWebappNode()."@https-enabled" != "false" &&
+                !request.isSecure()) {
+            logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires an encrypted/secure connection but the request is not secure, sending redirect to secure.")
+            // save messages in session before redirecting so they can be displayed on the next screen
+            if (ec.web) ((WebFacadeImpl) ec.web).saveMessagesToSession()
+            // redirect to the same URL this came to
+            response.sendRedirect(screenUrlInfo.getUrlWithParams())
             return false
         }
 
