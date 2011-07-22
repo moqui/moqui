@@ -47,6 +47,8 @@ This release includes:
     record does not exist and update if it does
   - Support of pre-configured scheduled job exists, see:
     http://www.quartz-scheduler.org/docs/cookbook/JobInitPlugin.html
+- Artifact Execution Facade
+  - Persist data about authz failures (in ArtifactAuthzFailure entity)
 - Tools Screens
   - Auto Screen
     - Order by links in column headers by default (by default for all
@@ -485,4 +487,3 @@ Features designed, but not to be included in 1.0 series
     other types of artifacts (if/as determined to be helpful), including:
     Component, Webapp, Screen Section, Screen Form, Screen Form Field,
     Template, Script, Entity Field
-  - Persist data about authz failures (in db, in addition to log)

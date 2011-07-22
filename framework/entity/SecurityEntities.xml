@@ -75,6 +75,24 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="authzActionEnumId"/>
         </relationship>
     </entity>
+    <entity entity-name="ArtifactAuthzFailure" package-name="moqui.security.authz" cache="false">
+        <field name="failureId" type="text-long" is-pk="true"/>
+        <field name="artifactName" type="text-long"/>
+        <field name="artifactTypeEnumId" type="id"/>
+        <field name="authzActionEnumId" type="id"/>
+        <field name="userId" type="id-very-long"/>
+        <field name="failureDate" type="date-time"/>
+        <field name="isDeny" type="text-indicator"/>
+        <relationship type="one" title="ArtifactType" related-entity-name="Enumeration">
+            <key-map field-name="artifactTypeEnumId"/>
+        </relationship>
+        <relationship type="one" title="AuthzAction" related-entity-name="Enumeration">
+            <key-map field-name="authzActionEnumId"/>
+        </relationship>
+        <relationship type="one-nofk" related-entity-name="UserAccount">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+    </entity>
     <entity entity-name="ArtifactAuthzRecord" package-name="moqui.security.authz">
         <field name="artifactAuthzId" type="id" is-pk="true"/>
         <field name="viewEntityName" type="text-medium"/>

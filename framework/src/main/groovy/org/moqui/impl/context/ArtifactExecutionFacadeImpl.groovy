@@ -20,6 +20,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.context.ArtifactAuthorizationException
+import java.sql.Timestamp
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
@@ -179,48 +180,60 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     }
                 }
             }
-        } finally {
-            if (!alreadyDisabled) enableAuthz()
-        }
 
-        if (denyAacv != null) {
-            // record that this was an explicit deny (for push or exception in case something catches and handles it)
-            aeii.copyAacvInfo(denyAacv, userId)
+            if (denyAacv != null) {
+                // record that this was an explicit deny (for push or exception in case something catches and handles it)
+                aeii.copyAacvInfo(denyAacv, userId)
+
+                if (!requiresAuthz || this.disableAuthz) {
+                    // if no authz required, just push it even though it was a failure
+                    this.artifactExecutionInfoStack.addFirst(aeii)
+                    return
+                } else {
+                    StringBuilder warning = new StringBuilder()
+                    warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
+                    for (def warnAei in this.stack) warning.append("\n").append(warnAei)
+                    logger.warn(warning.toString())
+
+                    eci.service.sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
+                            [artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
+                            authzActionEnumId:aeii.actionEnumId, userId:userId,
+                            failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"Y"]).call()
+
+                    throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+                }
+            } else {
+                // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
+                if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
+                        (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
+                    aeii.copyAuthorizedInfo(lastAeii)
+                    this.artifactExecutionInfoStack.addFirst(aeii)
+                    return
+                }
+            }
 
             if (!requiresAuthz || this.disableAuthz) {
                 // if no authz required, just push it even though it was a failure
+                if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
                 this.artifactExecutionInfoStack.addFirst(aeii)
-                return
             } else {
+                // if we got here no authz found, blow up
                 StringBuilder warning = new StringBuilder()
-                warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
+                warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
                 for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-                logger.warn(warning.toString())
+                logger.warn(warning.toString(), new Exception("Authz failure location"))
+
+                // NOTE: this is called sync because failures should be rare and not as performance sensitive, and
+                //  because this is still in a disableAuthz block (if async a service would have to be written for that)
+                eci.service.sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
+                        [artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
+                        authzActionEnumId:aeii.actionEnumId, userId:userId,
+                        failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"N"]).call()
 
                 throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
             }
-        } else {
-            // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
-            if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
-                    (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
-                aeii.copyAuthorizedInfo(lastAeii)
-                this.artifactExecutionInfoStack.addFirst(aeii)
-                return
-            }
-        }
-
-        if (!requiresAuthz || this.disableAuthz) {
-            // if no authz required, just push it even though it was a failure
-            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
-            this.artifactExecutionInfoStack.addFirst(aeii)
-        } else {
-            // if we got here no authz found, blow up
-            StringBuilder warning = new StringBuilder()
-            warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
-            for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-            logger.warn(warning.toString(), new Exception("Authz failure location"))
-
-            throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+        } finally {
+            if (!alreadyDisabled) enableAuthz()
         }
     }
 
