@@ -252,6 +252,13 @@ public class EntityDefinition {
                 logger.trace("For view-entity include function and complex not yet supported, for entity [${entityName}], may get bad SQL...")
             }
             // else {
+                boolean hasFunction = false
+                String function = fieldNode."@function"
+                if (function) {
+                    hasFunction = true
+                    if (function == "count-distinct") colName.append("COUNT(DISTINCT ")
+                    else colName.append(function.toUpperCase()).append('(')
+                }
                 // column name for view-entity (prefix with "${entity-alias}.")
                 colName.append(fieldNode."@entity-alias").append('.')
 
@@ -259,6 +266,8 @@ public class EntityDefinition {
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
                 String memberFieldName = fieldNode."@field" ? fieldNode."@field" : fieldNode."@name"
                 colName.append(memberEd.getColumnName(memberFieldName, false))
+
+                if (hasFunction) colName.append(')')
             // }
             return colName.toString()
         } else {
