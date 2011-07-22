@@ -35,7 +35,7 @@ width: 980px; overflow: auto;
 #header-user { float: right; }
 
 div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }
-div.message span { font-size: 0.9em; }
+div.message span { font-size: .9em; }
 div.error span { color: red; }
 
 #apps-container-footer { margin: 0px auto 0px auto; border-top: 1px solid #DDDDDF; padding: 2px; width: 200px; text-align: center; }
@@ -45,11 +45,11 @@ div.error span { color: red; }
 h1 { font-size: 1.5em; font-weight: bold; }
 h2 { font-size: 1.2em; font-weight: bold; }
 h3 { font-size: 1.0em; font-weight: bold; }
-h4 { font-size: 0.9em; font-weight: bold; }
-h5 { font-size: 0.8em; font-weight: bold; }
-h6 { font-size: 0.6em; }
+h4 { font-size: .9em; font-weight: bold; }
+h5 { font-size: .8em; font-weight: bold; }
+h6 { font-size: .6em; }
 
-a, a span { font-size: 0.9em; font-weight: bold; }
+a, a span { font-size: .9em; font-weight: bold; }
 p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
 li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 form { display: inline; }
@@ -59,7 +59,7 @@ button, input[type="reset"], input[type="submit"], input[type="button"], a.butto
 margin: 2px 2px 2px 2px; border: 1px solid; border-color: #ddd #bbb #999; outline: 0px; padding: 2px 4px 2px 4px;
 display: inline-block; overflow: visible; width: auto; cursor: pointer;
 background: white; color: #333;
-font-size: 0.8em; font-weight: bold; text-decoration: none; text-shadow: #fff 0 1px 1px;
+font-size: .8em; font-weight: bold; text-decoration: none; text-shadow: #fff 0 1px 1px;
 }
 
 button:active, input[type="reset"]:active, input[type="submit"]:active, input[type="button"]:active, a.button:active {
@@ -69,7 +69,7 @@ border-color: #999 #bbb #ddd; color: #666;
 input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select {
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
 margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
-font-size: 0.8em; font-family: Lucida Console, Monaco, monospace;
+font-size: .8em; font-family: Lucida Console, Monaco, monospace;
 }
 
 input:required:invalid, input:invalid, textarea:invalid { background-color: #FDD; }
@@ -77,25 +77,14 @@ input:focus:valid, textarea:focus:valid { background-color: #EEE; }
 
 th { text-align: left; padding: 0px 4px 0px 2px; }
 td { padding: 0px 4px 0px 2px; }
-
-/* ======================= subscreens-menu ======================= */
-/* NOTE: the jquery UI standard styles should be used instead:
- * - ui-tabs
- * - ui-tabs-nav
- * - ui-tabs-selected
- * - ui-tabs-panel
-
-ul.subscreens-menu { margin: 0px; padding: 0px 4px 0px 4px; list-style-type: none; }
-ul.subscreens-menu li { float: left; display: block; margin: 0px; padding: 0px 4px 0px 4px; font-size: 0.9em; font-weight: bold; }
-ul.subscreens-menu li a { text-decoration: none; }
-ul.subscreens-menu li.selected a { text-decoration: underline; }
-ul.subscreens-menu li a:hover { color: #000077; }
- */
+tr:nth-child(odd) { background-color: #EEE; }
+/*tr:nth-child(even) { background-color: #FFF; }*/
+tr:hover { background-color: #DDD; }
 
 /* ======================= XML Form Styles ======================= */
 
 .form-list-paginate a, .form-list-paginate span { padding-right: 4px;
-    font-family: "Courier New", monospace; font-weight: bold; font-size: 0.8em; vertical-align: top; }
+    font-family: "Courier New", monospace; font-weight: bold; font-size: .8em; vertical-align: top; }
 
 fieldset.form-single-outer {
 margin: 4px;
@@ -110,18 +99,18 @@ padding: 4px;
 width: 100%;
 }
 
-.form-title { padding: 0px 8px 0px 2px; font-size: 0.9em; font-weight: bold; }
+.form-title { padding: 0px 8px 0px 2px; font-size: .9em; font-weight: bold; }
 table.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
 
 .form-header-field { white-space: nowrap; }
 tr.form-header th, th div.form-title { vertical-align: top; }
 
 .single-form-field { padding-right: 10px; }
-.single-form-field span { font-size: 0.8em; }
+.single-form-field span { font-size: .8em; }
 .single-form-field span input { margin-right: 4px; }
 label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
 
-.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select, tr.form-row td { font-size: 0.8em; }
+.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select, tr.form-row td { font-size: .8em; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
@@ -136,15 +125,15 @@ a.active { color: red; }
 #login-box { width: 280px; margin: 0px auto 0px auto; padding: 10px; }
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
-#ArtifactHitBins-table thead tr th div input { font-size: 0.7em; }
+#ArtifactHitBins-table thead tr th div input { font-size: .7em; }
 
-#VisitArtifactHitList-table tbody tr td div { font-size: 0.9em; }
+#VisitArtifactHitList-table tbody tr td div { font-size: .9em; }
 
 /* ================ Overrides for jquery-ui theme ================ */
 
 .ui-widget { font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 1em; }
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {
-    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 0.8em; }
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: .8em; }
 
 .ui-button-icon-only { width: 1.1em; }
 button.ui-button-icon-only { width: 1.1em; }
@@ -159,6 +148,6 @@ button.ui-button-icons-only { width: 1.5em; }
 
 /* ================ Extensions for jquery-ui theme =============== */
 
-.ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 200px; }
+.ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 300px; }
 .ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
