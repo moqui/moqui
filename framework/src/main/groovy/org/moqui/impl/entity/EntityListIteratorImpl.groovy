@@ -19,6 +19,7 @@ import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityException
+import org.apache.commons.collections.set.ListOrderedSet
 
 class EntityListIteratorImpl implements EntityListIterator {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityListIteratorImpl.class)
@@ -28,14 +29,14 @@ class EntityListIteratorImpl implements EntityListIterator {
     protected ResultSet rs
 
     protected EntityDefinition entityDefinition
-    protected Set<String> fieldsSelected
+    protected ListOrderedSet fieldsSelected
 
     /** This is needed to determine if the ResultSet is empty as cheaply as possible. */
     protected boolean haveMadeValue = false
 
     protected boolean closed = false
 
-    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition, Set<String> fieldsSelected, EntityFacadeImpl efi) {
+    EntityListIteratorImpl(Connection con, ResultSet rs, EntityDefinition entityDefinition, ListOrderedSet fieldsSelected, EntityFacadeImpl efi) {
         this.efi = efi
         this.con = con
         this.rs = rs

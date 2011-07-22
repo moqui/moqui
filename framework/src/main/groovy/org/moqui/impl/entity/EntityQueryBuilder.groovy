@@ -361,8 +361,11 @@ class EntityQueryBuilder {
         }
 
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
-
-        setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob)
+        try {
+            setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob)
+        } catch (Exception e) {
+            throw new EntityException("Error setting prepared statement field [${fieldName}] of entity [${entityName}]", e)
+        }
     }
 
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, String entityName,
@@ -406,7 +409,7 @@ class EntityQueryBuilder {
                             ps.setBinaryStream(index, is, buf.length)
                             is.close()
                         } catch (IOException ex) {
-                            throw new EntityException("Error setting serialized object for field [${fieldName}]", ex)
+                            throw new EntityException("Error setting serialized object", ex)
                         }
                     } else {
                         if (useBinaryTypeForBlob) { ps.setNull(index, Types.BINARY) } else { ps.setNull(index, Types.BLOB) }
@@ -432,9 +435,9 @@ class EntityQueryBuilder {
                 }
             }
         } catch (SQLException sqle) {
-            throw new EntityException("SQL Exception while setting value on field [${fieldName}] of entity [${entityName}]: " + sqle.toString(), sqle)
+            throw new EntityException("SQL Exception while setting value: " + sqle.toString(), sqle)
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error while setting value on field [${fieldName}] of entity [${entityName}]: " + e.toString(), e)
+            throw new EntityException("Error while setting value: " + e.toString(), e)
         }
     }
 }
