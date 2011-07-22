@@ -14,7 +14,7 @@ dependsOnChildren()
 
 allprojects { version = '1.0-rc1' }
 
-tomcatHome = '../apache-tomcat-7.0.6'
+tomcatHome = '../apache-tomcat-7.0.19'
 warName = 'moqui-' + version + '.war'
 
 // ========== clean tasks ==========
