@@ -215,7 +215,7 @@ class EntityListIteratorImpl implements EntityListIterator {
     }
 
     @Override
-    EntityList getCompleteList() {
+    EntityList getCompleteList(boolean closeAfter) {
         try {
             // move back to before first if we need to
             if (haveMadeValue && !rs.isBeforeFirst()) {
@@ -229,11 +229,13 @@ class EntityListIteratorImpl implements EntityListIterator {
             return list
         } catch (SQLException e) {
             throw new EntityException("Error getting all results", e)
+        } finally {
+            if (closeAfter) close()
         }
     }
 
     @Override
-    EntityList getPartialList(int offset, int limit) {
+    EntityList getPartialList(int offset, int limit, boolean closeAfter) {
         try {
             EntityList list = new EntityListImpl(this.efi)
             if (limit == 0) list
@@ -259,6 +261,8 @@ class EntityListIteratorImpl implements EntityListIterator {
             return list
         } catch (SQLException e) {
             throw new EntityException("Error getting partial results", e)
+        } finally {
+            if (closeAfter) close()
         }
     }
 

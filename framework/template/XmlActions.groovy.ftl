@@ -73,6 +73,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#-- =================== entity-find elements =================== -->
+
 <#macro "entity-find-one">    ${.node["@value-field"]} = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if>
             <#if .node["@auto-field-map"]?if_exists == "true" || ((!.node["@auto-field-map"]?has_content) && (!.node["field-map"]?has_content))>.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
 </#macro>
@@ -84,17 +85,11 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
     </#if>
     <#if .node["limit-range"]?has_content>
-    org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = null
-    try {
-        ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
-        ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList(${.node["@start"]}, ${.node["@size"]})
-    } finally { if (${.node["@list"]}_xafind_eli != null) ${.node["@list"]}_xafind_eli.close() }
+    org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
+    ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList(${.node["@start"]}, ${.node["@size"]}, true)
     <#elseif .node["limit-view"]?has_content>
-    org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = null
-    try {
-        ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
-        ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList((${.node["@view-index"]} - 1) * ${.node["@view-size"]}, ${.node["@view-size"]})
-    } finally { if (${.node["@list"]}_xafind_eli != null) ${.node["@list"]}_xafind_eli.close() }
+    org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
+    ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList((${.node["@view-index"]} - 1) * ${.node["@view-size"]}, ${.node["@view-size"]}, true)
     <#elseif .node["use-iterator"]?has_content>
     ${.node["@list"]} = ${.node["@list"]}_xafind.iterator()
     <#else>
@@ -121,6 +116,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "econdition-object">${.node["@field"]}</#macro>
 
 <#-- =================== entity other elements =================== -->
+
 <#macro "entity-find-related-one">    ${.node["@to-value-field"]} = ${.node["@value-field"]}.findRelatedOne("${.node["@relationship-name"]}", ${.node["@cache"]?default("null")}, ${.node["@for-update"]?default("null")})
 </#macro>
 <#macro "entity-find-related">    ${.node["@list"]} = ${.node["@value-field"]}.findRelated("${.node["@relationship-name"]}", ${.node["@map"]?default("null")}, ${.node["@order-by-list"]?default("null")}, ${.node["@cache"]?default("null")}, ${.node["@for-update"]?default("null")})
@@ -210,6 +206,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#-- =================== if/when sub-elements =================== -->
+
 <#macro condition><#-- do nothing when visiting, only used explicitly inline --></#macro>
 <#macro then><#-- do nothing when visiting, only used explicitly inline --></#macro>
 <#macro "else-if"><#-- do nothing when visiting, only used explicitly inline --></#macro>
@@ -230,5 +227,6 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#-- =================== other elements =================== -->
+
 <#macro "log">    ec.logger.log(<#if .node["@level"]?has_content>"${.node["@level"]}"<#else/>"info"</#if>, """${.node["@message"]}""", null)
 </#macro>

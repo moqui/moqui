@@ -20,7 +20,7 @@ import java.util.ListIterator;
  * Entity Cursor List Iterator for Handling Cursored Database Results
  */
 public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<EntityValue> {
-
+    /** Close the underlying ResultSet and Connection. This should ALWAYS be called when you are done with an EntityListIterator object. */
     void close() throws EntityException;
 
     /** Sets the cursor position to just after the last result so that previous() will return the last result */
@@ -96,12 +96,12 @@ public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<
 
     void setFetchSize(int rows) throws EntityException;
 
-    EntityList getCompleteList() throws EntityException;
+    EntityList getCompleteList(boolean closeAfter) throws EntityException;
 
     /** Gets a partial list of results starting at start and containing at most number elements.
      * Start is a one based value, ie 1 is the first element.
      */
-    EntityList getPartialList(int offset, int limit) throws EntityException;
+    EntityList getPartialList(int offset, int limit, boolean closeAfter) throws EntityException;
 
     /** Writes XML text with an attribute or CDATA element for each field of each record. If dependents is true also
      * writes all dependent (descendant) records.

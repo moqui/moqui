@@ -47,6 +47,10 @@ import org.slf4j.Logger
 import org.w3c.dom.Element
 import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.entity.EntityDataWriter
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+import java.sql.SQLException
+import org.moqui.entity.EntityListIterator
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -705,6 +709,34 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#makeFind(String) */
     EntityFind makeFind(String entityName) { return new EntityFindImpl(this, entityName) }
+
+    /** @see org.moqui.entity.EntityFacade#sqlFind(String, List<Object>, String, List<String>) */
+    EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList) {
+        EntityDefinition ed = this.getEntityDefinition(entityName)
+        this.entityDbMeta.checkTableRuntime(ed)
+
+        Connection con = getConnection(getEntityGroupName(entityName))
+        PreparedStatement ps
+        try {
+            // create the PreparedStatement
+            ps = con.prepareStatement(sql, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)
+            // set the parameter values
+            int paramIndex = 1
+            for (Object parameterValue in sqlParameterList) {
+                EntityQueryBuilder.setPreparedStatementValue(ps, paramIndex, parameterValue, entityName, this)
+                paramIndex++
+            }
+            // do the actual query
+            long timeBefore = System.currentTimeMillis()
+            ResultSet rs = ps.executeQuery()
+            if (logger.traceEnabled) logger.trace("Executed query with SQL [${sql}] and parameters [${sqlParameterList}] in [${(System.currentTimeMillis()-timeBefore)/1000}] seconds")
+            // make and return the eli
+            EntityListIterator eli = new EntityListIteratorImpl(con, rs, ed, fieldList, this)
+            return eli
+        } catch (SQLException e) {
+            throw new EntityException("SQL Exception with statement:" + sql + "; " + e.toString(), e)
+        }
+    }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, long) */
     synchronized String sequencedIdPrimary(String seqName, Long staggerMax) {

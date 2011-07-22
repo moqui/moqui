@@ -362,6 +362,20 @@ class EntityQueryBuilder {
 
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
 
+        setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob)
+    }
+
+    static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, String entityName,
+                                          EntityFacadeImpl efi) throws EntityException {
+        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
+        int typeValue = value ? EntityFacadeImpl.getJavaTypeInt(value.class.name) : 1
+        setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob)
+
+    }
+
+    /* This is called by the other two setPreparedStatementValue methods */
+    static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, int typeValue,
+                                          boolean useBinaryTypeForBlob) throws EntityException {
         try {
             // allow setting, and searching for, String values for all types; JDBC driver should handle this okay
             if (value instanceof String) {

@@ -538,14 +538,8 @@ class EntityFindImpl implements EntityFind {
             }
         }
 
-        EntityListIterator eli
-        EntityList el
-        try {
-            eli = this.iteratorPlain()
-            el = eli.getCompleteList()
-        } finally {
-            if (eli != null) eli.close()
-        }
+        EntityListIterator eli = this.iteratorPlain()
+        EntityList el = eli.getCompleteList(true)
 
         if (doCache) {
             EntityList elToCache = el ?: EntityListImpl.EMPTY

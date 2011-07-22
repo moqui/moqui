@@ -37,6 +37,8 @@ This release includes:
     Moqui, by default through the MoquiShiroRealm and other realms such
     as for LDAP or ActiveDirectory can be configured with shiro.ini
 - Entity Facade
+  - Manual SQL find with results mapped to entity with results returned in
+    an EntityListIterator (EntityFacade.sqlFind())
   - Database-driven view entity
   - view-entity: merge the view-link element into the member element (also
     for DynamicViewEntity, DbViewEntity, *DbView screens)
@@ -438,8 +440,6 @@ Tools probable for 1.0 final:
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
       related entities
-  - Data View
-    - Support functions on aliased fields
   - Entity
     - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)

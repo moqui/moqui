@@ -45,6 +45,17 @@ public interface EntityFacade {
      */
     EntityFind makeFind(String entityName);
 
+    /** Do a database query with the given SQL and return the results as an EntityList for the given entity and with
+     * selected columns mapped to the listed fields.
+     *
+     * @param sql The actual SQL to run.
+     * @param sqlParameterList Parameter values that correspond with any question marks (?) in the SQL.
+     * @param entityName Name of the entity to map the results to.
+     * @param fieldList List of entity field names in order that they match columns selected in the query.
+     * @return EntityListIterator with results of query.
+     */
+    EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList);
+
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;
      * if the named sequence doesn't exist, it will be created.
      *
