@@ -50,6 +50,7 @@ This release includes:
   - Data View
     - Choose master entity, select fields from all related entities, save
       as DbViewEntity and related records
+    - Specify functions for selected fields
     - Choose column(s) to order by
     - Specify search constraints
     - View in webapp
@@ -471,7 +472,7 @@ Features designed, but not to be included in 1.0 series
 - Entity Facade
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
-  - Entity complex aliases in views
+  - Entity complex aliases in views (EntityDefinition:246)
   - View entity view-link.econdition* support (EntityFindBuilder:196)
 - Artifact Execution Facade
   - Artifact Tar-pitting based on configuration in db
