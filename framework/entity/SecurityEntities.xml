@@ -144,7 +144,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="ArtifactTarpit" package-name="moqui.security.tarpit">
         <description>If an artifact in the group specified is accessed by any user in the UserGroup maxHitsCount
-            times in maxHitsDuration seconds then the user/artifact will be blocked fir tarpitDuration seconds.
+            times in maxHitsDuration seconds then the user/artifact will be blocked for tarpitDuration seconds.
         </description>
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="artifactGroupId" type="id" is-pk="true"/>
@@ -158,12 +158,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>Deny access to the artifact for the user until releaseDateTime is reached.</description>
         <field name="userId" type="id" is-pk="true"/>
         <field name="artifactName" type="text-long" is-pk="true"/>
-        <field name="artifactTypeId" type="id" is-pk="true"/>
+        <field name="artifactTypeEnumId" type="id" is-pk="true"/>
         <field name="releaseDateTime" type="date-time"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
-        <relationship type="one" related-entity-name="ArtifactType"/>
+        <relationship type="one" title="ArtifactType" related-entity-name="Enumeration">
+            <key-map field-name="artifactTypeEnumId"/>
+        </relationship>
     </entity>
     -->
 
@@ -215,6 +217,28 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
+    <entity entity-name="UserGroupPermission" package-name="moqui.security.user" cache="true">
+        <field name="userGroupId" type="id" is-pk="true"/>
+        <field name="userPermissionId" type="id-very-long" is-pk="true"/>
+        <field name="fromDate" type="date-time" is-pk="true"/>
+        <field name="thruDate" type="date-time"/>
+        <relationship type="one" related-entity-name="UserGroup"/>
+        <relationship type="one-nofk" related-entity-name="UserPermission">
+            <description>No FK in order to allow arbitrary permissions (ie not pre-configured).</description>
+        </relationship>
+    </entity>
+    <view-entity entity-name="UserPermissionCheck" package-name="moqui.security.user">
+        <member-entity entity-alias="UGM" entity-name="UserGroupMember"/>
+        <member-entity entity-alias="UGP" entity-name="UserGroupPermission" join-from-alias="UGM" >
+            <key-map field-name="userGroupId"/>
+        </member-entity>
+        <alias name="userId" entity-alias="UGM"/>
+        <alias name="userPermissionId" entity-alias="UGP"/>
+        <alias name="groupFromDate" entity-alias="UGM"/>
+        <alias name="groupThruDate" entity-alias="UGM"/>
+        <alias name="permissionFromDate" entity-alias="UGP"/>
+        <alias name="permissionThruDate" entity-alias="UGP"/>
+    </view-entity>
     <entity entity-name="UserLoginHistory" package-name="moqui.security.user" cache="never">
         <field name="userId" type="id-very-long" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
@@ -233,6 +257,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
+    </entity>
+    <entity entity-name="UserPermission" package-name="moqui.security.user">
+        <field name="userPermissionId" type="id-very-long" is-pk="true"/>
+        <field name="description" type="text-long"/>
     </entity>
     <entity entity-name="UserPreference" package-name="moqui.security.user">
         <description>Use this entity for user-specific preferences (or properties). For default preferences use userId="_NA_".</description>

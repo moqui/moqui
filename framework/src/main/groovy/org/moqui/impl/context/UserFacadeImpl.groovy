@@ -16,20 +16,15 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Cookie
 
+import org.apache.shiro.authc.AuthenticationException
+import org.apache.shiro.authc.UsernamePasswordToken
 import org.apache.shiro.subject.Subject
 import org.apache.shiro.web.subject.WebSubjectContext
 import org.apache.shiro.web.subject.support.DefaultWebSubjectContext
-import org.apache.shiro.authc.ExcessiveAttemptsException
-import org.apache.shiro.authc.LockedAccountException
-import org.apache.shiro.authc.IncorrectCredentialsException
-import org.apache.shiro.authc.AuthenticationException
-import org.apache.shiro.authc.UnknownAccountException
-import org.apache.shiro.authc.UsernamePasswordToken
+import org.apache.shiro.web.session.HttpServletSession
 
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
-import org.apache.shiro.web.session.HttpServletSession
-import org.apache.shiro.authc.ExpiredCredentialsException
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -248,6 +243,26 @@ class UserFacadeImpl implements UserFacade {
             eci.web.session.removeAttribute("moqui.visitId")
         }
         currentUser.logout()
+    }
+
+    /* @see org.moqui.context.UserFacade#hasPermission(String) */
+    boolean hasPermission(String userPermissionId) {
+        String userId = getUserId()
+        if (!userId) return false
+
+        return (eci.entity.makeFind("UserPermissionCheck").condition([userId:userId, userPermissionId:userPermissionId])
+                .useCache(true).list()
+                .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
+                .filterByDate("permissionFromDate", "permissionThruDate", nowTimestamp)) as boolean
+    }
+
+    /* @see org.moqui.context.UserFacade#isInGroup(String) */
+    boolean isInGroup(String userGroupId) {
+        String userId = getUserId()
+        if (!userId) return false
+
+        return (eci.entity.makeFind("UserGroupMember").condition([userId:userId, userGroupId:userGroupId])
+                .useCache(true).list().filterByDate("fromDate", "thruDate", nowTimestamp)) as boolean
     }
 
     /* @see org.moqui.context.UserFacade#getUsername() */

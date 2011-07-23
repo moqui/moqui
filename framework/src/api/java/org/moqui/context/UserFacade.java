@@ -70,6 +70,24 @@ public interface UserFacade {
     /** Remove (logout) active user. */
     void logoutUser();
 
+    /** Check to see if current user has the given permission. To have a permission a user must be in a group
+     * (UserGroupMember => UserGroup) that has the given permission (UserGroupPermission).
+     *
+     * @param userPermissionId Permission ID for record in UserPermission or any arbitrary permission name (does
+     *     not have to be pre-configured, ie does not have to be in the UserPermission entity's table)
+     * @return boolean set to true if user has permission, false if not. If no user is logged in, returns false.
+     */
+    boolean hasPermission(String userPermissionId);
+
+    /** Check to see if current user is in the given group (UserGroup). The user group concept in Moqui is similar to
+     * the "role" concept in many security contexts (including Apache Shiro which is used in Moqui) though that term is
+     * avoided because of the use of the term "role" for the Party part of the Mantle Universal Data Model.
+     *
+     * @param userGroupId The user group ID to check against.
+     * @return boolean set to true if user is a member of the group, false if not. If no user is logged in, returns false.
+     */
+    boolean isInGroup(String userGroupId);
+
     /** @return ID of the current active user (from the UserAccount entity). */
     String getUserId();
 

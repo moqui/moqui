@@ -36,6 +36,8 @@ This release includes:
   - Incorporated Apache Shiro, which is now used for all authentication in
     Moqui, by default through the MoquiShiroRealm and other realms such
     as for LDAP or ActiveDirectory can be configured with shiro.ini
+  - Permission model and checking for simple/flat permissions (to be used
+    as an alternative to artifact authz)
 - Entity Facade
   - Manual SQL find with results mapped to entity with results returned in
     an EntityListIterator (EntityFacade.sqlFind())
@@ -442,23 +444,13 @@ Tools probable for 1.0 final:
   - List multi form submit button below and not in own column
   - Auto Screen move Edit button on list forms to left side (with XML Form
     changes as needed to make it possible)
-- Tools Screens
-  - Auto Screen
-    - Editable data grid, created by form-list, for detail and assoc
-      related entities
-  - Entity
-    - SQL Query Run/View
-    - Entity model internal check (relationship, view-link.key-map, ?)
-    - Database meta-data check/report against entity definitions; NOTE:
-      use LiquiBase for this
-  - Script Run (or groovy shell?)
-  - Service
-    - Configure and run chain of services (dynamic wizard)
-    - Scheduler (view scheduled services with cancel and add)
-  - Artifact Info screens (with in/out references for all)
+- User Facade
+  - Run permission checks (and all authorizations?) through Shiro
+- Artifact Execution Facade
+  - Artifact Tar-pitting based on configuration in db
 
 ===========================================================================
-Features designed, but not to be included in 1.0 series
+Features designed or considered, but not to be included in 1.0 series
 ===========================================================================
 
 - XML Screens
@@ -482,8 +474,21 @@ Features designed, but not to be included in 1.0 series
   - Entity complex aliases in views (EntityDefinition:246)
   - View entity view-link.econdition* support (EntityFindBuilder:196)
 - Artifact Execution Facade
-  - Artifact Tar-pitting based on configuration in db
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
     Component, Webapp, Screen Section, Screen Form, Screen Form Field,
     Template, Script, Entity Field
+- Tools Screens
+  - Auto Screen
+    - Editable data grid, created by form-list, for detail and assoc
+      related entities
+  - Entity
+    - SQL Query Run/View
+    - Entity model internal check (relationship, view-link.key-map, ?)
+    - Database meta-data check/report against entity definitions; NOTE:
+      use LiquiBase for this
+  - Script Run (or groovy shell?)
+  - Service
+    - Configure and run chain of services (dynamic wizard)
+    - Scheduler (view scheduled services with cancel and add)
+  - Artifact Info screens (with in/out references for all)
