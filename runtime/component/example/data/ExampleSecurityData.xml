@@ -11,6 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
+    <!-- ========== Example/Test User ========== -->
     <!-- password=moqui -->
     <UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe"
                  currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394"
@@ -18,6 +19,7 @@ This Work includes contributions authored by David E. Jones, not as a
                  currencyUomId="USD" locale="en_US" timeZone="US/Central"/>
     <UserGroupMember userGroupId="ADMIN" userId="EX_JOHN_DOE" fromDate="2010-02-03 00:00:00.000"/>
 
+    <!-- ========== Basic example artifact authz ========== -->
     <!-- an artifact group for all of the Example application via the ExampleApp screen (the root screen for the app) -->
     <ArtifactGroup artifactGroupId="EXAMPLE_APP" description="Example App (via root screen)"/>
     <ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="component://example/screen/ExampleApp.xml"
@@ -32,11 +34,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <ArtifactGroupMember artifactGroupId="EXAMPLE_APP" artifactName="org\\.moqui\\.example\\..*" nameIsPattern="Y"
                          artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
 
-    <!-- Setup full permissions for the ADMIN user group -->
+    <!-- ========== Full permissions for the ADMIN user group ========== -->
     <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_ALL" userGroupId="ADMIN" artifactGroupId="EXAMPLE_APP"
                    authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 
-    <!-- A user group with just view access for the ExampleApp -->
+    <!-- ========== Example with just view access for the ExampleApp ========== -->
     <UserGroup userGroupId="EXAMPLE_VIEWER" description="Example Viewers (view only)"/>
     <UserAccount userId="EX_VIEWER" username="example.viewer" userFullName="Example Viewer"
                  currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394"
@@ -46,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_VW" userGroupId="EXAMPLE_VIEWER" artifactGroupId="EXAMPLE_APP"
                    authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_VIEW"/>
 
-    <!-- Group to test only allow access to Example Find/Edit Screens -->
+    <!-- ========== Example to test only allow access to Example Find/Edit Screens ========== -->
     <ArtifactGroup artifactGroupId="EXAMPLE_LTD" description="Example Find/Edit Screens Only"/>
     <ArtifactGroupMember artifactGroupId="EXAMPLE_LTD" artifactName="component://example/screen/ExampleApp/Example.xml"
                          artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
@@ -58,4 +60,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <UserGroupMember userGroupId="EXAMPLE_LTD" userId="EX_TLD" fromDate="2010-02-03 00:00:00.000"/>
     <ArtifactAuthz artifactAuthzId="EXAMPLE_AUTHZ_LTD" userGroupId="EXAMPLE_LTD" artifactGroupId="EXAMPLE_LTD"
                    authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_ALL"/>
+
+    <!-- ========== Artifact Tarpit Example ========== -->
+    <ArtifactGroup artifactGroupId="ALL_SCREENS" description="All Screens"/>
+    <ArtifactGroupMember artifactGroupId="ALL_SCREENS" artifactName=".*" nameIsPattern="Y"
+                         artifactTypeEnumId="AT_XML_SCREEN"/>
+    <!-- if more than 15 screens in 60 seconds, deny access for 60 seconds -->
+    <ArtifactTarpit userGroupId="ALL_USERS" artifactGroupId="ALL_SCREENS"
+                    maxHitsCount="15" maxHitsDuration="60" tarpitDuration="60"/>
 </entity-facade-xml>

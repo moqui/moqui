@@ -21,6 +21,7 @@ import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.context.ArtifactAuthorizationException
 import java.sql.Timestamp
+import org.moqui.context.Cache
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
@@ -35,10 +36,13 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
     protected List<ArtifactExecutionInfoImpl> artifactExecutionInfoHistory = new LinkedList<ArtifactExecutionInfoImpl>()
 
+    protected Cache tarpitHitCache
+
     protected boolean disableAuthz = false
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
+        this.tarpitHitCache = eci.cache.getCache("artifact.tarpit.hits")
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#peek() */
@@ -72,11 +76,70 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             return
         }
 
-        // see if there is a UserAccount for the username, and if so get its userId as a more permanent identifier
+        // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
+        Set userGroupIdSet = new HashSet()
+        userGroupIdSet.add("ALL_USERS")
         boolean alreadyDisabled = disableAuthz()
         try {
+            // see if there is a UserAccount for the username, and if so get its userId as a more permanent identifier
             EntityValue ua = eci.entity.makeFind("UserAccount").condition("username", userId).useCache(true).one()
             if (ua) userId = ua.userId
+
+            // expand the userGroupId Set with UserGroupMember
+            for (EntityValue userGroupMember in eci.entity.makeFind("UserGroupMember").condition("userId", userId)
+                    .useCache(true).list().filterByDate(null, null, null))
+                userGroupIdSet.add(userGroupMember.userGroupId)
+
+            // record and check velocity limit (tarpit)
+            boolean recordHitTime = false
+            long lockForSeconds = 0
+            long checkTime = System.currentTimeMillis()
+            String tarpitKey = userId + "@" + aeii.typeEnumId + ":" + aeii.name
+            List<Long> hitTimeList = (List<Long>) tarpitHitCache.get(tarpitKey)
+            EntityList artifactTarpitList = null
+            // only check screens if they are the final screen in the chain (the target screen)
+            if (aeii.typeEnumId != "AT_XML_SCREEN" || requiresAuthz) {
+                artifactTarpitList = eci.entity.makeFind("ArtifactTarpitCheckView")
+                        .condition("userGroupId", ComparisonOperator.IN, userGroupIdSet).useCache(true).list()
+                        .filterByAnd([artifactTypeEnumId:aeii.typeEnumId])
+            }
+            // if (aeii.typeEnumId == "AT_XML_SCREEN") logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
+            for (EntityValue artifactTarpit in artifactTarpitList) {
+                if ((artifactTarpit.nameIsPattern && aeii.name.matches((String) artifactTarpit.artifactName)) ||
+                        aeii.name == artifactTarpit.artifactName) {
+                    recordHitTime = true
+                    long maxHitsDuration = artifactTarpit.maxHitsDuration as Long
+                    // count hits in this duration; start with 1 to count the current hit
+                    long hitsInDuration = 1
+                    for (Long hitTime in hitTimeList) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
+                    // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
+                    if (hitsInDuration > artifactTarpit.maxHitsCount && artifactTarpit.tarpitDuration > lockForSeconds) {
+                        lockForSeconds = artifactTarpit.tarpitDuration as Long
+                        // logger.warn("TOREMOVE artifact [${tarpitKey}], exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds, locking for ${lockForSeconds} seconds")
+                    }
+                }
+            }
+            if (recordHitTime) {
+                if (hitTimeList == null) { hitTimeList = new LinkedList<Long>(); tarpitHitCache.put(tarpitKey, hitTimeList) }
+                hitTimeList.add(System.currentTimeMillis())
+                // logger.warn("TOREMOVE recorded hit time for [${tarpitKey}], now has ${hitTimeList.size()} hits")
+
+                // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
+                // NOTE: this is NOT cached because it has an argument with nowTimestamp making a cached value of limited used
+                // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
+                EntityList tarpitLockList = eci.entity.makeFind("ArtifactTarpitLock")
+                        .condition([userId:userId, artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId])
+                        .condition("releaseDateTime", ComparisonOperator.GREATER_THAN, eci.user.nowTimestamp).list()
+                if (tarpitLockList) {
+                    throw new ArtifactAuthorizationException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}] too many times and may not again until ${tarpitLockList.first.releaseDateTime}")
+                }
+            }
+            // record the tarpit lock
+            if (lockForSeconds > 0) {
+                eci.service.sync().name("create", "ArtifactTarpitLock").parameters((Map<String, Object>) [userId:userId,
+                        artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
+                        releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+            }
         } finally {
             if (!alreadyDisabled) enableAuthz()
         }
@@ -96,12 +159,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         // don't check authz for these queries, would cause infinite recursion
         alreadyDisabled = disableAuthz()
         try {
-            // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
-            Set userGroupIdSet = new HashSet()
-            userGroupIdSet.add("ALL_USERS")
-            for (EntityValue userGroupMember in eci.entity.makeFind("UserGroupMember").condition("userId", userId).list().filterByDate(null, null, null))
-                userGroupIdSet.add(userGroupMember.userGroupId)
-
             // check authorizations for those groups (separately cached for more cache hits)
             EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
                     .condition("artifactTypeEnumId", aeii.typeEnumId)

@@ -141,7 +141,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========================================================= -->
     <!-- moqui.security.tarpit -->
     <!-- ========================================================= -->
-    <!-- Tabled for now, not to be part of 1.0:
+
     <entity entity-name="ArtifactTarpit" package-name="moqui.security.tarpit">
         <description>If an artifact in the group specified is accessed by any user in the UserGroup maxHitsCount
             times in maxHitsDuration seconds then the user/artifact will be blocked for tarpitDuration seconds.
@@ -154,11 +154,25 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" related-entity-name="UserGroup"/>
         <relationship type="one" related-entity-name="ArtifactGroup"/>
     </entity>
-    <entity entity-name="ArtifactTarpitted" package-name="moqui.security.tarpit">
+    <view-entity entity-name="ArtifactTarpitCheckView" package-name="moqui.security.authz">
+        <member-entity entity-alias="ATP" entity-name="ArtifactTarpit"/>
+        <member-entity entity-alias="AGM" entity-name="ArtifactGroupMember" join-from-alias="ATP">
+            <key-map field-name="artifactGroupId"/>
+        </member-entity>
+        <alias entity-alias="ATP" name="userGroupId"/>
+        <alias entity-alias="ATP" name="maxHitsCount"/>
+        <alias entity-alias="ATP" name="maxHitsDuration"/>
+        <alias entity-alias="ATP" name="tarpitDuration"/>
+        <alias entity-alias="AGM" name="artifactName"/>
+        <alias entity-alias="AGM" name="artifactTypeEnumId"/>
+        <alias entity-alias="AGM" name="nameIsPattern"/>
+    </view-entity>
+    <entity entity-name="ArtifactTarpitLock" package-name="moqui.security.tarpit" cache="false">
         <description>Deny access to the artifact for the user until releaseDateTime is reached.</description>
-        <field name="userId" type="id" is-pk="true"/>
-        <field name="artifactName" type="text-long" is-pk="true"/>
-        <field name="artifactTypeEnumId" type="id" is-pk="true"/>
+        <field name="artifactTarpitLockId" type="id" is-pk="true"/>
+        <field name="userId" type="id"/>
+        <field name="artifactName" type="text-long"/>
+        <field name="artifactTypeEnumId" type="id"/>
         <field name="releaseDateTime" type="date-time"/>
         <relationship type="one-nofk" related-entity-name="UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>
@@ -167,7 +181,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="artifactTypeEnumId"/>
         </relationship>
     </entity>
-    -->
 
     <!-- ========================================================= -->
     <!-- moqui.security.user -->
@@ -234,10 +247,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </member-entity>
         <alias name="userId" entity-alias="UGM"/>
         <alias name="userPermissionId" entity-alias="UGP"/>
-        <alias name="groupFromDate" entity-alias="UGM"/>
-        <alias name="groupThruDate" entity-alias="UGM"/>
-        <alias name="permissionFromDate" entity-alias="UGP"/>
-        <alias name="permissionThruDate" entity-alias="UGP"/>
+        <alias name="groupFromDate" entity-alias="UGM" field="fromDate"/>
+        <alias name="groupThruDate" entity-alias="UGM" field="thruDate"/>
+        <alias name="permissionFromDate" entity-alias="UGP" field="fromDate"/>
+        <alias name="permissionThruDate" entity-alias="UGP" field="thruDate"/>
     </view-entity>
     <entity entity-name="UserLoginHistory" package-name="moqui.security.user" cache="never">
         <field name="userId" type="id-very-long" is-pk="true"/>

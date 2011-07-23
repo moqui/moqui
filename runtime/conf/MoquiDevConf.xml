@@ -5,7 +5,7 @@
 
     <cache-list>
         <!-- Development Mode - don't use these for production, load testing, etc.
-             Cleared by default every 10 seconds from when loaded into cache. -->
+             Cleared by default every 20 seconds from when loaded into cache. -->
         <cache name="entity.definition" expire-time-idle="30"/>
         <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
         <cache name="entity.location" expire-time-idle="300"/>

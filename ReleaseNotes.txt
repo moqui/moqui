@@ -51,6 +51,8 @@ This release includes:
     http://www.quartz-scheduler.org/docs/cookbook/JobInitPlugin.html
 - Artifact Execution Facade
   - Persist data about authz failures (in ArtifactAuthzFailure entity)
+  - Artifact Tar-pitting based on configuration in db (see example
+    ArtifactTarpit in ExampleSecurityData.xml)
 - Tools Screens
   - Auto Screen
     - Order by links in column headers by default (by default for all
@@ -446,8 +448,6 @@ Tools probable for 1.0 final:
     changes as needed to make it possible)
 - User Facade
   - Run permission checks (and all authorizations?) through Shiro
-- Artifact Execution Facade
-  - Artifact Tar-pitting based on configuration in db
 
 ===========================================================================
 Features designed or considered, but not to be included in 1.0 series
