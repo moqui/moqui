@@ -36,12 +36,12 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
     /** Modify this EntityList so that it contains only the values that are active for the moment passed in.
      * The results include values that match the fromDate, but exclude values that match the thruDate.
      *
-     *@param moment The point in time to compare the values to; if null the current system date/time is used.
      *@param fromDateName The name of the from/beginning date/time field. Defaults to "fromDate".
      *@param thruDateName The name of the thru/ending date/time field. Defaults to "thruDate".
+     *@param moment The point in time to compare the values to; if null the current system date/time is used.
      *@return A reference to this for convenience.
      */
-    EntityList filterByDate(Timestamp moment, String fromDateName, String thruDateName);
+    EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment);
 
     /** Modify this EntityList so that it contains only the values that match the values in the fields parameter.
      *

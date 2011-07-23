@@ -25,17 +25,13 @@ class EntityListImpl implements EntityList {
 
     protected List<EntityValue> valueList = new LinkedList<EntityValue>()
 
-    EntityListImpl(EntityFacadeImpl efi) {
-        this.efi = efi
-    }
+    EntityListImpl(EntityFacadeImpl efi) { this.efi = efi }
 
     @Override
-    EntityValue getFirst() {
-        return valueList ? valueList.get(0) : null
-    }
+    EntityValue getFirst() { return valueList ? valueList.get(0) : null }
 
     @Override
-    EntityList filterByDate(Timestamp moment, String fromDateName, String thruDateName) {
+    EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) {
         // default to now
         if (!moment) moment = new Timestamp(System.currentTimeMillis())
         if (!fromDateName) fromDateName = "fromDate"
@@ -63,9 +59,7 @@ class EntityListImpl implements EntityList {
 
     @Override
     EntityList orderByFields(List<String> fieldNames) {
-        if (fieldNames) {
-            Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
-        }
+        if (fieldNames) Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
         return this
     }
 
@@ -93,14 +87,10 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
-    Iterator<EntityValue> iterator() {
-        return this.valueList.iterator()
-    }
+    Iterator<EntityValue> iterator() { return this.valueList.iterator() }
 
     @Override
-    Object clone() {
-        return this.cloneList()
-    }
+    Object clone() { return this.cloneList() }
 
     @Override
     EntityList cloneList() {
@@ -186,7 +176,7 @@ class EntityListImpl implements EntityList {
         EmptyEntityList() { }
 
         EntityValue getFirst() { return null }
-        EntityList filterByDate(Timestamp moment, String fromDateName, String thruDateName) { return this }
+        EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) { return this }
         EntityList filterByAnd(Map<String, ?> fields) { return this }
         EntityList orderByFields(List<String> fieldNames) { return this }
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
