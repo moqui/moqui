@@ -131,7 +131,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                 if (useParenthesis) localBuilder.append('(')
 
-                String linkEntityName = entityNode."member-entity".find({ it."@entity-alias" == relatedMemberEntity."@join-from-alias" })."@entity-name"
+                String linkEntityName = entityNode."member-entity".find({ it."@entity-alias" == relatedMemberEntity."@join-from-alias" })?."@entity-name"
                 EntityDefinition linkEntityDefinition = this.efi.getEntityDefinition(linkEntityName)
                 String relatedLinkEntityName = relatedMemberEntity."@entity-name"
                 EntityDefinition relatedLinkEntityDefinition = this.efi.getEntityDefinition(relatedLinkEntityName)

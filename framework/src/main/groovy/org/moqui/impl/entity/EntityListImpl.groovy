@@ -19,11 +19,13 @@ import org.moqui.entity.EntityCondition
 import org.moqui.impl.StupidUtilities.MapOrderByComparator
 
 class EntityListImpl implements EntityList {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
     public static final EntityList EMPTY = new EmptyEntityList()
 
     protected EntityFacadeImpl efi
 
     protected List<EntityValue> valueList = new LinkedList<EntityValue>()
+    protected boolean fromCache = false
 
     EntityListImpl(EntityFacadeImpl efi) { this.efi = efi }
 
@@ -32,6 +34,8 @@ class EntityListImpl implements EntityList {
 
     @Override
     EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) {
+        if (fromCache) return this.cloneList().filterByDate(fromDateName, thruDateName, moment)
+
         // default to now
         if (!moment) moment = new Timestamp(System.currentTimeMillis())
         if (!fromDateName) fromDateName = "fromDate"
@@ -54,27 +58,29 @@ class EntityListImpl implements EntityList {
 
     @Override
     EntityList filterByAnd(Map<String, ?> fields) {
+        if (fromCache) return this.cloneList().filterByAnd(fields)
         return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), true)
     }
 
     @Override
     EntityList orderByFields(List<String> fieldNames) {
+        if (fromCache) return this.cloneList().orderByFields(fieldNames)
         if (fieldNames) Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
         return this
     }
 
     @Override
     EntityList filterByCondition(EntityCondition condition, Boolean include) {
+        if (fromCache) return this.cloneList().filterByCondition(condition, include)
+        if (include == null) include = true
         Iterator<EntityValue> valueIterator = this.valueList.iterator()
         while (valueIterator.hasNext()) {
             EntityValue value = valueIterator.next()
-            if (condition.mapMatches(value)) {
-                // matched: if include is not true or false (default exclude) remove it
-                if (!include) valueIterator.remove()
-            } else {
-                // didn't match, if include is true remove it
-                if (include) valueIterator.remove()
-            }
+            boolean matches = condition.mapMatches(value)
+            // logger.warn("TOREMOVE filter value [${value}] with condition [${condition}] include=${include}, matches=${matches}")
+            // matched: if include is not true or false (default exclude) remove it
+            // didn't match, if include is true remove it
+            if ((matches && !include) || (!matches && include)) valueIterator.remove()
         }
         return this
     }
@@ -96,8 +102,12 @@ class EntityListImpl implements EntityList {
     EntityList cloneList() {
         EntityListImpl newObj = new EntityListImpl(this.efi)
         newObj.valueList.addAll(this.valueList)
+        // NOTE: when cloning don't clone the fromCache value (normally when from cache will be cloned before filtering)
         return newObj
     }
+
+    void setFromCache(boolean fc) { fromCache = fc }
+    boolean isFromCache() { return fromCache }
 
     // ========== List Interface Methods ==========
 
@@ -185,6 +195,8 @@ class EntityListImpl implements EntityList {
         int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }
 
         EntityList cloneList() { return this }
+        void setFromCache(boolean fc) { }
+        boolean isFromCache() { return false }
 
         // ========== List Interface Methods ==========
         int size() { return 0 }

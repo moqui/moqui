@@ -543,6 +543,7 @@ class EntityFindImpl implements EntityFind {
 
         if (doCache) {
             EntityList elToCache = el ?: EntityListImpl.EMPTY
+            elToCache.setFromCache(true)
             entityListCache.put(whereCondition, elToCache)
             efi.registerCacheListRa(this.entityName, whereCondition, elToCache)
         }
