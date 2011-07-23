@@ -78,22 +78,24 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
             <#if .node["@auto-field-map"]?if_exists == "true" || ((!.node["@auto-field-map"]?has_content) && (!.node["field-map"]?has_content))>.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
 </#macro>
 <#macro "entity-find">
+    <#assign useCache = (.node["@cache"]?if_exists != "true")>
     ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
-            <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ecn>.condition(<#visit ecn/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
+            <#if !useCache><#list .node["date-filter"] as df>.condition(<#visit df/>)</#list></#if><#list .node["econdition"] as ecn>.condition(<#visit ecn/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
     <#if .node["search-form-inputs"]?has_content><#assign sfiNode = .node["search-form-inputs"][0]>${.node["@list"]}_xafind.searchFormInputs(${sfiNode["@input-fields-map"]?default("null")}, "${sfiNode["@default-order-by"]?default("")}", ${sfiNode["@paginate"]?default("true")})
     </#if>
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
     </#if>
-    <#if .node["limit-range"]?has_content>
+    <#if .node["limit-range"]?has_content && !useCache>
     org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
     ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList(${.node["@start"]}, ${.node["@size"]}, true)
-    <#elseif .node["limit-view"]?has_content>
+    <#elseif .node["limit-view"]?has_content && !useCache>
     org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
     ${.node["@list"]} = ${.node["@list"]}_xafind_eli.getPartialList((${.node["@view-index"]} - 1) * ${.node["@view-size"]}, ${.node["@view-size"]}, true)
-    <#elseif .node["use-iterator"]?has_content>
+    <#elseif .node["use-iterator"]?has_content && !useCache>
     ${.node["@list"]} = ${.node["@list"]}_xafind.iterator()
     <#else>
     ${.node["@list"]} = ${.node["@list"]}_xafind.list()
+    <#if useCache><#list .node["date-filter"] as df>${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>ec.user.nowTimestamp</#if>)</#list></#if>
     </#if>
     <#if .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
     ${.node["@list"]}Count = ${.node["@list"]}_xafind.count()
