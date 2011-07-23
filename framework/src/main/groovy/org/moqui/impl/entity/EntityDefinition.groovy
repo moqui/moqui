@@ -49,7 +49,9 @@ public class EntityDefinition {
                 Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
                 if (memberEntity == null) throw new EntityException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${entityName}]")
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                Node fieldNode = memberEd.getFieldNode(aliasNode."@field" ?: aliasNode."@name")
+                String fieldName = aliasNode."@field" ?: aliasNode."@name"
+                Node fieldNode = memberEd.getFieldNode(fieldName)
+                if (fieldNode == null) throw new EntityException("In view-entity [${entityName}] alias [${aliasNode."@name"}] referred to field [${fieldName}] that does not exist on entity [${memberEd.entityName}].")
                 aliasNode.attributes().put("type", fieldNode.attributes().get("type"))
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
