@@ -393,6 +393,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
+    ExecutionContextImpl getEci() { return (ExecutionContextImpl) this.executionContext }
+
     void destroyActiveExecutionContext() {
         ExecutionContext ec = this.activeContext.get()
         if (ec) {

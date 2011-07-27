@@ -34,6 +34,10 @@ import org.apache.shiro.util.SimpleByteSource
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.Moqui
+import org.moqui.impl.context.UserFacadeImpl
+import org.moqui.impl.context.ExecutionContextImpl
+import org.apache.shiro.authz.UnauthorizedException
+import org.moqui.impl.context.ArtifactExecutionFacadeImpl
 
 class MoquiShiroRealm implements Realm {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiShiroRealm.class)
@@ -175,67 +179,95 @@ class MoquiShiroRealm implements Realm {
 
     // ========== Authorization Methods ==========
 
-    boolean isPermitted(PrincipalCollection principalCollection, String s) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    boolean isPermitted(PrincipalCollection principalCollection, String resourceAccess) {
+        String username = (String) principalCollection.primaryPrincipal
+        return ArtifactExecutionFacadeImpl.isPermitted(username, resourceAccess, null, ecfi.eci)
+    }
+
+    boolean[] isPermitted(PrincipalCollection principalCollection, String... resourceAccesses) {
+        boolean[] resultArray = new boolean[resourceAccesses.size()]
+        int i = 0
+        for (String resourceAccess in resourceAccesses) {
+            resultArray[i] = this.isPermitted(principalCollection, resourceAccess)
+            i++
+        }
+        return resultArray
+    }
+
+    boolean isPermittedAll(PrincipalCollection principalCollection, String... resourceAccesses) {
+        for (String resourceAccess in resourceAccesses)
+            if (!this.isPermitted(principalCollection, resourceAccess)) return false
+        return true
     }
 
     boolean isPermitted(PrincipalCollection principalCollection, Permission permission) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
-    }
-
-    boolean[] isPermitted(PrincipalCollection principalCollection, String... strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+        throw new IllegalArgumentException("Authorization of Permission through Shiro not yet supported")
     }
 
     boolean[] isPermitted(PrincipalCollection principalCollection, List<Permission> permissions) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
-    }
-
-    boolean isPermittedAll(PrincipalCollection principalCollection, String... strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+        throw new IllegalArgumentException("Authorization of Permission through Shiro not yet supported")
     }
 
     boolean isPermittedAll(PrincipalCollection principalCollection, Collection<Permission> permissions) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
-    }
-
-    void checkPermission(PrincipalCollection principalCollection, String s) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+        throw new IllegalArgumentException("Authorization of Permission through Shiro not yet supported")
     }
 
     void checkPermission(PrincipalCollection principalCollection, Permission permission) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+        // TODO how to handle the permission interface?
+        // see: http://www.jarvana.com/jarvana/view/org/apache/shiro/shiro-core/1.1.0/shiro-core-1.1.0-javadoc.jar!/org/apache/shiro/authz/Permission.html
+        // also look at DomainPermission, can extend for Moqui artifacts
+        // this.checkPermission(principalCollection, permission.?)
+        throw new IllegalArgumentException("Authorization of Permission through Shiro not yet supported")
+    }
+
+    void checkPermission(PrincipalCollection principalCollection, String permission) {
+        String username = (String) principalCollection.primaryPrincipal
+        if (UserFacadeImpl.hasPermission(username, permission, null, ecfi.eci)) {
+            throw new UnauthorizedException("User ${username} does not have permission ${permission}")
+        }
     }
 
     void checkPermissions(PrincipalCollection principalCollection, String... strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+        for (String permission in strings) checkPermission(principalCollection, permission)
     }
 
     void checkPermissions(PrincipalCollection principalCollection, Collection<Permission> permissions) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+        for (Permission permission in permissions) checkPermission(principalCollection, permission)
     }
 
-    boolean hasRole(PrincipalCollection principalCollection, String s) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    boolean hasRole(PrincipalCollection principalCollection, String roleName) {
+        String username = (String) principalCollection.primaryPrincipal
+        return UserFacadeImpl.isInGroup(username, roleName, null, ecfi.eci)
     }
 
-    boolean[] hasRoles(PrincipalCollection principalCollection, List<String> strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    boolean[] hasRoles(PrincipalCollection principalCollection, List<String> roleNames) {
+        boolean[] resultArray = new boolean[roleNames.size()]
+        int i = 0
+        for (String roleName in roleNames) { resultArray[i] = this.hasRole(principalCollection, roleName); i++ }
+        return resultArray
     }
 
-    boolean hasAllRoles(PrincipalCollection principalCollection, Collection<String> strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    boolean hasAllRoles(PrincipalCollection principalCollection, Collection<String> roleNames) {
+        for (String roleName in roleNames) { if (!this.hasRole(principalCollection, roleName)) return false }
+        return true
     }
 
-    void checkRole(PrincipalCollection principalCollection, String s) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    void checkRole(PrincipalCollection principalCollection, String roleName) {
+        if (!this.hasRole(principalCollection, roleName))
+            throw new UnauthorizedException("User ${principalCollection.primaryPrincipal} is not in role ${roleName}")
     }
 
-    void checkRoles(PrincipalCollection principalCollection, Collection<String> strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    void checkRoles(PrincipalCollection principalCollection, Collection<String> roleNames) {
+        for (String roleName in roleNames) {
+            if (!this.hasRole(principalCollection, roleName))
+                throw new UnauthorizedException("User ${principalCollection.primaryPrincipal} is not in role ${roleName}")
+        }
     }
 
-    void checkRoles(PrincipalCollection principalCollection, String... strings) {
-        throw new IllegalArgumentException("Authorization through Shiro not yet supported")
+    void checkRoles(PrincipalCollection principalCollection, String... roleNames) {
+        for (String roleName in roleNames) {
+            if (!this.hasRole(principalCollection, roleName))
+                throw new UnauthorizedException("User ${principalCollection.primaryPrincipal} is not in role ${roleName}")
+        }
     }
 }

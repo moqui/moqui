@@ -62,18 +62,56 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access
-        String userId = eci.user.username
+        String username = eci.user.username
 
         ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
 
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
         artifactExecutionInfoHistory.add(aeii)
 
+        if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.user.nowTimestamp))
+            throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+
+    }
+
+    /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */
+    Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
+
+    /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
+    List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
+
+    boolean disableAuthz() { boolean alreadyDisabled = this.disableAuthz; this.disableAuthz = true; return alreadyDisabled }
+    void enableAuthz() { this.disableAuthz = false }
+
+    /** Checks to see if username is permitted to access given resource.
+     *
+     * @param username
+     * @param resourceAccess Formatted as: "${typeEnumId}:${actionEnumId}:${name}"
+     * @param nowTimestamp
+     * @param eci
+     * @return
+     */
+    static boolean isPermitted(String username, String resourceAccess, Timestamp nowTimestamp, ExecutionContextImpl eci) {
+        int firstColon = resourceAccess.indexOf(":")
+        int secondColon = resourceAccess.indexOf(":", firstColon+1)
+        if (firstColon == -1 || secondColon == -1) throw new ArtifactAuthorizationException("Resource access string does not have two colons (':'), must be formatted like: \"\${typeEnumId}:\${actionEnumId}:\${name}\"")
+
+        String typeEnumId = resourceAccess.substring(0, firstColon)
+        String actionEnumId = resourceAccess.substring(firstColon+1, secondColon)
+        String name = resourceAccess.substring(secondColon+1)
+
+        return eci.artifactExecutionFacade.isPermitted(username,
+                new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), null, true, eci.user.nowTimestamp)
+    }
+
+    boolean isPermitted(String userId, ArtifactExecutionInfoImpl aeii, ArtifactExecutionInfoImpl lastAeii,
+                        boolean requiresAuthz, Timestamp nowTimestamp) {
+
         // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
         if (this.disableAuthz && aeii.typeEnumId == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
-            return
+            return true
         }
 
         // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
@@ -150,7 +188,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
             aeii.copyAuthorizedInfo(lastAeii)
             this.artifactExecutionInfoStack.addFirst(aeii)
-            return
+            return true
         }
 
         EntityList aacvList
@@ -222,7 +260,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     } else if (authzTypeEnumId == "AUTHZT_ALWAYS") {
                         aeii.copyAacvInfo(aacv, userId)
                         this.artifactExecutionInfoStack.addFirst(aeii)
-                        return
+                        return true
                     } else if (authzTypeEnumId == "AUTHZT_ALLOW" && denyAacv == null) {
                         // see if there are any denies in AEIs on lower on the stack
                         boolean ancestorDeny = false
@@ -232,7 +270,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         if (!ancestorDeny) {
                             aeii.copyAacvInfo(aacv, userId)
                             this.artifactExecutionInfoStack.addFirst(aeii)
-                            return
+                            return true
                         }
                     }
                 }
@@ -245,7 +283,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 if (!requiresAuthz || this.disableAuthz) {
                     // if no authz required, just push it even though it was a failure
                     this.artifactExecutionInfoStack.addFirst(aeii)
-                    return
+                    return true
                 } else {
                     StringBuilder warning = new StringBuilder()
                     warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
@@ -257,7 +295,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             authzActionEnumId:aeii.actionEnumId, userId:userId,
                             failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"Y"]).call()
 
-                    throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+                    return false
                 }
             } else {
                 // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
@@ -265,7 +303,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
                     aeii.copyAuthorizedInfo(lastAeii)
                     this.artifactExecutionInfoStack.addFirst(aeii)
-                    return
+                    return true
                 }
             }
 
@@ -273,6 +311,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 // if no authz required, just push it even though it was a failure
                 if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
                 this.artifactExecutionInfoStack.addFirst(aeii)
+                return true
             } else {
                 // if we got here no authz found, blow up
                 StringBuilder warning = new StringBuilder()
@@ -287,19 +326,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         authzActionEnumId:aeii.actionEnumId, userId:userId,
                         failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"N"]).call()
 
-                throw new ArtifactAuthorizationException("User [${userId}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+                return false
             }
         } finally {
             if (!alreadyDisabled) enableAuthz()
         }
+
+        return true
     }
-
-    /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */
-    Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
-
-    /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
-    List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
-
-    boolean disableAuthz() { boolean alreadyDisabled = this.disableAuthz; this.disableAuthz = true; return alreadyDisabled }
-    void enableAuthz() { this.disableAuthz = false }
 }

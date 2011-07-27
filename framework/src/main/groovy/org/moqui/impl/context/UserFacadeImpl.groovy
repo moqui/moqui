@@ -246,22 +246,28 @@ class UserFacadeImpl implements UserFacade {
     }
 
     /* @see org.moqui.context.UserFacade#hasPermission(String) */
-    boolean hasPermission(String userPermissionId) {
-        String userId = getUserId()
-        if (!userId) return false
+    boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, nowTimestamp, eci) }
 
-        return (eci.entity.makeFind("UserPermissionCheck").condition([userId:userId, userPermissionId:userPermissionId])
+    static boolean hasPermission(String username, String userPermissionId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
+        if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
+        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", username).useCache(true).one()
+        if (ua == null) ua = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
+        if (ua == null) return false
+        return (eci.entity.makeFind("UserPermissionCheck").condition([userId:ua.userId, userPermissionId:userPermissionId])
                 .useCache(true).list()
                 .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
                 .filterByDate("permissionFromDate", "permissionThruDate", nowTimestamp)) as boolean
     }
 
     /* @see org.moqui.context.UserFacade#isInGroup(String) */
-    boolean isInGroup(String userGroupId) {
-        String userId = getUserId()
-        if (!userId) return false
+    boolean isInGroup(String userGroupId) { return isInGroup(getUserId(), userGroupId, nowTimestamp, eci) }
 
-        return (eci.entity.makeFind("UserGroupMember").condition([userId:userId, userGroupId:userGroupId])
+    static boolean isInGroup(String username, String userGroupId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
+        if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
+        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", username).useCache(true).one()
+        if (ua == null) ua = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
+        if (ua == null) return false
+        return (eci.entity.makeFind("UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
                 .useCache(true).list().filterByDate("fromDate", "thruDate", nowTimestamp)) as boolean
     }
 
