@@ -27,17 +27,16 @@ import org.apache.shiro.authc.DisabledAccountException
 import org.apache.shiro.authc.CredentialsException
 import org.apache.shiro.authc.ExcessiveAttemptsException
 import org.apache.shiro.authz.Permission
+import org.apache.shiro.authz.UnauthorizedException
 import org.apache.shiro.realm.Realm
 import org.apache.shiro.subject.PrincipalCollection
 import org.apache.shiro.util.SimpleByteSource
 
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.Moqui
 import org.moqui.impl.context.UserFacadeImpl
-import org.moqui.impl.context.ExecutionContextImpl
-import org.apache.shiro.authz.UnauthorizedException
 import org.moqui.impl.context.ArtifactExecutionFacadeImpl
+import org.moqui.Moqui
 
 class MoquiShiroRealm implements Realm {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiShiroRealm.class)
@@ -179,6 +178,11 @@ class MoquiShiroRealm implements Realm {
 
     // ========== Authorization Methods ==========
 
+    /**
+     * @param principalCollection The principal (user)
+     * @param resourceAccess Formatted as: "${typeEnumId}:${actionEnumId}:${name}"
+     * @return boolean true if principal is permitted to access the resource, false otherwise.
+     */
     boolean isPermitted(PrincipalCollection principalCollection, String resourceAccess) {
         String username = (String) principalCollection.primaryPrincipal
         return ArtifactExecutionFacadeImpl.isPermitted(username, resourceAccess, null, ecfi.eci)
