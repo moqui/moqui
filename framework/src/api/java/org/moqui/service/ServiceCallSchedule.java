@@ -25,7 +25,7 @@ public interface ServiceCallSchedule extends ServiceCall {
     ServiceCallSchedule name(String path, String verb, String noun);
 
     /** Map of name, value pairs that make up the context (in parameters) passed to the service. */
-    ServiceCallSchedule parameters(Map<String, Object> context);
+    ServiceCallSchedule parameters(Map<String, ?> context);
 
     /** Single name, value pairs to put in the context (in parameters) passed to the service. */
     ServiceCallSchedule parameter(String name, Object value);

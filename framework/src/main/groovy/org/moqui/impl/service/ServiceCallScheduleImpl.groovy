@@ -51,7 +51,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     ServiceCallSchedule name(String p, String v, String n) { path = p; verb = v; noun = n; return this }
 
     @Override
-    ServiceCallSchedule parameters(Map<String, Object> map) { parameters.putAll(map); return this }
+    ServiceCallSchedule parameters(Map<String, ?> map) { parameters.putAll(map); return this }
 
     @Override
     ServiceCallSchedule parameter(String name, Object value) { parameters.put(name, value); return this }
