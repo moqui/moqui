@@ -104,15 +104,19 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     /** Get the next guaranteed unique seq id for this entity, and set it in the primary key field. This will set it in
      * the first primary key field in the entity definition, but it really should be used for entities with only one
      * primary key field.
+     *
+     * @return reference to this for convenience
      */
-    void setSequencedIdPrimary();
+    EntityValue setSequencedIdPrimary();
 
     /** Look at existing values with the same primary sequenced ID (first PK field) and get the highest existing
      * value for the secondary sequenced ID (the second PK field), add 1 to it and set the result in this entity value.
      *
      * The current value object must have the primary sequenced field already populated.
+     *
+     * @return reference to this for convenience
      */
-    void setSequencedIdSecondary();
+    EntityValue setSequencedIdSecondary();
 
     /** Compares this EntityValue to the passed object
      * @param that Object to compare this to
@@ -122,17 +126,29 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     EntityValue cloneValue();
 
-    /** Creates a record for this entity value. */
-    void create() throws EntityException;
+    /** Creates a record for this entity value.
+     *
+     * @return reference to this for convenience
+     */
+    EntityValue create() throws EntityException;
 
-    /** Creates a record for this entity value, or updates the record if one exists that matches the primary key. */
-    void createOrUpdate() throws EntityException;
+    /** Creates a record for this entity value, or updates the record if one exists that matches the primary key.
+     *
+     * @return reference to this for convenience
+     */
+    EntityValue createOrUpdate() throws EntityException;
 
-    /** Updates the record that matches the primary key. */
-    void update() throws EntityException;
+    /** Updates the record that matches the primary key.
+     *
+     * @return reference to this for convenience
+     */
+    EntityValue update() throws EntityException;
 
-    /** Deletes the record that matches the primary key. */
-    void delete() throws EntityException;
+    /** Deletes the record that matches the primary key.
+     *
+     * @return reference to this for convenience
+     */
+    EntityValue delete() throws EntityException;
 
     /** Refreshes this value based on the record that matches the primary key.
      * @return true if a record was found, otherwise false also meaning no refresh was done

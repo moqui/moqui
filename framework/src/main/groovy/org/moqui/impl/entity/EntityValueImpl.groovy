@@ -197,14 +197,15 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#setSequencedIdPrimary() */
-    void setSequencedIdPrimary() {
+    EntityValue setSequencedIdPrimary() {
         ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
         Integer staggerMax = (getEntityDefinition().entityNode."@sequence-primary-stagger" as Integer) ?: 1
         set((String) pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax))
+        return this
     }
 
     /** @see org.moqui.entity.EntityValue#setSequencedIdSecondary() */
-    void setSequencedIdSecondary() {
+    EntityValue setSequencedIdSecondary() {
         ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
         if (pkFields.size() < 2) throw new EntityException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
         // sequenced field will be the last pk
@@ -240,6 +241,7 @@ class EntityValueImpl implements EntityValue {
 
         int seqValToUse = (highestSeqVal ? highestSeqVal+1 : 1)
         this.set(seqFieldName, StupidUtilities.paddedNumber(seqValToUse, paddedLength))
+        return this
     }
 
     /** @see org.moqui.entity.EntityValue#compareTo(EntityValue) */
@@ -278,7 +280,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#create() */
-    void create() {
+    EntityValue create() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
@@ -336,6 +338,8 @@ class EntityValueImpl implements EntityValue {
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+
+        return this
     }
 
     protected void internalCreate(EntityQueryBuilder eqb, ListOrderedSet fieldList) {
@@ -354,17 +358,17 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#createOrUpdate() */
-    void createOrUpdate() {
+    EntityValue createOrUpdate() {
         EntityValue dbValue = (EntityValue) this.clone()
         if (dbValue.refresh()) {
-            update()
+            return update()
         } else {
-            create()
+            return create()
         }
     }
 
     /** @see org.moqui.entity.EntityValue#update() */
-    void update() {
+    EntityValue update() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
@@ -442,6 +446,8 @@ class EntityValueImpl implements EntityValue {
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+
+        return this
     }
 
     protected void internalUpdate(EntityQueryBuilder eqb) {
@@ -497,7 +503,7 @@ class EntityValueImpl implements EntityValue {
     }
 
     /** @see org.moqui.entity.EntityValue#delete() */
-    void delete() {
+    EntityValue delete() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
@@ -541,6 +547,8 @@ class EntityValueImpl implements EntityValue {
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
         getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+
+        return this
     }
 
     protected void internalDelete(EntityQueryBuilder eqb) {
