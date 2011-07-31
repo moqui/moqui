@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Speed Test">
+
+    <actions>
+        <script><![CDATA[
+            org.moqui.context.ExecutionContext ec = context.ec
+            java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("#,##0.#######")
+
+            def performanceList = []
+
+            // one PK
+            calls = 1000
+            startTime = System.currentTimeMillis()
+            for (int i = 0; i < calls; i++) {
+                dummy = ec.entity.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"one PK", entity:"Enumeration", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // one PK cache
+            calls = 1000
+            startTime = System.currentTimeMillis()
+            for (int i = 0; i < calls; i++) {
+                dummy = ec.entity.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"one PK cache", entity:"Enumeration", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // create with sequenced ID test
+            calls = 500
+            startTime = System.currentTimeMillis()
+            List createTestList = []
+            java.sql.Timestamp nowTs = new java.sql.Timestamp(startTime)
+            for (int i = 0; i < calls; i++) {
+                createTestList.add(ec.entity.makeValue("ToolsTestEntity").setFields([testMedium:"Medium "+i,
+                        testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs, testNumberInteger:i,
+                        testNumberDecimal:(i+0.5)], true, null, null).setSequencedIdPrimary().create())
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"create with sequenced ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // create with preset ID test
+            calls = 500
+            startTime = System.currentTimeMillis()
+            for (int i = 0; i < calls; i++) {
+                createTestList.add(ec.entity.makeValue("ToolsTestEntity").setFields([testId:("id"+i),
+                        testMedium:"Medium "+i, testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs,
+                        testNumberInteger:i, testNumberDecimal:(i+0.5)], true, null, null).create())
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"create with preset ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // update test
+            calls = createTestList.size()
+            startTime = System.currentTimeMillis()
+            for (def ev in createTestList) {
+                ev.testMedium = ev.testMedium + " - Updated"
+                ev.update()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"update", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // delete
+            calls = createTestList.size()
+            startTime = System.currentTimeMillis()
+            for (def ev in createTestList) {
+                ev.delete()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"delete", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            context.performanceList = performanceList
+            ]]></script>
+    </actions>
+    <widgets>
+        <form-list name="PerformanceResults" list="performanceList">
+            <field name="operation"><default-field><display/></default-field></field>
+            <field name="entity"><default-field><display/></default-field></field>
+            <field name="calls"><default-field><display/></default-field></field>
+            <field name="seconds"><default-field><display/></default-field></field>
+            <field name="secsPerCall"><default-field><display/></default-field></field>
+            <field name="callsPerSecond"><default-field><display/></default-field></field>
+        </form-list>
+    </widgets>
+</screen>
