@@ -18,6 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <script><![CDATA[
             org.moqui.context.ExecutionContext ec = context.ec
             java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("#,##0.#######")
+            java.sql.Timestamp nowTs = new java.sql.Timestamp(System.currentTimeMillis())
 
             def performanceList = []
 
@@ -43,18 +44,19 @@ This Work includes contributions authored by David E. Jones, not as a
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
+            // ========== direct CrUD tests ==========
+
             // create with sequenced ID test
             calls = 500
             startTime = System.currentTimeMillis()
             List createTestList = []
-            java.sql.Timestamp nowTs = new java.sql.Timestamp(startTime)
             for (int i = 0; i < calls; i++) {
                 createTestList.add(ec.entity.makeValue("ToolsTestEntity").setFields([testMedium:"Medium "+i,
                         testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs, testNumberInteger:i,
                         testNumberDecimal:(i+0.5)], true, null, null).setSequencedIdPrimary().create())
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"create with sequenced ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+            performanceList.add([operation:"direct create with sequenced ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -67,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         testNumberInteger:i, testNumberDecimal:(i+0.5)], true, null, null).create())
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"create with preset ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+            performanceList.add([operation:"direct create with preset ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -79,7 +81,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 ev.update()
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"update", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+            performanceList.add([operation:"direct update", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -90,7 +92,45 @@ This Work includes contributions authored by David E. Jones, not as a
                 ev.delete()
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"delete", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+            performanceList.add([operation:"direct delete", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // ========== service CrUD tests ==========
+
+            // create with sequenced ID test
+            calls = 100
+            startTime = System.currentTimeMillis()
+            List createTestIdList = []
+            for (int i = 0; i < calls; i++) {
+                createTestIdList.add(ec.service.sync().name("create", "ToolsTestEntity").parameters([
+                        testMedium:"Medium "+i, testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs,
+                        testNumberInteger:i, testNumberDecimal:(i+0.5)]).call().testId)
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"service create with sequenced ID", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // update test
+            calls = createTestIdList.size()
+            startTime = System.currentTimeMillis()
+            for (String id in createTestIdList) {
+                ec.service.sync().name("update", "ToolsTestEntity").parameters([testId:id, testMedium:"Updated Text"]).call()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"service update", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            // delete
+            calls = createTestIdList.size()
+            startTime = System.currentTimeMillis()
+            for (String id in createTestIdList) {
+                ec.service.sync().name("delete", "ToolsTestEntity").parameter("testId", id).call()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"service delete", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
