@@ -232,8 +232,8 @@ class ScreenRenderImpl implements ScreenRender {
                 throw t
             } finally {
                 try {
-                    if (sfi.ecfi.transactionFacade.isTransactionInPlace())
-                        sfi.ecfi.transactionFacade.commit(beganTransaction)
+                    if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace())
+                        sfi.ecfi.transactionFacade.commit()
                 } catch (Exception e) {
                     logger.error("Error committing screen transition transaction", e)
                 }
@@ -435,7 +435,7 @@ class ScreenRenderImpl implements ScreenRender {
             sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
             throw new RuntimeException(errMsg, t)
         } finally {
-            if (sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit(beganTransaction)
+            if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit()
             if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
                 sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.url,
                         (ec.web ? ec.web.requestParameters : null), screenStartTime, System.currentTimeMillis(), null)

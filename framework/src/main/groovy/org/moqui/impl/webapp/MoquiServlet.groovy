@@ -16,9 +16,9 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.ServletException
 
+import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
-import org.moqui.context.ArtifactAuthorizationException
 
 class MoquiServlet extends HttpServlet {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiServlet.class)

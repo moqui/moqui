@@ -448,7 +448,7 @@ class EntityDbMeta {
         } finally {
             if (stmt != null) stmt.close()
             if (con != null) con.close()
-            efi.ecfi.transactionFacade.commit(beganTx)
+            if (beganTx) efi.ecfi.transactionFacade.commit()
         }
     }
 }

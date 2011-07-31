@@ -779,7 +779,7 @@ class EntityFacadeImpl implements EntityFacade {
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
             } finally {
-                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
             }
         } catch (TransactionException e) {
             throw e

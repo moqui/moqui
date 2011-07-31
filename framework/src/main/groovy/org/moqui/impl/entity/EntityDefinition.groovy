@@ -14,6 +14,7 @@ package org.moqui.impl.entity
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
+import org.apache.commons.collections.map.ListOrderedMap
 
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityCondition.JoinOperator
@@ -22,7 +23,6 @@ import org.moqui.impl.entity.EntityConditionFactoryImpl.EntityConditionImplBase
 import org.moqui.impl.entity.EntityConditionFactoryImpl.ConditionField
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldToFieldCondition
 import org.moqui.impl.entity.EntityConditionFactoryImpl.FieldValueCondition
-import org.apache.commons.collections.map.ListOrderedMap
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)

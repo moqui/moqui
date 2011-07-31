@@ -197,9 +197,8 @@ class ServiceEcaRule {
                         logger.error("Error running Service TX ECA rule", t)
                         ecfi.transactionFacade.rollback(beganTransaction, "Error running Service TX ECA rule", t)
                     } finally {
-                        if (ecfi.transactionFacade.isTransactionInPlace()) {
-                            ecfi.transactionFacade.commit(beganTransaction)
-                        }
+                        if (beganTransaction && ecfi.transactionFacade.isTransactionInPlace())
+                            ecfi.transactionFacade.commit()
                     }
                 }
             };

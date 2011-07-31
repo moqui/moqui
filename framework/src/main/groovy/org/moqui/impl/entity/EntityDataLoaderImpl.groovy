@@ -134,7 +134,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error loading XML text", t)
             } finally {
-                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
             }
             // load each file in its own transaction
             for (String location in this.locationList) {
@@ -172,7 +172,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             tf.rollback(beganTransaction, "Error loading XML text", t)
             throw new IllegalArgumentException("Error loading XML data file [${location}]", t)
         } finally {
-            if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+            if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
         }
     }
 

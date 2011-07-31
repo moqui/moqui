@@ -386,7 +386,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             return ec
         } else {
             if (logger.traceEnabled) logger.trace("Creating new ExecutionContext in thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
-            Thread.currentThread().setContextClassLoader(cachedClassLoader)
+            if (!(Thread.currentThread().getContextClassLoader() instanceof StupidClassLoader))
+                Thread.currentThread().setContextClassLoader(cachedClassLoader)
             ec = new ExecutionContextImpl(this)
             this.activeContext.set(ec)
             return ec

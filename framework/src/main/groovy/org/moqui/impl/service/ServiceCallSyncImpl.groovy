@@ -208,7 +208,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     parent = parent.cause
                 }
             } finally {
-                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
             }
         } catch (TransactionException e) {
@@ -278,7 +278,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     parent = parent.cause
                 }
             } finally {
-                if (tf.isTransactionInPlace()) tf.commit(beganTransaction)
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
             }
         } catch (TransactionException e) {
