@@ -51,6 +51,7 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
 import org.moqui.entity.EntityListIterator
+import org.moqui.impl.context.CacheImpl
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -596,11 +597,11 @@ class EntityFacadeImpl implements EntityFacade {
         return efl
     }
 
-    Cache getCacheOne(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.one.${entityName}") }
-    Cache getCacheOneRa(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.one_ra.${entityName}") }
-    Cache getCacheList(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.list.${entityName}") }
-    Cache getCacheListRa(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.list_ra.${entityName}") }
-    Cache getCacheCount(String entityName) { return ecfi.cacheFacade.getCache("entity.${tenantId}.count.${entityName}") }
+    CacheImpl getCacheOne(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.one.${entityName}") }
+    CacheImpl getCacheOneRa(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.one_ra.${entityName}") }
+    CacheImpl getCacheList(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.list.${entityName}") }
+    CacheImpl getCacheListRa(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.list_ra.${entityName}") }
+    CacheImpl getCacheCount(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return

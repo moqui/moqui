@@ -30,6 +30,8 @@ import org.moqui.impl.entity.EntityConditionFactoryImpl.ListCondition
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.context.ExecutionContext
 import java.sql.Timestamp
+import net.sf.ehcache.Element
+import org.moqui.impl.context.CacheImpl
 
 class EntityFindImpl implements EntityFind {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindImpl.class)
@@ -393,11 +395,12 @@ class EntityFindImpl implements EntityFind {
 
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
+        ExecutionContext ec = efi.ecfi.executionContext
 
         if (ed.isViewEntity() && (!ed.entityNode."member-entity" || !ed.entityNode."alias"))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        efi.ecfi.executionContext.artifactExecution.push(
+        ec.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
@@ -414,21 +417,26 @@ class EntityFindImpl implements EntityFind {
         // no condition means no condition/parameter set, so return null for find.one()
         if (!whereCondition) {
             // pop the ArtifactExecutionInfo
-            efi.ecfi.executionContext.artifactExecution.pop()
+            ec.artifactExecution.pop()
             return null
         }
 
-        Cache entityOneCache = null
+        CacheImpl entityOneCache = null
         boolean doCache = this.shouldCache()
         if (doCache) {
             entityOneCache = this.efi.getCacheOne(this.entityName)
-            if (entityOneCache.containsKey(whereCondition)) {
-                EntityValue cacheHit = (EntityValue) entityOneCache.get(whereCondition)
-                // if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
-                efi.runEecaRules(ed.getEntityName(), cacheHit, "find-one", false)
-                // pop the ArtifactExecutionInfo
-                efi.ecfi.executionContext.artifactExecution.pop()
-                return cacheHit
+            Element cacheElement = entityOneCache.getElement(whereCondition)
+            if (cacheElement != null) {
+                if (cacheElement.expired) {
+                    entityOneCache.removeElement(cacheElement)
+                } else {
+                    EntityValue cacheHit = (EntityValue) cacheElement.objectValue
+                    // if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
+                    efi.runEecaRules(ed.getEntityName(), cacheHit, "find-one", false)
+                    // pop the ArtifactExecutionInfo
+                    ec.artifactExecution.pop()
+                    return cacheHit
+                }
             }
         }
 
@@ -459,7 +467,6 @@ class EntityFindImpl implements EntityFind {
         EntityValueImpl newEntityValue = null
         try {
             efi.entityDbMeta.checkTableRuntime(ed)
-
             newEntityValue = (EntityValueImpl) internalOne(efb, whereCondition.toString())
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)
@@ -481,7 +488,7 @@ class EntityFindImpl implements EntityFind {
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "one", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
         // pop the ArtifactExecutionInfo
-        efi.ecfi.executionContext.artifactExecution.pop()
+        ec.artifactExecution.pop()
 
         return newEntityValue
     }
@@ -513,11 +520,12 @@ class EntityFindImpl implements EntityFind {
     EntityList list() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
+        ExecutionContext ec = efi.ecfi.executionContext
 
         if (ed.isViewEntity() && (!ed.entityNode."member-entity" || !ed.entityNode."alias"))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        efi.ecfi.executionContext.artifactExecution.push(
+        ec.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
@@ -525,16 +533,22 @@ class EntityFindImpl implements EntityFind {
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
-        Cache entityListCache = null
+        CacheImpl entityListCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
             entityListCache = this.efi.getCacheList(this.entityName)
-            if (entityListCache.containsKey(whereCondition)) {
-                efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
-                // pop the ArtifactExecutionInfo
-                efi.ecfi.executionContext.artifactExecution.pop()
-                return (EntityList) entityListCache.get(whereCondition)
+            Element cacheElement = entityListCache.getElement(whereCondition)
+            if (cacheElement != null) {
+                if (cacheElement.expired) {
+                    entityListCache.removeElement(cacheElement)
+                } else {
+                    EntityList cacheHit = (EntityList) cacheElement.objectValue
+                    efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
+                    // pop the ArtifactExecutionInfo
+                    ec.artifactExecution.pop()
+                    return cacheHit
+                }
             }
         }
 
@@ -552,7 +566,7 @@ class EntityFindImpl implements EntityFind {
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "list", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
         // pop the ArtifactExecutionInfo
-        efi.ecfi.executionContext.artifactExecution.pop()
+        ec.artifactExecution.pop()
 
         return el
     }
@@ -561,11 +575,12 @@ class EntityFindImpl implements EntityFind {
     EntityListIterator iterator() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
+        ExecutionContext ec = efi.ecfi.executionContext
 
         if (ed.isViewEntity() && (!ed.entityNode."member-entity" || !ed.entityNode."alias"))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
-        efi.ecfi.executionContext.artifactExecution.push(
+        ec.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
@@ -577,7 +592,7 @@ class EntityFindImpl implements EntityFind {
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "iterator", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
         // pop the ArtifactExecutionInfo
-        efi.ecfi.executionContext.artifactExecution.pop()
+        ec.artifactExecution.pop()
 
         return eli
     }
@@ -646,7 +661,6 @@ class EntityFindImpl implements EntityFind {
         EntityListIterator eli
         try {
             efi.entityDbMeta.checkTableRuntime(ed)
-
             eli = internalIterator(efb)
         } catch (EntityException e) {
             efb.closeAll()
@@ -677,8 +691,9 @@ class EntityFindImpl implements EntityFind {
     long count() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
+        ExecutionContext ec = efi.ecfi.executionContext
 
-        efi.ecfi.executionContext.artifactExecution.push(
+        ec.artifactExecution.push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("view")))
 
@@ -686,16 +701,22 @@ class EntityFindImpl implements EntityFind {
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
-        Cache entityCountCache = null
+        CacheImpl entityCountCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
             entityCountCache = this.efi.getCacheCount(this.entityName)
-            if (entityCountCache.containsKey(whereCondition)) {
-                efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
-                // pop the ArtifactExecutionInfo
-                efi.ecfi.executionContext.artifactExecution.pop()
-                return (Long) entityCountCache.get(whereCondition)
+            Element cacheElement = entityCountCache.getElement(whereCondition)
+            if (cacheElement != null) {
+                if (cacheElement.expired) {
+                    entityCountCache.removeElement(cacheElement)
+                } else {
+                    Long cacheHit = (Long) cacheElement.objectValue
+                    efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
+                    // pop the ArtifactExecutionInfo
+                    ec.artifactExecution.pop()
+                    return cacheHit
+                }
             }
         }
 
@@ -745,7 +766,6 @@ class EntityFindImpl implements EntityFind {
         long count = 0
         try {
             efi.entityDbMeta.checkTableRuntime(ed)
-
             count = internalCount(efb)
         } catch (SQLException e) {
             throw new EntityException("Error finding count", e)
@@ -753,15 +773,13 @@ class EntityFindImpl implements EntityFind {
             efb.closeAll()
         }
 
-        if (doCache) {
-            entityCountCache.put(whereCondition, count)
-        }
+        if (doCache) entityCountCache.put(whereCondition, count)
 
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "count", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
         // pop the ArtifactExecutionInfo
-        efi.ecfi.executionContext.artifactExecution.pop()
+        ec.artifactExecution.pop()
 
         return count
     }
