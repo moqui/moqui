@@ -114,7 +114,7 @@ public class EntityDefinition {
         // handle automatic reverse-many nodes (based on one node coming the other way)
         if (relNode == null) {
             // see if there is an entity matching the relationship name that has a relationship coming this way
-            EntityDefinition ed
+            EntityDefinition ed = null
             try {
                 ed = efi.getEntityDefinition(relationshipName)
             } catch (EntityException e) {
@@ -519,7 +519,7 @@ public class EntityDefinition {
                     field = new ConditionField(econdition."@field-name")
                 }
                 // NOTE: may need to convert value from String to object for field
-                cond = new FieldValueCondition(this.efi.conditionFactory, field,
+                cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), econdition."@value")
             } else {
                 ConditionField field
@@ -540,7 +540,7 @@ public class EntityDefinition {
                 } else {
                     toField = new ConditionField(econdition."@to-field-name")
                 }
-                cond = new FieldToFieldCondition(this.efi.conditionFactory, field,
+                cond = new FieldToFieldCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), toField)
             }
             if (cond && econdition."@ignore-case" == "true") cond.ignoreCase()
@@ -578,10 +578,13 @@ public class EntityDefinition {
         return true
     }
 
+    protected static Map<String, String> camelToUnderscoreMap = new HashMap()
     static String camelCaseToUnderscored(String camelCase) {
         if (!camelCase) return ""
-        StringBuilder underscored = new StringBuilder()
+        String usv = camelToUnderscoreMap.get(camelCase)
+        if (usv) return usv
 
+        StringBuilder underscored = new StringBuilder()
         underscored.append(Character.toUpperCase(camelCase.charAt(0)))
         int inPos = 1
         while (inPos < camelCase.length()) {
@@ -591,6 +594,8 @@ public class EntityDefinition {
             inPos++
         }
 
-        return underscored.toString()
+        usv = underscored.toString()
+        camelToUnderscoreMap.put(camelCase, usv)
+        return usv
     }
 }

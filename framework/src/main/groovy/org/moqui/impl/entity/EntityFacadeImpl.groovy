@@ -841,59 +841,51 @@ class EntityFacadeImpl implements EntityFacade {
         return newValue
     }
 
-    protected static final Map<String, String> fieldTypeMap = [
-            "id":"java.lang.String",
-            "id-long":"java.lang.String",
-            "id-very-long":"java.lang.String",
-            "date":"java.sql.Date",
-            "time":"java.sql.Time",
-            "date-time":"java.sql.Timestamp",
-            "number-integer":"java.lang.Long",
-            "number-decimal":"java.math.BigDecimal",
-            "number-float":"java.lang.Double",
-            "currency-amount":"java.math.BigDecimal",
-            "currency-precise":"java.math.BigDecimal",
-            "text-indicator":"java.lang.String",
-            "text-short":"java.lang.String",
-            "text-medium":"java.lang.String",
-            "text-long":"java.lang.String",
-            "text-very-long":"java.lang.String",
-            "binary-very-long":"java.sql.Blob"]
+    protected Map<String, Map<String, String>> javaTypeByGroup = [:]
     String getFieldJavaType(String fieldType, String entityName) {
-        Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
+        String groupName = this.getEntityGroupName(entityName)
+        Map<String, String> javaTypeMap = javaTypeByGroup.get(groupName)
+        if (javaTypeMap == null) {
+            javaTypeMap = new HashMap()
+            javaTypeByGroup.put(groupName, javaTypeMap)
+        } else if (javaTypeMap.containsKey(fieldType)) {
+            return javaTypeMap.get(fieldType)
+        }
+
+        Node databaseNode = this.getDatabaseNode(groupName)
         String javaType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@java-type" : null
-        if (javaType) {
-            return javaType
-        } else {
+        if (!javaType) {
             Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
             javaType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@java-type" : null
-            if (javaType) {
-                return javaType
-            } else {
-                // get the default field java type
-                String defaultJavaType = fieldTypeMap[fieldType]
-                if (!defaultJavaType) throw new EntityException("Could not find Java type for field type [${fieldType}] on entity [${entityName}]")
-                return defaultJavaType
-            }
+            if (!javaType) throw new EntityException("Could not find Java type for field type [${fieldType}] on entity [${entityName}]")
         }
-    }
-    protected String getFieldSqlType(String fieldType, String entityName) {
-        Node databaseNode = this.getDatabaseNode(this.getEntityGroupName(entityName))
-        String sqlType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@sql-type" : null
-        if (sqlType) {
-            return sqlType
-        } else {
-            Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
-            sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@default-sql-type" : null
-            if (sqlType) {
-                return sqlType
-            } else {
-                throw new EntityException("Could not find SQL type for field type [${fieldType}] on entity [${entityName}]")
-            }
-        }
+        javaTypeMap.put(fieldType, javaType)
+        return javaType
     }
 
-    protected static final Map<String, Integer> javaTypeMap = [
+    protected Map<String, Map<String, String>> sqlTypeByGroup = [:]
+    protected String getFieldSqlType(String fieldType, String entityName) {
+        String groupName = this.getEntityGroupName(entityName)
+        Map<String, String> sqlTypeMap = sqlTypeByGroup.get(groupName)
+        if (sqlTypeMap == null) {
+            sqlTypeMap = new HashMap()
+            sqlTypeByGroup.put(groupName, sqlTypeMap)
+        } else if (sqlTypeMap.containsKey(fieldType)) {
+            return sqlTypeMap.get(fieldType)
+        }
+
+        Node databaseNode = this.getDatabaseNode(groupName)
+        String sqlType = databaseNode ? databaseNode."database-type".find({ it.@type == fieldType })?."@sql-type" : null
+        if (!sqlType) {
+            Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
+            sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@default-sql-type" : null
+            if (!sqlType) throw new EntityException("Could not find SQL type for field type [${fieldType}] on entity [${entityName}]")
+        }
+        sqlTypeMap.put(fieldType, sqlType)
+        return sqlType
+    }
+
+    protected static final Map<String, Integer> javaIntTypeMap = [
             "java.lang.String":1, "String":1, "org.codehaus.groovy.runtime.GStringImpl":1,
             "java.sql.Timestamp":2, "Timestamp":2,
             "java.sql.Time":3, "Time":3,
@@ -910,7 +902,7 @@ class EntityFacadeImpl implements EntityFacade {
             "java.util.Date":14,
             "java.util.ArrayList":15, "java.util.HashSet":15, "java.util.LinkedHashSet":15, "java.util.LinkedList":15]
     public static int getJavaTypeInt(String javaType) {
-        Integer typeInt = javaTypeMap[javaType]
+        Integer typeInt = javaIntTypeMap[javaType]
         if (!typeInt) throw new EntityException("Java type " + javaType + " not supported for entity fields")
         return typeInt
     }
