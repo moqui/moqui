@@ -572,7 +572,7 @@ public class EntityDefinition {
 
     @Override
     boolean equals(Object o) {
-        if (!(o instanceof EntityDefinition)) return false
+        if (o == null || o.getClass() != this.getClass()) return false
         EntityDefinition that = (EntityDefinition) o
         if (!this.entityName.equals(that.entityName)) return false
         return true
