@@ -11,16 +11,19 @@
  */
 package org.moqui.impl.context
 
+import static org.moqui.context.Cache.EvictionStrategy.*
+
 import org.moqui.context.CacheFacade
 import org.moqui.context.Cache
+import org.moqui.context.Cache.EvictionStrategy
+import org.moqui.impl.StupidUtilities
+
 import net.sf.ehcache.CacheManager
 import net.sf.ehcache.Ehcache
 import net.sf.ehcache.config.CacheConfiguration
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.moqui.context.Cache.EvictionStrategy
-import org.moqui.impl.StupidUtilities
 
 public class CacheFacadeImpl implements CacheFacade {
     protected final static Logger logger = LoggerFactory.getLogger(CacheFacadeImpl.class)
@@ -54,8 +57,10 @@ public class CacheFacadeImpl implements CacheFacade {
     void clearCachesByPrefix(String prefix) { cacheManager.clearAllStartingWith(prefix) }
 
     /** @see org.moqui.context.CacheFacade#getCache(String) */
-    Cache getCache(String cacheName) {
-        Cache theCache
+    Cache getCache(String cacheName) { return getCacheImpl(cacheName) }
+
+    CacheImpl getCacheImpl(String cacheName) {
+        CacheImpl theCache
         if (cacheManager.cacheExists(cacheName)) {
             // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
             theCache = new CacheImpl(cacheManager.getCache(cacheName))
@@ -85,9 +90,9 @@ public class CacheFacadeImpl implements CacheFacade {
 
     String getEvictionStrategyString(EvictionStrategy es) {
         switch (es) {
-            case EvictionStrategy.LEAST_RECENTLY_USED: return "LRU"
-            case EvictionStrategy.LEAST_RECENTLY_ADDED: return "LRA"
-            case EvictionStrategy.LEAST_FREQUENTLY_USED: return "LFU"
+            case LEAST_RECENTLY_USED: return "LRU"
+            case LEAST_RECENTLY_ADDED: return "LRA"
+            case LEAST_FREQUENTLY_USED: return "LFU"
         }
     }
 
