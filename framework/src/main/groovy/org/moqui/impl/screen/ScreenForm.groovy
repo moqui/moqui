@@ -264,7 +264,7 @@ class ScreenForm {
 
     void addAutoEntityField(EntityDefinition ed, String fieldName, String fieldType, String serviceVerb,
                             Node newFieldNode, Node subFieldNode, Node baseFormNode) {
-        ListOrderedSet pkFieldNameSet = ed.getFieldNames(true, false)
+        List<String> pkFieldNameSet = ed.getPkFieldNames()
 
         String efType = ed.getFieldNode(fieldName)."@type"
 
@@ -495,7 +495,7 @@ class ScreenForm {
         if (childNode."@key") {
             key = ec.resource.evaluateStringExpand(childNode."@key", null)
         } else if (listOption instanceof EntityValueImpl) {
-            String keyFieldName = listOption.getEntityDefinition().getFieldNames(true, false).get(0)
+            String keyFieldName = listOption.getEntityDefinition().getPkFieldNames().get(0)
             if (keyFieldName) key = ec.context.get(keyFieldName)
         }
         if (!key) key = ec.context.get(fieldNode."@name")

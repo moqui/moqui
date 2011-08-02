@@ -67,12 +67,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
         ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
 
-        Set<String> inParameterNames = null
+        Collection<String> inParameterNames = null
         if (sd != null) {
             inParameterNames = sd.getInParameterNames()
         } else {
             EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
-            if (ed != null) inParameterNames = ed.getFieldNames(true, true)
+            if (ed != null) inParameterNames = ed.getAllFieldNames()
         }
         if (multi) {
             for (int i = 0; ; i++) {

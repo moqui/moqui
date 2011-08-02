@@ -118,7 +118,7 @@ class EntityDbMeta {
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ").append(ed.getFullTableName()).append(" (")
 
-        for (String fieldName in ed.getFieldNames(true, true)) {
+        for (String fieldName in ed.getAllFieldNames()) {
             Node fieldNode = ed.getFieldNode(fieldName)
             String sqlType = efi.getFieldSqlType(fieldNode."@type", ed.entityName)
             String javaType = efi.getFieldJavaType(fieldNode."@type", ed.entityName)
@@ -145,7 +145,7 @@ class EntityDbMeta {
         }
         sql.append(" PRIMARY KEY (")
         boolean isFirstPk = true
-        for (String pkName in ed.getFieldNames(true, false)) {
+        for (String pkName in ed.getPkFieldNames()) {
             if (isFirstPk) isFirstPk = false else sql.append(", ")
             sql.append(ed.getColumnName(pkName, false))
         }

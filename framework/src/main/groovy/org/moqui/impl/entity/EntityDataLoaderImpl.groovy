@@ -311,8 +311,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 } else {
                     // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name
                     if (!currentValue.containsPrimaryKey()) {
-                        ListOrderedSet pkFieldList = currentValue.getEntityDefinition().getFieldNames(true, false)
-                        if (pkFieldList.size() == 1) {
+                        if (currentValue.getEntityDefinition().getPkFieldNames().size() == 1) {
                             currentValue.setSequencedIdPrimary()
                         } else {
                             throw new SAXException("Cannot store value with incomplete primary key with more than 1 primary key field: " + currentValue)

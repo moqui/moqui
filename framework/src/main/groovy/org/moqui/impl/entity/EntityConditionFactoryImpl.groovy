@@ -196,6 +196,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             if (o == null || o.getClass() != this.getClass()) return false
             BasicJoinCondition that = (BasicJoinCondition) o
             if (!this.lhs.equals(that.lhs)) return false
+            // NOTE: for Java Enums the != is WAY faster than the .equals
             if (this.operator != that.operator) return false
             if (!this.rhs.equals(that.rhs)) return false
             return true
@@ -203,6 +204,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     public static class FieldValueCondition extends EntityConditionImplBase {
+        protected Class localClass = null
         protected ConditionField field
         protected ComparisonOperator operator
         protected Object value
@@ -212,9 +214,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 ConditionField field, ComparisonOperator operator, Object value) {
             super(ecFactoryImpl)
             this.field = field
-            this.operator = operator ? operator : ComparisonOperator.EQUALS
+            this.operator = operator ?: ComparisonOperator.EQUALS
             this.value = value
         }
+
+        Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
 
         @Override
         void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -284,17 +288,26 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         boolean equals(Object o) {
-            if (o == null || o.getClass() != this.getClass()) return false
+            if (o == null || o.getClass() != this.getLocalClass()) return false
             FieldValueCondition that = (FieldValueCondition) o
-            if (this.field != that.field) return false
+            if (!this.field.equalsConditionField(that.field)) return false
+            // NOTE: for Java Enums the != is WAY faster than the .equals
             if (this.operator != that.operator) return false
-            if (this.value != that.value) return false
+            if (this.value == null && that.value != null) return false
+            if (this.value != null) {
+                if (that.value == null) {
+                    return false
+                } else {
+                    if (!this.value.equals(that.value)) return false
+                }
+            }
             if (this.ignoreCase != that.ignoreCase) return false
             return true
         }
     }
 
     public static class FieldToFieldCondition extends EntityConditionImplBase {
+        protected Class localClass = null
         protected ConditionField field
         protected ComparisonOperator operator
         protected ConditionField toField
@@ -304,9 +317,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
                 ConditionField field, ComparisonOperator operator, ConditionField toField) {
             super(ecFactoryImpl)
             this.field = field
-            this.operator = operator ? operator : ComparisonOperator.EQUALS
+            this.operator = operator ?: ComparisonOperator.EQUALS
             this.toField = toField
         }
+
+        Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
 
         @Override
         void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -324,7 +339,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         boolean mapMatches(Map<String, ?> map) {
-            return compareByOperator(map.get(field.fieldName), this.operator, map.get(toField.fieldName))
+            return compareByOperator(map.get(field.getFieldName()), this.operator, map.get(toField.getFieldName()))
         }
 
         @Override
@@ -342,26 +357,30 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         boolean equals(Object o) {
-            if (o == null || o.getClass() != this.getClass()) return false
+            if (o == null || o.getClass() != this.getLocalClass()) return false
             FieldToFieldCondition that = (FieldToFieldCondition) o
-            if (!this.field.equals(that.field)) return false
+            if (!this.field.equalsConditionField(that.field)) return false
+            // NOTE: for Java Enums the != is WAY faster than the .equals
             if (this.operator != that.operator) return false
-            if (!this.toField.equals(that.toField)) return false
+            if (!this.toField.equalsConditionField(that.toField)) return false
             if (this.ignoreCase != that.ignoreCase) return false
             return true
         }
     }
 
     public static class ListCondition extends EntityConditionImplBase {
+        protected Class localClass = null
         protected List<EntityConditionImplBase> conditionList
         protected JoinOperator operator
 
         ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
                 List<EntityConditionImplBase> conditionList, JoinOperator operator) {
             super(ecFactoryImpl)
-            this.conditionList = conditionList ? conditionList : new LinkedList()
-            this.operator = operator ? operator : JoinOperator.AND
+            this.conditionList = conditionList ?: new LinkedList()
+            this.operator = operator ?: JoinOperator.AND
         }
+
+        Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
 
         void addCondition(EntityConditionImplBase condition) { conditionList.add(condition) }
 
@@ -412,8 +431,9 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         boolean equals(Object o) {
-            if (o == null || o.getClass() != this.getClass()) return false
+            if (o == null || o.getClass() != this.getLocalClass()) return false
             ListCondition that = (ListCondition) o
+            // NOTE: for Java Enums the != is WAY faster than the .equals
             if (this.operator != that.operator) return false
             if (!this.conditionList.equals(that.conditionList)) return false
             return true
@@ -421,6 +441,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     public static class MapCondition extends EntityConditionImplBase {
+        protected Class localClass = null
         protected Map<String, ?> fieldMap
         protected ComparisonOperator comparisonOperator
         protected JoinOperator joinOperator
@@ -433,6 +454,8 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             this.comparisonOperator = comparisonOperator ? comparisonOperator : ComparisonOperator.EQUALS
             this.joinOperator = joinOperator ? joinOperator : JoinOperator.AND
         }
+
+        Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
 
         @Override
         void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -487,8 +510,9 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
         @Override
         boolean equals(Object o) {
-            if (o == null || o.getClass() != this.getClass()) return false
+            if (o == null || o.getClass() != this.getLocalClass()) return false
             MapCondition that = (MapCondition) o
+            // NOTE: for Java Enums the != is WAY faster than the .equals
             if (this.comparisonOperator != that.comparisonOperator) return false
             if (this.joinOperator != that.joinOperator) return false
             if (this.ignoreCase != that.ignoreCase) return false
@@ -505,8 +529,8 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         DateCondition(EntityConditionFactoryImpl ecFactoryImpl,
                 String fromFieldName, String thruFieldName, Timestamp compareStamp) {
             super(ecFactoryImpl)
-            this.fromFieldName = fromFieldName ? fromFieldName : "fromDate"
-            this.thruFieldName = thruFieldName ? thruFieldName : "thruDate"
+            this.fromFieldName = fromFieldName ?: "fromDate"
+            this.thruFieldName = thruFieldName ?: "thruDate"
             this.compareStamp = compareStamp
         }
 
@@ -553,9 +577,16 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         boolean equals(Object o) {
             if (o == null || o.getClass() != this.getClass()) return false
             DateCondition that = (DateCondition) o
+            if (this.compareStamp == null && that.compareStamp != null) return false
+            if (this.compareStamp != null) {
+                if (that.compareStamp == null) {
+                    return false
+                } else {
+                    if (!this.compareStamp.equals(that.compareStamp)) return false
+                }
+            }
             if (!this.fromFieldName.equals(that.fromFieldName)) return false
             if (!this.thruFieldName.equals(that.thruFieldName)) return false
-            if (this.compareStamp != that.compareStamp) return false
             return true
         }
     }
@@ -647,9 +678,29 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         boolean equals(Object o) {
             if (o == null || o.getClass() != this.getClass()) return false
             ConditionField that = (ConditionField) o
-            if (this.entityAlias != that.entityAlias) return false
-            if (this.aliasEntityDef != that.aliasEntityDef) return false
+            return equalsConditionField(that)
+        }
+        boolean equalsConditionField(ConditionField that) {
+            if (that == null) return false
             if (!this.fieldName.equals(that.fieldName)) return false
+
+            if (this.entityAlias == null && that.entityAlias != null) return false
+            if (this.entityAlias != null) {
+                if (that.entityAlias == null) {
+                    return false
+                } else {
+                    if (!this.entityAlias.equals(that.entityAlias)) return false
+                }
+            }
+
+            if (this.aliasEntityDef == null && that.aliasEntityDef != null) return false
+            if (this.aliasEntityDef != null) {
+                if (that.aliasEntityDef == null) {
+                    return false
+                } else {
+                    if (!this.aliasEntityDef.getEntityName().equals(that.aliasEntityDef.getEntityName())) return false
+                }
+            }
             return true
         }
     }

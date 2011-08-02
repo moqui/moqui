@@ -30,7 +30,13 @@ public class EntityDefinition {
     protected EntityFacadeImpl efi
     protected String entityName
     protected Node entityNode
+    protected Map<String, Node> fieldNodeMap = new HashMap()
+    protected Map<String, Node> relationshipNodeMap = new HashMap()
+    protected Map<String, String> columnNameMap = new HashMap()
+    protected List<String> pkFieldNameList = null
+    protected List<String> allFieldNameList = null
 
+    protected Boolean isView = null
     protected Boolean needsAuditLogVal = null
     protected Boolean needsEncryptVal = null
 
@@ -68,7 +74,10 @@ public class EntityDefinition {
 
     Node getEntityNode() { return this.entityNode }
 
-    boolean isViewEntity() { return this.entityNode.name() == "view-entity" }
+    boolean isViewEntity() {
+        if (isView == null) isView = (this.entityNode.name() == "view-entity")
+        return isView
+    }
     boolean hasFunctionAlias() { return isViewEntity() && this.entityNode."alias".find({ it."@function" }) }
 
     String getDefaultDescriptionField() {
@@ -103,12 +112,19 @@ public class EntityDefinition {
     }
 
     Node getFieldNode(String fieldName) {
+        Node fn = fieldNodeMap.get(fieldName)
+        if (fn != null) return fn
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        return (Node) this.entityNode[nodeName].find({ it.@name == fieldName })
+        fn = (Node) this.entityNode[nodeName].find({ it.@name == fieldName })
+        fieldNodeMap.put(fieldName, fn)
+        return fn
     }
 
     Node getRelationshipNode(String relationshipName) {
-        Node relNode = (Node) this.entityNode."relationship".find(
+        Node relNode = relationshipNodeMap.get(relationshipName)
+        if (relNode != null) return relNode
+
+        relNode = (Node) this.entityNode."relationship".find(
                 { (it."@title" ?: "") + it."@related-entity-name" == relationshipName })
 
         // handle automatic reverse-many nodes (based on one node coming the other way)
@@ -137,6 +153,7 @@ public class EntityDefinition {
             }
         }
 
+        relationshipNodeMap.put(relationshipName, relNode)
         return relNode
     }
 
@@ -146,13 +163,12 @@ public class EntityDefinition {
         if (!relEd) throw new EntityException("Could not find entity [${relationship."@related-entity-name"}] referred to in a relationship in entity [${entityName}]")
         if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
             // go through pks of related entity, assume field names match
-            ListOrderedSet pkFieldNames = relEd.getFieldNames(true, false)
-            for (String pkFieldName in pkFieldNames) eKeyMap.put(pkFieldName, pkFieldName)
+            for (String pkFieldName in relEd.getPkFieldNames()) eKeyMap.put(pkFieldName, pkFieldName)
         } else {
             for (Node keyMap in relationship."key-map") {
                 String relFn = keyMap."@related-field-name" ?: keyMap."@field-name"
                 if (!relEd.isField(relFn) && ((String) relationship."@type").startsWith("one")) {
-                    ListOrderedSet pks = relEd.getFieldNames(true, false)
+                    List<String> pks = relEd.getPkFieldNames()
                     if (pks.size() == 1) relFn = pks.get(0)
                     // if we don't match these constraints and get this default we'll get an error later...
                 }
@@ -237,6 +253,9 @@ public class EntityDefinition {
     }
 
     String getColumnName(String fieldName, boolean includeFunctionAndComplex) {
+        String cn = columnNameMap.get(fieldName)
+        if (cn != null) return cn
+
         Node fieldNode = this.getFieldNode(fieldName)
         if (!fieldNode) {
             throw new EntityException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
@@ -244,7 +263,7 @@ public class EntityDefinition {
 
         if (isViewEntity()) {
             // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
-            StringBuilder colName = new StringBuilder()
+            StringBuilder colNameBuilder = new StringBuilder()
             if (includeFunctionAndComplex) {
                 // TODO: column name view-entity complex-alias (build expression based on complex-alias)
                 // TODO: column name for view-entity alias with function (wrap in function, after complex-alias to wrap that too when used)
@@ -258,27 +277,30 @@ public class EntityDefinition {
                 String function = fieldNode."@function"
                 if (function) {
                     hasFunction = true
-                    if (function == "count-distinct") colName.append("COUNT(DISTINCT ")
-                    else colName.append(function.toUpperCase()).append('(')
+                    if (function == "count-distinct") colNameBuilder.append("COUNT(DISTINCT ")
+                    else colNameBuilder.append(function.toUpperCase()).append('(')
                 }
                 // column name for view-entity (prefix with "${entity-alias}.")
-                colName.append(fieldNode."@entity-alias").append('.')
+                colNameBuilder.append(fieldNode."@entity-alias").append('.')
 
                 Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == fieldNode."@entity-alias" })
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
                 String memberFieldName = fieldNode."@field" ? fieldNode."@field" : fieldNode."@name"
-                colName.append(memberEd.getColumnName(memberFieldName, false))
+                colNameBuilder.append(memberEd.getColumnName(memberFieldName, false))
 
-                if (hasFunction) colName.append(')')
+                if (hasFunction) colNameBuilder.append(')')
             // }
-            return colName.toString()
+            cn = colNameBuilder.toString()
         } else {
             if (fieldNode."@column-name") {
-                return fieldNode."@column-name"
+                cn = fieldNode."@column-name"
             } else {
-                return camelCaseToUnderscored(fieldNode."@name")
+                cn = camelCaseToUnderscored(fieldNode."@name")
             }
         }
+
+        columnNameMap.put(fieldName, cn)
+        return cn
     }
 
     /** Returns the table name, ie table-name or converted entity-name */
@@ -310,7 +332,7 @@ public class EntityDefinition {
     }
 
     boolean containsPrimaryKey(Map fields) {
-        for (String fieldName in this.getFieldNames(true, false)) {
+        for (String fieldName in this.getPkFieldNames()) {
             if (!fields[fieldName]) return false
         }
         return true
@@ -318,14 +340,13 @@ public class EntityDefinition {
 
     Map<String, Object> getPrimaryKeys(Map fields) {
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getFieldNames(true, false)) {
+        for (String fieldName in this.getPkFieldNames()) {
             pks.put(fieldName, fields[fieldName])
         }
         return pks
     }
 
     ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk) {
-        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
         ListOrderedSet nameSet = new ListOrderedSet()
         String nodeName = this.isViewEntity() ? "alias" : "field"
         for (Node node in this.entityNode[nodeName]) {
@@ -334,6 +355,18 @@ public class EntityDefinition {
             }
         }
         return nameSet
+    }
+    List<String> getPkFieldNames() {
+        if (pkFieldNameList == null) {
+            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, false).asList()))
+        }
+        return pkFieldNameList
+    }
+    List<String> getAllFieldNames() {
+        if (allFieldNameList == null) {
+            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true).asList()))
+        }
+        return allFieldNameList
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk) {
@@ -351,14 +384,7 @@ public class EntityDefinition {
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 
-        Set fieldNameSet
-        if (pks != null) {
-            fieldNameSet = this.getFieldNames(pks, !pks)
-        } else {
-            fieldNameSet = this.getFieldNames(true, true)
-        }
-
-        for (String fieldName in fieldNameSet) {
+        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks) : this.getAllFieldNames())) {
             String sourceFieldName
             if (namePrefix) {
                 sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)

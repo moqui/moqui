@@ -69,6 +69,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Cache entityLocationCache
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
+    protected final Map<String, String> entityGroupNameMap = new HashMap()
 
     protected EntityDbMeta dbMeta = null
 
@@ -395,7 +396,7 @@ class EntityFacadeImpl implements EntityFacade {
         Set<String> entityNameSet = getAllEntityNames()
         for (String entityName in entityNameSet) {
             EntityDefinition ed = getEntityDefinition(entityName)
-            ListOrderedSet pkSet = ed.getFieldNames(true, false)
+            List<String> pkSet = ed.getPkFieldNames()
             for (Node relNode in ed.entityNode."relationship") {
                 if (relNode."@type" == "many") continue
 
@@ -406,7 +407,7 @@ class EntityFacadeImpl implements EntityFacade {
                     logger.warn("Error getting definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]: ${e.toString()}")
                     continue
                 }
-                ListOrderedSet reversePkSet = reverseEd.getFieldNames(true, false)
+                List<String> reversePkSet = reverseEd.getPkFieldNames()
                 String relType = reversePkSet.equals(pkSet) ? "one-nofk" : "many"
 
                 // does a many relationship coming back already exist?
@@ -512,7 +513,7 @@ class EntityFacadeImpl implements EntityFacade {
     EntityDefinition getEntityDefinition(String entityName) {
         if (!entityName) return null
         EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
-        if (ed) return ed
+        if (ed != null) return ed
         return loadEntityDefinition(entityName)
     }
 
@@ -530,8 +531,7 @@ class EntityFacadeImpl implements EntityFacade {
             if (masterEntitiesOnly) {
                 if (!(ed.entityNode."@has-dependents" == "true") || en.endsWith("Type") ||
                         en == "Enumeration" || en == "StatusItem") continue
-                ListOrderedSet pks = ed.getFieldNames(true, false)
-                if (pks.size() > 1) continue
+                if (ed.getPkFieldNames().size() > 1) continue
             }
 
             eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
@@ -554,7 +554,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (ed == null) return efl
 
         // first get fields of the main entity
-        for (String fn in ed.getFieldNames(true, true)) {
+        for (String fn in ed.getAllFieldNames()) {
             Node fieldNode = ed.getFieldNode(fn)
             boolean inDbView = false
             if (dbViewEntity && makeFind("DbViewEntityAlias")
@@ -572,7 +572,7 @@ class EntityFacadeImpl implements EntityFacade {
             try { red = getEntityDefinition(relInfo.relatedEntityName) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (red == null) continue
 
-            for (String fn in red.getFieldNames(true, true)) {
+            for (String fn in red.getAllFieldNames()) {
                 Node fieldNode = red.getFieldNode(fn)
                 boolean inDbView = false
                 String functionName = null
@@ -794,10 +794,17 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */
     String getEntityGroupName(String entityName) {
+        String entityGroupName = entityGroupNameMap.get(entityName)
+        if (entityGroupName != null) return entityGroupName
         EntityDefinition ed = this.getEntityDefinition(entityName)
         if (!ed) return null
-        if (ed.entityNode."@group-name") return ed.entityNode."@group-name"
-        return this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
+        if (ed.entityNode."@group-name") {
+            entityGroupName = ed.entityNode."@group-name"
+        } else {
+            entityGroupName = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
+        }
+        entityGroupNameMap.put(entityName, entityGroupName)
+        return entityGroupName
     }
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
@@ -828,7 +835,7 @@ class EntityFacadeImpl implements EntityFacade {
         EntityValue newValue = makeValue(entityName)
         EntityDefinition ed = newValue.getEntityDefinition()
 
-        for (String fieldName in ed.getFieldNames(true, true)) {
+        for (String fieldName in ed.getAllFieldNames()) {
             String attrValue = element.getAttribute(fieldName)
             if (attrValue) {
                 newValue.setString(fieldName, attrValue)
@@ -849,8 +856,9 @@ class EntityFacadeImpl implements EntityFacade {
         if (javaTypeMap == null) {
             javaTypeMap = new HashMap()
             javaTypeByGroup.put(groupName, javaTypeMap)
-        } else if (javaTypeMap.containsKey(fieldType)) {
-            return javaTypeMap.get(fieldType)
+        } else {
+            String ft = javaTypeMap.get(fieldType)
+            if (ft != null) return ft
         }
 
         Node databaseNode = this.getDatabaseNode(groupName)
@@ -871,8 +879,9 @@ class EntityFacadeImpl implements EntityFacade {
         if (sqlTypeMap == null) {
             sqlTypeMap = new HashMap()
             sqlTypeByGroup.put(groupName, sqlTypeMap)
-        } else if (sqlTypeMap.containsKey(fieldType)) {
-            return sqlTypeMap.get(fieldType)
+        } else {
+            String st = sqlTypeMap.get(fieldType)
+            if (st != null) return st
         }
 
         Node databaseNode = this.getDatabaseNode(groupName)

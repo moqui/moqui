@@ -106,7 +106,7 @@ class EntityValueImpl implements EntityValue {
         if (fieldNode."@enable-localization" == "true") {
             String localeStr = getEntityFacadeImpl().ecfi.executionContext.user.locale?.toString()
             if (localeStr) {
-                ListOrderedSet pks = ed.getFieldNames(true, false)
+                List<String> pks = ed.getPkFieldNames()
                 if (pks.size() == 1) {
                     String pkValue = get(pks.get(0))
                     if (pkValue) {
@@ -139,7 +139,7 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#getPrimaryKeys() */
     Map<String, Object> getPrimaryKeys() {
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getEntityDefinition().getFieldNames(true, false)) {
+        for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
             pks.put(fieldName, valueMap[fieldName])
         }
         return pks
@@ -198,15 +198,15 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#setSequencedIdPrimary() */
     EntityValue setSequencedIdPrimary() {
-        ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
+        List<String> pkFields = getEntityDefinition().getPkFieldNames()
         Integer staggerMax = (getEntityDefinition().entityNode."@sequence-primary-stagger" as Integer) ?: 1
-        set((String) pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax))
+        set(pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax))
         return this
     }
 
     /** @see org.moqui.entity.EntityValue#setSequencedIdSecondary() */
     EntityValue setSequencedIdSecondary() {
-        ListOrderedSet pkFields = getEntityDefinition().getFieldNames(true, false)
+        List<String> pkFields = getEntityDefinition().getPkFieldNames()
         if (pkFields.size() < 2) throw new EntityException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
         // sequenced field will be the last pk
         String seqFieldName = pkFields.get(pkFields.size()-1)
@@ -254,7 +254,7 @@ class EntityValueImpl implements EntityValue {
         if (result != 0) return result
 
         // next compare PK fields
-        for (String pkFieldName in this.getEntityDefinition().getFieldNames(true, false)) {
+        for (String pkFieldName in this.getEntityDefinition().getPkFieldNames()) {
             result = compareFields(that, pkFieldName)
             if (result != 0) return result
         }
@@ -296,9 +296,8 @@ class EntityValueImpl implements EntityValue {
             if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
                 this.set("lastUpdatedStamp", new Timestamp(System.currentTimeMillis()))
 
-            ListOrderedSet allFieldList = ed.getFieldNames(true, true)
             ListOrderedSet fieldList = new ListOrderedSet()
-            for (String fieldName in allFieldList) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+            for (String fieldName in ed.getAllFieldNames()) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
             EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
@@ -382,7 +381,7 @@ class EntityValueImpl implements EntityValue {
         if (ed.isViewEntity()) {
             throw new EntityException("Update not yet implemented for view-entity")
         } else {
-            ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
+            List<String> pkFieldList = ed.getPkFieldNames()
 
             ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true)
             ListOrderedSet nonPkFieldList = new ListOrderedSet()
@@ -516,14 +515,13 @@ class EntityValueImpl implements EntityValue {
         if (ed.isViewEntity()) {
             throw new EntityException("Delete not implemented for view-entity")
         } else {
-            ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
 
             EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()
             sql.append("DELETE FROM ").append(ed.getFullTableName()).append(" WHERE ")
 
             boolean isFirstPk = true
-            for (String fieldName in pkFieldList) {
+            for (String fieldName in ed.getPkFieldNames()) {
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
                 sql.append(ed.getColumnName(fieldName, false)).append("=?")
                 eqb.getParameters().add(new EntityConditionParameter(ed.getFieldNode(fieldName),
@@ -572,8 +570,8 @@ class EntityValueImpl implements EntityValue {
 
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
-        ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
-        if (!pkFieldList) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
+        List<String> pkFieldList = ed.getPkFieldNames()
+        if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
         ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true)
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 
@@ -751,7 +749,7 @@ class EntityValueImpl implements EntityValue {
         if (document != null) element = document.createElement((prefix ? prefix : "") + entityName)
         if (!element) return null
 
-        for (String fieldName in getEntityDefinition().getFieldNames(true, true)) {
+        for (String fieldName in getEntityDefinition().getAllFieldNames()) {
             String value = getString(fieldName)
             if (value) {
                 if (value.contains('\n') || value.contains('\r')) {
@@ -784,7 +782,7 @@ class EntityValueImpl implements EntityValue {
 
         pw.print(indentString); pw.print('<'); if (prefix) pw.print(prefix); pw.print(entityName);
 
-        for (String fieldName in getEntityDefinition().getFieldNames(true, true)) {
+        for (String fieldName in getEntityDefinition().getAllFieldNames()) {
             Node fieldNode = getEntityDefinition().getFieldNode(fieldName)
             String type = fieldNode."@type"
 

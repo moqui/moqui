@@ -44,8 +44,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         try {
             boolean allPksInOnly = true
-            ListOrderedSet pkFieldNames = ed.getFieldNames(true, false)
-            for (String pkFieldName in pkFieldNames) {
+            for (String pkFieldName in ed.getPkFieldNames()) {
                 if (!sd.getInParameter(pkFieldName) || sd.getOutParameter(pkFieldName)) { allPksInOnly = false; break }
             }
 
@@ -73,7 +72,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                                     Map<String, Object> result, Set<String> outParamNames) {
         EntityValue newEntityValue = sfi.ecfi.entityFacade.makeValue(ed.entityName)
 
-        ListOrderedSet pkFieldNames = ed.getFieldNames(true, false)
+        List<String> pkFieldNames = ed.getPkFieldNames()
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
         if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {

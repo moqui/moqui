@@ -171,7 +171,7 @@ class EntityFindImpl implements EntityFind {
             (efi.ecfi.executionContext.web ? efi.ecfi.executionContext.web.parameters : efi.ecfi.executionContext.context)
         EntityDefinition ed = getEntityDef()
 
-        for (String fn in ed.getFieldNames(true, true)) {
+        for (String fn in ed.getAllFieldNames()) {
             // NOTE: do we need to do type conversion here?
 
             // this will handle text-find
@@ -447,7 +447,7 @@ class EntityFindImpl implements EntityFind {
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true))
+        if (!this.fieldsToSelect) this.selectFields(ed.getAllFieldNames())
         // SELECT fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         // FROM Clause
@@ -608,7 +608,7 @@ class EntityFindImpl implements EntityFind {
         }
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true))
+        if (!this.fieldsToSelect) this.selectFields(ed.getAllFieldNames())
         // select fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
         
