@@ -48,7 +48,7 @@ task runStaging(type: JavaExec) {
 }
 task runProduction(type: JavaExec) {
     dependsOn ':framework:build'
-    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m', '-Xms512M']; maxHeapSize = '512M'
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m', '-Xms512M']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':'conf/MoquiProductionConf.xml']
     main = '-jar'; args = [warName]
 }

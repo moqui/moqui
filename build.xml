@@ -52,9 +52,9 @@ The actual build is done with Gradle.
     <target name="run-prod" description="Run Moqui Web server in production mode">
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
-            <jvmarg value="-Xms1024M"/>
-            <jvmarg value="-Xmx1024M"/>
-            <jvmarg value="-XX:MaxPermSize=64m"/>
+            <jvmarg value="-Xms512M"/>
+            <jvmarg value="-Xmx512M"/>
+            <jvmarg value="-XX:MaxPermSize=128m"/>
             <jvmarg value="-Dmoqui.conf=conf/MoquiProductionConf.xml"/>
         </java>
     </target>
