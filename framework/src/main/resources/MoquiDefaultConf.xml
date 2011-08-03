@@ -27,7 +27,7 @@
         <cache name="resource.text.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <!-- this is a count of all artifact hits, expire once idle for over 15 minutes -->
-        <cache name="artifact.tarpit.hits" expire-time-idle="60" expire-time-live="0" max-elements="0"/>
+        <cache name="artifact.tarpit.hits" expire-time-idle="900" expire-time-live="0" max-elements="0"/>
     </cache-list>
     <server-stats bin-length-seconds="900" visit-enabled="true" visitor-enabled="true">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
@@ -36,7 +36,7 @@
         <artifact-stats type="service" persist-bin="true" persist-hit="false"/>
         <artifact-stats type="entity" persist-bin="false"/>
     </server-stats>
-    
+
     <webapp-list>
         <!-- The webapp.@name attribute value is looked up based on the value of the moqui-name context-param in
         the web.xml file. This configuration will allow the framework to do various things for that webapp. -->
@@ -57,6 +57,13 @@
         </webapp>
     </webapp-list>
 
+    <artifact-execution-facade>
+        <artifact-execution type="AT_XML_SCREEN" authz-enabled="true" tarpit-enabled="true"/>
+        <artifact-execution type="AT_XML_SCREEN_TRANS" authz-enabled="true" tarpit-enabled="true"/>
+        <artifact-execution type="AT_SERVICE" authz-enabled="true" tarpit-enabled="true"/>
+        <!-- NOTE: entity tarpit disabled by default for performance and tracking overhead reasons -->
+        <artifact-execution type="AT_ENTITY" authz-enabled="true" tarpit-enabled="false"/>
+    </artifact-execution-facade>
     <user-facade>
         <password encrypt-hash-type="SHA-256" min-length="6" min-digits="1" min-others="1"
                   history-limit="5" change-weeks="12" email-require-change="true" email-expire-hours="48"/>

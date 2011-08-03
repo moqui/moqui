@@ -20,6 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="cache-list"/>
                 <xs:element minOccurs="0" ref="server-stats"/>
                 <xs:element minOccurs="0" ref="webapp-list"/>
+                <xs:element minOccurs="0" ref="artifact-execution-facade"/>
                 <xs:element minOccurs="0" ref="user-facade"/>
                 <xs:element minOccurs="0" ref="transaction-facade"/>
                 <xs:element minOccurs="0" ref="resource-facade"/>
@@ -158,7 +159,32 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType><xs:sequence><xs:element ref="actions"/></xs:sequence></xs:complexType>
     </xs:element>
 
-    <!-- ====================== Transaction Facade Conf Root ======================= -->
+    <!-- ====================== Artifact Execution Facade Conf Root ======================= -->
+    <xs:element name="artifact-execution-facade">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="artifact-execution"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="artifact-execution">
+        <xs:complexType>
+            <xs:attribute name="type" use="required">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="AT_XML_SCREEN"/>
+                        <xs:enumeration value="AT_XML_SCREEN_TRANS"/>
+                        <xs:enumeration value="AT_SERVICE"/>
+                        <xs:enumeration value="AT_ENTITY"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="authz-enabled" type="boolean" default="true"/>
+            <xs:attribute name="tarpit-enabled" type="boolean" default="true"/>
+        </xs:complexType>
+    </xs:element>
+
+    <!-- ====================== User Facade Conf Root ======================= -->
     <xs:element name="user-facade">
         <xs:complexType>
             <xs:sequence>

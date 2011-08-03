@@ -568,6 +568,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "name")
         }
 
+        if (overrideNode."artifact-execution-facade") {
+            mergeNodeWithChildKey(baseNode."artifact-execution-facade"[0], overrideNode."artifact-execution-facade"[0],
+                    "artifact-execution", "type")
+        }
+
         if (overrideNode."user-facade") {
             Node ufBaseNode = baseNode."user-facade"[0]
             Node ufOverrideNode = overrideNode."user-facade"[0]

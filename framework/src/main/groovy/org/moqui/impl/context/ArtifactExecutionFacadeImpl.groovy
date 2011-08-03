@@ -36,13 +36,37 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
     protected List<ArtifactExecutionInfoImpl> artifactExecutionInfoHistory = new LinkedList<ArtifactExecutionInfoImpl>()
 
+    // NOTE: there is no code to clean out old entries in tarpitHitCache, using the cache idle expire time for that
     protected Cache tarpitHitCache
+    protected Map<String, Boolean> artifactTypeAuthzEnabled = new HashMap()
+    protected Map<String, Boolean> artifactTypeTarpitEnabled = new HashMap()
 
     protected boolean disableAuthz = false
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
         this.tarpitHitCache = eci.cache.getCache("artifact.tarpit.hits")
+    }
+
+    boolean isAuthzEnabled(String artifactTypeEnumId) {
+        Boolean en = artifactTypeAuthzEnabled.get(artifactTypeEnumId)
+        if (en == null) {
+            Node aeNode = (Node) eci.ecfi.confXmlRoot."artifact-execution-facade"[0]."artifact-execution"
+                    .find({ it."@type" == artifactTypeEnumId })
+            en = aeNode != null ? !(aeNode."@authz-enabled" == "false") : true
+            artifactTypeAuthzEnabled.put(artifactTypeEnumId, en)
+        }
+        return en
+    }
+    boolean isTarpitEnabled(String artifactTypeEnumId) {
+        Boolean en = artifactTypeTarpitEnabled.get(artifactTypeEnumId)
+        if (en == null) {
+            Node aeNode = (Node) eci.ecfi.confXmlRoot."artifact-execution-facade"[0]."artifact-execution"
+                    .find({ it."@type" == artifactTypeEnumId })
+            en = aeNode != null ? !(aeNode."@tarpit-enabled" == "false") : true
+            artifactTypeTarpitEnabled.put(artifactTypeEnumId, en)
+        }
+        return en
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#peek() */
@@ -72,6 +96,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.user.nowTimestamp))
             throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
 
+        // NOTE: if needed the isPermitted method will set additional info in aeii
+        this.artifactExecutionInfoStack.addFirst(aeii)
     }
 
     /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */
@@ -110,7 +136,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
         if (this.disableAuthz && aeii.typeEnumId == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
-            this.artifactExecutionInfoStack.addFirst(aeii)
             return true
         }
 
@@ -128,66 +153,70 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     .useCache(true).list().filterByDate(null, null, null))
                 userGroupIdSet.add(userGroupMember.userGroupId)
 
-            // record and check velocity limit (tarpit)
-            boolean recordHitTime = false
-            long lockForSeconds = 0
-            long checkTime = System.currentTimeMillis()
-            String tarpitKey = userId + "@" + aeii.typeEnumId + ":" + aeii.name
-            List<Long> hitTimeList = (List<Long>) tarpitHitCache.get(tarpitKey)
-            EntityList artifactTarpitList = null
-            // only check screens if they are the final screen in the chain (the target screen)
-            if (aeii.typeEnumId != "AT_XML_SCREEN" || requiresAuthz) {
-                artifactTarpitList = eci.entity.makeFind("ArtifactTarpitCheckView")
-                        .condition("userGroupId", ComparisonOperator.IN, userGroupIdSet).useCache(true).list()
-                        .filterByAnd([artifactTypeEnumId:aeii.typeEnumId])
-            }
-            // if (aeii.typeEnumId == "AT_XML_SCREEN") logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
-            for (EntityValue artifactTarpit in artifactTarpitList) {
-                if ((artifactTarpit.nameIsPattern && aeii.name.matches((String) artifactTarpit.artifactName)) ||
-                        aeii.name == artifactTarpit.artifactName) {
-                    recordHitTime = true
-                    long maxHitsDuration = artifactTarpit.maxHitsDuration as Long
-                    // count hits in this duration; start with 1 to count the current hit
-                    long hitsInDuration = 1
-                    for (Long hitTime in hitTimeList) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
-                    // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
-                    if (hitsInDuration > artifactTarpit.maxHitsCount && artifactTarpit.tarpitDuration > lockForSeconds) {
-                        lockForSeconds = artifactTarpit.tarpitDuration as Long
-                        // logger.warn("TOREMOVE artifact [${tarpitKey}], exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds, locking for ${lockForSeconds} seconds")
+            if (isTarpitEnabled(aeii.typeEnumId)) {
+                // record and check velocity limit (tarpit)
+                boolean recordHitTime = false
+                long lockForSeconds = 0
+                long checkTime = System.currentTimeMillis()
+                String tarpitKey = userId + "@" + aeii.typeEnumId + ":" + aeii.name
+                List<Long> hitTimeList = (List<Long>) tarpitHitCache.get(tarpitKey)
+                EntityList artifactTarpitList = null
+                // only check screens if they are the final screen in the chain (the target screen)
+                if (aeii.typeEnumId != "AT_XML_SCREEN" || requiresAuthz) {
+                    artifactTarpitList = eci.entity.makeFind("ArtifactTarpitCheckView")
+                            .condition("userGroupId", ComparisonOperator.IN, userGroupIdSet).useCache(true).list()
+                            .filterByAnd([artifactTypeEnumId:aeii.typeEnumId])
+                }
+                // if (aeii.typeEnumId == "AT_XML_SCREEN") logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
+                for (EntityValue artifactTarpit in artifactTarpitList) {
+                    if ((artifactTarpit.nameIsPattern && aeii.name.matches((String) artifactTarpit.artifactName)) ||
+                            aeii.name == artifactTarpit.artifactName) {
+                        recordHitTime = true
+                        long maxHitsDuration = artifactTarpit.maxHitsDuration as Long
+                        // count hits in this duration; start with 1 to count the current hit
+                        long hitsInDuration = 1
+                        for (Long hitTime in hitTimeList) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
+                        // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
+                        if (hitsInDuration > artifactTarpit.maxHitsCount && artifactTarpit.tarpitDuration > lockForSeconds) {
+                            lockForSeconds = artifactTarpit.tarpitDuration as Long
+                            // logger.warn("TOREMOVE artifact [${tarpitKey}], exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds, locking for ${lockForSeconds} seconds")
+                        }
                     }
                 }
-            }
-            if (recordHitTime) {
-                if (hitTimeList == null) { hitTimeList = new LinkedList<Long>(); tarpitHitCache.put(tarpitKey, hitTimeList) }
-                hitTimeList.add(System.currentTimeMillis())
-                // logger.warn("TOREMOVE recorded hit time for [${tarpitKey}], now has ${hitTimeList.size()} hits")
+                if (recordHitTime) {
+                    if (hitTimeList == null) { hitTimeList = new LinkedList<Long>(); tarpitHitCache.put(tarpitKey, hitTimeList) }
+                    hitTimeList.add(System.currentTimeMillis())
+                    // logger.warn("TOREMOVE recorded hit time for [${tarpitKey}], now has ${hitTimeList.size()} hits")
 
-                // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
-                // NOTE: this is NOT cached because it has an argument with nowTimestamp making a cached value of limited used
-                // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
-                EntityList tarpitLockList = eci.entity.makeFind("ArtifactTarpitLock")
-                        .condition([userId:userId, artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId])
-                        .condition("releaseDateTime", ComparisonOperator.GREATER_THAN, eci.user.nowTimestamp).list()
-                if (tarpitLockList) {
-                    throw new ArtifactAuthorizationException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}] too many times and may not again until ${tarpitLockList.first.releaseDateTime}")
+                    // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
+                    // NOTE: this is NOT cached because it has an argument with nowTimestamp making a cached value of limited used
+                    // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
+                    EntityList tarpitLockList = eci.entity.makeFind("ArtifactTarpitLock")
+                            .condition([userId:userId, artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId])
+                            .condition("releaseDateTime", ComparisonOperator.GREATER_THAN, eci.user.nowTimestamp).list()
+                    if (tarpitLockList) {
+                        throw new ArtifactAuthorizationException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}] too many times and may not again until ${tarpitLockList.first.releaseDateTime}")
+                    }
                 }
-            }
-            // record the tarpit lock
-            if (lockForSeconds > 0) {
-                eci.service.sync().name("create", "ArtifactTarpitLock").parameters((Map<String, Object>) [userId:userId,
-                        artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
-                        releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+                // record the tarpit lock
+                if (lockForSeconds > 0) {
+                    eci.service.sync().name("create", "ArtifactTarpitLock").parameters((Map<String, Object>) [userId:userId,
+                            artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
+                            releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+                }
             }
         } finally {
             if (!alreadyDisabled) enableAuthz()
         }
+
+        // tarpit enabled already checked, if authz not enabled return true immediately
+        if (!isAuthzEnabled(aeii.typeEnumId)) return true
 
         // if last was an always allow, then don't bother checking for deny/etc
         if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
                 lastAeii.authorizedAuthzTypeId == "AUTHZT_ALWAYS" &&
                 (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
             aeii.copyAuthorizedInfo(lastAeii)
-            this.artifactExecutionInfoStack.addFirst(aeii)
             return true
         }
 
@@ -259,7 +288,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         denyAacv = aacv
                     } else if (authzTypeEnumId == "AUTHZT_ALWAYS") {
                         aeii.copyAacvInfo(aacv, userId)
-                        this.artifactExecutionInfoStack.addFirst(aeii)
                         return true
                     } else if (authzTypeEnumId == "AUTHZT_ALLOW" && denyAacv == null) {
                         // see if there are any denies in AEIs on lower on the stack
@@ -269,7 +297,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                         if (!ancestorDeny) {
                             aeii.copyAacvInfo(aacv, userId)
-                            this.artifactExecutionInfoStack.addFirst(aeii)
                             return true
                         }
                     }
@@ -281,8 +308,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 aeii.copyAacvInfo(denyAacv, userId)
 
                 if (!requiresAuthz || this.disableAuthz) {
-                    // if no authz required, just push it even though it was a failure
-                    this.artifactExecutionInfoStack.addFirst(aeii)
+                    // if no authz required, just return true even though it was a failure
                     return true
                 } else {
                     StringBuilder warning = new StringBuilder()
@@ -302,7 +328,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
                         (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
                     aeii.copyAuthorizedInfo(lastAeii)
-                    this.artifactExecutionInfoStack.addFirst(aeii)
                     return true
                 }
             }
@@ -310,7 +335,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             if (!requiresAuthz || this.disableAuthz) {
                 // if no authz required, just push it even though it was a failure
                 if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
-                this.artifactExecutionInfoStack.addFirst(aeii)
                 return true
             } else {
                 // if we got here no authz found, blow up
