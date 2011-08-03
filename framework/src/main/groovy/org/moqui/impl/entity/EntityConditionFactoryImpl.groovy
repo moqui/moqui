@@ -19,6 +19,7 @@ import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.StupidJavaUtilities
 
 class EntityConditionFactoryImpl implements EntityConditionFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
@@ -634,14 +635,17 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         String entityAlias = null
         String fieldName
         EntityDefinition aliasEntityDef = null
+        String aliasEntityName = null
 
         ConditionField(String fieldName) {
-            this.fieldName = fieldName
+            this.fieldName = fieldName.intern()
         }
         ConditionField(String entityAlias, String fieldName, EntityDefinition aliasEntityDef) {
-            this.entityAlias = entityAlias
-            this.fieldName = fieldName
+            this.entityAlias = entityAlias.intern()
+            this.fieldName = fieldName.intern()
             this.aliasEntityDef = aliasEntityDef
+            // NOTE: this is already intern()'ed
+            if (aliasEntityDef != null) aliasEntityName = aliasEntityDef.getEntityName()
         }
 
         String getColumnName(EntityDefinition ed) {
@@ -682,25 +686,9 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         }
         boolean equalsConditionField(ConditionField that) {
             if (that == null) return false
-            if (!this.fieldName.equals(that.fieldName)) return false
-
-            if (this.entityAlias == null && that.entityAlias != null) return false
-            if (this.entityAlias != null) {
-                if (that.entityAlias == null) {
-                    return false
-                } else {
-                    if (!this.entityAlias.equals(that.entityAlias)) return false
-                }
-            }
-
-            if (this.aliasEntityDef == null && that.aliasEntityDef != null) return false
-            if (this.aliasEntityDef != null) {
-                if (that.aliasEntityDef == null) {
-                    return false
-                } else {
-                    if (!this.aliasEntityDef.getEntityName().equals(that.aliasEntityDef.getEntityName())) return false
-                }
-            }
+            if (!StupidJavaUtilities.internedNonNullStringsEqual(this.fieldName, that.fieldName)) return false
+            if (!StupidJavaUtilities.internedStringsEqual(this.entityAlias, that.entityAlias)) return false
+            if (!StupidJavaUtilities.internedStringsEqual(this.aliasEntityName, that.aliasEntityName)) return false
             return true
         }
     }

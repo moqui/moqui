@@ -29,6 +29,7 @@ public class EntityDefinition {
 
     protected EntityFacadeImpl efi
     protected String entityName
+    protected String fullEntityName
     protected Node entityNode
     protected Map<String, Node> fieldNodeMap = new HashMap()
     protected Map<String, Node> relationshipNodeMap = new HashMap()
@@ -44,7 +45,8 @@ public class EntityDefinition {
 
     EntityDefinition(EntityFacadeImpl efi, Node entityNode) {
         this.efi = efi
-        this.entityName = entityNode."@entity-name"
+        this.entityName = (entityNode."@entity-name").intern()
+        this.fullEntityName = (entityNode."@package-name" + "." + this.entityName).intern()
         this.entityNode = entityNode
 
         if (isViewEntity()) {
@@ -70,7 +72,7 @@ public class EntityDefinition {
     }
 
     String getEntityName() { return this.entityName }
-    String getFullEntityName() { return entityNode."@package-name" + "." + this.entityName }
+    String getFullEntityName() { return this.fullEntityName }
 
     Node getEntityNode() { return this.entityNode }
 
@@ -124,8 +126,8 @@ public class EntityDefinition {
         Node relNode = relationshipNodeMap.get(relationshipName)
         if (relNode != null) return relNode
 
-        relNode = (Node) this.entityNode."relationship".find(
-                { (it."@title" ?: "") + it."@related-entity-name" == relationshipName })
+        relNode = (Node) this.entityNode."relationship"
+                .find({ (it."@title" ?: "") + it."@related-entity-name" == relationshipName })
 
         // handle automatic reverse-many nodes (based on one node coming the other way)
         if (relNode == null) {
