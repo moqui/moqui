@@ -99,11 +99,17 @@ dependencies {
     runtime name: 'shiro-quartz', version: '1.1.0'
 }
 
+task apiJavadoc(type: Javadoc) {
+    source sourceSets.api.allJava
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = file(docsDir.absolutePath + '/apiJavadoc')
+}
+
 // setup task dependencies to make sure the start and api sourceSets always get run
 compileJava.dependsOn startClasses
 compileJava.dependsOn apiClasses
 // add the classes directory for the api SourceSet to the main compile classpath so that dependent classes are available
-sourceSets.main.compileClasspath += project.files(project.sourceSets.api.classesDir)
+sourceSets.main.compileClasspath += files(sourceSets.api.classesDir)
 
 jar {
     // this is necessary otherwise jar won't build when war plugin is applied
