@@ -5,7 +5,22 @@ Moqui Framework Release Notes
 Release 1.0-rc1 - 3 August 2011
 ===========================================================================
 
-The 1.0-rc1 release...
+The first 1.0 release candidate of the Moqui Framework (version 1.0-rc1)
+was released on 3 August 2011.
+
+This release includes various small new features based on feedback and
+actual use, including Apache Shiro for security (authc and authz), build
+using Gradle which supports Maven repositories and with directory layout
+changed to follow Maven conventions, the ability to run arbitrary SQL and
+get the results back in an EntityListIterator, and the Data View tool that
+allows users to build queries and data exports on the fly.
+
+This release candidate also includes improvements based on more testing,
+including performance testing and profiling to dramatically increase the
+speed of various operations, especially those done frequently.
+
+As a release candidate from this point only minor changes are expected
+before the 1.0 final production-ready release.
 
 This release includes:
 
