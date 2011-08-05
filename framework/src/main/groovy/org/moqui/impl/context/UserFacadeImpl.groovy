@@ -25,6 +25,7 @@ import org.apache.shiro.web.session.HttpServletSession
 
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
+import javax.servlet.http.HttpSession
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -49,10 +50,11 @@ class UserFacadeImpl implements UserFacade {
 
     void initFromHttpRequest(HttpServletRequest request, HttpServletResponse response) {
         this.request = request
+        HttpSession session = request.getSession()
 
         WebSubjectContext wsc = new DefaultWebSubjectContext()
         wsc.setServletRequest(request); wsc.setServletResponse(response)
-        wsc.setSession(new HttpServletSession(request.getSession(), request.getServerName()))
+        wsc.setSession(new HttpServletSession(session, request.getServerName()))
         currentUser = eci.ecfi.securityManager.createSubject(wsc)
 
         if (currentUser.authenticated) {
@@ -64,12 +66,14 @@ class UserFacadeImpl implements UserFacade {
         } else {
             if (logger.traceEnabled) logger.trace("For new request NO user authenticated in the session; userIdStack is [${this.usernameStack}]")
         }
-        if (request.session.getAttribute("moqui.visitId")) {
-            this.visitId = (String) request.session.getAttribute("moqui.visitId")
+
+        this.visitId = session.getAttribute("moqui.visitId")
+        if (!this.visitId && !eci.ecfi.skipStats) {
+            Node serverStatsNode = eci.ecfi.confXmlRoot."server-stats"[0]
 
             // handle visitorId and cookie
             String cookieVisitorId = null
-            if (eci.ecfi.confXmlRoot."server-stats"[0]."@visitor-enabled" != "false") {
+            if (serverStatsNode."@visitor-enabled" != "false") {
                 Cookie[] cookies = request.getCookies()
                 if (cookies != null) {
                     for (int i = 0; i < cookies.length; i++) {
@@ -85,7 +89,7 @@ class UserFacadeImpl implements UserFacade {
                     try {
                         Map cvResult = eci.service.sync().name("create", "Visitor").parameter("createdDate", getNowTimestamp()).call()
                         cookieVisitorId = cvResult.visitorId
-                        logger.info("Created new visitor with ID [${cookieVisitorId}] in visit [${this.visitId}]")
+                        logger.info("Created new Visitor with ID [${cookieVisitorId}] in session [${session.id}]")
                     } finally {
                         if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
                     }
@@ -97,34 +101,42 @@ class UserFacadeImpl implements UserFacade {
                 response.addCookie(visitorCookie)
             }
 
-            EntityValue visit = getVisit()
-            if (!visit?.initialLocale) {
+            if (serverStatsNode."@visit-enabled" != "false") {
+                // create and persist Visit
+                String contextPath = session.getServletContext().getContextPath()
+                String webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
                 String fullUrl = eci.web.requestUrl
                 fullUrl = (fullUrl.length() > 255) ? fullUrl.substring(0, 255) : fullUrl.toString()
+                Map parameters = [sessionId:session.id, webappName:webappId, fromDate:new Timestamp(session.getCreationTime()),
+                        initialLocale:getLocale().toString(), initialRequest:fullUrl,
+                        initialReferrer:request.getHeader("Referrer")?:"",
+                        initialUserAgent:request.getHeader("User-Agent")?:"",
+                        clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()]
+                InetAddress address = InetAddress.getLocalHost();
+                if (address) {
+                    parameters.serverIpAddress = address.getHostAddress()
+                    parameters.serverHostName = address.getHostName()
+                }
 
-                Map<String, Object> uvParms = (Map<String, Object>) [visitId:visit.visitId, initialLocale:getLocale().toString(),
-                            initialRequest:fullUrl, initialReferrer:request.getHeader("Referrer")?:"",
-                            initialUserAgent:request.getHeader("User-Agent")?:"",
-                            clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()]
                 // handle proxy original address, if exists
                 if (request.getHeader("X-Forwarded-For")) {
-                    uvParms.clientIpAddress = request.getHeader("X-Forwarded-For")
+                    parameters.clientIpAddress = request.getHeader("X-Forwarded-For")
                 } else {
-                    uvParms.clientIpAddress = request.getRemoteAddr()
+                    parameters.clientIpAddress = request.getRemoteAddr()
                 }
-                if (cookieVisitorId) uvParms.visitorId = cookieVisitorId
+                if (cookieVisitorId) parameters.visitorId = cookieVisitorId
 
-                // NOTE: disable authz for this call, don't normally want to allow update of Visit, but this is special case
+                // NOTE: disable authz for this call, don't normally want to allow create of Visit, but this is special case
                 boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
                 try {
-                    // called this sync so it is ready next time referred to, like on next request
-                    eci.service.sync().name("update", "Visit").parameters(uvParms).call()
+                    Map result = eci.service.sync().name("create", "Visit").parameters(parameters).call()
+                    // put visitId in session as "moqui.visitId"
+                    session.setAttribute("moqui.visitId", result.visitId)
+                    this.visitId = result.visitId
+                    logger.info("Created new Visit with ID [${this.visitId}] in session [${session.id}]")
                 } finally {
                     if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
                 }
-
-                // consider this the first hit in the visit, so trigger the actions
-                eci.web.runFirstHitInVisitActions()
             }
         }
     }

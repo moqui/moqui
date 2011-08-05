@@ -432,13 +432,21 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     // ========== Server Stat Tracking ==========
+    boolean getSkipStats() {
+        // NOTE: the results of this condition eval can't be cached because the expression can use any data in the ec
+        String skipCond = confXmlRoot."server-stats"[0]."@stats-skip-condition"
+        return (skipCond && getEci().getResource().evaluateCondition(skipCond, null))
+    }
+
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
         if (artifactType == "service" && artifactName.contains("ArtifactHit")) return
         if (artifactType == "entity" && artifactName == "ArtifactHit") return
 
-        ExecutionContextImpl eci = this.executionContext
+        if (getSkipStats()) return
+
+        ExecutionContextImpl eci = this.getEci()
         // find artifact-stats node by type AND sub-type, if not found find by just the type
         Node artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType && it."@sub-type" == artifactSubType })
         if (artifactStats == null) artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType })

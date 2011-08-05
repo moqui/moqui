@@ -3,7 +3,7 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.0.xsd">
 
-    <server-stats>
+    <server-stats stats-skip-condition="ec.web!=null &amp;&amp; ec.web.request.pathInfo == '/status'">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>

@@ -22,35 +22,8 @@ class MoquiSessionListener implements HttpSessionListener {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiSessionListener.class)
 
     void sessionCreated(HttpSessionEvent event) {
-        HttpSession session = event.getSession()
-        ExecutionContextFactoryImpl ecfi = (ExecutionContextFactoryImpl) session.getServletContext().getAttribute("executionContextFactory")
-        if (!ecfi) {
-            logger.warn("Not creating visit for session [${session.id}], no executionContextFactory in ServletContext")
-            return
-        }
-
-        if (ecfi.confXmlRoot."server-stats"[0]."@visit-enabled" == "false") return
-
-        // create and persist Visit
-        String contextPath = session.getServletContext().getContextPath()
-        String webappId = contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
-        Map parameters = [sessionId:session.id, webappName:webappId, fromDate:new Timestamp(session.getCreationTime())]
-        InetAddress address = InetAddress.getLocalHost();
-        if (address) {
-            parameters.serverIpAddress = address.getHostAddress()
-            parameters.serverHostName = address.getHostName()
-        }
-
-        try {
-            ecfi.executionContext.artifactExecution.disableAuthz()
-
-            Map result = ecfi.serviceFacade.sync().name("create", "Visit").parameters((Map<String, Object>) parameters).call()
-
-            // put visitId in session as "moqui.visitId"
-            session.setAttribute("moqui.visitId", result.visitId)
-        } finally {
-            ecfi.executionContext.artifactExecution.enableAuthz()
-        }
+        // NOTE: this method now does nothing because we only want to create the Visit on the first request, and in
+        //     order to not create the Visit under certain conditions we need the HttpServletRequest object.
     }
 
     void sessionDestroyed(HttpSessionEvent event) {
