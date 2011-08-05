@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="package-name" type="xs:string" use="required"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
-            <xs:attribute name="sequence-bank-size" type="xs:nonNegativeInteger"/>
+            <xs:attribute name="sequence-bank-size" type="xs:nonNegativeInteger" default="50"/>
             <xs:attribute name="sequence-primary-stagger" type="xs:nonNegativeInteger" default="1">
                 <xs:annotation><xs:documentation>The maximum amount to stagger the sequenced ID, if 1 the sequence will
                     be incremented by 1, otherwise the current sequence ID will be incremented by a value between 1 and

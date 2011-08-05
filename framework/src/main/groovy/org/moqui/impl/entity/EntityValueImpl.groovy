@@ -199,8 +199,10 @@ class EntityValueImpl implements EntityValue {
     /** @see org.moqui.entity.EntityValue#setSequencedIdPrimary() */
     EntityValue setSequencedIdPrimary() {
         List<String> pkFields = getEntityDefinition().getPkFieldNames()
-        Integer staggerMax = (getEntityDefinition().entityNode."@sequence-primary-stagger" as Integer) ?: 1
-        set(pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax))
+        Node entityNode = getEntityDefinition().getEntityNode()
+        Long staggerMax = (entityNode."@sequence-primary-stagger" as Long) ?: 1
+        Long bankSize = (entityNode."@sequence-bank-size" as Long) ?: 50
+        set(pkFields.get(0), getEntityFacadeImpl().sequencedIdPrimary(getEntityName(), staggerMax, bankSize))
         return this
     }
 
@@ -219,11 +221,11 @@ class EntityValueImpl implements EntityValue {
         // temporarily disable authz for this, just doing lookup to get next value and to allow for a
         //     authorize-skip="create" with authorize-skip of view too this is necessary
         List<EntityValue> allValues
-        this.getEntityFacadeImpl().ecfi.executionContext.artifactExecution.disableAuthz()
+        this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
             allValues = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue).list()
         } finally {
-            this.getEntityFacadeImpl().ecfi.executionContext.artifactExecution.enableAuthz()
+            this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
         }
 
         Integer highestSeqVal = null
@@ -284,7 +286,7 @@ class EntityValueImpl implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
 
@@ -336,7 +338,7 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return this
     }
@@ -371,7 +373,7 @@ class EntityValueImpl implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -444,7 +446,7 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return this
     }
@@ -506,7 +508,7 @@ class EntityValueImpl implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -544,7 +546,7 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return this
     }
@@ -562,7 +564,7 @@ class EntityValueImpl implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
 
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.push(
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -614,7 +616,7 @@ class EntityValueImpl implements EntityValue {
         getEntityFacadeImpl().ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.executionContext.artifactExecution.pop()
+        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return retVal
     }

@@ -99,7 +99,7 @@ This Work includes contributions authored by David E. Jones, not as a
             // ========== service CrUD tests ==========
 
             // create with sequenced ID test
-            calls = 100
+            calls = 200
             startTime = System.currentTimeMillis()
             List createTestIdList = []
             for (int i = 0; i < calls; i++) {

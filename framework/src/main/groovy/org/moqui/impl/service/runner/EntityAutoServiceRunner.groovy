@@ -22,6 +22,7 @@ import org.moqui.service.ServiceException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.apache.commons.collections.set.ListOrderedSet
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
@@ -70,13 +71,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
     public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                     Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue newEntityValue = sfi.ecfi.entityFacade.makeValue(ed.entityName)
+        ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
+        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getEntityName())
 
         List<String> pkFieldNames = ed.getPkFieldNames()
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
         if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {
-            parameters.put("fromDate", sfi.ecfi.executionContext.user.nowTimestamp)
+            parameters.put("fromDate", ecfi.getExecutionContext().getUser().getNowTimestamp())
             // logger.info("Set fromDate field to default [${parameters.fromDate}]")
         }
 
@@ -95,8 +97,12 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             Node singlePkField = ed.getFieldNode(singlePkParamName)
 
             Object pkValue = parameters.get(singlePkField."@name")
-            if (!pkValue) pkValue = sfi.ecfi.entityFacade.sequencedIdPrimary(ed.entityName, null)
-            newEntityValue.set(singlePkField."@name", pkValue)
+            if (pkValue) {
+                newEntityValue.set(singlePkField."@name", pkValue)
+            } else {
+                newEntityValue.setSequencedIdPrimary()
+                pkValue = newEntityValue.get(singlePkField."@name")
+            }
             if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
@@ -125,7 +131,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                     Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
         EntityValue lookedUpValue = preLookedUpValue ?:
-                sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
+                sfi.getEcfi().getEntityFacade().makeValue(ed.getEntityName()).setFields(parameters, true, null, true)
+        // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] value not found, cannot update; using parameters [${parameters}]")
         }
@@ -160,13 +167,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     }
 
     public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
-        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).one()
-        if (lookedUpValue != null) lookedUpValue.delete()
+        EntityValue ev = sfi.getEcfi().getEntityFacade().makeValue(ed.getEntityName()).setFields(parameters, true, null, true)
+        ev.delete()
     }
 
     /** Does a create if record does not exist, or update if it does. */
     public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue lookedUpValue = sfi.ecfi.entityFacade.makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
+        EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().makeFind(ed.entityName).condition(parameters)
+                .useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             createEntity(sfi, ed, parameters, result, outParamNames)
         } else {

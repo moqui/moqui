@@ -62,9 +62,10 @@ public interface EntityFacade {
      * @param seqName The name of the sequence to get the next seq id from
      * @param staggerMax The maximum amount to stagger the sequenced ID, if 1 the sequence will be incremented by 1,
      *     otherwise the current sequence ID will be incremented by a value between 1 and staggerMax
+     * @param bankSize The size of the "bank" of values to get from the database (defaults to 1)
      * @return Long with the next seq id for the given sequence name
      */
-    String sequencedIdPrimary(String seqName, Long staggerMax);
+    String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize);
 
     /** Gets the group name for specified entityName
      * @param entityName The name of the entity to get the group name

@@ -243,7 +243,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
 
-        TransactionFacade tf = sfi.ecfi.getTransactionFacade()
+        TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
         Map<String, Object> result = new HashMap()
         try {
@@ -253,7 +253,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
                 sfi.registerTxSecaRules(getServiceName(), currentParameters)
 
-                EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
+                EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(noun)
                 if (verb == "create") {
                     EntityAutoServiceRunner.createEntity(sfi, ed, currentParameters, result, null)
                 } else if (verb == "update") {

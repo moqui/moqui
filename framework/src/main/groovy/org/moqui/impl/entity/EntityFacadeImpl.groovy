@@ -67,6 +67,9 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Cache entityDefinitionCache
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
     protected final Cache entityLocationCache
+    /** Sequence name (often entity name) is the key and the value is an array of 2 Longs the first is the next
+     * available value and the second is the highest value reserved/cached in the bank. */
+    protected final Cache entitySequenceBankCache
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
@@ -85,6 +88,7 @@ class EntityFacadeImpl implements EntityFacade {
         this.entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
         this.entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
         // NOTE: don't try to load entity locations before constructor is complete; this.loadAllEntityLocations()
+        this.entitySequenceBankCache = ecfi.getCacheFacade().getCache("entity.sequence.bank")
 
         // EECA rule tables
         loadEecaRulesAll()
@@ -741,51 +745,67 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, long) */
-    synchronized String sequencedIdPrimary(String seqName, Long staggerMax) {
+    /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, Long, Long) */
+    synchronized String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
         // TODO:     traffic creates; is it creates only?)
+
         // NOTE: simple approach with forUpdate, not using the update/select "ethernet" approach used in OFBiz; consider
         // that in the future if there are issues with this approach
-        // TODO: add support for bins of IDs for performance, ie to avoid going to the db for each one
-        Long seqNum
-        TransactionFacade tf = this.ecfi.getTransactionFacade()
-        boolean suspendedTransaction = false
-        try {
-            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
-            boolean beganTransaction = tf.begin(null)
-            try {
-                EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName)
-                        .useCache(false).forUpdate(true).one()
-                if (svi == null) {
-                    svi = makeValue("SequenceValueItem")
-                    svi.set("seqName", seqName)
-                    // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
-                    seqNum = 100000
-                    svi.set("seqNum", seqNum)
-                    svi.create()
-                } else {
-                    seqNum = svi.getLong("seqNum")
-                    if (staggerMax) {
-                        long stagger = Math.round(Math.random() * staggerMax)
-                        if (stagger == 0) stagger = 1
-                        seqNum += stagger
-                    } else {
-                        seqNum += 1
-                    }
-                    svi.set("seqNum", seqNum)
-                    svi.update()
-                }
-            } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
-            } finally {
-                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+
+        // first get a bank if we don't have one already
+        ArrayList<Long> bank = (ArrayList) this.entitySequenceBankCache.get(seqName)
+        if (bank == null || bank[0] > bank[1]) {
+            if (bank == null) {
+                bank = new ArrayList<Long>(2)
+                this.entitySequenceBankCache.put(seqName, bank)
             }
-        } catch (TransactionException e) {
-            throw e
-        } finally {
-            if (suspendedTransaction) tf.resume()
+
+            TransactionFacade tf = this.ecfi.getTransactionFacade()
+            boolean suspendedTransaction = false
+            try {
+                if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+                boolean beganTransaction = tf.begin(null)
+                try {
+                    EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName)
+                            .useCache(false).forUpdate(true).one()
+                    if (svi == null) {
+                        svi = makeValue("SequenceValueItem")
+                        svi.set("seqName", seqName)
+                        // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
+                        bank[0] = 100000
+                        bank[1] = bank[0] + ((bankSize ?: 1) - 1)
+                        svi.set("seqNum", bank[1])
+                        svi.create()
+                    } else {
+                        Long lastSeqNum = svi.getLong("seqNum")
+                        bank[0] = lastSeqNum + 1
+                        bank[1] = bank[0] + ((bankSize ?: 1) - 1)
+                        svi.set("seqNum", bank[1])
+                        svi.update()
+                    }
+                } catch (Throwable t) {
+                    tf.rollback(beganTransaction, "Error getting primary sequenced ID", t)
+                } finally {
+                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                }
+            } catch (TransactionException e) {
+                throw e
+            } finally {
+                if (suspendedTransaction) tf.resume()
+            }
+        }
+
+        Long seqNum = bank[0]
+        if (staggerMax) {
+            long stagger = Math.round(Math.random() * staggerMax)
+            if (stagger == 0) stagger = 1
+            bank[0] += stagger
+            // NOTE: if bank[0] > bank[1] because of this just leave it and the next time we try to get a sequence
+            //     value we'll get one from a new bank
+        } else {
+            seqNum += 1
         }
 
         String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"
