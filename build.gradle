@@ -12,7 +12,7 @@
 
 dependsOnChildren()
 
-allprojects { version = '1.0-rc1' }
+allprojects { version = '1.0.0' }
 
 tomcatHome = '../apache-tomcat-7.0.19'
 warName = 'moqui-' + version + '.war'
@@ -26,6 +26,7 @@ task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattr
 
 task cleanAll {
     dependsOn clean
+    dependsOn ':framework:clean'
     dependsOn cleanDb
     dependsOn cleanLog
     dependsOn cleanOther
