@@ -183,7 +183,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
                             if (hitsInDuration > artifactTarpit.getLong("maxHitsCount") && artifactTarpit.getLong("tarpitDuration") > lockForSeconds) {
                                 lockForSeconds = artifactTarpit.getLong("tarpitDuration")
-                                // logger.warn("TOREMOVE artifact [${tarpitKey}], exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds, locking for ${lockForSeconds} seconds")
+                                logger.warn("User [${userId}] exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds for artifact [${tarpitKey}], locking for ${lockForSeconds} seconds")
                             }
                         }
                     }
@@ -194,7 +194,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                         // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
                         // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
-                        // TODO: is this failing to pickup locks?
                         EntityList tarpitLockList = efi.makeFind("ArtifactTarpitLock")
                                 .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()])
                                 .useCache(true).list()
