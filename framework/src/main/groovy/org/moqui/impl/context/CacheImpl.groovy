@@ -28,6 +28,8 @@ class CacheImpl implements Cache {
 
     CacheImpl(Ehcache ehcache) { this.ehcache = ehcache }
 
+    Ehcache getInternalCache() { return this.ehcache }
+
     /** @see org.moqui.context.Cache#getName() */
     String getName() { return this.ehcache.getName() }
 
