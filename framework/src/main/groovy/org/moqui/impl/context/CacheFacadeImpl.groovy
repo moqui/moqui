@@ -35,6 +35,8 @@ public class CacheFacadeImpl implements CacheFacade {
      */
     protected final CacheManager cacheManager = new CacheManager()
 
+    protected final Map<String, CacheImpl> localCacheImplMap = new HashMap()
+
     CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
     }
@@ -60,14 +62,15 @@ public class CacheFacadeImpl implements CacheFacade {
     Cache getCache(String cacheName) { return getCacheImpl(cacheName) }
 
     CacheImpl getCacheImpl(String cacheName) {
-        CacheImpl theCache
-        if (cacheManager.cacheExists(cacheName)) {
-            // CacheImpl is a really lightweight object, but we should still consider keeping a local map of references
-            theCache = new CacheImpl(cacheManager.getCache(cacheName))
-        } else {
-            theCache = new CacheImpl(initCache(cacheName))
+        CacheImpl theCache = localCacheImplMap.get(cacheName)
+        if (theCache == null) {
+            if (cacheManager.cacheExists(cacheName)) {
+                theCache = new CacheImpl(cacheManager.getCache(cacheName))
+            } else {
+                theCache = new CacheImpl(initCache(cacheName))
+            }
+            localCacheImplMap.put(cacheName, theCache)
         }
-
         return theCache
     }
 

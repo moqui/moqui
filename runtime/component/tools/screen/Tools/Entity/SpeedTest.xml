@@ -16,42 +16,83 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <script><![CDATA[
+            Integer baseCalls = (ec.web.parameters.baseCalls as Integer) ?: 100
+            if (!baseCalls) baseCalls = 100
+
             org.moqui.context.ExecutionContext ec = context.ec
+            org.moqui.entity.EntityFacade ef = ec.entity
             java.text.DecimalFormat decimalFormat = new java.text.DecimalFormat("#,##0.#######")
             java.sql.Timestamp nowTs = new java.sql.Timestamp(System.currentTimeMillis())
 
             def performanceList = []
 
-            // one PK
-            calls = 1000
+
+            // direct cache writes and reads with EC
+            calls = baseCalls
+            org.moqui.context.Cache testCache = ec.cache.getCache("test.cache")
+            org.moqui.entity.EntityValue testEnumValue =
+                    ef.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
+
+            // to measure the cache time and not the condition creation time, create those in advance
             startTime = System.currentTimeMillis()
+            org.moqui.entity.EntityConditionFactory ecf = ef.conditionFactory
+            List<org.moqui.entity.EntityCondition> conditionList = new ArrayList(calls)
             for (int i = 0; i < calls; i++) {
-                dummy = ec.entity.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
+                conditionList.add(ecf.makeCondition([enumId:"_NA_"+i]))
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"one PK", entity:"Enumeration", calls:calls, seconds:seconds,
+            performanceList.add([operation:"create EntityCondition", entity:"Enumeration", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            startTime = System.currentTimeMillis()
+            for (int i = 0; i < calls; i++) {
+                testCache.put(conditionList[i], testEnumValue)
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"direct cache writes", entity:"Enumeration", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
+            startTime = System.currentTimeMillis()
+            for (int i = 0; i < calls; i++) {
+                testCache.get(conditionList[i])
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"direct cache reads", entity:"Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // one PK cache
-            calls = 1000
+            calls = baseCalls
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
-                dummy = ec.entity.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
+                ef.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
             performanceList.add([operation:"one PK cache", entity:"Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
+            // one PK
+            calls = baseCalls
+            startTime = System.currentTimeMillis()
+            for (int i = 0; i < calls; i++) {
+                ef.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
+            }
+            seconds = (System.currentTimeMillis() - startTime) / 1000
+            performanceList.add([operation:"one PK", entity:"Enumeration", calls:calls, seconds:seconds,
+                    secsPerCall:decimalFormat.format(seconds / calls),
+                    callsPerSecond:decimalFormat.format(calls / seconds)])
+
             // ========== direct CrUD tests ==========
 
             // create with sequenced ID test
-            calls = 500
+            calls = baseCalls/2
             startTime = System.currentTimeMillis()
             List createTestList = []
             for (int i = 0; i < calls; i++) {
-                createTestList.add(ec.entity.makeValue("ToolsTestEntity").setFields([testMedium:"Medium "+i,
+                createTestList.add(ef.makeValue("ToolsTestEntity").setFields([testMedium:"Medium "+i,
                         testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs, testNumberInteger:i,
                         testNumberDecimal:(i+0.5)], true, null, null).setSequencedIdPrimary().create())
             }
@@ -61,10 +102,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
             // create with preset ID test
-            calls = 500
+            calls = baseCalls/2
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
-                createTestList.add(ec.entity.makeValue("ToolsTestEntity").setFields([testId:("id"+i),
+                createTestList.add(ef.makeValue("ToolsTestEntity").setFields([testId:("id"+i),
                         testMedium:"Medium "+i, testLong:"Long "+i, testIndicator:"Y", testDateTime:nowTs,
                         testNumberInteger:i, testNumberDecimal:(i+0.5)], true, null, null).create())
             }
@@ -99,7 +140,7 @@ This Work includes contributions authored by David E. Jones, not as a
             // ========== service CrUD tests ==========
 
             // create with sequenced ID test
-            calls = 200
+            calls = baseCalls/4
             startTime = System.currentTimeMillis()
             List createTestIdList = []
             for (int i = 0; i < calls; i++) {
@@ -133,6 +174,7 @@ This Work includes contributions authored by David E. Jones, not as a
             performanceList.add([operation:"service delete", entity:"ToolsTestEntity", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
+
 
             context.performanceList = performanceList
             ]]></script>

@@ -356,7 +356,7 @@ class UserFacadeImpl implements UserFacade {
 
     /* @see org.moqui.context.UserFacade#getUserAccount() */
     EntityValue getUserAccount() {
-        if (usernameStack.size() == 0) return null
+        if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
             internalUserAccount = eci.getEntity().makeFind("UserAccount").condition("username", this.getUsername()).useCache(true).one()
         }

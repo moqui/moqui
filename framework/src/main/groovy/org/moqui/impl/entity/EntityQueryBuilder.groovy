@@ -48,6 +48,8 @@ class EntityQueryBuilder {
         this.efi = efi
     }
 
+    EntityDefinition getMainEd() { return mainEntityDefinition }
+
     /** @return StringBuilder meant to be appended to */
     StringBuilder getSqlTopLevel() {
         return this.sqlTopLevel

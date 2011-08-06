@@ -22,7 +22,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String authorizedUserId = null
     protected String authorizedAuthzTypeId = null
     protected String authorizedActionEnumId = null
-    protected boolean isAuthorizationInheritable = false
+    protected boolean authorizationInheritable = false
 
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
@@ -48,8 +48,8 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     void setAuthorizedActionEnumId(String authorizedActionEnumId) { this.authorizedActionEnumId = authorizedActionEnumId }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#isAuthorizationInheritable() */
-    boolean isAuthorizationInheritable() { return this.isAuthorizationInheritable }
-    void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.isAuthorizationInheritable = isAuthorizationInheritable}
+    boolean isAuthorizationInheritable() { return this.authorizationInheritable }
+    void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.authorizationInheritable = isAuthorizationInheritable}
 
     void copyAacvInfo(EntityValue aacv, String userId) {
         setAuthorizedUserId((String) userId)
@@ -62,11 +62,11 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         setAuthorizedUserId(aeii.authorizedUserId)
         setAuthorizedAuthzTypeId(aeii.authorizedAuthzTypeId)
         setAuthorizedActionEnumId(aeii.authorizedActionEnumId)
-        setAuthorizationInheritable(aeii.isAuthorizationInheritable)
+        setAuthorizationInheritable(aeii.authorizationInheritable)
     }
 
     @Override
     String toString() {
-        return "name:${name},type:${typeEnumId},action:${actionEnumId},user:${authorizedUserId},authz:${authorizedAuthzTypeId},authAction:${authorizedActionEnumId},inheritable:${isAuthorizationInheritable}"
+        return "name:${name},type:${typeEnumId},action:${actionEnumId},user:${authorizedUserId},authz:${authorizedAuthzTypeId},authAction:${authorizedActionEnumId},inheritable:${authorizationInheritable}"
     }
 }

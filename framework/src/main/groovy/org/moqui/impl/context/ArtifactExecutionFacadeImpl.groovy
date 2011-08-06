@@ -46,7 +46,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected Map<String, Boolean> artifactTypeTarpitEnabled = new HashMap()
     protected EntityCondition nameIsPatternEqualsY
 
-    protected boolean disableAuthz = false
+    protected boolean authzDisabled = false
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
@@ -112,8 +112,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
 
-    boolean disableAuthz() { boolean alreadyDisabled = this.disableAuthz; this.disableAuthz = true; return alreadyDisabled }
-    void enableAuthz() { this.disableAuthz = false }
+    boolean disableAuthz() { boolean alreadyDisabled = this.authzDisabled; this.authzDisabled = true; return alreadyDisabled }
+    void enableAuthz() { this.authzDisabled = false }
 
     /** Checks to see if username is permitted to access given resource.
      *
@@ -140,7 +140,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         boolean requiresAuthz, Timestamp nowTimestamp) {
 
         // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
-        if (this.disableAuthz && aeii.getTypeEnumId() == "AT_ENTITY") {
+        if (this.authzDisabled && aeii.getTypeEnumId() == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             return true
         }
@@ -327,7 +327,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 // record that this was an explicit deny (for push or exception in case something catches and handles it)
                 aeii.copyAacvInfo(denyAacv, userId)
 
-                if (!requiresAuthz || this.disableAuthz) {
+                if (!requiresAuthz || this.authzDisabled) {
                     // if no authz required, just return true even though it was a failure
                     return true
                 } else {
@@ -352,7 +352,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                 }
             }
 
-            if (!requiresAuthz || this.disableAuthz) {
+            if (!requiresAuthz || this.authzDisabled) {
                 // if no authz required, just push it even though it was a failure
                 if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
                 return true
