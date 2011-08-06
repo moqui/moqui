@@ -13,6 +13,11 @@ This release includes:
 - Added support to skip stats tracking based on a conditional expression
 - More performance profiling and improvements
   - entity-auto update and delete services no longer do a find first
+  - various frequently used objects are cached in UserFacade, especially
+    those used for authz and tarpit, making many things faster and cached
+    queries around 4 times faster than the already optimized speed
+  - many small performance improvements, changes to get around Groovy and
+    Java quirks
 - Entity Facade
   - Primary sequenced ID banking for better performance when creating
     records with sequenced single field primary key (default bank size 50)
