@@ -23,6 +23,9 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityFacadeImpl
+import org.moqui.entity.EntityConditionFactory
+import org.moqui.entity.EntityCondition
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
@@ -41,12 +44,14 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected Cache tarpitHitCache
     protected Map<String, Boolean> artifactTypeAuthzEnabled = new HashMap()
     protected Map<String, Boolean> artifactTypeTarpitEnabled = new HashMap()
+    protected EntityCondition nameIsPatternEqualsY
 
     protected boolean disableAuthz = false
 
     ArtifactExecutionFacadeImpl(ExecutionContextImpl eci) {
         this.eci = eci
         this.tarpitHitCache = eci.cache.getCache("artifact.tarpit.hits")
+        nameIsPatternEqualsY = eci.getEntity().getConditionFactory().makeCondition("nameIsPattern", ComparisonOperator.EQUALS, "Y")
     }
 
     boolean isAuthzEnabled(String artifactTypeEnumId) {
@@ -95,7 +100,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         artifactExecutionInfoHistory.add(aeii)
 
         if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.getUser().getNowTimestamp()))
-            throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
+            throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.getActionEnumId())} on ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}]")
 
         // NOTE: if needed the isPermitted method will set additional info in aeii
         this.artifactExecutionInfoStack.addFirst(aeii)
@@ -140,66 +145,70 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             return true
         }
 
-        // this will be set inside the disableAuthz block
-        Set<String> userGroupIdSet
+        EntityFacadeImpl efi = (EntityFacadeImpl) eci.entity
+        UserFacadeImpl ufi = (UserFacadeImpl) eci.getUser()
+
 
         boolean alreadyDisabled = disableAuthz()
         try {
             // see if there is a UserAccount for the username, and if so get its userId as a more permanent identifier
-            EntityValue ua = eci.getUser().getUserAccount()
+            EntityValue ua = ufi.getUserAccount()
             if (ua) userId = ua.userId
-            userGroupIdSet = eci.getUser().getUserGroupIdSet()
 
-            if (isTarpitEnabled(aeii.typeEnumId)) {
+            if (isTarpitEnabled(aeii.getTypeEnumId())) {
                 // record and check velocity limit (tarpit)
                 boolean recordHitTime = false
                 long lockForSeconds = 0
                 long checkTime = System.currentTimeMillis()
-                String tarpitKey = userId + "@" + aeii.typeEnumId + ":" + aeii.name
-                List<Long> hitTimeList = (List<Long>) tarpitHitCache.get(tarpitKey)
-                EntityList artifactTarpitList = null
+                EntityList artifactTarpitCheckList = null
                 // only check screens if they are the final screen in the chain (the target screen)
-                if (aeii.typeEnumId != "AT_XML_SCREEN" || requiresAuthz) {
-                    artifactTarpitList = eci.entity.makeFind("ArtifactTarpitCheckView")
-                            .condition("userGroupId", ComparisonOperator.IN, userGroupIdSet).useCache(true).list()
-                            .filterByAnd([artifactTypeEnumId:aeii.typeEnumId])
+                if (aeii.getTypeEnumId() != "AT_XML_SCREEN" || requiresAuthz) {
+                    artifactTarpitCheckList = ufi.getArtifactTarpitCheckList()
+                            .filterByAnd([artifactTypeEnumId:aeii.getTypeEnumId()])
                 }
-                // if (aeii.typeEnumId == "AT_XML_SCREEN") logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
-                for (EntityValue artifactTarpit in artifactTarpitList) {
-                    if ((artifactTarpit.nameIsPattern && aeii.name.matches((String) artifactTarpit.artifactName)) ||
-                            aeii.name == artifactTarpit.artifactName) {
-                        recordHitTime = true
-                        long maxHitsDuration = artifactTarpit.maxHitsDuration as Long
-                        // count hits in this duration; start with 1 to count the current hit
-                        long hitsInDuration = 1
-                        for (Long hitTime in hitTimeList) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
-                        // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
-                        if (hitsInDuration > artifactTarpit.maxHitsCount && artifactTarpit.tarpitDuration > lockForSeconds) {
-                            lockForSeconds = artifactTarpit.tarpitDuration as Long
-                            // logger.warn("TOREMOVE artifact [${tarpitKey}], exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds, locking for ${lockForSeconds} seconds")
+                // if (aeii.getTypeEnumId() == "AT_XML_SCREEN") logger.warn("TOREMOVE about to check tarpit [${tarpitKey}], userGroupIdSet=${userGroupIdSet}, artifactTarpitList=${artifactTarpitList}")
+                if (artifactTarpitCheckList) {
+                    String tarpitKey = userId + "@" + aeii.getTypeEnumId() + ":" + aeii.getName()
+                    List<Long> hitTimeList = null
+                    for (EntityValue artifactTarpit in artifactTarpitCheckList) {
+                        if (("Y".equals(artifactTarpit.get("nameIsPattern")) &&
+                                aeii.getName().matches((String) artifactTarpit.get("artifactName"))) ||
+                                aeii.getName().equals(artifactTarpit.get("artifactName"))) {
+                            recordHitTime = true
+                            if (hitTimeList == null) hitTimeList = (List<Long>) tarpitHitCache.get(tarpitKey)
+                            long maxHitsDuration = artifactTarpit.getLong("maxHitsDuration")
+                            // count hits in this duration; start with 1 to count the current hit
+                            long hitsInDuration = 1
+                            for (Long hitTime in hitTimeList) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
+                            // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
+                            if (hitsInDuration > artifactTarpit.getLong("maxHitsCount") && artifactTarpit.getLong("tarpitDuration") > lockForSeconds) {
+                                lockForSeconds = artifactTarpit.getLong("tarpitDuration")
+                                // logger.warn("TOREMOVE artifact [${tarpitKey}], exceeded ${artifactTarpit.maxHitsCount} in ${maxHitsDuration} seconds, locking for ${lockForSeconds} seconds")
+                            }
                         }
                     }
-                }
-                if (recordHitTime) {
-                    if (hitTimeList == null) { hitTimeList = new LinkedList<Long>(); tarpitHitCache.put(tarpitKey, hitTimeList) }
-                    hitTimeList.add(System.currentTimeMillis())
-                    // logger.warn("TOREMOVE recorded hit time for [${tarpitKey}], now has ${hitTimeList.size()} hits")
+                    if (recordHitTime) {
+                        if (hitTimeList == null) { hitTimeList = new LinkedList<Long>(); tarpitHitCache.put(tarpitKey, hitTimeList) }
+                        hitTimeList.add(System.currentTimeMillis())
+                        // logger.warn("TOREMOVE recorded hit time for [${tarpitKey}], now has ${hitTimeList.size()} hits")
 
-                    // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
-                    // NOTE: this is NOT cached because it has an argument with nowTimestamp making a cached value of limited used
-                    // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
-                    EntityList tarpitLockList = eci.entity.makeFind("ArtifactTarpitLock")
-                            .condition([userId:userId, artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId])
-                            .condition("releaseDateTime", ComparisonOperator.GREATER_THAN, eci.user.nowTimestamp).list()
-                    if (tarpitLockList) {
-                        throw new ArtifactAuthorizationException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}] too many times and may not again until ${tarpitLockList.first.releaseDateTime}")
+                        // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
+                        // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
+                        // TODO: is this failing to pickup locks?
+                        EntityList tarpitLockList = efi.makeFind("ArtifactTarpitLock")
+                                .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()])
+                                .useCache(true).list()
+                                .filterByCondition(efi.getConditionFactory().makeCondition("releaseDateTime", ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
+                        if (tarpitLockList) {
+                            throw new ArtifactAuthorizationException("User [${userId}] has accessed ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}] too many times and may not again until ${tarpitLockList.first.releaseDateTime}")
+                        }
                     }
-                }
-                // record the tarpit lock
-                if (lockForSeconds > 0) {
-                    eci.service.sync().name("create", "ArtifactTarpitLock").parameters((Map<String, Object>) [userId:userId,
-                            artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
-                            releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+                    // record the tarpit lock
+                    if (lockForSeconds > 0) {
+                        eci.getService().sync().name("create", "ArtifactTarpitLock").parameters((Map<String, Object>)
+                                [userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
+                                releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
+                    }
                 }
             }
         } finally {
@@ -207,12 +216,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         }
 
         // tarpit enabled already checked, if authz not enabled return true immediately
-        if (!isAuthzEnabled(aeii.typeEnumId)) return true
+        if (!isAuthzEnabled(aeii.getTypeEnumId())) return true
 
         // if last was an always allow, then don't bother checking for deny/etc
-        if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
-                lastAeii.authorizedAuthzTypeId == "AUTHZT_ALWAYS" &&
-                (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
+        if (lastAeii != null && lastAeii.isAuthorizationInheritable() && lastAeii.getAuthorizedUserId() == userId &&
+                "AUTHZT_ALWAYS".equals(lastAeii.getAuthorizedAuthzTypeId()) &&
+                ("AUTHZA_ALL".equals(lastAeii.getAuthorizedActionEnumId()) || aeii.getActionEnumId().equals(lastAeii.getAuthorizedActionEnumId()))) {
             aeii.copyAuthorizedInfo(lastAeii)
             return true
         }
@@ -223,7 +232,9 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         // don't check authz for these queries, would cause infinite recursion
         alreadyDisabled = disableAuthz()
         try {
-            // check authorizations for those groups (separately cached for more cache hits)
+            /*
+            // The old way: one big cached query:
+            Set<String> userGroupIdSet = ufi.getUserGroupIdSet()
             EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
                     .condition("artifactTypeEnumId", aeii.typeEnumId)
                     .condition(eci.entity.conditionFactory.makeCondition(
@@ -236,16 +247,29 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             else aacvFind.condition("authzActionEnumId", "AUTHZA_ALL")
 
             aacvList = aacvFind.useCache(true).list()
+            */
+
+            // The new way: get a basic list by UserGroups from the UserFacadeImpl, then filter it down
+            EntityConditionFactory ecf = efi.getConditionFactory()
+            aacvList = ufi.getArtifactAuthzCheckList()
+                    .filterByCondition(ecf.makeCondition([
+                        ecf.makeCondition("artifactTypeEnumId", ComparisonOperator.EQUALS, aeii.getTypeEnumId()),
+                        ecf.makeCondition("authzActionEnumId", ComparisonOperator.IN, ["AUTHZA_ALL", aeii.getActionEnumId()]),
+                        ecf.makeCondition(
+                            ecf.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.getName()),
+                            JoinOperator.OR, nameIsPatternEqualsY)
+                    ]), true)
 
             if (aacvList.size() > 0) {
                 for (EntityValue aacv in aacvList) {
-                    if (aacv.nameIsPattern == "Y" && !aeii.name.matches((String) aacv.artifactName)) continue
+                    if ("Y".equals(aacv.get("nameIsPattern")) && !aeii.getName().matches(aacv.getString("artifactName")))
+                        continue
                     // check the record-level permission
-                    if (aacv.viewEntityName) {
-                        EntityValue artifactAuthzRecord = eci.entity.makeFind("ArtifactAuthzRecord")
+                    if (aacv.get("viewEntityName")) {
+                        EntityValue artifactAuthzRecord = efi.makeFind("ArtifactAuthzRecord")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).one()
-                        EntityDefinition ed = eci.entity.getEntityDefinition((String) aacv.viewEntityName)
-                        EntityFind ef = eci.entity.makeFind((String) aacv.viewEntityName)
+                        EntityDefinition ed = efi.getEntityDefinition((String) aacv.viewEntityName)
+                        EntityFind ef = efi.makeFind((String) aacv.viewEntityName)
                         if (artifactAuthzRecord.userIdField) {
                             ef.condition((String) artifactAuthzRecord.userIdField, userId)
                         } else if (ed.isField("userId")) {
@@ -255,14 +279,14 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             ef.conditionDate((String) artifactAuthzRecord.filterByDateFromField,
                                     (String) artifactAuthzRecord.filterByDateThruField, eci.user.nowTimestamp)
                         }
-                        EntityList condList = eci.entity.makeFind("ArtifactAuthzRecordCond")
+                        EntityList condList = efi.makeFind("ArtifactAuthzRecordCond")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
                         for (EntityValue cond in condList) {
                             String expCondValue = eci.resource.evaluateStringExpand((String) cond.condValue,
                                     "ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
                             if (expCondValue) {
                                 ef.condition((String) cond.fieldName,
-                                        eci.entity.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
+                                        efi.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
                                         expCondValue)
                             }
                         }
@@ -271,11 +295,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         if (ef.useCache(true).count() == 0) continue
                     }
 
-                    String authzTypeEnumId = aacv.authzTypeEnumId
-                    if (aacv.authzServiceName) {
-                        Map result = eci.service.sync().name((String) aacv.authzServiceName).parameters((Map<String, Object>)
-                                [userId:userId, authzActionEnumId:aeii.actionEnumId,
-                                artifactTypeEnumId:aeii.typeEnumId, artifactName:aeii.name]).call()
+                    String authzTypeEnumId = aacv.get("authzTypeEnumId")
+                    if (aacv.get("authzServiceName")) {
+                        Map result = eci.getService().sync().name(aacv.getString("authzServiceName"))
+                                .parameters((Map<String, Object>) [userId:userId, authzActionEnumId:aeii.getActionEnumId(),
+                                artifactTypeEnumId:aeii.getTypeEnumId(), artifactName:aeii.getName()]).call()
                         if (result?.authzTypeEnumId) authzTypeEnumId = result.authzTypeEnumId
                     }
 
@@ -290,7 +314,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         // see if there are any denies in AEIs on lower on the stack
                         boolean ancestorDeny = false
                         for (ArtifactExecutionInfoImpl ancestorAeii in artifactExecutionInfoStack)
-                            if (ancestorAeii.authorizedAuthzTypeId == "AUTHZT_DENY") ancestorDeny = true
+                            if (ancestorAeii.getAuthorizedAuthzTypeId() == "AUTHZT_DENY") ancestorDeny = true
 
                         if (!ancestorDeny) {
                             aeii.copyAacvInfo(aacv, userId)
@@ -309,13 +333,13 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     return true
                 } else {
                     StringBuilder warning = new StringBuilder()
-                    warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of a deny record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}], here is the current artifact stack:")
+                    warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of a deny record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}], here is the current artifact stack:")
                     for (def warnAei in this.stack) warning.append("\n").append(warnAei)
                     logger.warn(warning.toString())
 
-                    eci.service.sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
-                            [artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
-                            authzActionEnumId:aeii.actionEnumId, userId:userId,
+                    eci.getService().sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
+                            [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
+                            authzActionEnumId:aeii.getActionEnumId(), userId:userId,
                             failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"Y"]).call()
 
                     return false
@@ -323,7 +347,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             } else {
                 // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
                 if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
-                        (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.actionEnumId)) {
+                        (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.getActionEnumId())) {
                     aeii.copyAuthorizedInfo(lastAeii)
                     return true
                 }
@@ -336,15 +360,15 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             } else {
                 // if we got here no authz found, blow up
                 StringBuilder warning = new StringBuilder()
-                warning.append("User [${userId}] is not authorized for ${aeii.typeEnumId} [${aeii.name}] because of no allow record [type:${aeii.typeEnumId},action:${aeii.actionEnumId}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
+                warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of no allow record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
                 for (def warnAei in this.stack) warning.append("\n").append(warnAei)
                 logger.warn(warning.toString(), new Exception("Authz failure location"))
 
                 // NOTE: this is called sync because failures should be rare and not as performance sensitive, and
                 //  because this is still in a disableAuthz block (if async a service would have to be written for that)
                 eci.service.sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
-                        [artifactName:aeii.name, artifactTypeEnumId:aeii.typeEnumId,
-                        authzActionEnumId:aeii.actionEnumId, userId:userId,
+                        [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
+                        authzActionEnumId:aeii.getActionEnumId(), userId:userId,
                         failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"N"]).call()
 
                 return false

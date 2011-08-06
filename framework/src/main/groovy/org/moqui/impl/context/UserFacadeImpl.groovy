@@ -26,6 +26,9 @@ import org.apache.shiro.web.session.HttpServletSession
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
 import javax.servlet.http.HttpSession
+import org.moqui.entity.EntityList
+import org.moqui.impl.entity.EntityListImpl
+import org.moqui.entity.EntityCondition.ComparisonOperator
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -38,6 +41,9 @@ class UserFacadeImpl implements UserFacade {
     // keep a reference to a UserAccount for performance reasons, avoid repeated cached queries
     protected EntityValue internalUserAccount = null
     protected Set<String> internalUserGroupIdSet = null
+    protected EntityList internalArtifactTarpitCheckList = null
+    protected EntityList internalArtifactAuthzCheckList = null
+
     /** The Shiro Subject (user) */
     protected Subject currentUser = null
 
@@ -68,6 +74,8 @@ class UserFacadeImpl implements UserFacade {
                 this.usernameStack.addFirst(userId)
                 this.internalUserAccount = null
                 this.internalUserGroupIdSet = null
+                this.internalArtifactTarpitCheckList = null
+                this.internalArtifactAuthzCheckList = null
             }
             if (logger.traceEnabled) logger.trace("For new request found user [${userId}] in the session; userIdStack is [${this.usernameStack}]")
         } else {
@@ -238,6 +246,8 @@ class UserFacadeImpl implements UserFacade {
             this.usernameStack.addFirst(username)
             this.internalUserAccount = null
             this.internalUserGroupIdSet = null
+            this.internalArtifactTarpitCheckList = null
+            this.internalArtifactAuthzCheckList = null
 
             // after successful login trigger the after-login actions
             if (eci.web != null) eci.web.runAfterLoginActions()
@@ -259,8 +269,10 @@ class UserFacadeImpl implements UserFacade {
 
         if (usernameStack) {
             usernameStack.removeFirst()
-            internalUserAccount = null
-            internalUserGroupIdSet = null
+            this.internalUserAccount = null
+            this.internalUserGroupIdSet = null
+            this.internalArtifactTarpitCheckList = null
+            this.internalArtifactAuthzCheckList = null
         }
 
         if (eci.web != null) {
@@ -303,11 +315,37 @@ class UserFacadeImpl implements UserFacade {
         if (internalUserGroupIdSet == null) {
             internalUserGroupIdSet = new HashSet(allUserGroupIdOnly)
             // expand the userGroupId Set with UserGroupMember
-            for (EntityValue userGroupMember in eci.entity.makeFind("UserGroupMember").condition("userId", userId)
+            for (EntityValue userGroupMember in eci.getEntity().makeFind("UserGroupMember").condition("userId", userId)
                     .useCache(true).list().filterByDate(null, null, null))
                 userGroupIdSet.add((String) userGroupMember.userGroupId)
         }
         return internalUserGroupIdSet
+    }
+
+    EntityList getArtifactTarpitCheckList() {
+        if (usernameStack.size() == 0) return EntityListImpl.EMPTY
+        if (internalArtifactTarpitCheckList == null) {
+            // get the list for each group separately to increase cache hits/efficiency
+            internalArtifactTarpitCheckList = new EntityListImpl(eci.getEcfi().getEntityFacade())
+            for (String userGroupId in getUserGroupIdSet()) {
+                internalArtifactTarpitCheckList.addAll(eci.getEntity().makeFind("ArtifactTarpitCheckView")
+                        .condition("userGroupId", userGroupId).useCache(true).list())
+            }
+        }
+        return internalArtifactTarpitCheckList
+    }
+
+    EntityList getArtifactAuthzCheckList() {
+        if (usernameStack.size() == 0) return EntityListImpl.EMPTY
+        if (internalArtifactAuthzCheckList == null) {
+            // get the list for each group separately to increase cache hits/efficiency
+            internalArtifactAuthzCheckList = new EntityListImpl(eci.getEcfi().getEntityFacade())
+            for (String userGroupId in getUserGroupIdSet()) {
+                internalArtifactAuthzCheckList.addAll(eci.getEntity().makeFind("ArtifactAuthzCheckView")
+                        .condition("userGroupId", userGroupId).useCache(true).list())
+            }
+        }
+        return internalArtifactAuthzCheckList
     }
 
     /* @see org.moqui.context.UserFacade#getUsername() */

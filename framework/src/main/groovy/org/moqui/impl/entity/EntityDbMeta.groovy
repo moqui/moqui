@@ -25,12 +25,13 @@ import org.moqui.entity.EntityException
 class EntityDbMeta {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDbMeta.class)
 
-    protected Cache entityTablesChecked
+    protected Map entityTablesChecked = new HashMap()
 
     protected EntityFacadeImpl efi
     EntityDbMeta(EntityFacadeImpl efi) {
         this.efi = efi
-        entityTablesChecked = efi.ecfi.cacheFacade.getCache("entity.${efi.tenantId}.tables.checked")
+        // this is nice as a cache but slower and checked MANY times with lots of entity/db traffic:
+        // entityTablesChecked = efi.ecfi.cacheFacade.getCache("entity.${efi.tenantId}.tables.checked")
     }
 
     void checkTableRuntime(EntityDefinition ed) {

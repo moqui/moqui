@@ -71,6 +71,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final TransactionFacadeImpl transactionFacade
     protected final L10nFacadeImpl l10nFacade
 
+    // Some direct-cached values for better performance
+    protected String skipStatsCond
+    protected Integer hitBinLengthMillis
+    protected Map<String, Boolean> artifactPersistHitByType = new HashMap<String, Boolean>()
+    protected Map<String, Boolean> artifactPersistBinByType = new HashMap<String, Boolean>()
+
     /**
      * This constructor gets runtime directory and conf file location from a properties file on the classpath so that
      * it can initialize on its own. This is the constructor to be used by the ServiceLoader in the Moqui.java file,
@@ -118,7 +124,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             logger.warn("The moqui.conf path [${confFullPath}] was not found.")
         }
 
-        this.confXmlRoot = this.initConfig()
+        confXmlRoot = this.initConfig()
+        skipStatsCond = confXmlRoot."server-stats"[0]."@stats-skip-condition"
+        hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
 
         initComponents()
 
@@ -333,8 +341,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (hashType) {
             hcm.setHashAlgorithmName(hashType)
         } else {
-            Node passwordNode = confXmlRoot."user-facade"[0]."password"[0]
-            hcm.setHashAlgorithmName(defaultPasswordHashType)
+            hcm.setHashAlgorithmName(getPasswordHashType())
         }
         return hcm
     }
@@ -434,8 +441,35 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     // ========== Server Stat Tracking ==========
     boolean getSkipStats() {
         // NOTE: the results of this condition eval can't be cached because the expression can use any data in the ec
-        String skipCond = confXmlRoot."server-stats"[0]."@stats-skip-condition"
-        return (skipCond && getEci().getResource().evaluateCondition(skipCond, null))
+        return (skipStatsCond && getEci().getResource().evaluateCondition(skipStatsCond, null))
+    }
+
+    protected boolean artifactPersistHit(String artifactType, String artifactSubType) {
+        String cacheKey = artifactType + "#" + artifactSubType
+        Boolean ph = artifactPersistHitByType.get(cacheKey)
+        if (ph == null) {
+            Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
+            ph = artifactStats."@persist-hit" == "true"
+            artifactPersistHitByType.put(cacheKey, ph)
+        }
+        return ph
+    }
+    protected boolean artifactPersistBin(String artifactType, String artifactSubType) {
+        String cacheKey = artifactType + "#" + artifactSubType
+        Boolean ph = artifactPersistBinByType.get(cacheKey)
+        if (ph == null) {
+            Node artifactStats = getArtifactStatsNode(artifactType, artifactSubType)
+            ph = artifactStats."@persist-bin" == "true"
+            artifactPersistBinByType.put(cacheKey, ph)
+        }
+        return ph
+    }
+
+    protected Node getArtifactStatsNode(String artifactType, String artifactSubType) {
+        // find artifact-stats node by type AND sub-type, if not found find by just the type
+        Node artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType && it."@sub-type" == artifactSubType })
+        if (artifactStats == null) artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType })
+        return artifactStats
     }
 
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
@@ -444,18 +478,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (artifactType == "service" && artifactName.contains("ArtifactHit")) return
         if (artifactType == "entity" && artifactName == "ArtifactHit") return
 
-        if (getSkipStats()) return
-
         ExecutionContextImpl eci = this.getEci()
-        // find artifact-stats node by type AND sub-type, if not found find by just the type
-        Node artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType && it."@sub-type" == artifactSubType })
-        if (artifactStats == null) artifactStats = (Node) confXmlRoot."server-stats"[0]."artifact-stats".find({ it.@type == artifactType })
-
-        int hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
         long runningTimeMillis = endTime - startTime
 
         // NOTE: never save hits for entity artifact hits, way too heavy and also avoids self-reference (could also be done by checking for ArtifactHit/etc of course)
-        if (artifactStats."@persist-hit" == "true" && artifactType != "entity") {
+        if (!"entity".equals(artifactType) && artifactPersistHit(artifactType, artifactSubType) && !getSkipStats()) {
             Map<String, Object> ahp = (Map<String, Object>) [visitId:eci.user.visitId, userId:eci.user.userId,
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                 startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
@@ -495,7 +522,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             // call async, let the server do it whenever
             eci.service.async().name("create", "ArtifactHit").parameters(ahp).call()
         }
-        if (artifactStats."@persist-bin" == "true") {
+        if (artifactPersistBin(artifactType, artifactSubType) && !getSkipStats()) {
             Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
             if (ahb == null) ahb = makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
 

@@ -27,7 +27,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
         this.typeEnumId = typeEnumId
-        this.actionEnumId = actionEnumId
+        this.actionEnumId = actionEnumId ?: "AUTHZA_ALL"
     }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
