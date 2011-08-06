@@ -17,6 +17,7 @@ import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition
 import org.moqui.impl.StupidUtilities.MapOrderByComparator
+import org.moqui.entity.EntityException
 
 class EntityListImpl implements EntityList {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
@@ -127,40 +128,70 @@ class EntityListImpl implements EntityList {
     Object[] toArray(Object[] ts) { return this.valueList.toArray((EntityValue[]) ts) }
 
     @Override
-    boolean add(EntityValue e) { return this.valueList.add(e) }
+    boolean add(EntityValue e) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.add(e)
+    }
 
     @Override
-    boolean remove(Object o) { return this.valueList.remove(o) }
+    boolean remove(Object o) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.remove(o)
+    }
 
     @Override
     boolean containsAll(Collection<?> objects) { return this.valueList.containsAll(objects) }
 
     @Override
-    boolean addAll(Collection<? extends EntityValue> es) { return this.valueList.addAll(es) }
+    boolean addAll(Collection<? extends EntityValue> es) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.addAll(es)
+    }
 
     @Override
-    boolean addAll(int i, Collection<? extends EntityValue> es) { return this.valueList.addAll(i, es) }
+    boolean addAll(int i, Collection<? extends EntityValue> es) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.addAll(i, es)
+    }
 
     @Override
-    boolean removeAll(Collection<?> objects) { return this.valueList.removeAll(objects) }
+    boolean removeAll(Collection<?> objects) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.removeAll(objects)
+    }
 
     @Override
-    boolean retainAll(Collection<?> objects) { return this.valueList.retainAll(objects) }
+    boolean retainAll(Collection<?> objects) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.retainAll(objects)
+    }
 
     @Override
-    void clear() { this.valueList.clear() }
+    void clear() {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        this.valueList.clear()
+    }
 
     @Override
     EntityValue get(int i) { return this.valueList.get(i) }
 
     @Override
-    EntityValue set(int i, EntityValue e) { return this.valueList.set(i, e) }
+    EntityValue set(int i, EntityValue e) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.set(i, e)
+    }
 
     @Override
-    void add(int i, EntityValue e) { this.valueList.add(i, e) }
+    void add(int i, EntityValue e) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        this.valueList.add(i, e)
+    }
 
     @Override
-    EntityValue remove(int i) { return this.valueList.remove(i) }
+    EntityValue remove(int i) {
+        if (fromCache) throw new EntityException("Cannot modify EntityList from cache")
+        return this.valueList.remove(i)
+    }
 
     @Override
     int indexOf(Object o) { return this.valueList.indexOf(o) }
