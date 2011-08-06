@@ -37,6 +37,12 @@ class ServiceDefinition {
     protected String noun = null
     protected XmlAction xmlAction = null
 
+    protected boolean internalAuthenticate
+    protected String internalServiceType
+    protected boolean internalTxIgnore
+    protected boolean internalTxForceNew
+    protected Integer internalTransactionTimeout
+
     ServiceDefinition(ServiceFacadeImpl sfi, String path, Node sn) {
         this.sfi = sfi
         this.serviceNode = sn
@@ -99,6 +105,16 @@ class ServiceDefinition {
         if (serviceNode."actions") {
             xmlAction = new XmlAction(sfi.ecfi, (Node) serviceNode."actions"[0], getServiceName())
         }
+
+        internalAuthenticate = (serviceNode."@authenticate" != "false")
+        internalServiceType = serviceNode."@type" ?: "inline"
+        internalTxIgnore = (serviceNode."@transaction" == "ignore")
+        internalTxForceNew = (serviceNode."@transaction" == "force-new")
+        if (serviceNode."@transaction-timeout") {
+            internalTransactionTimeout = serviceNode."@transaction-timeout" as Integer
+        } else {
+            internalTransactionTimeout = null
+        }
     }
 
     void mergeAutoParameters(Node parametersNode, Node autoParameters) {
@@ -147,6 +163,12 @@ class ServiceDefinition {
     String getPath() { return path }
     String getVerb() { return verb }
     String getNoun() { return noun }
+
+    boolean getAuthenticate() { return internalAuthenticate }
+    String getServiceType() { return internalServiceType }
+    boolean getTxIgnore() { return internalTxIgnore }
+    boolean getTxForceNew() { return internalTxForceNew }
+    Integer getTxTimeout() { return internalTransactionTimeout }
 
     static String getPathFromName(String serviceName) {
         if (!serviceName.contains(".")) return null
