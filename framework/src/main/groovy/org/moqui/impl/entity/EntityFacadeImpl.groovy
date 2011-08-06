@@ -52,6 +52,7 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import org.moqui.entity.EntityListIterator
 import org.moqui.impl.context.CacheImpl
+import net.sf.ehcache.Ehcache
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -607,7 +608,7 @@ class EntityFacadeImpl implements EntityFacade {
     CacheImpl getCacheListRa(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.list_ra.${entityName}") }
     CacheImpl getCacheCount(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.count.${entityName}") }
 
-    void clearCacheForValue(EntityValueImpl evi) {
+    void clearCacheForValue(EntityValueImpl evi, boolean isCreate) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
         String entityName = evi.getEntityName()
         EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
@@ -615,15 +616,15 @@ class EntityFacadeImpl implements EntityFacade {
         // clear one cache
         if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.one.${entityName}")) {
             Cache entityOneCache = getCacheOne(entityName)
+            Ehcache eocEhc = entityOneCache.getInternalCache()
             // clear by PK, most common scenario
-            if (entityOneCache.containsKey(pkCondition)) entityOneCache.remove(pkCondition)
+            eocEhc.remove(pkCondition)
             // also see if there are any one RA entries
             Cache oneRaCache = getCacheOneRa(entityName)
             if (oneRaCache.containsKey(pkCondition)) {
                 List raKeyList = (List) oneRaCache.get(pkCondition)
                 for (EntityCondition ec in raKeyList) {
-                    // check it one last time before removing, may have been cleared by something else
-                    if (entityOneCache.containsKey(ec)) entityOneCache.remove(ec)
+                    eocEhc.remove(ec)
                 }
                 // we've cleared all entries that this was referring to, so clean it out too
                 oneRaCache.remove(pkCondition)
@@ -632,24 +633,36 @@ class EntityFacadeImpl implements EntityFacade {
 
         // clear list cache, use reverse-associative Map (also a Cache)
         if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.list.${entityName}")) {
-            Cache listRaCache = getCacheListRa(entityName)
-            if (listRaCache.containsKey(pkCondition)) {
-                List raKeyList = (List) listRaCache.get(pkCondition)
-                Cache entityListCache = getCacheList(entityName)
-                for (EntityCondition ec in raKeyList) {
-                    // check it one last time before removing, may have been cleared by something else
-                    if (entityListCache.containsKey(ec)) entityListCache.remove(ec)
+            // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
+            if (isCreate) {
+                CacheImpl entityListCache = getCacheList(entityName)
+                Ehcache elEhc = entityListCache.getInternalCache()
+                for (EntityCondition ec in elEhc.getKeys()) {
+                    // any way to efficiently clear out the RA cache for these? for now just leave and they are handled eventually
+                    if (ec.mapMatches(evi)) elEhc.remove(ec)
                 }
-                // we've cleared all entries that this was referring to, so clean it out too
-                listRaCache.remove(pkCondition)
+            } else {
+                Cache listRaCache = getCacheListRa(entityName)
+                if (listRaCache.containsKey(pkCondition)) {
+                    List raKeyList = (List) listRaCache.get(pkCondition)
+                    CacheImpl entityListCache = getCacheList(entityName)
+                    Ehcache elcEhc = entityListCache.getInternalCache()
+                    for (EntityCondition ec in raKeyList) {
+                        // this may have already been cleared, but it is a waste of time to check for that explicitly
+                        elcEhc.remove(ec)
+                    }
+                    // we've cleared all entries that this was referring to, so clean it out too
+                    listRaCache.remove(pkCondition)
+                }
             }
         }
 
         // clear count cache (no RA because we only have a count to work with, just match by condition)
         if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.count.${entityName}")) {
-            Cache entityCountCache = getCacheCount(entityName)
-            for (EntityCondition ec in entityCountCache.keySet()) {
-                if (ec.mapMatches(evi)) entityCountCache.remove(ec)
+            CacheImpl entityCountCache = getCacheCount(entityName)
+            Ehcache elEhc = entityCountCache.getInternalCache()
+            for (EntityCondition ec in elEhc.getKeys()) {
+                if (ec.mapMatches(evi)) elEhc.remove(ec)
             }
         }
     }
@@ -703,7 +716,7 @@ class EntityFacadeImpl implements EntityFacade {
         return this.entityConditionFactory
     }
 
-    /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
+    /** @see org.moqui.entity.EntityFacade#makeValue(String) */
     EntityValue makeValue(String entityName) {
         EntityDefinition entityDefinition = this.getEntityDefinition(entityName)
         if (!entityDefinition) {
