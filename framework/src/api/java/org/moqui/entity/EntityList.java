@@ -62,7 +62,7 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      *
      * @param condition EntityCondition to filter by.
      * @param include If true include matching values, if false exclude matching values.
-     *     Defaults to false (exclude, ie only include values that do not meet condition).
+     *     Defaults to true (include, ie only include values that do meet condition).
      * @return List with filtered values.
      */
     EntityList filterByCondition(EntityCondition condition, Boolean include);
