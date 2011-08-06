@@ -16,7 +16,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <parameter name="cacheName"/>
 
     <transition name="clearCacheElement">
-        <actions><script>ec.cache.getCache(key).clear()</script></actions>
+        <actions>
+            <script>ec.cache.getCache(cacheName).remove(key)</script>
+            <message>Cleared [${key}] from cache [${cacheName}]</message>
+        </actions>
         <default-response url="."/>
     </transition>
 
