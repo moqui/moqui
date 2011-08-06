@@ -18,6 +18,7 @@ public class ContextStack implements Map {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class);
 
     protected Deque<Map> stackList = new LinkedList<Map>();
+    protected Map firstMap = null;
 
     public ContextStack() {
         // start with a single Map
@@ -30,24 +31,36 @@ public class ContextStack implements Map {
     public ContextStack push() {
         Map newMap = new HashMap();
         stackList.addFirst(newMap);
+        firstMap = newMap;
         return this;
     }
 
-    /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack) */
+    /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack)
+     * @param existingMap An existing Map
+     */
     public void push(Map existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map");
         stackList.addFirst(existingMap);
+        firstMap = existingMap;
     }
 
     /** Remove and returns the Map from the top of the stack (the local context).
      * If there is only one Map on the stack it returns null and does not remove it.
+     *
+     * @return The first/top Map
      */
-    public Map pop() { return (stackList != null && stackList.size() > 0) ? stackList.removeFirst() : null; }
+    public Map pop() {
+        Map popped = stackList.size() > 0 ? stackList.removeFirst() : null;
+        firstMap = stackList.size() > 0 ? stackList.peekFirst() : null;
+        return popped;
+    }
 
-    /** Add an existing Map as the Root Map, ie on the BOTTOM of the stack meaning it will be overridden by other Maps on the stack */
+    /** Add an existing Map as the Root Map, ie on the BOTTOM of the stack meaning it will be overridden by other Maps on the stack
+     * @param  existingMap An existing Map
+     */
     public void addRootMap(Map existingMap) {
-        if (existingMap == null) throw new IllegalArgumentException("Cannot add null as an existing Map ");
-        stackList.addFirst(existingMap);
+        if (existingMap == null) throw new IllegalArgumentException("Cannot add null as an existing Map");
+        stackList.addLast(existingMap);
     }
 
     public Map getRootMap() { return stackList.peekLast(); }
@@ -56,8 +69,10 @@ public class ContextStack implements Map {
      * Creates a ContextStack object that has the same Map objects on its stack (a shallow clone).
      * Meant to be used to enable a situation where a parent and child context are operating simultaneously using two
      * different ContextStack objects, but sharing the Maps between them.
+     *
+     * @return Clone of this ContextStack
      */
-    public ContextStack clone() {
+    public ContextStack clone() throws CloneNotSupportedException {
         ContextStack newStack = new ContextStack();
         newStack.stackList.addAll(stackList);
         return newStack;
@@ -96,7 +111,7 @@ public class ContextStack implements Map {
     public boolean containsValue(Object value) {
         // this keeps track of keys looked at for values at each level of the stack so that the same key is not
         // considered more than once (the earlier Maps overriding later ones)
-        Set keysObserved = new HashSet();
+        Set<Object> keysObserved = new HashSet<Object>();
         for (Map curMap: stackList) {
             for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
@@ -116,41 +131,45 @@ public class ContextStack implements Map {
     public Object get(Object key) {
         // the "context" key always gets a self-reference, effectively the top of the stack
         if ("context".equals(key)) return this;
-        Object value = null;
-        for (Map curMap: stackList) {
-            try {
-                if (key == null && curMap instanceof Hashtable) continue;
-                if (curMap.containsKey(key)) {
-                    value = curMap.get(key);
-                    break;
+        if (firstMap.containsKey(key)) {
+            return firstMap.get(key);
+        } else {
+            Object value = null;
+            for (Map curMap: stackList) {
+                try {
+                    if (key == null && curMap instanceof Hashtable) continue;
+                    if (curMap.containsKey(key)) {
+                        value = curMap.get(key);
+                        break;
+                    }
+                } catch (Exception e) {
+                    logger.error("Error getting value for key [" + key + "], returning null", e);
+                    return null;
                 }
-            } catch (Exception e) {
-                logger.error("Error getting value for key [" + key + "], returning null", e);
-                return null;
             }
+            return value;
         }
-        return value;
     }
 
     /** @see java.util.Map#  */
     public Object put(Object key, Object value) {
-        return stackList.peekFirst().put(key, value);
+        return firstMap.put(key, value);
     }
 
     /** @see java.util.Map#remove(java.lang.Object) */
     public Object remove(Object key) {
-        return stackList.peekFirst().remove(key);
+        return firstMap.remove(key);
     }
 
     /** @see java.util.Map#putAll(java.util.Map) */
-    public void putAll(Map arg0) { stackList.peekFirst().putAll(arg0); }
+    public void putAll(Map arg0) { firstMap.putAll(arg0); }
 
     /** @see java.util.Map#clear() */
-    public void clear() { stackList.peekFirst().clear(); }
+    public void clear() { firstMap.clear(); }
 
     /** @see java.util.Map#keySet() */
     public Set keySet() {
-        Set resultSet = new HashSet();
+        Set<Object> resultSet = new HashSet<Object>();
         for (Map curMap: stackList) {
             resultSet.addAll(curMap.keySet());
         }
@@ -159,8 +178,8 @@ public class ContextStack implements Map {
 
     /** @see java.util.Map#values() */
     public Collection values() {
-        Set keysObserved = new HashSet();
-        List resultValues = new LinkedList();
+        Set<Object> keysObserved = new HashSet<Object>();
+        List<Object> resultValues = new LinkedList<Object>();
         for (Map curMap: stackList) {
             for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
@@ -174,7 +193,7 @@ public class ContextStack implements Map {
 
     /** @see java.util.Map#entrySet() */
     public Set<Map.Entry> entrySet() {
-        Set keysObserved = new HashSet();
+        Set<Object> keysObserved = new HashSet<Object>();
         Set<Map.Entry> resultEntrySet = new HashSet<Map.Entry>();
         for (Map curMap: stackList) {
             for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
@@ -192,7 +211,7 @@ public class ContextStack implements Map {
         StringBuilder fullMapString = new StringBuilder();
         int curLevel = 0;
         for (Map curMap: stackList) {
-            fullMapString.append("============================== Start stack level " + curLevel + "\n");
+            fullMapString.append("============================== Start stack level ").append(curLevel).append("\n");
             for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
                 fullMapString.append("==>[");
                 fullMapString.append(curEntry.getKey());
@@ -205,7 +224,7 @@ public class ContextStack implements Map {
                 }
                 fullMapString.append("\n");
             }
-            fullMapString.append("============================== End stack level " + curLevel + "\n");
+            fullMapString.append("============================== End stack level ").append(curLevel).append("\n");
             curLevel++;
         }
         return fullMapString.toString();
@@ -216,7 +235,6 @@ public class ContextStack implements Map {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || o.getClass() != this.getClass()) return false;
-        return this.stackList.equals(((ContextStack) o).stackList);
+        return !(o == null || o.getClass() != this.getClass()) && this.stackList.equals(((ContextStack) o).stackList);
     }
 }
