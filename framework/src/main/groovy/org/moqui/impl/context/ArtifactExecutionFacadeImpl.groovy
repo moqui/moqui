@@ -11,17 +11,18 @@
  */
 package org.moqui.impl.context
 
+import java.sql.Timestamp
+
+import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ArtifactExecutionFacade
 import org.moqui.context.ArtifactExecutionInfo
+import org.moqui.context.Cache
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.impl.entity.EntityDefinition
-import org.moqui.context.ArtifactAuthorizationException
-import java.sql.Timestamp
-import org.moqui.context.Cache
 
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
@@ -86,14 +87,14 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access
-        String username = eci.user.username
+        String username = eci.getUser().getUsername()
 
         ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
 
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
         artifactExecutionInfoHistory.add(aeii)
 
-        if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.user.nowTimestamp))
+        if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.getUser().getNowTimestamp()))
             throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.actionEnumId)} on ${artifactTypeDescriptionMap.get(aeii.typeEnumId)?:aeii.typeEnumId} [${aeii.name}]")
 
         // NOTE: if needed the isPermitted method will set additional info in aeii
@@ -134,24 +135,20 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         boolean requiresAuthz, Timestamp nowTimestamp) {
 
         // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
-        if (this.disableAuthz && aeii.typeEnumId == "AT_ENTITY") {
+        if (this.disableAuthz && aeii.getTypeEnumId() == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             return true
         }
 
-        // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
-        Set userGroupIdSet = new HashSet()
-        userGroupIdSet.add("ALL_USERS")
+        // this will be set inside the disableAuthz block
+        Set<String> userGroupIdSet
+
         boolean alreadyDisabled = disableAuthz()
         try {
             // see if there is a UserAccount for the username, and if so get its userId as a more permanent identifier
-            EntityValue ua = eci.entity.makeFind("UserAccount").condition("username", userId).useCache(true).one()
+            EntityValue ua = eci.getUser().getUserAccount()
             if (ua) userId = ua.userId
-
-            // expand the userGroupId Set with UserGroupMember
-            for (EntityValue userGroupMember in eci.entity.makeFind("UserGroupMember").condition("userId", userId)
-                    .useCache(true).list().filterByDate(null, null, null))
-                userGroupIdSet.add(userGroupMember.userGroupId)
+            userGroupIdSet = eci.getUser().getUserGroupIdSet()
 
             if (isTarpitEnabled(aeii.typeEnumId)) {
                 // record and check velocity limit (tarpit)

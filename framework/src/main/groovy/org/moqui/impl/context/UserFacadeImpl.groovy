@@ -29,12 +29,15 @@ import javax.servlet.http.HttpSession
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
+    protected final static Set<String> allUserGroupIdOnly = new HashSet(["ALL_USERS"])
 
     protected ExecutionContextImpl eci
     protected Timestamp effectiveTime = null
 
-    // just keep the userId, always get the UserAccount value from the entity cache
     protected Deque<String> usernameStack = new LinkedList()
+    // keep a reference to a UserAccount for performance reasons, avoid repeated cached queries
+    protected EntityValue internalUserAccount = null
+    protected Set<String> internalUserGroupIdSet = null
     /** The Shiro Subject (user) */
     protected Subject currentUser = null
 
@@ -55,21 +58,25 @@ class UserFacadeImpl implements UserFacade {
         WebSubjectContext wsc = new DefaultWebSubjectContext()
         wsc.setServletRequest(request); wsc.setServletResponse(response)
         wsc.setSession(new HttpServletSession(session, request.getServerName()))
-        currentUser = eci.ecfi.securityManager.createSubject(wsc)
+        currentUser = eci.getEcfi().getSecurityManager().createSubject(wsc)
 
         if (currentUser.authenticated) {
             // effectively login the user
             String userId = (String) currentUser.principal
             // better not to do this, if there was a user before this init leave it for history/debug: if (this.userIdStack) this.userIdStack.pop()
-            if (this.usernameStack.size() == 0 || this.usernameStack.peekFirst() != userId) this.usernameStack.addFirst(userId)
+            if (this.usernameStack.size() == 0 || this.usernameStack.peekFirst() != userId) {
+                this.usernameStack.addFirst(userId)
+                this.internalUserAccount = null
+                this.internalUserGroupIdSet = null
+            }
             if (logger.traceEnabled) logger.trace("For new request found user [${userId}] in the session; userIdStack is [${this.usernameStack}]")
         } else {
             if (logger.traceEnabled) logger.trace("For new request NO user authenticated in the session; userIdStack is [${this.usernameStack}]")
         }
 
         this.visitId = session.getAttribute("moqui.visitId")
-        if (!this.visitId && !eci.ecfi.skipStats) {
-            Node serverStatsNode = eci.ecfi.confXmlRoot."server-stats"[0]
+        if (!this.visitId && !eci.getEcfi().getSkipStats()) {
+            Node serverStatsNode = eci.getEcfi().getConfXmlRoot()."server-stats"[0]
 
             // handle visitorId and cookie
             String cookieVisitorId = null
@@ -85,13 +92,13 @@ class UserFacadeImpl implements UserFacade {
                 }
                 if (!cookieVisitorId) {
                     // NOTE: disable authz for this call, don't normally want to allow create of Visitor, but this is a special case
-                    boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+                    boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
                     try {
                         Map cvResult = eci.service.sync().name("create", "Visitor").parameter("createdDate", getNowTimestamp()).call()
                         cookieVisitorId = cvResult.visitorId
                         logger.info("Created new Visitor with ID [${cookieVisitorId}] in session [${session.id}]")
                     } finally {
-                        if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+                        if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
                     }
                 }
                 // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
@@ -127,7 +134,7 @@ class UserFacadeImpl implements UserFacade {
                 if (cookieVisitorId) parameters.visitorId = cookieVisitorId
 
                 // NOTE: disable authz for this call, don't normally want to allow create of Visit, but this is special case
-                boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+                boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
                 try {
                     Map result = eci.service.sync().name("create", "Visit").parameters(parameters).call()
                     // put visitId in session as "moqui.visitId"
@@ -135,7 +142,7 @@ class UserFacadeImpl implements UserFacade {
                     this.visitId = result.visitId
                     logger.info("Created new Visit with ID [${this.visitId}] in session [${session.id}]")
                 } finally {
-                    if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+                    if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
                 }
             }
         }
@@ -195,13 +202,13 @@ class UserFacadeImpl implements UserFacade {
     }
 
     String getPreference(String preferenceKey) {
-        EntityValue up = eci.entity.makeFind("UserPreference").condition("userId", getUserId())
+        EntityValue up = eci.getEntity().makeFind("UserPreference").condition("userId", getUserId())
                 .condition("preferenceKey", preferenceKey).useCache(true).one()
         return up ? up.preferenceValue : null
     }
 
     void setPreference(String preferenceKey, String preferenceValue) {
-        eci.entity.makeValue("UserPreference").set("userId", getUserId())
+        eci.getEntity().makeValue("UserPreference").set("userId", getUserId())
                 .set("preferenceKey", preferenceKey).set("preferenceValue", preferenceValue).createOrUpdate()
     }
 
@@ -229,6 +236,8 @@ class UserFacadeImpl implements UserFacade {
             // do this first so that the rest will be done as this user
             // just in case there is already a user authenticated push onto a stack to remember
             this.usernameStack.addFirst(username)
+            this.internalUserAccount = null
+            this.internalUserGroupIdSet = null
 
             // after successful login trigger the after-login actions
             if (eci.web != null) eci.web.runAfterLoginActions()
@@ -248,7 +257,11 @@ class UserFacadeImpl implements UserFacade {
         // before logout trigger the before-logout actions
         if (eci.web != null) eci.web.runBeforeLogoutActions()
 
-        if (usernameStack) usernameStack.removeFirst()
+        if (usernameStack) {
+            usernameStack.removeFirst()
+            internalUserAccount = null
+            internalUserGroupIdSet = null
+        }
 
         if (eci.web != null) {
             eci.web.session.removeAttribute("moqui.tenantId")
@@ -258,46 +271,59 @@ class UserFacadeImpl implements UserFacade {
     }
 
     /* @see org.moqui.context.UserFacade#hasPermission(String) */
-    boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, nowTimestamp, eci) }
+    boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, getNowTimestamp(), eci) }
 
     static boolean hasPermission(String username, String userPermissionId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
         if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
-        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", username).useCache(true).one()
-        if (ua == null) ua = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
+        EntityValue ua = eci.getEntity().makeFind("UserAccount").condition("userId", username).useCache(true).one()
+        if (ua == null) ua = eci.getEntity().makeFind("UserAccount").condition("username", username).useCache(true).one()
         if (ua == null) return false
-        return (eci.entity.makeFind("UserPermissionCheck").condition([userId:ua.userId, userPermissionId:userPermissionId])
+        return (eci.getEntity().makeFind("UserPermissionCheck").condition([userId:ua.userId, userPermissionId:userPermissionId])
                 .useCache(true).list()
                 .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
                 .filterByDate("permissionFromDate", "permissionThruDate", nowTimestamp)) as boolean
     }
 
     /* @see org.moqui.context.UserFacade#isInGroup(String) */
-    boolean isInGroup(String userGroupId) { return isInGroup(getUserId(), userGroupId, nowTimestamp, eci) }
+    boolean isInGroup(String userGroupId) { return isInGroup(getUserId(), userGroupId, getNowTimestamp(), eci) }
 
     static boolean isInGroup(String username, String userGroupId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
         if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
-        EntityValue ua = eci.entity.makeFind("UserAccount").condition("userId", username).useCache(true).one()
-        if (ua == null) ua = eci.entity.makeFind("UserAccount").condition("username", username).useCache(true).one()
+        EntityValue ua = eci.getEntity().makeFind("UserAccount").condition("userId", username).useCache(true).one()
+        if (ua == null) ua = eci.getEntity().makeFind("UserAccount").condition("username", username).useCache(true).one()
         if (ua == null) return false
-        return (eci.entity.makeFind("UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
+        return (eci.getEntity().makeFind("UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
                 .useCache(true).list().filterByDate("fromDate", "thruDate", nowTimestamp)) as boolean
     }
 
-    /* @see org.moqui.context.UserFacade#getUsername() */
-    String getUserId() { return userAccount?.userId }
+    /* @see org.moqui.context.UserFacade#getUserGroupIdSet() */
+    Set<String> getUserGroupIdSet() {
+        // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
+        if (usernameStack.size() == 0) return allUserGroupIdOnly
+        if (internalUserGroupIdSet == null) {
+            internalUserGroupIdSet = new HashSet(allUserGroupIdOnly)
+            // expand the userGroupId Set with UserGroupMember
+            for (EntityValue userGroupMember in eci.entity.makeFind("UserGroupMember").condition("userId", userId)
+                    .useCache(true).list().filterByDate(null, null, null))
+                userGroupIdSet.add((String) userGroupMember.userGroupId)
+        }
+        return internalUserGroupIdSet
+    }
 
     /* @see org.moqui.context.UserFacade#getUsername() */
-    String getUsername() { return this.usernameStack ? this.usernameStack.peekFirst() : null }
+    String getUserId() { return getUserAccount()?.userId }
+
+    /* @see org.moqui.context.UserFacade#getUsername() */
+    String getUsername() { return this.usernameStack.size() > 0 ? this.usernameStack.peekFirst() : null }
 
     /* @see org.moqui.context.UserFacade#getUserAccount() */
     EntityValue getUserAccount() {
-        if (!usernameStack) {
-            // logger.info("Getting UserAccount no userIdStack", new Exception("Trace"))
-            return null
+        if (usernameStack.size() == 0) return null
+        if (internalUserAccount == null) {
+            internalUserAccount = eci.getEntity().makeFind("UserAccount").condition("username", this.getUsername()).useCache(true).one()
         }
-        EntityValue ua = eci.entity.makeFind("UserAccount").condition("username", this.username).useCache(true).one()
-        // logger.info("Got UserAccount [${ua}] with userIdStack [${userIdStack}]")
-        return ua
+        // logger.info("Got UserAccount [${internalUserAccount}] with userIdStack [${userIdStack}]")
+        return internalUserAccount
     }
 
     /** @see org.moqui.context.UserFacade#getVisitUserId() */
@@ -311,11 +337,11 @@ class UserFacadeImpl implements UserFacade {
         if (!visitId) return null
 
         EntityValue vst
-        boolean alreadyDisabled = eci.artifactExecution.disableAuthz()
+        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
-            vst = eci.entity.makeFind("Visit").condition("visitId", visitId).useCache(true).one()
+            vst = eci.getEntity().makeFind("Visit").condition("visitId", visitId).useCache(true).one()
         } finally {
-            if (!alreadyDisabled) eci.artifactExecution.enableAuthz()
+            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
         }
         return vst
     }

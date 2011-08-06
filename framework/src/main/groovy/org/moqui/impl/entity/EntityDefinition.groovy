@@ -328,23 +328,16 @@ public class EntityDefinition {
         return schemaName ?: null
     }
 
-    boolean isField(String fieldName) {
-        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
-        return (this.getFieldNode(fieldName)) ? true : false
-    }
+    boolean isField(String fieldName) { return getFieldNode(fieldName) != null }
 
     boolean containsPrimaryKey(Map fields) {
-        for (String fieldName in this.getPkFieldNames()) {
-            if (!fields[fieldName]) return false
-        }
+        for (String fieldName in this.getPkFieldNames()) if (!fields[fieldName]) return false
         return true
     }
 
     Map<String, Object> getPrimaryKeys(Map fields) {
         Map<String, Object> pks = new HashMap()
-        for (String fieldName in this.getPkFieldNames()) {
-            pks.put(fieldName, fields[fieldName])
-        }
+        for (String fieldName in this.getPkFieldNames()) pks.put(fieldName, fields[fieldName])
         return pks
     }
 

@@ -15,6 +15,7 @@ import org.moqui.entity.EntityValue;
 
 import java.sql.Timestamp;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 
 /** For information about the user and user preferences (including locale, time zone, currency, etc). */
@@ -87,6 +88,8 @@ public interface UserFacade {
      * @return boolean set to true if user is a member of the group, false if not. If no user is logged in, returns false.
      */
     boolean isInGroup(String userGroupId);
+
+    Set<String> getUserGroupIdSet();
 
     /** @return ID of the current active user (from the UserAccount entity). */
     String getUserId();

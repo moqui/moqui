@@ -104,7 +104,7 @@ class EntityValueImpl implements EntityValue {
 
         // if enabled use LocalizedEntityField for any localized fields
         if (fieldNode."@enable-localization" == "true") {
-            String localeStr = getEntityFacadeImpl().ecfi.executionContext.user.locale?.toString()
+            String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
                 List<String> pks = ed.getPkFieldNames()
                 if (pks.size() == 1) {
@@ -124,13 +124,13 @@ class EntityValueImpl implements EntityValue {
                 }
                 // no luck? try getting a localized value from LocalizedMessage
                 EntityFind lmFind = getEntityFacadeImpl().makeFind("LocalizedMessage")
-                lmFind.condition([original:valueMap[name], locale:localeStr])
+                lmFind.condition([original:valueMap.get(name), locale:localeStr])
                 EntityValue lmValue = lmFind.useCache(true).one()
                 if (lmValue) return lmValue.localized
             }
         }
 
-        return valueMap[name]
+        return valueMap.get(name)
     }
 
     /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
@@ -140,7 +140,7 @@ class EntityValueImpl implements EntityValue {
     Map<String, Object> getPrimaryKeys() {
         Map<String, Object> pks = new HashMap()
         for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
-            pks.put(fieldName, valueMap[fieldName])
+            pks.put(fieldName, valueMap.get(fieldName))
         }
         return pks
     }
@@ -154,7 +154,7 @@ class EntityValueImpl implements EntityValue {
         if (valueMap[name] != value) {
             modified = true
             if (dbValueMap == null) dbValueMap = new HashMap()
-            dbValueMap.put(name, valueMap[name])
+            dbValueMap.put(name, valueMap.get(name))
         }
         valueMap.put(name, value)
         return this
@@ -644,7 +644,7 @@ class EntityValueImpl implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#getOriginalDbValue(String) */
     Object getOriginalDbValue(String name) {
-        return (dbValueMap && dbValueMap[name]) ? dbValueMap[name] : valueMap[name]
+        return (dbValueMap && dbValueMap.get(name)) ? dbValueMap.get(name) : valueMap.get(name)
     }
 
     /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, Boolean, Boolean) */
