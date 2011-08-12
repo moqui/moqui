@@ -45,11 +45,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </form-single>
         <form-list name="ListDbViewEntities" list="dbViewEntityList">
             <field name="dbViewEntityName">
-                <header-field title="Name" show-order-by="true"/>
+                <header-field title="Entity" show-order-by="true"/>
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="packageName">
-                <header-field title="Name" show-order-by="true"/>
+                <header-field title="Package" show-order-by="true"/>
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="edit"><default-field><link url="edit" text="Edit"/></default-field></field>
