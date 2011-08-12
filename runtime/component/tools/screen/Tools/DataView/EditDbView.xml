@@ -151,7 +151,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field-map field-name="dbViewEntityName"/>
                     <field-map field-name="entityAlias" value="MASTER"/>
                 </entity-find-one>
-                <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo('+entityName', true)"/>
+                <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo('+entityName', false)"/>
                 <set field="masterFieldList"
                       from="ec.entity.getAllEntityRelatedFields(fieldValues?.entityName, orderByField?:'+fieldName', dbViewEntityName)"/>
             </actions>
