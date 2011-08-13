@@ -119,8 +119,8 @@ class CacheImpl implements Cache {
     Object remove(Serializable key) {
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
-        this.ehcache.removeElement(originalElement)
         if (originalElement) {
+            this.ehcache.removeElement(originalElement)
             return originalElement.getObjectValue()
         } else {
             return null
