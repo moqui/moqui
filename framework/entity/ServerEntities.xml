@@ -54,6 +54,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="minTimeMillis" type="number-integer"/>
         <field name="maxTimeMillis" type="number-integer"/>
     </entity>
+    <view-entity entity-name="ArtifactHitReport" package-name="moqui.server.artifact">
+        <member-entity entity-alias="AHB" entity-name="ArtifactHitBin"/>
+        <alias entity-alias="AHB" name="artifactType"/><!-- this will group by automatically -->
+        <alias entity-alias="AHB" name="artifactName"/><!-- this will group by automatically -->
+        <alias entity-alias="AHB" name="hitCount" function="sum"/>
+        <alias entity-alias="AHB" name="firstHitDateTime" field="binStartDateTime" function="min"/>
+        <alias entity-alias="AHB" name="lastHitDateTime" field="binEndDateTime" function="max"/>
+        <alias entity-alias="AHB" name="minTimeMillis" function="min"/>
+        <alias entity-alias="AHB" name="maxTimeMillis" function="max"/>
+    </view-entity>
 
     <!-- ========================================================= -->
     <!-- moqui.server.visit -->
