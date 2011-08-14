@@ -561,12 +561,18 @@ class EntityFacadeImpl implements EntityFacade {
         // first get fields of the main entity
         for (String fn in ed.getAllFieldNames()) {
             Node fieldNode = ed.getFieldNode(fn)
+
             boolean inDbView = false
-            if (dbViewEntity && makeFind("DbViewEntityAlias")
-                    .condition([dbViewEntityName:dbViewEntityName, entityAlias:"MASTER", fieldName:fn]).count()) {
+            String functionName = null
+            EntityValue aliasVal = makeFind("DbViewEntityAlias")
+                .condition([dbViewEntityName:dbViewEntityName, entityAlias:"MASTER", fieldName:fn]).one()
+            if (aliasVal) {
                 inDbView = true
+                functionName = aliasVal.functionName
             }
-            efl.add((Map<String, Object>) [entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one", inDbView:inDbView])
+
+            efl.add((Map<String, Object>) [entityName:en, fieldName:fn, type:fieldNode."@type", cardinality:"one",
+                    inDbView:inDbView, functionName:functionName])
         }
 
         // loop through all related entities and get their fields too
@@ -577,20 +583,20 @@ class EntityFacadeImpl implements EntityFacade {
             try { red = getEntityDefinition(relInfo.relatedEntityName) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (red == null) continue
 
+            EntityValue dbViewEntityMember = null
+            if (dbViewEntity) dbViewEntityMember = makeFind("DbViewEntityMember")
+                    .condition([dbViewEntityName:dbViewEntityName, entityName:red.entityName]).one()
+
             for (String fn in red.getAllFieldNames()) {
                 Node fieldNode = red.getFieldNode(fn)
                 boolean inDbView = false
                 String functionName = null
-                if (dbViewEntity) {
-                    EntityValue dbViewEntityMember = makeFind("DbViewEntityMember")
-                            .condition([dbViewEntityName:dbViewEntityName, entityName:red.entityName]).one()
-                    if (dbViewEntityMember) {
-                        EntityValue aliasVal = makeFind("DbViewEntityAlias")
-                            .condition([dbViewEntityName:dbViewEntityName, entityAlias:dbViewEntityMember.entityAlias, fieldName:fn]).one()
-                        if (aliasVal) {
-                            inDbView = true
-                            functionName = aliasVal.functionName
-                        }
+                if (dbViewEntityMember) {
+                    EntityValue aliasVal = makeFind("DbViewEntityAlias")
+                        .condition([dbViewEntityName:dbViewEntityName, entityAlias:dbViewEntityMember.entityAlias, fieldName:fn]).one()
+                    if (aliasVal) {
+                        inDbView = true
+                        functionName = aliasVal.functionName
                     }
                 }
                 efl.add((Map<String, Object>) [entityName:relInfo.relatedEntityName, fieldName:fn, type:fieldNode."@type",
@@ -602,19 +608,19 @@ class EntityFacadeImpl implements EntityFacade {
         return efl
     }
 
-    CacheImpl getCacheOne(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.one.${entityName}") }
-    CacheImpl getCacheOneRa(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.one_ra.${entityName}") }
-    CacheImpl getCacheList(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.list.${entityName}") }
-    CacheImpl getCacheListRa(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.list_ra.${entityName}") }
-    CacheImpl getCacheCount(String entityName) { return ecfi.cacheFacade.getCacheImpl("entity.${tenantId}.count.${entityName}") }
+    CacheImpl getCacheOne(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one.${entityName}") }
+    CacheImpl getCacheOneRa(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one_ra.${entityName}") }
+    CacheImpl getCacheList(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.list.${entityName}") }
+    CacheImpl getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.list_ra.${entityName}") }
+    CacheImpl getCacheCount(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi, boolean isCreate) {
         if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
         String entityName = evi.getEntityName()
-        EntityCondition pkCondition = conditionFactory.makeCondition(evi.getPrimaryKeys())
+        EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
 
         // clear one cache
-        if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.one.${entityName}")) {
+        if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.one.${entityName}")) {
             Cache entityOneCache = getCacheOne(entityName)
             Ehcache eocEhc = entityOneCache.getInternalCache()
             // clear by PK, most common scenario
@@ -632,7 +638,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         // clear list cache, use reverse-associative Map (also a Cache)
-        if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.list.${entityName}")) {
+        if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.list.${entityName}")) {
             // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
             if (isCreate) {
                 CacheImpl entityListCache = getCacheList(entityName)
@@ -658,7 +664,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
 
         // clear count cache (no RA because we only have a count to work with, just match by condition)
-        if (ecfi.cacheFacade.cacheExists("entity.${tenantId}.count.${entityName}")) {
+        if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.count.${entityName}")) {
             CacheImpl entityCountCache = getCacheCount(entityName)
             Ehcache elEhc = entityCountCache.getInternalCache()
             for (EntityCondition ec in elEhc.getKeys()) {
@@ -669,7 +675,7 @@ class EntityFacadeImpl implements EntityFacade {
     void registerCacheOneRa(String entityName, EntityCondition ec, EntityValue ev) {
         if (ev == null) return
         Cache oneRaCache = getCacheOneRa(entityName)
-        EntityCondition pkCondition = conditionFactory.makeCondition(ev.getPrimaryKeys())
+        EntityCondition pkCondition = getConditionFactory().makeCondition(ev.getPrimaryKeys())
         // if the condition matches the primary key, no need for an RA entry
         if (pkCondition == ec) return
         List raKeyList = (List) oneRaCache.get(pkCondition)
@@ -682,7 +688,7 @@ class EntityFacadeImpl implements EntityFacade {
     void registerCacheListRa(String entityName, EntityCondition ec, EntityList el) {
         Cache listRaCache = getCacheListRa(entityName)
         for (EntityValue ev in el) {
-            EntityCondition pkCondition = conditionFactory.makeCondition(ev.getPrimaryKeys())
+            EntityCondition pkCondition = getConditionFactory().makeCondition(ev.getPrimaryKeys())
             List raKeyList = (List) listRaCache.get(pkCondition)
             if (!raKeyList) {
                 raKeyList = new ArrayList()
