@@ -486,6 +486,7 @@ Tools probable for 1.0 final:
   - List multi form submit button below and not in own column
   - Auto Screen move Edit button on list forms to left side (with XML Form
     changes as needed to make it possible)
+  - Filter menu rendering by authorization
 
 ===========================================================================
 Features designed or considered, but not to be included in 1.0 series
