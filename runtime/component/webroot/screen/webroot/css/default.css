@@ -49,6 +49,8 @@ h4 { font-size: .9em; font-weight: bold; }
 h5 { font-size: .8em; font-weight: bold; }
 h6 { font-size: .6em; }
 
+tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
+
 a, a span { font-size: .9em; font-weight: bold; }
 p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
 li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
