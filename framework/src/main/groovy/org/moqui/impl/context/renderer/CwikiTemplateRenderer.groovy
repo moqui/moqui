@@ -39,7 +39,10 @@ class CwikiTemplateRenderer implements TemplateRenderer {
 
     void render(String location, Writer writer) {
         String cwikiText = templateCwikiLocationCache.get(location)
-        if (cwikiText) writer.write(cwikiText)
+        if (cwikiText) {
+            writer.write(cwikiText)
+            return
+        }
 
         StringWriter localWriter = new StringWriter()
         HtmlDocumentBuilder builder = new HtmlDocumentBuilder(localWriter)
