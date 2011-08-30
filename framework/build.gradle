@@ -67,8 +67,12 @@ dependencies {
     compile name: 'jsr173_1.0_api', version: ''
     compile name: 'liquibase', version: '2.0.1'
     compile name: 'mail', version: ''
-    compile name: 'org.eclipse.mylyn.wikitext.core_1.4.0.I20101212-2200-e3x', version: ''
-    compile name: 'org.eclipse.mylyn.wikitext.confluence.core_1.4.0.I20101212-2200-e3x', version: ''
+    compile name: 'org.eclipse.mylyn.wikitext.core_1.6.0.I20110830-0427', version: ''
+    compile name: 'org.eclipse.mylyn.wikitext.confluence.core_1.6.0.I20110830-0427', version: ''
+    compile name: 'org.eclipse.mylyn.wikitext.mediawiki.core_1.6.0.I20110830-0427', version: ''
+    compile name: 'org.eclipse.mylyn.wikitext.textile.core_1.6.0.I20110830-0427', version: ''
+    compile name: 'org.eclipse.mylyn.wikitext.tracwiki.core_1.6.0.I20110830-0427', version: ''
+    compile name: 'org.eclipse.mylyn.wikitext.twiki.core_1.6.0.I20110830-0427', version: ''
 
     compile name: 'quartz-all', version: '2.0.2'
 

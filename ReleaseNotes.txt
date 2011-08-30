@@ -21,6 +21,8 @@ This release includes:
 - Entity Facade
   - Primary sequenced ID banking for better performance when creating
     records with sequenced single field primary key (default bank size 50)
+- Added support for other types of wiki files including MediaWiki, Textile,
+  TracWiki, and TWiki (in addition to Confluence)
 
 ===========================================================================
 Release 1.0-rc1 - 3 August 2011

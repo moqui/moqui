@@ -23,7 +23,7 @@
         <cache name="resource.groovy.expression" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <cache name="resource.ftl.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="resource.cwiki.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="resource.wiki.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
         <cache name="resource.text.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
 
         <!-- this is a count of all artifact hits, expire once idle for over 15 minutes -->
@@ -104,7 +104,12 @@
         <template-renderer extension=".html.ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
         <template-renderer extension=".gstring" class="org.moqui.impl.context.renderer.GStringTemplateRenderer"/>
         <template-renderer extension=".html.gstring" class="org.moqui.impl.context.renderer.GStringTemplateRenderer"/>
-        <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.CwikiTemplateRenderer"/>
+        <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
+        <template-renderer extension=".confluence" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
+        <template-renderer extension=".mediawiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
+        <template-renderer extension=".textile" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
+        <template-renderer extension=".tracwiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
+        <template-renderer extension=".twiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
         <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
         <!-- a renderer for .html isn't necessary because the default is to write the text as-is, however this is useful
             so that the extension becomes a default extension and doesn't have to be in the URL -->
