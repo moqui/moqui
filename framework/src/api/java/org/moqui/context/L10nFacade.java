@@ -13,7 +13,7 @@ package org.moqui.context;
 
 /** For localization (l10n) functionality, like localizing messages. */
 public interface L10nFacade {
-    /** Use the current locale (see getLocale method) to localize the message based on data in the LocalizedMessage
+    /** Use the current locale (see getLocale method) to localize the message based on data in the moqui.basic.LocalizedMessage
      * entity. The localized message may have variables inserted using the ${} syntax and will be expanded with the
      * current context (see the getContext() method).
      *

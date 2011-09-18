@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <order-by field-name="exampleItemSeqId"/>
         </entity-find>
 
-        <entity-find entity-name="UomAndType" list="allUomAndTypeList">
+        <entity-find entity-name="moqui.basic.UomAndType" list="allUomAndTypeList">
             <order-by field-name="typeDescription"/>
             <order-by field-name="description"/>
         </entity-find>

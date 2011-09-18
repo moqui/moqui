@@ -75,7 +75,7 @@ class MoquiShiroRealm implements Realm {
         try {
             boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
             try {
-                newUserAccount = ecfi.entityFacade.makeFind("UserAccount").condition("username", username).useCache(true).one()
+                newUserAccount = ecfi.entityFacade.makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
             } finally {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
             }
@@ -145,12 +145,12 @@ class MoquiShiroRealm implements Realm {
                 // no more auth failures? record the various account state updates, hasLoggedOut=N
                 Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
                         disabled:"N", disabledDateTime:null, hasLoggedOut:"N"]
-                ecfi.serviceFacade.sync().name("update", "UserAccount").parameters(uaParameters).call()
+                ecfi.serviceFacade.sync().name("update", "moqui.security.UserAccount").parameters(uaParameters).call()
 
                 // update visit if no user in visit yet
                 EntityValue visit = ecfi.executionContext.user.visit
                 if (visit && !visit.userId) {
-                    ecfi.serviceFacade.sync().name("update", "Visit")
+                    ecfi.serviceFacade.sync().name("update", "moqui.server.Visit")
                             .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId]).call()
                 }
             } finally {
@@ -166,7 +166,7 @@ class MoquiShiroRealm implements Realm {
                 if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = token.credentials
                 boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
                 try {
-                    ecfi.serviceFacade.sync().name("create", "UserLoginHistory").parameters(ulhContext).call()
+                    ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext).call()
                 } finally {
                     if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
                 }

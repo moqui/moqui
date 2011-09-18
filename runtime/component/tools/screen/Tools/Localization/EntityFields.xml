@@ -15,20 +15,20 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Entity Fields" default-menu-index="2">
 
     <transition name="createLocalizedEntityField">
-        <service-call name="create#LocalizedEntityField"/>
+        <service-call name="create#moqui.basic.LocalizedEntityField"/>
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedEntityField">
-        <service-call name="update#LocalizedEntityField" multi="true"/>
+        <service-call name="update#moqui.basic.LocalizedEntityField" multi="true"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedEntityField">
-        <service-call name="delete#LocalizedEntityField"/>
+        <service-call name="delete#moqui.basic.LocalizedEntityField"/>
         <default-response url="."/>
     </transition>
 
     <actions>
-        <entity-find entity-name="LocalizedEntityField" list="localizedEntityFieldList" offset="0" limit="50">
+        <entity-find entity-name="moqui.basic.LocalizedEntityField" list="localizedEntityFieldList" offset="0" limit="50">
             <search-form-inputs default-order-by="entityName,fieldName,locale"/>
         </entity-find>
     </actions>

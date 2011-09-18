@@ -100,16 +100,16 @@ class EntityFacadeImpl implements EntityFacade {
         EntityFacadeImpl defaultEfi = null
         if (this.tenantId != "DEFAULT") {
             defaultEfi = ecfi.getEntityFacade("DEFAULT")
-            tenant = defaultEfi.makeFind("Tenant").condition("tenantId", this.tenantId).one()
+            tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
         }
 
         for(Node datasource in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
             EntityValue tenantDataSource = null
             EntityList tenantDataSourceXaPropList = null
             if (tenant != null) {
-                tenantDataSource = defaultEfi.makeFind("TenantDataSource").condition("tenantId", this.tenantId)
+                tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
                         .condition("entityGroupName", datasource."@group-name").one()
-                tenantDataSourceXaPropList = defaultEfi.makeFind("TenantDataSourceXaProp")
+                tenantDataSourceXaPropList = defaultEfi.makeFind("moqui.tenant.TenantDataSourceXaProp")
                         .condition("tenantId", this.tenantId).condition("entityGroupName", datasource."@group-name")
                         .list()
             }
@@ -257,16 +257,17 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        // look for view-entity definitions in the database (DbViewEntity)
-        if (entityLocationCache.get("DbViewEntity")) {
+        // look for view-entity definitions in the database (moqui.entity.DbViewEntity)
+        if (entityLocationCache.get("moqui.entity.DbViewEntity")) {
             int numDbViewEntities = 0
-            for (EntityValue dbViewEntity in makeFind("DbViewEntity").list()) {
+            for (EntityValue dbViewEntity in makeFind("moqui.entity.DbViewEntity").list()) {
                 this.entityLocationCache.put((String) dbViewEntity.dbViewEntityName, ["_DB_VIEW_ENTITY_"])
+                this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, ["_DB_VIEW_ENTITY_"])
                 numDbViewEntities++
             }
-            if (logger.infoEnabled) logger.info("Found [${numDbViewEntities}] view-entity definitions in database (DbViewEntity)")
+            if (logger.infoEnabled) logger.info("Found [${numDbViewEntities}] view-entity definitions in database (moqui.entity.DbViewEntity)")
         } else {
-            logger.warn("Could not find view-entity definitions in database (DbViewEntity), no location found for the DbViewEntity entity.")
+            logger.warn("Could not find view-entity definitions in database (moqui.entity.DbViewEntity), no location found for the moqui.entity.DbViewEntity entity.")
         }
     }
 
@@ -279,10 +280,14 @@ class EntityFacadeImpl implements EntityFacade {
             // loop through all entity, view-entity, and extend-entity and add file location to List for any entity named
             int numEntities = 0
             for (GPathResult entity in entityRoot.children()) {
-                List theList = (List) this.entityLocationCache.get((String) entity."@entity-name")
+                String entityName = (String) entity."@entity-name"
+                String packageName = (String) entity."@package-name"
+                List theList = (List) this.entityLocationCache.get(packageName + "." + entityName)
                 if (!theList) {
                     theList = new ArrayList()
-                    this.entityLocationCache.put((String) entity."@entity-name", theList)
+                    // put in cache under both plain entityName and fullEntityName
+                    this.entityLocationCache.put(entityName, theList)
+                    this.entityLocationCache.put(packageName + "." + entityName, theList)
                 }
                 if (!theList.contains(entityRr.location)) theList.add(entityRr.location)
                 numEntities++
@@ -306,14 +311,21 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        // If this is a DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
+        String packageName = null
+        if (entityName.contains('.')) {
+            packageName = entityName.substring(0, entityName.lastIndexOf("."))
+            entityName = entityName.substring(entityName.lastIndexOf(".")+1)
+        }
+
+        // If this is a moqui.entity.DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
         if (entityLocationList.size() == 1 && entityLocationList[0] == "_DB_VIEW_ENTITY_") {
-            EntityValue dbViewEntity = makeFind("DbViewEntity").condition("dbViewEntityName", entityName).one()
+            EntityValue dbViewEntity = makeFind("moqui.entity.DbViewEntity").condition("dbViewEntityName", entityName).one()
+            if (dbViewEntity == null) throw new EntityException("Could not find DbViewEntity with name ${entityName}")
             Node dbViewNode = new Node(null, "view-entity", ["entity-name":entityName, "package-name":dbViewEntity.packageName])
             if (dbViewEntity.cache == "Y") dbViewNode.attributes().put("cache", "true")
             else if (dbViewEntity.cache == "N") dbViewNode.attributes().put("cache", "false")
 
-            EntityList memberList = makeFind("DbViewEntityMember").condition("dbViewEntityName", entityName).list()
+            EntityList memberList = makeFind("moqui.entity.DbViewEntityMember").condition("dbViewEntityName", entityName).list()
             for (EntityValue dbViewEntityMember in memberList) {
                 Node memberEntity = dbViewNode.appendNode("member-entity",
                         ["entity-alias":dbViewEntityMember.entityAlias, "entity-name":dbViewEntityMember.entityName])
@@ -322,7 +334,7 @@ class EntityFacadeImpl implements EntityFacade {
                     if (dbViewEntityMember.joinOptional == "Y") memberEntity.attributes().put("join-optional", "true")
                 }
 
-                EntityList dbViewEntityKeyMapList = makeFind("DbViewEntityKeyMap")
+                EntityList dbViewEntityKeyMapList = makeFind("moqui.entity.DbViewEntityKeyMap")
                         .condition(["dbViewEntityName":entityName, "joinFromAlias":dbViewEntityMember.joinFromAlias,
                             "entityAlias":dbViewEntityMember.entityAlias])
                         .list()
@@ -332,7 +344,7 @@ class EntityFacadeImpl implements EntityFacade {
                         keyMapNode.attributes().put("related-field-name", dbViewEntityKeyMap.relatedFieldName)
                 }
             }
-            for (EntityValue dbViewEntityAlias in makeFind("DbViewEntityAlias").condition("dbViewEntityName", entityName).list()) {
+            for (EntityValue dbViewEntityAlias in makeFind("moqui.entity.DbViewEntityAlias").condition("dbViewEntityName", entityName).list()) {
                 Node aliasNode = dbViewNode.appendNode("alias",
                         ["name":dbViewEntityAlias.fieldAlias, "entity-alias":dbViewEntityAlias.entityAlias])
                 if (dbViewEntityAlias.fieldName) aliasNode.attributes().put("field", dbViewEntityAlias.fieldName)
@@ -341,8 +353,9 @@ class EntityFacadeImpl implements EntityFacade {
 
             // create the new EntityDefinition
             ed = new EntityDefinition(this, dbViewNode)
-            // cache it
-            entityDefinitionCache.put(entityName, ed)
+            // cache it under both entityName and fullEntityName
+            entityDefinitionCache.put(ed.getEntityName(), ed)
+            entityDefinitionCache.put(ed.getFullEntityName(), ed)
             // send it on its way
             return ed
         }
@@ -354,7 +367,8 @@ class EntityFacadeImpl implements EntityFacade {
             InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
             Node entityRoot = new XmlParser().parse(entityStream)
             entityStream.close()
-            for (Node childNode in entityRoot.children().findAll({ it."@entity-name" == entityName })) {
+            // filter by package-name if specified, otherwise grab whatever
+            for (Node childNode in entityRoot.children().findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })) {
                 if (childNode.name() == "extend-entity") {
                     extendEntityNodes.add(childNode)
                 } else {
@@ -368,6 +382,8 @@ class EntityFacadeImpl implements EntityFacade {
 
         // merge the extend-entity nodes
         for (Node extendEntity in extendEntityNodes) {
+            // if package-name attributes don't match, skip
+            if (entityNode."@package-name" != extendEntity."@package-name") continue
             // merge attributes
             entityNode.attributes().putAll(extendEntity.attributes())
             // merge field nodes
@@ -386,7 +402,8 @@ class EntityFacadeImpl implements EntityFacade {
         // create the new EntityDefinition
         ed = new EntityDefinition(this, entityNode)
         // cache it
-        entityDefinitionCache.put(entityName, ed)
+        entityDefinitionCache.put(ed.getEntityName(), ed)
+        entityDefinitionCache.put(ed.getFullEntityName(), ed)
         // send it on its way
         return ed
     }
@@ -512,7 +529,10 @@ class EntityFacadeImpl implements EntityFacade {
     /** This uses the data from the loadAllEntityLocations() method, so that must be called first (it is called in the
      * constructor, and the cache must not have been cleared since. */
     Set<String> getAllEntityNames() {
-        return new TreeSet(entityLocationCache.keySet())
+        TreeSet<String> allNames = new TreeSet()
+        // only add full entity names (with package-name in it, will always have at least one dot)
+        for (String en in entityLocationCache.keySet()) if (en.contains(".")) allNames.add(en)
+        return allNames
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
@@ -522,7 +542,13 @@ class EntityFacadeImpl implements EntityFacade {
         return loadEntityDefinition(entityName)
     }
 
-    void clearEntityDefinitionFromCache(String entityName) { this.entityDefinitionCache.remove(entityName) }
+    void clearEntityDefinitionFromCache(String entityName) {
+        EntityDefinition ed = (EntityDefinition) this.entityDefinitionCache.get(entityName)
+        if (ed != null) {
+            this.entityDefinitionCache.remove(ed.getEntityName())
+            this.entityDefinitionCache.remove(ed.getFullEntityName())
+        }
+    }
 
     List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly) {
         if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
@@ -535,7 +561,7 @@ class EntityFacadeImpl implements EntityFacade {
 
             if (masterEntitiesOnly) {
                 if (!(ed.entityNode."@has-dependents" == "true") || en.endsWith("Type") ||
-                        en == "Enumeration" || en == "StatusItem") continue
+                        en == "moqui.basic.Enumeration" || en == "moqui.basic.StatusItem") continue
                 if (ed.getPkFieldNames().size() > 1) continue
             }
 
@@ -551,7 +577,7 @@ class EntityFacadeImpl implements EntityFacade {
         // make sure reverse-one many relationships exist
         createAllAutoReverseManyRelationships()
 
-        EntityValue dbViewEntity = dbViewEntityName ? makeFind("DbViewEntity").condition("dbViewEntityName", dbViewEntityName).one() : null
+        EntityValue dbViewEntity = dbViewEntityName ? makeFind("moqui.entity.DbViewEntity").condition("dbViewEntityName", dbViewEntityName).one() : null
 
         List<Map<String, Object>> efl = new LinkedList()
         EntityDefinition ed = null
@@ -564,7 +590,7 @@ class EntityFacadeImpl implements EntityFacade {
 
             boolean inDbView = false
             String functionName = null
-            EntityValue aliasVal = makeFind("DbViewEntityAlias")
+            EntityValue aliasVal = makeFind("moqui.entity.DbViewEntityAlias")
                 .condition([dbViewEntityName:dbViewEntityName, entityAlias:"MASTER", fieldName:fn]).one()
             if (aliasVal) {
                 inDbView = true
@@ -584,7 +610,7 @@ class EntityFacadeImpl implements EntityFacade {
             if (red == null) continue
 
             EntityValue dbViewEntityMember = null
-            if (dbViewEntity) dbViewEntityMember = makeFind("DbViewEntityMember")
+            if (dbViewEntity) dbViewEntityMember = makeFind("moqui.entity.DbViewEntityMember")
                     .condition([dbViewEntityName:dbViewEntityName, entityName:red.entityName]).one()
 
             for (String fn in red.getAllFieldNames()) {
@@ -592,7 +618,7 @@ class EntityFacadeImpl implements EntityFacade {
                 boolean inDbView = false
                 String functionName = null
                 if (dbViewEntityMember) {
-                    EntityValue aliasVal = makeFind("DbViewEntityAlias")
+                    EntityValue aliasVal = makeFind("moqui.entity.DbViewEntityAlias")
                         .condition([dbViewEntityName:dbViewEntityName, entityAlias:dbViewEntityMember.entityAlias, fieldName:fn]).one()
                     if (aliasVal) {
                         inDbView = true
@@ -787,10 +813,10 @@ class EntityFacadeImpl implements EntityFacade {
                 if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
                 boolean beganTransaction = tf.begin(null)
                 try {
-                    EntityValue svi = makeFind("SequenceValueItem").condition("seqName", seqName)
+                    EntityValue svi = makeFind("moqui.entity.SequenceValueItem").condition("seqName", seqName)
                             .useCache(false).forUpdate(true).one()
                     if (svi == null) {
-                        svi = makeValue("SequenceValueItem")
+                        svi = makeValue("moqui.entity.SequenceValueItem")
                         svi.set("seqName", seqName)
                         // a new tradition: start sequenced values at one hundred thousand instead of ten thousand
                         bank[0] = 100000

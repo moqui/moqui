@@ -46,8 +46,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <!-- TABLED not to be part of 1.0: <xs:element minOccurs="0" maxOccurs="unbounded" ref="change-set"/> -->
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
-            <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="package-name" type="xs:string" use="required"/>
+            <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
             <xs:attribute name="sequence-bank-size" type="xs:nonNegativeInteger" default="50"/>
             <xs:attribute name="sequence-primary-stagger" type="xs:nonNegativeInteger" default="1">
@@ -89,6 +89,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="index"/>
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="package-name" type="xs:string" use="required"/>
             <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
             <xs:attribute name="sequence-bank-size" type="xs:string"/>
@@ -131,13 +132,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="enable-audit-log" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
                     If true whenever the value for this field on a record changes the Entity Facade will record the
-                    change in the EntityAuditLog entity.
+                    change in the moqui.entity.EntityAuditLog entity.
                     Defaults to false.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="enable-localization" default="false" type="boolean">
                 <xs:annotation><xs:documentation>
-                    If true gets on this field will be looked up with the LocalizedEntityField entity and if there is
+                    If true gets on this field will be looked up with the moqui.basic.LocalizedEntityField entity and if there is
                     a matching record the localized value there will be returned instead of the actual record's value.
                     Defaults to false for performance reasons, only set to true for fields that will have translations.
                 </xs:documentation></xs:annotation>

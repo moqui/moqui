@@ -14,15 +14,15 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd">
 
     <actions>
-        <entity-find-one entity-name="Visit" value-field="fieldValues"/>
-        <entity-find entity-name="ArtifactHit" list="artifactHitList">
+        <entity-find-one entity-name="moqui.server.Visit" value-field="fieldValues"/>
+        <entity-find entity-name="moqui.server.ArtifactHit" list="artifactHitList">
             <econdition field-name="visitId"/>
             <order-by field-name="+startDateTime"/>
         </entity-find>
     </actions>
     <widgets>
         <form-single name="VisitDetail">
-            <auto-fields-entity entity-name="Visit" field-type="display"/>
+            <auto-fields-entity entity-name="moqui.server.Visit" field-type="display"/>
         </form-single>
         <form-list name="VisitArtifactHitList" list="artifactHitList">
             <field name="startDateTime"><default-field><display also-hidden="false"/></default-field></field>

@@ -24,10 +24,10 @@ try {
 // add the bodyParameters to the context so they are available throughout this script
 if (bodyParameters) context.putAll(bodyParameters)
 
-def emailTemplate = ec.entity.makeFind("EmailTemplate").condition("emailTemplateId", emailTemplateId).one()
-//def emailTemplateAttachmentList = ec.entity.makeFind("EmailTemplateAttachment").condition("emailTemplateId", emailTemplateId).list()
-def emailTemplateAttachmentList = emailTemplate.EmailTemplateAttachment
-def emailServer = emailTemplate.EmailServer
+def emailTemplate = ec.entity.makeFind("moqui.basic.email.EmailTemplate").condition("emailTemplateId", emailTemplateId).one()
+//def emailTemplateAttachmentList = ec.entity.makeFind("moqui.basic.email.EmailTemplateAttachment").condition("emailTemplateId", emailTemplateId).list()
+def emailTemplateAttachmentList = emailTemplate."moqui.basic.email.EmailTemplateAttachment"
+def emailServer = emailTemplate."moqui.basic.email.EmailServer"
 
 HtmlEmail email = new HtmlEmail()
 email.setHostName(emailServer.smtpHost)
@@ -83,14 +83,14 @@ for (def emailTemplateAttachment in emailTemplateAttachmentList) {
     }
 }
 
-// create an EmailMessage record with info about this sent message
+// create an moqui.basic.email.EmailMessage record with info about this sent message
 // NOTE: can do anything with: statusId, purposeEnumId, toUserId?
 Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
         fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
         ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
         contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user.userId]
 ec.artifactExecution.disableAuthz()
-ec.service.sync().name("create", "EmailMessage").parameters(cemParms).call()
+ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).call()
 ec.artifactExecution.enableAuthz()
 
 logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml [${bodyHtml}] bodyText [${bodyText}]")

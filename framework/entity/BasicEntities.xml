@@ -13,15 +13,168 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- moqui.basic.datasource -->
+    <!-- moqui.basic -->
     <!-- ========================================================= -->
 
-    <entity entity-name="DataSource" package-name="moqui.basic.datasource" cache="true">
+    <!-- ========== DataSource ========== -->
+    <entity entity-name="DataSource" package-name="moqui.basic" cache="true">
         <field name="dataSourceId" type="id" is-pk="true"/>
         <field name="dataSourceTypeEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="DataSourceType" related-entity-name="Enumeration">
+        <relationship type="one" title="DataSourceType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="dataSourceTypeEnumId"/>
+        </relationship>
+    </entity>
+
+    <!-- ========== Enumeration ========== -->
+    <entity entity-name="Enumeration" package-name="moqui.basic" cache="true">
+        <field name="enumId" type="id" is-pk="true"/>
+        <field name="enumTypeId" type="id-long"/>
+        <field name="parentEnumId" type="id"/>
+        <field name="enumCode" type="text-medium"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="description" type="text-long" enable-localization="true"/>
+        <relationship type="one" related-entity-name="EnumerationType"/>
+        <relationship type="one-nofk" title="Parent" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="parentEnumId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="EnumerationType" package-name="moqui.basic" cache="true">
+        <field name="enumTypeId" type="id-long" is-pk="true"/>
+        <field name="description" type="text-long"/>
+    </entity>
+
+    <!-- ========== Geo ========== -->
+    <entity entity-name="Geo" package-name="moqui.basic" cache="true">
+        <field name="geoId" type="id" is-pk="true"/>
+        <field name="geoTypeEnumId" type="id"/>
+        <field name="geoName" type="text-medium"/>
+        <field name="geoCodeAlpha2" type="text-short"/>
+        <field name="geoCodeAlpha3" type="text-short"/>
+        <field name="geoCodeNumeric" type="text-short"/>
+        <field name="wellKnownText" type="text-very-long"/>
+        <relationship type="one" title="GeoType" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="geoTypeEnumId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="GeoAssoc" package-name="moqui.basic" cache="true">
+        <field name="geoId" type="id" is-pk="true"/>
+        <field name="geoIdTo" type="id" is-pk="true"/>
+        <field name="geoAssocTypeEnumId" type="id"/>
+        <relationship type="one" title="Main" related-entity-name="Geo"/>
+        <relationship type="one" title="Assoc" related-entity-name="Geo">
+            <key-map field-name="geoIdTo"/>
+        </relationship>
+        <relationship type="one" title="GeoAssocType" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="geoAssocTypeEnumId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="GeoPoint" package-name="moqui.basic">
+        <field name="geoPointId" type="id" is-pk="true"/>
+        <field name="dataSourceId" type="id"/>
+        <field name="latitude" type="number-float"/>
+        <field name="longitude" type="number-float"/>
+        <field name="elevation" type="number-float"/>
+        <field name="elevationUomId" type="id"/>
+        <field name="information" type="text-long"/>
+        <relationship type="one" related-entity-name="DataSource"/>
+        <relationship type="one" title="Elevation" related-entity-name="moqui.basic.Uom">
+            <key-map field-name="elevationUomId"/>
+        </relationship>
+    </entity>
+
+    <!-- ========== Localized ========== -->
+    <entity entity-name="LocalizedMessage" package-name="moqui.basic" cache="true" authorize-skip="view">
+        <field name="original" type="text-long" is-pk="true"/>
+        <field name="locale" type="text-short" is-pk="true"/>
+        <field name="localized" type="text-very-long"/>
+    </entity>
+    <entity entity-name="LocalizedEntityField" package-name="moqui.basic" cache="true" authorize-skip="view">
+        <field name="entityName" type="text-medium" is-pk="true"/>
+        <field name="fieldName" type="text-medium" is-pk="true"/>
+        <field name="pkValue" type="text-medium" is-pk="true"/>
+        <field name="locale" type="text-short" is-pk="true"/>
+        <field name="localized" type="text-very-long"/>
+    </entity>
+
+    <!-- ========== Status ========== -->
+    <entity entity-name="StatusItem" package-name="moqui.basic" cache="true">
+        <field name="statusId" type="id" is-pk="true"/>
+        <field name="statusTypeId" type="id-long"/>
+        <field name="statusCode" type="text-medium"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="description" type="text-long" enable-localization="true"/>
+        <relationship type="one" related-entity-name="moqui.basic.StatusType"/>
+    </entity>
+    <entity entity-name="StatusType" package-name="moqui.basic">
+        <field name="statusTypeId" type="id-long" is-pk="true"/>
+        <field name="parentTypeId" type="id-long"/>
+        <field name="description" type="text-long"/>
+        <relationship type="one" title="Parent" related-entity-name="moqui.basic.StatusType">
+            <!-- NOTE: the related-field-name is necessary here because it is a reference back to the same entity and
+                 will find the parentTypeId as the related field because it matches by name. -->
+            <key-map field-name="parentTypeId" related-field-name="statusTypeId"/>
+        </relationship>
+    </entity>
+    <entity entity-name="StatusValidChange" package-name="moqui.basic" cache="true">
+        <field name="statusId" type="id" is-pk="true"/>
+        <field name="statusIdTo" type="id" is-pk="true"/>
+        <field name="conditionExpression" type="text-long"/>
+        <field name="transitionName" type="text-medium"/>
+        <relationship type="one" title="Main" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" title="To" related-entity-name="moqui.basic.StatusItem">
+            <key-map field-name="statusIdTo" related-field-name="statusId"/>
+        </relationship>
+    </entity>
+    <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic">
+        <member-entity entity-alias="SVC" entity-name="moqui.basic.StatusValidChange"/>
+        <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem" join-from-alias="SVC">
+            <key-map field-name="statusIdTo" related-field-name="statusId"/>
+        </member-entity>
+        <alias-all entity-alias="SVC"/>
+        <alias-all entity-alias="SI"/>
+        <relationship type="one" related-entity-name="moqui.basic.StatusValidChange"/>
+        <relationship type="one" related-entity-name="moqui.basic.StatusItem"/>
+        <entity-condition>
+            <order-by field-name="sequenceNum"/>
+        </entity-condition>
+    </view-entity>
+
+    <!-- ========== Uom ========== -->
+    <entity entity-name="Uom" package-name="moqui.basic" cache="true">
+        <field name="uomId" type="id" is-pk="true"/>
+        <field name="uomTypeEnumId" type="id"/>
+        <field name="abbreviation" type="text-medium"/>
+        <field name="description" type="text-long"/>
+        <relationship type="one" title="UomType" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="uomTypeEnumId"/>
+        </relationship>
+    </entity>
+    <view-entity entity-name="UomAndType" package-name="moqui.basic" cache="true">
+        <member-entity entity-alias="UOM" entity-name="moqui.basic.Uom"/>
+        <member-entity entity-alias="UTE" entity-name="moqui.basic.Enumeration" join-from-alias="UOM">
+            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
+        </member-entity>
+        <alias entity-alias="UOM" name="uomId"/>
+        <alias entity-alias="UOM" name="description"/>
+        <alias entity-alias="UOM" name="abbreviation"/>
+        <alias entity-alias="UTE" name="typeDescription" field="description"/>
+    </view-entity>
+    <entity entity-name="UomConversion" package-name="moqui.basic" cache="true">
+        <field name="uomConversionId" type="id" is-pk="true"/>
+        <field name="uomId" type="id"/>
+        <field name="uomIdTo" type="id"/>
+        <field name="fromDate" type="date-time"/>
+        <field name="thruDate" type="date-time"/>
+        <field name="conversionFactor" type="number-float"/>
+        <field name="conversionOffset" type="number-float">
+            <description>The factor is multiplied first, then the offset is added. When converting in the reverse
+                direction the offset is subtracted first, then divided by the factor.
+            </description>
+        </field>
+        <relationship type="one" related-entity-name="moqui.basic.Uom"/>
+        <relationship type="one" title="To" related-entity-name="moqui.basic.Uom">
+            <key-map field-name="uomIdTo" related-field-name="uomId"/>
         </relationship>
     </entity>
 
@@ -57,25 +210,23 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>For outgoing messages that came from an EmailTemplate.</description>
         </field>
 
-        <relationship type="one" related-entity-name="StatusItem">
-            <description>(statusTypeId = EmailMessage)</description>
-        </relationship>
-        <relationship type="one" title="EmailType" related-entity-name="Enumeration">
+        <relationship type="one" title="EmailMessage" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" title="EmailType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="emailTypeEnumId"/>
         </relationship>
-        <relationship type="one" title="Root" related-entity-name="EmailMessage">
+        <relationship type="one" title="Root" related-entity-name="moqui.basic.email.EmailMessage">
             <key-map field-name="rootEmailMessageId" related-field-name="emailMessageId"/>
         </relationship>
-        <relationship type="one" title="Parent" related-entity-name="EmailMessage">
+        <relationship type="one" title="Parent" related-entity-name="moqui.basic.email.EmailMessage">
             <key-map field-name="parentEmailMessageId" related-field-name="emailMessageId"/>
         </relationship>
-        <relationship type="one" title="From" related-entity-name="UserAccount">
+        <relationship type="one" title="From" related-entity-name="moqui.security.UserAccount">
             <key-map field-name="fromUserId"/>
         </relationship>
-        <relationship type="one" title="To" related-entity-name="UserAccount">
+        <relationship type="one" title="To" related-entity-name="moqui.security.UserAccount">
             <key-map field-name="toUserId"/>
         </relationship>
-        <relationship type="one" related-entity-name="EmailTemplate"/>
+        <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
         <index name="EMAIL_MSG_ID" unique="true"><index-field name="messageId"/></index>
     </entity>
     <entity entity-name="EmailServer" package-name="moqui.basic.email" cache="true">
@@ -103,7 +254,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="bodyScreenLocation" type="text-long"/>
         <field name="webappName" type="text-long"/>
         <field name="sendPartial" type="text-indicator"/>
-        <relationship type="one" related-entity-name="EmailServer"/>
+        <relationship type="one" related-entity-name="moqui.basic.email.EmailServer"/>
     </entity>
     <entity entity-name="EmailTemplateAttachment" package-name="moqui.basic.email" cache="true">
         <field name="emailTemplateId" type="id" is-pk="true"/>
@@ -117,183 +268,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 If empty the attachmentLocation will be sent over as a file whose type depends on its extension.
             </description>
         </field>
-        <relationship type="one" related-entity-name="EmailTemplate"/>
-    </entity>
-
-    <!-- ========================================================= -->
-    <!-- moqui.basic.enumeration -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="Enumeration" package-name="moqui.basic.enumeration" cache="true">
-        <field name="enumId" type="id" is-pk="true"/>
-        <field name="enumTypeId" type="id-long"/>
-        <field name="parentEnumId" type="id"/>
-        <field name="enumCode" type="text-medium"/>
-        <field name="sequenceNum" type="number-integer"/>
-        <field name="description" type="text-long" enable-localization="true"/>
-        <relationship type="one" related-entity-name="EnumerationType"/>
-        <relationship type="one-nofk" title="Parent" related-entity-name="Enumeration">
-            <key-map field-name="parentEnumId"/>
-        </relationship>
-    </entity>
-    <entity entity-name="EnumerationType" package-name="moqui.basic.enumeration" cache="true">
-        <field name="enumTypeId" type="id-long" is-pk="true"/>
-        <field name="description" type="text-long"/>
-    </entity>
-
-    <!-- ========================================================= -->
-    <!-- moqui.basic.geo -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="Geo" package-name="moqui.basic.geo" cache="true">
-        <field name="geoId" type="id" is-pk="true"/>
-        <field name="geoTypeEnumId" type="id"/>
-        <field name="geoName" type="text-medium"/>
-        <field name="geoCodeAlpha2" type="text-short"/>
-        <field name="geoCodeAlpha3" type="text-short"/>
-        <field name="geoCodeNumeric" type="text-short"/>
-        <field name="wellKnownText" type="text-very-long"/>
-        <relationship type="one" title="GeoType" related-entity-name="Enumeration">
-            <key-map field-name="geoTypeEnumId"/>
-        </relationship>
-    </entity>
-    <entity entity-name="GeoAssoc" package-name="moqui.basic.geo" cache="true">
-        <field name="geoId" type="id" is-pk="true"/>
-        <field name="geoIdTo" type="id" is-pk="true"/>
-        <field name="geoAssocTypeEnumId" type="id"/>
-        <relationship type="one" title="Main" related-entity-name="Geo"/>
-        <relationship type="one" title="Assoc" related-entity-name="Geo">
-            <key-map field-name="geoIdTo"/>
-        </relationship>
-        <relationship type="one" title="GeoAssocType" related-entity-name="Enumeration">
-            <key-map field-name="geoAssocTypeEnumId"/>
-        </relationship>
-    </entity>
-    <entity entity-name="GeoPoint" package-name="moqui.basic.geo">
-        <field name="geoPointId" type="id" is-pk="true"/>
-        <field name="dataSourceId" type="id"/>
-        <field name="latitude" type="number-float"/>
-        <field name="longitude" type="number-float"/>
-        <field name="elevation" type="number-float"/>
-        <field name="elevationUomId" type="id"/>
-        <field name="information" type="text-long"/>
-        <relationship type="one" related-entity-name="DataSource"/>
-        <relationship type="one" title="Elevation" related-entity-name="Uom">
-            <key-map field-name="elevationUomId"/>
-        </relationship>
-    </entity>
-
-    <!-- ========================================================= -->
-    <!-- moqui.basic.l10n -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="LocalizedMessage" package-name="moqui.basic.l10n" cache="true" authorize-skip="view">
-        <field name="original" type="text-long" is-pk="true"/>
-        <field name="locale" type="text-short" is-pk="true"/>
-        <field name="localized" type="text-very-long"/>
-    </entity>
-    <entity entity-name="LocalizedEntityField" package-name="moqui.basic.l10n" cache="true" authorize-skip="view">
-        <field name="entityName" type="text-medium" is-pk="true"/>
-        <field name="fieldName" type="text-medium" is-pk="true"/>
-        <field name="pkValue" type="text-medium" is-pk="true"/>
-        <field name="locale" type="text-short" is-pk="true"/>
-        <field name="localized" type="text-very-long"/>
-    </entity>
-
-    <!-- ========================================================= -->
-    <!-- moqui.basic.status -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="StatusItem" package-name="moqui.basic.status" cache="true">
-        <field name="statusId" type="id" is-pk="true"/>
-        <field name="statusTypeId" type="id-long"/>
-        <field name="statusCode" type="text-medium"/>
-        <field name="sequenceNum" type="number-integer"/>
-        <field name="description" type="text-long" enable-localization="true"/>
-        <relationship type="one" related-entity-name="StatusType"/>
-    </entity>
-    <entity entity-name="StatusType" package-name="moqui.basic.status">
-        <field name="statusTypeId" type="id-long" is-pk="true"/>
-        <field name="parentTypeId" type="id-long"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="Parent" related-entity-name="StatusType">
-            <!-- NOTE: the related-field-name is necessary here because it is a reference back to the same entity and
-                 will find the parentTypeId as the related field because it matches by name. -->
-            <key-map field-name="parentTypeId" related-field-name="statusTypeId"/>
-        </relationship>
-    </entity>
-    <entity entity-name="StatusValidChange" package-name="moqui.basic.status" cache="true">
-        <field name="statusId" type="id" is-pk="true"/>
-        <field name="statusIdTo" type="id" is-pk="true"/>
-        <field name="conditionExpression" type="text-long"/>
-        <field name="transitionName" type="text-medium"/>
-        <relationship type="one" title="Main" related-entity-name="StatusItem"/>
-        <relationship type="one" title="To" related-entity-name="StatusItem">
-            <key-map field-name="statusIdTo" related-field-name="statusId"/>
-        </relationship>
-    </entity>
-    <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic.status">
-        <member-entity entity-alias="SVC" entity-name="StatusValidChange"/>
-        <member-entity entity-alias="SI" entity-name="StatusItem" join-from-alias="SVC">
-            <key-map field-name="statusIdTo" related-field-name="statusId"/>
-        </member-entity>
-        <alias-all entity-alias="SVC"/>
-        <alias-all entity-alias="SI"/>
-        <relationship type="one" related-entity-name="StatusValidChange"/>
-        <relationship type="one" related-entity-name="StatusItem"/>
-        <entity-condition>
-            <order-by field-name="sequenceNum"/>
-        </entity-condition>
-    </view-entity>
-
-    <!-- ========================================================= -->
-    <!-- moqui.basic.uom -->
-    <!-- ========================================================= -->
-
-    <entity entity-name="Uom" package-name="moqui.basic.uom" cache="true">
-        <field name="uomId" type="id" is-pk="true"/>
-        <field name="uomTypeEnumId" type="id"/>
-        <field name="abbreviation" type="text-medium"/>
-        <field name="description" type="text-long"/>
-        <relationship type="one" title="UomType" related-entity-name="Enumeration">
-            <key-map field-name="uomTypeEnumId"/>
-        </relationship>
-    </entity>
-    <view-entity entity-name="UomAndType" package-name="moqui.basic.uom" cache="true">
-        <member-entity entity-alias="UOM" entity-name="Uom"/>
-        <member-entity entity-alias="UTE" entity-name="Enumeration" join-from-alias="UOM">
-            <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
-        </member-entity>
-        <alias entity-alias="UOM" name="uomId"/>
-        <alias entity-alias="UOM" name="description"/>
-        <alias entity-alias="UOM" name="abbreviation"/>
-        <alias entity-alias="UTE" name="typeDescription" field="description"/>
-    </view-entity>
-    <entity entity-name="UomConversion" package-name="moqui.basic.uom" cache="true">
-        <field name="uomConversionId" type="id" is-pk="true"/>
-        <field name="uomId" type="id"/>
-        <field name="uomIdTo" type="id"/>
-        <field name="fromDate" type="date-time"/>
-        <field name="thruDate" type="date-time"/>
-        <field name="conversionFactor" type="number-float"/>
-        <field name="conversionOffset" type="number-float">
-            <description>The factor is multiplied first, then the offset is added. When converting in the reverse
-                direction the offset is subtracted first, then divided by the factor.
-            </description>
-        </field>
-        <relationship type="one" related-entity-name="Uom"/>
-        <relationship type="one" title="To" related-entity-name="Uom">
-            <key-map field-name="uomIdTo" related-field-name="uomId"/>
-        </relationship>
-    </entity>
-    <entity entity-name="UomGroup" package-name="moqui.basic.uom" cache="true">
-        <field name="uomGroupId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
-    </entity>
-    <entity entity-name="UomGroupMember" package-name="moqui.basic.uom" cache="true">
-        <field name="uomGroupId" type="id" is-pk="true"/>
-        <field name="uomId" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="UomGroup"/>
-        <relationship type="one" related-entity-name="Uom"/>
+        <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
     </entity>
 </entities>

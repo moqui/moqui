@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="getExampleTypeEnumList">
         <actions>
-            <entity-find entity-name="Enumeration" list="exampleTypeEnumList">
+            <entity-find entity-name="moqui.basic.Enumeration" list="exampleTypeEnumList">
                 <!-- for purposes of the example, get this as a parameter instead of the inline value: <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/> -->
                 <econdition field-name="enumTypeId" from="enumTypeId"/>
                 <order-by field-name="description"/>
@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <entity-find-one entity-name="Example" value-field="fieldValues"/>
         <log message="EditExample exampleId [${exampleId}] fieldValues [${fieldValues}]"/>
 
-        <entity-find-one entity-name="StatusItem" value-field="currentStatus">
+        <entity-find-one entity-name="moqui.basic.StatusItem" value-field="currentStatus">
             <field-map field-name="statusId" from="fieldValues?.statusId"/>
         </entity-find-one>
     </actions>
@@ -140,7 +140,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <default-field title="Type">
                             <drop-down allow-empty="false">
                                 <entity-options text="${description}">
-                                    <entity-find entity-name="Enumeration">
+                                    <entity-find entity-name="moqui.basic.Enumeration">
                                         <econdition field-name="enumTypeId" value="ExampleType"/>
                                         <order-by field-name="description"/>
                                     </entity-find>

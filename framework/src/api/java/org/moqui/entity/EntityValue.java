@@ -35,7 +35,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     /** Get the named field.
      *
-     * If there is a matching entry in the LocalizedEntityField entity using the Locale in the current ExecutionContext
+     * If there is a matching entry in the moqui.basic.LocalizedEntityField entity using the Locale in the current ExecutionContext
      * then that will be returned instead.
      *
      * This method also supports getting related entities using their relationship name, formatted as

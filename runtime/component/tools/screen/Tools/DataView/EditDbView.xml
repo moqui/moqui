@@ -20,32 +20,32 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="view"><default-response url="../ViewDbView"/></transition>
     <transition name="DbView.csv"><default-response url="../ViewDbView/DbView.csv"></default-response></transition>
     <transition name="update">
-        <service-call name="update#DbViewEntity"/>
+        <service-call name="update#moqui.entity.DbViewEntity"/>
         <default-response url="."/>
     </transition>
     <transition name="setMasterEntity">
-        <service-call name="store#DbViewEntityMember"/>
+        <service-call name="store#moqui.entity.DbViewEntityMember"/>
         <default-response url="."/>
     </transition>
     <transition name="setMasterFields">
         <actions>
             <set field="dbViewEntityName" from="dbViewEntityName_0"/>
-            <entity-find-one entity-name="DbViewEntity" value-field="dbViewEntity"/>
-            <entity-find-one entity-name="DbViewEntityMember" value-field="masterDbViewEntityMember">
+            <entity-find-one entity-name="moqui.entity.DbViewEntity" value-field="dbViewEntity"/>
+            <entity-find-one entity-name="moqui.entity.DbViewEntityMember" value-field="masterDbViewEntityMember">
                 <field-map field-name="dbViewEntityName" from="dbViewEntityName"/>
                 <field-map field-name="entityAlias" value="MASTER"/>
             </entity-find-one>
             <set field="masterEntityName" from="masterDbViewEntityMember.entityName"/>
 
-            <!-- clean out DbViewEntity* records -->
-            <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityAlias"/>
-            <entity-delete-related value-field="dbViewEntity" relationship-name="DbViewEntityKeyMap"/>
-            <entity-delete-by-condition entity-name="DbViewEntityMember">
+            <!-- clean out moqui.entity.DbViewEntity* records -->
+            <entity-delete-related value-field="dbViewEntity" relationship-name="moqui.entity.DbViewEntityAlias"/>
+            <entity-delete-related value-field="dbViewEntity" relationship-name="moqui.entity.DbViewEntityKeyMap"/>
+            <entity-delete-by-condition entity-name="moqui.entity.DbViewEntityMember">
                 <econdition field-name="dbViewEntityName" from="dbViewEntityName"/>
                 <econdition field-name="entityAlias" operator="not-equals" value="MASTER"/>
             </entity-delete-by-condition>
 
-            <!-- add DbViewEntityAlias record, and DbViewEntityMember/ViewLink if needed -->
+            <!-- add moqui.entity.DbViewEntityAlias record, and moqui.entity.DbViewEntityMember/ViewLink if needed -->
             <script>
                 // make sure reverse-one many relationships exist
                 ec.entity.createAllAutoReverseManyRelationships()
@@ -83,7 +83,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     def memberValue = (relationshipName == masterDbViewEntityMember.entityName) ?
                             masterDbViewEntityMember : members.get(entityName)
                     if (!memberValue) {
-                        memberValue = ec.entity.makeValue("DbViewEntityMember")
+                        memberValue = ec.entity.makeValue("moqui.entity.DbViewEntityMember")
                         memberValue.dbViewEntityName = dbViewEntityName
                         memberValue.entityName = entityName
                         memberValue.entityAlias = "MEMBER${memberIndex}"
@@ -96,7 +96,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         // added a member, add KeyMap(s)
                         Map relExpKeyMap = masterEd.getRelationshipExpandedKeyMap(relNode)
                         for (Map.Entry keyMapEntry in relExpKeyMap) {
-                            def keyMapValue = ec.entity.makeValue("DbViewEntityKeyMap")
+                            def keyMapValue = ec.entity.makeValue("moqui.entity.DbViewEntityKeyMap")
                             keyMapValue.dbViewEntityName = dbViewEntityName
                             keyMapValue.joinFromAlias = memberValue.joinFromAlias
                             keyMapValue.entityAlias = memberValue.entityAlias
@@ -110,7 +110,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     fieldAliasIndex++
                     aliasIndexes.put(fieldName, fieldAliasIndex)
 
-                    def aliasValue = ec.entity.makeValue("DbViewEntityAlias")
+                    def aliasValue = ec.entity.makeValue("moqui.entity.DbViewEntityAlias")
                     aliasValue.dbViewEntityName = dbViewEntityName
                     aliasValue.fieldAlias = fieldName + (fieldAliasIndex > 1 ? fieldAliasIndex : '')
                     aliasValue.entityAlias = memberValue.entityAlias
@@ -135,7 +135,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="DbView.csv" text="Get as CSV"/>
         </container>
         <section name="Update">
-            <actions><entity-find-one entity-name="DbViewEntity" value-field="fieldValues"/></actions>
+            <actions><entity-find-one entity-name="moqui.entity.DbViewEntity" value-field="fieldValues"/></actions>
             <widgets>
                 <form-single name="UpdateDbViewEntity" transition="update">
                     <field name="dbViewEntityName"><default-field title="View Name"><display/></default-field></field>
@@ -147,7 +147,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </section>
         <section name="Master">
             <actions>
-                <entity-find-one entity-name="DbViewEntityMember" value-field="fieldValues">
+                <entity-find-one entity-name="moqui.entity.DbViewEntityMember" value-field="fieldValues">
                     <field-map field-name="dbViewEntityName"/>
                     <field-map field-name="entityAlias" value="MASTER"/>
                 </entity-find-one>

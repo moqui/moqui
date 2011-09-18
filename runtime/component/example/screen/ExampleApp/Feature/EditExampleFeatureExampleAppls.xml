@@ -54,7 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <order-by field-name="sequenceNum"/>
         </entity-find>
 
-        <entity-find entity-name="Enumeration" list="exampleFeatureApplEnumList">
+        <entity-find entity-name="moqui.basic.Enumeration" list="exampleFeatureApplEnumList">
             <econdition field-name="enumTypeId" value="ExampleFeatureAppl"/>
             <order-by field-name="description"/>
         </entity-find>

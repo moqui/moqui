@@ -12,33 +12,33 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <!-- Tabled for now, not to be part of 1.0:
-    <EnumerationType description="Entity Group Entry Application Type" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    <Enumeration description="Include" enumCode="INCLUDE" enumId="ESIA_INCLUDE" sequenceNum="1" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    <Enumeration description="Exclude" enumCode="EXCLUDE" enumId="ESIA_EXCLUDE" sequenceNum="2" enumTypeId="ENTGRP_ENTRY_APPL"/>
-    <Enumeration description="Always Include" enumCode="ALWAYS" enumId="ESIA_ALWAYS" sequenceNum="3" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <moqui.basic.EnumerationType description="Entity Group Entry Application Type" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <moqui.basic.Enumeration description="Include" enumCode="INCLUDE" enumId="ESIA_INCLUDE" sequenceNum="1" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <moqui.basic.Enumeration description="Exclude" enumCode="EXCLUDE" enumId="ESIA_EXCLUDE" sequenceNum="2" enumTypeId="ENTGRP_ENTRY_APPL"/>
+    <moqui.basic.Enumeration description="Always Include" enumCode="ALWAYS" enumId="ESIA_ALWAYS" sequenceNum="3" enumTypeId="ENTGRP_ENTRY_APPL"/>
     -->
 
     <!-- Tabled for now, not to be part of 1.0:
-    <StatusType description="Entity Sync Run Status" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Not Started" sequenceNum="1" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Running" sequenceNum="2" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Offline Pending" sequenceNum="3" statusCode="PENDING" statusId="ESR_PENDING" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Complete" sequenceNum="4" statusCode="COMPLETE" statusId="ESR_COMPLETE" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Other Error" sequenceNum="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Service Call Error" sequenceNum="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
-    <StatusItem description="Data Error" sequenceNum="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusType description="Entity Sync Run Status" parentTypeId="" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Not Started" sequenceNum="1" statusCode="NOT_STARTED" statusId="ESR_NOT_STARTED" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Running" sequenceNum="2" statusCode="RUNNING" statusId="ESR_RUNNING" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Offline Pending" sequenceNum="3" statusCode="PENDING" statusId="ESR_PENDING" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Complete" sequenceNum="4" statusCode="COMPLETE" statusId="ESR_COMPLETE" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Other Error" sequenceNum="97" statusCode="OTHER_ERROR" statusId="ESR_OTHER_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Service Call Error" sequenceNum="98" statusCode="SERVICE_ERROR" statusId="ESR_SERVICE_ERROR" statusTypeId="ENTSYNC_RUN"/>
+    <moqui.basic.StatusItem description="Data Error" sequenceNum="99" statusCode="DATA_ERROR" statusId="ESR_DATA_ERROR" statusTypeId="ENTSYNC_RUN"/>
     -->
 
-    <EnumerationType description="Entity Comparison Operator" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="less" enumCode="LESS" enumId="ENTCO_LESS" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="greater" enumCode="GREATER" enumId="ENTCO_GREATER" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="less-equals" enumCode="LESS_EQ" enumId="ENTCO_LESS_EQ" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="greater-equals" enumCode="GREATER_EQ" enumId="ENTCO_GREATER_EQ" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="equals" enumCode="EQUALS" enumId="ENTCO_EQUALS" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="not-equals" enumCode="NOT_EQUALS" enumId="ENTCO_NOT_EQUALS" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="in" enumCode="IN" enumId="ENTCO_IN" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="not-in" enumCode="NOT_IN" enumId="ENTCO_NOT_IN" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="between" enumCode="BETWEEN" enumId="ENTCO_BETWEEN" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="like" enumCode="LIKE" enumId="ENTCO_LIKE" enumTypeId="ComparisonOperator"/>
-    <Enumeration description="not-like" enumCode="NOT_LIKE" enumId="ENTCO_NOT_LIKE" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.EnumerationType description="Entity Comparison Operator" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="less" enumCode="LESS" enumId="ENTCO_LESS" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="greater" enumCode="GREATER" enumId="ENTCO_GREATER" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="less-equals" enumCode="LESS_EQ" enumId="ENTCO_LESS_EQ" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="greater-equals" enumCode="GREATER_EQ" enumId="ENTCO_GREATER_EQ" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="equals" enumCode="EQUALS" enumId="ENTCO_EQUALS" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="not-equals" enumCode="NOT_EQUALS" enumId="ENTCO_NOT_EQUALS" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="in" enumCode="IN" enumId="ENTCO_IN" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="not-in" enumCode="NOT_IN" enumId="ENTCO_NOT_IN" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="between" enumCode="BETWEEN" enumId="ENTCO_BETWEEN" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="like" enumCode="LIKE" enumId="ENTCO_LIKE" enumTypeId="ComparisonOperator"/>
+    <moqui.basic.Enumeration description="not-like" enumCode="NOT_LIKE" enumId="ENTCO_NOT_LIKE" enumTypeId="ComparisonOperator"/>
 </entity-facade-xml>

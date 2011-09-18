@@ -29,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <set field="exampleFeatureId" from="exampleFeatureId"/>
         <entity-find-one entity-name="ExampleFeature" value-field="fieldValues"/>
 
-        <entity-find entity-name="Enumeration" list="featureSourceEnumList">
+        <entity-find entity-name="moqui.basic.Enumeration" list="featureSourceEnumList">
             <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>

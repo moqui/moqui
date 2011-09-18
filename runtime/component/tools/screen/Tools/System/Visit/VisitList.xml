@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <entity-find entity-name="Visit" list="visitList" limit="50">
+        <entity-find entity-name="moqui.server.Visit" list="visitList" limit="50">
             <search-form-inputs default-order-by="-fromDate"/>
         </entity-find>
     </actions>

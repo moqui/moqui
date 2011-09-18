@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <entity-find entity-name="ArtifactHitBin" list="artifactHitBinList" limit="50">
+        <entity-find entity-name="moqui.server.ArtifactHitBin" list="artifactHitBinList" limit="50">
             <search-form-inputs default-order-by="-binStartDateTime"/>
         </entity-find>
     </actions>

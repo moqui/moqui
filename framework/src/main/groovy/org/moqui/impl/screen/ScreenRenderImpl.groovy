@@ -791,12 +791,12 @@ class ScreenRenderImpl implements ScreenRender {
         if (!stteId) stteId = "STT_INTERNAL"
 
         // see if there is a user setting for the theme
-        String themeId = sfi.ecfi.entityFacade.makeFind("UserScreenTheme")
+        String themeId = sfi.ecfi.entityFacade.makeFind("moqui.security.UserScreenTheme")
                 .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId])
                 .one()?.screenThemeId
         // default theme
         if (!themeId) {
-            EntityValue stv = sfi.ecfi.entityFacade.makeFind("ScreenTheme").condition("screenThemeTypeEnumId", stteId)
+            EntityValue stv = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenTheme").condition("screenThemeTypeEnumId", stteId)
                     .condition("screenThemeId", ComparisonOperator.LIKE, "%DEFAULT%").one()
             if (stv) themeId = stv.screenThemeId
         }
@@ -804,7 +804,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     List<String> getThemeValues(String resourceTypeEnumId) {
-        EntityList strList = sfi.ecfi.entityFacade.makeFind("ScreenThemeResource")
+        EntityList strList = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId])
                 .orderBy("sequenceNum").list()
         List<String> values = new LinkedList()

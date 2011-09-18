@@ -11,13 +11,13 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <LocalizedMessage original="Example" locale="es" localized="Ejemplo"/>
-    <LocalizedMessage original="Example" locale="fr" localized="Exemple"/>
-    <LocalizedMessage original="Example" locale="it" localized="Esempio"/>
-    <LocalizedMessage original="Example" locale="zh" localized="样例"/>
+    <moqui.basic.LocalizedMessage original="Example" locale="es" localized="Ejemplo"/>
+    <moqui.basic.LocalizedMessage original="Example" locale="fr" localized="Exemple"/>
+    <moqui.basic.LocalizedMessage original="Example" locale="it" localized="Esempio"/>
+    <moqui.basic.LocalizedMessage original="Example" locale="zh" localized="样例"/>
 
-    <LocalizedMessage original="Example Feature" locale="es" localized="Característica Ejemplo"/>
-    <LocalizedMessage original="Example Feature" locale="fr" localized="Caractéristique exemple"/>
-    <LocalizedMessage original="Example Feature" locale="it" localized="Caratteristica Esempio"/>
-    <LocalizedMessage original="Example Feature" locale="zh" localized="样例特征"/>
+    <moqui.basic.LocalizedMessage original="Example Feature" locale="es" localized="Característica Ejemplo"/>
+    <moqui.basic.LocalizedMessage original="Example Feature" locale="fr" localized="Caractéristique exemple"/>
+    <moqui.basic.LocalizedMessage original="Example Feature" locale="it" localized="Caratteristica Esempio"/>
+    <moqui.basic.LocalizedMessage original="Example Feature" locale="zh" localized="样例特征"/>
 </entity-facade-xml>

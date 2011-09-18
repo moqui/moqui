@@ -15,20 +15,20 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Messages" default-menu-index="1">
 
     <transition name="createLocalizedMessage">
-        <service-call name="create#LocalizedMessage"/>
+        <service-call name="create#moqui.basic.LocalizedMessage"/>
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedMessage">
-        <service-call name="update#LocalizedMessage" multi="true"/>
+        <service-call name="update#moqui.basic.LocalizedMessage" multi="true"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedMessage">
-        <service-call name="delete#LocalizedMessage"/>
+        <service-call name="delete#moqui.basic.LocalizedMessage"/>
         <default-response url="."/>
     </transition>
 
     <actions>
-        <entity-find entity-name="LocalizedMessage" list="localizedMessageList" offset="0" limit="50">
+        <entity-find entity-name="moqui.basic.LocalizedMessage" list="localizedMessageList" offset="0" limit="50">
             <search-form-inputs default-order-by="original,locale"/>
         </entity-find>
     </actions>

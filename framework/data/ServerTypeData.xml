@@ -11,9 +11,9 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <EnumerationType description="Server Hit Type" enumTypeId="SERVER_HIT_TYPE"/>
-    <Enumeration description="screen" enumId="SHT_SCREEN" enumTypeId="SERVER_HIT_TYPE"/>
-    <Enumeration description="transition" enumId="SHT_TRANSITION" enumTypeId="SERVER_HIT_TYPE"/>
-    <Enumeration description="service" enumId="SHT_SERVICE" enumTypeId="SERVER_HIT_TYPE"/>
-    <Enumeration description="entity" enumId="SHT_ENTITY" enumTypeId="SERVER_HIT_TYPE"/>
+    <moqui.basic.EnumerationType description="Server Hit Type" enumTypeId="SERVER_HIT_TYPE"/>
+    <moqui.basic.Enumeration description="screen" enumId="SHT_SCREEN" enumTypeId="SERVER_HIT_TYPE"/>
+    <moqui.basic.Enumeration description="transition" enumId="SHT_TRANSITION" enumTypeId="SERVER_HIT_TYPE"/>
+    <moqui.basic.Enumeration description="service" enumId="SHT_SERVICE" enumTypeId="SERVER_HIT_TYPE"/>
+    <moqui.basic.Enumeration description="entity" enumId="SHT_ENTITY" enumTypeId="SERVER_HIT_TYPE"/>
 </entity-facade-xml>

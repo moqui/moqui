@@ -102,7 +102,7 @@ class EntityValueImpl implements EntityValue {
             }
         }
 
-        // if enabled use LocalizedEntityField for any localized fields
+        // if enabled use moqui.basic.LocalizedEntityField for any localized fields
         if (fieldNode."@enable-localization" == "true") {
             String localeStr = getEntityFacadeImpl().ecfi.getExecutionContext().getUser().getLocale()?.toString()
             if (localeStr) {
@@ -110,7 +110,7 @@ class EntityValueImpl implements EntityValue {
                 if (pks.size() == 1) {
                     String pkValue = get(pks.get(0))
                     if (pkValue) {
-                        EntityFind lefFind = getEntityFacadeImpl().makeFind("LocalizedEntityField")
+                        EntityFind lefFind = getEntityFacadeImpl().makeFind("moqui.basic.LocalizedEntityField")
                         lefFind.condition([entityName:entityName, fieldName:name, pkValue:pkValue, locale:localeStr])
                         EntityValue lefValue = lefFind.useCache(true).one()
                         if (lefValue) return lefValue.localized
@@ -122,8 +122,8 @@ class EntityValueImpl implements EntityValue {
                         }
                     }
                 }
-                // no luck? try getting a localized value from LocalizedMessage
-                EntityFind lmFind = getEntityFacadeImpl().makeFind("LocalizedMessage")
+                // no luck? try getting a localized value from moqui.basic.LocalizedMessage
+                EntityFind lmFind = getEntityFacadeImpl().makeFind("moqui.basic.LocalizedMessage")
                 lmFind.condition([original:valueMap.get(name), locale:localeStr])
                 EntityValue lmValue = lmFind.useCache(true).one()
                 if (lmValue) return lmValue.localized
@@ -498,7 +498,7 @@ class EntityValueImpl implements EntityValue {
                 if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
                 if (pkText) parms.pkRestCombinedValue = pkText
 
-                getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#EntityAuditLog").parameters(parms).call()
+                getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
         }
     }

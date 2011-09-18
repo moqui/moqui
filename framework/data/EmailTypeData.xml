@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <entity-facade-xml type="seed">
     <!-- NOTE: these are skeleton settings and some fields need to be filled in (probably best with another data file)
         for your specific installation in order to be functional -->
-    <EmailServer emailServerId="SYSTEM"
+    <moqui.basic.email.EmailServer emailServerId="SYSTEM"
                  smtpHost="" smtpPort="25" smtpStartTls="N" smtpSsl="N"
                  storeHost="" storePort="143" storeProtocol="imap" storeDelete="N"
                  mailUsername="" mailPassword=""/>
@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
         storeProtocol="pop3" storePort="110" (std) storePort="995" (ssl-pop)
     -->
 
-    <EmailTemplate emailTemplateId="PASSWORD_RESET" description="Default Password Reset" emailServerId="SYSTEM"
+    <moqui.basic.email.EmailTemplate emailTemplateId="PASSWORD_RESET" description="Default Password Reset" emailServerId="SYSTEM"
                    bodyScreenLocation="classpath://screen/PasswordReset.xml" webappName="webroot"
                    fromAddress="" ccAddresses="" bccAddresses=""
                    subject="Password Reset" sendPartial="Y"/>

@@ -13,10 +13,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
     <!-- ========================================================= -->
-    <!-- moqui.entity.tenant -->
+    <!-- moqui.tenant -->
     <!-- ========================================================= -->
 
-    <entity entity-name="Tenant" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="Tenant" package-name="moqui.tenant" group-name="tenantcommon">
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="tenantName" type="text-medium"/>
         <field name="isEnabled" type="text-indicator"/>
@@ -40,47 +40,47 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="emailSmtpStartTls" type="text-indicator"/>
         <field name="emailSmtpAllowNonSecure" type="text-indicator"/>
     </entity>
-    <entity entity-name="TenantCurrency" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="TenantCurrency" package-name="moqui.tenant" group-name="tenantcommon">
         <description>Each record represents a Currency UOM to be available to the tenant.
             If no records are present all system currencies will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="currencyUomId" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
-    <entity entity-name="TenantEmail" package-name="moqui.entity.tenant">
+    <entity entity-name="TenantEmail" package-name="moqui.tenant">
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="emailTypeEnumId" type="id" is-pk="true"/>
         <field name="fromDate" type="date-time" is-pk="true"/>
         <field name="thruDate" type="date-time"/>
         <field name="emailTemplateId" type="id"/>
-        <relationship type="one" related-entity-name="Tenant"/>
-        <relationship type="one" title="EmailType" related-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
+        <relationship type="one" title="EmailType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="emailTypeEnumId"/>
         </relationship>
-        <relationship type="one" related-entity-name="EmailTemplate"/>
+        <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
     </entity>
-    <entity entity-name="TenantLocale" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="TenantLocale" package-name="moqui.tenant" group-name="tenantcommon">
         <description>Each record represents a Locale to be available to the tenant.
             If no records are present all system locales will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="locale" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
-    <entity entity-name="TenantTimeZone" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="TenantTimeZone" package-name="moqui.tenant" group-name="tenantcommon">
         <description>Each record represents a Time Zone to be available to the tenant.
             If no records are present all system time zones will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="timeZone" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
-    <entity entity-name="TenantCountry" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="TenantCountry" package-name="moqui.tenant" group-name="tenantcommon">
         <description>Each record represents a Country (Geo) to be available to the tenant.
             If no records are present all system countries will be available.</description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="countryGeoId" type="id" is-pk="true"/>
-        <relationship type="one" related-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
-    <entity entity-name="TenantDataSource" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="TenantDataSource" package-name="moqui.tenant" group-name="tenantcommon">
         <description>
             There should be one record for each tenant and each group-map for the active EntityProxy.
             The jdbc fields will override the datasource -> inline-jdbc values for the per-tenant EntityProxy.
@@ -91,13 +91,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="jdbcUri" type="text-long"/>
         <field name="jdbcUsername" type="text-long"/>
         <field name="jdbcPassword" type="text-long"/>
-        <relationship type="one" related-entity-name="Tenant"/>
+        <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
-    <entity entity-name="TenantDataSourceXaProp" package-name="moqui.entity.tenant" group-name="tenantcommon">
+    <entity entity-name="TenantDataSourceXaProp" package-name="moqui.tenant" group-name="tenantcommon">
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="entityGroupName" type="text-medium" is-pk="true"/>
         <field name="propName" type="text-long" is-pk="true"/>
         <field name="propValue" type="text-long"/>
-        <relationship type="one" related-entity-name="TenantDataSource"/>
+        <relationship type="one" related-entity-name="moqui.tenant.TenantDataSource"/>
     </entity>
 </entities>

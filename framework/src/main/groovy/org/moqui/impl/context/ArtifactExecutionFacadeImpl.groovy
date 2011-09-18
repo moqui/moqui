@@ -194,7 +194,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                         // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
                         // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
-                        EntityList tarpitLockList = efi.makeFind("ArtifactTarpitLock")
+                        EntityList tarpitLockList = efi.makeFind("moqui.security.ArtifactTarpitLock")
                                 .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()])
                                 .useCache(true).list()
                                 .filterByCondition(efi.getConditionFactory().makeCondition("releaseDateTime", ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
@@ -204,7 +204,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     }
                     // record the tarpit lock
                     if (lockForSeconds > 0) {
-                        eci.getService().sync().name("create", "ArtifactTarpitLock").parameters((Map<String, Object>)
+                        eci.getService().sync().name("create", "moqui.security.ArtifactTarpitLock").parameters((Map<String, Object>)
                                 [userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                                 releaseDateTime:(new Timestamp(checkTime + (lockForSeconds*1000)))]).call()
                     }
@@ -234,7 +234,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             /*
             // The old way: one big cached query:
             Set<String> userGroupIdSet = ufi.getUserGroupIdSet()
-            EntityFind aacvFind = eci.entity.makeFind("ArtifactAuthzCheckView")
+            EntityFind aacvFind = eci.entity.makeFind("moqui.security.ArtifactAuthzCheckView")
                     .condition("artifactTypeEnumId", aeii.typeEnumId)
                     .condition(eci.entity.conditionFactory.makeCondition(
                         eci.entity.conditionFactory.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.name),
@@ -265,7 +265,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         continue
                     // check the record-level permission
                     if (aacv.get("viewEntityName")) {
-                        EntityValue artifactAuthzRecord = efi.makeFind("ArtifactAuthzRecord")
+                        EntityValue artifactAuthzRecord = efi.makeFind("moqui.security.ArtifactAuthzRecord")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).one()
                         EntityDefinition ed = efi.getEntityDefinition((String) aacv.viewEntityName)
                         EntityFind ef = efi.makeFind((String) aacv.viewEntityName)
@@ -278,11 +278,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             ef.conditionDate((String) artifactAuthzRecord.filterByDateFromField,
                                     (String) artifactAuthzRecord.filterByDateThruField, eci.user.nowTimestamp)
                         }
-                        EntityList condList = efi.makeFind("ArtifactAuthzRecordCond")
+                        EntityList condList = efi.makeFind("moqui.security.ArtifactAuthzRecordCond")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
                         for (EntityValue cond in condList) {
                             String expCondValue = eci.resource.evaluateStringExpand((String) cond.condValue,
-                                    "ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
+                                    "moqui.security.ArtifactAuthzRecordCond.${cond.artifactAuthzId}.${cond.artifactAuthzCondSeqId}")
                             if (expCondValue) {
                                 ef.condition((String) cond.fieldName,
                                         efi.conditionFactory.comparisonOperatorFromEnumId((String) cond.operatorEnumId),
@@ -336,7 +336,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                     for (def warnAei in this.stack) warning.append("\n").append(warnAei)
                     logger.warn(warning.toString())
 
-                    eci.getService().sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
+                    eci.getService().sync().name("create", "moqui.security.ArtifactAuthzFailure").parameters((Map<String, Object>)
                             [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                             authzActionEnumId:aeii.getActionEnumId(), userId:userId,
                             failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"Y"]).call()
@@ -365,7 +365,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                 // NOTE: this is called sync because failures should be rare and not as performance sensitive, and
                 //  because this is still in a disableAuthz block (if async a service would have to be written for that)
-                eci.service.sync().name("create", "ArtifactAuthzFailure").parameters((Map<String, Object>)
+                eci.service.sync().name("create", "moqui.security.ArtifactAuthzFailure").parameters((Map<String, Object>)
                         [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                         authzActionEnumId:aeii.getActionEnumId(), userId:userId,
                         failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"N"]).call()

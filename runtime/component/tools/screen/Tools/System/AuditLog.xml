@@ -15,7 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Audit Log">
 
     <actions>
-        <entity-find entity-name="EntityAuditLog" list="entityAuditLogList" limit="50">
+        <entity-find entity-name="moqui.entity.EntityAuditLog" list="entityAuditLogList" limit="50">
             <search-form-inputs default-order-by="-changedDate"/>
         </entity-find>
     </actions>

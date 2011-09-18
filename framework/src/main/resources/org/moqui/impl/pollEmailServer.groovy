@@ -25,7 +25,7 @@ final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.mo
 
 org.moqui.impl.context.ExecutionContextImpl ec
 
-def emailServer = ec.entity.makeFind("EmailTemplate").condition("emailServerId", emailServerId).one()
+def emailServer = ec.entity.makeFind("moqui.basic.email.EmailTemplate").condition("emailServerId", emailServerId).one()
 
 def sessionProperties = new Properties()
 sessionProperties.put("mail.store.protocol", emailServer.storeProtocol)

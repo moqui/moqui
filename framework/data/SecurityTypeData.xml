@@ -11,51 +11,51 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <EnumerationType description="Artifact Types" enumTypeId="ArtifactType"/>
-    <Enumeration description="Screen" enumId="AT_XML_SCREEN" enumTypeId="ArtifactType"/>
-    <Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ArtifactType"/>
-    <Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ArtifactType"/>
-    <Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ArtifactType"/>
+    <moqui.basic.EnumerationType description="Artifact Types" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Screen" enumId="AT_XML_SCREEN" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ArtifactType"/>
     <!-- not yet pushed/tracked/checked types below here
         some of these are experimental ideas and may not ever be implemented, or useful
-    <Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ArtifactType"/>
-    <Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ArtifactType"/>
-    <Enumeration description="Screen Section" enumId="AT_XML_SCREEN_SECTN" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
-    <Enumeration description="Screen Form" enumId="AT_XML_SCREEN_FORM" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
-    <Enumeration description="Screen Form Field" enumId="AT_XML_SCREEN_FFLD" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
-    <Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ArtifactType"/>
-    <Enumeration description="Script" enumId="AT_SCRIPT" enumTypeId="ArtifactType"/>
-    <Enumeration description="EntityField" enumId="AT_ENTITY_FIELD" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Screen Section" enumId="AT_XML_SCREEN_SECTN" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
+    <moqui.basic.Enumeration description="Screen Form" enumId="AT_XML_SCREEN_FORM" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
+    <moqui.basic.Enumeration description="Screen Form Field" enumId="AT_XML_SCREEN_FFLD" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
+    <moqui.basic.Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="Script" enumId="AT_SCRIPT" enumTypeId="ArtifactType"/>
+    <moqui.basic.Enumeration description="EntityField" enumId="AT_ENTITY_FIELD" enumTypeId="ArtifactType"/>
     -->
 
-    <EnumerationType description="Authorization Type" enumTypeId="AuthzType"/>
-    <Enumeration description="Allow" enumId="AUTHZT_ALLOW" enumTypeId="AuthzType"/>
-    <Enumeration description="Deny (overrides Allow)" enumId="AUTHZT_DENY" enumTypeId="AuthzType"/>
-    <Enumeration description="Always Allow (overrides Deny)" enumId="AUTHZT_ALWAYS" enumTypeId="AuthzType"/>
-    <!-- needed? <Enumeration description="Not Applicable" enumId="AUTHZT_NA" enumTypeId="AuthzType"/> -->
+    <moqui.basic.EnumerationType description="Authorization Type" enumTypeId="AuthzType"/>
+    <moqui.basic.Enumeration description="Allow" enumId="AUTHZT_ALLOW" enumTypeId="AuthzType"/>
+    <moqui.basic.Enumeration description="Deny (overrides Allow)" enumId="AUTHZT_DENY" enumTypeId="AuthzType"/>
+    <moqui.basic.Enumeration description="Always Allow (overrides Deny)" enumId="AUTHZT_ALWAYS" enumTypeId="AuthzType"/>
+    <!-- needed? <moqui.basic.Enumeration description="Not Applicable" enumId="AUTHZT_NA" enumTypeId="AuthzType"/> -->
 
-    <EnumerationType description="Authorization Action" enumTypeId="AuthzAction"/>
-    <Enumeration description="View" enumCode="VIEW" enumId="AUTHZA_VIEW" enumTypeId="AuthzAction"/>
-    <Enumeration description="Create" enumCode="CREATE" enumId="AUTHZA_CREATE" enumTypeId="AuthzAction"/>
-    <Enumeration description="Update" enumCode="UPDATE" enumId="AUTHZA_UPDATE" enumTypeId="AuthzAction"/>
-    <Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AuthzAction"/>
-    <Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AuthzAction"/>
+    <moqui.basic.EnumerationType description="Authorization Action" enumTypeId="AuthzAction"/>
+    <moqui.basic.Enumeration description="View" enumCode="VIEW" enumId="AUTHZA_VIEW" enumTypeId="AuthzAction"/>
+    <moqui.basic.Enumeration description="Create" enumCode="CREATE" enumId="AUTHZA_CREATE" enumTypeId="AuthzAction"/>
+    <moqui.basic.Enumeration description="Update" enumCode="UPDATE" enumId="AUTHZA_UPDATE" enumTypeId="AuthzAction"/>
+    <moqui.basic.Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AuthzAction"/>
+    <moqui.basic.Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AuthzAction"/>
 
     <!-- User Preference Keys can be declared in Enumeration records, but they don't have to be -->
-    <EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
+    <moqui.basic.EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
 
-    <UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
+    <moqui.security.UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
     
-    <UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
+    <moqui.security.UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
 
     <!-- A default/automatic group for all users -->
-    <UserGroup userGroupId="ALL_USERS" description="All Users (all users members by default)"/>
+    <moqui.security.UserGroup userGroupId="ALL_USERS" description="All Users (all users members by default)"/>
 
     <!-- Artifact Authz for UserAccount, user can view own info -->
-    <ArtifactGroup artifactGroupId="UserAccount" description="UserAccount entity."/>
-    <ArtifactGroupMember artifactGroupId="UserAccount" artifactName="moqui.security.user.UserAccount" nameIsPattern="N"
+    <moqui.security.ArtifactGroup artifactGroupId="UserAccount" description="UserAccount entity."/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="UserAccount" artifactName="moqui.security.user.UserAccount" nameIsPattern="N"
                          artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
-    <ArtifactAuthz artifactAuthzId="ALL_USERS_SELF" userGroupId="ALL_USERS" artifactGroupId="UserAccount"
+    <moqui.security.ArtifactAuthz artifactAuthzId="ALL_USERS_SELF" userGroupId="ALL_USERS" artifactGroupId="UserAccount"
                    authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_VIEW"/>
-    <ArtifactAuthzRecord artifactAuthzId="ALL_USERS_SELF" viewEntityName="UserAccount"/>
+    <moqui.security.ArtifactAuthzRecord artifactAuthzId="ALL_USERS_SELF" viewEntityName="moqui.security.UserAccount"/>
 </entity-facade-xml>

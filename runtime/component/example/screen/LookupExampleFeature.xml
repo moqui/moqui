@@ -21,7 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <search-form-inputs/>
             <order-by field-name="description"/>
         </entity-find>
-        <entity-find entity-name="Enumeration" list="featureSourceEnumList">
+        <entity-find entity-name="moqui.basic.Enumeration" list="featureSourceEnumList">
             <econdition field-name="enumTypeId" value="EXMPL_FEAT_SOURCE"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
@@ -48,7 +48,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="featureSourceEnumId">
                 <default-field title="Feature Source">
-                    <display-entity entity-name="Enumeration" text="${description} [${enumCode}]"/>
+                    <display-entity entity-name="moqui.basic.Enumeration" text="${description} [${enumCode}]"/>
                 </default-field>
             </field>
             <field name="description"><default-field title="Description"><display/></default-field></field>

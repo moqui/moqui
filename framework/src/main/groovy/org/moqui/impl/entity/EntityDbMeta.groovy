@@ -260,10 +260,13 @@ class EntityDbMeta {
                 int commonChars = 0
                 while (title.length() > commonChars && ed.entityName.length() > commonChars &&
                         title.charAt(commonChars) == ed.entityName.charAt(commonChars)) commonChars++
+                String relatedEntityName = relNode."@related-entity-name"
+                if (relatedEntityName.contains("."))
+                    relatedEntityName = relatedEntityName.substring(relatedEntityName.lastIndexOf(".")+1)
                 if (commonChars > 0) {
-                    indexName.append(ed.entityName).append(title.substring(commonChars)).append(relNode."@related-entity-name")
+                    indexName.append(ed.entityName).append(title.substring(commonChars)).append(relatedEntityName)
                 } else {
-                    indexName.append(ed.entityName).append(title).append(relNode."@related-entity-name")
+                    indexName.append(ed.entityName).append(title).append(relatedEntityName)
                 }
                 // logger.warn("ed.entityName=${ed.entityName}, title=${title}, commonChars=${commonChars}, indexName=${indexName}")
             }
@@ -376,10 +379,14 @@ class EntityDbMeta {
                 int commonChars = 0
                 while (title.length() > commonChars && ed.entityName.length() > commonChars &&
                         title.charAt(commonChars) == ed.entityName.charAt(commonChars)) commonChars++
+                // related-entity-name may have the entity's package-name in it; if so, remove it
+                String relatedEntityName = relNode."@related-entity-name"
+                if (relatedEntityName.contains("."))
+                    relatedEntityName = relatedEntityName.substring(relatedEntityName.lastIndexOf(".")+1)
                 if (commonChars > 0) {
-                    constraintName.append(ed.entityName).append(title.substring(commonChars)).append(relNode."@related-entity-name")
+                    constraintName.append(ed.entityName).append(title.substring(commonChars)).append(relatedEntityName)
                 } else {
-                    constraintName.append(ed.entityName).append(title).append(relNode."@related-entity-name")
+                    constraintName.append(ed.entityName).append(title).append(relatedEntityName)
                 }
                 // logger.warn("ed.entityName=${ed.entityName}, title=${title}, commonChars=${commonChars}, constraintName=${constraintName}")
             }

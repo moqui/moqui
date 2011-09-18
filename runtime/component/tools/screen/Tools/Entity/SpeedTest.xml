@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
             calls = baseCalls
             org.moqui.context.Cache testCache = ec.cache.getCache("test.cache")
             org.moqui.entity.EntityValue testEnumValue =
-                    ef.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
+                    ef.makeFind("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
 
             // to measure the cache time and not the condition creation time, create those in advance
             startTime = System.currentTimeMillis()
@@ -41,7 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 conditionList.add(ecf.makeCondition([enumId:"_NA_"+i]))
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"create EntityCondition", entity:"Enumeration", calls:calls, seconds:seconds,
+            performanceList.add([operation:"create EntityCondition", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -50,7 +50,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 testCache.put(conditionList[i], testEnumValue)
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"direct cache writes", entity:"Enumeration", calls:calls, seconds:seconds,
+            performanceList.add([operation:"direct cache writes", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -59,7 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 testCache.get(conditionList[i])
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"direct cache reads", entity:"Enumeration", calls:calls, seconds:seconds,
+            performanceList.add([operation:"direct cache reads", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -67,10 +67,10 @@ This Work includes contributions authored by David E. Jones, not as a
             calls = baseCalls
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
-                ef.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
+                ef.makeFind("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(true).one()
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"one PK cache", entity:"Enumeration", calls:calls, seconds:seconds,
+            performanceList.add([operation:"one PK cache", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 
@@ -78,10 +78,10 @@ This Work includes contributions authored by David E. Jones, not as a
             calls = baseCalls
             startTime = System.currentTimeMillis()
             for (int i = 0; i < calls; i++) {
-                ef.makeFind("Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
+                ef.makeFind("moqui.basic.Enumeration").condition([enumId:"_NA_"]).useCache(false).one()
             }
             seconds = (System.currentTimeMillis() - startTime) / 1000
-            performanceList.add([operation:"one PK", entity:"Enumeration", calls:calls, seconds:seconds,
+            performanceList.add([operation:"one PK", entity:"moqui.basic.Enumeration", calls:calls, seconds:seconds,
                     secsPerCall:decimalFormat.format(seconds / calls),
                     callsPerSecond:decimalFormat.format(calls / seconds)])
 

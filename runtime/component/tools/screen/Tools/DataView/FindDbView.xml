@@ -21,12 +21,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="../ViewDbView"/>
     </transition>
     <transition name="create">
-        <service-call name="create#DbViewEntity"/>
+        <service-call name="create#moqui.entity.DbViewEntity"/>
         <default-response url="."/>
     </transition>
 
     <actions>
-        <entity-find entity-name="DbViewEntity" list="dbViewEntityList">
+        <entity-find entity-name="moqui.entity.DbViewEntity" list="dbViewEntityList">
             <search-form-inputs/>
             <econdition field-name="isDataView" value="Y"/>
         </entity-find>

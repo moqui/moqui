@@ -11,11 +11,11 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <ArtifactGroup artifactGroupId="TOOLS_APP" description="Tools App (via root screen)"/>
-    <ArtifactGroupMember artifactGroupId="TOOLS_APP" artifactName="component://tools/screen/Tools.xml"
+    <moqui.security.ArtifactGroup artifactGroupId="TOOLS_APP" description="Tools App (via root screen)"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="TOOLS_APP" artifactName="component://tools/screen/Tools.xml"
                          artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
 
     <!-- Setup full permissions for the ADMIN user group -->
-    <ArtifactAuthz artifactAuthzId="TOOLS_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="TOOLS_APP"
+    <moqui.security.ArtifactAuthz artifactAuthzId="TOOLS_AUTHZ_1" userGroupId="ADMIN" artifactGroupId="TOOLS_APP"
                    authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_ALL"/>
 </entity-facade-xml>

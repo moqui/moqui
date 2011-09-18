@@ -310,14 +310,14 @@ class ScreenForm {
                         Node entityOptionsNode = dropDownNode.appendNode("entity-options")
                         Node entityFindNode = entityOptionsNode.appendNode("entity-find",
                                 ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
-                        if (relatedEntityName == "Enumeration") {
+                        if (relatedEntityName == "moqui.basic.Enumeration") {
                             // make sure the title is an actual enumTypeId before adding condition
-                            if (ecfi.entityFacade.makeFind("EnumerationType").condition("enumTypeId", title).count() > 0) {
+                            if (ecfi.entityFacade.makeFind("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
                                 entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
                             }
-                        } else if (relatedEntityName == "StatusItem") {
+                        } else if (relatedEntityName == "moqui.basic.StatusItem") {
                             // make sure the title is an actual statusTypeId before adding condition
-                            if (ecfi.entityFacade.makeFind("StatusType").condition("statusTypeId", title).count() > 0) {
+                            if (ecfi.entityFacade.makeFind("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
                                 entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
                             }
                         }

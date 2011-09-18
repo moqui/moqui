@@ -14,10 +14,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <view-entity entity-name="ExampleStatusDetail" package-name="moqui.example.example">
         <member-entity entity-alias="EXPL" entity-name="Example"/>
-        <member-entity entity-alias="EAL" entity-name="EntityAuditLog" join-from-alias="EXPL">
+        <member-entity entity-alias="EAL" entity-name="moqui.entity.EntityAuditLog" join-from-alias="EXPL">
             <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/>
         </member-entity>
-        <member-entity entity-alias="STIT" entity-name="StatusItem" join-from-alias="EAL">
+        <member-entity entity-alias="STIT" entity-name="moqui.basic.StatusItem" join-from-alias="EAL">
             <key-map field-name="pkPrimaryValue" related-field-name="statusId"/>
         </member-entity>
         <alias-all entity-alias="EXPL">
@@ -44,7 +44,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
 
     <view-entity entity-name="ExampleStatusItem" package-name="moqui.example.example">
-        <member-entity entity-alias="SI" entity-name="StatusItem"/>
+        <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem"/>
         <alias-all entity-alias="SI"/>
         <entity-condition>
             <econdition field-name="statusTypeId" operator="equals" value="Example"/>
@@ -55,7 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- Some examples of nested views and conditions for report -->
     <view-entity entity-name="ExampleFeatureApplAndEnum" package-name="moqui.example.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
-        <member-entity entity-alias="ENUM" entity-name="Enumeration" join-from-alias="EXFTAP">
+        <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
             <key-map field-name="exampleFeatureApplEnumId"/>
         </member-entity>
         <alias-all entity-alias="EXFTAP"/>
@@ -98,7 +98,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- example for nested view-entity with conditions on nested views -->
     <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="moqui.example.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
-        <member-entity entity-alias="ENUM" entity-name="Enumeration" join-from-alias="EXFTAP">
+        <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
             <key-map field-name="exampleFeatureApplEnumId"/>
         </member-entity>
         <alias-all entity-alias="EXFTAP"/>

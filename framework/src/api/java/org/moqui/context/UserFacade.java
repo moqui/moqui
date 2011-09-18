@@ -92,13 +92,13 @@ public interface UserFacade {
 
     Set<String> getUserGroupIdSet();
 
-    /** @return ID of the current active user (from the UserAccount entity). */
+    /** @return ID of the current active user (from the moqui.security.UserAccount entity). */
     String getUserId();
 
     /** @return Username of the current active user (NOT the UserAccount.userId, may even be a username from another system). */
     String getUsername();
 
-    /** @return EntityValue for the current active user (the UserAccount entity). */
+    /** @return EntityValue for the current active user (the moqui.security.UserAccount entity). */
     EntityValue getUserAccount();
 
     /** @return ID of the user associated with the visit. May be different from the active user ID if a service or something is run explicitly as another user. */

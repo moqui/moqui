@@ -171,13 +171,17 @@ class ServiceDefinition {
     Integer getTxTimeout() { return internalTransactionTimeout }
 
     static String getPathFromName(String serviceName) {
-        if (!serviceName.contains(".")) return null
-        return serviceName.substring(0, serviceName.lastIndexOf("."))
+        String p = serviceName
+        // do hash first since a noun following hash may have dots in it
+        if (p.contains("#")) p = p.substring(0, p.indexOf("#"))
+        if (!p.contains(".")) return null
+        return p.substring(0, p.lastIndexOf("."))
     }
     static String getVerbFromName(String serviceName) {
         String v = serviceName
-        if (v.contains(".")) v = v.substring(v.lastIndexOf(".") + 1)
+        // do hash first since a noun following hash may have dots in it
         if (v.contains("#")) v = v.substring(0, v.indexOf("#"))
+        if (v.contains(".")) v = v.substring(v.lastIndexOf(".") + 1)
         return v
     }
     static String getNounFromName(String serviceName) {

@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters><parameter name="userId" type="String" required="true"/></in-parameters>
         <actions>
             <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
-            <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
+            <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
             <set field="userAccount.successiveFailedLogins"
                  from="userAccount.successiveFailedLogins ? userAccount.successiveFailedLogins + 1 : 1"/>
             <set field="maxFailures" from="(ec.ecfi.confXmlRoot.'user-facade'[0].login[0].'@max-failures' ?: 3) as Integer"/>
@@ -52,10 +52,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <if condition="userId">
                 <then>
-                    <entity-find-one entity-name="UserAccount" value-field="userAccount"/>
+                    <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
                 </then>
                 <else-if condition="username">
-                    <entity-find-one entity-name="UserAccount" value-field="userAccount">
+                    <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
                         <field-map field-name="username"/>
                     </entity-find-one>
                 </else-if>
@@ -110,7 +110,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- if password is in the history don't allow it -->
             <set field="historyLimit" from="passwordNode.'@history-limit'" default-value="5" type="Integer"/>
-            <entity-find entity-name="UserPasswordHistory" list="duplicateUserPasswordHistoryList">
+            <entity-find entity-name="moqui.security.UserPasswordHistory" list="duplicateUserPasswordHistoryList">
                 <econdition field-name="userId" from="userId"/>
                 <!-- can't query by this field since it is encrypted: <econdition field-name="password" from="newPassword"/> -->
             </entity-find>
@@ -124,11 +124,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- from here on the newPassword is considered okay -->
 
             <!-- save history, then while more in history than password.@history-limit default 5 then remove oldest -->
-            <service-call name="create#UserPasswordHistory">
+            <service-call name="create#moqui.security.UserPasswordHistory">
                 <field-map field-name="userId"/>
                 <field-map field-name="password" from="newPassword"/>
             </service-call>
-            <entity-find entity-name="UserPasswordHistory" list="existingUserPasswordHistoryList">
+            <entity-find entity-name="moqui.security.UserPasswordHistory" list="existingUserPasswordHistoryList">
                 <econdition field-name="userId" from="userId"/>
                 <order-by field-name="fromDate"/>
             </entity-find>
@@ -138,7 +138,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <!-- encrypt password (using password.@encrypt-hash-type default SHA) and save -->
             <set field="salt" from="ec.ecfi.randomSalt"/>
-            <service-call name="update#UserAccount">
+            <service-call name="update#moqui.security.UserAccount">
                 <field-map field-name="userId"/>
                 <field-map field-name="currentPassword" from="ec.ecfi.getSimpleHash(newPassword, salt)"/>
                 <field-map field-name="passwordSalt" from="salt"/>
@@ -161,7 +161,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="username" required="true"/>
         </in-parameters>
         <actions>
-            <entity-find-one entity-name="UserAccount" value-field="userAccount">
+            <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
                 <field-map field-name="username"/>
             </entity-find-one>
             <if condition="!userAccount">
@@ -179,7 +179,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <set field="passwordNode" from="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
             <set field="salt" from="ec.ecfi.randomSalt"/>
-            <service-call name="update#UserAccount">
+            <service-call name="update#moqui.security.UserAccount">
                 <field-map field-name="userId" from="userAccount.userId"/>
                 <field-map field-name="currentPassword" from="ec.ecfi.getSimpleHash(newPassword, salt)"/>
                 <field-map field-name="passwordSalt" from="salt"/>
@@ -191,7 +191,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <script>userAccount.refresh()</script>
 
             <!-- send an email with the new password -->
-            <service-call name="org.moqui.impl.EmailServices.sendEmailTemplate">
+            <service-call name="org.moqui.impl.EmailServices.send#EmailTemplate">
                 <field-map field-name="emailTemplateId" value="PASSWORD_RESET"/>
                 <field-map field-name="toAddresses" from="userAccount.emailAddress"/>
                 <field-map field-name="bodyParameters" from="[userAccount:userAccount, newPassword:newPassword]"/>

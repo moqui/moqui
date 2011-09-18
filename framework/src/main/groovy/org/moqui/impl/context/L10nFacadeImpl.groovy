@@ -41,7 +41,7 @@ public class L10nFacadeImpl implements L10nFacade {
         }
 
         String localeString = locale.toString()
-        EntityFind find = ecfi.entityFacade.makeFind("LocalizedMessage")
+        EntityFind find = ecfi.entityFacade.makeFind("moqui.basic.LocalizedMessage")
         find.condition(["original":original, "locale":localeString]).useCache(true)
         EntityValue localizedMessage = find.one()
         if (!localizedMessage && localeString.contains('_')) {

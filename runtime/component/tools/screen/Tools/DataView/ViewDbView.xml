@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <entity-find-one entity-name="DbViewEntity" value-field="fieldValues"/>
+        <entity-find-one entity-name="moqui.entity.DbViewEntity" value-field="fieldValues"/>
         <entity-find entity-name="${dbViewEntityName}" list="dbViewList">
             <search-form-inputs/>
         </entity-find>

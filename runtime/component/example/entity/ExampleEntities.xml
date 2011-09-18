@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.example.example -->
     <!-- ========================================================= -->
 
-    <extend-entity entity-name="Example">
+    <extend-entity entity-name="Example" package-name="moqui.example.example">
         <field name="auditedField" type="text-long" enable-audit-log="true"/>
         <field name="encryptedField" type="text-long" encrypt="true"/>
         <field name="exampleEmail" type="text-long"/>
@@ -36,10 +36,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="anotherDate" type="date-time"/>
         <field name="anotherText" type="text-long"/>
         -->
-        <relationship type="one" title="ExampleType" related-entity-name="Enumeration">
+        <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="exampleTypeEnumId"/>
         </relationship>
-        <relationship type="one" title="Example" related-entity-name="StatusItem"/>
+        <relationship type="one" title="Example" related-entity-name="moqui.basic.StatusItem"/>
     </entity>
     <entity entity-name="ExampleItem" package-name="moqui.example.example">
         <field name="exampleId" type="id" is-pk="true"/>
@@ -47,10 +47,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="description" type="text-long"/>
         <field name="amount" type="number-float"/>
         <field name="amountUomId" type="id"/>
-        <relationship type="one" title="Amount" related-entity-name="Uom">
+        <relationship type="one" title="Amount" related-entity-name="moqui.basic.Uom">
             <key-map field-name="amountUomId"/>
         </relationship>
-        <relationship type="one" related-entity-name="Example"/>
+        <relationship type="one" related-entity-name="moqui.example.example.Example"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -61,7 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
         <field name="description" type="text-long"/>
-        <relationship type="one" title="ExampleFeatureSource" related-entity-name="Enumeration">
+        <relationship type="one" title="ExampleFeatureSource" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="featureSourceEnumId"/>
         </relationship>
     </entity>
@@ -72,9 +72,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="thruDate" type="date-time"/>
         <field name="exampleFeatureApplEnumId" type="id"/>
         <field name="sequenceNum" type="number-integer"/>
-        <relationship type="one" related-entity-name="Example"/>
-        <relationship type="one" related-entity-name="ExampleFeature"/>
-        <relationship type="one" title="ExampleFeatureAppl" related-entity-name="Enumeration">
+        <relationship type="one" related-entity-name="moqui.example.example.Example"/>
+        <relationship type="one" related-entity-name="moqui.example.example.ExampleFeature"/>
+        <relationship type="one" title="ExampleFeatureAppl" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="exampleFeatureApplEnumId"/>
         </relationship>
     </entity>

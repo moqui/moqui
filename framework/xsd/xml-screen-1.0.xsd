@@ -345,7 +345,7 @@ This Work includes contributions authored by David E. Jones, not as a
             2. for including screens that are part of another application, or shared and not in any application:
                subscreens-item elements below the screen -> subscreens element (this element)
             3. for adding screens, removing screens, or changing order and title of screens to an existing application:
-               a record in the SubscreensItem entity
+               a record in the moqui.screen.SubscreensItem entity
 
             There are two visual elements (widgets) that come from the subscreens, a menu and the active subscreen.
             Those are included with the widgets using the "subscreens-menu" and "subscreens-active" elements, or the

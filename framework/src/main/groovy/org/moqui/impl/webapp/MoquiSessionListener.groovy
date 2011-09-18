@@ -47,7 +47,7 @@ class MoquiSessionListener implements HttpSessionListener {
             ecfi.executionContext.artifactExecution.disableAuthz()
 
             // set thruDate on Visit
-            ecfi.serviceFacade.sync().name("update", "Visit")
+            ecfi.serviceFacade.sync().name("update", "moqui.server.Visit")
                     .parameters((Map<String, Object>) [visitId:visitId, thruDate:new Timestamp(System.currentTimeMillis())])
                     .call()
         } finally {

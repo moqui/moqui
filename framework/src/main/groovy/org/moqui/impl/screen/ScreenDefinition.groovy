@@ -123,8 +123,8 @@ class ScreenDefinition {
             if (logger.traceEnabled) logger.trace("Added XML defined subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
         }
 
-        // override dir structure and subscreens-item elements with SubscreensItem entity
-        EntityList subscreensItemList = sfi.ecfi.entityFacade.makeFind("SubscreensItem")
+        // override dir structure and subscreens-item elements with moqui.screen.SubscreensItem entity
+        EntityList subscreensItemList = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
                 .condition([screenLocation:location, userId:"_NA_"]).useCache(true).list()
         for (EntityValue subscreensItem in subscreensItemList) {
             SubscreensItem si = new SubscreensItem(subscreensItem)
@@ -133,7 +133,7 @@ class ScreenDefinition {
         }
         // override rest with SubscreensItem entity with userId of current user
         if (sfi.ecfi.executionContext.user.userId) {
-            EntityList userSubscreensItemList = sfi.ecfi.entityFacade.makeFind("SubscreensItem")
+            EntityList userSubscreensItemList = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
                     .condition([screenLocation:location, userId:sfi.ecfi.executionContext.user.userId]).useCache(true).list()
             for (EntityValue subscreensItem in userSubscreensItemList) {
                 SubscreensItem si = new SubscreensItem(subscreensItem)

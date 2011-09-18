@@ -24,10 +24,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>
             Poll an email server (IMAP or POP3) to receive messages. Each new message is processed using
             the Email-ECA rules. Messages are flagged as seen (if supported). Messages are deleted if the storeDelete
-            flag is set on the EmailServer record.
+            flag is set on the moqui.basic.email.EmailServer record.
 
             This is meant to be called as a scheduled service, run as often as you want to poll for new messages on a
-            particular server (configured in the corresponding EmailServer record).
+            particular server (configured in the corresponding moqui.basic.email.EmailServer record).
         </description>
         <in-parameters>
             <parameter name="emailServerId" required="true"/>

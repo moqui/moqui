@@ -292,7 +292,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             artifactHitBinByType.clear()
             for (Map<String, Object> ahb in ahbList) {
                 ahb.binEndDateTime = currentTimestamp
-                executionContext.service.sync().name("create", "ArtifactHitBin").parameters(ahb).call()
+                executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
             }
 
             // this destroy order is important as some use others so must be destroyed first
@@ -475,8 +475,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
-        if (artifactType == "service" && artifactName.contains("ArtifactHit")) return
-        if (artifactType == "entity" && artifactName == "ArtifactHit") return
+        if (artifactType == "service" && artifactName.contains("moqui.server.ArtifactHit")) return
+        if (artifactType == "entity" && artifactName == "moqui.server.ArtifactHit") return
 
         ExecutionContextImpl eci = this.getEci()
         long runningTimeMillis = endTime - startTime
@@ -520,7 +520,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             }
 
             // call async, let the server do it whenever
-            eci.service.async().name("create", "ArtifactHit").parameters(ahp).call()
+            eci.service.async().name("create", "moqui.server.ArtifactHit").parameters(ahp).call()
         }
         if (artifactPersistBin(artifactType, artifactSubType) && !getSkipStats()) {
             Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
@@ -553,7 +553,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // otherwise, persist the old (async so this is fast) and create a new one
         ahb.binEndDateTime = new Timestamp(binStartTime + hitBinLengthMillis)
-        executionContext.service.async().name("create", "ArtifactHitBin").parameters(ahb).call()
+        executionContext.service.async().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
 
         return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
     }

@@ -12,42 +12,42 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entity-facade-xml type="seed">
     <!-- Default Theme Extensions (rest of the theme defined in ScreenTypeData.xml) -->
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/smoothness/jquery-ui-1.8.14.custom.css"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/default.css"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-1.5.1.min.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-1.8.14.custom.min.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-timepicker-addon-0.9.3.min.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-combobox.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-validate-1.7-100644.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
                          resourceValue="/moqui.ico"/>
 
     <!-- Theme for Internal iPad apps -->
-    <Enumeration description="Internal Applications for iPad Theme Type" enumId="STT_INTERNAL_IPAD" enumTypeId="ScreenThemeType"/>
-    <ScreenTheme screenThemeId="DEFAULT_IPAD" screenThemeTypeEnumId="STT_INTERNAL_IPAD" description="Moqui Default iPad Theme: simple, flat, default"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
+    <moqui.basic.Enumeration description="Internal Applications for iPad Theme Type" enumId="STT_INTERNAL_IPAD" enumTypeId="ScreenThemeType"/>
+    <moqui.screen.ScreenTheme screenThemeId="DEFAULT_IPAD" screenThemeTypeEnumId="STT_INTERNAL_IPAD" description="Moqui Default iPad Theme: simple, flat, default"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/smoothness/jquery-ui-1.8.14.custom.css"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/default.css"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/ipad/css/ipad.css"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-1.5.1.min.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-1.8.14.custom.min.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-timepicker-addon-0.9.3.min.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-combobox.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-validate-1.7-100644.js"/>
-    <ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
                          resourceValue="/ipad.ico"/>
 </entity-facade-xml>
