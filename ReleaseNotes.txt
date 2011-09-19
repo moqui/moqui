@@ -18,9 +18,14 @@ This release includes:
     queries around 4 times faster than the already optimized speed
   - many small performance improvements, changes to get around Groovy and
     Java quirks
+- Change components to load in reverse of order initialized (later
+  components override earlier ones); ECFI:415
 - Entity Facade
   - Allow (optional) reference of entity by package-name + entity-name,
   - Change framework to reference all of its entities by fully qualified name
+  - Allow separator (hash) between title and related-entity-name in
+    relationship name now that related-entity-name may be packages and such,
+    and looks funny
   - Primary sequenced ID banking for better performance when creating
     records with sequenced single field primary key (default bank size 50)
 - Added support for other types of wiki files including MediaWiki, Textile,
@@ -486,11 +491,6 @@ This release includes:
 Tools probable for 1.0 final:
 ===========================================================================
 
-- Change components to load in reverse of order initialized (later
-  components override earlier ones); ECFI:415
-- Entity Facade
-  - Change title to go after related-entity-name in relationship name now
-    that related-entity-name may be packages and such, and looks funny
 - Screen Facade
   - List multi form submit button below and not in own column
   - Auto Screen move Edit button on list forms to left side (with XML Form

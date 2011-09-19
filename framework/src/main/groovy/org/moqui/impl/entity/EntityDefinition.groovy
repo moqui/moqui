@@ -127,7 +127,8 @@ public class EntityDefinition {
         if (relNode != null) return relNode
 
         relNode = (Node) this.internalEntityNode."relationship"
-                .find({ (it."@title" ?: "") + it."@related-entity-name" == relationshipName })
+                .find({ ((it."@title" ?: "") + it."@related-entity-name") == relationshipName ||
+                    ((it."@title" ?: "") + "#" + it."@related-entity-name") == relationshipName})
 
         // handle automatic reverse-many nodes (based on one node coming the other way)
         if (relNode == null) {

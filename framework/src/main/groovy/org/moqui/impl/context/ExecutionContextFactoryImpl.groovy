@@ -33,6 +33,7 @@ import org.apache.shiro.authc.credential.CredentialsMatcher
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.crypto.hash.SimpleHash
 import org.moqui.impl.StupidUtilities
+import org.apache.commons.collections.map.ListOrderedMap
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -46,7 +47,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected StupidClassLoader cachedClassLoader
 
-    protected final Map<String, String> componentLocationMap = new HashMap<String, String>()
+    protected final ListOrderedMap componentLocationMap = new ListOrderedMap()
 
     protected ThreadLocal<ExecutionContextImpl> activeContext = new ThreadLocal<ExecutionContextImpl>()
 
@@ -424,7 +425,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         if (componentLocationMap.containsKey(componentName))
             logger.warn("Overriding component [${componentName}] at [${componentLocationMap.get(componentName)}] with location [${baseLocation}] because another component of the same name was initialized.")
-        componentLocationMap.put(componentName, baseLocation)
+        // put at the beginning of the Map/List, components registered later override those registered earlier
+        componentLocationMap.put(0, componentName, baseLocation)
         logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
