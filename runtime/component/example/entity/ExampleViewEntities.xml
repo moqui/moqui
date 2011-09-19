@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.0.xsd">
 
-    <view-entity entity-name="ExampleStatusDetail" package-name="moqui.example.example">
+    <view-entity entity-name="ExampleStatusDetail" package-name="moqui.example">
         <member-entity entity-alias="EXPL" entity-name="Example"/>
         <member-entity entity-alias="EAL" entity-name="moqui.entity.EntityAuditLog" join-from-alias="EXPL">
             <key-map field-name="exampleId" related-field-name="pkPrimaryValue"/>
@@ -43,7 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-condition>
     </view-entity>
 
-    <view-entity entity-name="ExampleStatusItem" package-name="moqui.example.example">
+    <view-entity entity-name="ExampleStatusItem" package-name="moqui.example">
         <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem"/>
         <alias-all entity-alias="SI"/>
         <entity-condition>
@@ -53,7 +53,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
     
     <!-- Some examples of nested views and conditions for report -->
-    <view-entity entity-name="ExampleFeatureApplAndEnum" package-name="moqui.example.example">
+    <view-entity entity-name="ExampleFeatureApplAndEnum" package-name="moqui.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
         <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
             <key-map field-name="exampleFeatureApplEnumId"/>
@@ -61,7 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM"/>
     </view-entity>
-    <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="moqui.example.example">
+    <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="moqui.example">
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
         <member-entity entity-alias="EFAAE" entity-name="ExampleFeatureApplAndEnum" join-from-alias="EXFT">
             <key-map field-name="exampleFeatureId"/>
@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </alias-all>
         <alias name="typeDescription" entity-alias="EFAAE" field="description"/>
     </view-entity>
-    <view-entity entity-name="ExampleFeatureAndApplFullView" package-name="moqui.example.example">
+    <view-entity entity-name="ExampleFeatureAndApplFullView" package-name="moqui.example">
         <member-entity entity-alias="EX" entity-name="Example"/>
         <member-entity entity-alias="EFAAAE" entity-name="ExampleFeatureAndApplAndEnum" join-from-alias="EX">
             <key-map field-name="exampleId"/>
@@ -83,7 +83,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </alias-all>
         <alias name="featureDescription" entity-alias="EFAAAE" field="description"/>
     </view-entity>
-    <view-entity entity-name="ContrivedExamplesWithRequiredFeaturesReport" package-name="moqui.example.example">
+    <view-entity entity-name="ContrivedExamplesWithRequiredFeaturesReport" package-name="moqui.example">
         <member-entity entity-alias="EFAAFV" entity-name="ExampleFeatureAndApplFullView"/>
         <alias-all entity-alias="EFAAFV"/>
         <entity-condition>
@@ -96,7 +96,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </view-entity>
 
     <!-- example for nested view-entity with conditions on nested views -->
-    <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="moqui.example.example">
+    <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="moqui.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
         <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
             <key-map field-name="exampleFeatureApplEnumId"/>
@@ -110,7 +110,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="exampleFeatureApplEnumId" value="DESIRED"/>
         </entity-condition>
     </view-entity>
-    <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="moqui.example.example">
+    <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="moqui.example">
         <member-entity entity-alias="EFAATD" entity-name="ExampleFeatureApplAndTypeDesired"/>
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature" join-from-alias="EFAATD">
             <key-map field-name="exampleFeatureId"/>
