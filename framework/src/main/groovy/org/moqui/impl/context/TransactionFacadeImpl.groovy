@@ -35,11 +35,8 @@ import java.sql.Connection
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
 class TransactionFacadeImpl implements TransactionFacade {
-    protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TransactionFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi;
 
@@ -47,6 +44,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     protected TransactionManager tm
 
     private ThreadLocal<ArrayList<Exception>> transactionBeginStackList = new ThreadLocal<ArrayList<Exception>>()
+    private ThreadLocal<ArrayList<Long>> transactionBeginStartTimeList = new ThreadLocal<ArrayList<Long>>()
     private ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStackList = new ThreadLocal<ArrayList<RollbackInfo>>()
     private ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
     private ThreadLocal<List<Exception>> suspendedTxLocationStack = new ThreadLocal<List<Exception>>()
@@ -76,6 +74,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
 
         transactionBeginStackList.remove()
+        transactionBeginStartTimeList.remove()
         rollbackOnlyInfoStackList.remove()
         suspendedTxStackList.remove()
         suspendedTxLocationStack.remove()
@@ -103,6 +102,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
 
         transactionBeginStackList.remove()
+        transactionBeginStartTimeList.remove()
         rollbackOnlyInfoStackList.remove()
         suspendedTxStackList.remove()
         suspendedTxLocationStack.remove()
@@ -110,6 +110,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     TransactionManager getTransactionManager() { return tm }
     UserTransaction getUserTransaction() { return ut }
+    Long getCurrentTransactionStartTime() { return getTransactionBeginStartTimeList() ? getTransactionBeginStartTimeList().get(0) : null }
 
     protected ArrayList<Exception> getTransactionBeginStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()
@@ -117,6 +118,15 @@ class TransactionFacadeImpl implements TransactionFacade {
             list = new ArrayList<Exception>(10)
             list.add(null)
             transactionBeginStackList.set(list)
+        }
+        return list
+    }
+    protected ArrayList<Long> getTransactionBeginStartTimeList() {
+        ArrayList<Long> list = (ArrayList<Long>) transactionBeginStartTimeList.get()
+        if (!list) {
+            list = new ArrayList<Long>(10)
+            list.add(null)
+            transactionBeginStartTimeList.set(list)
         }
         return list
     }
@@ -230,6 +240,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             ut.begin()
 
             getTransactionBeginStack().set(0, new Exception("Tx Begin Placeholder"))
+            getTransactionBeginStartTimeList().set(0, System.currentTimeMillis())
 
             return true
         } catch (NotSupportedException e) {
@@ -278,6 +289,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         } finally {
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
+            if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
         }
     }
 
@@ -312,6 +324,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             // and removes better
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
+            if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
         }
     }
 
@@ -346,6 +359,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             // only do these after successful suspend
             getRollbackOnlyInfoStack().add(0, null)
             getTransactionBeginStack().add(0, null)
+            getTransactionBeginStartTimeList().add(0, null)
             getSuspendedTxStack().add(0, tx)
             getSuspendedTxLocationStack().add(0, new Exception("Transaction Suspend Location"))
             return true
@@ -364,6 +378,8 @@ class TransactionFacadeImpl implements TransactionFacade {
                 // only do these after successful resume
                 getRollbackOnlyInfoStack().remove(0)
                 getTransactionBeginStack().remove(0)
+                getTransactionBeginStartTimeList().remove(0)
+
                 sts.remove(0)
                 getSuspendedTxLocationStack().remove(0)
             } else {

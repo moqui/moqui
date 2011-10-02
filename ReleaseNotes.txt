@@ -22,12 +22,14 @@ This release includes:
   components override earlier ones); ECFI:415
 - Entity Facade
   - Allow (optional) reference of entity by package-name + entity-name,
-  - Change framework to reference all of its entities by fully qualified name
+  - Change framework to reference all its entities by fully qualified name
   - Allow separator (hash) between title and related-entity-name in
-    relationship name now that related-entity-name may be packages and such,
-    and looks funny
+    relationship name now that related-entity-name may be packages and
+    such, and looks funny
   - Primary sequenced ID banking for better performance when creating
     records with sequenced single field primary key (default bank size 50)
+  - Change lastUpdatedStamp to tx timestamp to sync/export/etc data without
+    splitting transactions
 - Added support for other types of wiki files including MediaWiki, Textile,
   TracWiki, and TWiki (in addition to Confluence)
 
