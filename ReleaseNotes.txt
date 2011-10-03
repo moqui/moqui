@@ -20,6 +20,9 @@ This release includes:
     Java quirks
 - Change components to load in reverse of order initialized (later
   components override earlier ones); ECFI:415
+- User Facade
+  - Added support for login via HTTP Basic Authorization, mostly for
+    things like RESTful services and support for clients using it
 - Entity Facade
   - Allow (optional) reference of entity by package-name + entity-name,
   - Change framework to reference all its entities by fully qualified name

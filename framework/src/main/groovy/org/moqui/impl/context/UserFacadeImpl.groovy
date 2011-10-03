@@ -12,9 +12,10 @@
 package org.moqui.impl.context
 
 import java.sql.Timestamp
+import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.Cookie
+import javax.servlet.http.HttpSession
 
 import org.apache.shiro.authc.AuthenticationException
 import org.apache.shiro.authc.UsernamePasswordToken
@@ -25,10 +26,8 @@ import org.apache.shiro.web.session.HttpServletSession
 
 import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
-import javax.servlet.http.HttpSession
 import org.moqui.entity.EntityList
 import org.moqui.impl.entity.EntityListImpl
-import org.moqui.entity.EntityCondition.ComparisonOperator
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -80,6 +79,17 @@ class UserFacadeImpl implements UserFacade {
             if (logger.traceEnabled) logger.trace("For new request found user [${userId}] in the session; userIdStack is [${this.usernameStack}]")
         } else {
             if (logger.traceEnabled) logger.trace("For new request NO user authenticated in the session; userIdStack is [${this.usernameStack}]")
+        }
+
+        // check for HTTP Basic Authorization for Authentication purposes
+        // NOTE: do this even if there is another user logged in, will go on stack
+        String authzHeader = request.getHeader("Authorization")
+        if (authzHeader && authzHeader.substring(0, 6).equals("Basic ")) {
+            String basicAuthEncoded = authzHeader.substring(6).trim()
+            String basicAuthAsString = basicAuthEncoded.decodeBase64()
+            String username = basicAuthAsString.substring(0, basicAuthAsString.indexOf(":"))
+            String password = basicAuthAsString.substring(basicAuthAsString.indexOf(":") + 1)
+            this.loginUser(username, password, null)
         }
 
         this.visitId = session.getAttribute("moqui.visitId")
