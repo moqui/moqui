@@ -30,6 +30,8 @@ This release includes:
     records with sequenced single field primary key (default bank size 50)
   - Change lastUpdatedStamp to tx timestamp to sync/export/etc data without
     splitting transactions
+- Screen Facade
+  - List multi form submit button below and not in own column
 - Added support for other types of wiki files including MediaWiki, Textile,
   TracWiki, and TWiki (in addition to Confluence)
 
@@ -494,7 +496,6 @@ Tools probable for 1.0 final:
 ===========================================================================
 
 - Screen Facade
-  - List multi form submit button below and not in own column
   - Auto Screen move Edit button on list forms to left side (with XML Form
     changes as needed to make it possible)
   - Filter menu rendering by authorization
