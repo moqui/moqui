@@ -59,11 +59,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </container-dialog>
         </container>
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
-            <auto-fields-entity entity-name="${detailEntityName}" field-type="display"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
             <field name="detailEntityName"><default-field><hidden/></default-field></field>
             <field name="edit"><default-field title="Edit"><submit/></default-field></field>
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
+            <auto-fields-entity entity-name="${detailEntityName}" field-type="display"/>
         </form-list>
     </widgets>
 </screen>

@@ -74,32 +74,35 @@ class ScreenForm {
             mergeFormNodes(newFormNode, esf.formNode, true)
         }
 
-        for (Node afsNode in baseFormNode."auto-fields-service") {
-            String serviceName = afsNode."@service-name"
-            if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
-            ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
-            if (serviceDef != null) {
-                addServiceFields(serviceDef, afsNode."@include"?:"in", afsNode."@field-type"?:"edit", newFormNode, ecfi)
-                continue
-            }
-            if (serviceName.contains("#")) {
-                EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
-                if (ed != null) {
-                    addEntityFields(ed, "all", afsNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), newFormNode)
+        for (Node formSubNode in baseFormNode.children()) {
+            if (formSubNode.name() == "field") {
+                newFormNode.append(StupidUtilities.deepCopyNode(formSubNode))
+            } else if (formSubNode.name() == "auto-fields-service") {
+                String serviceName = formSubNode."@service-name"
+                if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
+                ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
+                if (serviceDef != null) {
+                    addServiceFields(serviceDef, formSubNode."@include"?:"in", formSubNode."@field-type"?:"edit", newFormNode, ecfi)
                     continue
                 }
+                if (serviceName.contains("#")) {
+                    EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
+                    if (ed != null) {
+                        addEntityFields(ed, "all", formSubNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), newFormNode)
+                        continue
+                    }
+                }
+                throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${newFormNode."@name"}] of screen [${sd.location}]")
+            } else if (formSubNode.name() == "auto-fields-entity") {
+                String entityName = formSubNode."@entity-name"
+                if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
+                EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
+                if (ed != null) {
+                    addEntityFields(ed, formSubNode."@include"?:"all", formSubNode."@field-type"?:"find-display", null, newFormNode)
+                    continue
+                }
+                throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-fields-entity of form [${newFormNode."@name"}] of screen [${sd.location}]")
             }
-            throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${newFormNode."@name"}] of screen [${sd.location}]")
-        }
-        for (Node afeNode in baseFormNode."auto-fields-entity") {
-            String entityName = afeNode."@entity-name"
-            if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
-            EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
-            if (ed != null) {
-                addEntityFields(ed, afeNode."@include"?:"all", afeNode."@field-type"?:"find-display", null, newFormNode)
-                continue
-            }
-            throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-fields-entity of form [${newFormNode."@name"}] of screen [${sd.location}]")
         }
 
         // merge original formNode to override any applicable settings

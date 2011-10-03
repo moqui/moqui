@@ -22,9 +22,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:annotation><xs:documentation>A single form is used to view or edit fields of a single map/hash/record/etc.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-service"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-entity"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element minOccurs="0" ref="auto-fields-service"/>
+                    <xs:element minOccurs="0" ref="auto-fields-entity"/>
+                    <xs:element minOccurs="0" ref="field"/>
+                </xs:choice>
                 <xs:element minOccurs="0" ref="field-layout"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
@@ -57,9 +59,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="row-actions"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-service"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="auto-fields-entity"/>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="field"/>
+                <xs:choice minOccurs="0" maxOccurs="unbounded">
+                    <xs:element minOccurs="0" ref="auto-fields-service"/>
+                    <xs:element minOccurs="0" ref="auto-fields-entity"/>
+                    <xs:element minOccurs="0" ref="field"/>
+                </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="form-list-column"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required"/>
