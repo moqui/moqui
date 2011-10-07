@@ -11,41 +11,13 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <moqui.basic.EnumerationType description="Artifact Types" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="Screen" enumId="AT_XML_SCREEN" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ArtifactType"/>
-    <!-- not yet pushed/tracked/checked types below here
-        some of these are experimental ideas and may not ever be implemented, or useful
-    <moqui.basic.Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="Screen Section" enumId="AT_XML_SCREEN_SECTN" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
-    <moqui.basic.Enumeration description="Screen Form" enumId="AT_XML_SCREEN_FORM" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
-    <moqui.basic.Enumeration description="Screen Form Field" enumId="AT_XML_SCREEN_FFLD" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
-    <moqui.basic.Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="Script" enumId="AT_SCRIPT" enumTypeId="ArtifactType"/>
-    <moqui.basic.Enumeration description="EntityField" enumId="AT_ENTITY_FIELD" enumTypeId="ArtifactType"/>
-    -->
+    <!-- An EmailTemplate for password reset email -->
+    <moqui.basic.email.EmailTemplate emailTemplateId="PASSWORD_RESET" description="Default Password Reset" emailServerId="SYSTEM"
+                   bodyScreenLocation="classpath://screen/PasswordReset.xml" webappName="webroot"
+                   fromAddress="" ccAddresses="" bccAddresses=""
+                   subject="Password Reset" sendPartial="Y"/>
 
-    <moqui.basic.EnumerationType description="Authorization Type" enumTypeId="AuthzType"/>
-    <moqui.basic.Enumeration description="Allow" enumId="AUTHZT_ALLOW" enumTypeId="AuthzType"/>
-    <moqui.basic.Enumeration description="Deny (overrides Allow)" enumId="AUTHZT_DENY" enumTypeId="AuthzType"/>
-    <moqui.basic.Enumeration description="Always Allow (overrides Deny)" enumId="AUTHZT_ALWAYS" enumTypeId="AuthzType"/>
-    <!-- needed? <moqui.basic.Enumeration description="Not Applicable" enumId="AUTHZT_NA" enumTypeId="AuthzType"/> -->
-
-    <moqui.basic.EnumerationType description="Authorization Action" enumTypeId="AuthzAction"/>
-    <moqui.basic.Enumeration description="View" enumCode="VIEW" enumId="AUTHZA_VIEW" enumTypeId="AuthzAction"/>
-    <moqui.basic.Enumeration description="Create" enumCode="CREATE" enumId="AUTHZA_CREATE" enumTypeId="AuthzAction"/>
-    <moqui.basic.Enumeration description="Update" enumCode="UPDATE" enumId="AUTHZA_UPDATE" enumTypeId="AuthzAction"/>
-    <moqui.basic.Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AuthzAction"/>
-    <moqui.basic.Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AuthzAction"/>
-
-    <!-- User Preference Keys can be declared in Enumeration records, but they don't have to be -->
-    <moqui.basic.EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
-
-    <moqui.security.UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
-    
+    <!-- An group for full-access Administrators -->
     <moqui.security.UserGroup userGroupId="ADMIN" description="Administrators (full access)"/>
 
     <!-- A default/automatic group for all users -->

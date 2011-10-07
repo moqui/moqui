@@ -43,6 +43,24 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="ArtifactType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="artifactTypeEnumId"/>
         </relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Artifact Types" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Screen" enumId="AT_XML_SCREEN" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ArtifactType"/>
+            <!-- not yet pushed/tracked/checked types below here
+                some of these are experimental ideas and may not ever be implemented, or useful
+            <moqui.basic.Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="WebApp" enumId="AT_WEB_APP" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Screen Section" enumId="AT_XML_SCREEN_SECTN" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
+            <moqui.basic.Enumeration description="Screen Form" enumId="AT_XML_SCREEN_FORM" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
+            <moqui.basic.Enumeration description="Screen Form Field" enumId="AT_XML_SCREEN_FFLD" enumTypeId="ArtifactType"/><!- - if no permission don't throw error, just don't display - ->
+            <moqui.basic.Enumeration description="Template" enumId="AT_TEMPLATE" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Script" enumId="AT_SCRIPT" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="EntityField" enumId="AT_ENTITY_FIELD" enumTypeId="ArtifactType"/>
+            -->
+        </seed-data>
     </entity>
 
     <!-- ========== Artifact Authz ========== -->
@@ -72,6 +90,20 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="AuthzAction" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="authzActionEnumId"/>
         </relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Authorization Type" enumTypeId="AuthzType"/>
+            <moqui.basic.Enumeration description="Allow" enumId="AUTHZT_ALLOW" enumTypeId="AuthzType"/>
+            <moqui.basic.Enumeration description="Deny (overrides Allow)" enumId="AUTHZT_DENY" enumTypeId="AuthzType"/>
+            <moqui.basic.Enumeration description="Always Allow (overrides Deny)" enumId="AUTHZT_ALWAYS" enumTypeId="AuthzType"/>
+            <!-- needed? <moqui.basic.Enumeration description="Not Applicable" enumId="AUTHZT_NA" enumTypeId="AuthzType"/> -->
+
+            <moqui.basic.EnumerationType description="Authorization Action" enumTypeId="AuthzAction"/>
+            <moqui.basic.Enumeration description="View" enumCode="VIEW" enumId="AUTHZA_VIEW" enumTypeId="AuthzAction"/>
+            <moqui.basic.Enumeration description="Create" enumCode="CREATE" enumId="AUTHZA_CREATE" enumTypeId="AuthzAction"/>
+            <moqui.basic.Enumeration description="Update" enumCode="UPDATE" enumId="AUTHZA_UPDATE" enumTypeId="AuthzAction"/>
+            <moqui.basic.Enumeration description="Delete" enumCode="DELETE" enumId="AUTHZA_DELETE" enumTypeId="AuthzAction"/>
+            <moqui.basic.Enumeration description="All" enumCode="ALL" enumId="AUTHZA_ALL" enumTypeId="AuthzAction"/>
+        </seed-data>
     </entity>
     <entity entity-name="ArtifactAuthzFailure" package-name="moqui.security" cache="false">
         <field name="failureId" type="text-long" is-pk="true"/>
@@ -207,6 +239,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- NOTE: both username and emailAddress must be unique -->
         <index name="USERACCT_USERNAME" unique="true"><index-field name="username"/></index>
         <index name="USERACCT_EMAILADDR" unique="true"><index-field name="emailAddress"/></index>
+        <seed-data>
+            <moqui.security.UserAccount userId="_NA_" username="_NA_" userFullName="Not Applicable" currentPassword="" disabled="Y"/>
+        </seed-data>
     </entity>
     <entity entity-name="UserGroup" package-name="moqui.security">
         <field name="userGroupId" type="id" is-pk="true"/>
@@ -279,6 +314,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK because any key can be used whether or not there is an Enumeration record for it.</description>
             <key-map field-name="preferenceKey"/>
         </relationship>
+        <seed-data>
+            <!-- User Preference Keys can be declared in Enumeration records, but they don't have to be -->
+            <moqui.basic.EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
+        </seed-data>
     </entity>
     <entity entity-name="UserScreenTheme" package-name="moqui.security" authorize-skip="view">
         <field name="userId" type="id-very-long" is-pk="true"/>

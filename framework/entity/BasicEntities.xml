@@ -332,9 +332,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="mailUsername" type="text-long"/>
         <field name="mailPassword" type="text-long" encrypt="true"/>
         <seed-data>
-            <moqui.basic.email.EmailServer emailServerId="SYSTEM" smtpRelayHost=""
-                                           smtpUsername="" smtpPassword=""
-                                           smtpPort="" smtpStartTls="" smtpSsl=""/>
+            <!-- NOTE: these are skeleton settings and some fields need to be filled in (probably best with another data file)
+                for your specific installation in order to be functional -->
+            <moqui.basic.email.EmailServer emailServerId="SYSTEM"
+                         smtpHost="" smtpPort="25" smtpStartTls="N" smtpSsl="N"
+                         storeHost="" storePort="143" storeProtocol="imap" storeDelete="N"
+                         mailUsername="" mailPassword=""/>
+            <!-- Other common values:
+                smtpPort="25" (std) smtpPort="465" (ssmtp) smtpPort="587" (ssmtp?)
+                storeProtocol="imap" storePort="143" (std) storePort="585" (imap4-ssl) storePort="993" (imaps)
+                storeProtocol="pop3" storePort="110" (std) storePort="995" (ssl-pop)
+            -->
         </seed-data>
     </entity>
     <entity entity-name="EmailTemplate" package-name="moqui.basic.email" cache="true">

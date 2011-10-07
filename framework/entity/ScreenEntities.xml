@@ -51,6 +51,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="ScreenThemeType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
+        <seed-data>
+            <!-- Screen Themes -->
+            <moqui.basic.EnumerationType description="Screen Theme Type" enumTypeId="ScreenThemeType"/>
+            <moqui.basic.Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL" enumTypeId="ScreenThemeType"/>
+            <moqui.basic.Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC" enumTypeId="ScreenThemeType"/>
+
+            <!-- Default Theme -->
+            <moqui.screen.ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL"
+                                      description="Moqui Default Theme: simple, flat, default"/>
+            <!-- NOTE: the default webroot component extends this theme, see the WebrootThemeData.xml file for more -->
+        </seed-data>
     </entity>
     <entity entity-name="ScreenThemeResource" package-name="moqui.screen" authorize-skip="view" cache="true">
         <field name="screenThemeId" type="id" is-pk="true"/>
@@ -63,6 +74,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="ScreenThemeResourceType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="resourceTypeEnumId" related-field-name="enumId"/>
         </relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Screen Theme Resource Type" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Style Sheet (CSS) URL" enumId="STRT_STYLESHEET" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Script URL" enumId="STRT_SCRIPT" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="ScreenThemeResourceType"/>
+        </seed-data>
     </entity>
 
     <!-- ========================================================= -->
@@ -197,6 +215,26 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="enumTypeId"/>
         </relationship>
     </entity>
+    <moqui.basic.EnumerationType description="Dynamic Form Field Type" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Boolean (Yes/No)" enumId="DFFT_BOOLEAN" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Content Record" enumId="DFFT_CONTENT" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Country" enumId="DFFT_COUNTRY" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Credit Card Number" enumId="DFFT_CREDIT_CARD" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Date String (yyyy-MM-dd)" enumId="DFFT_DATE" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Date String (yyyy-MM-dd hh:mm:ss)" enumId="DFFT_DATE_TIME" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Email Address" enumId="DFFT_EMAIL" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Enumeration" enumId="DFFT_ENUMERATION" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Numeric" enumId="DFFT_NUMBER" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Selected Option" enumId="DFFT_OPTION" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Password" enumId="DFFT_PASSWORD" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Separator Line" enumId="DFFT_SEPARATOR_LINE" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Separator Text" enumId="DFFT_SEPARATOR_TEXT" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="State/Province" enumId="DFFT_STATE_PROVINCE" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Short Text (single-line)" enumId="DFFT_TEXT_SHORT" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Long Text (single-line)" enumId="DFFT_TEXT_LONG" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Text (multi-line)" enumId="DFFT_TEXTAREA" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="Time String (hh:mm:ss)" enumId="DFFT_TIME" enumTypeId="DYNFORM_FIELD_TYPE"/>
+    <moqui.basic.Enumeration description="URL" enumId="DFFT_URL" enumTypeId="DYNFORM_FIELD_TYPE"/>
     <entity entity-name="DynamicFormFieldOption" package-name="moqui.screen.form">
         <field name="dynamicFormFieldId" type="id" is-pk="true"/>
         <field name="dynamicFormOptionSeqId" type="id" is-pk="true"/>
