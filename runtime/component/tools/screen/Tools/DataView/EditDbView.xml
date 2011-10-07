@@ -153,7 +153,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </entity-find-one>
                 <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo('+entityName', false)"/>
                 <set field="masterFieldList"
-                      from="ec.entity.getAllEntityRelatedFields(fieldValues?.entityName, orderByField?:'+fieldName', dbViewEntityName)"/>
+                    from="ec.entity.getAllEntityRelatedFields(fieldValues?.entityName, orderByField?:'+entityName', dbViewEntityName)"/>
             </actions>
             <widgets>
                 <form-single name="SetMasterEntity" transition="setMasterEntity">
