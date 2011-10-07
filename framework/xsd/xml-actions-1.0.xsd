@@ -37,6 +37,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:element ref="IfBasicOperations"/>
             <xs:element ref="IfOtherOperations"/>
             <xs:element ref="OtherOperations"/>
+            <!-- allow additional elements without validation to facilitate extension by adding only FTL macros -->
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
         </xs:choice>
     </xs:group>
 

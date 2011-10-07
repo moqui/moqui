@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.entity
 
-import javax.transaction.Transaction
 import javax.xml.parsers.SAXParserFactory
 
 import org.apache.commons.codec.binary.Base64
@@ -33,7 +32,6 @@ import org.xml.sax.XMLReader
 import org.xml.sax.InputSource
 import org.xml.sax.Locator
 import org.xml.sax.SAXException
-import org.apache.commons.collections.set.ListOrderedSet
 
 class EntityDataLoaderImpl implements EntityDataLoader {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -92,6 +90,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     void internalRun(EntityXmlHandler exh) {
         // if no xmlText or locations, so find all of the component and entity-facade files
         if (!this.xmlText && !this.locationList) {
+            // if we're loading seed type data, add entity def files to the list of locations to load
+            if (!dataTypes || dataTypes.contains("seed")) {
+                for (ResourceReference entityRr in efi.getAllEntityFileLocations()) locationList.add(entityRr.location)
+            }
+
             // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
             for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
                 locationList.add(loadData."@location")
@@ -227,6 +230,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected long valuesRead = 0
         protected List<String> messageList = new LinkedList()
 
+        protected boolean loadElements = false
+
         EntityXmlHandler(EntityDataLoaderImpl edli, ValueHandler valueHandler) {
             this.edli = edli
             this.valueHandler = valueHandler
@@ -241,8 +246,15 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             if (qName == "entity-facade-xml") {
                 String type = attributes.getValue("type")
                 if (type && edli.dataTypes && !edli.dataTypes.contains(type)) throw new TypeToSkipException()
+                loadElements = true
+                return
+            } else if (qName == "seed-data") {
+                loadElements = true
                 return
             }
+
+
+            if (!loadElements) return
 
             if (currentValue != null) {
                 // nested value/CDATA element
@@ -255,7 +267,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
 
                 if (edli.efi.getEntityDefinition(entityName)) {
-                    currentValue = edli.efi.makeValue(entityName)
+                    currentValue = (EntityValueImpl) edli.efi.makeValue(entityName)
 
                     int length = attributes.getLength()
                     for (int i = 0; i < length; i++) {
@@ -288,7 +300,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
         }
         void endElement(String ns, String localName, String qName) {
-            if (qName == "entity-facade-xml") return
+            if (qName == "entity-facade-xml" || qName == "seed-data") {
+                loadElements = false
+                return
+            }
+            if (!loadElements) return
             if (currentValue != null) {
                 if (currentFieldName != null) {
                     if (currentFieldValue) {

@@ -33,6 +33,8 @@ This release includes:
     records with sequenced single field primary key (default bank size 50)
   - Change lastUpdatedStamp to tx timestamp to sync/export/etc data without
     splitting transactions
+  - TODO Supports seed-data element in entity and extend-entity elements so
+    that seed data can be defined and managed along with entity definitions
 - Screen Facade
   - List multi form submit button below and not in own column
   - Allow field, auto-fields-entity, and auto-fields-service to appear in

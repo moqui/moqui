@@ -28,6 +28,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:choice>
             <xs:element ref="AllWidgets"/>
             <xs:element ref="StandaloneFields"/>
+            <!-- allow additional elements without validation to facilitate extension by adding only FTL macros -->
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
         </xs:choice>
     </xs:group>
 

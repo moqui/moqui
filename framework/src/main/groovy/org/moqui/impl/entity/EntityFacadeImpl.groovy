@@ -234,10 +234,12 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    protected synchronized void loadAllEntityLocations() {
+    List<ResourceReference> getAllEntityFileLocations() {
+        List<ResourceReference> entityRrList = new LinkedList()
+
         // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
         for (Node loadEntity in this.ecfi.getConfXmlRoot()."entity-facade"[0]."load-entity") {
-            this.loadEntityFileLocations(this.ecfi.resourceFacade.getLocationReference(loadEntity."@location"))
+            entityRrList.add(this.ecfi.resourceFacade.getLocationReference(loadEntity."@location"))
         }
 
         // loop through components look for XML files in the entity directory, check each for "<entities>" root element
@@ -249,13 +251,20 @@ class EntityFacadeImpl implements EntityFacade {
                 // get all files in the directory
                 for (ResourceReference entityRr in entityDirRr.directoryEntries) {
                     if (!entityRr.isFile() || !entityRr.location.endsWith(".xml")) continue
-                    this.loadEntityFileLocations(entityRr)
+                    entityRrList.add(entityRr)
                 }
             } else {
                 // just warn here, no exception because any non-file component location would blow everything up
                 logger.warn("Cannot load entity directory in component location [${location}] because protocol [${entityDirRr.uri.scheme}] is not supported.")
             }
         }
+
+        return entityRrList
+    }
+
+    protected synchronized void loadAllEntityLocations() {
+        // load all entity files based on ResourceReference
+        for (ResourceReference entityRr in getAllEntityFileLocations()) this.loadEntityFileLocations(entityRr)
 
         // look for view-entity definitions in the database (moqui.entity.DbViewEntity)
         if (entityLocationCache.get("moqui.entity.DbViewEntity")) {
