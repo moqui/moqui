@@ -76,7 +76,7 @@ class ScreenForm {
 
         for (Node formSubNode in baseFormNode.children()) {
             if (formSubNode.name() == "field") {
-                newFormNode.append(StupidUtilities.deepCopyNode(formSubNode))
+                mergeFieldNode(newFormNode, StupidUtilities.deepCopyNode(formSubNode), false)
             } else if (formSubNode.name() == "auto-fields-service") {
                 String serviceName = formSubNode."@service-name"
                 if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
