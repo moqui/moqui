@@ -16,6 +16,8 @@ import org.moqui.context.ExecutionContext
 import org.moqui.impl.StupidUtilities
 
 class UrlResourceReference implements ResourceReference {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UrlResourceReference.class)
+
     URL locationUrl = null
     ExecutionContext ec = null
     Boolean exists = null
@@ -36,6 +38,12 @@ class UrlResourceReference implements ResourceReference {
             isFile = (locationUrl?.protocol == "file")
         }
         return this
+    }
+
+    File getFile() {
+        // NOTE: using toExternalForm().substring(5) instead of toURI because URI does not allow spaces in a filename
+        File f = new File(locationUrl.toExternalForm().substring(5))
+        return f
     }
 
     @Override
@@ -75,8 +83,7 @@ class UrlResourceReference implements ResourceReference {
     @Override
     boolean isFile() {
         if (isFile) {
-            File f = new File(locationUrl.toURI())
-            return f.isFile()
+            return getFile().isFile()
         } else {
             throw new IllegalArgumentException("Is file not supported for resource with protocol [${locationUrl.protocol}]")
         }
@@ -84,8 +91,7 @@ class UrlResourceReference implements ResourceReference {
     @Override
     boolean isDirectory() {
         if (isFile) {
-            File f = new File(locationUrl.toURI())
-            return f.isDirectory()
+            return getFile().isDirectory()
         } else {
             throw new IllegalArgumentException("Is directory not supported for resource with protocol [${locationUrl.protocol}]")
         }
@@ -93,7 +99,7 @@ class UrlResourceReference implements ResourceReference {
     @Override
     List<ResourceReference> getDirectoryEntries() {
         if (isFile) {
-            File f = new File(locationUrl.toURI())
+            File f = getFile()
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
                 children.add(new UrlResourceReference().init(dirFile.toURI().toString(), ec))
@@ -111,8 +117,7 @@ class UrlResourceReference implements ResourceReference {
         if (exists != null) return exists
 
         if (isFile) {
-            File f = new File(locationUrl.toURI())
-            exists = f.exists()
+            exists = getFile().exists()
             return exists
         } else {
             throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl.protocol}]")
@@ -122,8 +127,7 @@ class UrlResourceReference implements ResourceReference {
     boolean supportsLastModified() { isFile }
     long getLastModified() {
         if (isFile) {
-            File f = new File(locationUrl.toURI())
-            return f.lastModified()
+            return getFile().lastModified()
         } else {
             System.currentTimeMillis()
         }

@@ -17,11 +17,8 @@ import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
 
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-
 class ScreenUrlInfo {
-    protected final static Logger logger = LoggerFactory.getLogger(ScreenUrlInfo.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenUrlInfo.class)
 
     ScreenRenderImpl sri
 
