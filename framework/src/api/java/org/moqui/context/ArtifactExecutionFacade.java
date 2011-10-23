@@ -46,11 +46,20 @@ public interface ArtifactExecutionFacade {
      *         disable to enable it.
      */
     boolean disableAuthz();
-
     /** Enable authorization after a disableAuthz() call. Not that this should be done in a finally block with the code
      * following the disableAuthz() in the corresponding try block. If this is not in a finally block an exception may
      * result in authorizations being disabled for the rest of the scope of the ExecutionContext (a potential security
      * whole).
      */
     void enableAuthz();
+
+    /** Disable Entity Facade ECA rules (for this thread/ExecutionContext only, does not affect other things happening
+     * in the system).
+     * @return boolean following same pattern as disableAuthz(), and should be handled the same way.
+     */
+    boolean disableEntityEca();
+    /** Disable Entity Facade ECA rules (for this thread/ExecutionContext only, does not affect other things happening
+     * in the system).
+     */
+    void enableEntityEca();
 }

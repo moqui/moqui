@@ -53,6 +53,7 @@ import java.sql.SQLException
 import org.moqui.entity.EntityListIterator
 import org.moqui.impl.context.CacheImpl
 import net.sf.ehcache.Ehcache
+import org.moqui.impl.context.ArtifactExecutionFacadeImpl
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -517,6 +518,9 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     void runEecaRules(String entityName, Map fieldValues, String operation, boolean before) {
+        // if Entity ECA rules disabled in ArtifactExecutionFacade, just return immediately
+        if (((ArtifactExecutionFacadeImpl) this.ecfi.getEci().getArtifactExecution()).entityEcaDisabled()) return
+
         List<EntityEcaRule> lst = eecaRulesByEntityName.get(entityName)
         for (EntityEcaRule eer in lst) {
             eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.executionContext)

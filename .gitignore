@@ -9,5 +9,3 @@ runtime/db/derby/MoquiTransactional/
 runtime/db/derby/derby.log
 runtime/log/
 runtime/mantle/
-runtime/component/OFBizMigrate/
-runtime/component/moqui_ofbiz_10_04/

@@ -54,8 +54,8 @@ public interface EntityDataLoader {
      * it will try to update the existing record. Good for situations where most of the values will be new in the db.
      * @return Reference to this for convenience.
      */
-
     EntityDataLoader useTryInsert(boolean useTryInsert);
+
     /** If true will check all foreign key relationships for each value and if any of them are missing create a new
      * record with primary key only to avoid foreign key constraint errors.
      *
@@ -65,6 +65,12 @@ public interface EntityDataLoader {
      * @return Reference to this for convenience.
      */
     EntityDataLoader dummyFks(boolean dummyFks);
+
+    /** Set to true to disable Entity Facade ECA rules (for this import only, does not affect other things happening
+     * in the system).
+     * @return Reference to this for convenience.
+     */
+    EntityDataLoader disableEntityEca(boolean disableEeca);
 
     /** Only check the data against matching records in the database. Report on records that don't exist in the database
      * and any differences with records that have matching primary keys.

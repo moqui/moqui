@@ -46,6 +46,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     int transactionTimeout = 600
     boolean useTryInsert = false
     boolean dummyFks = false
+    boolean disableEeca = false
 
     EntityDataLoaderImpl(EntityFacadeImpl efi) { this.efi = efi }
 
@@ -62,6 +63,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     EntityDataLoader transactionTimeout(int tt) { this.transactionTimeout = tt; return this }
     EntityDataLoader useTryInsert(boolean useTryInsert) { this.useTryInsert = useTryInsert; return this }
     EntityDataLoader dummyFks(boolean dummyFks) { this.dummyFks = dummyFks; return this }
+    EntityDataLoader disableEntityEca(boolean disableEeca) { this.disableEeca = disableEeca; return this }
 
     List<String> check() {
         CheckValueHandler cvh = new CheckValueHandler(this)
@@ -88,6 +90,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     }
 
     void internalRun(EntityXmlHandler exh) {
+        boolean reenableEeca = false
+        if (this.disableEeca) reenableEeca = !this.efi.ecfi.eci.artifactExecution.disableEntityEca()
+
         // if no xmlText or locations, so find all of the component and entity-facade files
         if (!this.xmlText && !this.locationList) {
             // if we're loading seed type data, add entity def files to the list of locations to load
@@ -148,6 +153,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         } finally {
             if (suspendedTransaction) tf.resume()
         }
+
+        if (reenableEeca) this.efi.ecfi.eci.artifactExecution.enableEntityEca()
     }
 
     void loadSingleFile(String location, EntityXmlHandler exh) {
