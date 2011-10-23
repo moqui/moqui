@@ -654,61 +654,65 @@ class EntityFacadeImpl implements EntityFacade {
     CacheImpl getCacheCount(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.count.${entityName}") }
 
     void clearCacheForValue(EntityValueImpl evi, boolean isCreate) {
-        if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
-        String entityName = evi.getEntityName()
-        EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
+        try {
+            if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
+            String entityName = evi.getEntityName()
+            EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
 
-        // clear one cache
-        if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.one.${entityName}")) {
-            Cache entityOneCache = getCacheOne(entityName)
-            Ehcache eocEhc = entityOneCache.getInternalCache()
-            // clear by PK, most common scenario
-            eocEhc.remove(pkCondition)
-            // also see if there are any one RA entries
-            Cache oneRaCache = getCacheOneRa(entityName)
-            if (oneRaCache.containsKey(pkCondition)) {
-                List raKeyList = (List) oneRaCache.get(pkCondition)
-                for (EntityCondition ec in raKeyList) {
-                    eocEhc.remove(ec)
-                }
-                // we've cleared all entries that this was referring to, so clean it out too
-                oneRaCache.remove(pkCondition)
-            }
-        }
-
-        // clear list cache, use reverse-associative Map (also a Cache)
-        if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.list.${entityName}")) {
-            // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
-            if (isCreate) {
-                CacheImpl entityListCache = getCacheList(entityName)
-                Ehcache elEhc = entityListCache.getInternalCache()
-                for (EntityCondition ec in elEhc.getKeys()) {
-                    // any way to efficiently clear out the RA cache for these? for now just leave and they are handled eventually
-                    if (ec.mapMatches(evi)) elEhc.remove(ec)
-                }
-            } else {
-                Cache listRaCache = getCacheListRa(entityName)
-                if (listRaCache.containsKey(pkCondition)) {
-                    List raKeyList = (List) listRaCache.get(pkCondition)
-                    CacheImpl entityListCache = getCacheList(entityName)
-                    Ehcache elcEhc = entityListCache.getInternalCache()
+            // clear one cache
+            if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.one.${entityName}")) {
+                Cache entityOneCache = getCacheOne(entityName)
+                Ehcache eocEhc = entityOneCache.getInternalCache()
+                // clear by PK, most common scenario
+                eocEhc.remove(pkCondition)
+                // also see if there are any one RA entries
+                Cache oneRaCache = getCacheOneRa(entityName)
+                if (oneRaCache.containsKey(pkCondition)) {
+                    List raKeyList = (List) oneRaCache.get(pkCondition)
                     for (EntityCondition ec in raKeyList) {
-                        // this may have already been cleared, but it is a waste of time to check for that explicitly
-                        elcEhc.remove(ec)
+                        eocEhc.remove(ec)
                     }
                     // we've cleared all entries that this was referring to, so clean it out too
-                    listRaCache.remove(pkCondition)
+                    oneRaCache.remove(pkCondition)
                 }
             }
-        }
 
-        // clear count cache (no RA because we only have a count to work with, just match by condition)
-        if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.count.${entityName}")) {
-            CacheImpl entityCountCache = getCacheCount(entityName)
-            Ehcache elEhc = entityCountCache.getInternalCache()
-            for (EntityCondition ec in elEhc.getKeys()) {
-                if (ec.mapMatches(evi)) elEhc.remove(ec)
+            // clear list cache, use reverse-associative Map (also a Cache)
+            if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.list.${entityName}")) {
+                // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
+                if (isCreate) {
+                    CacheImpl entityListCache = getCacheList(entityName)
+                    Ehcache elEhc = entityListCache.getInternalCache()
+                    for (EntityCondition ec in elEhc.getKeys()) {
+                        // any way to efficiently clear out the RA cache for these? for now just leave and they are handled eventually
+                        if (ec.mapMatches(evi)) elEhc.remove(ec)
+                    }
+                } else {
+                    Cache listRaCache = getCacheListRa(entityName)
+                    if (listRaCache.containsKey(pkCondition)) {
+                        List raKeyList = (List) listRaCache.get(pkCondition)
+                        CacheImpl entityListCache = getCacheList(entityName)
+                        Ehcache elcEhc = entityListCache.getInternalCache()
+                        for (EntityCondition ec in raKeyList) {
+                            // this may have already been cleared, but it is a waste of time to check for that explicitly
+                            elcEhc.remove(ec)
+                        }
+                        // we've cleared all entries that this was referring to, so clean it out too
+                        listRaCache.remove(pkCondition)
+                    }
+                }
             }
+
+            // clear count cache (no RA because we only have a count to work with, just match by condition)
+            if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.count.${entityName}")) {
+                CacheImpl entityCountCache = getCacheCount(entityName)
+                Ehcache elEhc = entityCountCache.getInternalCache()
+                for (EntityCondition ec in elEhc.getKeys()) {
+                    if (ec.mapMatches(evi)) elEhc.remove(ec)
+                }
+            }
+        } catch (Throwable t) {
+            logger.error("Suppressed error in entity cache clearing [${evi.getEntityName()}; ${isCreate ? 'create' : 'non-create'}]", t)
         }
     }
     void registerCacheOneRa(String entityName, EntityCondition ec, EntityValue ev) {

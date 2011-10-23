@@ -36,6 +36,8 @@ This release includes:
   - Supports seed-data element in entity and extend-entity elements so
     that seed data can be defined and managed along with entity definitions
   - Option to disable Entity ECAs during data load
+  - Isolate cache clearing failures, don't ever kill calling method (ie
+    never throw an exception/throwable)
 - Screen Facade
   - List multi form submit button below and not in own column
   - Allow field, auto-fields-entity, and auto-fields-service to appear in
@@ -504,7 +506,6 @@ This release includes:
 Tools probable for 1.0 final:
 ===========================================================================
 
-- Isolate cache clearing failures, don't kill calling method
 - In primary sequence for entity names if the value exists in the db reset
   sequence and try again (or perhaps suffix, also testing and incrementing
   the suffix as needed); worth the performance impact of one query per
