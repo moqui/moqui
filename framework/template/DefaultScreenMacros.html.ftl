@@ -295,6 +295,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
                       </#if>
                         <div class="field-row ui-helper-clearfix">
+                        <#assign inFieldRow = true>
                         <#list layoutNode["field-ref"] as rowFieldRefNode>
                             <div class="field-row-item">
                                 <#assign fieldRef = rowFieldRefNode["@name"]>
@@ -307,6 +308,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                 </#if>
                             </div>
                         </#list>
+                        <#assign inFieldRow = false>
                         </div>
                     <#elseif layoutNode?node_name == "field-group">
                       <#if collapsible && !collapsibleOpened><#assign collapsibleOpened = true>
@@ -372,7 +374,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]?if_exists != "false")><#recurse fieldSubNode/><#return></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
     <div class="single-form-field">
-        <#if !fieldSubNode["submit"]?has_content><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}"><@fieldTitle fieldSubNode/></label></#if>
+        <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
+        <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label></#if>
         <#recurse fieldSubNode/>
     </div>
 </#macro>
