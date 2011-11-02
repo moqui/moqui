@@ -150,7 +150,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
                 // there was an old status, and in this call we are trying to change it, so do the StatusValidChange check
                 EntityValue statusValidChange = sfi.ecfi.entityFacade.makeFind("moqui.basic.StatusValidChange")
-                        .condition(["statusId":lookedUpStatusId, "statusIdTo":parameterStatusId])
+                        .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId])
                         .useCache(true).one()
                 if (!statusValidChange) {
                     // uh-oh, no valid change...

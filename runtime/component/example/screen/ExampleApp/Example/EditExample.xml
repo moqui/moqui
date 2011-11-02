@@ -151,7 +151,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="statusId">
                         <default-field title="Status">
                             <drop-down allow-empty="false" current-description="${currentStatus?.description}">
-                                <entity-options key="${statusIdTo}" text="${transitionName} (${description})">
+                                <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                                     <entity-find entity-name="StatusValidChangeToDetail">
                                         <econdition field-name="statusId" from="fieldValues.statusId"/>
                                     </entity-find>

@@ -100,16 +100,24 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="GeoAssoc" package-name="moqui.basic" cache="true">
         <field name="geoId" type="id" is-pk="true"/>
-        <field name="geoIdTo" type="id" is-pk="true"/>
+        <field name="toGeoId" type="id" is-pk="true"/>
         <field name="geoAssocTypeEnumId" type="id"/>
         <relationship type="one" title="Main" related-entity-name="Geo"/>
         <relationship type="one" title="Assoc" related-entity-name="Geo">
-            <key-map field-name="geoIdTo"/>
+            <key-map field-name="toGeoId"/>
         </relationship>
         <relationship type="one" title="GeoAssocType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="geoAssocTypeEnumId"/>
         </relationship>
     </entity>
+    <view-entity entity-name="GeoAssocAndToDetail" package-name="moqui.basic">
+        <member-entity entity-alias="GEOA" entity-name="GeoAssoc"/>
+        <member-entity entity-alias="GEOTO" entity-name="Geo" join-from-alias="GEOA">
+            <key-map field-name="toGeoId" related-field-name="geoId"/>
+        </member-entity>
+        <alias-all entity-alias="GEOA"/>
+        <alias-all entity-alias="GEOTO"><exclude field="geoId"/></alias-all>
+    </view-entity>
     <entity entity-name="GeoPoint" package-name="moqui.basic">
         <field name="geoPointId" type="id" is-pk="true"/>
         <field name="dataSourceId" type="id"/>
@@ -163,18 +171,18 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="StatusValidChange" package-name="moqui.basic" cache="true">
         <field name="statusId" type="id" is-pk="true"/>
-        <field name="statusIdTo" type="id" is-pk="true"/>
+        <field name="toStatusId" type="id" is-pk="true"/>
         <field name="conditionExpression" type="text-long"/>
         <field name="transitionName" type="text-medium"/>
         <relationship type="one" title="Main" related-entity-name="moqui.basic.StatusItem"/>
         <relationship type="one" title="To" related-entity-name="moqui.basic.StatusItem">
-            <key-map field-name="statusIdTo" related-field-name="statusId"/>
+            <key-map field-name="toStatusId" related-field-name="statusId"/>
         </relationship>
     </entity>
     <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic">
         <member-entity entity-alias="SVC" entity-name="moqui.basic.StatusValidChange"/>
         <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem" join-from-alias="SVC">
-            <key-map field-name="statusIdTo" related-field-name="statusId"/>
+            <key-map field-name="toStatusId" related-field-name="statusId"/>
         </member-entity>
         <alias-all entity-alias="SVC"/>
         <alias-all entity-alias="SI"/>
@@ -225,7 +233,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="UomConversion" package-name="moqui.basic" cache="true">
         <field name="uomConversionId" type="id" is-pk="true"/>
         <field name="uomId" type="id"/>
-        <field name="uomIdTo" type="id"/>
+        <field name="toUomId" type="id"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
         <field name="conversionFactor" type="number-float"/>
@@ -236,7 +244,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <relationship type="one" related-entity-name="moqui.basic.Uom"/>
         <relationship type="one" title="To" related-entity-name="moqui.basic.Uom">
-            <key-map field-name="uomIdTo" related-field-name="uomId"/>
+            <key-map field-name="toUomId" related-field-name="uomId"/>
         </relationship>
     </entity>
 
@@ -300,11 +308,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusItem description="Received" sequenceNum="4" statusId="ES_RECEIVED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Bounced" sequenceNum="8" statusId="ES_BOUNCED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Cancelled" sequenceNum="9" statusId="ES_CANCELLED" statusTypeId="EmailMessage"/>
-            <moqui.basic.StatusValidChange statusId="ES_DRAFT" statusIdTo="ES_READY" transitionName="Ready"/>
-            <moqui.basic.StatusValidChange statusId="ES_READY" statusIdTo="ES_SENT" transitionName="Send"/>
-            <moqui.basic.StatusValidChange statusId="ES_READY" statusIdTo="ES_CANCELLED" transitionName="Cancel"/>
-            <moqui.basic.StatusValidChange statusId="ES_SENT" statusIdTo="ES_RECEIVED" transitionName="Received"/>
-            <moqui.basic.StatusValidChange statusId="ES_SENT" statusIdTo="ES_BOUNCED" transitionName="Bounced"/>
+            <moqui.basic.StatusValidChange statusId="ES_DRAFT" toStatusId="ES_READY" transitionName="Ready"/>
+            <moqui.basic.StatusValidChange statusId="ES_READY" toStatusId="ES_SENT" transitionName="Send"/>
+            <moqui.basic.StatusValidChange statusId="ES_READY" toStatusId="ES_CANCELLED" transitionName="Cancel"/>
+            <moqui.basic.StatusValidChange statusId="ES_SENT" toStatusId="ES_RECEIVED" transitionName="Received"/>
+            <moqui.basic.StatusValidChange statusId="ES_SENT" toStatusId="ES_BOUNCED" transitionName="Bounced"/>
 
             <!-- Email Type -->
             <moqui.basic.EnumerationType description="Email Type" enumTypeId="EmailType"/>

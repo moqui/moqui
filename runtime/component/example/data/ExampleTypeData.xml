@@ -33,16 +33,16 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.basic.StatusItem description="Tested" sequenceNum="5" statusId="EXST_TESTED" statusTypeId="Example"/>
     <moqui.basic.StatusItem description="Complete" sequenceNum="6" statusId="EXST_COMPLETE" statusTypeId="Example"/>
     <moqui.basic.StatusItem description="Cancelled" sequenceNum="99" statusId="EXST_CANCELLED" statusTypeId="Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IN_DESIGN" statusIdTo="EXST_DEFINED" transitionName="Definition Complete"/>
-    <moqui.basic.StatusValidChange statusId="EXST_DEFINED" statusIdTo="EXST_APPROVED" transitionName="Approve"/>
-    <moqui.basic.StatusValidChange statusId="EXST_APPROVED" statusIdTo="EXST_IMPLEMENTED" transitionName="Implementation Complete"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IMPLEMENTED" statusIdTo="EXST_TESTED" transitionName="Testing Complete"/>
-    <moqui.basic.StatusValidChange statusId="EXST_TESTED" statusIdTo="EXST_COMPLETE" transitionName="Example Completed"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IN_DESIGN" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_DEFINED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_APPROVED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IMPLEMENTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_TESTED" statusIdTo="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <moqui.basic.StatusValidChange statusId="EXST_IN_DESIGN" toStatusId="EXST_DEFINED" transitionName="Definition Complete"/>
+    <moqui.basic.StatusValidChange statusId="EXST_DEFINED" toStatusId="EXST_APPROVED" transitionName="Approve"/>
+    <moqui.basic.StatusValidChange statusId="EXST_APPROVED" toStatusId="EXST_IMPLEMENTED" transitionName="Implementation Complete"/>
+    <moqui.basic.StatusValidChange statusId="EXST_IMPLEMENTED" toStatusId="EXST_TESTED" transitionName="Testing Complete"/>
+    <moqui.basic.StatusValidChange statusId="EXST_TESTED" toStatusId="EXST_COMPLETE" transitionName="Example Completed"/>
+    <moqui.basic.StatusValidChange statusId="EXST_IN_DESIGN" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <moqui.basic.StatusValidChange statusId="EXST_DEFINED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <moqui.basic.StatusValidChange statusId="EXST_APPROVED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <moqui.basic.StatusValidChange statusId="EXST_IMPLEMENTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
+    <moqui.basic.StatusValidChange statusId="EXST_TESTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
 
     <!-- Example Feature Source -->
     <moqui.basic.EnumerationType description="Example Feature Source" enumTypeId="ExampleFeatureSource"/>

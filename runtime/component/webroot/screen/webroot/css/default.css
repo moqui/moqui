@@ -31,7 +31,7 @@ width: 980px; overflow: auto;
 }
 
 #header-logo { float: left; width: 300px; height: 30px; }
-#header-logo h1 { font-size: 1.5em; font-family: Courier, "Courier New", monospace; font-weight: bold; }
+#header-logo h1, #header-logo a { font-size: 1.5em; font-family: Courier, "Courier New", monospace; font-weight: bold; border: 0px; padding: 0px; margin: 0px; }
 #header-user { float: right; }
 
 div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }

@@ -10,6 +10,9 @@ TODO: general description
 This release includes:
 
 - All the great features of the preview, beta and rc1 releases
+- For field name pattern consistency changed GeoAssoc.geoIdTo to toGeoId,
+  StatusValidChange.statusIdTo to toStatusId, and UomConversion.uomIdTo to
+  toUomId
 - Added support to skip stats tracking based on a conditional expression
 - More performance profiling and improvements
   - entity-auto update and delete services no longer do a find first
@@ -512,6 +515,9 @@ Tools probable for 1.0 final:
   sequence?
 - Screen Facade
   - Filter menu rendering by authorization
+  - Setting to reject all requests (system down for maintenance)
+  - Add example (echo or something) of handling "path info" beyond screen
+    or transition in request path
 
 ===========================================================================
 Features designed or considered, but not to be included in 1.0 series

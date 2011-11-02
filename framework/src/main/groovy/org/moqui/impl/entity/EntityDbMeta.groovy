@@ -96,7 +96,7 @@ class EntityDbMeta {
 
             String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
             tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
-            if (tableSet.next()) {
+            if (!tableSet.isClosed() && tableSet.next()) {
                 return true
             } else {
                 logger.info("Table for entity [${ed.entityName}] does NOT exist")
