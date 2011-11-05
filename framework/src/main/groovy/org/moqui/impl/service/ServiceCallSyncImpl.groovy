@@ -116,8 +116,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         //     the service on the stack)
 
         if (sd == null) {
-            // if verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
-            if (("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
+            // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
+            if (!path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
                     sfi.getEcfi().getEntityFacade().getEntityDefinition(noun) != null) {
                 Map result = runImplicitEntityAuto(currentParameters, eci)
 

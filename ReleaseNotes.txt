@@ -518,6 +518,7 @@ Tools probable for 1.0 final:
   - Setting to reject all requests (system down for maintenance)
   - Add example (echo or something) of handling "path info" beyond screen
     or transition in request path
+  - TODO: On form submit error, get values from ec.web.parameters
 
 ===========================================================================
 Features designed or considered, but not to be included in 1.0 series

@@ -120,7 +120,7 @@ class UrlResourceReference implements ResourceReference {
             exists = getFile().exists()
             return exists
         } else {
-            throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl.protocol}]")
+            throw new IllegalArgumentException("Exists not supported for resource with protocol [${locationUrl?.protocol}]")
         }
     }
 
