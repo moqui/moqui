@@ -601,6 +601,7 @@ class ScreenRenderImpl implements ScreenRender {
     String getFormFieldValidationClasses(String formName, String fieldName) {
         ScreenForm form = getActiveScreenDef().getForm(formName)
         Node parameterNode = form.getFieldInParameterNode(fieldName)
+        logger.warn("TOREMOVE getFormFieldValidationClasses form [${formName}] field [${fieldName}] parameterNode [${parameterNode}]")
         if (parameterNode == null) return ""
 
         Set<String> vcs = new HashSet()
@@ -613,9 +614,9 @@ class ScreenRenderImpl implements ScreenRender {
         if (parameterNode."credit-card") vcs.add("creditcard")
 
         String type = parameterNode."@type"
-        if (type.endsWith("BigDecimal") || type.endsWith("BigInteger") || type.endsWith("Long") ||
+        if (type && (type.endsWith("BigDecimal") || type.endsWith("BigInteger") || type.endsWith("Long") ||
                 type.endsWith("Integer") || type.endsWith("Double") || type.endsWith("Float") ||
-                type.endsWith("Number")) vcs.add("number")
+                type.endsWith("Number"))) vcs.add("number")
 
         StringBuilder sb = new StringBuilder()
         for (String vc in vcs) { if (sb) sb.append(" "); sb.append(vc); }

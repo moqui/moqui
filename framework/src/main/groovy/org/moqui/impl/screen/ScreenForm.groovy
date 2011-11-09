@@ -12,7 +12,6 @@
 package org.moqui.impl.screen
 
 import org.apache.commons.collections.map.ListOrderedMap
-import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
@@ -28,6 +27,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.Logger
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityException
+import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -108,6 +108,25 @@ class ScreenForm {
         // merge original formNode to override any applicable settings
         mergeFormNodes(newFormNode, baseFormNode, false)
 
+        // populate validate-service and validate-parameter attributes if the target transition calls a single service
+        if (newFormNode."@transition") {
+            TransitionItem ti = this.sd.getTransitionItem(newFormNode."@transition", null)
+            if (ti != null && ti.getSingleServiceName()) {
+                String singleServiceName = ti.getSingleServiceName()
+                logger.warn("TOREMOVE finding validate service for form [${newFormNode."@name"}] transition [${newFormNode."@transition"}] singleServiceName [${singleServiceName}]")
+                ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(singleServiceName)
+                if (sd != null) {
+                    Set<String> inParamNames = sd.getInParameterNames()
+                    for (Node fieldNode in newFormNode."field") {
+                        // if the field matches an in-parameter name and does not already have a validate-service, then set it
+                        if (inParamNames.contains(fieldNode."@name") && !fieldNode."@validate-service") {
+                            fieldNode.attributes().put("validate-service", singleServiceName)
+                        }
+                    }
+                }
+            }
+        }
+
         if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
 
         // prep row-actions
@@ -152,14 +171,16 @@ class ScreenForm {
         if (fieldNode."@validate-service") {
             ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(fieldNode."@validate-service")
             if (sd == null) throw new IllegalArgumentException("Bad validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
-            return sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
+            Node parameterNode = sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
+            logger.warn("TOREMOVE getFieldInParameterNode service [${fieldNode."@validate-service"}] field [${fieldName}] parameterNode [${parameterNode}]")
+            return parameterNode
         }
         return null
     }
 
     protected void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
         String serviceVerb = sd.verb
-        String serviceType = sd.serviceNode."@type"
+        //String serviceType = sd.serviceNode."@type"
         EntityDefinition ed = null
         try {
             ed = ecfi.entityFacade.getEntityDefinition(sd.noun)

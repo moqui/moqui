@@ -46,6 +46,9 @@ This release includes:
   - Allow field, auto-fields-entity, and auto-fields-service to appear in
     any order and preserve that order when exploding the form definition
   - Auto Screen move Edit button on list forms to left side
+  - If form transition has a single service (service-call instead of
+    actions elements) then automatically use that service for validation
+    information for fields with matching name
 - Added support for other types of wiki files including MediaWiki, Textile,
   TracWiki, and TWiki (in addition to Confluence)
 

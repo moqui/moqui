@@ -267,6 +267,7 @@ class ScreenDefinition {
         protected String location
         protected XmlAction condition = null
         protected XmlAction actions = null
+        protected String singleServiceName = null
 
         protected List<ResponseItem> conditionalResponseList = new ArrayList<ResponseItem>()
         protected ResponseItem defaultResponse = null
@@ -288,6 +289,7 @@ class ScreenDefinition {
                 if (!callServiceNode."@in-map") callServiceNode.attributes().put("in-map", "true")
                 if (!callServiceNode."@out-map") callServiceNode.attributes().put("out-map", "ec.web.requestAttributes")
                 actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".service_call")
+                singleServiceName = callServiceNode."@name"
             } else if (transitionNode.actions) {
                 actions = new XmlAction(parentScreen.sfi.ecfi, (Node) transitionNode."actions"[0], location + ".actions")
             }
@@ -304,6 +306,7 @@ class ScreenDefinition {
 
         String getName() { return name }
         String getMethod() { return method }
+        String getSingleServiceName() { return singleServiceName }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 

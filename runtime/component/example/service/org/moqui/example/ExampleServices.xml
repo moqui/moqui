@@ -31,6 +31,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters>
             <auto-parameters include="pk" required="true"/>
             <auto-parameters include="nonpk"/>
+            <parameter name="exampleEmail"><text-email/></parameter>
+            <parameter name="exampleUrl"><text-url/></parameter>
         </in-parameters>
         <out-parameters>
             <parameter name="oldStatusId" type="String" required="true"/>
