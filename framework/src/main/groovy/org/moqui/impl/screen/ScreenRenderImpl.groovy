@@ -601,7 +601,6 @@ class ScreenRenderImpl implements ScreenRender {
     String getFormFieldValidationClasses(String formName, String fieldName) {
         ScreenForm form = getActiveScreenDef().getForm(formName)
         Node parameterNode = form.getFieldInParameterNode(fieldName)
-        logger.warn("TOREMOVE getFormFieldValidationClasses form [${formName}] field [${fieldName}] parameterNode [${parameterNode}]")
         if (parameterNode == null) return ""
 
         Set<String> vcs = new HashSet()

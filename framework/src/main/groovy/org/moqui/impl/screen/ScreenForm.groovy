@@ -113,7 +113,6 @@ class ScreenForm {
             TransitionItem ti = this.sd.getTransitionItem(newFormNode."@transition", null)
             if (ti != null && ti.getSingleServiceName()) {
                 String singleServiceName = ti.getSingleServiceName()
-                logger.warn("TOREMOVE finding validate service for form [${newFormNode."@name"}] transition [${newFormNode."@transition"}] singleServiceName [${singleServiceName}]")
                 ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(singleServiceName)
                 if (sd != null) {
                     Set<String> inParamNames = sd.getInParameterNames()
@@ -172,7 +171,6 @@ class ScreenForm {
             ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(fieldNode."@validate-service")
             if (sd == null) throw new IllegalArgumentException("Bad validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
             Node parameterNode = sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
-            logger.warn("TOREMOVE getFieldInParameterNode service [${fieldNode."@validate-service"}] field [${fieldName}] parameterNode [${parameterNode}]")
             return parameterNode
         }
         return null
