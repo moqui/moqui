@@ -169,7 +169,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 </#macro>
 
 <#-- NOTE: if there is an error message (in ec.messages.errors) then the actions result is an error, otherwise it is not, so we need a default error message here -->
-<#macro return><#assign returnMessage = .node["@message"]?default("Error in actions")/><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${returnMessage?trim}""")<#else/>    ec.message.addMessage("""${returnMessage?trim}""")</#if>
+<#macro return><#assign returnMessage = .node["@message"]?default("")/><#if .node["@error"]?has_content && .node["@error"] == "true">    ec.message.addError("""${returnMessage?trim}""" ?: "Error in actions")<#else/>    if (returnMessage) ec.message.addMessage("""${returnMessage?trim}""")</#if>
     return
 </#macro>
 <#macro assert><#list .node["*"] as childCond>
