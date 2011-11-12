@@ -799,9 +799,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="set-if-empty" type="boolean" default="true">
+            <xs:attribute name="set-if-empty" type="boolean" default="false">
                 <xs:annotation><xs:documentation>Specifies whether or not to set fields that are null or empty.
-                    Defaults to true.</xs:documentation></xs:annotation>
+                    Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

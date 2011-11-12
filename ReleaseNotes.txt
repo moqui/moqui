@@ -516,6 +516,7 @@ Tools probable for 1.0 final:
   sequence and try again (or perhaps suffix, also testing and incrementing
   the suffix as needed); worth the performance impact of one query per
   sequence?
+- Service to clean out and reload database (for demo server)
 - Screen Facade
   - Filter menu rendering by authorization
   - Setting to reject all requests (system down for maintenance)
