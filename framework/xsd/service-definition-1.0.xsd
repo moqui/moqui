@@ -319,6 +319,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
             <xs:attribute name="before" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or
                 "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="format" type="xs:string"><xs:annotation><xs:documentation>If the value is a String
+                instead of Date/Time/Timestamp, specify the format for conversion here.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
 

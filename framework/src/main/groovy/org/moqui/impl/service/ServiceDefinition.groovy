@@ -23,6 +23,7 @@ import org.owasp.esapi.errors.IntrusionException
 import org.apache.commons.validator.CreditCardValidator
 import org.apache.commons.validator.UrlValidator
 import org.apache.commons.validator.EmailValidator
+import org.moqui.impl.context.ContextStack
 
 class ServiceDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceDefinition.class)
@@ -214,7 +215,10 @@ class ServiceDefinition {
         if (this.serviceNode."@validate" != "false") {
             Set<String> inParameterNames = this.getInParameterNames()
             // if service is to be validated, go through service in-parameters definition and only get valid parameters
-            for (String parameterName in new HashSet(parameters.keySet())) {
+            // go through a set that is both the defined in-parameters and the keySet of passed in parameters
+            Set<String> iterateSet = new HashSet(parameters.keySet())
+            iterateSet.addAll(inParameterNames)
+            for (String parameterName in iterateSet) {
                 if (!inParameterNames.contains(parameterName)) {
                     parameters.remove(parameterName)
                     if (logger.traceEnabled && parameterName != "ec")
@@ -226,12 +230,17 @@ class ServiceDefinition {
                 Object parameterValue = parameters.get(parameterName)
 
                 // set the default-value if applicable
-                if (!parameterValue && parameterNode."@default-value") parameterValue = parameterNode."@default-value"
+                if (!parameterValue && parameterNode."@default-value") {
+                    ((ContextStack) eci.context).push(parameters)
+                    parameterValue = eci.getResource().evaluateStringExpand(parameterNode."@default-value", "${this.location}_${parameterName}_default")
+                    logger.warn("For parameter ${parameterName} new value ${parameterValue} from default-value ${parameterNode.'@default-value'} and context: ${eci.context}")
+                    ((ContextStack) eci.context).pop()
+                }
 
                 // check if required
                 if (!parameterValue) {
                     if (parameterNode."@required" == "true") {
-                        eci.message.addError("Parameter [${parameterName}] of service [${getServiceName()}] is required")
+                        eci.message.addError("${parameterName} is required (service ${getServiceName()})")
                     }
                     // if it isn't there continue since there is nothing to do with it
                     // TODO: should we change empty values to null?
@@ -340,6 +349,7 @@ class ServiceDefinition {
             try {
                 if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
             } catch (Throwable t) {
+                logger.error("Error in validation", t)
                 eci.message.addError("Parameter ${parameterName} with value [${pv}] failed [${child.name()}] validation (${t.message})")
             }
         }
@@ -363,7 +373,7 @@ class ServiceDefinition {
             return !allPass
         case "matches":
             if (!(pv instanceof String)) {
-                eci.message.addError("Parameter ${parameterName} with value [${pv}] is not a String, cannot do matches validation.")
+                eci.message.addError("${parameterName} (value: ${pv}) is not a String, cannot do matches validation.")
                 return false
             }
             if (valNode."@regexp" && !((String) pv).matches((String) valNode."@regexp")) {
@@ -379,12 +389,12 @@ class ServiceDefinition {
                 BigDecimal min = new BigDecimal((String) valNode."@min")
                 if (valNode."@min-include-equals" == "false") {
                     if (bdVal <= min) {
-                        eci.message.addError("Parameter ${parameterName} with value [${pv}] must be greater than ${min}.")
+                        eci.message.addError("${parameterName} (value: ${pv}) must be greater than ${min}.")
                         return false
                     }
                 } else {
                     if (bdVal < min) {
-                        eci.message.addError("Parameter ${parameterName} with value [${pv}] must be greater than or equal to ${min}.")
+                        eci.message.addError("${parameterName} (value: ${pv}) must be greater than or equal to ${min}.")
                         return false
                     }
                 }
@@ -393,12 +403,12 @@ class ServiceDefinition {
                 BigDecimal max = new BigDecimal((String) valNode."@max")
                 if (valNode."@max-include-equals" == "true") {
                     if (max > bdVal) {
-                        eci.message.addError("Parameter ${parameterName} with value [${pv}] must be less than or equal to ${max}.")
+                        eci.message.addError("${parameterName} (value: ${pv}) must be less than or equal to ${max}.")
                         return false
                     }
                 } else {
                     if (max >= bdVal) {
-                        eci.message.addError("Parameter ${parameterName} with value [${pv}] must be less than ${max}.")
+                        eci.message.addError("${parameterName} (value: ${pv}) must be less than ${max}.")
                         return false
                     }
                 }
@@ -408,7 +418,7 @@ class ServiceDefinition {
             try {
                 new BigInteger(pv as String)
             } catch (NumberFormatException e) {
-                eci.message.addError("Parameter ${parameterName} with value [${pv}] must be a integer number.")
+                eci.message.addError("${parameterName} (value: ${pv}) is not a integer number.")
                 return false
             }
             return true
@@ -416,7 +426,7 @@ class ServiceDefinition {
             try {
                 new BigDecimal(pv as String)
             } catch (NumberFormatException e) {
-                eci.message.addError("Parameter ${parameterName} with value [${pv}] must be a decimal number.")
+                eci.message.addError("${parameterName} (value: ${pv}) is not a decimal number.")
                 return false
             }
             return true
@@ -425,14 +435,14 @@ class ServiceDefinition {
             if (valNode."@min") {
                 int min = valNode."@min" as int
                 if (str.length() < min) {
-                    eci.message.addError("Parameter ${parameterName} with value [${pv}] and length ${str.length()} must have a length greater than or equal to ${min}.")
+                    eci.message.addError("${parameterName} (value: ${pv}, length: ${str.length()}) is shorter than ${min} characters.")
                     return false
                 }
             }
             if (valNode."@max") {
                 int max = valNode."@max" as int
                 if (max >= str.length()) {
-                    eci.message.addError("Parameter ${parameterName} with value [${pv}] and length ${str.length()} must have a length les than or equal to ${max}.")
+                    eci.message.addError("${parameterName} (value: ${pv}, length: ${str.length()}) is longer than ${max} characters.")
                     return false
                 }
             }
@@ -440,14 +450,14 @@ class ServiceDefinition {
         case "text-email":
             String str = pv as String
             if (!emailValidator.isValid(str)) {
-                eci.message.addError("Parameter ${parameterName} with value [${str}] must be a valid email address.")
+                eci.message.addError("${parameterName} (value: ${str}) is not a valid email address.")
                 return false
             }
             return true
         case "text-url":
             String str = pv as String
             if (!urlValidator.isValid(str)) {
-                eci.message.addError("Parameter ${parameterName} with value [${str}] must be a valid URL.")
+                eci.message.addError("${parameterName} (value: ${str}) is not a valid URL.")
                 return false
             }
             return true
@@ -455,7 +465,7 @@ class ServiceDefinition {
             String str = pv as String
             for (char c in str) {
                 if (!Character.isLetter(c)) {
-                    eci.message.addError("Parameter ${parameterName} with value [${str}] must have only letters.")
+                    eci.message.addError("${parameterName} (value ${str}) must have only letters.")
                     return false
                 }
             }
@@ -464,20 +474,51 @@ class ServiceDefinition {
             String str = pv as String
             for (char c in str) {
                 if (!Character.isDigit(c)) {
-                    eci.message.addError("Parameter ${parameterName} with value [${str}] must have only digits.")
+                    eci.message.addError("${parameterName} (value: ${str}) must have only digits.")
                     return false
                 }
             }
             return true
         case "time-range":
-            Calendar cal = Calendar.newInstance()
-            // TODO: not sure if this will work: ((pv as java.util.Date).getTime())
-            cal.setTimeInMillis((pv as java.util.Date).getTime())
+            Calendar cal
+            String format = valNode."@format"
+            if (pv instanceof String) {
+                cal = eci.getL10n().parseDateTime((String) pv, format)
+            } else {
+                // try letting groovy convert it
+                cal = Calendar.getInstance()
+                // TODO: not sure if this will work: ((pv as java.util.Date).getTime())
+                cal.setTimeInMillis((pv as java.util.Date).getTime())
+            }
             if (valNode."@after") {
-                // TODO handle after date/time/date-time depending on type of parameter, support "now" too
+                // handle after date/time/date-time depending on type of parameter, support "now" too
+                String valString = valNode."@after"
+                Calendar compareCal
+                if (valString == "now") {
+                    compareCal = Calendar.getInstance()
+                    compareCal.setTimeInMillis(eci.user.nowTimestamp.time)
+                } else {
+                    compareCal = eci.l10n.parseDateTime(valString, format)
+                }
+                if (!cal.after(compareCal)) {
+                    eci.message.addError("${parameterName} (value: ${pv}) is before ${valString}.")
+                    return false
+                }
             }
             if (valNode."@before") {
-                // TODO handle after date/time/date-time depending on type of parameter, support "now" too
+                // handle after date/time/date-time depending on type of parameter, support "now" too
+                String valString = valNode."@before"
+                Calendar compareCal
+                if (valString == "now") {
+                    compareCal = Calendar.getInstance()
+                    compareCal.setTimeInMillis(eci.user.nowTimestamp.time)
+                } else {
+                    compareCal = eci.l10n.parseDateTime(valString, format)
+                }
+                if (!cal.before(compareCal)) {
+                    eci.message.addError("${parameterName} (value: ${pv}) is after ${valString}.")
+                    return false
+                }
             }
             return true
         case "credit-card":
@@ -490,7 +531,7 @@ class ServiceDefinition {
             }
             String str = pv as String
             if (!ccv.isValid(str)) {
-                eci.message.addError("Parameter ${parameterName} with value [${str}] must be a valid credit card number.")
+                eci.message.addError("${parameterName} (value: ${str}) is not a valid credit card number.")
                 return false
             }
             return true
