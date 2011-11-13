@@ -233,14 +233,14 @@ class ServiceDefinition {
                 if (!parameterValue && parameterNode."@default-value") {
                     ((ContextStack) eci.context).push(parameters)
                     parameterValue = eci.getResource().evaluateStringExpand(parameterNode."@default-value", "${this.location}_${parameterName}_default")
-                    // logger.warn("For parameter ${parameterName} new value ${parameterValue} from default-value ${parameterNode.'@default-value'} and context: ${eci.context}")
+                    // logger.warn("TOREMOVE For parameter ${parameterName} new value ${parameterValue} from default-value ${parameterNode.'@default-value'} and context: ${eci.context}")
                     ((ContextStack) eci.context).pop()
                 }
 
                 // check if required
                 if (!parameterValue) {
                     if (parameterNode."@required" == "true") {
-                        eci.message.addError("${parameterName} is required (service ${getServiceName()})")
+                        eci.message.addError("${parameterName} cannot be empty (service ${getServiceName()})")
                     }
                     // if it isn't there continue since there is nothing to do with it
                     // TODO: should we change empty values to null?
@@ -304,7 +304,6 @@ class ServiceDefinition {
 
                     if (converted != null) {
                         parameterValue = converted
-                        parameters.put(parameterName, converted)
                     } else {
                         // no type conversion? blow up
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] was type [${parameterValue.class.name}], expecting type [${type}]")
@@ -334,6 +333,9 @@ class ServiceDefinition {
                 // run through validations under parameter node
                 // do this after the convert so we can deal with objects when needed
                 validateParameter(parameterNode, parameterName, parameterValue, eci)
+
+                // put the final parameterValue back into the parameters Map
+                parameters.put(parameterName, parameterValue)
             }
         }
     }
