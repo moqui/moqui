@@ -279,7 +279,7 @@ class ScreenRenderImpl implements ScreenRender {
                 // save messages in session before redirecting so they can be displayed on the next screen
                 if (ec.web) {
                     ((WebFacadeImpl) ec.web).saveMessagesToSession()
-                    if (ri.saveParameters) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
+                    if (ri.saveParameters || ec.message.errors) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
                 }
 
                 if (urlType == "plain") {
@@ -719,13 +719,18 @@ class ScreenRenderImpl implements ScreenRender {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
         if (fieldNode."@entry-name") return ec.resource.evaluateContextField(fieldNode."@entry-name", null)
         String fieldName = fieldNode."@name"
-        Object value = ec.context.get(fieldName)
-        if (!value && ec.context.fieldValues && fieldNode.parent().name() == "form-single") {
+        String mapName = fieldNode.parent()."@map" ?: "fieldValues"
+        Object value
+        // if this is an error situation try parameters first, otherwise try parameters last
+        boolean isError = ec.message.errors as boolean
+        if (isError && ec.web != null) value = ec.web.parameters.get(fieldName)
+        if (!value) value = ec.context.get(fieldName)
+        if (!value && ec.context.get(mapName) && fieldNode.parent().name() == "form-single") {
             try {
-                value = ec.context.fieldValues.get(fieldName)
+                value = ((Map) ec.context.get(mapName)).get(fieldName)
             } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
         }
-        if (!value && ec.web) value = ec.web.parameters.get(fieldName)
+        if (!isError && ec.web != null && !value) value = ec.web.parameters.get(fieldName)
 
         if (value) return value as String
         return ec.resource.evaluateStringExpand(defaultValue, null)

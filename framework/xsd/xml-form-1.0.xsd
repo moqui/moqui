@@ -35,6 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     extend. If there is no location is a form in the current screen.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="transition" type="xs:string"/>
+            <xs:attribute name="map" type="xs:string" default="fieldValues"/>
             <xs:attribute name="focus-field" type="xs:string"/>
             <xs:attribute name="skip-start" type="boolean" default="false"/>
             <xs:attribute name="skip-end" type="boolean" default="false"/>
