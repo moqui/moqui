@@ -40,6 +40,9 @@ class ScreenUrlInfo {
     /** The minimal path name list for the URL, basically without following the defaults */
     List<String> minimalPathNameList = null
 
+    /** Everything in the path after the screen or transition, may be used to pass additional info */
+    List<String> extraPathNameList = null
+
     /** The path for a file resource (template or static), relative to the targetScreen.location */
     List<String> fileResourcePathList = null
     /** If the full path led to a file resource that is verified to exist, the URL goes here; the URL for access on the
@@ -107,6 +110,8 @@ class ScreenUrlInfo {
         for (String pathName in this.fullPathNameList) urlBuilder.append('/').append(pathName)
         return urlBuilder.toString()
     }
+
+    List<String> getExtraPathNameList() { return extraPathNameList }
 
     Map<String, String> getParameterMap() {
         Map<String, String> pm = new HashMap()
@@ -195,7 +200,7 @@ class ScreenUrlInfo {
         // loop through path for various things: check validity, see if we can do a transition short-cut and go right
         //     to its response url, etc
         ScreenDefinition lastSd = sri.rootScreenDef
-        List<String> remainingPathList = new ArrayList<String>(fullPathNameList)
+        extraPathNameList = new ArrayList<String>(fullPathNameList)
         for (String pathName in this.fullPathNameList) {
             String nextLoc = lastSd.getSubscreensItem(pathName)?.location
 
@@ -230,9 +235,14 @@ class ScreenUrlInfo {
                 }
 
                 // is this a file under the screen?
-                ResourceReference existingFileRef = lastSd.getSubContentRef(remainingPathList)
+                ResourceReference existingFileRef = lastSd.getSubContentRef(extraPathNameList)
                 if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
                     fileResourceRef = existingFileRef
+                    break
+                }
+
+                if (lastSd.screenNode."@allow-extra-path" == "true") {
+                    // call it good
                     break
                 }
 
@@ -259,7 +269,7 @@ class ScreenUrlInfo {
             preTransitionPathNameList.add(pathName)
 
             // made it all the way to here so this was a screen or transition
-            remainingPathList.remove(0)
+            extraPathNameList.remove(0)
         }
 
         // save the path so far for minimal URLs
@@ -284,16 +294,16 @@ class ScreenUrlInfo {
                 if (targetTransition) {
                     targetTransitionActualName = subscreenName
                     break
-                } else {
-                    // is this a file under the screen?
-                    ResourceReference existingFileRef = lastSd.getSubContentRef([subscreenName])
-                    if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
-                        fileResourceRef = existingFileRef
-                        break
-                    }
-
-                    throw new IllegalArgumentException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
                 }
+
+                // is this a file under the screen?
+                ResourceReference existingFileRef = lastSd.getSubContentRef([subscreenName])
+                if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
+                    fileResourceRef = existingFileRef
+                    break
+                }
+
+                throw new IllegalArgumentException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")

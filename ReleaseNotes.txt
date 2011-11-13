@@ -49,6 +49,10 @@ This release includes:
   - If form transition has a single service (service-call instead of
     actions elements) then automatically use that service for validation
     information for fields with matching name
+  - Improved handling of context and error parameters to more cleanly and
+    easily repopulate forms after a server-side error
+  - Example (/echopath) of handling "path info" beyond screen or transition
+    in request path
 - Added support for other types of wiki files including MediaWiki, Textile,
   TracWiki, and TWiki (in addition to Confluence)
 
@@ -520,8 +524,6 @@ Tools probable for 1.0 final:
 - Screen Facade
   - Filter menu rendering by authorization
   - Setting to reject all requests (system down for maintenance)
-  - Add example (echo or something) of handling "path info" beyond screen
-    or transition in request path
 
 ===========================================================================
 Features designed or considered, but not to be included in 1.0 series

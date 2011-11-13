@@ -98,6 +98,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>If specified will be used as the login screen path for this screen and
                     any subscreens, otherwise defaults to "/Login".</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="allow-extra-path" type="boolean" default="false">
+                <xs:annotation><xs:documentation>If set to true arbitrary path follow this screen's path is allowed.
+                    Default is false and an exception will be thrown if there is extra path that does not match a
+                    subscreen, a transition, or content below the screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="macro-template">
