@@ -34,6 +34,8 @@ public interface WebFacade {
     ServletContext getServletContext();
     Map<String, Object> getApplicationAttributes();
 
+    Map<String, Object> getErrorParameters();
+
     void sendJsonResponse(Object responseObj);
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();

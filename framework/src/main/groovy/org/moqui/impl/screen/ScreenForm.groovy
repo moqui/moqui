@@ -126,6 +126,15 @@ class ScreenForm {
             }
         }
 
+        /*
+        // add a moquiFormId field to all forms (also: maybe handle in macro ftl file to avoid issue with field-layout
+        //     not including this field), and TODO: save in the session
+        Node newFieldNode = new Node(null, "field", [name:"moquiFormId"])
+        Node subFieldNode = newFieldNode.appendNode("default-field")
+        subFieldNode.appendNode("hidden", ["default-value":"((Math.random() * 9999999999) as Long) as String"])
+        mergeFieldNode(newFormNode, newFieldNode, false)
+         */
+
         if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
 
         // prep row-actions

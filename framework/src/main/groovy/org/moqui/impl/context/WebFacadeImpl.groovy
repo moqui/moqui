@@ -49,6 +49,8 @@ class WebFacadeImpl implements WebFacade {
     protected Map<String, Object> sessionAttributes = null
     protected Map<String, Object> applicationAttributes = null
 
+    protected Map<String, Object> errorParameters = null
+
     WebFacadeImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
                   ExecutionContextImpl eci) {
         this.eci = eci
@@ -62,6 +64,9 @@ class WebFacadeImpl implements WebFacade {
         // get any parameters saved to the session from the last request, and clear that session attribute if there
         savedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
         if (savedParameters != null) request.session.removeAttribute("moqui.saved.parameters")
+
+        errorParameters = (Map) request.session.getAttribute("moqui.error.parameters")
+        if (errorParameters != null) request.session.removeAttribute("moqui.error.parameters")
 
         // get any messages saved to the session, and clear them from the session
         if (session.getAttribute("moqui.message.messages")) {
@@ -209,6 +214,9 @@ class WebFacadeImpl implements WebFacade {
         return applicationAttributes
     }
 
+    /** @see org.moqui.context.WebFacade#getErrorParameters() */
+    Map<String, Object> getErrorParameters() { return errorParameters }
+
     /** @see org.moqui.context.WebFacade#sendJsonResponse(Object) */
     void sendJsonResponse(Object responseObj) {
         JsonBuilder jb = new JsonBuilder()
@@ -266,6 +274,14 @@ class WebFacadeImpl implements WebFacade {
         parms.putAll(this.requestParameters)
         parms.putAll(this.requestAttributes)
         session.setAttribute("moqui.saved.parameters", parms)
+    }
+
+    /** Save request parameters and attributes to a Map in the moqui.error.parameters session attribute */
+    void saveErrorParametersToSession() {
+        Map parms = new HashMap()
+        parms.putAll(this.requestParameters)
+        parms.putAll(this.requestAttributes)
+        session.setAttribute("moqui.error.parameters", parms)
     }
 
     static DiskFileItemFactory makeDiskFileItemFactory(ServletContext context) {

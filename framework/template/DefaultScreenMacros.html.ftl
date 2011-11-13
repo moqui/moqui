@@ -264,7 +264,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
     <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
-    <#if !skipStart><form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>></#if>
+    <#if !skipStart>
+    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
+        <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+    </#if>
         <#if formNode["field-layout"]?has_content>
             <#assign fieldLayout = formNode["field-layout"][0]>
             <fieldset class="form-single-outer">
@@ -421,6 +424,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#if needHeaderForm && !skipStart>
             <#assign curUrlInfo = sri.getCurrentScreenUrl()>
             <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
+                <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
         </#if>
             <thead>
                 <tr class="form-header">
@@ -520,6 +524,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <tbody>
             <#if isMulti && !skipStart>
                 <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
+                    <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
             </#if>
                 <#list listObject as listEntry>
                     <#assign listEntryIndex = listEntry_index>

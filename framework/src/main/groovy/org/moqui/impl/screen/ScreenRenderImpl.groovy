@@ -279,7 +279,8 @@ class ScreenRenderImpl implements ScreenRender {
                 // save messages in session before redirecting so they can be displayed on the next screen
                 if (ec.web) {
                     ((WebFacadeImpl) ec.web).saveMessagesToSession()
-                    if (ri.saveParameters || ec.message.errors) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
+                    if (ri.saveParameters) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
+                    if (ec.message.errors) ((WebFacadeImpl) ec.web).saveErrorParametersToSession()
                 }
 
                 if (urlType == "plain") {
@@ -722,15 +723,16 @@ class ScreenRenderImpl implements ScreenRender {
         String mapName = fieldNode.parent()."@map" ?: "fieldValues"
         Object value
         // if this is an error situation try parameters first, otherwise try parameters last
-        boolean isError = ec.message.errors as boolean
-        if (isError && ec.web != null) value = ec.web.parameters.get(fieldName)
-        if (!value) value = ec.context.get(fieldName)
+        if (ec.web != null && ec.web.errorParameters != null && (ec.web.errorParameters.moquiFormName == fieldNode.parent()."@name"))
+            value = ec.web.errorParameters.get(fieldName)
+        // logger.warn("TOREMOVE fieldName=${fieldName} value=${value}; ec.web.errorParameters=${ec.web.errorParameters}; ec.web.errorParameters.moquiFormName=${ec.web.parameters.moquiFormName}, fieldNode.parent().@name=${fieldNode.parent().'@name'}")
         if (!value && ec.context.get(mapName) && fieldNode.parent().name() == "form-single") {
             try {
                 value = ((Map) ec.context.get(mapName)).get(fieldName)
             } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
         }
-        if (!isError && ec.web != null && !value) value = ec.web.parameters.get(fieldName)
+        if (!value) value = ec.context.get(fieldName)
+        // this isn't needed since the parameters are copied to the context: if (!isError && isWebAndSameForm && !value) value = ec.web.parameters.get(fieldName)
 
         if (value) return value as String
         return ec.resource.evaluateStringExpand(defaultValue, null)
