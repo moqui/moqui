@@ -12,13 +12,35 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        include-child-content="true">
+        include-child-content="true" require-authentication="false">
+
+    <transition name="LoadAllData">
+        <!-- NOTE: this is in the example component because it should NEVER be deployed on a production server! -->
+        <actions>
+            <script><![CDATA[
+            import org.moqui.entity.EntityDataLoader
+
+            // TODO: reject requests until this is done?
+
+            // load all the data
+            EntityDataLoader edl = ec.getEntity().makeDataLoader();
+
+            long startTime = System.currentTimeMillis();
+            long records = edl.load();
+            long totalSeconds = (System.currentTimeMillis() - startTime) / 1000;
+            ]]></script>
+            <log level="info" message="Loaded [${records}] records in ${totalSeconds} seconds."/>
+        </actions>
+        <default-response url="."/>
+    </transition>
+
     <subscreens default-item="Example">
         <!-- these are actually links to content to add to the menu since content is not automatically added to the menu -->
         <subscreens-item name="ExamplePolicies" menu-index="4" menu-title="Policies"/>
         <subscreens-item name="ExampleTerms" menu-index="5" menu-title="Terms"/>
         <subscreens-item name="ExampleWiki" menu-index="6" menu-title="Wiki"/>
     </subscreens>
+
     <widgets>
         <subscreens-panel id="example-app" type="tab"/>
         <!-- for a header and panel in an app can use something like this, though the basic approach above is cleaner:
