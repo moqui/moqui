@@ -25,7 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- Artifact Authz for UserAccount, user can view own info -->
     <moqui.security.ArtifactGroup artifactGroupId="UserAccount" description="UserAccount entity."/>
-    <moqui.security.ArtifactGroupMember artifactGroupId="UserAccount" artifactName="moqui.security.user.UserAccount" nameIsPattern="N"
+    <moqui.security.ArtifactGroupMember artifactGroupId="UserAccount" artifactName="moqui.security.UserAccount" nameIsPattern="N"
                          artifactTypeEnumId="AT_ENTITY" inheritAuthz="Y"/>
     <moqui.security.ArtifactAuthz artifactAuthzId="ALL_USERS_SELF" userGroupId="ALL_USERS" artifactGroupId="UserAccount"
                    authzTypeEnumId="AUTHZT_ALWAYS" authzActionEnumId="AUTHZA_VIEW"/>
