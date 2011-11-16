@@ -99,6 +99,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
         artifactExecutionInfoHistory.add(aeii)
+        // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact push ${username} - ${aeii}")
 
         if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.getUser().getNowTimestamp()))
             throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.getActionEnumId())} on ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}]")
@@ -149,6 +150,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             return true
         }
+
+        // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted after authzDisabled ${aeii}")
 
         EntityFacadeImpl efi = (EntityFacadeImpl) eci.entity
         UserFacadeImpl ufi = (UserFacadeImpl) eci.getUser()
@@ -220,13 +223,17 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         }
 
         // tarpit enabled already checked, if authz not enabled return true immediately
-        if (!isAuthzEnabled(aeii.getTypeEnumId())) return true
+        if (!isAuthzEnabled(aeii.getTypeEnumId())) {
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted authz disabled - ${aeii}")
+            return true
+        }
 
         // if last was an always allow, then don't bother checking for deny/etc
         if (lastAeii != null && lastAeii.isAuthorizationInheritable() && lastAeii.getAuthorizedUserId() == userId &&
                 "AUTHZT_ALWAYS".equals(lastAeii.getAuthorizedAuthzTypeId()) &&
                 ("AUTHZA_ALL".equals(lastAeii.getAuthorizedActionEnumId()) || aeii.getActionEnumId().equals(lastAeii.getAuthorizedActionEnumId()))) {
             aeii.copyAuthorizedInfo(lastAeii)
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted already authorized for user ${userId} - ${aeii}")
             return true
         }
 
@@ -255,14 +262,15 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
             // The new way: get a basic list by UserGroups from the UserFacadeImpl, then filter it down
             EntityConditionFactory ecf = efi.getConditionFactory()
-            aacvList = ufi.getArtifactAuthzCheckList()
-                    .filterByCondition(ecf.makeCondition([
+            EntityCondition aacvCond = ecf.makeCondition([
                         ecf.makeCondition("artifactTypeEnumId", ComparisonOperator.EQUALS, aeii.getTypeEnumId()),
                         ecf.makeCondition("authzActionEnumId", ComparisonOperator.IN, ["AUTHZA_ALL", aeii.getActionEnumId()]),
                         ecf.makeCondition(
                             ecf.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.getName()),
-                            JoinOperator.OR, nameIsPatternEqualsY)
-                    ]), true)
+                            JoinOperator.OR, nameIsPatternEqualsY)])
+            aacvList = ufi.getArtifactAuthzCheckList().cloneList().filterByCondition(aacvCond, true)
+
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted aacvList: ${aacvList}; aacvCond: ${aacvCond}")
 
             if (aacvList.size() > 0) {
                 for (EntityValue aacv in aacvList) {
@@ -313,6 +321,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         denyAacv = aacv
                     } else if (authzTypeEnumId == "AUTHZT_ALWAYS") {
                         aeii.copyAacvInfo(aacv, userId)
+                        // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted found always allow for user ${userId} - ${aeii}")
                         return true
                     } else if (authzTypeEnumId == "AUTHZT_ALLOW" && denyAacv == null) {
                         // see if there are any denies in AEIs on lower on the stack
@@ -322,65 +331,80 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                         if (!ancestorDeny) {
                             aeii.copyAacvInfo(aacv, userId)
+                            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted allow with no deny for user ${userId} - ${aeii}")
                             return true
                         }
                     }
                 }
             }
+        } finally {
+            if (!alreadyDisabled) enableAuthz()
+        }
 
-            if (denyAacv != null) {
-                // record that this was an explicit deny (for push or exception in case something catches and handles it)
-                aeii.copyAacvInfo(denyAacv, userId)
+        if (denyAacv != null) {
+            // record that this was an explicit deny (for push or exception in case something catches and handles it)
+            aeii.copyAacvInfo(denyAacv, userId)
 
-                if (!requiresAuthz || this.authzDisabled) {
-                    // if no authz required, just return true even though it was a failure
-                    return true
-                } else {
-                    StringBuilder warning = new StringBuilder()
-                    warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of a deny record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}], here is the current artifact stack:")
-                    for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-                    logger.warn(warning.toString())
+            if (!requiresAuthz || this.authzDisabled) {
+                // if no authz required, just return true even though it was a failure
+                // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted (in deny) doesn't require authz or authzDisabled for user ${userId} - ${aeii}")
+                return true
+            } else {
+                StringBuilder warning = new StringBuilder()
+                warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of a deny record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}], here is the current artifact stack:")
+                for (def warnAei in this.stack) warning.append("\n").append(warnAei)
+                logger.warn(warning.toString())
 
+                alreadyDisabled = disableAuthz()
+                try {
                     eci.getService().sync().name("create", "moqui.security.ArtifactAuthzFailure").parameters((Map<String, Object>)
                             [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                             authzActionEnumId:aeii.getActionEnumId(), userId:userId,
                             failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"Y"]).call()
+                } finally {
+                    if (!alreadyDisabled) enableAuthz()
+                }
 
-                    return false
-                }
-            } else {
-                // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
-                if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
-                        (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.getActionEnumId())) {
-                    aeii.copyAuthorizedInfo(lastAeii)
-                    return true
-                }
+                return false
             }
-
-            if (!requiresAuthz || this.authzDisabled) {
-                // if no authz required, just push it even though it was a failure
-                if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
+        } else {
+            // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
+            if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
+                    (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.getActionEnumId())) {
+                aeii.copyAuthorizedInfo(lastAeii)
+                // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted inheritable and same user and ALL or same action for user ${userId} - ${aeii}")
                 return true
-            } else {
-                // if we got here no authz found, blow up
-                StringBuilder warning = new StringBuilder()
-                warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of no allow record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
-                for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-                logger.warn(warning.toString(), new Exception("Authz failure location"))
+            }
+        }
 
+        if (!requiresAuthz || this.authzDisabled) {
+            // if no authz required, just push it even though it was a failure
+            if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted doesn't require authz or authzDisabled for user ${userId} - ${aeii}")
+            return true
+        } else {
+            // if we got here no authz found, blow up
+            StringBuilder warning = new StringBuilder()
+            warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of no allow record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
+            for (def warnAei in this.stack) warning.append("\n").append(warnAei)
+            logger.warn(warning.toString(), new Exception("Authz failure location"))
+
+            alreadyDisabled = disableAuthz()
+            try {
                 // NOTE: this is called sync because failures should be rare and not as performance sensitive, and
                 //  because this is still in a disableAuthz block (if async a service would have to be written for that)
                 eci.service.sync().name("create", "moqui.security.ArtifactAuthzFailure").parameters((Map<String, Object>)
                         [artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId(),
                         authzActionEnumId:aeii.getActionEnumId(), userId:userId,
                         failureDate:new Timestamp(System.currentTimeMillis()), isDeny:"N"]).call()
-
-                return false
+            } finally {
+                if (!alreadyDisabled) enableAuthz()
             }
-        } finally {
-            if (!alreadyDisabled) enableAuthz()
+
+            return false
         }
 
+        // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted got to end for user ${userId} - ${aeii}")
         return true
     }
 }
