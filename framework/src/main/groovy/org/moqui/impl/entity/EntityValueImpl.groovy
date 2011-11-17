@@ -296,7 +296,7 @@ class EntityValueImpl implements EntityValue {
             throw new EntityException("Create not yet implemented for view-entity")
         } else {
             if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
-                this.set("lastUpdatedStamp", getEntityFacadeImpl().ecfi.getTransactionFacade().getCurrentTransactionStartTime())
+                this.set("lastUpdatedStamp", new Timestamp(getEntityFacadeImpl().ecfi.getTransactionFacade().getCurrentTransactionStartTime()))
 
             ListOrderedSet fieldList = new ListOrderedSet()
             for (String fieldName in ed.getAllFieldNames()) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
@@ -406,7 +406,7 @@ class EntityValueImpl implements EntityValue {
             }
 
             if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
-                this.set("lastUpdatedStamp", getEntityFacadeImpl().ecfi.getTransactionFacade().getCurrentTransactionStartTime())
+                this.set("lastUpdatedStamp", new Timestamp(getEntityFacadeImpl().ecfi.getTransactionFacade().getCurrentTransactionStartTime()))
 
             EntityQueryBuilder eqb = new EntityQueryBuilder(ed, getEntityFacadeImpl())
             StringBuilder sql = eqb.getSqlTopLevel()

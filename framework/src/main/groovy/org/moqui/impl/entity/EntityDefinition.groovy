@@ -64,7 +64,7 @@ public class EntityDefinition {
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
         } else {
-            if (!"false" == this.internalEntityNode."@no-update-stamp") {
+            if (this.internalEntityNode."@no-update-stamp" != "true") {
                 // automatically add the lastUpdatedStamp field
                 this.internalEntityNode.appendNode("field", [name:"lastUpdatedStamp", type:"date-time"])
             }
