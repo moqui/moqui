@@ -2,10 +2,15 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0.0 - date not yet decided
+Release 1.0.0 - 19 November 2011
 ===========================================================================
 
-TODO: general description
+Here it is, the initial production release of the 1.0 series. This release
+includes various fixes and new features to facilitate easy use based on
+more extensive testing and real-world development using the framework.
+
+More examples of different patterns exist in Moqui Framework itself, as
+well as in add-on projects including Mantle, POP Commerce, and so on.
 
 This release includes:
 
@@ -516,14 +521,8 @@ This release includes:
 Tools probable for 1.0 final:
 ===========================================================================
 
-- In primary sequence for entity names if the value exists in the db reset
-  sequence and try again (or perhaps suffix, also testing and incrementing
-  the suffix as needed); worth the performance impact of one query per
-  sequence?
-- Service to clean out and reload database (for demo server)
 - Screen Facade
   - Filter menu rendering by authorization
-  - Setting to reject all requests (system down for maintenance)
 
 ===========================================================================
 Features designed or considered, but not to be included in 1.0 series
