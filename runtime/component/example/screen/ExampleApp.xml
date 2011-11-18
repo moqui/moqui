@@ -20,6 +20,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <script><![CDATA[
             import org.moqui.entity.EntityDataLoader
 
+            ec.artifactExecution.disableAuthz()
+
             // TODO: reject requests until this is done?
 
             // load all the data
@@ -28,6 +30,8 @@ This Work includes contributions authored by David E. Jones, not as a
             long startTime = System.currentTimeMillis();
             long records = edl.load();
             long totalSeconds = (System.currentTimeMillis() - startTime) / 1000;
+
+            ec.artifactExecution.enableAuthz()
             ]]></script>
             <log level="info" message="Loaded [${records}] records in ${totalSeconds} seconds."/>
         </actions>
