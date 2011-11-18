@@ -96,8 +96,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="TenantDataSourceXaProp" package-name="moqui.tenant" group-name="tenantcommon">
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="entityGroupName" type="text-medium" is-pk="true"/>
-        <field name="propName" type="text-long" is-pk="true"/>
-        <field name="propValue" type="text-long"/>
+        <field name="propName" type="text-medium" is-pk="true"/>
+        <field name="propValue" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.tenant.TenantDataSource"/>
     </entity>
 </entities>

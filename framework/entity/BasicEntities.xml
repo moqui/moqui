@@ -134,9 +134,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========== Localized ========== -->
     <entity entity-name="LocalizedMessage" package-name="moqui.basic" cache="true" authorize-skip="view">
-        <field name="original" type="text-long" is-pk="true"/>
+        <field name="original" type="text-medium" is-pk="true"/>
         <field name="locale" type="text-short" is-pk="true"/>
-        <field name="localized" type="text-very-long"/>
+        <field name="localized" type="text-long"/>
     </entity>
     <entity entity-name="LocalizedEntityField" package-name="moqui.basic" cache="true" authorize-skip="view">
         <field name="entityName" type="text-medium" is-pk="true"/>

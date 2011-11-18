@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="ArtifactGroupMember" package-name="moqui.security">
         <field name="artifactGroupId" type="id" is-pk="true"/>
-        <field name="artifactName" type="text-long" is-pk="true">
+        <field name="artifactName" type="text-medium" is-pk="true">
             <description>Full artifact location/name, or a pattern if nameIsPattern=Y.</description>
         </field>
         <field name="artifactTypeEnumId" type="id" is-pk="true"/>
@@ -106,8 +106,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </seed-data>
     </entity>
     <entity entity-name="ArtifactAuthzFailure" package-name="moqui.security" cache="false">
-        <field name="failureId" type="text-long" is-pk="true"/>
-        <field name="artifactName" type="text-long"/>
+        <field name="failureId" type="text-medium" is-pk="true"/>
+        <field name="artifactName" type="text-medium"/>
         <field name="artifactTypeEnumId" type="id"/>
         <field name="authzActionEnumId" type="id"/>
         <field name="userId" type="id-very-long"/>
@@ -305,7 +305,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="UserPreference" package-name="moqui.security">
         <description>Use this entity for user-specific preferences (or properties). For default preferences use userId="_NA_".</description>
         <field name="userId" type="id-very-long" is-pk="true"/>
-        <field name="preferenceKey" type="text-long" is-pk="true"/>
+        <field name="preferenceKey" type="text-medium" is-pk="true"/>
         <field name="preferenceValue" type="text-long"/>
         <relationship type="one-nofk" related-entity-name="moqui.security.UserAccount">
             <description>No FK in order to allow externally authenticated users.</description>

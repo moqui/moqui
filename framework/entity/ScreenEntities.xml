@@ -17,7 +17,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========== Subscreen ========== -->
     <entity entity-name="SubscreensItem" package-name="moqui.screen" authorize-skip="view" cache="true">
-        <field name="screenLocation" type="text-long" is-pk="true"/>
+        <field name="screenLocation" type="text-medium" is-pk="true"/>
         <field name="subscreenName" type="text-medium" is-pk="true"/>
         <field name="userId" type="id-very-long" is-pk="true">
             <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
@@ -98,9 +98,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="DynamicFormField" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
-        <field name="fieldName" type="text-long" is-pk="true"/>
-        <field name="entryName" type="text-long"/>
-        <field name="title" type="text-long"/>
+        <field name="fieldName" type="text-medium" is-pk="true"/>
+        <field name="entryName" type="text-medium"/>
+        <field name="title" type="text-medium"/>
         <field name="fieldTypeEnumId" type="id"/>
         <field name="optionEnumTypeId" type="id">
             <description>Get options from Enumeration entity.</description>
@@ -109,8 +109,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="DynamicFormFieldOption" package-name="moqui.screen.form">
         <field name="formId" type="id" is-pk="true"/>
-        <field name="fieldName" type="text-long" is-pk="true"/>
-        <field name="value" type="text-long" is-pk="true"/>
+        <field name="fieldName" type="text-medium" is-pk="true"/>
+        <field name="value" type="text-medium" is-pk="true"/>
         <field name="description" type="text-long"/>
         <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" related-entity-name="DynamicFormField"/>

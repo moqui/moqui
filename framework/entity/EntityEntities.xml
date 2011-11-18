@@ -83,7 +83,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="EntityGroupEntry" package-name="moqui.entity.group">
         <field name="entityGroupId" type="id" is-pk="true"/>
-        <field name="entityOrPackage" type="text-long" is-pk="true"/>
+        <field name="entityOrPackage" type="text-medium" is-pk="true"/>
         <field name="applEnumId" type="id"/>
         <relationship type="one" related-entity-name="EntityGroup"/>
     </entity>
