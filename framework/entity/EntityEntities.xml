@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="DbViewEntity" package-name="moqui.entity" cache="true" authorize-skip="view">
         <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="packageName" type="text-long"/>
+        <field name="packageName" type="text-medium"/>
         <field name="cache" type="text-indicator"/>
         <field name="isDataView" type="text-indicator"/>
     </entity>
@@ -60,15 +60,15 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="EntityAuditLog" package-name="moqui.entity" authorize-skip="create">
         <field name="auditHistorySeqId" type="id" is-pk="true"/>
         <field name="changedEntityName" type="text-medium"/>
-        <field name="changedFieldName" type="text-long"/>
-        <field name="pkPrimaryValue" type="text-long"/>
-        <field name="pkSecondaryValue" type="text-long"/>
+        <field name="changedFieldName" type="text-medium"/>
+        <field name="pkPrimaryValue" type="text-medium"/>
+        <field name="pkSecondaryValue" type="text-medium"/>
         <field name="pkRestCombinedValue" type="text-long"/>
         <field name="oldValueText" type="text-long"/>
         <field name="newValueText" type="text-long"/>
         <field name="changedDate" type="date-time"/>
-        <field name="changedByUserId" type="text-long"/>
-        <field name="changedInVisitId" type="text-long"/>
+        <field name="changedByUserId" type="text-medium"/>
+        <field name="changedInVisitId" type="text-medium"/>
     </entity>
 
     <entity entity-name="SequenceValueItem" package-name="moqui.entity" authorize-skip="true">
@@ -99,10 +99,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="runStatusId" type="id"/>
         <field name="lastSuccessfulSyncTime" type="date-time"/>
         <field name="syncSplitMillis" type="number-integer"/>
-        <field name="targetServerUrl" type="text-long"/>
-        <field name="targetUsername" type="text-long"/>
-        <field name="targetPassword" type="text-long" encrypt="true"/>
-        <field name="targetTenantId" type="text-long"/>
+        <field name="targetServerUrl" type="text-medium"/>
+        <field name="targetUsername" type="text-medium"/>
+        <field name="targetPassword" type="text-medium" encrypt="true"/>
+        <field name="targetTenantId" type="text-medium"/>
         <field name="keepRemoveInfoHours" type="number-float"/>
         <field name="forPullOnly" type="text-indicator"/>
         <field name="forPushOnly" type="text-indicator"/>

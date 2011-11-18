@@ -198,7 +198,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>Deny access to the artifact for the user until releaseDateTime is reached.</description>
         <field name="artifactTarpitLockId" type="id" is-pk="true"/>
         <field name="userId" type="id"/>
-        <field name="artifactName" type="text-long"/>
+        <field name="artifactName" type="text-medium"/>
         <field name="artifactTypeEnumId" type="id"/>
         <field name="releaseDateTime" type="date-time"/>
         <relationship type="one-nofk" related-entity-name="moqui.security.UserAccount">
@@ -212,15 +212,15 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- ========== User ========== -->
     <entity entity-name="UserAccount" package-name="moqui.security">
         <field name="userId" type="id-very-long" is-pk="true"/>
-        <field name="username" type="text-long" enable-audit-log="true">
+        <field name="username" type="text-medium" enable-audit-log="true">
             <description>The username used along with the password to login</description>
         </field>
         <field name="userFullName" type="text-medium"><description>User's first, middle, last, etc name</description></field>
-        <field name="currentPassword" type="text-long"/>
+        <field name="currentPassword" type="text-medium"/>
         <field name="passwordSalt" type="text-medium"/>
         <field name="passwordHashType" type="text-short"/>
         <field name="passwordSetDate" type="date-time"/>
-        <field name="passwordHint" type="text-long"/>
+        <field name="passwordHint" type="text-medium"/>
         <field name="hasLoggedOut" type="text-indicator"/>
         <field name="disabled" type="text-indicator"/>
         <field name="disabledDateTime" type="date-time"/>
@@ -230,7 +230,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="locale" type="text-short"/>
         <field name="timeZone" type="id-long"/>
         <field name="externalUserId" type="id-very-long"/>
-        <field name="emailAddress" type="text-long">
+        <field name="emailAddress" type="text-medium">
             <description>The email address to use for forgot password emails and other system messages.</description>
         </field>
         <relationship type="one" title="Currency" related-entity-name="moqui.basic.Uom">
@@ -245,7 +245,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="UserGroup" package-name="moqui.security">
         <field name="userGroupId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
     </entity>
     <entity entity-name="UserGroupMember" package-name="moqui.security" cache="true">
         <field name="userGroupId" type="id" is-pk="true"/>
@@ -300,7 +300,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="UserPermission" package-name="moqui.security">
         <field name="userPermissionId" type="id-very-long" is-pk="true"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
     </entity>
     <entity entity-name="UserPreference" package-name="moqui.security">
         <description>Use this entity for user-specific preferences (or properties). For default preferences use userId="_NA_".</description>

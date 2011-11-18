@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-very-long"/>
         <field name="artifactType" type="text-medium"/>
         <field name="artifactSubType" type="text-medium"/>
-        <field name="artifactName" type="text-long">
+        <field name="artifactName" type="text-medium">
             <description>The name of the artifact hit. For XML Screens request it is "${webapp-name}.${screen-path}"</description>
         </field>
         <field name="parameterString" type="text-long"/>
@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="requestUrl" type="text-long"/>
         <field name="referrerUrl" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
-        <field name="serverHostName" type="text-long"/>
+        <field name="serverHostName" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.server.Visit"/>
         <relationship type="one" related-entity-name="moqui.security.UserAccount"/>
     </entity>
@@ -44,9 +44,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="hitBinId" type="id" is-pk="true"/>
         <field name="artifactType" type="text-medium"/>
         <field name="artifactSubType" type="text-medium"/>
-        <field name="artifactName" type="text-long"/>
+        <field name="artifactName" type="text-medium"/>
         <field name="serverIpAddress" type="id"/>
-        <field name="serverHostName" type="text-long"/>
+        <field name="serverHostName" type="text-medium"/>
         <field name="binStartDateTime" type="date-time"/>
         <field name="binEndDateTime" type="date-time"/>
         <field name="hitCount" type="number-integer"/>
@@ -72,14 +72,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userCreated" type="text-indicator"/>
         <field name="sessionId" type="id-very-long"/>
         <field name="serverIpAddress" type="id"/>
-        <field name="serverHostName" type="text-long"/>
+        <field name="serverHostName" type="text-medium"/>
         <field name="webappName" type="text-medium"/>
         <field name="initialLocale" type="text-medium"/>
         <field name="initialRequest" type="text-long"/>
         <field name="initialReferrer" type="text-long"/>
-        <field name="initialUserAgent" type="text-long"/>
+        <field name="initialUserAgent" type="text-medium"/>
         <field name="clientIpAddress" type="text-medium"/>
-        <field name="clientHostName" type="text-long"/>
+        <field name="clientHostName" type="text-medium"/>
         <field name="clientUser" type="text-medium"/>
         <field name="clientIpIspName" type="text-medium"/>
         <field name="clientIpPostalCode" type="text-medium"/>

@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>Date Day Dimension. The natural key is [dateValue]</description>
         <field name="dimensionId" type="id" is-pk="true"/>
         <field name="dateValue" type="date"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="dayName" type="text-medium"/>
         <field name="dayOfMonth" type="number-integer"/>
         <field name="dayOfYear" type="number-integer"/>
@@ -33,6 +33,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>Currency Dimension. The natural key is [currencyId]</description>
         <field name="dimensionId" type="id" is-pk="true"/>
         <field name="currencyId" type="id"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
     </entity>
 </entities>

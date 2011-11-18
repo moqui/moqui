@@ -22,7 +22,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-very-long" is-pk="true">
             <description>These settings are per-user. To apply to all users set this to "_NA_".</description>
         </field>
-        <field name="subscreenLocation" type="text-long"/>
+        <field name="subscreenLocation" type="text-medium"/>
         <field name="menuTitle" type="text-medium">
             <description>
                 The title to show for this subscreen in the menu. Can be used to override subscreen titles in the
@@ -47,7 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="ScreenTheme" package-name="moqui.screen" authorize-skip="true" cache="true">
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <relationship type="one" title="ScreenThemeType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="screenThemeTypeEnumId"/>
         </relationship>
@@ -67,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="resourceTypeEnumId" type="id"/>
-        <field name="resourceValue" type="text-long">
+        <field name="resourceValue" type="text-medium">
             <description>The location, name or other value description the resource.</description>
         </field>
         <relationship type="one" related-entity-name="moqui.screen.ScreenTheme"/>
@@ -92,7 +92,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-very-long">
             <description>These settings are per-user. To apply to all users set this to null.</description>
         </field>
-        <field name="modifyXmlScreenForm" type="text-long">
+        <field name="modifyXmlScreenForm" type="text-medium">
             <description>The screen location and form name (separated by a hash/pound sign) of XML Screen Form to modify.</description>
         </field>
     </entity>
@@ -111,7 +111,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="formId" type="id" is-pk="true"/>
         <field name="fieldName" type="text-medium" is-pk="true"/>
         <field name="value" type="text-medium" is-pk="true"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" related-entity-name="DynamicFormField"/>
     </entity>
@@ -132,9 +132,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 there.
             </description>
         </field>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="submitCaption" type="text-short"/>
-        <field name="submitService" type="text-long"/>
+        <field name="submitService" type="text-medium"/>
         <field name="isAnonymous" type="text-indicator">
             <description>Allow response to the dynamicForm without login?</description>
         </field>
@@ -144,10 +144,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="allowUpdate" type="text-indicator">
             <description>Allow change to responses?</description>
         </field>
-        <field name="acroFormLocation" type="text-long">
+        <field name="acroFormLocation" type="text-medium">
             <description>Points to PDF with AcroForm</description>
         </field>
-        <field name="modifyXmlForm" type="text-long">
+        <field name="modifyXmlForm" type="text-medium">
             <description>The location and name (separated by a hash/pound sign) of an XML Form to modify.</description>
         </field>
         <field name="extendsDynamicFormId" type="id">
@@ -178,7 +178,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </description>
         </field>
         <field name="dynamicFormFieldTypeEnumId" type="id"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="question" type="text-very-long"/>
         <field name="hint" type="text-very-long"/>
         <field name="enumTypeId" type="id">
@@ -186,7 +186,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </field>
         <field name="formatString" type="text-medium"/>
         <field name="requiredField" type="text-indicator"/>
-        <field name="externalFieldRef" type="text-long">
+        <field name="externalFieldRef" type="text-medium">
             <description>External field ID/reference; for AcroForms used to track the field ID</description>
         </field>
         <field name="whenDynamicFormFieldId" type="id">
@@ -238,7 +238,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="DynamicFormFieldOption" package-name="moqui.screen.form">
         <field name="dynamicFormFieldId" type="id" is-pk="true"/>
         <field name="dynamicFormOptionSeqId" type="id" is-pk="true"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <relationship type="one" related-entity-name="DynamicFormField"/>
     </entity>
@@ -281,7 +281,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id-very-long">
             <description>These settings are per-user. To apply to all users set this to null.</description>
         </field>
-        <field name="modifyXmlScreen" type="text-long">
+        <field name="modifyXmlScreen" type="text-medium">
             <description>The location of XML Screen to modify.</description>
         </field>
     </entity>
@@ -293,13 +293,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="areaEnumId" type="id">
             <description>Options include: header, left, center, right, and footer.</description>
         </field>
-        <field name="screenLocation" type="text-long"/>
+        <field name="screenLocation" type="text-medium"/>
     </entity>
     <entity entity-name="DynamicScreenIncludeParam" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="includeSeqId" type="id" is-pk="true"/>
         <field name="parameterName" type="text-medium" is-pk="true"/>
-        <field name="parameterValue" type="text-long"/>
+        <field name="parameterValue" type="text-medium"/>
     </entity>
     <entity entity-name="DynamicScreenPanel" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>

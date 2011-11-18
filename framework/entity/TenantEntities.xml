@@ -29,11 +29,11 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- Email Defaults -->
         <field name="emailOutgoingEnabled" type="text-indicator"/>
-        <field name="emailOutgoingFromAddress" type="text-long"/>
-        <field name="emailOutgoingRedirectAddr" type="text-long">
+        <field name="emailOutgoingFromAddress" type="text-medium"/>
+        <field name="emailOutgoingRedirectAddr" type="text-medium">
             <description>For testing purposes. If an email address is specified here all outgoing email will go to this address only.</description>
         </field>
-        <field name="emailSmtpRelayHost" type="text-long"/>
+        <field name="emailSmtpRelayHost" type="text-medium"/>
         <field name="emailSmtpAuthUsername" type="text-medium"/>
         <field name="emailSmtpAuthPassword" type="text-medium"/>
         <field name="emailSmtpPort" type="text-short"/>
@@ -87,10 +87,10 @@ This Work includes contributions authored by David E. Jones, not as a
         </description>
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="entityGroupName" type="text-medium" is-pk="true"/>
-        <field name="jndiName" type="text-long"/>
-        <field name="jdbcUri" type="text-long"/>
-        <field name="jdbcUsername" type="text-long"/>
-        <field name="jdbcPassword" type="text-long"/>
+        <field name="jndiName" type="text-medium"/>
+        <field name="jdbcUri" type="text-medium"/>
+        <field name="jdbcUsername" type="text-medium"/>
+        <field name="jdbcPassword" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
     <entity entity-name="TenantDataSourceXaProp" package-name="moqui.tenant" group-name="tenantcommon">
