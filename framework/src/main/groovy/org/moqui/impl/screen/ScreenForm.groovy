@@ -280,6 +280,8 @@ class ScreenForm {
 
     protected void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk")) {
+            // always skip automatically added lastUpdatedStamp
+            if (fieldName == "lastUpdatedStamp") continue
 
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
