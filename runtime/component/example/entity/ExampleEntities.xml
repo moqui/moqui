@@ -18,24 +18,24 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- Example Feature -->
     <extend-entity entity-name="Example" package-name="moqui.example">
-        <field name="auditedField" type="text-long" enable-audit-log="true"/>
-        <field name="encryptedField" type="text-long" encrypt="true"/>
-        <field name="exampleEmail" type="text-long"/>
-        <field name="exampleUrl" type="text-long"/>
+        <field name="auditedField" type="text-medium" enable-audit-log="true"/>
+        <field name="encryptedField" type="text-medium" encrypt="true"/>
+        <field name="exampleEmail" type="text-medium"/>
+        <field name="exampleUrl" type="text-medium"/>
     </extend-entity>
     <entity entity-name="Example" package-name="moqui.example">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="exampleTypeEnumId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>
         <field name="exampleName" type="text-medium"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="longDescription" type="text-very-long"/>
         <field name="comments" type="text-long"/>
         <field name="exampleSize" type="number-integer"/>
         <field name="exampleDate" type="date-time"/>
         <!-- try uncommenting these while running to see how things change
         <field name="anotherDate" type="date-time"/>
-        <field name="anotherText" type="text-long"/>
+        <field name="anotherText" type="text-medium"/>
         -->
         <relationship type="one" title="ExampleType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="exampleTypeEnumId"/>
@@ -45,7 +45,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="ExampleItem" package-name="moqui.example">
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="exampleItemSeqId" type="id" is-pk="true"><description>secondary sequenced ID</description></field>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <field name="amount" type="number-float"/>
         <field name="amountUomId" type="id"/>
         <relationship type="one" title="Amount" related-entity-name="moqui.basic.Uom">
@@ -58,7 +58,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="ExampleFeature" package-name="moqui.example">
         <field name="exampleFeatureId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="featureSourceEnumId" type="id"/>
-        <field name="description" type="text-long"/>
+        <field name="description" type="text-medium"/>
         <relationship type="one" title="ExampleFeatureSource" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="featureSourceEnumId"/>
         </relationship>
