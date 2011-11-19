@@ -63,7 +63,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="changedFieldName" type="text-medium"/>
         <field name="pkPrimaryValue" type="text-medium"/>
         <field name="pkSecondaryValue" type="text-medium"/>
-        <field name="pkRestCombinedValue" type="text-long"/>
+        <field name="pkRestCombinedValue" type="text-medium"/>
         <field name="oldValueText" type="text-long"/>
         <field name="newValueText" type="text-long"/>
         <field name="changedDate" type="date-time"/>

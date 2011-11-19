@@ -359,8 +359,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="emailServerId" type="id"/>
         <field name="fromAddress" type="text-medium"/>
         <field name="fromName" type="text-medium"/>
-        <field name="ccAddresses" type="text-long"/>
-        <field name="bccAddresses" type="text-long"/>
+        <field name="ccAddresses" type="text-medium"/>
+        <field name="bccAddresses" type="text-medium"/>
         <field name="subject" type="text-long"/>
         <field name="bodyScreenLocation" type="text-medium"/>
         <field name="webappName" type="text-medium"/>

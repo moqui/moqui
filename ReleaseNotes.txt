@@ -28,6 +28,10 @@ This release includes:
     Java quirks
 - Change components to load in reverse of order initialized (later
   components override earlier ones)
+- Increased text field sizes (short to 63, medium to 255, long to 4095)
+- Changed a bunch of fields from text-long to text-medium that are either
+  primary-key fields, or that don't need to be so long, or in entities
+  where there are too many text-long fields
 - User Facade
   - Added support for login via HTTP Basic Authorization, mostly for
     things like RESTful services and support for clients using it

@@ -278,10 +278,13 @@
         <dictionary-type type="currency-precise" java-type="java.math.BigDecimal" default-sql-type="NUMERIC(23,3)"/>
 
         <dictionary-type type="text-indicator" java-type="java.lang.String" default-sql-type="CHAR(1)"/>
-        <dictionary-type type="text-short" java-type="java.lang.String" default-sql-type="VARCHAR(10)"/>
+        <dictionary-type type="text-short" java-type="java.lang.String" default-sql-type="VARCHAR(63)"/>
         <dictionary-type type="text-medium" java-type="java.lang.String" default-sql-type="VARCHAR(255)"/>
-        <!-- text-long was 32000, but changed to 8192 because MySQL max size is 21K or so for a VARCHAR, and 64K for a row (not including text-very-long) -->
-        <dictionary-type type="text-long" java-type="java.lang.String" default-sql-type="VARCHAR(8192)"/>
+        <!-- text-long was 32000, but changed to 4095 because MySQL max size is 21K or so for a VARCHAR, and 64K for a
+            row (not including text-very-long), and it seems that the limit is bytes, not characters, so 4K characters
+            is 12K bytes... just like the old annoying column size which is now in characters, but the row size still
+            in bytes -->
+        <dictionary-type type="text-long" java-type="java.lang.String" default-sql-type="VARCHAR(4095)"/>
         <dictionary-type type="text-very-long" java-type="java.lang.String" default-sql-type="CLOB"/>
 
         <dictionary-type type="binary-very-long" java-type="java.sql.Blob" default-sql-type="BLOB"/>
