@@ -38,7 +38,7 @@ import org.moqui.context.TransactionFacade
 class TransactionFacadeImpl implements TransactionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TransactionFacadeImpl.class)
 
-    protected final ExecutionContextFactoryImpl ecfi;
+    protected final ExecutionContextFactoryImpl ecfi
 
     protected UserTransaction ut
     protected TransactionManager tm
@@ -57,6 +57,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             this.populateTransactionObjectsJndi()
         } else if (transactionFactory."@factory-type" == "internal") {
             UserTransactionManager utm = new UserTransactionManager()
+            // initialize Atomikos
             utm.init()
             this.ut = utm
             this.tm = utm
@@ -66,12 +67,14 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
 
     void destroy() {
-        // destroy ut, tm (just for internal/Atomikos; nothing for JNDI
-        if (this.tm instanceof UserTransactionManager) {
-            ((UserTransactionManager) this.tm).close()
-            this.tm = null
-            this.ut = null
-        }
+        UserTransactionManager utm = this.tm instanceof UserTransactionManager ? (UserTransactionManager) this.tm : null
+
+        // set to null first to avoid additional operations
+        this.tm = null
+        this.ut = null
+
+        // destroy utm (just for internal/Atomikos; nothing for JNDI
+        if (utm != null) utm.close()
 
         transactionBeginStackList.remove()
         transactionBeginStartTimeList.remove()
