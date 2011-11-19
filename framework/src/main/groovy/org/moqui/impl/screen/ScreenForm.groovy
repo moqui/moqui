@@ -341,16 +341,22 @@ class ScreenForm {
                         Node entityOptionsNode = dropDownNode.appendNode("entity-options")
                         Node entityFindNode = entityOptionsNode.appendNode("entity-find",
                                 ["entity-name":relatedEntityName, "list":"optionsValueList", "offset":0, "limit":200])
-                        if (relatedEntityName == "moqui.basic.Enumeration") {
-                            // make sure the title is an actual enumTypeId before adding condition
-                            if (ecfi.entityFacade.makeFind("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
-                                entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
+                        // don't require any permissions for this
+                        boolean alreadyDisabled = this.ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+                        try {
+                            if (relatedEntityName == "moqui.basic.Enumeration") {
+                                // make sure the title is an actual enumTypeId before adding condition
+                                if (ecfi.entityFacade.makeFind("moqui.basic.EnumerationType").condition("enumTypeId", title).count() > 0) {
+                                    entityFindNode.appendNode("econdition", ["field-name":"enumTypeId", "value":title])
+                                }
+                            } else if (relatedEntityName == "moqui.basic.StatusItem") {
+                                // make sure the title is an actual statusTypeId before adding condition
+                                if (ecfi.entityFacade.makeFind("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
+                                    entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
+                                }
                             }
-                        } else if (relatedEntityName == "moqui.basic.StatusItem") {
-                            // make sure the title is an actual statusTypeId before adding condition
-                            if (ecfi.entityFacade.makeFind("moqui.basic.StatusType").condition("statusTypeId", title).count() > 0) {
-                                entityFindNode.appendNode("econdition", ["field-name":"statusTypeId", "value":title])
-                            }
+                        } finally {
+                            if (!alreadyDisabled) this.ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
                         }
 
                         if (relDefaultDescriptionField) {
