@@ -101,8 +101,10 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         artifactExecutionInfoHistory.add(aeii)
         // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact push ${username} - ${aeii}")
 
-        if (!isPermitted(username, aeii, lastAeii, requiresAuthz, eci.getUser().getNowTimestamp()))
-            throw new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.getActionEnumId())} on ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}]")
+        if (!isPermitted(username, aeii, lastAeii, requiresAuthz, true, eci.getUser().getNowTimestamp())) {
+            Exception e = new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.getActionEnumId())} on ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}]")
+            logger.warn("Artifact authorization failed", e)
+        }
 
         // NOTE: if needed the isPermitted method will set additional info in aeii
         this.artifactExecutionInfoStack.addFirst(aeii)
@@ -139,11 +141,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         String name = resourceAccess.substring(secondColon+1)
 
         return eci.artifactExecutionFacade.isPermitted(username,
-                new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), null, true, eci.user.nowTimestamp)
+                new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), null, true, true, eci.user.nowTimestamp)
     }
 
     boolean isPermitted(String userId, ArtifactExecutionInfoImpl aeii, ArtifactExecutionInfoImpl lastAeii,
-                        boolean requiresAuthz, Timestamp nowTimestamp) {
+                        boolean requiresAuthz, boolean countTarpit, Timestamp nowTimestamp) {
 
         // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
         if (this.authzDisabled && aeii.getTypeEnumId() == "AT_ENTITY") {
@@ -163,7 +165,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             EntityValue ua = ufi.getUserAccount()
             if (ua) userId = ua.userId
 
-            if (isTarpitEnabled(aeii.getTypeEnumId())) {
+            if (countTarpit && isTarpitEnabled(aeii.getTypeEnumId())) {
                 // record and check velocity limit (tarpit)
                 boolean recordHitTime = false
                 long lockForSeconds = 0
@@ -387,7 +389,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             StringBuilder warning = new StringBuilder()
             warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of no allow record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
             for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-            logger.warn(warning.toString(), new Exception("Authz failure location"))
+            logger.warn(warning.toString())
 
             alreadyDisabled = disableAuthz()
             try {

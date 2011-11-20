@@ -51,6 +51,7 @@ This release includes:
   - Isolate cache clearing failures, don't ever kill calling method (ie
     never throw an exception/throwable)
 - Screen Facade
+  - Filter menu rendering by authorization
   - List multi form submit button below and not in own column
   - Allow field, auto-fields-entity, and auto-fields-service to appear in
     any order and preserve that order when exploding the form definition
@@ -522,13 +523,6 @@ This release includes:
 - Configurable "root" screen with sample HTML wrappers, login, menus, etc
 
 ===========================================================================
-Tools probable for 1.0 final:
-===========================================================================
-
-- Screen Facade
-  - Filter menu rendering by authorization
-
-===========================================================================
 Features designed or considered, but not to be included in 1.0 series
 ===========================================================================
 
@@ -548,6 +542,7 @@ Features designed or considered, but not to be included in 1.0 series
     HTTP, JMS, and RMI (TX enlisted), email, XMPP (any of these useful, or
     generally better to use Mule or ServiceMix/Camel?)
 - Entity Facade
+  - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
   - Entity complex aliases in views (EntityDefinition:246)

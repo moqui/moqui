@@ -16,6 +16,8 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.impl.context.ArtifactExecutionFacadeImpl
 
 class ScreenUrlInfo {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenUrlInfo.class)
@@ -87,6 +89,34 @@ class ScreenUrlInfo {
         // if sri.screenUrlInfo is null it is because this object is not yet set to it, so set this to true as it "is" the current screen path
         inCurrentScreenPath = sri.screenUrlInfo ? sri.isInCurrentScreenPath(minimalPathNameList) : true
         disableLink = targetTransition ? !targetTransition.checkCondition(sri.ec) : false
+    }
+
+    boolean isPermitted() {
+        Deque<ArtifactExecutionInfoImpl> artifactExecutionInfoStack = new LinkedList<ArtifactExecutionInfoImpl>()
+        String username = sri.getEc().getUser().getUsername()
+
+        int index = 1
+        for (ScreenDefinition screenDef in screenPathDefList) {
+            ArtifactExecutionInfoImpl aeii = new ArtifactExecutionInfoImpl(screenDef.location, "AT_XML_SCREEN", "AUTHZA_VIEW")
+
+            ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
+
+            // logger.warn("TOREMOVE checking screen for user ${username} - ${aeii}")
+
+            boolean isLast = (index == screenPathDefList.size())
+            if (!((ArtifactExecutionFacadeImpl) sri.getEc().getArtifactExecution()).isPermitted(username, aeii,
+                    lastAeii, isLast, false, sri.getEc().getUser().getNowTimestamp())) {
+                logger.warn("TOREMOVE user ${username} is NOT allowed to view screen at path ${this.fullPathNameList} because of screen at ${screenDef.location}")
+                return false
+            }
+
+            artifactExecutionInfoStack.addFirst(aeii)
+
+            index++
+        }
+
+        logger.warn("TOREMOVE user ${username} IS allowed to view screen at path ${this.fullPathNameList}")
+        return true
     }
 
     String getMinimalPathUrlWithParams() {

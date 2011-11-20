@@ -29,7 +29,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
         <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
             <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-            <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+            <#if urlInfo.isPermitted()>
+                <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+            </#if>
         </#if></#list>
         </ul>
     </div>
@@ -53,14 +55,16 @@ This Work includes contributions authored by David E. Jones, not as a
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                <#if dynamic>
-                    <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
-                    <#if urlInfo.inCurrentScreenPath>
-                        <#assign dynamicActive = subscreensItem_index>
-                        <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
+                <#if urlInfo.isPermitted()>
+                    <#if dynamic>
+                        <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
+                        <#if urlInfo.inCurrentScreenPath>
+                            <#assign dynamicActive = subscreensItem_index>
+                            <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
+                        </#if>
                     </#if>
+                    <li class="ui-state-default ui-corner-top<#if urlInfo.disableLink> ui-state-disabled<#elseif urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>"><span>${subscreensItem.menuTitle}</span></a></li>
                 </#if>
-                <li class="ui-state-default ui-corner-top<#if urlInfo.disableLink> ui-state-disabled<#elseif urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>"><span>${subscreensItem.menuTitle}</span></a></li>
             </#if></#list>
             </ul>
         </#if>
