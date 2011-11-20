@@ -106,7 +106,7 @@ class ScreenUrlInfo {
             boolean isLast = (index == screenPathDefList.size())
             if (!((ArtifactExecutionFacadeImpl) sri.getEc().getArtifactExecution()).isPermitted(username, aeii,
                     lastAeii, isLast, false, sri.getEc().getUser().getNowTimestamp())) {
-                logger.warn("TOREMOVE user ${username} is NOT allowed to view screen at path ${this.fullPathNameList} because of screen at ${screenDef.location}")
+                // logger.warn("TOREMOVE user ${username} is NOT allowed to view screen at path ${this.fullPathNameList} because of screen at ${screenDef.location}")
                 return false
             }
 
@@ -115,7 +115,7 @@ class ScreenUrlInfo {
             index++
         }
 
-        logger.warn("TOREMOVE user ${username} IS allowed to view screen at path ${this.fullPathNameList}")
+        // logger.warn("TOREMOVE user ${username} IS allowed to view screen at path ${this.fullPathNameList}")
         return true
     }
 
