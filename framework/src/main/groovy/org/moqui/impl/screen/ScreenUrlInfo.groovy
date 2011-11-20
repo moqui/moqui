@@ -18,6 +18,10 @@ import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ArtifactExecutionFacadeImpl
+import org.moqui.impl.service.ServiceDefinition
+import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.impl.entity.EntityDefinition
+import org.moqui.impl.entity.EntityFacadeImpl
 
 class ScreenUrlInfo {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenUrlInfo.class)
@@ -146,10 +150,36 @@ class ScreenUrlInfo {
     Map<String, String> getParameterMap() {
         Map<String, String> pm = new HashMap()
         // get default parameters for the target screen
-        if (targetScreen) {
+        if (targetScreen != null) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
                 Object value = pi.getValue(sri.ec)
                 if (value) pm.put(pi.name, value as String)
+            }
+        }
+        if (targetTransition != null && targetTransition.getSingleServiceName()) {
+            String targetServiceName = targetTransition.getSingleServiceName()
+            ServiceDefinition sd = ((ServiceFacadeImpl) sri.getEc().getService()).getServiceDefinition(targetServiceName)
+            if (sd != null) {
+                for (String pn in sd.getInParameterNames()) {
+                    Object value = sri.ec.context.get(pn)
+                    if (!value && sri.ec.web != null) value = sri.ec.web.parameters.get(pn)
+                    if (value) pm.put(pn, value as String)
+                }
+            } else if (targetServiceName.contains("#")) {
+                // service name but no service def, see if it is an entity op and if so try the pk fields
+                String verb = targetServiceName.substring(0, targetServiceName.indexOf("#"))
+                if (verb == "create" || verb == "update" || verb == "delete" || verb == "store") {
+                    String en = targetServiceName.substring(targetServiceName.indexOf("#")+1)
+                    EntityDefinition ed = ((EntityFacadeImpl) sri.ec.entity).getEntityDefinition(en)
+                    if (ed != null) {
+                        for (String fn in ed.getPkFieldNames()) {
+                            Object value = sri.ec.context.get(fn)
+                            if (!value && sri.ec.web != null) value = sri.ec.web.parameters.get(fn)
+                            if (value) pm.put(fn, value as String)
+                        }
+                    }
+                }
+
             }
         }
         // add all of the parameters specified inline in the screen path or added after
