@@ -128,8 +128,6 @@ class ServiceDefinition {
         if (autoParameters."exclude") for (Node excludeNode in autoParameters."exclude") {
             fieldsToExclude.add(excludeNode."@field-name")
         }
-        // always exclude the automatically added lastUpdatedStamp from service parameters
-        fieldsToExclude.add("lastUpdatedStamp")
 
         String includeStr = autoParameters."@include" ?: "all"
         String requiredStr = autoParameters."@required" ?: "false"

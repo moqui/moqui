@@ -217,6 +217,9 @@ class ScreenForm {
             Node subFieldNode = newFieldNode.appendNode("default-field")
             switch (fieldType) {
             case "edit":
+                // lastUpdatedStamp is always hidden for edit (needed for optimistic lock)
+                if (parameterNode."@name" == "lastUpdatedStamp") subFieldNode.appendNode("hidden")
+
                 if (parameterNode."@required" == "true" && serviceVerb.startsWith("update")) {
                     subFieldNode.appendNode("hidden")
                 } else {
@@ -280,9 +283,6 @@ class ScreenForm {
 
     protected void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk")) {
-            // always skip automatically added lastUpdatedStamp
-            if (fieldName == "lastUpdatedStamp") continue
-
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
             Node subFieldNode = newFieldNode.appendNode("default-field")
@@ -320,6 +320,9 @@ class ScreenForm {
 
         switch (fieldType) {
         case "edit":
+            // lastUpdatedStamp is always hidden for edit (needed for optimistic lock)
+            if (fieldName == "lastUpdatedStamp") subFieldNode.appendNode("hidden")
+
             if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
                 subFieldNode.appendNode("hidden")
             } else {

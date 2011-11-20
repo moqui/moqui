@@ -151,10 +151,11 @@ class EntityValueImpl implements EntityValue {
         if (!getEntityDefinition().isField(name)) {
             throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
         }
-        if (valueMap[name] != value) {
+        Object oldValue = valueMap.get(name)
+        if (oldValue != value) {
             modified = true
             if (dbValueMap == null) dbValueMap = new HashMap()
-            dbValueMap.put(name, valueMap.get(name))
+            dbValueMap.put(name, oldValue)
         }
         valueMap.put(name, value)
         return this
@@ -379,7 +380,22 @@ class EntityValueImpl implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", true)
 
-        Map oldValues = this.getDbValueMap()
+        Map oldValues = dbValueMap
+        if (ed.needsAuditLog()) {
+            boolean needsDbValue = true
+            if (oldValues != null) {
+                // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
+                for (Object val in oldValues.values()) if (val != null) { needsDbValue = false; break }
+            } else {
+                oldValues = new HashMap()
+            }
+            if (needsDbValue) {
+                EntityValue dbValue = (EntityValue) this.clone()
+                dbValue.refresh()
+                oldValues.putAll(dbValue)
+            }
+        }
+
         if (ed.isViewEntity()) {
             throw new EntityException("Update not yet implemented for view-entity")
         } else {
@@ -463,6 +479,7 @@ class EntityValueImpl implements EntityValue {
 
     void handleAuditLog(boolean isUpdate, Map oldValues) {
         if (isUpdate && oldValues == null) return
+
         EntityDefinition ed = getEntityDefinition()
         if (!ed.needsAuditLog()) return
         // in this case DON'T use the ec.user.nowTimestamp because we want the real time for audits
@@ -482,10 +499,12 @@ class EntityValueImpl implements EntityValue {
         for (Node fieldNode in ed.getFieldNodes(true, true)) {
             if (fieldNode."@enable-audit-log" == "true") {
                 String fieldName = fieldNode."@name"
-                // if isUpdate but oldValues has not value then it hasn't been updated, so skip it
-                if (isUpdate && !oldValues.containsKey(fieldName)) continue
-
                 Object value = get(fieldName)
+                Object oldValue = oldValues?.get(fieldName)
+
+                // if isUpdate but old value == new value, then it hasn't been updated, so skip it
+                if (isUpdate && value == oldValue) continue
+
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
                 Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
@@ -493,10 +512,12 @@ class EntityValueImpl implements EntityValue {
                     newValueText:(value as String), changedDate:nowTimestamp,
                     changedByUserId:getEntityFacadeImpl().ecfi.executionContext.user.userId,
                     changedInVisitId:getEntityFacadeImpl().ecfi.executionContext.user.visitId]
-                if (oldValues != null && oldValues.get(fieldName)) parms.oldValueText = oldValues.get(fieldName)
+                parms.oldValueText = oldValue
                 if (firstPkField) parms.pkPrimaryValue = get(firstPkField)
                 if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
                 if (pkText) parms.pkRestCombinedValue = pkText
+
+                // logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}]")
 
                 getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
