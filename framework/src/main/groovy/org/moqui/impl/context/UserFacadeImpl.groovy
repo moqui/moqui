@@ -346,7 +346,7 @@ class UserFacadeImpl implements UserFacade {
     }
 
     EntityList getArtifactAuthzCheckList() {
-        if (usernameStack.size() == 0) return EntityListImpl.EMPTY
+        // NOTE: even if there is no user, still consider part of the ALL_USERS group and such: if (usernameStack.size() == 0) return EntityListImpl.EMPTY
         if (internalArtifactAuthzCheckList == null) {
             // get the list for each group separately to increase cache hits/efficiency
             internalArtifactAuthzCheckList = new EntityListImpl(eci.getEcfi().getEntityFacade())

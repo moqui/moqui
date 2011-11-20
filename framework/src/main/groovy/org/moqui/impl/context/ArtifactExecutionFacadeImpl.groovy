@@ -270,9 +270,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         ecf.makeCondition(
                             ecf.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.getName()),
                             JoinOperator.OR, nameIsPatternEqualsY)])
-            aacvList = ufi.getArtifactAuthzCheckList().cloneList().filterByCondition(aacvCond, true)
+            aacvList = ufi.getArtifactAuthzCheckList().cloneList()
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted aacvList before filter: ${aacvList}")
+            aacvList = aacvList.filterByCondition(aacvCond, true)
 
-            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted aacvList: ${aacvList}; aacvCond: ${aacvCond}")
+            // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE for aeii [${aeii}] artifact isPermitted aacvList: ${aacvList}; aacvCond: ${aacvCond}")
 
             if (aacvList.size() > 0) {
                 for (EntityValue aacv in aacvList) {
@@ -317,6 +319,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         if (result?.authzTypeEnumId) authzTypeEnumId = result.authzTypeEnumId
                     }
 
+                    // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE found authz record for aeii [${aeii}]: ${aacv}")
                     if (authzTypeEnumId == "AUTHZT_DENY") {
                         // we already know last was not always allow (checked above), so keep going in loop just in case we
                         // find an always allow in the query
