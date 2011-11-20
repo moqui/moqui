@@ -201,7 +201,6 @@ class ScreenForm {
             // if the parameter corresponds to an entity field, we can do better with that
             if (ed != null && ed.getFieldNode(parameterNode."@name") != null) {
                 Node newFieldNode = new Node(null, "field", [name:parameterNode."@name"])
-                if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
                 Node subFieldNode = newFieldNode.appendNode("default-field")
                 addAutoEntityField(ed, parameterNode."@name", fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
                 mergeFieldNode(baseFormNode, newFieldNode, false)
@@ -218,7 +217,10 @@ class ScreenForm {
             switch (fieldType) {
             case "edit":
                 // lastUpdatedStamp is always hidden for edit (needed for optimistic lock)
-                if (parameterNode."@name" == "lastUpdatedStamp") subFieldNode.appendNode("hidden")
+                if (parameterNode."@name" == "lastUpdatedStamp") {
+                    subFieldNode.appendNode("hidden")
+                    break
+                }
 
                 if (parameterNode."@required" == "true" && serviceVerb.startsWith("update")) {
                     subFieldNode.appendNode("hidden")
@@ -237,7 +239,7 @@ class ScreenForm {
                         }
                     }
                 }
-                break;
+                break
             case "find":
                 if (spType.endsWith("Date") && spType != "java.util.Date") {
                     subFieldNode.appendNode("date-find", [type:"date", format:parameterNode."@format"])
@@ -252,10 +254,10 @@ class ScreenForm {
                 } else {
                     subFieldNode.appendNode("text-find")
                 }
-                break;
+                break
             case "display":
                 subFieldNode.appendNode("display", [format:parameterNode."@format"])
-                break;
+                break
             case "find-display":
                 Node headerFieldNode = newFieldNode.appendNode("header-field")
                 if (spType.endsWith("Date") && spType != "java.util.Date") {
@@ -272,10 +274,10 @@ class ScreenForm {
                     headerFieldNode.appendNode("text-find")
                 }
                 subFieldNode.appendNode("display", [format:parameterNode."@format"])
-                break;
+                break
             case "hidden":
                 subFieldNode.appendNode("hidden")
-                break;
+                break
             }
             mergeFieldNode(baseFormNode, newFieldNode, false)
         }
@@ -284,7 +286,6 @@ class ScreenForm {
     protected void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk")) {
             Node newFieldNode = new Node(null, "field", [name:fieldName])
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
             addAutoEntityField(ed, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
@@ -321,11 +322,15 @@ class ScreenForm {
         switch (fieldType) {
         case "edit":
             // lastUpdatedStamp is always hidden for edit (needed for optimistic lock)
-            if (fieldName == "lastUpdatedStamp") subFieldNode.appendNode("hidden")
+            if (fieldName == "lastUpdatedStamp") {
+                subFieldNode.appendNode("hidden")
+                break
+            }
 
             if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
                 subFieldNode.appendNode("hidden")
             } else {
+                if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
                 if (efType.startsWith("date") || efType.startsWith("time")) {
                     Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
                     if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
@@ -373,8 +378,9 @@ class ScreenForm {
                     }
                 }
             }
-            break;
+            break
         case "find":
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
             if (efType.startsWith("date") || efType.startsWith("time")) {
                 subFieldNode.appendNode("date-find", [type:efType])
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
@@ -382,13 +388,15 @@ class ScreenForm {
             } else {
                 subFieldNode.appendNode("text-find")
             }
-            break;
+            break
         case "display":
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
             if (oneRelNode != null) subFieldNode.appendNode("display-entity",
                     ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
             else subFieldNode.appendNode("display")
-            break;
+            break
         case "find-display":
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
             Node headerFieldNode = newFieldNode."header-field" ?: newFieldNode.appendNode("header-field")
             if (efType.startsWith("date") || efType.startsWith("time")) {
                 headerFieldNode.appendNode("date-find", [type:efType])
@@ -400,10 +408,10 @@ class ScreenForm {
             if (oneRelNode != null) subFieldNode.appendNode("display-entity",
                     ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
             else subFieldNode.appendNode("display")
-            break;
+            break
         case "hidden":
             subFieldNode.appendNode("hidden")
-            break;
+            break
         }
 
         // NOTE: don't like where this is located, would be nice to have a generic way for forms to add this sort of thing
