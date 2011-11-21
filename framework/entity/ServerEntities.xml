@@ -59,6 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias entity-alias="AHB" name="artifactType"/><!-- this will group by automatically -->
         <alias entity-alias="AHB" name="artifactName"/><!-- this will group by automatically -->
         <alias entity-alias="AHB" name="hitCount" function="sum"/>
+        <alias entity-alias="AHB" name="totalTimeMillis" function="sum"/>
         <alias entity-alias="AHB" name="firstHitDateTime" field="binStartDateTime" function="min"/>
         <alias entity-alias="AHB" name="lastHitDateTime" field="binEndDateTime" function="max"/>
         <alias entity-alias="AHB" name="minTimeMillis" function="min"/>

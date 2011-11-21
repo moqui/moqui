@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
-        default-menu-title="Artifact Stats">
+        default-menu-title="Artifact Bins">
 
     <transition name="ArtifactHitBinStats.csv">
         <default-response url="."><parameter name="renderMode" value="csv"/>
@@ -24,8 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="ArtifactHitBinStats.pdf">
         <default-response url="/fop/apps/tools/ArtifactHitBins" url-type="plain">
-            <parameter name="renderMode" value="xsl-fo"/>
-            <parameter name="pageNoLimit" value="true"/>
+            <parameter name="renderMode" value="xsl-fo"/><parameter name="pageNoLimit" value="true"/>
             <!--<parameter name="lastStandalone" value="true"/>-->
         </default-response>
     </transition>
