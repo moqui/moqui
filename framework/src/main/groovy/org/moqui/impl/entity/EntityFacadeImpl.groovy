@@ -15,8 +15,6 @@ import com.atomikos.jdbc.AtomikosDataSourceBean
 import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
 import com.atomikos.jdbc.AbstractDataSourceBean
 
-import groovy.util.slurpersupport.GPathResult
-
 import java.sql.Connection
 import javax.sql.DataSource
 import javax.sql.XADataSource
@@ -75,6 +73,10 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
+
+    // this will be used to temporarily cache root Node objects of entity XML files, used when loading a bunch at once,
+    //     should be null otherwise to prevent its use
+    protected Map<String, Node> tempEntityFileNodeMap = null
 
     protected EntityDbMeta dbMeta = null
 
@@ -271,35 +273,67 @@ class EntityFacadeImpl implements EntityFacade {
         if (entityLocationCache.get("moqui.entity.DbViewEntity")) {
             int numDbViewEntities = 0
             for (EntityValue dbViewEntity in makeFind("moqui.entity.DbViewEntity").list()) {
-                this.entityLocationCache.put((String) dbViewEntity.dbViewEntityName, ["_DB_VIEW_ENTITY_"])
-                this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, ["_DB_VIEW_ENTITY_"])
+                if (dbViewEntity.packageName) {
+                    List pkgList = (List) this.entityLocationCache.get(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName)
+                    if (!pkgList) {
+                        pkgList = new LinkedList()
+                        this.entityLocationCache.put(dbViewEntity.packageName + "." + dbViewEntity.dbViewEntityName, pkgList)
+                    }
+                    if (!pkgList.contains("_DB_VIEW_ENTITY_")) pkgList.add("_DB_VIEW_ENTITY_")
+                }
+
+                List nameList = (List) this.entityLocationCache.get((String) dbViewEntity.dbViewEntityName)
+                if (!nameList) {
+                    nameList = new LinkedList()
+                    // put in cache under both plain entityName and fullEntityName
+                    this.entityLocationCache.put((String) dbViewEntity.dbViewEntityName, nameList)
+                }
+                if (!nameList.contains("_DB_VIEW_ENTITY_")) nameList.add("_DB_VIEW_ENTITY_")
+
                 numDbViewEntities++
             }
             if (logger.infoEnabled) logger.info("Found [${numDbViewEntities}] view-entity definitions in database (moqui.entity.DbViewEntity)")
         } else {
             logger.warn("Could not find view-entity definitions in database (moqui.entity.DbViewEntity), no location found for the moqui.entity.DbViewEntity entity.")
         }
+
+        /* a little code to show all entities and their locations
+        Set<String> enSet = new TreeSet(entityLocationCache.keySet())
+        for (String en in enSet) {
+            List lst = entityLocationCache.get(en)
+            entityLocationCache.put(en, Collections.unmodifiableList(lst))
+            logger.warn("TOREMOVE entity ${en}: ${lst}")
+        }
+        */
     }
 
     protected synchronized void loadEntityFileLocations(ResourceReference entityRr) {
-        // NOTE: using XmlSlurper here instead of XmlParser because it should be faster since it won't parse through the whole file right away
         InputStream entityStream = entityRr.openStream()
-        GPathResult entityRoot = new XmlSlurper().parse(entityStream)
+        Node entityRoot = new XmlParser().parse(entityStream)
         entityStream.close()
         if (entityRoot.name() == "entities") {
             // loop through all entity, view-entity, and extend-entity and add file location to List for any entity named
             int numEntities = 0
-            for (GPathResult entity in entityRoot.children()) {
+            for (Node entity in entityRoot.children()) {
                 String entityName = (String) entity."@entity-name"
                 String packageName = (String) entity."@package-name"
-                List theList = (List) this.entityLocationCache.get(packageName + "." + entityName)
-                if (!theList) {
-                    theList = new ArrayList()
-                    // put in cache under both plain entityName and fullEntityName
-                    this.entityLocationCache.put(entityName, theList)
-                    this.entityLocationCache.put(packageName + "." + entityName, theList)
+                if (packageName) {
+                    List pkgList = (List) this.entityLocationCache.get(packageName + "." + entityName)
+                    if (!pkgList) {
+                        pkgList = new LinkedList()
+                        this.entityLocationCache.put(packageName + "." + entityName, pkgList)
+                    }
+                    if (!pkgList.contains(entityRr.location)) pkgList.add(entityRr.location)
                 }
-                if (!theList.contains(entityRr.location)) theList.add(entityRr.location)
+
+                List nameList = (List) this.entityLocationCache.get(entityName)
+                if (!nameList) {
+                    nameList = new LinkedList()
+                    // put in cache under both plain entityName and fullEntityName
+                    this.entityLocationCache.put(entityName, nameList)
+                }
+                if (!nameList.contains(entityRr.location)) nameList.add(entityRr.location)
+
                 numEntities++
             }
             logger.info("Found [${numEntities}] entity definitions in [${entityRr.location}]")
@@ -310,11 +344,11 @@ class EntityFacadeImpl implements EntityFacade {
         EntityDefinition ed = (EntityDefinition) entityDefinitionCache.get(entityName)
         if (ed) return ed
 
-        List<String> entityLocationList = (List<String>) entityLocationCache.get(entityName)
+        List entityLocationList = (List) entityLocationCache.get(entityName)
         if (!entityLocationList) {
             if (logger.warnEnabled) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
             this.loadAllEntityLocations()
-            entityLocationList = (List<String>) entityLocationCache.get(entityName)
+            entityLocationList = (List) entityLocationCache.get(entityName)
             // no locations found for this entity, entity probably doesn't exist
             if (!entityLocationList) {
                 throw new EntityException("No definition found for entity-name [${entityName}]")
@@ -327,8 +361,10 @@ class EntityFacadeImpl implements EntityFacade {
             entityName = entityName.substring(entityName.lastIndexOf(".")+1)
         }
 
+        // if (!packageName) logger.warn("TOREMOVE finding entity def for [${entityName}] with no packageName, entityLocationList=${entityLocationList}")
+
         // If this is a moqui.entity.DbViewEntity, handle that in a special way (generate the Nodes from the DB records)
-        if (entityLocationList.size() == 1 && entityLocationList[0] == "_DB_VIEW_ENTITY_") {
+        if (entityLocationList.contains("_DB_VIEW_ENTITY_")) {
             EntityValue dbViewEntity = makeFind("moqui.entity.DbViewEntity").condition("dbViewEntityName", entityName).one()
             if (dbViewEntity == null) throw new EntityException("Could not find DbViewEntity with name ${entityName}")
             Node dbViewNode = new Node(null, "view-entity", ["entity-name":entityName, "package-name":dbViewEntity.packageName])
@@ -374,9 +410,14 @@ class EntityFacadeImpl implements EntityFacade {
         Node entityNode = null
         List<Node> extendEntityNodes = new ArrayList<Node>()
         for (String location in entityLocationList) {
-            InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
-            Node entityRoot = new XmlParser().parse(entityStream)
-            entityStream.close()
+            Node entityRoot = null
+            if (tempEntityFileNodeMap != null) entityRoot = tempEntityFileNodeMap.get(location)
+            if (entityRoot == null) {
+                InputStream entityStream = this.ecfi.resourceFacade.getLocationStream(location)
+                entityRoot = new XmlParser().parse(entityStream)
+                entityStream.close()
+                if (tempEntityFileNodeMap != null) tempEntityFileNodeMap.put(location, entityRoot)
+            }
             // filter by package-name if specified, otherwise grab whatever
             for (Node childNode in entityRoot.children().findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })) {
                 if (childNode.name() == "extend-entity") {
@@ -388,7 +429,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        if (!entityNode) throw new EntityException("No definition found for entity-name [${entityName}]")
+        if (!entityNode) throw new EntityException("No definition found for entity [${entityName}]${packageName ? ' in package ['+packageName+']' : ''}")
 
         // merge the extend-entity nodes
         for (Node extendEntity in extendEntityNodes) {
@@ -566,6 +607,8 @@ class EntityFacadeImpl implements EntityFacade {
     List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly) {
         if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
 
+        tempEntityFileNodeMap = new HashMap()
+
         List<Map<String, Object>> eil = new LinkedList()
         for (String en in getAllEntityNames()) {
             EntityDefinition ed = null
@@ -581,6 +624,8 @@ class EntityFacadeImpl implements EntityFacade {
             eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
                     isView:(ed.isViewEntity() ? "true" : "false")])
         }
+
+        tempEntityFileNodeMap = null
 
         if (orderByField) StupidUtilities.orderMapList((List<Map>) eil, [orderByField])
         return eil

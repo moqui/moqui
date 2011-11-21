@@ -90,6 +90,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         // logger.info("allPksIn=${allPksIn}, isSinglePk=${isSinglePk}, isDoublePk=${isDoublePk}")
 
+        Map<String, Object> tempResult = new HashMap()
         if (isSinglePk) {
             /* **** primary sequenced primary key **** */
             /* **** primary sequenced key with optional override passed in **** */
@@ -103,7 +104,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 newEntityValue.setSequencedIdPrimary()
                 pkValue = newEntityValue.get(singlePkField."@name")
             }
-            if (outParamNames == null || outParamNames.contains(singlePkParamName)) result.put(singlePkParamName, pkValue)
+            if (outParamNames == null || outParamNames.contains(singlePkParamName)) tempResult.put(singlePkParamName, pkValue)
         } else if (isDoublePk && !allPksIn) {
             /* **** secondary sequenced primary key **** */
             // don't do it this way, currently only supports second pk fields: String doublePkSecondaryName = parameters.get(pkFieldNames.get(0)) ? pkFieldNames.get(1) : pkFieldNames.get(0)
@@ -111,7 +112,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             newEntityValue.setFields(parameters, true, null, true)
             newEntityValue.setSequencedIdSecondary()
             if (outParamNames == null || outParamNames.contains(doublePkSecondaryName))
-                result.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
+                tempResult.put(doublePkSecondaryName, newEntityValue.get(doublePkSecondaryName))
         } else if (allPksIn) {
             /* **** plain specified primary key **** */
             newEntityValue.setFields(parameters, true, null, true)
@@ -126,6 +127,8 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         newEntityValue.setFields(parameters, true, null, false)
         // logger.info("In auto createEntity allPksIn [${allPksIn}] isSinglePk [${isSinglePk}] isDoublePk [${isDoublePk}] newEntityValue final [${newEntityValue}]")
         newEntityValue.create()
+
+        result.putAll(tempResult)
     }
 
     public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
