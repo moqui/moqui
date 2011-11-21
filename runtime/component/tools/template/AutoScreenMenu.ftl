@@ -16,7 +16,7 @@
             <#if dynamic>
                 <#assign urlInfo = urlInfo.addParameter("lastStandalone", "true")>
                 <#if urlInfo.inCurrentScreenPath && relationshipInfo.relatedEntityName == detailEntityName?if_exists>
-                    <#assign dynamicActive = relationshipInfo_index>
+                    <#assign dynamicActive = relationshipInfo_index + 1>
                     <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
                 </#if>
             </#if>
