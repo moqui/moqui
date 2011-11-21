@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
+        default-menu-title="Artifact Summary">
+
+    <transition name="ArtifactHitSummaryStats.csv">
+        <default-response url="."><parameter name="renderMode" value="csv"/>
+            <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
+    </transition>
+    <transition name="ArtifactHitSummaryStats.xml">
+        <default-response url="."><parameter name="renderMode" value="xml"/>
+            <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
+    </transition>
+    <transition name="ArtifactHitSummaryStats.pdf">
+        <default-response url="/fop/apps/tools/ArtifactHitSummary" url-type="plain">
+            <parameter name="renderMode" value="xsl-fo"/><parameter name="pageNoLimit" value="true"/>
+            <!--<parameter name="lastStandalone" value="true"/>-->
+        </default-response>
+    </transition>
+
+    <actions>
+        <entity-find entity-name="moqui.server.ArtifactHitReport" list="artifactHitReportList" limit="50">
+            <search-form-inputs default-order-by="artifactType,artifactName"/>
+        </entity-find>
+    </actions>
+    <widgets>
+        <container>
+            <link url="ArtifactHitSummaryStats.csv" text="Get as CSV"/>
+            <link url="ArtifactHitSummaryStats.xml" text="Get as XML" target-window="_blank"/>
+            <link url="ArtifactHitSummaryStats.pdf" text="Get as PDF" target-window="_blank"/>
+        </container>
+        <form-list name="ArtifactHitSummary" list="artifactHitReportList">
+            <row-actions>
+                <set field="averageTime" from="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>
+            </row-actions>
+
+            <field name="artifactType">
+                <header-field show-order-by="true">
+                    <drop-down allow-empty="true">
+                        <option key="screen"/><option key="screen-content"/><option key="transition"/>
+                        <option key="service"/><option key="entity"/>
+                    </drop-down>
+                </header-field>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="artifactName">
+                <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
+                <!-- NOTE: these replace() calls are to add spaces so that longer artifactNames can wrap instead of making the table super-wide -->
+                <default-field><display text="${artifactName.replace('/',' / ').replace(' /  / ', '//').replace('.',' . ')}" also-hidden="false"/></default-field>
+            </field>
+            <field name="lastHitDateTime">
+                <header-field title="Last Hit" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="hitCount">
+                <header-field title="Hits" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="minTimeMillis">
+                <header-field title="Min" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="averageTime">
+                <default-field title="Avg"><display also-hidden="false"/></default-field>
+            </field>
+            <field name="maxTimeMillis">
+                <header-field title="Max" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="find"><header-field title="Find"><submit/></header-field></field>
+        </form-list>
+    </widgets>
+</screen>
