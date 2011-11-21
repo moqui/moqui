@@ -12,7 +12,7 @@
 
 dependsOnChildren()
 
-allprojects { version = '1.0.0' }
+allprojects { version = '1.0.1' }
 
 tomcatHome = '../apache-tomcat-7.0.19'
 warName = 'moqui-' + version + '.war'
