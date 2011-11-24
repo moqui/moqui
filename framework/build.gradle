@@ -52,6 +52,7 @@ dependencies {
 
     compile name: 'geronimo-j2ee-connector_1.5_spec', version: ''
     compile name: 'geronimo-jms_1.1_spec', version: '1.0'
+    apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1'
     compile name: 'geronimo-jta_1.1_spec', version: '1.1.1'
 
     compile name: 'groovy-all', version: '1.8.0'
@@ -83,9 +84,12 @@ dependencies {
         dependencies module(name: 'commons-beanutils', version: '1.8.3'), module(name: 'commons-logging', version: '1.1.1') }
     compile name: 'shiro-web', version: '1.1.0'
 
+    apiCompile module(name: 'slf4j-api', version: '1.6.0') {
+        dependencies module(name: 'log4j', version: '1.2.15'), module(name: 'slf4j-log4j12', version: '1.6.0') }
     compile module(name: 'slf4j-api', version: '1.6.0') {
         dependencies module(name: 'log4j', version: '1.2.15'), module(name: 'slf4j-log4j12', version: '1.6.0') }
 
+    apiCompile name: 'winstone', version: '0.9.10'
     // winstone is in providedCompile so that it won't be included in the war file WEB-INF/lib
     providedCompile name: 'winstone', version: '0.9.10'
 
@@ -113,15 +117,15 @@ task apiJavadoc(type: Javadoc) {
 compileJava.dependsOn startClasses
 compileJava.dependsOn apiClasses
 // add the classes directory for the api SourceSet to the main compile classpath so that dependent classes are available
-sourceSets.main.compileClasspath += files(sourceSets.api.classesDir)
+sourceSets.main.compileClasspath += files(sourceSets.api.output.classesDir)
 
 jar {
     // this is necessary otherwise jar won't build when war plugin is applied
     enabled = true
     appendix = 'framework'
     manifest { attributes 'Implementation-Title': 'Moqui Framework', 'Implementation-Version': version }
-    from sourceSets.api.classes
-    from sourceSets.main.classes
+    from sourceSets.api.output
+    from sourceSets.main.output
     // get all of the "resources" that are in component-standard directories instead of src/main/resources
     from fileTree(dir: projectDir.absolutePath,
             includes: ['data/**', 'entity/**', 'screen/**', 'service/**', 'template/**', 'xsd/**'])
@@ -133,12 +137,12 @@ war {
     destinationDir = file(projectDir.absolutePath + '/..')
     // add MoquiInit.properties to the WEB-INF/classes dir for the deployed war mode of operation
     from(fileTree(dir: projectDir.absolutePath + '/..', includes: ['MoquiInit.properties'])) { into 'WEB-INF/classes' }
-    // this excludes the classes in sourceSets.main.classes (better to have the jar file built above)
+    // this excludes the classes in sourceSets.main.output (better to have the jar file built above)
     classpath = configurations.runtime - configurations.providedCompile
     classpath file(jar.archivePath)
 
     // put start classes and winstone in the root of the war file for the executable war/jar mode of operation
-    from sourceSets.start.classes
+    from sourceSets.start.output
     from file(projectDir.absolutePath + '/lib/winstone-0.9.10.jar')
     // setup the manifest for the executable war/jar mode
     manifest { attributes 'Implementation-Title': 'Moqui Start', 'Implementation-Vendor': 'Moqui Framework',

@@ -12,6 +12,13 @@ TODO...
 This release includes:
 
 - All the great features of the 1.0.0 and previous releases
+- Updated Gradle build file for version 1.0-milestone-6 (previously ran on
+  1.0-milestone-3)
+
+Bug Fixes:
+
+- Improved entity-auto service error handling
+- Fixed issue with entities in different packages that have the same name
 
 
 ===========================================================================
