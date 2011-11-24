@@ -19,6 +19,11 @@ Bug Fixes:
 
 - Improved entity-auto service error handling
 - Fixed issue with entities in different packages that have the same name
+- Instead of submit buttons always having name=submit, they now use the
+  name of the XML Form field; to see if one button or another was pressed
+  just check to see if the parameter was passed; also changed all submit
+  field names to submitButton to avoid conflict with standard DOM function
+  "submit" for form elements (thanks to Vasanth for reporting this)
 
 
 ===========================================================================

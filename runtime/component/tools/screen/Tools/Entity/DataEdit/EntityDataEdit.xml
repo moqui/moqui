@@ -38,7 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
             <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
             <field name="entityName"><default-field><hidden/></default-field></field>
-            <field name="submit"><default-field title="Update"><submit/></default-field></field>
+            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
         </form-single>
         <form-list name="RelatedEntities" list="relationshipInfoList">
             <field name="title"><default-field><display/></default-field></field>

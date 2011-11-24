@@ -35,8 +35,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <list-options list="knownServiceNames" key="${entry}"/>
                 </drop-down>
             </default-field></field>
-            <field name="submit"><default-field title="Select"><submit/></default-field></field>
-            <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submit"/></field-row></field-layout>
+            <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row></field-layout>
         </form-single>
         <section name="ServiceResultsSection">
             <condition><expression><![CDATA[serviceName && doingRun=="Y"]]></expression></condition>
@@ -56,7 +56,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <auto-fields-service service-name="${serviceName}" field-type="edit"/>
                     <field name="serviceName"><default-field><hidden/></default-field></field>
                     <field name="doingRun"><default-field><hidden default-value="Y"/></default-field></field>
-                    <field name="submit"><default-field title="Submit"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Submit"><submit/></default-field></field>
                 </form-single>
             </widgets>
         </section>

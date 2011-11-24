@@ -41,7 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field name="username"><default-field><text-line size="20"/></default-field></field>
                 <field name="password"><default-field><password size="20"/></default-field></field>
                 <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
-                <field name="submit"><default-field title="Login"><submit/></default-field></field>
+                <field name="submitButton"><default-field title="Login"><submit/></default-field></field>
             </form-single>
         </container>
 

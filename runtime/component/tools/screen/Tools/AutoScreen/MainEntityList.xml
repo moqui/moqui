@@ -30,8 +30,8 @@ This Work includes contributions authored by David E. Jones, not as a
                                   text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
                 </drop-down>
             </default-field></field>
-            <field name="submit"><default-field title="Select"><submit/></default-field></field>
-            <field-layout><field-row><field-ref name="entityName"/><field-ref name="submit"/></field-row></field-layout>
+            <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="entityName"/><field-ref name="submitButton"/></field-row></field-layout>
         </form-single>
         <form-list name="EntityList" list="masterEntityList">
             <field name="package">

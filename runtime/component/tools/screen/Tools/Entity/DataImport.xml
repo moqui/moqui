@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <text-area rows="10" cols="80" default-value="&lt;entity-facade-xml&gt;\n&lt;/entity-facade-xml&gt;"/>
             </default-field></field>
 
-            <field name="submit"><default-field><submit/></default-field></field>
+            <field name="submitButton"><default-field><submit/></default-field></field>
 
             <field-layout collapsible="true">
                 <field-ref name="timeout"/>
@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-group title="Resource Location"><field-ref name="location"/></field-group>
                 <field-group title="XML Text"><field-ref name="xmlText"/></field-group>
 
-                <field-ref name="submit"/>
+                <field-ref name="submitButton"/>
             </field-layout>
         </form-single>
     </widgets>

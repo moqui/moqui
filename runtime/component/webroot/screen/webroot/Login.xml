@@ -53,13 +53,13 @@ This Work includes contributions authored by David E. Jones, not as a
                         <field name="username"><default-field><text-line size="20"/></default-field></field>
                         <field name="password"><default-field><password size="20"/></default-field></field>
                         <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
-                        <field name="submit"><default-field title="Login"><submit/></default-field></field>
+                        <field name="submitButton"><default-field title="Login"><submit/></default-field></field>
                     </form-single>
                     <container-dialog id="reset-password" button-text="Forgot Password">
                         <form-single name="resetPassword" transition="resetPassword">
                             <field name="username"><default-field><text-line size="20"/></default-field></field>
                             <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
-                            <field name="submit"><default-field title="Reset and Email"><submit/></default-field></field>
+                            <field name="submitButton"><default-field title="Reset and Email"><submit/></default-field></field>
                         </form-single>
                     </container-dialog>
                     <container-dialog id="change-password" button-text="Change Password">
@@ -69,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             <field name="newPassword"><default-field><password size="20"/></default-field></field>
                             <field name="newPasswordVerify"><default-field><password size="20"/></default-field></field>
                             <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
-                            <field name="submit"><default-field title="Update"><submit/></default-field></field>
+                            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                         </form-single>
                     </container-dialog>
                 </container>

@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </radio></default-field>
             </field>
 
-            <field name="submit"><default-field><submit/></default-field></field>
+            <field name="submitButton"><default-field><submit/></default-field></field>
         </form-single>
     </widgets>
 </screen>

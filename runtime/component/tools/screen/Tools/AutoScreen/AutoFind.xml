@@ -24,12 +24,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="listSubmit">
         <actions>
-            <if condition="submit=='Delete'">
+            <if condition="delete">
                 <service-call name="delete#${entityName}" in-map="true"/>
             </if>
         </actions>
         <conditional-response url=".">
-            <condition><expression>buttonName=="Delete"</expression></condition>
+            <condition><expression>delete</expression></condition>
         </conditional-response>
         <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>
@@ -46,14 +46,14 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-single name="FindEntityValue" transition="find" dynamic="true">
                     <auto-fields-entity entity-name="${entityName}" field-type="find"/>
                     <field name="entityName"><default-field><hidden/></default-field></field>
-                    <field name="submit"><default-field title="Find"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Find"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
             <container-dialog id="CreateValueDialog" button-text="New Value">
                 <form-single name="CreateEntityValue" transition="create" dynamic="true">
                     <auto-fields-entity entity-name="${entityName}" field-type="edit"/>
                     <field name="entityName"><default-field><hidden/></default-field></field>
-                    <field name="submit"><default-field title="Create"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
         </container>

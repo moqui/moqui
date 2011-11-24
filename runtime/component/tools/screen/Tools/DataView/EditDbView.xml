@@ -140,8 +140,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-single name="UpdateDbViewEntity" transition="update">
                     <field name="dbViewEntityName"><default-field title="View Name"><display/></default-field></field>
                     <field name="packageName"><default-field title="Package"><text-line/></default-field></field>
-                    <field name="submit"><default-field title="Update"><submit/></default-field></field>
-                    <field-layout><field-row><field-ref name="dbViewEntityName"/><field-ref name="packageName"/><field-ref name="submit"/></field-row></field-layout>
+                    <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
+                    <field-layout><field-row><field-ref name="dbViewEntityName"/><field-ref name="packageName"/><field-ref name="submitButton"/></field-row></field-layout>
                 </form-single>
             </widgets>
         </section>
@@ -165,11 +165,11 @@ This Work includes contributions authored by David E. Jones, not as a
                                           text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
                         </drop-down></default-field>
                     </field>
-                    <field name="submit"><default-field title="Set Master"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Set Master"><submit/></default-field></field>
 
                     <field-layout><field-row>
                         <field-ref name="dbViewEntityName"/><field-ref name="entityAlias"/>
-                        <field-ref name="entityName"/><field-ref name="submit"/>
+                        <field-ref name="entityName"/><field-ref name="submitButton"/>
                     </field-row></field-layout>
                 </form-single>
                 <form-list name="SetMasterFields" list="masterFieldList" transition="setMasterFields" multi="true">
@@ -193,7 +193,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             <option key="count"/><option key="count-distinct"/><option key="upper"/><option key="lower"/>
                         </drop-down></default-field>
                     </field>
-                    <field name="submit"><default-field title="Select Fields"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Select Fields"><submit/></default-field></field>
                 </form-list>
             </widgets>
         </section>

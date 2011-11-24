@@ -97,7 +97,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             </drop-down>
                         </default-field>
                     </field>
-                    <field name="submit"><default-field title="Create"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
 
                     <field-layout collapsible="true">
                         <field-ref name="exampleId"/>
@@ -121,7 +121,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             <field-ref name="exampleUrl"/>
                         </field-group>
 
-                        <field-ref name="submit"/>
+                        <field-ref name="submitButton"/>
                     </field-layout>
                 </form-single>
             </widgets>
@@ -159,7 +159,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             </drop-down>
                         </default-field>
                     </field>
-                    <field name="submit"><default-field title="Update"><submit/></default-field></field>
+                    <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
                 </form-single>
             </widgets>
         </section>
