@@ -29,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
         </actions>
         <conditional-response url=".">
-            <condition><expression>submit=="Delete"</expression></condition>
+            <condition><expression>buttonName=="Delete"</expression></condition>
         </conditional-response>
         <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
     </transition>

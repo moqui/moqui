@@ -32,7 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <if condition="submit=='Delete'"><service-call name="delete#${detailEntityName}" in-map="true"/></if>
         </actions>
         <conditional-response url=".">
-            <condition><expression>submit=="Delete"</expression></condition>
+            <condition><expression>buttonName=="Delete"</expression></condition>
         </conditional-response>
         <default-response url="../AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(detailEntityName).getPrimaryKeys(context)">
             <parameter name="detailEntityName" from="entityName"/>
