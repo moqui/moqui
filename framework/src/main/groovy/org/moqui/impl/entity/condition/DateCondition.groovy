@@ -48,17 +48,17 @@ class DateCondition extends EntityConditionImplBase {
     }
 
     protected EntityConditionImplBase makeCondition() {
-        return this.ecFactoryImpl.makeCondition(
-            this.ecFactoryImpl.makeCondition(
-                this.ecFactoryImpl.makeCondition(this.thruFieldName, ComparisonOperator.EQUALS, null),
+        return (EntityConditionImplBase) ecFactoryImpl.makeCondition(
+            ecFactoryImpl.makeCondition(
+                ecFactoryImpl.makeCondition(thruFieldName, EntityCondition.ComparisonOperator.EQUALS, null),
                 EntityCondition.JoinOperator.OR,
-                this.ecFactoryImpl.makeCondition(this.thruFieldName, ComparisonOperator.GREATER_THAN, this.compareStamp)
+                ecFactoryImpl.makeCondition(thruFieldName, EntityCondition.ComparisonOperator.GREATER_THAN, compareStamp)
             ),
             EntityCondition.JoinOperator.AND,
-            this.ecFactoryImpl.makeCondition(
-                this.ecFactoryImpl.makeCondition(this.fromFieldName, ComparisonOperator.EQUALS, null),
+            ecFactoryImpl.makeCondition(
+                ecFactoryImpl.makeCondition(fromFieldName, EntityCondition.ComparisonOperator.EQUALS, null),
                 EntityCondition.JoinOperator.OR,
-                this.ecFactoryImpl.makeCondition(this.fromFieldName, ComparisonOperator.LESS_THAN_EQUAL_TO, this.compareStamp)
+                ecFactoryImpl.makeCondition(fromFieldName, EntityCondition.ComparisonOperator.LESS_THAN_EQUAL_TO, compareStamp)
             )
         )
     }
