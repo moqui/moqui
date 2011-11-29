@@ -263,7 +263,7 @@ class EntityFindImpl implements EntityFind {
         ExecutionContext ec = this.efi.ecfi.executionContext
 
         this.entity((String) node["@entity-name"])
-        if (node["@cache"]) this.useCache(node["@cache"] == "true")
+        if (node["@cache"]) { this.useCache(node["@cache"] == "true") }
         if (node["@for-update"]) this.forUpdate(node["@for-update"] == "true")
         if (node["@distinct"]) this.distinct(node["@distinct"] == "true")
         if (node["@offset"]) this.offset(node["@offset"] as Integer)
@@ -271,10 +271,12 @@ class EntityFindImpl implements EntityFind {
         for (Node sf in node["select-field"]) this.selectField((String) sf["@field-name"])
         for (Node ob in node["order-by"]) this.orderBy((String) ob["@field-name"])
 
-        for (Node df in node["date-filter"])
-            this.condition(ec.entity.conditionFactory.makeConditionDate((String) node["@from-field-name"] ?: "fromDate",
-                    (String) node["@thru-field-name"] ?: "thruDate",
-                    (node["@valid-date"] ? ec.resource.evaluateContextField((String) node["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
+        if (!this.getUseCache()) {
+            for (Node df in node["date-filter"])
+                this.condition(ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
+                        (String) df["@thru-field-name"] ?: "thruDate",
+                        (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
+        }
 
         for (Node ecn in node["econdition"])
             this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(ecn))
@@ -556,10 +558,10 @@ class EntityFindImpl implements EntityFind {
         }
 
         EntityListIterator eli = this.iteratorPlain()
-        EntityList el = eli.getCompleteList(true)
+        EntityListImpl el = eli.getCompleteList(true)
 
         if (doCache) {
-            EntityList elToCache = el ?: EntityListImpl.EMPTY
+            EntityListImpl elToCache = el ?: EntityListImpl.EMPTY
             elToCache.setFromCache(true)
             entityListCache.put(whereCondition, elToCache)
             efi.registerCacheListRa(this.entityName, whereCondition, elToCache)

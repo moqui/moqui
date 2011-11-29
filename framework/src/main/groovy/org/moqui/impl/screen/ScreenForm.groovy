@@ -28,6 +28,8 @@ import org.slf4j.Logger
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityException
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
+import org.moqui.entity.EntityCondition
+import java.sql.Timestamp
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -503,6 +505,18 @@ class ScreenForm {
                 ef.findNode(entityFindNode)
 
                 EntityList eli = ef.list()
+
+                if (ef.getUseCache()) {
+                    // do the date filtering after the query
+                    for (Node df in entityFindNode["date-filter"]) {
+                        EntityCondition dateEc = ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
+                                (String) df["@thru-field-name"] ?: "thruDate",
+                                (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp))
+                        // logger.warn("TOREMOVE getFieldOptions cache=${ef.getUseCache()}, dateEc=${dateEc} list before=${eli}")
+                        eli = eli.filterByCondition(dateEc, true)
+                    }
+                }
+
                 for (EntityValue ev in eli) {
                     ec.context.push(ev)
                     addFieldOption(options, fieldNode, childNode, ev, ec)
