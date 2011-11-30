@@ -380,12 +380,15 @@ class EntityValueImpl implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", true)
 
+        boolean dbValueMapFromDb = false
+        // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
+        for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
+
         Map oldValues = dbValueMap
         if (ed.needsAuditLog()) {
             boolean needsDbValue = true
             if (oldValues != null) {
-                // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
-                for (Object val in oldValues.values()) if (val != null) { needsDbValue = false; break }
+                needsDbValue = !dbValueMapFromDb
             } else {
                 oldValues = new HashMap()
             }
@@ -405,12 +408,12 @@ class EntityValueImpl implements EntityValue {
             ListOrderedSet nonPkFieldList = new ListOrderedSet()
             for (String fieldName in nonPkAllFieldList) {
                 if (valueMap.containsKey(fieldName) &&
-                        (!dbValueMap || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
+                        (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
                     nonPkFieldList.add(fieldName)
                 }
             }
             if (!nonPkFieldList) {
-                if (logger.traceEnabled) logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+                if (logger.infoEnabled) logger.info("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
                 return
             }
 
