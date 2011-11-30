@@ -36,6 +36,7 @@ import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.entity.EntityCondition.ComparisonOperator
+import org.moqui.impl.entity.EntityValueImpl
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -728,7 +729,14 @@ class ScreenRenderImpl implements ScreenRender {
         // logger.warn("TOREMOVE fieldName=${fieldName} value=${value}; ec.web.errorParameters=${ec.web.errorParameters}; ec.web.errorParameters.moquiFormName=${ec.web.parameters.moquiFormName}, fieldNode.parent().@name=${fieldNode.parent().'@name'}")
         if (!value && ec.context.get(mapName) && fieldNode.parent().name() == "form-single") {
             try {
-                value = ((Map) ec.context.get(mapName)).get(fieldName)
+                Map valueMap = (Map) ec.context.get(mapName)
+                if (valueMap instanceof EntityValueImpl) {
+                    // if it is an EntityValueImpl, only get if the fieldName is a value
+                    EntityValueImpl evi = (EntityValueImpl) valueMap
+                    if (evi.getEntityDefinition().isField(fieldName)) value = evi.get(fieldName)
+                } else {
+                    value = valueMap.get(fieldName)
+                }
             } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
         }
         if (!value) value = ec.context.get(fieldName)
