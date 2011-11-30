@@ -36,6 +36,7 @@ public class EntityDefinition {
     protected Map<String, String> columnNameMap = new HashMap()
     protected List<String> pkFieldNameList = null
     protected List<String> allFieldNameList = null
+    protected Map<String, Map> mePkFieldToAliasNameMapMap = null
 
     protected Boolean isView = null
     protected Boolean needsAuditLogVal = null
@@ -377,6 +378,84 @@ public class EntityDefinition {
         return nodeList
     }
 
+    Map getMePkFieldToAliasNameMap(String entityAlias) {
+        if (mePkFieldToAliasNameMapMap == null) mePkFieldToAliasNameMapMap = new HashMap<String, Map>()
+        Map mePkFieldToAliasNameMap = mePkFieldToAliasNameMapMap.get(entityAlias)
+
+        //logger.warn("TOREMOVE 1 getMePkFieldToAliasNameMap entityAlias=${entityAlias} cached value=${mePkFieldToAliasNameMap}; entityNode=${entityNode}")
+        if (mePkFieldToAliasNameMap != null) return mePkFieldToAliasNameMap
+
+        mePkFieldToAliasNameMap = new HashMap()
+
+        // do a reverse map on member-entity pk fields to view-entity aliases
+        Node memberEntityNode = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
+        //logger.warn("TOREMOVE 2 getMePkFieldToAliasNameMap entityAlias=${entityAlias} memberEntityNode=${memberEntityNode}")
+        EntityDefinition med = this.efi.getEntityDefinition(memberEntityNode."@entity-name")
+        List<String> pkFieldNames = med.getPkFieldNames()
+        for (String pkName in pkFieldNames) {
+            Node matchingAliasNode = (Node) entityNode."alias".find({
+                it."@entity-alias" == memberEntityNode."@entity-alias" &&
+                (it."@field" == pkName || (!it."@field" && it."@name" == pkName)) })
+            //logger.warn("TOREMOVE 3 getMePkFieldToAliasNameMap entityAlias=${entityAlias} for pkName=${pkName}, matchingAliasNode=${matchingAliasNode}")
+            if (matchingAliasNode) {
+                // found an alias Node
+                mePkFieldToAliasNameMap.put(pkName, matchingAliasNode."@name")
+                continue
+            }
+
+            // no alias, try to find in join key-maps that map to other aliased fields
+
+            // first try the current member-entity
+            if (memberEntityNode."@join-from-alias" && memberEntityNode."key-map") {
+                boolean foundOne = false
+                for (Node keyMapNode in memberEntityNode."key-map") {
+                    //logger.warn("TOREMOVE 4 getMePkFieldToAliasNameMap entityAlias=${entityAlias} for pkName=${pkName}, keyMapNode=${keyMapNode}")
+                    if (keyMapNode."@related-field-name" == pkName ||
+                            (!keyMapNode."@related-field-name" && keyMapNode."@field-name" == pkName)) {
+                        String relatedPkName = keyMapNode."@field-name"
+                        Node relatedMatchingAliasNode = (Node) entityNode."alias".find({
+                            it."@entity-alias" == memberEntityNode."@join-from-alias" &&
+                            (it."@field" == relatedPkName || (!it."@field" && it."@name" == relatedPkName)) })
+                        //logger.warn("TOREMOVE 5 getMePkFieldToAliasNameMap entityAlias=${entityAlias} for pkName=${pkName}, relatedAlias=${memberEntityNode.'@join-from-alias'}, relatedPkName=${relatedPkName}, relatedMatchingAliasNode=${relatedMatchingAliasNode}")
+                        if (relatedMatchingAliasNode) {
+                            mePkFieldToAliasNameMap.put(pkName, relatedMatchingAliasNode."@name")
+                            foundOne = true
+                            break
+                        }
+                    }
+                }
+                if (foundOne) continue
+            }
+
+            // then go through all other member-entity that might relate back to this one
+            for (Node relatedMeNode in entityNode."member-entity") {
+                if (relatedMeNode."@join-from-alias" == memberEntityNode."@entity-alias" && relatedMeNode."key-map") {
+                    boolean foundOne = false
+                    for (Node keyMapNode in relatedMeNode."key-map") {
+                        if (keyMapNode."@field-name" == pkName) {
+                            String relatedPkName = keyMapNode."@related-field-name" ?: keyMapNode."@field-name"
+                            Node relatedMatchingAliasNode = (Node) entityNode."alias".find({
+                                it."@entity-alias" == relatedMeNode."@entity-alias" &&
+                                (it."@field" == relatedPkName || (!it."@field" && it."@name" == relatedPkName)) })
+                            if (relatedMatchingAliasNode) {
+                                mePkFieldToAliasNameMap.put(pkName, relatedMatchingAliasNode."@name")
+                                foundOne = true
+                                break
+                            }
+                        }
+                    }
+                    if (foundOne) break
+                }
+            }
+        }
+
+        if (pkFieldNames.size() != mePkFieldToAliasNameMap.size()) {
+            logger.warn("Not all primary-key fields in view-entity [${entityName}] for member-entity [${memberEntityNode.'@entity-name'}], skipping cache reverse-association, and note that if this record is updated the cache won't automatically clear; pkFieldNames=${pkFieldNames}; partial mePkFieldToAliasNameMap=${mePkFieldToAliasNameMap}")
+        }
+
+        return mePkFieldToAliasNameMap
+    }
+
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 
@@ -455,7 +534,7 @@ public class EntityDefinition {
                 continue;
             }
 
-            for (Node fieldNode in aliasedEntityDefinition.internalEntityNode.field) {
+            for (Node fieldNode in aliasedEntityDefinition.internalEntityNode."field") {
                 // never auto-alias these
                 if (fieldNode."@name" == "lastUpdatedStamp") continue
                 // if specified as excluded, leave it out
@@ -506,10 +585,9 @@ public class EntityDefinition {
                 }
 
                 Node newAlias = this.internalEntityNode.appendNode("alias",
-                        [name:aliasName, field:fieldNode."@name",
-                        "entity-alias":aliasAll."@entity-alias",
+                        [name:aliasName, field:fieldNode."@name", "entity-alias":aliasAll."@entity-alias",
                         "if-from-alias-all":true])
-                if (fieldNode.description) newAlias.appendNode(fieldNode."description")
+                if (fieldNode."description") newAlias.appendNode(fieldNode."description")
             }
         }
     }

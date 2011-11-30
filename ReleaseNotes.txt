@@ -14,6 +14,9 @@ This release includes:
 - All the great features of the 1.0.0 and previous releases
 - Updated Gradle build file for version 1.0-milestone-6 (previously ran on
   1.0-milestone-3)
+- Added support to automatically clear caches for view-entity based in
+  updates to member-entity records, as long as all member-entity PK fields
+  are directly or indirectly aliased on the view-entity
 
 Bug Fixes:
 
@@ -24,6 +27,9 @@ Bug Fixes:
   just check to see if the parameter was passed; also changed all submit
   field names to submitButton to avoid conflict with standard DOM function
   "submit" for form elements (thanks to Vasanth for reporting this)
+- Fixed bad reference to ComparisonOperator in DateCondition class
+- Fixed issue with settings nulls in an entity-auto update service or
+  anywhere the dbValueMap is not populated from the database
 
 
 ===========================================================================

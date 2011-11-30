@@ -700,8 +700,9 @@ class EntityFacadeImpl implements EntityFacade {
 
     void clearCacheForValue(EntityValueImpl evi, boolean isCreate) {
         try {
-            if (evi.getEntityDefinition().getEntityNode()."@use-cache" == "never") return
-            String entityName = evi.getEntityName()
+            EntityDefinition ed = evi.getEntityDefinition()
+            if (ed.getEntityNode()."@use-cache" == "never") return
+            String entityName = ed.getEntityName()
             EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
 
             // clear one cache
@@ -723,7 +724,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
 
             // clear list cache, use reverse-associative Map (also a Cache)
-            if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.list.${entityName}")) {
+            if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.list_ra.${entityName}")) {
                 // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
                 if (isCreate) {
                     CacheImpl entityListCache = getCacheList(entityName)
@@ -736,11 +737,21 @@ class EntityFacadeImpl implements EntityFacade {
                     Cache listRaCache = getCacheListRa(entityName)
                     if (listRaCache.containsKey(pkCondition)) {
                         List raKeyList = (List) listRaCache.get(pkCondition)
+                        // logger.warn("TOREMOVE for entity ${entityName}, for pkCondition [${pkCondition}], raKeyList for clear=${raKeyList}")
                         CacheImpl entityListCache = getCacheList(entityName)
                         Ehcache elcEhc = entityListCache.getInternalCache()
-                        for (EntityCondition ec in raKeyList) {
-                            // this may have already been cleared, but it is a waste of time to check for that explicitly
-                            elcEhc.remove(ec)
+                        for (Object raKey in raKeyList) {
+                            if (raKey instanceof EntityCondition) {
+                                EntityCondition ec = (EntityCondition) raKey
+                                // this may have already been cleared, but it is a waste of time to check for that explicitly
+                                elcEhc.remove(ec)
+                            } else {
+                                Map viewEcMap = (Map) raKey
+                                CacheImpl viewEntityListCache = getCacheList(viewEcMap.ven)
+                                Ehcache velcEhc = viewEntityListCache.getInternalCache()
+                                // this may have already been cleared, but it is a waste of time to check for that explicitly
+                                velcEhc.remove(viewEcMap.ec)
+                            }
                         }
                         // we've cleared all entries that this was referring to, so clean it out too
                         listRaCache.remove(pkCondition)
@@ -760,10 +771,10 @@ class EntityFacadeImpl implements EntityFacade {
             logger.error("Suppressed error in entity cache clearing [${evi.getEntityName()}; ${isCreate ? 'create' : 'non-create'}]", t)
         }
     }
-    void registerCacheOneRa(String entityName, EntityCondition ec, EntityValue ev) {
-        if (ev == null) return
+    void registerCacheOneRa(String entityName, EntityCondition ec, EntityValueImpl evi) {
+        if (evi == null) return
         Cache oneRaCache = getCacheOneRa(entityName)
-        EntityCondition pkCondition = getConditionFactory().makeCondition(ev.getPrimaryKeys())
+        EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
         // if the condition matches the primary key, no need for an RA entry
         if (pkCondition == ec) return
         List raKeyList = (List) oneRaCache.get(pkCondition)
@@ -773,16 +784,43 @@ class EntityFacadeImpl implements EntityFacade {
         }
         raKeyList.add(ec)
     }
-    void registerCacheListRa(String entityName, EntityCondition ec, EntityList el) {
-        Cache listRaCache = getCacheListRa(entityName)
-        for (EntityValue ev in el) {
-            EntityCondition pkCondition = getConditionFactory().makeCondition(ev.getPrimaryKeys())
-            List raKeyList = (List) listRaCache.get(pkCondition)
-            if (!raKeyList) {
-                raKeyList = new ArrayList()
-                listRaCache.put(pkCondition, raKeyList)
+    void registerCacheListRa(String entityName, EntityCondition ec, EntityListImpl eli) {
+        EntityDefinition ed = getEntityDefinition(entityName)
+        if (ed.isViewEntity()) {
+            // go through each member-entity
+            for (Node memberEntityNode in ed.getEntityNode()."member-entity") {
+                Map mePkFieldToAliasNameMap = ed.getMePkFieldToAliasNameMap(memberEntityNode."@entity-alias")
+
+                // logger.warn("TOREMOVE for view-entity ${entityName}, member-entity ${memberEntityNode.'@entity-name'}, got PK field to alias map: ${mePkFieldToAliasNameMap}")
+
+                // create EntityCondition with pk fields
+                // store with main ec with view-entity name in a RA cache for view entities for the member-entity name
+                // with cache key of member-entity PK EntityCondition obj
+                Cache listViewRaCache = getCacheListRa(memberEntityNode.'@entity-name')
+                for (EntityValue ev in eli) {
+                    Map pkCondMap = new HashMap()
+                    for (Map.Entry mePkEntry in mePkFieldToAliasNameMap) pkCondMap.put(mePkEntry.getKey(), ev.get(mePkEntry.getValue()))
+                    EntityCondition pkCondition = getConditionFactory().makeCondition(pkCondMap)
+                    List raKeyList = (List) listViewRaCache.get(pkCondition)
+                    if (!raKeyList) {
+                        raKeyList = new ArrayList()
+                        listViewRaCache.put(pkCondition, raKeyList)
+                    }
+                    raKeyList.add([ven:entityName, ec:ec])
+                    // logger.warn("TOREMOVE for view-entity ${entityName}, member-entity ${memberEntityNode.'@entity-name'}, for pkCondition [${pkCondition}], raKeyList after add=${raKeyList}")
+                }
             }
-            raKeyList.add(ec)
+        } else {
+            Cache listRaCache = getCacheListRa(entityName)
+            for (EntityValue ev in eli) {
+                EntityCondition pkCondition = getConditionFactory().makeCondition(ev.getPrimaryKeys())
+                List raKeyList = (List) listRaCache.get(pkCondition)
+                if (!raKeyList) {
+                    raKeyList = new ArrayList()
+                    listRaCache.put(pkCondition, raKeyList)
+                }
+                raKeyList.add(ec)
+            }
         }
     }
 
