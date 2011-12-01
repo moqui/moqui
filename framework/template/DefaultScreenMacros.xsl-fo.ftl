@@ -142,7 +142,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign labelType = .node["@type"]?default("span")/>
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
     <#if (labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
-    <fo:block><#if .node["@encode"]!"true" == "false">${labelValue}<#else/>${labelValue?html?replace("\n", "<br>")}</#if></fo:block>
+    <fo:block><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else/>${labelValue}</#if></fo:block>
 </#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 

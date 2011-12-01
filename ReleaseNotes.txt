@@ -30,6 +30,7 @@ Bug Fixes:
 - Fixed bad reference to ComparisonOperator in DateCondition class
 - Fixed issue with settings nulls in an entity-auto update service or
   anywhere the dbValueMap is not populated from the database
+- Fixed bug (#3442014) with funny FTL eval of label.@encode attribute
 
 
 ===========================================================================
