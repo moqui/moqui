@@ -17,10 +17,12 @@ This release includes:
 - Added support to automatically clear caches for view-entity based in
   updates to member-entity records, as long as all member-entity PK fields
   are directly or indirectly aliased on the view-entity
+- Improved entity-auto service error handling
+- Changed login screen to render in the same request instead of a redirect
+  and to return a status code of 401 (related to bug #3442045)
 
 Bug Fixes:
 
-- Improved entity-auto service error handling
 - Fixed issue with entities in different packages that have the same name
 - Instead of submit buttons always having name=submit, they now use the
   name of the XML Form field; to see if one button or another was pressed
