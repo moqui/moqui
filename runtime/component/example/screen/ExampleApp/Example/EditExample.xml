@@ -97,6 +97,11 @@ This Work includes contributions authored by David E. Jones, not as a
                             </drop-down>
                         </default-field>
                     </field>
+                    <!-- uncomment to see example of a render-mode embedded in a field:
+                    <field name="testRenderMode"><default-field>
+                        <render-mode><text type="html"><![CDATA[<span><div>This is test HTML text.</div><div>This is another line.</div></span>]]></text></render-mode>
+                    </default-field></field>
+                    -->
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
 
                     <field-layout collapsible="true">
@@ -121,6 +126,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             <field-ref name="exampleUrl"/>
                         </field-group>
 
+                        <!-- <field-ref name="testRenderMode"/> -->
                         <field-ref name="submitButton"/>
                     </field-layout>
                 </form-single>

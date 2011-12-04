@@ -20,6 +20,10 @@ This release includes:
 - Improved entity-auto service error handling
 - Changed login screen to render in the same request instead of a redirect
   and to return a status code of 401 (related to bug #3442045)
+- Made form field sub-fields more flexible, can include any widget tag
+  under them now; this has been tested with render-mode and should work
+  with others as they just run the corresponding macro for the widget
+  element, but your mileage may vary
 
 Bug Fixes:
 

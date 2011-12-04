@@ -255,7 +255,13 @@ class StupidUtilities {
     static Node deepCopyNode(Node original) {
         // always pass in a null parent and expect this to be appended to the parent node by the caller if desired
         Node newNode = new Node(null, original.name(), original.attributes())
-        for (Node childNode in original.children()) newNode.append(deepCopyNode(childNode))
+        for (Object child in original.children()) {
+            if (child instanceof Node) {
+                newNode.append(deepCopyNode((Node) child))
+            } else {
+                newNode.value = child
+            }
+        }
         return newNode
     }
 
