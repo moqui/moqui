@@ -24,6 +24,9 @@ This release includes:
   under them now; this has been tested with render-mode and should work
   with others as they just run the corresponding macro for the widget
   element, but your mileage may vary
+- Added support for a classes directory under the runtime directory, and
+  under each component directory to go along with the lib directories so
+  that classpath resources do not have to be in a jar file
 
 Bug Fixes:
 
@@ -37,6 +40,9 @@ Bug Fixes:
 - Fixed issue with settings nulls in an entity-auto update service or
   anywhere the dbValueMap is not populated from the database
 - Fixed bug (#3442014) with funny FTL eval of label.@encode attribute
+- Fixed issue with ResourceFacade classpath:// URLs that were not using
+  thread's context ClassLoader, and so weren't finding classpath entries
+  in runtime or component lib and classes directories
 
 
 ===========================================================================

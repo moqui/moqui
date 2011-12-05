@@ -137,5 +137,5 @@ class UrlResourceReference implements ResourceReference {
     void destroy() { }
 
     @Override
-    String toString() { return getLocation() }
+    String toString() { return getLocation() ?: "[no location (${this.class.getName()})]" }
 }

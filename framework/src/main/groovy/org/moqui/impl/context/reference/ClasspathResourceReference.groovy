@@ -24,12 +24,18 @@ class ClasspathResourceReference extends UrlResourceReference {
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
         strippedLocation = ResourceFacadeImpl.stripLocationPrefix(location)
-        // first try the ClassLoader that loaded this class
-        locationUrl = this.getClass().getClassLoader().getResource(strippedLocation)
+        // first try the current thread's context ClassLoader
+        locationUrl = Thread.currentThread().getContextClassLoader().getResource(strippedLocation)
+        // next try the ClassLoader that loaded this class
+        if (locationUrl == null) locationUrl = this.getClass().getClassLoader().getResource(strippedLocation)
         // no luck? try the system ClassLoader
-        if (!locationUrl) locationUrl = ClassLoader.getSystemResource(strippedLocation)
+        if (locationUrl == null) locationUrl = ClassLoader.getSystemResource(strippedLocation)
         // if the URL was found this way then it exists, so remember that
-        if (locationUrl) exists = true
+        if (locationUrl != null) {
+            exists = true
+        } else {
+            logger.warn("Could not find location [${strippedLocation}] on the classpath")
+        }
 
         return this
     }

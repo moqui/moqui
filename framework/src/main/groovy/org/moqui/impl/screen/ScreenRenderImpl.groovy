@@ -673,7 +673,7 @@ class ScreenRenderImpl implements ScreenRender {
             // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
             return ""
         } else {
-            return sfi.ecfi.resourceFacade.getLocationText(location, true)
+            return sfi.ecfi.resourceFacade.getLocationText(location, true) ?: ""
         }
     }
 

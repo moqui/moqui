@@ -11,9 +11,7 @@
  */
 package org.moqui.impl;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.ProtectionDomain;
@@ -58,6 +56,7 @@ public class StupidClassLoader extends ClassLoader {
     }
 
     protected final List<JarFile> jarFileList = new ArrayList<JarFile>();
+    protected final List<File> classesDirectoryList = new ArrayList<File>();
     protected final Map<String, Class> classCache = new HashMap<String, Class>();
     protected final Map<String, URL> resourceCache = new HashMap<String, URL>();
     protected ProtectionDomain pd;
@@ -78,16 +77,40 @@ public class StupidClassLoader extends ClassLoader {
     //Map<String, Class> getClassCache() { return classCache; }
     //Map<String, URL> getResourceCache() { return resourceCache; }
 
+    public void addClassesDirectory(File classesDir) {
+        if (!classesDir.exists()) throw new IllegalArgumentException("Classes directory [" + classesDir + "] does not exist.");
+        if (!classesDir.isDirectory()) throw new IllegalArgumentException("Classes directory [" + classesDir + "] is not a directory.");
+        classesDirectoryList.add(classesDir);
+    }
+
     protected byte[] getJarEntryBytes(JarFile jarFile, JarEntry je) throws IOException {
         DataInputStream dis = null;
         byte[] jeBytes = null;
         try {
             long lSize = je.getSize();
             if (lSize <= 0  ||  lSize >= Integer.MAX_VALUE) {
-                throw new IllegalArgumentException("Size [" + lSize + "] not valid for war entry [" + je + "]");
+                throw new IllegalArgumentException("Size [" + lSize + "] not valid for jar entry [" + je + "]");
             }
             jeBytes = new byte[(int)lSize];
             InputStream is = jarFile.getInputStream(je);
+            dis = new DataInputStream(is);
+            dis.readFully(jeBytes);
+        } finally {
+            if (dis != null) dis.close();
+        }
+        return jeBytes;
+    }
+
+    protected byte[] getFileBytes(File classFile) throws IOException {
+        DataInputStream dis = null;
+        byte[] jeBytes = null;
+        try {
+            long lSize = classFile.length();
+            if (lSize <= 0  ||  lSize >= Integer.MAX_VALUE) {
+                throw new IllegalArgumentException("Size [" + lSize + "] not valid for classpath file [" + classFile + "]");
+            }
+            jeBytes = new byte[(int)lSize];
+            InputStream is = new FileInputStream(classFile);
             dis = new DataInputStream(is);
             dis.readFully(jeBytes);
         } finally {
@@ -102,15 +125,27 @@ public class StupidClassLoader extends ClassLoader {
         if (resourceCache.containsKey(resourceName)) return resourceCache.get(resourceName);
 
         URL resourceUrl = null;
-        for (JarFile jarFile : jarFileList) {
-            JarEntry jarEntry = jarFile.getJarEntry(resourceName);
-            if (jarEntry != null) {
-                try {
-                    String jarFileName = jarFile.getName();
-                    if (jarFileName.contains("\\")) jarFileName = jarFileName.replace('\\', '/');
-                    resourceUrl = new URL("jar:file:" + jarFileName + "!/" + jarEntry);
-                } catch (MalformedURLException e) {
-                    System.out.println("Error making URL for [" + resourceName + "] in jar [" + jarFile + "]: " + e.toString());
+
+        for (File classesDir : classesDirectoryList) {
+            File testFile = new File(classesDir.getAbsolutePath() + "/" + resourceName);
+            try {
+                if (testFile.exists() && testFile.isFile()) resourceUrl = testFile.toURI().toURL();
+            } catch (MalformedURLException e) {
+                System.out.println("Error making URL for [" + resourceName + "] in classes directory [" + classesDir + "]: " + e.toString());
+            }
+        }
+
+        if (resourceUrl == null) {
+            for (JarFile jarFile : jarFileList) {
+                JarEntry jarEntry = jarFile.getJarEntry(resourceName);
+                if (jarEntry != null) {
+                    try {
+                        String jarFileName = jarFile.getName();
+                        if (jarFileName.contains("\\")) jarFileName = jarFileName.replace('\\', '/');
+                        resourceUrl = new URL("jar:file:" + jarFileName + "!/" + jarEntry);
+                    } catch (MalformedURLException e) {
+                        System.out.println("Error making URL for [" + resourceName + "] in jar [" + jarFile + "]: " + e.toString());
+                    }
                 }
             }
         }
@@ -124,6 +159,14 @@ public class StupidClassLoader extends ClassLoader {
     @Override
     public Enumeration<URL> findResources(String resourceName) throws IOException {
         List<URL> urlList = new ArrayList<URL>();
+        for (File classesDir : classesDirectoryList) {
+            File testFile = new File(classesDir.getAbsolutePath() + "/" + resourceName);
+            try {
+                if (testFile.exists() && testFile.isFile()) urlList.add(testFile.toURI().toURL());
+            } catch (MalformedURLException e) {
+                System.out.println("Error making URL for [" + resourceName + "] in classes directory [" + classesDir + "]: " + e.toString());
+            }
+        }
         for (JarFile jarFile : jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             if (jarEntry != null) {
@@ -193,21 +236,42 @@ public class StupidClassLoader extends ClassLoader {
         Class<?> c = null;
         String classFileName = className.replace('.', '/') + ".class";
 
-        for (JarFile jarFile: jarFileList) {
-            // System.out.println("Finding class file " + classFileName + " in jar file " + jarFile.getName());
-            JarEntry jarEntry = jarFile.getJarEntry(classFileName);
-            if (jarEntry != null) {
-                definePackage(className, jarFile);
-                byte[] jeBytes = getJarEntryBytes(jarFile, jarEntry);
-                if (jeBytes == null) {
-                    System.out.println("Could not get bytes for [" + jarEntry.getName() + "] in [" + jarFile.getName() + "]");
-                    continue;
+        for (File classesDir : classesDirectoryList) {
+            File testFile = new File(classesDir.getAbsolutePath() + "/" + classFileName);
+            try {
+                if (testFile.exists() && testFile.isFile()) {
+                    byte[] jeBytes = getFileBytes(testFile);
+                    if (jeBytes == null) {
+                        System.out.println("Could not get bytes for [" + testFile + "] in [" + classesDir + "]");
+                        continue;
+                    }
+                    // System.out.println("Class [" + classFileName + "] FOUND in jarFile [" + jarFile.getName() + "], size is " + jeBytes.length);
+                    c = defineClass(className, jeBytes, 0, jeBytes.length, pd);
+                    break;
                 }
-                // System.out.println("Class [" + classFileName + "] FOUND in jarFile [" + jarFile.getName() + "], size is " + jeBytes.length);
-                c = defineClass(className, jeBytes, 0, jeBytes.length, pd);
-                break;
+            } catch (MalformedURLException e) {
+                System.out.println("Error making URL for [" + classFileName + "] in classes directory [" + classesDir + "]: " + e.toString());
             }
         }
+
+        if (c == null) {
+            for (JarFile jarFile: jarFileList) {
+                // System.out.println("Finding class file " + classFileName + " in jar file " + jarFile.getName());
+                JarEntry jarEntry = jarFile.getJarEntry(classFileName);
+                if (jarEntry != null) {
+                    definePackage(className, jarFile);
+                    byte[] jeBytes = getJarEntryBytes(jarFile, jarEntry);
+                    if (jeBytes == null) {
+                        System.out.println("Could not get bytes for [" + jarEntry.getName() + "] in [" + jarFile.getName() + "]");
+                        continue;
+                    }
+                    // System.out.println("Class [" + classFileName + "] FOUND in jarFile [" + jarFile.getName() + "], size is " + jeBytes.length);
+                    c = defineClass(className, jeBytes, 0, jeBytes.length, pd);
+                    break;
+                }
+            }
+        }
+
         // down here only cache if found
         if (c != null) classCache.put(className, c);
         return c;

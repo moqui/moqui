@@ -60,5 +60,5 @@ class WrapperResourceReference implements ResourceReference {
     void destroy() { rr.destroy() }
 
     @Override
-    String toString() { rr.toString() }
+    String toString() { rr?.toString() ?: "[no location (${this.class.getName()})]" }
 }

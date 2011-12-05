@@ -31,6 +31,7 @@ import org.moqui.context.ScriptRunner
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.context.runner.XmlActionsScriptRunner
+import java.lang.reflect.Constructor
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -166,13 +167,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
     /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */
     InputStream getLocationStream(String location) {
         ResourceReference rr = getLocationReference(location)
-        if (!rr) return null
+        if (rr == null) return null
         return rr.openStream()
     }
 
     String getLocationText(String location, boolean cache) {
         if (cache && textLocationCache.containsKey(location)) return (String) textLocationCache.get(location)
-        String text = StupidUtilities.getStreamText(getLocationStream(location))
+        InputStream locStream = getLocationStream(location)
+        if (locStream == null) logger.info("Cannot get text, no resource found at location [${location}]")
+        String text = StupidUtilities.getStreamText(locStream)
         if (cache) textLocationCache.put(location, text)
         return text
     }

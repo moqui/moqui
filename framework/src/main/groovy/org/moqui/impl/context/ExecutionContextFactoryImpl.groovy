@@ -258,17 +258,29 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         ClassLoader pcl = (Thread.currentThread().getContextClassLoader() ?: this.class.classLoader) ?: System.classLoader
         cachedClassLoader = new StupidClassLoader(pcl)
         Thread.currentThread().setContextClassLoader(cachedClassLoader)
+        // add runtime/classes jar files to the class loader
+        File runtimeClassesFile = new File(runtimePath + "/classes")
+        if (runtimeClassesFile.exists()) {
+            cachedClassLoader.addClassesDirectory(runtimeClassesFile)
+        }
         // add runtime/lib jar files to the class loader
         File runtimeLibFile = new File(runtimePath + "/lib")
-        for (File jarFile: runtimeLibFile.listFiles()) {
-            if (jarFile.getName().endsWith(".jar")) {
-                cachedClassLoader.addJarFile(new JarFile(jarFile))
-                logger.info("Added JAR from runtime/lib: ${jarFile.getName()}")
+        if (runtimeLibFile.exists()) {
+            for (File jarFile: runtimeLibFile.listFiles()) {
+                if (jarFile.getName().endsWith(".jar")) {
+                    cachedClassLoader.addJarFile(new JarFile(jarFile))
+                    logger.info("Added JAR from runtime/lib: ${jarFile.getName()}")
+                }
             }
         }
 
-        // add <component>/lib jar files to the class loader now that component locations loaded
+        // add <component>/classes and <component>/lib jar files to the class loader now that component locations loaded
         for (Map.Entry componentEntry in componentBaseLocations) {
+            ResourceReference classesRr = this.resourceFacade.getLocationReference(componentEntry.value + "/classes")
+            if (classesRr.supportsExists() && classesRr.exists && classesRr.supportsDirectory() && classesRr.isDirectory()) {
+                cachedClassLoader.addClassesDirectory(new File(classesRr.getUri()))
+            }
+
             ResourceReference libRr = this.resourceFacade.getLocationReference(componentEntry.value + "/lib")
             if (libRr.supportsExists() && libRr.exists && libRr.supportsDirectory() && libRr.isDirectory()) {
                 for (ResourceReference jarRr: libRr.getDirectoryEntries()) {
