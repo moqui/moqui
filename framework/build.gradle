@@ -28,6 +28,9 @@ repositories {
 }
 
 dependencies {
+    // groovy dependencies (just the library to compile with)
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.0-beta-1'
+
     compile name: 'antisamy', version: '1.4'
 
     compile module(name: 'atomikos-transactions', version: '3.7.0') {
@@ -55,7 +58,7 @@ dependencies {
     apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1'
     compile name: 'geronimo-jta_1.1_spec', version: '1.1.1'
 
-    compile name: 'groovy-all', version: '1.8.0'
+    compile name: 'groovy-all', version: '2.0.0-beta-1'
 
     compile name: 'jackrabbit-api', version: '2.2.2'
     compile name: 'jackrabbit-jcr-commons', version: '2.2.2'
@@ -96,9 +99,6 @@ dependencies {
     compile module(name: 'fop', version: '1.0') {
         dependencies module(name: 'avalon-framework', version: '4.2.0'), module(name: 'xmlgraphics-commons', version: '1.4')
     }
-
-    // groovy dependencies (just the library to compile with?)
-    groovy name: 'groovy-all', version: '1.8.0'
 
     // ========== runtime-only dependencies ==========
     runtime name: 'derby', version: '10.8.1.2'
