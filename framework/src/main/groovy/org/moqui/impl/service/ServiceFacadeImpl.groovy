@@ -57,7 +57,7 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
-            ServiceRunner sr = (ServiceRunner) this.getClass().getClassLoader().loadClass(serviceType."@runner-class").newInstance()
+            ServiceRunner sr = (ServiceRunner) Thread.currentThread().getContextClassLoader().loadClass(serviceType."@runner-class").newInstance()
             serviceRunners.put(serviceType."@name", sr.init(this))
         }
 

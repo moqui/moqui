@@ -52,7 +52,7 @@ public class JavaServiceRunner implements ServiceRunner {
 
             Class c = (Class) classCache.get(sd.location)
             if (!c) {
-                c = this.getClass().getClassLoader().loadClass(sd.location)
+                c = Thread.currentThread().getContextClassLoader().loadClass(sd.location)
                 classCache.put(sd.location, c)
             }
             Method m = c.getMethod(sd.serviceNode."@method", ExecutionContext.class)

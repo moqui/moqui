@@ -43,6 +43,10 @@ Bug Fixes:
 - Fixed issue with ResourceFacade classpath:// URLs that were not using
   thread's context ClassLoader, and so weren't finding classpath entries
   in runtime or component lib and classes directories
+- Fixed issue with ResourceReference, TemplateRenderer, ScriptRunner,
+  ServiceRunner, and Java service implementation class loading to use the
+  current Thread's context ClassLoader which will get the component and
+  runtime lib and classes resources
 
 
 ===========================================================================

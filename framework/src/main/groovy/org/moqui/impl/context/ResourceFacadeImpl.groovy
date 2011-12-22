@@ -70,19 +70,19 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         // Setup resource reference classes
         for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
-            Class rrClass = this.getClass().getClassLoader().loadClass(rrNode."@class")
+            Class rrClass = Thread.currentThread().getContextClassLoader().loadClass(rrNode."@class")
             resourceReferenceClasses.put(rrNode."@scheme", rrClass)
         }
 
         // Setup template renderers
         for (Node templateRendererNode in ecfi.confXmlRoot."resource-facade"[0]."template-renderer") {
-            TemplateRenderer tr = (TemplateRenderer) this.getClass().getClassLoader().loadClass(templateRendererNode."@class").newInstance()
+            TemplateRenderer tr = (TemplateRenderer) Thread.currentThread().getContextClassLoader().loadClass(templateRendererNode."@class").newInstance()
             templateRenderers.put(templateRendererNode."@extension", tr.init(ecfi))
         }
 
         // Setup script runners
         for (Node scriptRunnerNode in ecfi.confXmlRoot."resource-facade"[0]."script-runner") {
-            ScriptRunner sr = (ScriptRunner) this.getClass().getClassLoader().loadClass(scriptRunnerNode."@class").newInstance()
+            ScriptRunner sr = (ScriptRunner) Thread.currentThread().getContextClassLoader().loadClass(scriptRunnerNode."@class").newInstance()
             scriptRunners.put(scriptRunnerNode."@extension", sr.init(ecfi))
         }
 
