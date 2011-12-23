@@ -2,12 +2,12 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0.1 - Date Not Yet Decided
+Release 1.0.1 - 30 December 2011
 ===========================================================================
 
-Version 1.0.1 is primarily a maintenance and bug fix release.
-
-TODO...
+Version 1.0.1 is primarily a maintenance and bug fix release. The few new
+features are mostly extensions to existing features for improved
+flexibility, to round out functionality, and better support standards.
 
 This release includes:
 
