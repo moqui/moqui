@@ -27,6 +27,11 @@ This release includes:
 - Added support for a classes directory under the runtime directory, and
   under each component directory to go along with the lib directories so
   that classpath resources do not have to be in a jar file
+- Added support for JSR-223 (javax.script) compatible scripting languages
+  through configuration only (in moqui-conf file) so no ScriptRunner
+  interface implementation is needed for these
+- Added support for JavaScript (.js) server-side scripts through
+  javax.script interface
 
 Bug Fixes:
 

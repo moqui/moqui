@@ -115,8 +115,15 @@
             so that the extension becomes a default extension and doesn't have to be in the URL -->
         <template-renderer extension=".html" class="org.moqui.impl.context.renderer.NoTemplateRenderer"/>
 
+        <!-- this is just an example, always use the ScriptRunner interface instead of javax.script because javax.script
+            does not support compiling class scripts and running methods within the class, but Groovy does
+        <script-runner extension=".groovy" engine="groovy"/>
+        -->
         <script-runner extension=".groovy" class="org.moqui.impl.context.runner.GroovyScriptRunner"/>
         <script-runner extension=".xml" class="org.moqui.impl.context.runner.XmlActionsScriptRunner"/>
+
+        <!-- the javascript engine (Rhino) is built into Java starting with version 6, so we can support it without extra libs -->
+        <script-runner extension=".js" engine="javascript"/>
     </resource-facade>
 
     <screen-facade boundary-comments="false" default-autocomplete-rows="20" default-paginate-rows="20">

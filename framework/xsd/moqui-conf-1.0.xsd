@@ -300,7 +300,15 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="script-runner">
         <xs:complexType>
             <xs:attribute name="extension" type="xs:string" use="required"/>
-            <xs:attribute name="class" type="xs:string" use="required"/>
+            <xs:attribute name="class" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>If specified should point to a class that implements the
+                    org.moqui.context.ScriptRunner interface.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="engine" type="xs:string" use="optional">
+                <xs:annotation><xs:documentation>The JSR-223 engine name, i.e. the name passed to the
+                    javax.script.ScriptEngine.getEngineByName() method. If you use this attribute do not use the class
+                    attribute as that will override this setting.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 
@@ -318,9 +326,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="screen-text-output">
         <xs:complexType>
             <xs:attribute name="type" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>
-                    Can be anything. Default supported values include: text, html, xsl-fo, xml, and csv.
-                </xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Can be anything. Default supported values include: text, html, xsl-fo,
+                    xml, and csv.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="mime-type" type="xs:string" use="optional"/>
             <xs:attribute name="macro-template-location" type="xs:string" use="required"/>

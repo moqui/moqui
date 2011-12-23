@@ -32,6 +32,7 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.context.runner.XmlActionsScriptRunner
 import java.lang.reflect.Constructor
+import org.moqui.impl.context.runner.JavaxScriptRunner
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -82,8 +83,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         // Setup script runners
         for (Node scriptRunnerNode in ecfi.confXmlRoot."resource-facade"[0]."script-runner") {
-            ScriptRunner sr = (ScriptRunner) Thread.currentThread().getContextClassLoader().loadClass(scriptRunnerNode."@class").newInstance()
-            scriptRunners.put(scriptRunnerNode."@extension", sr.init(ecfi))
+            if (scriptRunnerNode."@class") {
+                ScriptRunner sr = (ScriptRunner) Thread.currentThread().getContextClassLoader().loadClass(scriptRunnerNode."@class").newInstance()
+                scriptRunners.put(scriptRunnerNode."@extension", sr.init(ecfi))
+            } else if (scriptRunnerNode."@engine") {
+                ScriptRunner sr = new JavaxScriptRunner(scriptRunnerNode."@engine").init(ecfi)
+                scriptRunners.put(scriptRunnerNode."@extension", sr)
+            } else {
+                logger.error("Configured script-runner for extension [${scriptRunnerNode."@extension"}] must have either a class or engine attribute and has neither.")
+            }
         }
 
         // Setup content repositories
