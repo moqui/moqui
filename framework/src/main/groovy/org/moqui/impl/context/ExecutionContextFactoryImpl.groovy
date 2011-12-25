@@ -129,9 +129,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         skipStatsCond = confXmlRoot."server-stats"[0]."@stats-skip-condition"
         hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
 
+        // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
+        initComponents()
         // init ClassLoader early so that classpath:// resources and framework interface impls will work
         initClassLoader()
-        initComponents()
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -178,7 +179,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         this.confXmlRoot = this.initConfig()
 
+        // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
         initComponents()
+        // init ClassLoader early so that classpath:// resources and framework interface impls will work
+        initClassLoader()
 
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
@@ -187,8 +191,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui LoggerFacadeImpl Initialized")
         this.resourceFacade = new ResourceFacadeImpl(this)
         logger.info("Moqui ResourceFacadeImpl Initialized")
-
-        initClassLoader()
 
         this.transactionFacade = new TransactionFacadeImpl(this)
         logger.info("Moqui TransactionFacadeImpl Initialized")
