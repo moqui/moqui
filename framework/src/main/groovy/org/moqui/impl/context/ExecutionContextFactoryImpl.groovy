@@ -275,15 +275,18 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 }
             }
         }
+    }
 
+    /** this is called by the ResourceFacadeImpl constructor right after the ResourceReference classes are loaded but before ScriptRunners and TemplateRenderers */
+    protected void initComponentLibAndClasses(ResourceFacadeImpl rfi) {
         // add <component>/classes and <component>/lib jar files to the class loader now that component locations loaded
         for (Map.Entry componentEntry in componentBaseLocations) {
-            ResourceReference classesRr = this.resourceFacade.getLocationReference(componentEntry.value + "/classes")
+            ResourceReference classesRr = rfi.getLocationReference(componentEntry.value + "/classes")
             if (classesRr.supportsExists() && classesRr.exists && classesRr.supportsDirectory() && classesRr.isDirectory()) {
                 cachedClassLoader.addClassesDirectory(new File(classesRr.getUri()))
             }
 
-            ResourceReference libRr = this.resourceFacade.getLocationReference(componentEntry.value + "/lib")
+            ResourceReference libRr = rfi.getLocationReference(componentEntry.value + "/lib")
             if (libRr.supportsExists() && libRr.exists && libRr.supportsDirectory() && libRr.isDirectory()) {
                 for (ResourceReference jarRr: libRr.getDirectoryEntries()) {
                     if (jarRr.fileName.endsWith(".jar")) {

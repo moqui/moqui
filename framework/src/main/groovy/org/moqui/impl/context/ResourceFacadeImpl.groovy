@@ -71,8 +71,27 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         // Setup resource reference classes
         for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
-            Class rrClass = Thread.currentThread().getContextClassLoader().loadClass(rrNode."@class")
-            resourceReferenceClasses.put(rrNode."@scheme", rrClass)
+            try {
+                Class rrClass = Thread.currentThread().getContextClassLoader().loadClass(rrNode."@class")
+                resourceReferenceClasses.put(rrNode."@scheme", rrClass)
+            } catch (ClassNotFoundException e) {
+                logger.info("Class [${rrNode.'@class'}] not found outside of components, will retry after.")
+            }
+        }
+        
+        // now that resource references are in place, init the lib and classes directories in the components
+        this.ecfi.initComponentLibAndClasses(this)
+
+        // Try failed resource reference classes again now that component classpath resources are in place
+        for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
+            if (resourceReferenceClasses.containsKey(rrNode."@scheme")) continue
+
+            try {
+                Class rrClass = Thread.currentThread().getContextClassLoader().loadClass(rrNode."@class")
+                resourceReferenceClasses.put(rrNode."@scheme", rrClass)
+            } catch (ClassNotFoundException e) {
+                logger.warn("Class [${rrNode.'@class'}] not found even with components, skipping.")
+            }
         }
 
         // Setup template renderers
