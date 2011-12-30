@@ -57,6 +57,9 @@ Bug Fixes:
   ServiceRunner, and Java service implementation class loading to use the
   current Thread's context ClassLoader which will get the component and
   runtime lib and classes resources
+- Fixed issue where automatic reverse relationship did not work for full
+  entity names
+- Fixed issue with findRelated and findRelatedOne when forUpdate is null
 
 
 ===========================================================================

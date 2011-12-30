@@ -685,7 +685,7 @@ class EntityValueImpl implements EntityValue {
         if (byAndFields) condMap.putAll(byAndFields)
 
         EntityFind find = getEntityFacadeImpl().makeFind(relationship."@related-entity-name")
-        return find.condition(condMap).orderBy(orderBy).useCache(useCache).forUpdate(forUpdate).list()
+        return find.condition(condMap).orderBy(orderBy).useCache(useCache).forUpdate(forUpdate as boolean).list()
     }
 
     /** @see org.moqui.entity.EntityValue#findRelatedOne(String, Boolean, Boolean) */
@@ -704,7 +704,7 @@ class EntityValueImpl implements EntityValue {
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
 
         EntityFind find = getEntityFacadeImpl().makeFind(relationship."@related-entity-name")
-        return find.condition(condMap).useCache(useCache).forUpdate(forUpdate).one()
+        return find.condition(condMap).useCache(useCache).forUpdate(forUpdate as boolean).one()
     }
 
     /** @see org.moqui.entity.EntityValue#deleteRelated(String) */

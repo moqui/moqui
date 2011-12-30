@@ -143,7 +143,8 @@ public class EntityDefinition {
             if (ed != null) {
                 // don't call ed.getRelationshipNode(), may result in infinite recursion
                 Node reverseRelNode = (Node) ed.internalEntityNode."relationship".find(
-                        { it."@related-entity-name" == this.internalEntityName && (it."@type" == "one" || it."@type" == "one-nofk") })
+                        { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
+                            && (it."@type" == "one" || it."@type" == "one-nofk")) })
                 if (reverseRelNode != null) {
                     Map keyMap = ed.getRelationshipExpandedKeyMap(reverseRelNode)
                     Node newRelNode = this.internalEntityNode.appendNode("relationship",
