@@ -261,7 +261,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>For threaded messages, this points to the previous message in the thread.</description>
         </field>
         <field name="statusId" type="id" enable-audit-log="true"/>
-        <field name="emailTypeEnumId" type="id" is-pk="true"/>
+        <field name="emailTypeEnumId" type="id"/>
         <field name="sentDate" type="date-time"/>
         <field name="receivedDate" type="date-time"/>
         <field name="subject" type="text-long"/>

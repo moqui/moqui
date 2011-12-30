@@ -35,7 +35,12 @@ This release includes:
 
 Bug Fixes:
 
-- Fixed issue with entities in different packages that have the same name
+- Removed emailTypeEnumId from the PK of the EmailMessage entity, it
+  should not have been there and is not needed (or wanted); this PK
+  change will require modifying or rebuilding that table in existing
+  systems
+- Fixed issue with handling entities in different packages that have the
+  same name
 - Instead of submit buttons always having name=submit, they now use the
   name of the XML Form field; to see if one button or another was pressed
   just check to see if the parameter was passed; also changed all submit
