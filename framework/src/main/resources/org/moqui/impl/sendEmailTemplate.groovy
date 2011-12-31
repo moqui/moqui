@@ -12,6 +12,7 @@
 import org.apache.commons.mail.HtmlEmail
 import org.apache.commons.mail.ByteArrayDataSource
 import javax.activation.DataSource
+import org.moqui.BaseException
 
 org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.moqui.impl.sendEmailTemplate")
 
@@ -29,9 +30,18 @@ def emailTemplate = ec.entity.makeFind("moqui.basic.email.EmailTemplate").condit
 def emailTemplateAttachmentList = emailTemplate."moqui.basic.email.EmailTemplateAttachment"
 def emailServer = emailTemplate."moqui.basic.email.EmailServer"
 
+// check a couple of required fields
+if (!emailTemplate) ec.message.addError("No EmailTemplate record found for ID [${emailTemplateId}]")
+if (!emailServer) ec.message.addError("No EmailServer record found for EmailTemplate [${emailTemplateId}]")
+if (emailServer && !emailServer.smtpHost)
+    ec.message.addError("SMTP Host is empty for EmailServer [${emailServer.emailServerId}]")
+if (emailTemplate && !emailTemplate.fromAddress)
+    ec.message.addError("From address is empty for EmailTemplate [${emailTemplateId}]")
+if (ec.message.errors) return
+
 HtmlEmail email = new HtmlEmail()
 email.setHostName(emailServer.smtpHost)
-if (emailServer.smtpPort) email.setSmtpPort(emailServer.smtpPort as int)
+if (emailServer.smtpPort) email.setSmtpPort((emailServer.smtpPort ?: "25") as int)
 if (emailServer.mailUsername) email.setAuthentication(emailServer.mailUsername, emailServer.mailPassword)
 if (emailServer.smtpStartTls) email.setTLS(emailServer.smtpStartTls == "Y")
 if (emailServer.smtpSsl) email.setSSL(emailServer.smtpSsl == "Y")
@@ -103,5 +113,5 @@ logger.info("Sending [${email}] email from template [${emailTemplateId}] with bo
 email.send()
 } catch (Throwable t) {
     logger.info("Error in groovy", t)
-    throw new Exception("Error in sendEmailTemplate", t)
+    throw new BaseException("Error in sendEmailTemplate", t)
 }
