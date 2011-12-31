@@ -232,15 +232,16 @@ class ServiceDefinition {
                 Object parameterValue = parameters.get(parameterName)
 
                 // set the default-value if applicable
-                if (!parameterValue && parameterNode."@default-value") {
+                if (!parameterValue && !(parameterValue instanceof Boolean) && parameterNode."@default-value") {
                     ((ContextStack) eci.context).push(parameters)
                     parameterValue = eci.getResource().evaluateStringExpand(parameterNode."@default-value", "${this.location}_${parameterName}_default")
                     // logger.warn("TOREMOVE For parameter ${parameterName} new value ${parameterValue} from default-value ${parameterNode.'@default-value'} and context: ${eci.context}")
                     ((ContextStack) eci.context).pop()
                 }
 
-                // check if required
-                if (!parameterValue) {
+                // check if required and empty - use groovy non-empty rules, except for Boolean objects if they are a
+                //     non-null instanceof Boolean, then consider it not-empty (normally if false would eval to false)
+                if (!parameterValue && !(parameterValue instanceof Boolean)) {
                     if (parameterNode."@required" == "true") {
                         eci.message.addError("${parameterName} cannot be empty (service ${getServiceName()})")
                     }

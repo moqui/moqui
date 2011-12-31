@@ -32,6 +32,8 @@ This release includes:
   interface implementation is needed for these
 - Added support for JavaScript (.js) server-side scripts through
   javax.script interface
+- Added support for StartTLS and SSL to sendEmailTemplate service, based
+  on the configuration in the EmailServer record
 
 Bug Fixes:
 
@@ -60,6 +62,11 @@ Bug Fixes:
 - Fixed issue where automatic reverse relationship did not work for full
   entity names
 - Fixed issue with findRelated and findRelatedOne when forUpdate is null
+- Fixed bug in StupidUtilities.basicConvert so that String to Boolean
+  conversions do not use the default groovy non-empty rule for true, ie
+  so that the string "false" will actually evaluate to false
+- Fixed service parameters validation to not treat false boolean values as
+  empty values (ie we can't use groovy non-empty definition for Booleans)
 
 
 ===========================================================================
