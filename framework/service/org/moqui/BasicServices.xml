@@ -18,6 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="emailTemplateId" type="String" required="true"/>
             <parameter name="toAddresses" type="String"/>
             <parameter name="bodyParameters" type="Map"/>
+            <parameter name="createEmailMessage" type="Boolean" default-value="false"/>
         </in-parameters>
         <out-parameters>
             <parameter name="messageId" type="String"/>

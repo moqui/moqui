@@ -33,6 +33,8 @@ HtmlEmail email = new HtmlEmail()
 email.setHostName(emailServer.smtpHost)
 if (emailServer.smtpPort) email.setSmtpPort(emailServer.smtpPort as int)
 if (emailServer.mailUsername) email.setAuthentication(emailServer.mailUsername, emailServer.mailPassword)
+if (emailServer.smtpStartTls) email.setTLS(emailServer.smtpStartTls == "Y")
+if (emailServer.smtpSsl) email.setSSL(emailServer.smtpSsl == "Y")
 
 email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromName)
 String subject = ec.resource.evaluateStringExpand((String) emailTemplate.subject, "")
@@ -85,13 +87,15 @@ for (def emailTemplateAttachment in emailTemplateAttachmentList) {
 
 // create an moqui.basic.email.EmailMessage record with info about this sent message
 // NOTE: can do anything with: statusId, purposeEnumId, toUserId?
-Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
-        fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
-        ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
-        contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user.userId]
-ec.artifactExecution.disableAuthz()
-ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).call()
-ec.artifactExecution.enableAuthz()
+if (createEmailMessage) {
+    Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
+            fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
+            ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
+            contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user.userId]
+    ec.artifactExecution.disableAuthz()
+    ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).call()
+    ec.artifactExecution.enableAuthz()
+}
 
 logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml [${bodyHtml}] bodyText [${bodyText}]")
 
