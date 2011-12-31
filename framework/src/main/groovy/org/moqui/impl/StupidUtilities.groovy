@@ -20,6 +20,7 @@ import org.apache.commons.codec.binary.Hex
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
+import com.sun.tools.corba.se.idl.constExpr.BooleanAnd
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
@@ -41,8 +42,13 @@ class StupidUtilities {
         // only support the classes we have pre-configured
         if (theClass == null) return null
         try {
-            // groovy do the work
-            return value.asType(theClass)
+            if (theClass == java.lang.Boolean.class && value instanceof String && value) {
+                // for non-empty String to Boolean don't use normal not-empty rules, look for "true", "false", etc
+                return Boolean.valueOf((String) value)
+            } else {
+                // let groovy do the work
+                return value.asType(theClass)
+            }
         } catch (Throwable t) {
             return null
         }
