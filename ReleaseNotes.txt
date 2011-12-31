@@ -67,6 +67,7 @@ Bug Fixes:
   so that the string "false" will actually evaluate to false
 - Fixed service parameters validation to not treat false boolean values as
   empty values (ie we can't use groovy non-empty definition for Booleans)
+- Fixed permission issue in resetPassword service
 
 
 ===========================================================================
