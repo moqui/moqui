@@ -206,6 +206,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="username" required="true"/>
         </in-parameters>
         <actions>
+            <!-- for this we don't want authz checks, though normally for these services we would -->
+            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
+
             <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
                 <field-map field-name="username"/>
             </entity-find-one>
@@ -215,9 +218,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <if condition="!userAccount.emailAddress">
                 <return message="User account with username [${username}] does not have an email address" error="true"/>
             </if>
-
-            <!-- for the rest of this we don't want authz checks, though normally for these services we would -->
-            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
 
             <!-- reset the password to a random value -->
             <set field="newPassword" from="org.moqui.impl.StupidUtilities.getRandomString(12)"/>
