@@ -12,15 +12,12 @@
 package org.moqui.impl
 
 import java.nio.charset.Charset
-import java.security.MessageDigest
 import java.sql.Timestamp
 import java.util.regex.Pattern
 
-import org.apache.commons.codec.binary.Hex
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
-import com.sun.tools.corba.se.idl.constExpr.BooleanAnd
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
