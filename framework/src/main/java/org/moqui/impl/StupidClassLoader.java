@@ -48,6 +48,7 @@ public class StupidClassLoader extends ClassLoader {
         m.put("java.util.List", java.util.List.class); m.put("List", java.util.List.class);
         m.put("java.util.Map", java.util.Map.class); m.put("Map", java.util.Map.class); m.put("java.util.HashMap", java.util.HashMap.class);
         m.put("java.util.Set", java.util.Set.class); m.put("Set", java.util.Set.class); m.put("java.util.HashSet", java.util.HashSet.class);
+        m.put("groovy.util.Node", groovy.util.Node.class); m.put("Node", groovy.util.Node.class);
         m.put(Boolean.TYPE.getName(), Boolean.TYPE); m.put(Short.TYPE.getName(), Short.TYPE);
         m.put(Integer.TYPE.getName(), Integer.TYPE); m.put(Long.TYPE.getName(), Long.TYPE);
         m.put(Float.TYPE.getName(), Float.TYPE); m.put(Double.TYPE.getName(), Double.TYPE);
