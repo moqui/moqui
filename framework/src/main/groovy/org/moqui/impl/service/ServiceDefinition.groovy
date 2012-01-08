@@ -38,7 +38,7 @@ class ServiceDefinition {
     protected String noun = null
     protected XmlAction xmlAction = null
 
-    protected boolean internalAuthenticate
+    protected String internalAuthenticate
     protected String internalServiceType
     protected boolean internalTxIgnore
     protected boolean internalTxForceNew
@@ -107,7 +107,7 @@ class ServiceDefinition {
             xmlAction = new XmlAction(sfi.ecfi, (Node) serviceNode."actions"[0], getServiceName())
         }
 
-        internalAuthenticate = (serviceNode."@authenticate" != "false")
+        internalAuthenticate = serviceNode."@authenticate" ?: "true"
         internalServiceType = serviceNode."@type" ?: "inline"
         internalTxIgnore = (serviceNode."@transaction" == "ignore")
         internalTxForceNew = (serviceNode."@transaction" == "force-new")
@@ -168,7 +168,7 @@ class ServiceDefinition {
     String getVerb() { return verb }
     String getNoun() { return noun }
 
-    boolean getAuthenticate() { return internalAuthenticate }
+    String getAuthenticate() { return internalAuthenticate }
     String getServiceType() { return internalServiceType }
     boolean getTxIgnore() { return internalTxIgnore }
     boolean getTxForceNew() { return internalTxForceNew }

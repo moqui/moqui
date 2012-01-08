@@ -110,7 +110,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             case "find": authzAction = "AUTHZA_VIEW"; break
         }
         eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE", authzAction),
-                (sd != null && sd.getAuthenticate()))
+                (sd != null && sd.getAuthenticate() == "true"))
+        if (sd != null && sd.getAuthenticate() == "anonymous-all") {
+            eci.getArtifactExecution().setAnonymousAuthorizedAll()
+        } else if (sd != null && sd.getAuthenticate() == "anonymous-view") {
+            eci.getArtifactExecution().setAnonymousAuthorizedView()
+        }
         // NOTE: don't require authz if the service def doesn't authenticate
         // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
         //     the service on the stack)
@@ -173,7 +178,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             String password = currentParameters.authUserAccount?.currentPassword ?: currentParameters.authPassword
             String tenantId = currentParameters.authTenantId
             if (userId && password) userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
-            if (sd.getAuthenticate() && !eci.getUser().getUserId())
+            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId())
                 eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
 
             // if error in auth or for other reasons, return now with no results

@@ -53,6 +53,9 @@ public interface ArtifactExecutionFacade {
      */
     void enableAuthz();
 
+    void setAnonymousAuthorizedAll();
+    void setAnonymousAuthorizedView();
+
     /** Disable Entity Facade ECA rules (for this thread/ExecutionContext only, does not affect other things happening
      * in the system).
      * @return boolean following same pattern as disableAuthz(), and should be handled the same way.

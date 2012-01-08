@@ -116,6 +116,22 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
 
+    void setAnonymousAuthorizedAll() {
+        ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()
+        aeii.authorizationInheritable = true
+        aeii.authorizedUserId = "_NA_"
+        aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
+        aeii.authorizedActionEnumId = "AUTHZA_ALL"
+    }
+
+    void setAnonymousAuthorizedView() {
+        ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()
+        aeii.authorizationInheritable = true
+        aeii.authorizedUserId = "_NA_"
+        aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
+        aeii.authorizedActionEnumId = "AUTHZA_VIEW"
+    }
+
     boolean disableAuthz() { boolean alreadyDisabled = this.authzDisabled; this.authzDisabled = true; return alreadyDisabled }
     void enableAuthz() { this.authzDisabled = false }
 
