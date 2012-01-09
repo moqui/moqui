@@ -456,7 +456,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         // if screen requires auth and there is not active user redirect to login screen, save this request
         if (logger.traceEnabled) logger.trace("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
-        if (currentSd.screenNode?."@require-authentication" != "false" && !ec.user.userId) {
+        if ((!(currentSd.screenNode?."@require-authentication") || currentSd.screenNode?."@require-authentication" == "true") && !ec.user.userId) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
             if (ec.web) {

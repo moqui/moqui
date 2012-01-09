@@ -13,9 +13,9 @@ This release includes:
   Map and Node (groovy.util.Node) parameters; the main reason for Node
   support is for XML messages coming in such as the OAGIS ones to be
   handled directly by a service (this is one part of Mantle)
-- Methods to ArtifactExecutionFacade and options to the authenticate
-  attribute on the service definition to make the current artifact
-  anonymously authorized
+- Methods on ArtifactExecutionFacade and options on the authenticate
+  attribute on the service definition and the require-authentication on the
+  screen definition to make the current artifact anonymously authorized
 
 Bug Fixes:
 

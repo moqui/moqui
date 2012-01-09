@@ -185,7 +185,12 @@ class ScreenDefinition {
     void render(ScreenRenderImpl sri, boolean isTargetScreen) {
         // NOTE: don't require authz if the screen doesn't require auth
         sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
-                isTargetScreen ? screenNode."@require-authentication" != "false" : false)
+                isTargetScreen ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false)
+        if (screenNode."@require-authentication" == "anonymous-all") {
+            sri.ec.artifactExecution.setAnonymousAuthorizedAll()
+        } else if (screenNode."@require-authentication" == "anonymous-view") {
+            sri.ec.artifactExecution.setAnonymousAuthorizedView()
+        }
         rootSection.render(sri)
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
         sri.ec.artifactExecution.pop()
@@ -316,7 +321,8 @@ class ScreenDefinition {
             //    in the services/etc if/when needed, or specific transitions can have authz settings
             sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location,
                     "AT_XML_SCREEN_TRANS", "AUTHZA_VIEW"),
-                    parentScreen.screenNode."@require-authentication" != "false")
+                    (!parentScreen.screenNode."@require-authentication" ||
+                     parentScreen.screenNode."@require-authentication" == "true"))
 
             // put parameters in the context
             if (sri.ec.web) {

@@ -75,7 +75,16 @@ This Work includes contributions authored by David E. Jones, not as a
                     it is in. If true this screen will automatically be included in the parent's subscreens menu.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="require-authentication" default="true" type="boolean"/>
+            <xs:attribute name="require-authentication" default="true" type="boolean">
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="true"/>
+                        <xs:enumeration value="false"/>
+                        <xs:enumeration value="anonymous-all"/>
+                        <xs:enumeration value="anonymous-view"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
             <!-- TABLED, not to be part of 1.0: <xs:attribute name="require-certificate" default="false" type="boolean"/> -->
             <xs:attribute name="begin-transaction" type="boolean" default="false">
                 <xs:annotation><xs:documentation>
