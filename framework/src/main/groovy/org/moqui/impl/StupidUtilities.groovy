@@ -37,7 +37,7 @@ class StupidUtilities {
 
         Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)
         // only support the classes we have pre-configured
-        if (theClass == null) return null
+        if (theClass == null) return value
         try {
             if (theClass == java.lang.Boolean.class && value instanceof String && value) {
                 // for non-empty String to Boolean don't use normal not-empty rules, look for "true", "false", etc
@@ -47,7 +47,8 @@ class StupidUtilities {
                 return value.asType(theClass)
             }
         } catch (Throwable t) {
-            return null
+            logger.warn("Error doing type conversion to [${javaType}] for value [${value}]", t)
+            return value
         }
     }
 
