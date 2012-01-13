@@ -19,6 +19,7 @@ import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.FtlNodeWrapper
+import org.moqui.impl.StupidUtilities
 
 class XmlAction {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(XmlAction.class)
@@ -34,7 +35,8 @@ class XmlAction {
         groovyString = makeGroovyString(ecfi, ftlNode, location)
         // logger.info("Xml Action [${location}] groovyString: ${groovyString}")
         try {
-            groovyClass = new GroovyClassLoader(Thread.currentThread().getContextClassLoader()).parseClass(groovyString, location)
+            groovyClass = new GroovyClassLoader(Thread.currentThread().getContextClassLoader())
+                    .parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
         } catch (Throwable t) {
             logger.error("Error parsing groovy String: ${groovyString}")
             throw t
@@ -51,7 +53,7 @@ class XmlAction {
         }
         groovyString = makeGroovyString(ecfi, ftlNode, location)
         try {
-            groovyClass = new GroovyClassLoader().parseClass(groovyString, location)
+            groovyClass = new GroovyClassLoader().parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
         } catch (Throwable t) {
             logger.error("Error parsing groovy String: ${groovyString}")
             throw t

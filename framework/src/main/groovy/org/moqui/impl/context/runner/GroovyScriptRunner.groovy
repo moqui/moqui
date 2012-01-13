@@ -18,6 +18,7 @@ import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ScriptRunner
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.StupidUtilities
 
 class GroovyScriptRunner implements ScriptRunner {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(GroovyScriptRunner.class)
@@ -55,7 +56,7 @@ class GroovyScriptRunner implements ScriptRunner {
         Class gc = (Class) scriptGroovyLocationCache.get(location)
         if (!gc) {
             String groovyText = ecfi.resourceFacade.getLocationText(location, false)
-            gc = new GroovyClassLoader().parseClass(groovyText, location)
+            gc = new GroovyClassLoader().parseClass(groovyText, StupidUtilities.cleanStringForJavaName(location))
             scriptGroovyLocationCache.put(location, gc)
         }
         return gc

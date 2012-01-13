@@ -19,6 +19,10 @@ This release includes:
 
 Bug Fixes:
 
+- Fixed bug in script template for XML Actions calling a script at a
+  location (was missing quotes around the location)
+- Fixed bug where XML Actions and groovy script locations were not being
+  cleaned before using as class names for groovy compiled classes
 
 ===========================================================================
 Release 1.0.1 - 31 December 2011
