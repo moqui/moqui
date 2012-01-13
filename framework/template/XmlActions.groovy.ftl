@@ -42,7 +42,7 @@ import org.moqui.impl.StupidUtilities
     }
 </#macro>
 
-<#macro "script"><#if .node["@location"]?has_content>ec.resource.runScriptInCurrentContext(${.node["@location"]}, null)</#if>
+<#macro "script"><#if .node["@location"]?has_content>ec.resource.runScriptInCurrentContext("${.node["@location"]}", null)</#if>
     // begin inline script
     ${.node}
     // end inline script
