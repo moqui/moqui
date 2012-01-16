@@ -524,7 +524,7 @@ class EntityValueImpl implements EntityValue {
                 if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
                 if (pkText) parms.pkRestCombinedValue = pkText
 
-                logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}], oldValues=[${oldValues}]", new Exception("AuditLog location"))
+                // logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}], oldValues=[${oldValues}]", new Exception("AuditLog location"))
 
                 getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
