@@ -502,6 +502,10 @@ class EntityValueImpl implements EntityValue {
         for (Node fieldNode in ed.getFieldNodes(true, true)) {
             if (fieldNode."@enable-audit-log" == "true") {
                 String fieldName = fieldNode."@name"
+
+                // is there a new value? if not continue
+                if (!this.valueMap.containsKey(fieldName)) continue
+
                 Object value = get(fieldName)
                 Object oldValue = oldValues?.get(fieldName)
 
@@ -520,7 +524,7 @@ class EntityValueImpl implements EntityValue {
                 if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
                 if (pkText) parms.pkRestCombinedValue = pkText
 
-                // logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}]")
+                logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}], oldValues=[${oldValues}]", new Exception("AuditLog location"))
 
                 getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
