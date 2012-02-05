@@ -172,7 +172,8 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 }
 
                 boolean isFirstKeyMap = true
-                for (Node keyMap in relatedMemberEntity."key-map") {
+                Collection keyMaps = relatedMemberEntity."key-map".findAll()
+                for (Node keyMap in keyMaps) {
                     if (isFirstKeyMap) isFirstKeyMap = false else restOfStatement.append(" AND ")
 
                     restOfStatement.append(relatedMemberEntity."@join-from-alias")
@@ -181,7 +182,14 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                     restOfStatement.append(" = ")
 
-                    String relatedFieldName = keyMap."@related-field-name" ?: keyMap."@field-name"
+                    String relatedFieldName = keyMap."@related-field-name"
+                    if (!relatedFieldName) {
+                        if (relatedLinkEntityDefinition.pkFieldNames.size() == 1 && keyMaps.size() == 1) {
+                            relatedFieldName = relatedLinkEntityDefinition.pkFieldNames[0]
+                        } else {
+                            relatedFieldName = keyMap."@field-name"
+                        }
+                    }
                     restOfStatement.append(relatedMemberEntity."@entity-alias")
                     restOfStatement.append(".")
                     restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
