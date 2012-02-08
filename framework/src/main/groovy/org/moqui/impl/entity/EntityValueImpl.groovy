@@ -382,7 +382,7 @@ class EntityValueImpl implements EntityValue {
 
         boolean dbValueMapFromDb = false
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
-        for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
+        if (dbValueMap != null) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
         Map oldValues = dbValueMap
         if (ed.needsAuditLog()) {
