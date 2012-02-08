@@ -317,7 +317,7 @@ class StupidUtilities {
     }
 
     public static String cleanStringForJavaName(String original) {
-        String badChars = "\\*&?![]^+-.\$:<>()"
+        String badChars = "\\*&?![]^+-.\$:<>()#"
         StringBuilder newValue = new StringBuilder(original)
         for (int i = 0; i < newValue.length(); i++) {
             char curChar = newValue.charAt(i)
