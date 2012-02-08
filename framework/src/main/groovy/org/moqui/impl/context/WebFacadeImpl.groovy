@@ -271,16 +271,16 @@ class WebFacadeImpl implements WebFacade {
     /** Save request parameters and attributes to a Map in the moqui.saved.parameters session attribute */
     void saveRequestParametersToSession() {
         Map parms = new HashMap()
-        parms.putAll(this.requestParameters)
-        parms.putAll(this.requestAttributes)
+        if (requestParameters) parms.putAll(requestParameters)
+        if (requestAttributes) parms.putAll(requestAttributes)
         session.setAttribute("moqui.saved.parameters", parms)
     }
 
     /** Save request parameters and attributes to a Map in the moqui.error.parameters session attribute */
     void saveErrorParametersToSession() {
         Map parms = new HashMap()
-        parms.putAll(this.requestParameters)
-        parms.putAll(this.requestAttributes)
+        if (requestParameters) parms.putAll(requestParameters)
+        if (requestAttributes) parms.putAll(requestAttributes)
         session.setAttribute("moqui.error.parameters", parms)
     }
 

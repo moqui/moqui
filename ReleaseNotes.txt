@@ -26,6 +26,8 @@ Bug Fixes:
 - Fixed Entity Audit Log bug where fields not set were considered null and
   therefore were considered changed to null and logged as such
 - Fixed NPE when calling update() on an EntityValueImpl with no changes
+- Fixed NPE when there is an error in a request and the web.parameters,
+  web.requestAttributes, and web.requestParameters have not been used
 
 ===========================================================================
 Release 1.0.1 - 31 December 2011
