@@ -182,13 +182,11 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                     restOfStatement.append(" = ")
 
-                    String relatedFieldName = keyMap."@related-field-name"
-                    if (!relatedFieldName) {
-                        if (relatedLinkEntityDefinition.pkFieldNames.size() == 1 && keyMaps.size() == 1) {
-                            relatedFieldName = relatedLinkEntityDefinition.pkFieldNames[0]
-                        } else {
-                            relatedFieldName = keyMap."@field-name"
-                        }
+                    String relatedFieldName = keyMap."@related-field-name" ?: keyMap."@field-name"
+                    if (!relatedLinkEntityDefinition.isField(relatedFieldName) &&
+                            relatedLinkEntityDefinition.pkFieldNames.size() == 1 && keyMaps.size() == 1) {
+                        relatedFieldName = relatedLinkEntityDefinition.pkFieldNames[0]
+                        // if we don't match these constraints and get this default we'll get an error later...
                     }
                     restOfStatement.append(relatedMemberEntity."@entity-alias")
                     restOfStatement.append(".")
