@@ -10,7 +10,8 @@ package org.moqui.impl.service
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  *
- * Based on Redstone XML-RPC which is Copyright (c) 2005 Redstone Handelsbolag which is licensed under the GNU LGPL license.
+ * Based on Redstone XML-RPC which is Copyright (c) 2005 Redstone Handelsbolag
+ * which is licensed under the GNU LGPL license.
  */
 
 import org.moqui.impl.context.ExecutionContextImpl;
@@ -42,9 +43,9 @@ public class ServiceXmlRpcDispatcher extends XmlRpcParser {
         try {
             ServiceDefinition sd = eci.service.getServiceDefinition(methodName)
             if (sd == null)
-                throw new IllegalArgumentException("Received JSON-RPC service call for unknown service [${methodName}]")
+                throw new IllegalArgumentException("Received XML-RPC service call for unknown service [${methodName}]")
             if (sd.serviceNode."@allow-remote" != "true")
-                throw new IllegalArgumentException("Received JSON-RPC service call to service [${sd.serviceName}] that does not allow remote calls.")
+                throw new IllegalArgumentException("Received XML-RPC service call to service [${sd.serviceName}] that does not allow remote calls.")
 
             Map params = (Map) arguments.get(0)
 
