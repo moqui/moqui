@@ -47,7 +47,12 @@ class JavaxScriptRunner implements ScriptRunner {
         if (method) logger.warn("Tried to invoke script at [${location}] with method [${method}] through javax.script (JSR-223) runner which does NOT support methods, so it is being ignored.", new BaseException("Script Run Location"))
 
         ScriptEngine engine = mgr.getEngineByName(engineName)
+        return bindAndRun(location, ec, engine, scriptLocationCache)
+    }
 
+    void destroy() { }
+
+    static Object bindAndRun(String location, ExecutionContext ec, ScriptEngine engine, Cache scriptLocationCache) {
         Bindings bindings = new SimpleBindings()
         for (Map.Entry ce in ec.getContext()) bindings.put((String) ce.getKey(), ce.getValue())
 
@@ -56,7 +61,7 @@ class JavaxScriptRunner implements ScriptRunner {
             // cache the CompiledScript
             CompiledScript script = (CompiledScript) scriptLocationCache.get(location)
             if (script == null) {
-                script = ((Compilable) engine).compile(ecfi.getResourceFacade().getLocationText(location, false))
+                script = ((Compilable) engine).compile(ec.getResource().getLocationText(location, false))
                 scriptLocationCache.put(location, script)
             }
             result = script.eval(bindings)
@@ -64,7 +69,7 @@ class JavaxScriptRunner implements ScriptRunner {
             // cache the script text
             String scriptText = (String) scriptLocationCache.get(location)
             if (scriptText == null) {
-                scriptText = ecfi.getResourceFacade().getLocationText(location, false)
+                scriptText = ec.getResource().getLocationText(location, false)
                 scriptLocationCache.put(location, scriptText)
             }
             result = engine.eval(scriptText, bindings)
@@ -72,6 +77,4 @@ class JavaxScriptRunner implements ScriptRunner {
 
         return result
     }
-
-    void destroy() { }
 }

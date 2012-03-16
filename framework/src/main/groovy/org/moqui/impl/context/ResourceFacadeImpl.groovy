@@ -33,6 +33,8 @@ import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.context.runner.XmlActionsScriptRunner
 import java.lang.reflect.Constructor
 import org.moqui.impl.context.runner.JavaxScriptRunner
+import javax.script.ScriptEngineManager
+import javax.script.ScriptEngine
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -50,6 +52,9 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final Map<String, Class> resourceReferenceClasses = new HashMap()
     protected final Map<String, TemplateRenderer> templateRenderers = new HashMap()
     protected final Map<String, ScriptRunner> scriptRunners = new HashMap()
+
+    protected final ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
+    protected final Cache otherScriptCache
 
     protected final Map<String, Repository> contentRepositories = new HashMap()
     protected final Map<String, String> contentRepositoryWorkspaces = new HashMap()
@@ -112,6 +117,8 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 logger.error("Configured script-runner for extension [${scriptRunnerNode."@extension"}] must have either a class or engine attribute and has neither.")
             }
         }
+        this.otherScriptCache = ecfi.getCacheFacade().getCache("resource.script.other.location")
+
 
         // Setup content repositories
         for (Node repositoryNode in ecfi.confXmlRoot."repository-list"[0]."repository") {
@@ -269,9 +276,16 @@ public class ResourceFacadeImpl implements ResourceFacade {
         String extension = location.substring(location.lastIndexOf("."))
         ScriptRunner sr = this.scriptRunners.get(extension)
 
-        if (sr == null) throw new IllegalArgumentException("Cannot run script [${location}], unknown extension.")
+        if (sr != null) {
+            return sr.run(location, method, ec)
+        } else {
+            // see if the extension is known
+            ScriptEngine engine = scriptEngineManager.getEngineByExtension()
+            if (engine == null)
+                throw new IllegalArgumentException("Cannot run script [${location}], unknown extension (not in Moqui Conf file, and unkown to Java ScriptEngineManager).")
 
-        return sr.run(location, method, ec)
+            return JavaxScriptRunner.bindAndRun(location, ec, engine, otherScriptCache)
+        }
     }
 
     /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */

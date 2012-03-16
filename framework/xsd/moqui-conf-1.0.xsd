@@ -307,7 +307,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="engine" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>The JSR-223 engine name, i.e. the name passed to the
                     javax.script.ScriptEngine.getEngineByName() method. If you use this attribute do not use the class
-                    attribute as that will override this setting.</xs:documentation></xs:annotation>
+                    attribute as that will override this setting.
+
+                    NOTE: If you use a default extension supported in JSR-223 for the desired scripting language, and
+                    don't mind the different types of scripts being cached together, you do not need a script-runner
+                    element. The ScriptEngine will be looked up using the ScriptEngineManager.getEngineByExtension()
+                    method and the script (pre-compiled if supported) will be cached in the
+                    "resource.script.other.location" cache.
+                </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
