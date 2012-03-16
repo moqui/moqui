@@ -11,45 +11,6 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <!-- Example Type -->
-    <moqui.basic.EnumerationType description="Example Type" enumTypeId="ExampleType"/>
-    <moqui.basic.Enumeration description="Real World" enumId="EXT_REAL_WORLD" enumTypeId="ExampleType"/>
-    <moqui.basic.Enumeration description="Made Up" enumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
-    <moqui.basic.Enumeration description="Contrived" enumId="EXT_CONTRIVED" parentEnumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
-    <moqui.basic.Enumeration description="Inspired" enumId="EXT_INSPIRED" parentEnumId="EXT_MADE_UP" enumTypeId="ExampleType"/>
-
-    <!-- Example Feature Application -->
-    <moqui.basic.EnumerationType description="Example Feature Application" enumTypeId="ExampleFeatureAppl"/>
-    <moqui.basic.Enumeration description="Required" enumId="EFA_REQUIRED" enumTypeId="ExampleFeatureAppl"/>
-    <moqui.basic.Enumeration description="Desired" enumId="EFA_DESIRED" enumTypeId="ExampleFeatureAppl"/>
-    <moqui.basic.Enumeration description="Not Allowed" enumId="EFA_NOT_ALLOWED" enumTypeId="ExampleFeatureAppl"/>
-
-    <!-- Example Status -->
-    <moqui.basic.StatusType description="Example" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="In Design" sequenceNum="1" statusId="EXST_IN_DESIGN" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="Defined" sequenceNum="2" statusId="EXST_DEFINED" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="Approved" sequenceNum="3" statusId="EXST_APPROVED" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="Implemented" sequenceNum="4" statusId="EXST_IMPLEMENTED" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="Tested" sequenceNum="5" statusId="EXST_TESTED" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="Complete" sequenceNum="6" statusId="EXST_COMPLETE" statusTypeId="Example"/>
-    <moqui.basic.StatusItem description="Cancelled" sequenceNum="99" statusId="EXST_CANCELLED" statusTypeId="Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IN_DESIGN" toStatusId="EXST_DEFINED" transitionName="Definition Complete"/>
-    <moqui.basic.StatusValidChange statusId="EXST_DEFINED" toStatusId="EXST_APPROVED" transitionName="Approve"/>
-    <moqui.basic.StatusValidChange statusId="EXST_APPROVED" toStatusId="EXST_IMPLEMENTED" transitionName="Implementation Complete"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IMPLEMENTED" toStatusId="EXST_TESTED" transitionName="Testing Complete"/>
-    <moqui.basic.StatusValidChange statusId="EXST_TESTED" toStatusId="EXST_COMPLETE" transitionName="Example Completed"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IN_DESIGN" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_DEFINED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_APPROVED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_IMPLEMENTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
-    <moqui.basic.StatusValidChange statusId="EXST_TESTED" toStatusId="EXST_CANCELLED" transitionName="Cancel Example"/>
-
-    <!-- Example Feature Source -->
-    <moqui.basic.EnumerationType description="Example Feature Source" enumTypeId="ExampleFeatureSource"/>
-    <moqui.basic.Enumeration description="Customer" enumId="EXFTSRC_CUSTOMER" sequenceNum="1" enumTypeId="ExampleFeatureSource"/>
-    <moqui.basic.Enumeration description="Partner" enumId="EXFTSRC_PARTNER" sequenceNum="2" enumTypeId="ExampleFeatureSource"/>
-    <moqui.basic.Enumeration description="Employee" enumId="EXFTSRC_EMPLOYEE" sequenceNum="3" enumTypeId="ExampleFeatureSource"/>
-
     <!-- In the seed data since code may rely on it: and example moqui.entity.DbViewEntity -->
     <moqui.entity.DbViewEntity dbViewEntityName="StatusItemAndTypeDb" packageName="moqui.example" cache="Y"/>
     <moqui.entity.DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" entityName="moqui.basic.StatusItem"/>
