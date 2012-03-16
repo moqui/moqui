@@ -309,11 +309,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     javax.script.ScriptEngine.getEngineByName() method. If you use this attribute do not use the class
                     attribute as that will override this setting.
 
-                    NOTE: If you use a default extension supported in JSR-223 for the desired scripting language, and
-                    don't mind the different types of scripts being cached together, you do not need a script-runner
-                    element. The ScriptEngine will be looked up using the ScriptEngineManager.getEngineByExtension()
-                    method and the script (pre-compiled if supported) will be cached in the
-                    "resource.script.other.location" cache.
+                    NOTE: If you use a default extension supported in JSR-223 for the desired scripting language you do
+                    not need a script-runner element. The ScriptEngine will be looked up using the
+                    ScriptEngineManager.getEngineByExtension() method and the script (pre-compiled if supported) will
+                    be cached in the "resource.script${extension}.location" cache.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
