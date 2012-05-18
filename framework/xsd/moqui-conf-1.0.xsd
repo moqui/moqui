@@ -590,14 +590,24 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="join-style" default="ansi">
                 <xs:simpleType><xs:restriction base="xs:token">
-                        <xs:enumeration value="ansi"/>
-                        <xs:enumeration value="ansi-no-parenthesis"/>
+                    <xs:enumeration value="ansi"/>
+                    <xs:enumeration value="ansi-no-parenthesis"/>
                 </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="offset-style" default="fetch">
                 <xs:simpleType><xs:restriction base="xs:token">
-                        <xs:enumeration value="fetch"/>
-                        <xs:enumeration value="limit"/>
+                    <xs:enumeration value="fetch"><xs:annotation>
+                        <xs:documentation>Use the SQL2008 syntax (OFFSET ? ROWS FETCH FIRST ? ROWS ONLY)</xs:documentation>
+                    </xs:annotation></xs:enumeration>
+                    <xs:enumeration value="limit"><xs:annotation>
+                        <xs:documentation>Use the basic limit/offset syntax (LIMIT ? OFFSET ?)</xs:documentation>
+                    </xs:annotation></xs:enumeration>
+                    <xs:enumeration value="cursor"><xs:annotation>
+                        <xs:documentation>Don't use an SQL syntax, use a database cursor through the
+                            EntityListIterator.getPartialList() method. Note that there may be different behavior when
+                            calling EntityFind.iterator() as it only seeks to the offset but doesn't restrict by the
+                            limit.</xs:documentation>
+                    </xs:annotation></xs:enumeration>
                 </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="always-use-constraint-keyword" default="false" type="boolean"/>
@@ -606,11 +616,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="collate" type="xs:string"/>
             <xs:attribute name="default-isolation-level">
                 <xs:simpleType><xs:restriction base="xs:token">
-                        <xs:enumeration value="None"/>
-                        <xs:enumeration value="ReadCommitted"/>
-                        <xs:enumeration value="ReadUncommitted"/>
-                        <xs:enumeration value="RepeatableRead"/>
-                        <xs:enumeration value="Serializable"/>
+                    <xs:enumeration value="None"/>
+                    <xs:enumeration value="ReadCommitted"/>
+                    <xs:enumeration value="ReadUncommitted"/>
+                    <xs:enumeration value="RepeatableRead"/>
+                    <xs:enumeration value="Serializable"/>
                 </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="default-jdbc-driver" type="xs:string"/>

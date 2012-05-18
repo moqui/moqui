@@ -558,7 +558,14 @@ class EntityFindImpl implements EntityFind {
         }
 
         EntityListIterator eli = this.iteratorPlain()
-        EntityListImpl el = eli.getCompleteList(true)
+        EntityListImpl el
+
+        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed.getEntityName()))
+        if (this.limit != null && databaseNode."@offset-style" == "cursor") {
+            el = eli.getPartialList(this.offset ?: 0, this.limit, true)
+        } else {
+            el = eli.getCompleteList(true)
+        }
 
         if (doCache) {
             EntityListImpl elToCache = el ?: EntityListImpl.EMPTY
@@ -593,6 +600,15 @@ class EntityFindImpl implements EntityFind {
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", true)
         EntityListIterator eli = iteratorPlain()
+
+        // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
+        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed.getEntityName()))
+        if (databaseNode."@offset-style" == "cursor") {
+            if (!eli.absolute(offset)) {
+                // can't seek to desired offset? not enough results, just go to after last result
+                eli.afterLast()
+            }
+        }
 
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit

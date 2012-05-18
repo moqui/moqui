@@ -239,7 +239,7 @@ class EntityListIteratorImpl implements EntityListIterator {
     EntityList getPartialList(int offset, int limit, boolean closeAfter) {
         try {
             EntityList list = new EntityListImpl(this.efi)
-            if (limit == 0) list
+            if (limit == 0) return list
 
             // list is 1 based
             if (offset == 0) offset = 1
