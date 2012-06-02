@@ -373,6 +373,33 @@
 
             <database-type type="binary-very-long" sql-type="BYTEA"/>
         </database>
+        <database name="mssql" join-style="ansi" default-isolation-level="ReadCommitted" offset-style="cursor"
+                  default-test-query="SELECT 1" default-jdbc-driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                  default-xa-ds-class="com.microsoft.sqlserver.jdbc.SQLServerXADataSource">
+            <!-- NOTE: for MS SQL Server 2012 and later can use offset-style=fetch for better performance and consistent behavior -->
+            <database-type type="id" sql-type="NVARCHAR(20)"/>
+            <database-type type="id-long" sql-type="NVARCHAR(60)"/>
+            <database-type type="id-very-long" sql-type="NVARCHAR(255)"/>
+
+            <database-type type="date" sql-type="DATETIME"/>
+            <database-type type="time" sql-type="DATETIME"/>
+            <database-type type="date-time" sql-type="DATETIME"/>
+
+            <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
+            <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
+            <database-type type="number-float" sql-type="DECIMAL(32,12)"/>
+
+            <database-type type="currency-amount" sql-type="DECIMAL(22,2)"/>
+            <database-type type="currency-precise" sql-type="DECIMAL(23,3)"/>
+
+            <database-type type="text-indicator" sql-type="CHAR(1)"/>
+            <database-type type="text-short" sql-type="NVARCHAR(63)"/>
+            <database-type type="text-medium" sql-type="NVARCHAR(255)"/>
+            <database-type type="text-long" sql-type="NVARCHAR(4000)"/>
+            <database-type type="text-very-long" sql-type="TEXT"/>
+
+            <database-type type="binary-very-long" sql-type="IMAGE"/>
+        </database>
     </database-list>
     <repository-list>
         <!-- No JCR repo by default, but here are some examples: -->
