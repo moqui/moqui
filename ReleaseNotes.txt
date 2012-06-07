@@ -16,6 +16,14 @@ This release includes:
 - Methods on ArtifactExecutionFacade and options on the authenticate
   attribute on the service definition and the require-authentication on the
   screen definition to make the current artifact anonymously authorized
+- Added "cursor" option for the database.@offset-style attribute for
+  databases that do not support the offset/limit or fetch syntax
+  variations; using this option will result in an EntityListIterator being
+  used instead of letting the database handle the partial results
+- Added configuration for MS SQL Server database
+- Updated Atomikos to 3.8.0, Apache Derby to 10.8.2.2, ehcache to 2.5.2,
+  FreeMarker to 2.3.19, Groovy to 2.0.0-rc-2, Quartz Scheduler to 2.1.5,
+  Apache Shiro to 1.2.0
 
 Bug Fixes:
 
