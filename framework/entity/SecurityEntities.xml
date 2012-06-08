@@ -187,6 +187,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="artifactGroupId"/>
         </member-entity>
         <alias entity-alias="ATP" name="userGroupId"/>
+        <alias entity-alias="ATP" name="artifactGroupId"/>
         <alias entity-alias="ATP" name="maxHitsCount"/>
         <alias entity-alias="ATP" name="maxHitsDuration"/>
         <alias entity-alias="ATP" name="tarpitDuration"/>
