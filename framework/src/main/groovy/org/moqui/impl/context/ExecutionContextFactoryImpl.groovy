@@ -28,7 +28,6 @@ import org.moqui.impl.screen.ScreenFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.StupidClassLoader
 
-import redstone.xmlrpc.XmlRpcServer
 import org.apache.shiro.authc.credential.CredentialsMatcher
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.crypto.hash.SimpleHash
@@ -56,9 +55,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected Map<String, Map<String, Object>> artifactHitBinByType = new HashMap()
 
     protected Map<String, WebappInfo> webappInfoMap = new HashMap()
-
-    /** The server object for Redstone XML-RPC; to be shared by various things, especially ServiceXmlRpcDispatchers. */
-    protected XmlRpcServer xmlRpcServer = new XmlRpcServer()
 
     /** The SecurityManager for Apache Shiro */
     protected org.apache.shiro.mgt.SecurityManager internalSecurityManager
@@ -340,7 +336,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     String getRuntimePath() { return runtimePath }
     Node getConfXmlRoot() { return confXmlRoot }
-    XmlRpcServer getXmlRpcServer() { return xmlRpcServer }
 
     org.apache.shiro.mgt.SecurityManager getSecurityManager() {
         if (internalSecurityManager != null) return internalSecurityManager

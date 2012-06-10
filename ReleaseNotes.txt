@@ -21,6 +21,9 @@ This release includes:
   variations; using this option will result in an EntityListIterator being
   used instead of letting the database handle the partial results
 - Added configuration for MS SQL Server database
+- Replaced Redstone XML-RPC library with Apache XML-RPC to eliminate the
+  LGPL library so that Moqui can be used in Apache and similarly licensed
+  projects (including Apache OFBiz)
 - Updated Apache Derby to 10.8.2.2, Apache Jackrabbit to 2.4.1, Apache
   Log4J to 1.2.17, Apache Shiro to 1.2.0, Atomikos to 3.8.0, ehcache to
   2.5.2, FreeMarker to 2.3.19, Groovy to 2.0.0-rc-2, Quartz Scheduler to

@@ -9,75 +9,164 @@ package org.moqui.impl.service
  *
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
- *
- * Based on Redstone XML-RPC which is Copyright (c) 2005 Redstone Handelsbolag
- * which is licensed under the GNU LGPL license.
  */
 
-import org.moqui.impl.context.ExecutionContextImpl;
+import org.apache.xmlrpc.XmlRpcException
+import org.apache.xmlrpc.XmlRpcHandler
+import org.apache.xmlrpc.XmlRpcRequest
+import org.apache.xmlrpc.common.ServerStreamConnection
+import org.apache.xmlrpc.common.XmlRpcHttpRequestConfig
+import org.apache.xmlrpc.common.XmlRpcHttpRequestConfigImpl
+import org.apache.xmlrpc.server.AbstractReflectiveHandlerMapping
+import org.apache.xmlrpc.server.XmlRpcHttpServer
+import org.apache.xmlrpc.server.XmlRpcHttpServerConfig
+import org.apache.xmlrpc.server.XmlRpcNoSuchHandlerException
+import org.apache.xmlrpc.util.HttpUtil
 
-import redstone.xmlrpc.XmlRpcParser
-import redstone.xmlrpc.XmlRpcServer
-import redstone.xmlrpc.XmlRpcException
-import redstone.xmlrpc.XmlRpcMessages
-import redstone.xmlrpc.XmlRpcFault
+import org.moqui.impl.context.ExecutionContextImpl
 
-public class ServiceXmlRpcDispatcher extends XmlRpcParser {
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+public class ServiceXmlRpcDispatcher extends XmlRpcHttpServer {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceXmlRpcDispatcher.class)
 
-    protected XmlRpcServer server
     protected ExecutionContextImpl eci
 
-    protected String methodName
-    protected List arguments = new ArrayList()
-
     public ServiceXmlRpcDispatcher(ExecutionContextImpl eci) {
-        this.server = eci.ecfi.xmlRpcServer
         this.eci = eci
+        this.setHandlerMapping(new ServiceRpcHandler())
     }
 
-    public void dispatch(InputStream xmlInput, Writer responseOutput) throws XmlRpcException {
-        // Parse the inbound XML-RPC message. May throw an exception.
-        parse(xmlInput)
+    public void dispatch(HttpServletRequest request, HttpServletResponse response) throws XmlRpcException {
+        this.execute(this.getXmlRpcConfig(request), new HttpStreamConnection(request, response))
+    }
 
-        try {
+
+    @Override
+    protected void setResponseHeader(ServerStreamConnection con, String header, String value) {
+        ((HttpStreamConnection) con).getResponse().setHeader(header, value)
+    }
+
+    protected XmlRpcHttpRequestConfig getXmlRpcConfig(HttpServletRequest request) {
+        XmlRpcHttpRequestConfigImpl result = new XmlRpcHttpRequestConfigImpl()
+        XmlRpcHttpServerConfig serverConfig = (XmlRpcHttpServerConfig) getConfig()
+
+        result.setBasicEncoding(serverConfig.getBasicEncoding())
+        result.setContentLengthOptional(serverConfig.isContentLengthOptional())
+        result.setEnabledForExtensions(serverConfig.isEnabledForExtensions())
+        result.setGzipCompressing(HttpUtil.isUsingGzipEncoding(request.getHeader("Content-Encoding")))
+        result.setGzipRequesting(HttpUtil.isUsingGzipEncoding(request.getHeaders("Accept-Encoding")))
+        result.setEncoding(request.getCharacterEncoding())
+        // result.setEnabledForExceptions(serverConfig.isEnabledForExceptions())
+        HttpUtil.parseAuthorization(result, request.getHeader("Authorization"))
+
+        // result.setEnabledForExtensions(true)
+        // result.setEnabledForExceptions(true)
+
+        return result
+    }
+
+    class MoquiXmlRpcAuthHandler implements AbstractReflectiveHandlerMapping.AuthenticationHandler {
+        public boolean isAuthorized(XmlRpcRequest xmlRpcRequest) throws XmlRpcException {
+            XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) xmlRpcRequest.getConfig()
+
+            ServiceDefinition sd = eci.getService().getServiceDefinition(xmlRpcRequest.getMethodName())
+            if (sd != null && sd.getAuthenticate() == "true") {
+                return eci.user.loginUser(config.getBasicUserName(), config.getBasicPassword(), null)
+            } else {
+                return true
+            }
+        }
+    }
+
+    class ServiceRpcHandler extends AbstractReflectiveHandlerMapping implements XmlRpcHandler {
+
+        public ServiceRpcHandler() {
+            this.setAuthenticationHandler(new MoquiXmlRpcAuthHandler())
+        }
+
+        @Override
+        public XmlRpcHandler getHandler(String method) throws XmlRpcNoSuchHandlerException, XmlRpcException {
+            ServiceDefinition sd = eci.getService().getServiceDefinition(method)
+            if (sd == null) throw new XmlRpcNoSuchHandlerException("Service not found: [" + method + "]")
+            return this
+        }
+
+        public Object execute(XmlRpcRequest xmlRpcReq) throws XmlRpcException {
+            String methodName = xmlRpcReq.getMethodName()
+
             ServiceDefinition sd = eci.service.getServiceDefinition(methodName)
             if (sd == null)
-                throw new IllegalArgumentException("Received XML-RPC service call for unknown service [${methodName}]")
+                throw new XmlRpcException("Received XML-RPC service call for unknown service [${methodName}]")
             if (sd.serviceNode."@allow-remote" != "true")
-                throw new IllegalArgumentException("Received XML-RPC service call to service [${sd.serviceName}] that does not allow remote calls.")
+                throw new XmlRpcException("Received XML-RPC service call to service [${sd.serviceName}] that does not allow remote calls.")
 
-            Map params = (Map) arguments.get(0)
+            Map params = this.getParameters(xmlRpcReq, methodName)
+
+            XmlRpcHttpRequestConfig config = (XmlRpcHttpRequestConfig) xmlRpcReq.getConfig()
+            if (config.getBasicUserName() && eci.user.userId != config.getBasicUserName()) {
+                params.put("authUsername", config.getBasicUserName())
+                params.put("authPassword", config.getBasicPassword())
+            }
 
             Map result = eci.service.sync().name(sd.serviceName).parameters(params).call()
-
-            // write the return to the responseOutput
-            if (result) {
-                server.getSerializer().writeEnvelopeHeader(result, responseOutput)
-                server.getSerializer().serialize(result, responseOutput)
-                server.getSerializer().writeEnvelopeFooter(result, responseOutput)
+            if (eci.message.errors) {
+                throw new XmlRpcException(eci.message.errorsString)
             }
-        } catch (Throwable t) {
-            int code = -1;
-            if (t instanceof XmlRpcFault) code = ((XmlRpcFault) t).getErrorCode()
-            writeError(code, t.getClass().getName() + ": " + t.getMessage(), responseOutput)
+
+            return result
+        }
+
+        protected Map getParameters(XmlRpcRequest xmlRpcRequest, String methodName) throws XmlRpcException {
+            ServiceDefinition sd = eci.service.getServiceDefinition(methodName)
+
+            Map parameters = new HashMap()
+            int parameterCount = xmlRpcRequest.getParameterCount()
+
+            if (parameterCount > 1) {
+                // assume parameters are in the order they are found in the service definition
+                int x = 0
+                for (String name in sd.getInParameterNames()) {
+                    parameters.put(name, xmlRpcRequest.getParameter(x))
+                    x++
+
+                    if (x == parameterCount) break
+                }
+            } else if (parameterCount == 1) {
+                // hopefully it's a Map or the service takes just one parameter...
+                Object paramZero = xmlRpcRequest.getParameter(0)
+                if (paramZero instanceof Map) {
+                    parameters = paramZero
+                } else {
+                    parameters.put(sd.getInParameterNames().getAt(0), paramZero)
+                }
+            }
+
+            sd.convertValidateCleanParameters(parameters, eci)
+            return parameters
         }
     }
 
-    public void endElement(String uri, String name, String qualifiedName) {
-        if (name.equals("methodName")) methodName = this.consumeCharData()
-        else super.endElement(uri, name, qualifiedName);
-    }
+    class HttpStreamConnection implements ServerStreamConnection {
 
-    protected void handleParsedValue(Object value) { arguments.add(value) }
+        protected HttpServletRequest request
+        protected HttpServletResponse response
 
-    /** Creates an XML-RPC fault struct and puts it into the writer buffer. */
-    protected void writeError(int code, String message, Writer responseOutput) {
-        try {
-            logger.warn(message)
-            this.server.getSerializer().writeError(code, message, responseOutput)
-        } catch (IOException ignore) {
-            logger.error(XmlRpcMessages.getString("XmlRpcDispatcher.ErrorSendingFault"))
+        protected HttpStreamConnection(HttpServletRequest req, HttpServletResponse res) {
+            this.request = req
+            this.response = res
         }
+
+        public HttpServletRequest getRequest() { return request }
+        public HttpServletResponse getResponse() { return response }
+        public InputStream newInputStream() throws IOException { return request.getInputStream() }
+
+        public OutputStream newOutputStream() throws IOException {
+            response.setContentType("text/xml")
+            return response.getOutputStream()
+        }
+
+        public void close() throws IOException { response.getOutputStream().close() }
     }
 }

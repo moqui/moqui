@@ -242,7 +242,7 @@ class WebFacadeImpl implements WebFacade {
     }
 
     void handleXmlRpcServiceCall() {
-        new ServiceXmlRpcDispatcher(eci).dispatch(request.getInputStream(), response.writer)
+        new ServiceXmlRpcDispatcher(eci).dispatch(request, response)
     }
 
     void handleJsonRpcServiceCall() {

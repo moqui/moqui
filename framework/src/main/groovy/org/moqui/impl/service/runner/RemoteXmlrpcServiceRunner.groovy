@@ -11,12 +11,14 @@
  */
 package org.moqui.impl.service.runner
 
+import org.apache.xmlrpc.client.XmlRpcClientConfigImpl
+import org.apache.xmlrpc.client.XmlRpcClient
+import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory
+
+import org.moqui.context.ExecutionContext
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
-import org.moqui.context.ExecutionContext
-
-import redstone.xmlrpc.XmlRpcClient
 
 public class RemoteXmlRpcServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null
@@ -33,8 +35,13 @@ public class RemoteXmlRpcServiceRunner implements ServiceRunner {
         if (!location) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no location specified.")
         if (!method) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no method specified.")
 
-        XmlRpcClient client = new XmlRpcClient(location, false)
-        Object result = client.invoke(method, [parameters])
+        XmlRpcClientConfigImpl config = new XmlRpcClientConfigImpl()
+        config.setServerURL(new URL(location))
+        XmlRpcClient client = new XmlRpcClient()
+        client.setTransportFactory(new XmlRpcCommonsTransportFactory(client))
+        client.setConfig(config)
+
+        Object result = client.execute(method, [parameters])
 
         if (!result) return null
         if (result instanceof Map<String, Object>) {
