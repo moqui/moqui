@@ -24,10 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <path-parameter name="exampleId"/>
         <actions>
             <entity-find-one entity-name="Example" value-field="example"/>
-            <log level="warn" message="Parameters [${ec.web.parameters}] context [${context}] example [${example}]"/>
-            <script>
-                ec.web.sendJsonResponse(example)
-            </script>
+            <script>ec.web.sendJsonResponse(example)</script>
         </actions>
         <default-response type="none"/>
     </transition>
