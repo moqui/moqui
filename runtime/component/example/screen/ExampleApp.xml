@@ -14,8 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         include-child-content="true" require-authentication="false">
 
-    <parameter name="exampleId"/>
-
     <transition name="ExampleEntity" method="get">
         <!-- To test this try something like:
         NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
