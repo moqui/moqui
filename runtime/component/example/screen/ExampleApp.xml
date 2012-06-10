@@ -14,6 +14,24 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         include-child-content="true" require-authentication="false">
 
+    <parameter name="exampleId"/>
+
+    <transition name="ExampleEntity" method="post">
+        <service-call name="create#Example" in-map="ec.web.parameters"
+                      web-send-json-response="true"/>
+        <default-response type="none"/>
+    </transition>
+    <transition name="ExampleEntity" method="put">
+        <service-call name="org.moqui.example.ExampleServices.updateExample" in-map="ec.web.parameters"
+                      web-send-json-response="true"/>
+        <default-response type="none"/>
+    </transition>
+    <transition name="ExampleEntity" method="delete">
+        <service-call name="delete#Example" in-map="ec.web.parameters"
+                      web-send-json-response="true"/>
+        <default-response type="none"/>
+    </transition>
+
     <transition name="LoadAllData">
         <!-- NOTE: this is in the example component because it should NEVER be deployed on a production server! -->
         <actions>

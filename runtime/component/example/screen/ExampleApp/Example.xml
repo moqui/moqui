@@ -14,11 +14,6 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.0.xsd"
         default-menu-title="Example" default-menu-index="1">
 
-    <transition name="Example" method="put">
-        <service-call name="org.moqui.example.ExampleServices.createExample" in-map=""/>
-        <default-response type="none"/>
-    </transition>
-
     <subscreens default-item="FindExample"/>
 
     <widgets>

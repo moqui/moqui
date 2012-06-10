@@ -9,6 +9,17 @@ Version 1.0.2 ... TODO
 
 This release includes:
 
+- JSON representation of a Map sent in an HTTP Request body is treated as
+  additional request parameters (must have a header of "Content-Type:
+  application/json"
+- Added option to service-call tag to send result as a JSON response using
+  the WebFacade.sendJsonResponse() method
+- Added examples of the use of screen transitions for JSON over REST
+  services; see the ExampleApp.xml file
+- If auth* parameters are passed in a JSON body, multi-part body
+  parameters, or in body parameters when there are no URL parameters (query
+  string), then automatically logs in user (similar to behavior of HTTP
+  Basic Authorization with the Authorization header)
 - Support for nested parameter elements in service definitions for
   Map and Node (groovy.util.Node) parameters; the main reason for Node
   support is for XML messages coming in such as the OAGIS ones to be
@@ -41,6 +52,9 @@ Bug Fixes:
 - Fixed NPE when calling update() on an EntityValueImpl with no changes
 - Fixed NPE when there is an error in a request and the web.parameters,
   web.requestAttributes, and web.requestParameters have not been used
+- Fixed authz issue when calling service with auth* parameters
+  (UserAccount, Username, Password, and TenantId) so that login is done
+  before the first authz check to avoid guaranteed failure
 
 ===========================================================================
 Release 1.0.1 - 31 December 2011

@@ -90,6 +90,30 @@ class UserFacadeImpl implements UserFacade {
             String username = basicAuthAsString.substring(0, basicAuthAsString.indexOf(":"))
             String password = basicAuthAsString.substring(basicAuthAsString.indexOf(":") + 1)
             this.loginUser(username, password, null)
+        } else {
+            // try the Moqui-specific parameters for instant login
+            // if we have credentials coming in anywhere other than URL parameters, try logging in
+            String authUsername = null
+            String authPassword = null
+            String authTenantId = null
+            Map multiPartParameters = eci.webFacade.multiPartParameters
+            Map jsonParameters = eci.webFacade.jsonParameters
+            if (multiPartParameters && multiPartParameters.authUsername && multiPartParameters.authPassword) {
+                authUsername = multiPartParameters.authUsername
+                authPassword = multiPartParameters.authPassword
+                authTenantId = multiPartParameters.authTenantId
+            } else if (jsonParameters && jsonParameters.authUsername && jsonParameters.authPassword) {
+                authUsername = jsonParameters.authUsername
+                authPassword = jsonParameters.authPassword
+                authTenantId = jsonParameters.authTenantId
+            } else if (!request.getQueryString() && request.getParameter("authUsername") && request.getParameter("authPassword")) {
+                authUsername = request.getParameter("authUsername")
+                authPassword = request.getParameter("authPassword")
+                authTenantId = request.getParameter("authTenantId")
+            }
+            if (authUsername) {
+                this.loginUser(authUsername, authPassword, authTenantId)
+            }
         }
 
         this.visitId = session.getAttribute("moqui.visitId")

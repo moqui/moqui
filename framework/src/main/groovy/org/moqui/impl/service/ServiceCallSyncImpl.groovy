@@ -100,6 +100,14 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     Map<String, Object> callSingle(Map<String, Object> currentParameters, ServiceDefinition sd, ExecutionContextImpl eci) {
         long callStartTime = System.currentTimeMillis()
 
+        boolean userLoggedIn = false
+
+        // always try to login the user if parameters are specified
+        String userId = currentParameters.authUserAccount?.userId ?: currentParameters.authUsername
+        String password = currentParameters.authUserAccount?.currentPassword ?: currentParameters.authPassword
+        String tenantId = currentParameters.authTenantId
+        if (userId && password) userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
+
         // default to require the "All" authz action, and for special verbs default to something more appropriate
         String authzAction = "AUTHZA_ALL"
         switch (verb) {
@@ -166,18 +174,13 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // if error(s) in parameters, return now with no results
         if (eci.getMessage().getErrors().size() > 0) return null
 
-        boolean userLoggedIn = false
         TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
         Map<String, Object> result = null
         try {
             // authentication
             sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
-            // always try to login the user if parameters are specified
-            String userId = currentParameters.authUserAccount?.userId ?: currentParameters.authUsername
-            String password = currentParameters.authUserAccount?.currentPassword ?: currentParameters.authPassword
-            String tenantId = currentParameters.authTenantId
-            if (userId && password) userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
+            // NOTE: auto user login done above, before first authz check
             if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId())
                 eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
 

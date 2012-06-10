@@ -12,6 +12,7 @@
 package org.moqui.impl.context
 
 import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -27,9 +28,9 @@ import org.apache.commons.io.FileCleaningTracker
 
 import org.moqui.context.WebFacade
 import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
+import org.moqui.impl.service.ServiceJsonRpcDispatcher
 import org.moqui.impl.service.ServiceXmlRpcDispatcher
 import org.moqui.impl.StupidWebUtilities
-import org.moqui.impl.service.ServiceJsonRpcDispatcher
 
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
@@ -42,6 +43,7 @@ class WebFacadeImpl implements WebFacade {
 
     protected Map<String, Object> savedParameters = null
     protected Map<String, Object> multiPartParameters = null
+    protected Map<String, Object> jsonParameters = null
 
     protected ContextStack parameters = null
     protected Map<String, Object> requestAttributes = null
@@ -115,6 +117,19 @@ class WebFacadeImpl implements WebFacade {
                 }
             }
         }
+
+        // if there is a JSON document submitted consider those as parameters too
+        if (request.getHeader("Content-Type") == "application/json") {
+            JsonSlurper slurper = new JsonSlurper()
+            Object jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
+                    (String) request.getCharacterEncoding() ?: "UTF-8")))
+            if (jsonObj instanceof Map) {
+                jsonParameters = new HashMap()
+                for (Map.Entry<String, Object> entry in (Map) jsonObj) {
+                    jsonParameters.put(entry.getKey(), entry.getValue())
+                }
+            }
+        }
     }
 
     ExecutionContextImpl getEci() { eci }
@@ -181,11 +196,14 @@ class WebFacadeImpl implements WebFacade {
     /** @see org.moqui.context.WebFacade#getRequestParameters() */
     Map<String, Object> getRequestParameters() {
         if (requestParameters) return requestParameters
+
         ContextStack cs = new ContextStack()
         if (savedParameters) cs.push(savedParameters)
         if (multiPartParameters) cs.push(multiPartParameters)
+        if (jsonParameters) cs.push(jsonParameters)
         cs.push((Map<String, Object>) request.getParameterMap())
         cs.push(StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))
+
         // NOTE: the CanonicalizeMap cleans up character encodings, and unwraps lists of values with a single entry
         requestParameters = new StupidWebUtilities.CanonicalizeMap(cs)
         return requestParameters
@@ -225,7 +243,7 @@ class WebFacadeImpl implements WebFacade {
 
         if (!jsonStr) return
 
-        response.setContentType("application/x-json")
+        response.setContentType("application/json")
         // NOTE: String.length not correct for byte length
         String charset = response.getCharacterEncoding() ?: "UTF-8"
         int length = jsonStr.getBytes(charset).length
