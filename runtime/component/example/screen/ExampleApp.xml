@@ -16,17 +16,56 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <parameter name="exampleId"/>
 
+    <transition name="ExampleEntity" method="get">
+        <!-- To test this try something like:
+        NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
+        curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/apps/example/ExampleEntity/100010
+        -->
+        <path-parameter name="exampleId"/>
+        <actions>
+            <entity-find-one entity-name="Example" value-field="example"/>
+            <log level="warn" message="Parameters [${ec.web.parameters}] context [${context}] example [${example}]"/>
+            <script>
+                ec.web.sendJsonResponse(example)
+            </script>
+        </actions>
+        <default-response type="none"/>
+    </transition>
     <transition name="ExampleEntity" method="post">
-        <service-call name="create#Example" in-map="ec.web.parameters"
+        <!-- To test this try something like (remove the space between the two dashes in "- -data"):
+
+        curl -X POST -H "Content-Type: application/json" \
+             - -data '{ "exampleName":"REST Test 1", "exampleTypeEnumId":"EXT_MADE_UP", "statusId":"EXST_IN_DESIGN", \
+                 "authUsername":"john.doe", "authPassword":"moqui" }' \
+             http://localhost:8080/apps/example/ExampleEntity
+        -->
+        <service-call name="org.moqui.example.ExampleServices.createExample" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>
     <transition name="ExampleEntity" method="put">
+        <!-- To test this try something like (remove the space between the two dashes in "- -data"):
+
+        curl -X PUT -H "Content-Type: application/json" \
+             - -data '{ "exampleId":"100010", "exampleName":"REST Test 1 - Rev 2", \
+                 "authUsername":"john.doe", "authPassword":"moqui" }' \
+             http://localhost:8080/apps/example/ExampleEntity
+
+        OR (a much better approach):
+
+        curl -X PUT -H "Content-Type: application/json" -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" \
+             - -data '{ "exampleName":"REST Test - Rev 2" }' http://localhost:8080/apps/example/ExampleEntity/100010
+        -->
+        <path-parameter name="exampleId"/>
         <service-call name="org.moqui.example.ExampleServices.updateExample" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
     </transition>
     <transition name="ExampleEntity" method="delete">
+        <!-- To test this try something like:
+        curl -X DELETE -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/apps/example/ExampleEntity/100010
+        -->
+        <path-parameter name="exampleId"/>
         <service-call name="delete#Example" in-map="ec.web.parameters"
                       web-send-json-response="true"/>
         <default-response type="none"/>
@@ -43,11 +82,11 @@ This Work includes contributions authored by David E. Jones, not as a
             // TODO: reject requests until this is done?
 
             // load all the data
-            EntityDataLoader edl = ec.getEntity().makeDataLoader();
+            EntityDataLoader edl = ec.getEntity().makeDataLoader()
 
-            long startTime = System.currentTimeMillis();
-            long records = edl.load();
-            long totalSeconds = (System.currentTimeMillis() - startTime) / 1000;
+            long startTime = System.currentTimeMillis()
+            long records = edl.load()
+            long totalSeconds = (System.currentTimeMillis() - startTime) / 1000
 
             ec.artifactExecution.enableAuthz()
             ]]></script>

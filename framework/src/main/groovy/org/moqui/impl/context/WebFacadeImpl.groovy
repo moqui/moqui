@@ -44,6 +44,7 @@ class WebFacadeImpl implements WebFacade {
     protected Map<String, Object> savedParameters = null
     protected Map<String, Object> multiPartParameters = null
     protected Map<String, Object> jsonParameters = null
+    protected Map<String, Object> declaredPathParameters = null
 
     protected ContextStack parameters = null
     protected Map<String, Object> requestAttributes = null
@@ -164,6 +165,11 @@ class WebFacadeImpl implements WebFacade {
         return requestUrl.toString()
     }
 
+    void addDeclaredPathParameter(String name, String value) {
+        if (declaredPathParameters == null) declaredPathParameters = new HashMap()
+        declaredPathParameters.put(name, value)
+    }
+
     /** @see org.moqui.context.WebFacade#getParameters() */
     Map<String, Object> getParameters() {
         // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread
@@ -201,6 +207,7 @@ class WebFacadeImpl implements WebFacade {
         if (savedParameters) cs.push(savedParameters)
         if (multiPartParameters) cs.push(multiPartParameters)
         if (jsonParameters) cs.push(jsonParameters)
+        if (declaredPathParameters) cs.push(declaredPathParameters)
         cs.push((Map<String, Object>) request.getParameterMap())
         cs.push(StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo()))
 
@@ -238,9 +245,22 @@ class WebFacadeImpl implements WebFacade {
     /** @see org.moqui.context.WebFacade#sendJsonResponse(Object) */
     void sendJsonResponse(Object responseObj) {
         JsonBuilder jb = new JsonBuilder()
-        jb.call(responseObj)
-        String jsonStr = jb.toString()
+        if (eci.message.errors) {
+            // if there are return those
+            Map responseMap = new HashMap()
+            // if the responseObj is a Map add all of it's data
+            if (responseObj instanceof Map) responseMap.putAll((Map) responseObj)
+            responseMap.put("errors", eci.message.errors)
+            jb.call(responseMap)
 
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+        } else {
+            jb.call(responseObj)
+
+            response.setStatus(HttpServletResponse.SC_OK)
+        }
+
+        String jsonStr = jb.toString()
         if (!jsonStr) return
 
         response.setContentType("application/json")

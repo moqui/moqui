@@ -154,6 +154,12 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="path-parameter" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation><xs:documentation>
+                        These are additional path elements after the transition's path element. The values will be added
+                        to the web parameters based on the order of these path-elements.
+                    </xs:documentation></xs:annotation>
+                </xs:element>
                 <xs:element ref="condition" minOccurs="0">
                     <xs:annotation><xs:documentation>
                         This condition is run wherever this transition is referenced in the screen to see if the
@@ -223,6 +229,11 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="path-parameter">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="conditional-response">

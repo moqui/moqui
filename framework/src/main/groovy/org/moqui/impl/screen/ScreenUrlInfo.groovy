@@ -290,6 +290,10 @@ class ScreenUrlInfo {
 
                     this.targetTransition = ti
                     this.targetTransitionActualName = pathName
+
+                    // extra path elements always allowed after transitions for parameters, but we don't want the transition name on it
+                    extraPathNameList.remove(0)
+
                     // if no return above, just break out; a transition means we're at the end
                     break
                 }
@@ -328,7 +332,7 @@ class ScreenUrlInfo {
             // add this to the list of path names to use for transition redirect
             preTransitionPathNameList.add(pathName)
 
-            // made it all the way to here so this was a screen or transition
+            // made it all the way to here so this was a screen
             extraPathNameList.remove(0)
         }
 

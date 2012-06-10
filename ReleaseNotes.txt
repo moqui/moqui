@@ -9,17 +9,6 @@ Version 1.0.2 ... TODO
 
 This release includes:
 
-- JSON representation of a Map sent in an HTTP Request body is treated as
-  additional request parameters (must have a header of "Content-Type:
-  application/json"
-- Added option to service-call tag to send result as a JSON response using
-  the WebFacade.sendJsonResponse() method
-- Added examples of the use of screen transitions for JSON over REST
-  services; see the ExampleApp.xml file
-- If auth* parameters are passed in a JSON body, multi-part body
-  parameters, or in body parameters when there are no URL parameters (query
-  string), then automatically logs in user (similar to behavior of HTTP
-  Basic Authorization with the Authorization header)
 - Support for nested parameter elements in service definitions for
   Map and Node (groovy.util.Node) parameters; the main reason for Node
   support is for XML messages coming in such as the OAGIS ones to be
@@ -40,6 +29,20 @@ This release includes:
   2.5.2, FreeMarker to 2.3.19, Groovy to 2.0.0-rc-2, Quartz Scheduler to
   2.1.5, SLF4J to 1.6.5
 - Tested with latest version of Apache Tomcat (7.0.27)
+- JSON representation of a Map sent in an HTTP Request body is treated as
+  additional request parameters (must have a header of "Content-Type:
+  application/json"
+- Added option to service-call tag to send result as a JSON response using
+  the WebFacade.sendJsonResponse() method
+- If auth* parameters are passed in a JSON body, multi-part body
+  parameters, or in body parameters when there are no URL parameters (query
+  string), then automatically logs in user (similar to behavior of HTTP
+  Basic Authorization with the Authorization header)
+- Added support for declared path-parameters in the URL path under a
+  transition (especially useful for simulating a resource at a URL)
+- Based on the various new features for REST, JSON, and better support of
+  Web standards, added examples of the use of screen transitions for JSON
+  over REST services; see the ExampleApp.xml file
 
 Bug Fixes:
 
@@ -55,6 +58,8 @@ Bug Fixes:
 - Fixed authz issue when calling service with auth* parameters
   (UserAccount, Username, Password, and TenantId) so that login is done
   before the first authz check to avoid guaranteed failure
+- Fixed WebFacade.sendJsonResponse() to return ec.messages.errors if there
+  are errors instead of ignoring them
 
 ===========================================================================
 Release 1.0.1 - 31 December 2011

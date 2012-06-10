@@ -86,10 +86,14 @@ class UserFacadeImpl implements UserFacade {
         String authzHeader = request.getHeader("Authorization")
         if (authzHeader && authzHeader.substring(0, 6).equals("Basic ")) {
             String basicAuthEncoded = authzHeader.substring(6).trim()
-            String basicAuthAsString = basicAuthEncoded.decodeBase64()
-            String username = basicAuthAsString.substring(0, basicAuthAsString.indexOf(":"))
-            String password = basicAuthAsString.substring(basicAuthAsString.indexOf(":") + 1)
-            this.loginUser(username, password, null)
+            String basicAuthAsString = new String(basicAuthEncoded.decodeBase64())
+            if (basicAuthAsString.indexOf(":") > 0) {
+                String username = basicAuthAsString.substring(0, basicAuthAsString.indexOf(":"))
+                String password = basicAuthAsString.substring(basicAuthAsString.indexOf(":") + 1)
+                this.loginUser(username, password, null)
+            } else {
+                logger.warn("For HTTP Basic Authorization got bad credentials string. Base64 encoded is [${basicAuthEncoded}] and after decoding is [${basicAuthAsString}].")
+            }
         } else {
             // try the Moqui-specific parameters for instant login
             // if we have credentials coming in anywhere other than URL parameters, try logging in

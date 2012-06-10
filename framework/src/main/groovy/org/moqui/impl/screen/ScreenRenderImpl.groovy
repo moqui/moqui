@@ -225,6 +225,23 @@ class ScreenRenderImpl implements ScreenRender {
                             new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
                 }
 
+                if (screenUrlInfo.getExtraPathNameList() && screenUrlInfo.targetTransition.getPathParameterList()) {
+                    List<String> pathParameterList = screenUrlInfo.targetTransition.getPathParameterList()
+                    int i = 0
+                    for (String extraPathName in screenUrlInfo.getExtraPathNameList()) {
+                        if (pathParameterList.size() > i) {
+                            if (ec.web) {
+                                ec.web.addDeclaredPathParameter(pathParameterList.get(i), extraPathName)
+                            } else {
+                                ec.context.put(extraPathName, pathParameterList.get(i))
+                            }
+                            i++
+                        } else {
+                            break
+                        }
+                    }
+                }
+
                 ri = screenUrlInfo.targetTransition.run(this)
 
                 for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()

@@ -273,6 +273,7 @@ class ScreenDefinition {
         protected XmlAction condition = null
         protected XmlAction actions = null
         protected String singleServiceName = null
+        protected List<String> pathParameterList = null
 
         protected List<ResponseItem> conditionalResponseList = new ArrayList<ResponseItem>()
         protected ResponseItem defaultResponse = null
@@ -283,6 +284,13 @@ class ScreenDefinition {
             name = transitionNode."@name"
             method = transitionNode."@method" ?: "any"
             location = "${parentScreen.location}.transition_${StupidUtilities.cleanStringForJavaName(name)}"
+
+            // path-parameter
+            if (transitionNode."path-parameter") {
+                pathParameterList = new ArrayList()
+                for (Node pathParameterNode in transitionNode."path-parameter") pathParameterList.add(pathParameterNode."@name")
+            }
+
             // condition
             if (transitionNode.condition?.getAt(0)?.children()) {
                 // the script is effectively the first child of the condition element
@@ -312,6 +320,7 @@ class ScreenDefinition {
         String getName() { return name }
         String getMethod() { return method }
         String getSingleServiceName() { return singleServiceName }
+        List<String> getPathParameterList() { return pathParameterList }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
