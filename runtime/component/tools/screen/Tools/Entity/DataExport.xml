@@ -51,7 +51,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <widgets>
-        <form-single name="ImportData" transition="EntityExport.xml">
+        <form-single name="ExportData" transition="EntityExport.xml">
             <field name="entityNames">
                 <default-field><drop-down allow-multiple="true" size="20">
                     <list-options list="ec.entity.getAllEntitiesInfo('entityName', false)" key="${entityName}"/>
@@ -72,7 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </radio></default-field>
             </field>
 
-            <field name="submitButton"><default-field><submit/></default-field></field>
+            <field name="submitButton"><default-field title="Export"><submit/></default-field></field>
         </form-single>
     </widgets>
 </screen>
