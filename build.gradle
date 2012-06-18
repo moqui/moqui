@@ -10,12 +10,10 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
-dependsOnChildren()
-
 allprojects { version = '1.0.2' }
 
-tomcatHome = '../apache-tomcat-7.0.27'
-warName = 'moqui-' + version + '.war'
+def tomcatHome = '../apache-tomcat-7.0.27'
+def warName = 'moqui-' + version + '.war'
 
 // ========== clean tasks ==========
 
