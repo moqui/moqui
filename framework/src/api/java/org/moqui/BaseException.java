@@ -58,7 +58,8 @@ public class BaseException extends RuntimeException {
             String cn = ste.getClassName();
             if (cn.startsWith("freemarker.core.") || cn.startsWith("freemarker.ext.beans.") ||
                     cn.startsWith("java.lang.reflect.") || cn.startsWith("sun.reflect.") ||
-                    cn.startsWith("org.codehaus.groovy.runtime.") || cn.startsWith("org.codehaus.groovy.reflection.")) {
+                    cn.startsWith("org.codehaus.groovy.runtime.") || cn.startsWith("org.codehaus.groovy.reflection.") ||
+                    cn.startsWith("groovy.lang.")) {
                 continue;
             }
             if ("renderSingle".equals(ste.getMethodName()) && cn.startsWith("org.moqui.impl.screen.ScreenSection")) continue;

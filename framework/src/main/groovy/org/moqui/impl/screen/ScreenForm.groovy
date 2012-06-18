@@ -30,9 +30,14 @@ import org.moqui.entity.EntityException
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.entity.EntityCondition
 import java.sql.Timestamp
+import org.moqui.impl.entity.EntityListImpl
+import org.moqui.BaseException
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
+
+    protected static final Set<String> fieldAttributeNames = new HashSet<String>(["name", "entry-name", "hide", "validate-service", "validate-parameter"])
+    protected static final Set<String> subFieldAttributeNames = new HashSet<String>(["title", "tooltip", "red-when"])
 
     protected ExecutionContextFactoryImpl ecfi
     protected ScreenDefinition sd
@@ -40,23 +45,38 @@ class ScreenForm {
     protected String location
     protected Boolean isUploadForm = null
     protected Boolean isFormHeaderFormVal = null
+    protected boolean hasDbExtensions = false
     protected boolean isDynamic = false
 
     protected XmlAction rowActions = null
+
+    protected Map<String, Node> dbFormNodeById = null
 
     ScreenForm(ExecutionContextFactoryImpl ecfi, ScreenDefinition sd, Node baseFormNode, String location) {
         this.ecfi = ecfi
         this.sd = sd
         this.location = location
 
+        // is this a dynamic form?
         isDynamic = (baseFormNode."@dynamic" == "true")
 
-        if (!isDynamic) {
+        // does this form have DbForm extensions?
+        boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+        try {
+            String fullFormName = sd.getLocation() + "#" + baseFormNode."@name"
+            EntityList dbFormLookupList = this.ecfi.getEntityFacade().makeFind("DbFormLookup")
+                    .condition("modifyXmlScreenForm", fullFormName).useCache(true).list()
+            if (dbFormLookupList) hasDbExtensions = true
+        } finally {
+            if (!alreadyDisabled) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+
+        if (isDynamic) {
+            internalFormNode = baseFormNode
+        } else {
             // setting parent to null so that this isn't found in addition to the literal form-* element
             internalFormNode = new Node(null, baseFormNode.name())
             initForm(baseFormNode, internalFormNode)
-        } else {
-            internalFormNode = baseFormNode
         }
     }
 
@@ -145,38 +165,188 @@ class ScreenForm {
         }
     }
 
+    List<Node> getDbFormNodeList() {
+        if (!hasDbExtensions) return null
+
+        boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+        try {
+            // find DbForm records and merge them in as well
+            String formName = sd.getLocation() + "#" + internalFormNode."@name"
+            EntityList dbFormLookupList = this.ecfi.getEntityFacade().makeFind("DbFormLookup")
+                    .condition("userGroupId", EntityCondition.ComparisonOperator.IN, ecfi.getExecutionContext().getUser().getUserGroupIdSet())
+                    .condition("modifyXmlScreenForm", formName)
+                    .useCache(true).list()
+            // logger.warn("TOREMOVE: looking up DbForms for form [${formName}], found: ${dbFormLookupList}")
+
+            if (!dbFormLookupList) return null
+
+            List<Node> formNodeList = new ArrayList<Node>()
+            for (EntityValue dbFormLookup in dbFormLookupList) formNodeList.add(getDbFormNode(dbFormLookup.getString("formId")))
+
+            return formNodeList
+        } finally {
+            if (!alreadyDisabled) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+    }
+    Node getDbFormNode(String formId) {
+        if (dbFormNodeById == null) dbFormNodeById = new HashMap<String, Node>()
+        Node dbFormNode = dbFormNodeById.get(formId)
+
+        if (dbFormNode == null) {
+            EntityValue dbForm = ecfi.getEntityFacade().makeFind("DbForm").condition("formId", formId).useCache(true).one()
+            dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"),null)
+
+            EntityList dbFormFieldList = ecfi.getEntityFacade().makeFind("DbFormField").condition("formId", formId)
+                    .useCache(true).list()
+            for (EntityValue dbFormField in dbFormFieldList) {
+                String fieldName = dbFormField.fieldName
+                Node newFieldNode = new Node(null, "field", [name:fieldName])
+                if (dbFormField.entryName) newFieldNode.attributes().put("entry-name", dbFormField.entryName)
+                Node subFieldNode = newFieldNode.appendNode("default-field", [:])
+                if (dbFormField.title) subFieldNode.attributes().put("title", dbFormField.title)
+
+                String fieldType = dbFormField.fieldTypeEnumId
+                if (!fieldType) throw new IllegalArgumentException("DbFormField record with formId [${formId}] and fieldName [${fieldName}] has no fieldTypeEnumId")
+
+                String widgetName = fieldType.substring(6)
+                Node widgetNode = subFieldNode.appendNode(widgetName, [:])
+
+                EntityList dbFormFieldAttributeList = ecfi.getEntityFacade().makeFind("DbFormFieldAttribute")
+                        .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
+                for (EntityValue dbFormFieldAttribute in dbFormFieldAttributeList) {
+                    String attributeName = dbFormFieldAttribute.attributeName
+                    if (fieldAttributeNames.contains(attributeName)) {
+                        newFieldNode.attributes().put(attributeName, dbFormFieldAttribute.value)
+                    } else if (subFieldAttributeNames.contains(attributeName)) {
+                        subFieldNode.attributes().put(attributeName, dbFormFieldAttribute.value)
+                    } else {
+                        widgetNode.attributes().put(attributeName, dbFormFieldAttribute.value)
+                    }
+                }
+
+                // add option settings when applicable
+                EntityList dbFormFieldOptionList = ecfi.getEntityFacade().makeFind("DbFormFieldOption")
+                        .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
+                EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().makeFind("DbFormFieldEntOpts")
+                        .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
+                EntityList combinedOptionList = new EntityListImpl(ecfi.getEntityFacade())
+                combinedOptionList.addAll(dbFormFieldOptionList)
+                combinedOptionList.addAll(dbFormFieldEntOptsList)
+                combinedOptionList.orderByFields(["sequenceNum"])
+
+                for (EntityValue optionValue in combinedOptionList) {
+                    if (optionValue.getEntityName() == "DbFormFieldOption") {
+                        widgetNode.appendNode("option", [key:optionValue.keyValue, text:optionValue.text])
+                    } else {
+                        Node entityOptionsNode = widgetNode.appendNode("entity-options", [text:(optionValue.text ?: "\${description}")])
+                        Node entityFindNode = entityOptionsNode.appendNode("entity-find", ["entity-name":optionValue.entityName])
+
+                        EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().makeFind("DbFormFieldEntOptsCond")
+                                .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
+                                .useCache(true).list()
+                        for (EntityValue dbFormFieldEntOptsCond in dbFormFieldEntOptsCondList) {
+                            entityFindNode.appendNode("econdition", ["field-name":dbFormFieldEntOptsCond.entityFieldName, value:dbFormFieldEntOptsCond.value])
+                        }
+
+                        EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().makeFind("DbFormFieldEntOptsOrder")
+                                .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
+                                .orderBy("orderSequenceNum").useCache(true).list()
+                        for (EntityValue dbFormFieldEntOptsOrder in dbFormFieldEntOptsOrderList) {
+                            entityFindNode.appendNode("order-by", ["field-name":dbFormFieldEntOptsOrder.entityFieldName])
+                        }
+                    }
+                }
+
+                // logger.warn("TOREMOVE Adding DbForm field [${fieldName}] widgetName [${widgetName}] at layout sequence [${dbFormField.getLong("layoutSequenceNum")}], node: ${newFieldNode}")
+                if (dbFormField.getLong("layoutSequenceNum") != null) {
+                    newFieldNode.attributes().put("layoutSequenceNum", dbFormField.getLong("layoutSequenceNum"))
+                }
+                mergeFieldNode(dbFormNode, newFieldNode, false)
+            }
+
+            dbFormNodeById.put(formId, dbFormNode)
+        }
+
+        return dbFormNode
+    }
+
     Node getFormNode() {
+        // NOTE: this is cached in the ScreenRenderImpl as it may be called multiple times for a single form render
+        List<Node> dbFormNodeList = getDbFormNodeList()
         if (isDynamic) {
-            // NOTE: maybe cache this within the context or something as it may be called multiple times for a single form render
             Node newFormNode = new Node(null, internalFormNode.name())
             initForm(internalFormNode, newFormNode)
+            if (dbFormNodeList) {
+                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false)
+            }
             return newFormNode
         } else {
-            return internalFormNode
+            if (dbFormNodeList) {
+                Node newFormNode = new Node(null, internalFormNode.name(), [:])
+                // deep copy true to avoid bleed over of new fields and such
+                mergeFormNodes(newFormNode, internalFormNode, true)
+                // logger.warn("TOREMOVE: merging in dbFormNodeList: ${dbFormNodeList}", new BaseException("getFormNode call location"))
+                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false)
+                return newFormNode
+            } else {
+                return internalFormNode
+            }
         }
     }
 
-    boolean isUpload() {
+    FtlNodeWrapper getFtlFormNode() { return FtlNodeWrapper.wrapNode(getFormNode()) }
+
+    boolean isUpload(Node cachedFormNode) {
         if (isUploadForm != null) return isUploadForm
+
         // if there is a "file" element, then it's an upload form
-        isUploadForm = formNode.depthFirst().find({ it.name() == "file" }) as boolean
-        return isUploadForm
+        boolean internalFileNode = internalFormNode.depthFirst().find({ it.name() == "file" }) as boolean
+        if (internalFileNode) {
+            isUploadForm = true
+            return true
+        } else {
+            if (isDynamic || hasDbExtensions) {
+                Node testNode = cachedFormNode ?: getFormNode()
+                return testNode.depthFirst().find({ it.name() == "file" }) as boolean
+            } else {
+                return false
+            }
+        }
     }
-    boolean isFormHeaderForm() {
+    boolean isFormHeaderForm(Node cachedFormNode) {
         if (isFormHeaderFormVal != null) return isFormHeaderFormVal
+
         // if there is a "file" element, then it's an upload form
-        isFormHeaderFormVal = false
-        for (Node hfNode in formNode.depthFirst().findAll({ it.name() == "header-field" })) {
+        boolean internalFormHeaderFormVal = false
+        for (Node hfNode in internalFormNode.depthFirst().findAll({ it.name() == "header-field" })) {
             if (hfNode.children()) {
-                isFormHeaderFormVal = true
+                internalFormHeaderFormVal = true
                 break
             }
         }
-        return isFormHeaderFormVal
+        if (internalFormHeaderFormVal) {
+            isFormHeaderFormVal = true
+            return true
+        } else {
+            if (isDynamic || hasDbExtensions) {
+                boolean extFormHeaderFormVal = false
+                Node testNode = cachedFormNode ?: getFormNode()
+                for (Node hfNode in testNode.depthFirst().findAll({ it.name() == "header-field" })) {
+                    if (hfNode.children()) {
+                        extFormHeaderFormVal = true
+                        break
+                    }
+                }
+                return extFormHeaderFormVal
+            } else {
+                return false
+            }
+        }
     }
 
-    Node getFieldInParameterNode(String fieldName) {
-        Node fieldNode = (Node) formNode."field".find({ it.@name == fieldName })
+    Node getFieldInParameterNode(String fieldName, Node cachedFormNode) {
+        Node formNodeToUse = cachedFormNode ?: getFormNode()
+        Node fieldNode = (Node) formNodeToUse."field".find({ it.@name == fieldName })
         if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
         if (fieldNode."@validate-service") {
             ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(fieldNode."@validate-service")
@@ -428,7 +598,7 @@ class ScreenForm {
     }
 
     protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode, boolean deepCopy) {
-        baseFormNode.attributes().putAll(overrideFormNode.attributes())
+        if (overrideFormNode.attributes()) baseFormNode.attributes().putAll(overrideFormNode.attributes())
 
         // if overrideFormNode has any row-actions add them all to the ones of the baseFormNode, ie both will run
         if (overrideFormNode."row-actions") {
@@ -476,13 +646,32 @@ class ScreenForm {
             }
         } else {
             baseFormNode.append(deepCopy ? StupidUtilities.deepCopyNode(overrideFieldNode) : overrideFieldNode)
+            // this is a new field... if the form has a field-layout element add a reference under that too
+            if (baseFormNode."field-layout") {
+                Node fieldLayoutNode = baseFormNode."field-layout"[0]
+                Long layoutSequenceNum = overrideFieldNode.attribute("layoutSequenceNum")
+                if (layoutSequenceNum == null) {
+                    fieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
+                } else {
+                    baseFormNode.remove(fieldLayoutNode)
+                    Node newFieldLayoutNode = baseFormNode.appendNode("field-layout", fieldLayoutNode.attributes())
+                    int index = 0
+                    for (Node child in fieldLayoutNode.children()) {
+                        if (index == layoutSequenceNum)
+                            newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
+                        newFieldLayoutNode.append(child)
+                        index++
+                    }
+                }
+            }
         }
     }
 
     void runFormListRowActions(ScreenRenderImpl sri, Object listEntry) {
         // NOTE: this runs in a pushed-/sub-context, so just drop it in and it'll get cleaned up automatically
-        if (formNode."@list-entry") {
-            sri.ec.context.put(formNode."@list-entry", listEntry)
+        Node localFormNode = getFormNode()
+        if (localFormNode."@list-entry") {
+            sri.ec.context.put(localFormNode."@list-entry", listEntry)
         } else {
             if (listEntry instanceof Map) {
                 sri.ec.context.putAll((Map) listEntry)
@@ -492,8 +681,6 @@ class ScreenForm {
         }
         if (rowActions) rowActions.run(sri.ec)
     }
-
-    FtlNodeWrapper getFtlFormNode() { return FtlNodeWrapper.wrapNode(formNode) }
 
     static ListOrderedMap getFieldOptions(Node widgetNode, ExecutionContext ec) {
         Node fieldNode = widgetNode.parent().parent()

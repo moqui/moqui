@@ -20,4 +20,22 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="description"/>
     <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="sequenceNum"/>
     <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" fieldAlias="typeDescription" fieldName="description"/>
+
+    <!-- This is an example of a field override and a field addition using DbForm -->
+    <moqui.screen.form.DbForm formId="ExampleAdmin" isListForm="N"
+        modifyXmlScreenForm="component://example/screen/ExampleApp/Example/EditExample.xml#UpdateExample"/>
+    <moqui.screen.form.DbFormUserGroup formId="ExampleAdmin" userGroupId="ADMIN"/>
+    <moqui.screen.form.DbFormField formId="ExampleAdmin" fieldName="exampleTypeEnumId" fieldTypeEnumId="DBFFT_drop-down"/>
+    <moqui.screen.form.DbFormFieldOption formId="ExampleAdmin" fieldName="exampleTypeEnumId" sequenceNum="1"
+        keyValue="_NA_" text="Example DB Option (N/A)"/>
+    <moqui.screen.form.DbFormFieldEntOpts formId="ExampleAdmin" fieldName="exampleTypeEnumId" sequenceNum="2"
+        entityName="moqui.basic.Enumeration" text="${description}"/>
+    <moqui.screen.form.DbFormFieldEntOptsCond formId="ExampleAdmin" fieldName="exampleTypeEnumId" sequenceNum="2"
+        entityFieldName="enumTypeId" value="ExampleType"/>
+    <moqui.screen.form.DbFormFieldEntOptsOrder formId="ExampleAdmin" fieldName="exampleTypeEnumId" sequenceNum="2"
+        orderSequenceNum="1" entityFieldName="description"/>
+    <moqui.screen.form.DbFormField formId="ExampleAdmin" fieldName="dbTestLabel" title="DB Test"
+        fieldTypeEnumId="DBFFT_label" layoutSequenceNum="1"/>
+    <moqui.screen.form.DbFormFieldAttribute formId="ExampleAdmin" fieldName="dbTestLabel" attributeName="text"
+        value="This label is from a DbFormField"/>
 </entity-facade-xml>

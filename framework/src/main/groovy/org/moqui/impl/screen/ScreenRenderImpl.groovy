@@ -71,6 +71,8 @@ class ScreenRenderImpl implements ScreenRender {
     protected Writer internalWriter = null
     protected Writer afterFormWriter = null
 
+    protected Map<String, Node> screenFormNodeCache = new HashMap()
+
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
     }
@@ -623,19 +625,37 @@ class ScreenRenderImpl implements ScreenRender {
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
         return ""
     }
-    FtlNodeWrapper getFtlFormNode(String formName) {
+    Node getFormNode(String formName) {
         ScreenDefinition sd = getActiveScreenDef()
-        ScreenForm form = sd.getForm(formName)
-        if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
-        return form.ftlFormNode
+        String nodeCacheKey = sd.getLocation() + "#" + formName
+        // NOTE: this is cached in the context of the renderer for multiple accesses; because of form overrides may not
+        // be valid outside the scope of a single screen render
+        Node formNode = screenFormNodeCache.get(nodeCacheKey)
+        if (formNode == null) {
+            ScreenForm form = sd.getForm(formName)
+            if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+            formNode = form.getFormNode()
+            screenFormNodeCache.put(nodeCacheKey, formNode)
+        }
+        return formNode
+    }
+    FtlNodeWrapper getFtlFormNode(String formName) {
+        return FtlNodeWrapper.wrapNode(getFormNode(formName))
     }
 
-    boolean isFormUpload(String formName) { return getActiveScreenDef().getForm(formName).isUpload() }
-    boolean isFormHeaderForm(String formName) { return getActiveScreenDef().getForm(formName).isFormHeaderForm() }
+    boolean isFormUpload(String formName) {
+        Node cachedFormNode = this.getFormNode(formName)
+        return getActiveScreenDef().getForm(formName).isUpload(cachedFormNode)
+    }
+    boolean isFormHeaderForm(String formName) {
+        Node cachedFormNode = this.getFormNode(formName)
+        return getActiveScreenDef().getForm(formName).isFormHeaderForm(cachedFormNode)
+    }
 
     String getFormFieldValidationClasses(String formName, String fieldName) {
         ScreenForm form = getActiveScreenDef().getForm(formName)
-        Node parameterNode = form.getFieldInParameterNode(fieldName)
+        Node cachedFormNode = getFormNode(formName)
+        Node parameterNode = form.getFieldInParameterNode(fieldName, cachedFormNode)
         if (parameterNode == null) return ""
 
         Set<String> vcs = new HashSet()

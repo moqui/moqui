@@ -9,6 +9,7 @@ Version 1.0.2 ... TODO
 
 This release includes:
 
+- Updated *.gradle build files for Gradle 1.0
 - Support for nested parameter elements in service definitions for
   Map and Node (groovy.util.Node) parameters; the main reason for Node
   support is for XML messages coming in such as the OAGIS ones to be
@@ -43,6 +44,10 @@ This release includes:
 - Based on the various new features for REST, JSON, and better support of
   Web standards, added examples of the use of screen transitions for JSON
   over REST services; see the ExampleApp.xml file
+- Implemented initial version of DbForm feature with support for extending
+  forms defined in XML Screen files; includes example extending the
+  UpdateExample form on the EditExample screen; for details see the DbForm
+  and related entities, and the example in the ExampleTypeData.xml
 
 Bug Fixes:
 
