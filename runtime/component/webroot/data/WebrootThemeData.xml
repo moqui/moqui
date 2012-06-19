@@ -21,7 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-1.8.21.min.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-timepicker-addon-0.9.9.js"/>
+                         resourceValue="/js/jquery-ui-timepicker-addon-1.0.0.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-combobox.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
@@ -43,7 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-1.8.21.min.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-timepicker-addon-0.9.9.js"/>
+                         resourceValue="/js/jquery-ui-timepicker-addon-1.0.0.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
                          resourceValue="/js/jquery-ui-combobox.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
