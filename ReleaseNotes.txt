@@ -2,14 +2,22 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.0.2 - Date Not Yet Decided
+Release 1.1.0 - 30 June 2012
 ===========================================================================
 
-Version 1.0.2 ... TODO
+Version 1.1.0 includes various bug fixes and library updates. It is also a
+minor new feature release with added functionality for anonymous authz,
+enhanced JSON and REST web service support, and XML Form extension with
+database records (DbForm* entities) for all users or particular users.
+
+This version also replaces the only LGPL library (Restone XML-RPC) in Moqui
+Framework with an Apache licensed library (Apache XML-RPC). This makes
+Moqui compatible with licensing requirements for projects that are part of
+the Apache Software Foundation (including Apache OFBiz).
 
 This release includes:
 
-- Updated *.gradle build files for Gradle 1.0
+- Updated *.gradle build files for the recently released Gradle 1.0
 - Support for nested parameter elements in service definitions for
   Map and Node (groovy.util.Node) parameters; the main reason for Node
   support is for XML messages coming in such as the OAGIS ones to be
@@ -34,7 +42,7 @@ This release includes:
 - Tested with latest version of Apache Tomcat (7.0.27)
 - JSON representation of a Map sent in an HTTP Request body is treated as
   additional request parameters (must have a header of "Content-Type:
-  application/json"
+  application/json")
 - Added option to service-call tag to send result as a JSON response using
   the WebFacade.sendJsonResponse() method
 - If auth* parameters are passed in a JSON body, multi-part body
