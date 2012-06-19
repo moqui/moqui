@@ -185,7 +185,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="toStatusId" related-field-name="statusId"/>
         </member-entity>
         <alias-all entity-alias="SVC"/>
-        <alias-all entity-alias="SI"/>
+        <alias-all entity-alias="SI"><exclude field="statusId"/></alias-all>
         <relationship type="one" related-entity-name="moqui.basic.StatusValidChange"/>
         <relationship type="one" related-entity-name="moqui.basic.StatusItem"/>
         <entity-condition>
