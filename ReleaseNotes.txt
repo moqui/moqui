@@ -29,6 +29,8 @@ This release includes:
   Log4J to 1.2.17, Apache Shiro to 1.2.0, Atomikos to 3.8.0, ehcache to
   2.5.2, FreeMarker to 2.3.19, Groovy to 2.0.0-rc-2, Quartz Scheduler to
   2.1.5, SLF4J to 1.6.5
+- Updated jQuery to 1.7.2, jQuery UI to 1.8.21, Validate to 1.9.0, and
+  Timepicker to 0.9.9
 - Tested with latest version of Apache Tomcat (7.0.27)
 - JSON representation of a Map sent in an HTTP Request body is treated as
   additional request parameters (must have a header of "Content-Type:

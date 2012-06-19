@@ -16,7 +16,7 @@ margin: 0px; border: 0px; outline: 0px; padding: 0px;
 color: black; background: transparent; text-decoration: none;
 font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-weight: normal;
 font-size: 16px; /* set base font size here, all others relative using em */
-vertical-align: center;
+vertical-align: middle;
 }
 
 /* ========================== body, etc ========================== */
@@ -153,3 +153,11 @@ button.ui-button-icons-only { width: 1.5em; }
 .ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 300px; }
 .ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
