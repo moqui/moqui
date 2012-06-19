@@ -17,7 +17,7 @@ details.
 
     The defaultCache has an implicit name "default" which is a reserved cache name.
     -->
-    <defaultCache maxElementsInMemory="0" memoryStoreEvictionPolicy="LRU"
+    <defaultCache maxElementsInMemory="10000" memoryStoreEvictionPolicy="LRU"
             eternal="false" timeToIdleSeconds="0" timeToLiveSeconds="0"
             overflowToDisk="false" diskSpoolBufferSizeMB="10" maxElementsOnDisk="1000000"
             diskPersistent="false" diskExpiryThreadIntervalSeconds="120"/>
