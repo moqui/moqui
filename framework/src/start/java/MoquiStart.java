@@ -98,7 +98,7 @@ public class MoquiStart extends ClassLoader {
             }
 
             try {
-                Class c = moquiStartLoader.loadClass("org.moqui.Moqui");
+                Class<?> c = moquiStartLoader.loadClass("org.moqui.Moqui");
                 Method m = c.getMethod("loadData", new Class[] { Map.class });
                 m.invoke(null, argMap);
             } catch (Exception e) {
@@ -130,7 +130,7 @@ public class MoquiStart extends ClassLoader {
             argMap.put("warfile", moquiStartLoader.outerFile.getName());
             System.out.println("Running Winstone embedded server with args [" + argMap + "]");
 
-            Class c = moquiStartLoader.loadClass("winstone.Launcher");
+            Class<?> c = moquiStartLoader.loadClass("winstone.Launcher");
             Method initLogger = c.getMethod("initLogger", new Class[] { Map.class });
             Method shutdown = c.getMethod("shutdown");
             // init the Winstone logger
@@ -202,11 +202,13 @@ public class MoquiStart extends ClassLoader {
     }
 
     protected static class MoquiShutdown extends Thread {
-        Method callMethod; Object callObject;
-        List<JarFile> jarFileList;
+        final Method callMethod;
+        final Object callObject;
+        final List<JarFile> jarFileList;
         MoquiShutdown(Method callMethod, Object callObject, List<JarFile> jarFileList) {
             super();
-            this.callMethod = callMethod; this.callObject = callObject;
+            this.callMethod = callMethod;
+            this.callObject = callObject;
             this.jarFileList = jarFileList;
         }
         public void run() {
@@ -227,11 +229,11 @@ public class MoquiStart extends ClassLoader {
     }
 
     protected JarFile outerFile = null;
-    protected List<JarFile> jarFileList = new ArrayList<JarFile>();
-    protected Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
-    protected Map<String, URL> resourceCache = new HashMap<String, URL>();
+    protected final List<JarFile> jarFileList = new ArrayList<JarFile>();
+    protected final Map<String, Class<?>> classCache = new HashMap<String, Class<?>>();
+    protected final Map<String, URL> resourceCache = new HashMap<String, URL>();
     protected ProtectionDomain pd;
-    protected boolean loadWebInf;
+    protected final boolean loadWebInf;
 
     public MoquiStart(boolean loadWebInf) {
         this(ClassLoader.getSystemClassLoader(), loadWebInf);

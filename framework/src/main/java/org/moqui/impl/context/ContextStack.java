@@ -14,11 +14,11 @@ package org.moqui.impl.context;
 import java.util.*;
 import java.util.Hashtable;
 
-public class ContextStack implements Map {
+public class ContextStack implements Map<Object, Object> {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class);
 
-    protected Deque<Map> stackList = new LinkedList<Map>();
-    protected Map firstMap = null;
+    protected Deque<Map<Object,Object>> stackList = new LinkedList<Map<Object,Object>>();
+    protected Map<Object,Object> firstMap = null;
 
     public ContextStack() {
         // start with a single Map
@@ -29,7 +29,7 @@ public class ContextStack implements Map {
      * @return Returns reference to this ContextStack
      */
     public ContextStack push() {
-        Map newMap = new HashMap();
+        Map<Object,Object> newMap = new HashMap<Object,Object>();
         stackList.addFirst(newMap);
         firstMap = newMap;
         return this;
@@ -38,7 +38,7 @@ public class ContextStack implements Map {
     /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack)
      * @param existingMap An existing Map
      */
-    public void push(Map existingMap) {
+    public void push(Map<Object,Object> existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map");
         stackList.addFirst(existingMap);
         firstMap = existingMap;
@@ -50,7 +50,7 @@ public class ContextStack implements Map {
      * @return The first/top Map
      */
     public Map pop() {
-        Map popped = stackList.size() > 0 ? stackList.removeFirst() : null;
+        Map<Object,Object> popped = stackList.size() > 0 ? stackList.removeFirst() : null;
         firstMap = stackList.size() > 0 ? stackList.peekFirst() : null;
         return popped;
     }
@@ -58,7 +58,7 @@ public class ContextStack implements Map {
     /** Add an existing Map as the Root Map, ie on the BOTTOM of the stack meaning it will be overridden by other Maps on the stack
      * @param  existingMap An existing Map
      */
-    public void addRootMap(Map existingMap) {
+    public void addRootMap(Map<Object,Object> existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot add null as an existing Map");
         stackList.addLast(existingMap);
     }
@@ -112,8 +112,8 @@ public class ContextStack implements Map {
         // this keeps track of keys looked at for values at each level of the stack so that the same key is not
         // considered more than once (the earlier Maps overriding later ones)
         Set<Object> keysObserved = new HashSet<Object>();
-        for (Map curMap: stackList) {
-            for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
+        for (Map<Object,Object> curMap: stackList) {
+            for (Map.Entry curEntry: curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
                     keysObserved.add(curEntry.getKey());
                     if (value == null) {
@@ -162,26 +162,26 @@ public class ContextStack implements Map {
     }
 
     /** @see java.util.Map#putAll(java.util.Map) */
-    public void putAll(Map arg0) { firstMap.putAll(arg0); }
+    public void putAll(Map<? extends Object, ? extends Object> arg0) { firstMap.putAll(arg0); }
 
     /** @see java.util.Map#clear() */
     public void clear() { firstMap.clear(); }
 
     /** @see java.util.Map#keySet() */
-    public Set keySet() {
+    public Set<Object> keySet() {
         Set<Object> resultSet = new HashSet<Object>();
-        for (Map curMap: stackList) {
+        for (Map<Object,Object> curMap: stackList) {
             resultSet.addAll(curMap.keySet());
         }
         return Collections.unmodifiableSet(resultSet);
     }
 
     /** @see java.util.Map#values() */
-    public Collection values() {
+    public Collection<Object> values() {
         Set<Object> keysObserved = new HashSet<Object>();
         List<Object> resultValues = new LinkedList<Object>();
-        for (Map curMap: stackList) {
-            for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
+        for (Map<Object,Object> curMap: stackList) {
+            for (Map.Entry curEntry: curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
                     keysObserved.add(curEntry.getKey());
                     resultValues.add(curEntry.getValue());
@@ -192,11 +192,11 @@ public class ContextStack implements Map {
     }
 
     /** @see java.util.Map#entrySet() */
-    public Set<Map.Entry> entrySet() {
+    public Set<Map.Entry<Object, Object>> entrySet() {
         Set<Object> keysObserved = new HashSet<Object>();
-        Set<Map.Entry> resultEntrySet = new HashSet<Map.Entry>();
-        for (Map curMap: stackList) {
-            for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
+        Set<Map.Entry<Object, Object>> resultEntrySet = new HashSet<Map.Entry<Object, Object>>();
+        for (Map<Object,Object> curMap: stackList) {
+            for (Map.Entry<Object, Object> curEntry: curMap.entrySet()) {
                 if (!keysObserved.contains(curEntry.getKey())) {
                     keysObserved.add(curEntry.getKey());
                     resultEntrySet.add(curEntry);
@@ -210,9 +210,9 @@ public class ContextStack implements Map {
     public String toString() {
         StringBuilder fullMapString = new StringBuilder();
         int curLevel = 0;
-        for (Map curMap: stackList) {
+        for (Map<Object,Object> curMap: stackList) {
             fullMapString.append("============================== Start stack level ").append(curLevel).append("\n");
-            for (Map.Entry curEntry: (Set<Map.Entry>) curMap.entrySet()) {
+            for (Map.Entry curEntry: curMap.entrySet()) {
                 fullMapString.append("==>[");
                 fullMapString.append(curEntry.getKey());
                 fullMapString.append("]:");

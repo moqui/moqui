@@ -10,6 +10,10 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
+tasks.withType(Compile) {
+    options.compilerArgs << "-Xlint:unchecked"
+}
+
 apply plugin: 'groovy'
 apply plugin: 'war'
 
