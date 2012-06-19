@@ -67,6 +67,9 @@ Bug Fixes:
   before the first authz check to avoid guaranteed failure
 - Fixed WebFacade.sendJsonResponse() to return ec.messages.errors if there
   are errors instead of ignoring them
+- Fixed issue in L10nFacadeImpl (also used for service parameter automatic
+  type conversions) where Time and Timestamp parsing required sub-second
+  value; now parses strings without sub-seconds as well
 
 ===========================================================================
 Release 1.0.1 - 31 December 2011

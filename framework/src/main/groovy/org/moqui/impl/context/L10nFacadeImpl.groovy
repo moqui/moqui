@@ -65,7 +65,11 @@ public class L10nFacadeImpl implements L10nFacade {
     java.sql.Time parseTime(String input, String format) {
         if (!format) format = "HH:mm:ss.SSS"
         Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) return null
+        if (cal == null) {
+            format = "HH:mm:ss"
+            cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
+            if (cal == null) return null
+        }
         return new java.sql.Time(cal.getTimeInMillis())
     }
     String formatTime(java.sql.Time input, String format) {
@@ -89,7 +93,11 @@ public class L10nFacadeImpl implements L10nFacade {
     java.sql.Timestamp parseTimestamp(String input, String format) {
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
         Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) return null
+        if (cal == null) {
+            format = "yyyy-MM-dd HH:mm:ss"
+            cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
+            if (cal == null) return null
+        }
         return new Timestamp(cal.getTimeInMillis())
     }
     String formatTimestamp(java.sql.Timestamp input, String format) {
