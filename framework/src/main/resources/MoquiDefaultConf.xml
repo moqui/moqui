@@ -7,27 +7,27 @@
 
     <cache-list>
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
-        <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="entity.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="entity.tables.checked" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
+        <cache name="entity.location" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
+        <cache name="entity.tables.checked" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
 
-        <cache name="service.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="service.java.class" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="service.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="service.java.class" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
 
-        <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="screen.template.mode" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="screen.template.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="screen.template.mode" expire-time-idle="0" expire-time-live="0" max-elements="100"/>
+        <cache name="screen.template.location" expire-time-idle="0" expire-time-live="0" max-elements="100"/>
 
-        <cache name="resource.xml-actions.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="resource.groovy.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="resource.groovy.expression" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="resource.xml-actions.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="resource.groovy.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="resource.groovy.expression" expire-time-idle="0" expire-time-live="0" max-elements="50000"/>
 
-        <cache name="resource.ftl.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="resource.wiki.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
-        <cache name="resource.text.location" expire-time-idle="0" expire-time-live="0" max-elements="0"/>
+        <cache name="resource.ftl.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="resource.wiki.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
+        <cache name="resource.text.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
 
         <!-- this is a count of all artifact hits, expire once idle for over 15 minutes -->
-        <cache name="artifact.tarpit.hits" expire-time-idle="900" expire-time-live="0" max-elements="0"/>
+        <cache name="artifact.tarpit.hits" expire-time-idle="900" expire-time-live="0" max-elements="10000"/>
     </cache-list>
     <server-stats bin-length-seconds="900" visit-enabled="true" visitor-enabled="true">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
