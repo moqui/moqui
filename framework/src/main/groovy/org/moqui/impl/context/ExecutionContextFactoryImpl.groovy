@@ -37,6 +37,7 @@ import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
 import org.apache.camel.impl.SimpleRegistry
 import org.moqui.impl.service.camel.MoquiServiceComponent
+import org.moqui.impl.service.camel.MoquiServiceConsumer
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -65,6 +66,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** The central object of the Camel API: CamelContext */
     protected final CamelContext camelContext
+    protected MoquiServiceComponent moquiServiceComponent
+    protected Map<String, MoquiServiceConsumer> camelConsumerByUriMap = new HashMap<String, MoquiServiceConsumer>()
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -318,7 +321,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void initCamel() {
-        camelContext.addComponent("moquiservice", new MoquiServiceComponent(this))
+        moquiServiceComponent = new MoquiServiceComponent(this)
+        camelContext.addComponent("moquiservice", moquiServiceComponent)
         camelContext.start()
     }
 
@@ -425,6 +429,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     L10nFacade getL10nFacade() { return this.l10nFacade }
 
     CamelContext getCamelContext() { return this.camelContext }
+    MoquiServiceComponent getMoquiServiceComponent() { return this.moquiServiceComponent }
+    void registerCamelConsumer(String uri, MoquiServiceConsumer consumer) { camelConsumerByUriMap.put(uri, consumer) }
+    MoquiServiceConsumer getCamelConsumer(String uri) { return camelConsumerByUriMap.get(uri) }
 
     // ========== Interface Implementations ==========
 

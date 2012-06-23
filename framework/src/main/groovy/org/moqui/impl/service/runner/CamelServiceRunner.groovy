@@ -18,6 +18,9 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
 import org.moqui.service.ServiceException
+import org.apache.camel.Endpoint
+import org.apache.camel.Consumer
+import org.moqui.impl.service.camel.MoquiServiceConsumer
 
 public class CamelServiceRunner implements ServiceRunner {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CamelServiceRunner.class)
@@ -35,19 +38,28 @@ public class CamelServiceRunner implements ServiceRunner {
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         // location is mandatory, method is optional and only really used to call other Moqui services (goes in the ServiceName header)
-        String endpoint = sd.getLocation()
-        String serviceName = sd.serviceNode."@method"
-        if (!endpoint) throw new ServiceException("Service [" + sd.serviceName + "] is missing the location attribute and it is required for running a Camel service.")
+        String endpointUri = sd.getLocation()
+        if (!endpointUri) throw new ServiceException("Service [${sd.serviceName}] is missing the location attribute and it is required for running a Camel service.")
 
         Map<String, Object> headers = new HashMap<String, Object>()
-        if (serviceName) headers.put("ServiceName", serviceName)
 
-        try {
-            Map<String, Object> result = (Map<String, Object>) producerTemplate.requestBodyAndHeaders(endpoint, parameters, headers)
-            return result
-        } catch (CamelExecutionException e) {
-            sfi.ecfi.getExecutionContext().message.addError(e.message)
-            return null
+        Endpoint endpoint = sfi.ecfi.moquiServiceComponent.createEndpoint(endpointUri)
+        MoquiServiceConsumer consumer = sfi.ecfi.getCamelConsumer(endpoint.getEndpointUri())
+        if (consumer != null) {
+            try {
+                return consumer.process(sd, parameters)
+            } catch (CamelExecutionException e) {
+                sfi.ecfi.getExecutionContext().message.addError(e.message)
+                return null
+            }
+        } else {
+            logger.warn("No consumer found for service [${sd.serviceName}], using ProducerTemplate to send the message")
+            try {
+                return (Map<String, Object>) producerTemplate.requestBodyAndHeaders(endpointUri, parameters, headers)
+            } catch (CamelExecutionException e) {
+                sfi.ecfi.getExecutionContext().message.addError(e.message)
+                return null
+            }
         }
     }
 

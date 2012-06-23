@@ -160,11 +160,6 @@
         <service-type name="remote-xml-rpc" runner-class="org.moqui.impl.service.runner.RemoteXmlrpcServiceRunner"/>
         <service-type name="remote-json-rpc" runner-class="org.moqui.impl.service.runner.RemoteJsonRpcServiceRunner"/>
         <service-type name="camel" runner-class="org.moqui.impl.service.runner.CamelServiceRunner"/>
-        <!-- TABLED: not to include in 1.0
-        <service-type name="proxy-http" runner-class="org.moqui.impl.service.runner.ProxyHttpServiceRunner"/>
-        <service-type name="proxy-jms" runner-class="org.moqui.impl.service.runner.ProxyJmsServiceRunner"/>
-        <service-type name="proxy-rmi" runner-class="org.moqui.impl.service.runner.ProxyRmiServiceRunner"/>
-        -->
     </service-facade>
 
     <entity-facade default-group-name="transactional" distributed-cache-clear-enabled="false"
