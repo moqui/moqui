@@ -33,7 +33,7 @@ repositories {
 
 dependencies {
     // groovy dependencies (just the library to compile with)
-    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.0-rc-2' // Apache 2.0
+    groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.0-rc-3' // Apache 2.0
 
     compile name: 'antisamy', version: '1.4' // New BSD
 
@@ -43,6 +43,9 @@ dependencies {
     compile name: 'atomikos-transactions-jdbc', version: '3.8.0' // Apache 2.0
     // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.7.0' // Apache 2.0
     compile name: 'atomikos-transactions-jta', version: '3.8.0' // Apache 2.0
+
+    apiCompile name: 'camel-core', version: '2.9.2' // Apache 2.0
+    compile name: 'camel-core', version: '2.9.2' // Apache 2.0
 
     compile name: 'commons-codec', version: '1.4' // Apache 2.0
     compile name: 'commons-collections', version: '3.2.1' // Apache 2.0
@@ -62,7 +65,7 @@ dependencies {
     apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
     compile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
 
-    compile name: 'groovy-all', version: '2.0.0-rc-2' // Apache 2.0
+    compile name: 'groovy-all', version: '2.0.0-rc-3' // Apache 2.0
 
     compile name: 'jackrabbit-api', version: '2.4.1' // Apache 2.0
     compile name: 'jackrabbit-jcr-commons', version: '2.4.1' // Apache 2.0

@@ -90,6 +90,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/>
     </transition>
 
+    <transition name="localCamelExample">
+        <!-- To test this try something like (remove the space between the two dashes in "- -data"):
+
+        curl -X POST -H "Content-Type: application/json" \
+             - -data '{ "testInput":"foo bar", "authUsername":"john.doe", "authPassword":"moqui" }' \
+             http://localhost:8080/apps/example/localCamelExample
+        -->
+        <service-call name="org.moqui.example.ExampleServices.localCamelExample"/>
+        <default-response url="."/>
+    </transition>
+
     <subscreens default-item="Example">
         <!-- these are actually links to content to add to the menu since content is not automatically added to the menu -->
         <subscreens-item name="ExamplePolicies" menu-index="4" menu-title="Policies"/>

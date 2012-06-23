@@ -13,6 +13,7 @@ package org.moqui.context;
 
 import java.util.Map;
 
+import org.apache.camel.CamelContext;
 import org.moqui.entity.EntityFacade;
 import org.moqui.service.ServiceFacade;
 
@@ -73,6 +74,9 @@ public interface ExecutionContext {
 
     /** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
     ScreenFacade getScreen();
+
+    /** Apache Camel is used for integration message routing. To interact directly with Camel get the context here. */
+    CamelContext getCamelContext();
 
     /** This should be called by a filter or servlet at the beginning of an HTTP request to initialize a web facade
      * for the current thread.

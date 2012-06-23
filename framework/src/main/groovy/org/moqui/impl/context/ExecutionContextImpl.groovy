@@ -26,6 +26,7 @@ import org.moqui.context.ArtifactExecutionFacade
 import org.moqui.context.WebFacade
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
+import org.apache.camel.CamelContext
 
 class ExecutionContextImpl implements ExecutionContext {
 
@@ -97,6 +98,8 @@ class ExecutionContextImpl implements ExecutionContext {
 
     /** @see org.moqui.context.ExecutionContext#getScreen() */
     ScreenFacade getScreen() { this.ecfi.getScreenFacade() }
+
+    CamelContext getCamelContext() { return this.ecfi.getCamelContext() }
 
     /** @see org.moqui.context.ExecutionContext#initWebFacade(String, HttpServletRequest, HttpServletResponse) */
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {

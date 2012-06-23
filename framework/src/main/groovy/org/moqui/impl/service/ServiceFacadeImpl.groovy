@@ -169,7 +169,7 @@ class ServiceFacadeImpl implements ServiceFacade {
                     serviceNode = (Node) serviceRoot."service".find({ it."@verb" == verb && it."@noun" == noun })
             } else {
                 // we just have a verb, this should work if the noun field is empty, or if noun + verb makes up the verb passed in
-                serviceNode = (Node) serviceRoot."service".find({ (it."@verb" + it."@noun") == verb })
+                serviceNode = (Node) serviceRoot."service".find({ (it."@verb" + (it."@noun" ?: "")) == verb })
             }
         } catch (IOException e) {
             // probably because there is no resource at that location, so do nothing

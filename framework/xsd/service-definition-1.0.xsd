@@ -55,6 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="interface"/>
                         <xs:enumeration value="remote-xml-rpc"/>
                         <xs:enumeration value="remote-json-rpc"/>
+                        <xs:enumeration value="camel"/>
                         <!-- TABLED: not to include in 1.0
                         <xs:enumeration value="proxy-http"/>
                         <xs:enumeration value="proxy-jms"/>

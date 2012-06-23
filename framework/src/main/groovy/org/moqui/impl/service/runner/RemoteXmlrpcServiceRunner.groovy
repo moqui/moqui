@@ -20,10 +20,10 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
 
-public class RemoteXmlRpcServiceRunner implements ServiceRunner {
+public class RemoteXmlrpcServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi = null
 
-    RemoteXmlRpcServiceRunner() {}
+    RemoteXmlrpcServiceRunner() {}
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 

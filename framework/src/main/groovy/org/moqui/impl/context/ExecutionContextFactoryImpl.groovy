@@ -33,6 +33,10 @@ import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.crypto.hash.SimpleHash
 import org.moqui.impl.StupidUtilities
 import org.apache.commons.collections.map.ListOrderedMap
+import org.apache.camel.CamelContext
+import org.apache.camel.impl.DefaultCamelContext
+import org.apache.camel.impl.SimpleRegistry
+import org.moqui.impl.service.camel.MoquiServiceComponent
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -58,6 +62,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /** The SecurityManager for Apache Shiro */
     protected org.apache.shiro.mgt.SecurityManager internalSecurityManager
+
+    /** The central object of the Camel API: CamelContext */
+    protected final CamelContext camelContext
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -130,6 +137,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // init ClassLoader early so that classpath:// resources and framework interface impls will work
         initClassLoader()
 
+        // setup the CamelContext, but don't init yet
+        camelContext = new DefaultCamelContext()
+
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
         logger.info("Moqui CacheFacadeImpl Initialized")
@@ -149,6 +159,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ScreenFacadeImpl Initialized")
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
+
+        // everything else ready to go, init Camel
+        this.initCamel()
 
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
@@ -180,6 +193,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // init ClassLoader early so that classpath:// resources and framework interface impls will work
         initClassLoader()
 
+        // setup the CamelContext, but don't init yet
+        camelContext = new DefaultCamelContext()
+
         // this init order is important as some facades will use others
         this.cacheFacade = new CacheFacadeImpl(this)
         logger.info("Moqui CacheFacadeImpl Initialized")
@@ -199,6 +215,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ScreenFacadeImpl Initialized")
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
+
+        // everything else ready to go, init Camel
+        this.initCamel()
 
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
@@ -298,8 +317,16 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
+    protected void initCamel() {
+        camelContext.addComponent("moquiservice", new MoquiServiceComponent(this))
+        camelContext.start()
+    }
+
     synchronized void destroy() {
         if (!this.destroyed) {
+            // first stop Camel to prevent more calls coming in
+            camelContext.stop()
+
             // persist any remaining bins in artifactHitBinByType
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
             List<Map<String, Object>> ahbList = new ArrayList(artifactHitBinByType.values())
@@ -396,6 +423,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     TransactionFacadeImpl getTransactionFacade() { return this.transactionFacade }
 
     L10nFacade getL10nFacade() { return this.l10nFacade }
+
+    CamelContext getCamelContext() { return this.camelContext }
 
     // ========== Interface Implementations ==========
 

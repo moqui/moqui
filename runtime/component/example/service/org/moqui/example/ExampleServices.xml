@@ -112,4 +112,26 @@ This Work includes contributions authored by David E. Jones, not as a
              location="component://example/script/org/moqui/example/testCreateExampleService.xml">
         <implements service="testServiceInterface"/>
     </service>
+
+    <!-- Example Camel services (one to call through Moqui Service Facade, one to be called when that service is called) -->
+    <service verb="localCamelExample" type="camel" location="moquiservice:org.moqui.example.ExampleServices.targetCamelExample">
+        <in-parameters>
+            <parameter name="testInput"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="testOutput"/>
+        </out-parameters>
+    </service>
+    <service verb="targetCamelExample" type="inline">
+        <in-parameters>
+            <parameter name="testInput"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="testOutput"/>
+        </out-parameters>
+        <actions>
+            <set field="result.testOutput" value="Here's the input: ${testInput}"/>
+            <log level="warn" message="targetCamelExample testOutput: ${result.testOutput}"/>
+        </actions>
+    </service>
 </services>
