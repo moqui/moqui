@@ -1,0 +1,57 @@
+/*
+ * This Work is in the public domain and is provided on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+ * including, without limitation, any warranties or conditions of TITLE,
+ * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+ * You are solely responsible for determining the appropriateness of using
+ * this Work and assume any risks associated with your use of this Work.
+ *
+ * This Work includes contributions authored by David E. Jones, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
+ */
+package org.moqui.impl.service.runner
+
+import org.apache.camel.CamelExecutionException
+import org.apache.camel.ProducerTemplate
+
+import org.moqui.impl.service.ServiceDefinition
+import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.impl.service.ServiceRunner
+import org.moqui.service.ServiceException
+
+public class CamelServiceRunner implements ServiceRunner {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CamelServiceRunner.class)
+
+    protected ServiceFacadeImpl sfi
+    protected ProducerTemplate producerTemplate
+
+    CamelServiceRunner() {}
+
+    public ServiceRunner init(ServiceFacadeImpl sfi) {
+        this.sfi = sfi
+        producerTemplate = sfi.ecfi.camelContext.createProducerTemplate()
+        return this
+    }
+
+    public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
+        // location is mandatory, method is optional and only really used to call other Moqui services (goes in the ServiceName header)
+        String endpoint = sd.getLocation()
+        String serviceName = sd.serviceNode."@method"
+        if (!endpoint) throw new ServiceException("Service [" + sd.serviceName + "] is missing the location attribute and it is required for running a Camel service.")
+
+        Map<String, Object> headers = new HashMap<String, Object>()
+        if (serviceName) headers.put("ServiceName", serviceName)
+
+        try {
+            Map<String, Object> result = (Map<String, Object>) producerTemplate.requestBodyAndHeaders(endpoint, parameters, headers)
+            return result
+        } catch (CamelExecutionException e) {
+            sfi.ecfi.getExecutionContext().message.addError(e.message)
+            return null
+        }
+    }
+
+    public void destroy() {
+        producerTemplate.stop()
+    }
+}
