@@ -110,6 +110,14 @@ dependencies {
     }
 
     // ========== runtime-only dependencies ==========
+    runtime name: 'camel-freemarker', version: '2.9.2' // Apache 2.0
+    runtime name: 'camel-groovy', version: '2.9.2' // Apache 2.0
+    runtime name: 'camel-http4', version: '2.9.2' // Apache 2.0
+    runtime name: 'camel-jms', version: '2.9.2' // Apache 2.0
+    runtime name: 'camel-mail', version: '2.9.2' // Apache 2.0
+    runtime name: 'camel-quartz', version: '2.9.2' // Apache 2.0
+    runtime name: 'camel-shiro', version: '2.9.2' // Apache 2.0
+
     runtime name: 'derby', version: '10.8.2.2' // Apache 2.0
     runtime name: 'jakarta-oro', version: '2.0.8' // Apache 2.0
     runtime name: 'shiro-ehcache', version: '1.2.0' // Apache 2.0
