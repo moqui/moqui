@@ -67,6 +67,7 @@ This release includes:
   through camel (with URI like "moquiservice:package.serviceName")
 - Example Moqui service that sends a Camel message, and example service
   that service calls through the Moqui Camel Endpoint (Producer)
+- View entity member-entity.entity-condition (for join conditions)
 
 Bug Fixes:
 
@@ -702,7 +703,6 @@ Features designed or considered, but not to be included in 1.0 series
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
   - Entity complex aliases in views (EntityDefinition:246)
-  - View entity view-link.econdition* support (EntityFindBuilder:196)
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:

@@ -100,15 +100,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
         <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
             <key-map field-name="exampleFeatureApplEnumId"/>
+            <entity-condition>
+                <econdition field-name="exampleFeatureApplEnumId" value="DESIRED"/>
+            </entity-condition>
         </member-entity>
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM">
             <exclude field="description"/>
         </alias-all>
         <alias name="typeDescription" entity-alias="ENUM" field="description"/>
-        <entity-condition>
-            <econdition field-name="exampleFeatureApplEnumId" value="DESIRED"/>
-        </entity-condition>
     </view-entity>
     <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="moqui.example">
         <member-entity entity-alias="EFAATD" entity-name="ExampleFeatureApplAndTypeDesired"/>

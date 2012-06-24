@@ -13,6 +13,7 @@ package org.moqui.impl.entity
 
 import java.sql.PreparedStatement
 import java.sql.SQLException
+import org.moqui.impl.entity.condition.EntityConditionImplBase
 
 class EntityFindBuilder extends EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
@@ -108,10 +109,10 @@ class EntityFindBuilder extends EntityQueryBuilder {
     void makeSqlFromClause(EntityDefinition localEntityDefinition, StringBuilder localBuilder) {
         localBuilder.append(" FROM ")
 
-        Node entityNode = localEntityDefinition.entityNode
+        Node entityNode = localEntityDefinition.getEntityNode()
 
         if (localEntityDefinition.isViewEntity()) {
-            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(localEntityDefinition.entityName))
+            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(localEntityDefinition.getEntityName()))
             String joinStyle = databaseNode."@join-style" ?: "ansi"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
@@ -125,12 +126,15 @@ class EntityFindBuilder extends EntityQueryBuilder {
             Set<String> joinedAliasSet = new TreeSet<String>()
 
             // on initial pass only add opening parenthesis since easier than going back and inserting them, then insert the rest
-            StringBuilder restOfStatement = new StringBuilder()
             boolean isFirst = true
+            boolean fromEmpty = true
             for (Node relatedMemberEntity in entityNode."member-entity") {
                 if (!relatedMemberEntity."@join-from-alias") continue
 
-                if (useParenthesis) localBuilder.append('(')
+                if (isFirst && useParenthesis) localBuilder.append('(')
+
+                // adding to from, then it's not empty
+                fromEmpty = false
 
                 String linkEntityName = entityNode."member-entity".find({ it."@entity-alias" == relatedMemberEntity."@join-from-alias" })?."@entity-name"
                 EntityDefinition linkEntityDefinition = this.efi.getEntityDefinition(linkEntityName)
@@ -139,9 +143,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
                 if (isFirst) {
                     // first link, add link entity for this one only, for others add related link entity
-                    makeSqlViewTableName(linkEntityDefinition, restOfStatement)
-                    restOfStatement.append(" ")
-                    restOfStatement.append(relatedMemberEntity."@join-from-alias")
+                    makeSqlViewTableName(linkEntityDefinition, localBuilder)
+                    localBuilder.append(" ")
+                    localBuilder.append(relatedMemberEntity."@join-from-alias")
 
                     joinedAliasSet.add(relatedMemberEntity."@join-from-alias")
                 } else {
@@ -156,15 +160,15 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 joinedAliasSet.add(relatedMemberEntity."@entity-alias")
 
                 if (relatedMemberEntity."@join-optional" == "true") {
-                    restOfStatement.append(" LEFT OUTER JOIN ")
+                    localBuilder.append(" LEFT OUTER JOIN ")
                 } else {
-                    restOfStatement.append(" INNER JOIN ")
+                    localBuilder.append(" INNER JOIN ")
                 }
 
-                makeSqlViewTableName(relatedLinkEntityDefinition, restOfStatement)
-                restOfStatement.append(" ")
-                restOfStatement.append(relatedMemberEntity."@entity-alias")
-                restOfStatement.append(" ON ")
+                makeSqlViewTableName(relatedLinkEntityDefinition, localBuilder)
+                localBuilder.append(" ")
+                localBuilder.append(relatedMemberEntity."@entity-alias")
+                localBuilder.append(" ON ")
 
                 if (!relatedMemberEntity."key-map") {
                     throw new IllegalArgumentException("No view-link/join key-maps found for the " +
@@ -175,13 +179,13 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 boolean isFirstKeyMap = true
                 Collection keyMaps = relatedMemberEntity."key-map".findAll()
                 for (Node keyMap in keyMaps) {
-                    if (isFirstKeyMap) isFirstKeyMap = false else restOfStatement.append(" AND ")
+                    if (isFirstKeyMap) isFirstKeyMap = false else localBuilder.append(" AND ")
 
-                    restOfStatement.append(relatedMemberEntity."@join-from-alias")
-                    restOfStatement.append(".")
-                    restOfStatement.append(sanitizeColumnName(linkEntityDefinition.getColumnName(keyMap."@field-name", false)))
+                    localBuilder.append(relatedMemberEntity."@join-from-alias")
+                    localBuilder.append(".")
+                    localBuilder.append(sanitizeColumnName(linkEntityDefinition.getColumnName(keyMap."@field-name", false)))
 
-                    restOfStatement.append(" = ")
+                    localBuilder.append(" = ")
 
                     String relatedFieldName = keyMap."@related-field-name" ?: keyMap."@field-name"
                     if (!relatedLinkEntityDefinition.isField(relatedFieldName) &&
@@ -189,23 +193,24 @@ class EntityFindBuilder extends EntityQueryBuilder {
                         relatedFieldName = relatedLinkEntityDefinition.pkFieldNames[0]
                         // if we don't match these constraints and get this default we'll get an error later...
                     }
-                    restOfStatement.append(relatedMemberEntity."@entity-alias")
-                    restOfStatement.append(".")
-                    restOfStatement.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
+                    localBuilder.append(relatedMemberEntity."@entity-alias")
+                    localBuilder.append(".")
+                    localBuilder.append(sanitizeColumnName(relatedLinkEntityDefinition.getColumnName(relatedFieldName, false)))
                 }
 
                 if (relatedMemberEntity."entity-condition") {
-                    // TABLED: add any additional manual conditions for the view-link here
+                    // add any additional manual conditions for the view-link here
+                    Node entityCondition = relatedMemberEntity."entity-condition"[0]
+                    EntityConditionImplBase linkEcib = localEntityDefinition.makeViewListCondition(entityCondition)
+                    localBuilder.append(" AND ")
+                    linkEcib.makeSqlWhere(this)
                 }
 
-                if (useParenthesis) restOfStatement.append(')')
                 isFirst = false
             }
-
-            localBuilder.append(restOfStatement.toString())
+            if (!fromEmpty && useParenthesis) localBuilder.append(')')
 
             // handle member-entities not referenced in any view-link element
-            boolean fromEmpty = restOfStatement.length() == 0
             for (Node memberEntity in entityNode."member-entity") {
                 EntityDefinition fromEntityDefinition = this.efi.getEntityDefinition(memberEntity."@entity-name")
                 if (!joinedAliasSet.contains(memberEntity."@entity-alias")) {
