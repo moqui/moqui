@@ -67,7 +67,8 @@ This release includes:
   through camel (with URI like "moquiservice:package.serviceName")
 - Example Moqui service that sends a Camel message, and example service
   that service calls through the Moqui Camel Endpoint (Producer)
-- View entity member-entity.entity-condition (for join conditions)
+- View entity member-entity.entity-condition for conditions on joins
+- View entity alias.complex-alias implemented for formulas in queries
 
 Bug Fixes:
 
@@ -702,7 +703,6 @@ Features designed or considered, but not to be included in 1.0 series
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
-  - Entity complex aliases in views (EntityDefinition:246)
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:

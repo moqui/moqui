@@ -108,6 +108,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="ENUM">
             <exclude field="description"/>
         </alias-all>
+        <alias name="testComplexAlias">
+            <complex-alias operator="+">
+                <complex-alias-field entity-alias="ENUM" field="sequenceNum"/>
+                <complex-alias-field entity-alias="EXFTAP" field="sequenceNum"/>
+            </complex-alias>
+        </alias>
         <alias name="typeDescription" entity-alias="ENUM" field="description"/>
     </view-entity>
     <view-entity entity-name="AllExamplesWithDesiredCustomerFeaturesReport" package-name="moqui.example">

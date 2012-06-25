@@ -472,7 +472,7 @@ class ScreenForm {
                             Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         List<String> pkFieldNameSet = ed.getPkFieldNames()
 
-        String efType = ed.getFieldNode(fieldName)."@type"
+        String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
 
         // to see if this should be a drop-down with data from another entity,
         // find first relationship that has this field as the only key map and is not a many relationship

@@ -56,7 +56,13 @@ public class EntityDefinition {
             // set @type, set is-pk on all alias Nodes if the related field is-pk
             for (Node aliasNode in entityNode."alias") {
                 Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == aliasNode."@entity-alias" })
-                if (memberEntity == null) throw new EntityException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${internalEntityName}]")
+                if (memberEntity == null) {
+                    if (aliasNode."complex-alias") {
+                        continue
+                    } else {
+                        throw new EntityException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${internalEntityName}]")
+                    }
+                }
                 EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
                 String fieldName = aliasNode."@field" ?: aliasNode."@name"
                 Node fieldNode = memberEd.getFieldNode(fieldName)
@@ -270,30 +276,28 @@ public class EntityDefinition {
             // NOTE: for view-entity the incoming fieldNode will actually be for an alias element
             StringBuilder colNameBuilder = new StringBuilder()
             if (includeFunctionAndComplex) {
-                // TODO: column name view-entity complex-alias (build expression based on complex-alias)
-                // TODO: column name for view-entity alias with function (wrap in function, after complex-alias to wrap that too when used)
-
                 // column name for view-entity (prefix with "${entity-alias}.")
                 //colName.append(fieldNode."@entity-alias").append('.')
                 logger.trace("For view-entity include function and complex not yet supported, for entity [${internalEntityName}], may get bad SQL...")
             }
             // else {
-                boolean hasFunction = false
+
+            if (fieldNode."complex-alias") {
+                buildComplexAliasName(fieldNode, "+", colNameBuilder)
+            } else {
                 String function = fieldNode."@function"
                 if (function) {
-                    hasFunction = true
-                    if (function == "count-distinct") colNameBuilder.append("COUNT(DISTINCT ")
-                    else colNameBuilder.append(function.toUpperCase()).append('(')
+                    colNameBuilder.append(getFunctionPrefix(function))
                 }
                 // column name for view-entity (prefix with "${entity-alias}.")
                 colNameBuilder.append(fieldNode."@entity-alias").append('.')
 
-                Node memberEntity = (Node) internalEntityNode."member-entity".find({ it."@entity-alias" == fieldNode."@entity-alias" })
-                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                String memberFieldName = fieldNode."@field" ? fieldNode."@field" : fieldNode."@name"
-                colNameBuilder.append(memberEd.getColumnName(memberFieldName, false))
+                String memberFieldName = fieldNode."@field" ?: fieldNode."@name"
+                colNameBuilder.append(getBasicFieldColName(internalEntityNode, fieldNode."@entity-alias", memberFieldName))
 
-                if (hasFunction) colNameBuilder.append(')')
+                if (function) colNameBuilder.append(')')
+            }
+
             // }
             cn = colNameBuilder.toString()
         } else {
@@ -306,6 +310,45 @@ public class EntityDefinition {
 
         columnNameMap.put(fieldName, cn)
         return cn
+    }
+
+    protected String getBasicFieldColName(Node entityNode, String entityAlias, String fieldName) {
+        Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
+        EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+        return memberEd.getColumnName(fieldName, false)
+    }
+
+    protected void buildComplexAliasName(Node parentNode, String operator, StringBuilder colNameBuilder) {
+        colNameBuilder.append('(')
+        boolean isFirst = true
+        for (Node childNode in parentNode.children()) {
+            if (isFirst) isFirst=false else colNameBuilder.append(' ').append(operator).append(' ')
+
+            if (childNode.name() == "complex-alias") {
+                buildComplexAliasName(childNode, childNode."@operator", colNameBuilder)
+            } else if (childNode.name() == "complex-alias-field") {
+                String entityAlias = childNode."@entity-alias"
+                String basicColName = getBasicFieldColName(internalEntityNode, entityAlias, childNode."@field")
+                String colName = entityAlias + "." + basicColName
+                String defaultValue = childNode."@default-value"
+                String function = childNode."@function"
+
+                if (defaultValue) {
+                    colName = "COALESCE(" + colName + "," + defaultValue + ")"
+                }
+                if (function) {
+                    String prefix = getFunctionPrefix(function)
+                    colName = prefix + colName + ")"
+                }
+
+                colNameBuilder.append(colName)
+            }
+        }
+        colNameBuilder.append(')')
+    }
+
+    protected String getFunctionPrefix(String function) {
+        return (function == "count-distinct") ? "COUNT(DISTINCT " : function.toUpperCase() + '('
     }
 
     /** Returns the table name, ie table-name or converted entity-name */
