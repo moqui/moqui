@@ -19,17 +19,6 @@ the Apache Software Foundation (including Apache OFBiz).
 This release includes:
 
 - Updated *.gradle build files for the recently released Gradle 1.0
-- Support for nested parameter elements in service definitions for
-  Map and Node (groovy.util.Node) parameters; the main reason for Node
-  support is for XML messages coming in such as the OAGIS ones to be
-  handled directly by a service (this is one part of Mantle)
-- Methods on ArtifactExecutionFacade and options on the authenticate
-  attribute on the service definition and the require-authentication on the
-  screen definition to make the current artifact anonymously authorized
-- Added "cursor" option for the database.@offset-style attribute for
-  databases that do not support the offset/limit or fetch syntax
-  variations; using this option will result in an EntityListIterator being
-  used instead of letting the database handle the partial results
 - Added configuration for MS SQL Server database
 - Replaced Redstone XML-RPC library with Apache XML-RPC to eliminate the
   LGPL library so that Moqui can be used in Apache and similarly licensed
@@ -41,34 +30,51 @@ This release includes:
 - Updated jQuery to 1.7.2, jQuery UI to 1.8.21, Validate to 1.9.0, and
   Timepicker to 1.0.0
 - Tested with latest version of Apache Tomcat (7.0.27)
-- JSON representation of a Map sent in an HTTP Request body is treated as
-  additional request parameters (must have a header of "Content-Type:
-  application/json")
-- Added option to service-call tag to send result as a JSON response using
-  the WebFacade.sendJsonResponse() method
-- If auth* parameters are passed in a JSON body, multi-part body
-  parameters, or in body parameters when there are no URL parameters (query
-  string), then automatically logs in user (similar to behavior of HTTP
-  Basic Authorization with the Authorization header)
-- Added support for declared path-parameters in the URL path under a
-  transition (especially useful for simulating a resource at a URL)
-- Based on the various new features for REST, JSON, and better support of
-  Web standards, added examples of the use of screen transitions for JSON
-  over REST services; see the ExampleApp.xml file
-- Implemented initial version of DbForm feature with support for extending
-  forms defined in XML Screen files; includes example extending the
-  UpdateExample form on the EditExample screen; for details see the DbForm
-  and related entities, and the example in the ExampleTypeData.xml
-- Embedded Apache Camel, currently used in the ServiceFacade to transport
-  service calls using many different standards, plus Camel routing for
-  more flexible system integration
-- CamelServiceRunner so that Moqui services can just send a Camel message
-- Camel component, endpoint, and producer for receiving Moqui service calls
-  through camel (with URI like "moquiservice:package.serviceName")
-- Example Moqui service that sends a Camel message, and example service
-  that service calls through the Moqui Camel Endpoint (Producer)
-- View entity member-entity.entity-condition for conditions on joins
-- View entity alias.complex-alias implemented for formulas in queries
+- Methods on ArtifactExecutionFacade and options on the authenticate
+  attribute on the service definition and the require-authentication on the
+  screen definition to make the current artifact anonymously authorized
+- Web Facade
+  - JSON representation of a Map sent in an HTTP Request body is treated as
+    additional request parameters (must have a header of "Content-Type:
+    application/json")
+  - If auth* parameters are passed in a JSON body, multi-part body
+    parameters, or in body parameters when there are no URL parameters
+    (query string), then automatically logs in user (similar to behavior of
+    HTTP Basic Authorization with the Authorization header)
+  - Based on the various new features for REST, JSON, and better support of
+    Web standards, added examples of the use of screen transitions for JSON
+    over REST services; see the ExampleApp.xml file
+- Screen Facade
+  - Added support for declared path-parameters in the URL path under a
+    transition (especially useful for simulating a resource at a URL)
+  - Implemented initial version of DbForm feature with support for
+    extending forms defined in XML Screen files; includes example extending
+    the UpdateExample form on the EditExample screen; for details see the
+    DbForm and related entities, and the example in the ExampleTypeData.xml
+- Service Facade
+  - Embedded Apache Camel, currently used in the ServiceFacade to transport
+    service calls using many different standards, plus Camel routing for
+    more flexible system integration
+  - CamelServiceRunner so that Moqui services can just send a Camel message
+  - Camel component, endpoint, and producer for receiving Moqui service
+    calls through camel (with URI like "moquiservice:package.serviceName")
+  - Example Moqui service that sends a Camel message, and example service
+    that service calls through the Moqui Camel Endpoint (Producer)
+  - Support for nested parameter elements in service definitions for
+    Map and Node (groovy.util.Node) parameters; the main reason for Node
+    support is for XML messages coming in such as the OAGIS ones to be
+    handled directly by a service (this is one part of Mantle)
+  - Added option to service-call tag to send result as a JSON response
+    using the WebFacade.sendJsonResponse() method
+  - Service database-driven semaphores to avoid multiple instances of the
+    same service running at the same time
+- Entity Facade
+  - View entity member-entity.entity-condition for conditions on joins
+  - View entity alias.complex-alias implemented for formulas in queries
+  - Added "cursor" option for the database.@offset-style attribute for
+    databases that do not support the offset/limit or fetch syntax
+    variations; using this option will result in an EntityListIterator
+    being used instead of letting the database handle the partial results
 
 Bug Fixes:
 
@@ -697,8 +703,6 @@ Features designed or considered, but not to be included in 1.0 series
     Survey and related entities (DbForm already in place to extend
     XML Screen Forms)
   - Form render template for cwiki render mode (even useful?)
-- Service Facade
-  - Service database-driven semaphores
 - Entity Facade
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element

@@ -23,6 +23,8 @@ import org.moqui.impl.service.runner.EntityAutoServiceRunner
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.service.ServiceException
 import org.moqui.context.ArtifactAuthorizationException
+import org.moqui.entity.EntityValue
+import java.sql.Timestamp
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
@@ -165,7 +167,45 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             }
         }
 
-        // TODO (future) sd.serviceNode."@semaphore"
+        // handle sd.serviceNode."@semaphore"
+        String semaphore = sd.getServiceNode()."@semaphore"
+        if (semaphore == "fail" || semaphore == "wait") {
+            EntityValue serviceSemaphore = eci.getEntity().makeFind("moqui.service.semaphore.ServiceSemaphore")
+                    .condition("serviceName", getServiceName()).useCache(false).one()
+            if (serviceSemaphore) {
+                long ignoreMillis = ((sd.getServiceNode()."@semaphore-ignore" ?: "3600") as Long) * 1000
+                Timestamp lockTime = serviceSemaphore.getTimestamp("lockTime")
+                if (System.currentTimeMillis() > (lockTime.getTime() + ignoreMillis)) {
+                    eci.getService().sync().name("delete", "ServiceSemaphore").parameters([serviceName:getServiceName()]).call()
+                }
+
+                if (semaphore == "fail") {
+                    throw new ServiceException("An instance of service [${getServiceName()}] is already running (thread [${serviceSemaphore.lockThread}], locked at ${serviceSemaphore.lockTime}) and it is setup to fail on semaphore conflict.")
+                } else {
+                    long sleepTime = ((sd.getServiceNode()."@semaphore-sleep" ?: "5") as Long) * 1000
+                    long timeoutTime = ((sd.getServiceNode()."@semaphore-timeout" ?: "120") as Long) * 1000
+                    long startTime = System.currentTimeMillis()
+                    boolean semaphoreCleared = false
+                    while (System.currentTimeMillis() < (startTime + timeoutTime)) {
+                        Thread.wait(sleepTime)
+                        if (eci.getEntity().makeFind("moqui.service.semaphore.ServiceSemaphore")
+                                .condition("serviceName", getServiceName()).useCache(false).one() == null) {
+                            semaphoreCleared = true
+                            break
+                        }
+                    }
+                    if (!semaphoreCleared) {
+                        throw new ServiceException("An instance of service [${getServiceName()}] is already running (thread [${serviceSemaphore.lockThread}], locked at ${serviceSemaphore.lockTime}) and it is setup to wait on semaphore conflict, but the semaphore did not clear in ${timeoutTime/1000} seconds.")
+                    }
+                }
+            }
+
+            // if we got to here the semaphore didn't exist or has cleared, so create one
+            eci.getService().sync().name("create", "ServiceSemaphore")
+                    .parameters([serviceName:getServiceName(), lockThread:Thread.currentThread().getName(),
+                            lockTime:new Timestamp(System.currentTimeMillis())])
+                    .call()
+        }
 
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
 
@@ -217,6 +257,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         } catch (TransactionException e) {
             throw e
         } finally {
+            // clear the semaphore
+            if (semaphore == "fail" || semaphore == "wait") {
+                eci.getService().sync().name("delete", "ServiceSemaphore").parameters([serviceName:getServiceName()]).call()
+            }
+
             try {
                 if (suspendedTransaction) tf.resume()
             } catch (Throwable t) {

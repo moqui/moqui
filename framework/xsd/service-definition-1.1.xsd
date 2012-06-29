@@ -56,11 +56,6 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="remote-xml-rpc"/>
                         <xs:enumeration value="remote-json-rpc"/>
                         <xs:enumeration value="camel"/>
-                        <!-- TABLED: not to include in 1.0
-                        <xs:enumeration value="proxy-http"/>
-                        <xs:enumeration value="proxy-jms"/>
-                        <xs:enumeration value="proxy-rmi"/>
-                        -->
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
@@ -121,7 +116,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             -->
             <!-- Tabled for now, not to be part of 1.0: <xs:attribute name="max-retry" type="xs:int" default="-1"/> -->
-            <!-- Tabled for now, not to be part of 1.0:
             <xs:attribute name="semaphore" default="none">
                 <xs:annotation><xs:documentation>
                     Intended for use in long-running services (usually scheduled). This uses a record in the database
@@ -136,9 +130,16 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="semaphore-wait-seconds" type="xs:int" default="300"/>
-            <xs:attribute name="semaphore-sleep" type="xs:int" default="500"/>
-            -->
+            <xs:attribute name="semaphore-timeout" type="xs:int" default="120">
+                <xs:annotation><xs:documentation>When waiting how long before timing out, in seconds.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="semaphore-sleep" type="xs:int" default="5">
+                <xs:annotation><xs:documentation>When waiting how long to sleep between checking the semaphore, in
+                    seconds.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="semaphore-ignore" type="xs:int" default="3600">
+                <xs:annotation><xs:documentation>Ignore existing semaphores after this time, in seconds.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="in-parameters">
