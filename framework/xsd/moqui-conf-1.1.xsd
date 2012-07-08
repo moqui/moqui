@@ -367,83 +367,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
-    <!-- TABLED: not to include in 1.0
-      Example XML for conf file for using these elements when supported in the future:
-        <thread-pool send-to-pool="default">
-            <run-from-pool name="default"/>
-        </thread-pool>
-
-    <xs:element name="thread-pool">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="run-from-pool"/>
-            </xs:sequence>
-            <xs:attribute name="send-to-pool" type="xs:string" use="required"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="run-from-pool">
-        <xs:complexType>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-        </xs:complexType>
-    </xs:element>
-    -->
-    <!-- TABLED: not to include in 1.0
-        <!- - JMS ServiceFacade Queue/Topic Configuration - ->
-        <!- -
-        <jms-service name="serviceMessenger" send-mode="all">
-            <server-jndi context-provider-url="rmi://127.0.0.1:1099"
-                         initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
-                         url-pkg-prefixes="java.naming.rmi.security.manager"
-                         security-principal="" security-credentials=""/>
-            <server-jms jndi-name="jms/TopicConnectionFactory"
-                        topic-queue-name="jms/MyTopic" type="topic"
-                        username="admin" password="admin"
-                        listen="true"/>
-        </jms-service>
-        - ->
-
-    <xs:element name="jms-service">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="server-jndi"/>
-                <xs:element maxOccurs="unbounded" ref="server-jms"/>
-            </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="send-mode" default="none">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="none"/>
-                        <xs:enumeration value="all"/>
-                        <xs:enumeration value="first-available"/>
-                        <xs:enumeration value="random"/>
-                        <xs:enumeration value="round-robin"/>
-                        <xs:enumeration value="least-load"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="server-jms">
-        <xs:complexType>
-            <xs:attribute name="jndi-name" type="xs:string" use="required"/>
-            <xs:attribute name="topic-queue-name" type="xs:string" use="required"/>
-            <xs:attribute name="type" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="topic"/>
-                        <xs:enumeration value="queue"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="username" type="xs:string"/>
-            <xs:attribute name="password" type="xs:string"/>
-            <xs:attribute name="client-id" type="xs:string"/>
-            <xs:attribute name="listen" default="false" type="boolean">
-            </xs:attribute>
-            <!- - need this? <xs:attribute name="listener-class" type="xs:string"/> - ->
-        </xs:complexType>
-    </xs:element>
-    -->
     <xs:element name="server-jndi">
         <xs:complexType>
             <xs:attribute name="context-provider-url" type="xs:string"/>
@@ -485,10 +408,16 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:choice>
             </xs:sequence>
             <xs:attribute name="group-name" type="xs:string" use="required"/>
-            <xs:attribute name="database-conf-name" type="xs:string" use="required"/>
+            <xs:attribute name="database-conf-name" type="xs:string">
+                <xs:annotation><xs:documentation>This is only required for JDBC/SQL datasources.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="schema-name" type="xs:string"/>
             <xs:attribute name="runtime-add-missing" default="true" type="boolean"/>
             <xs:attribute name="runtime-add-fks" default="false" type="boolean"/>
+            <xs:attribute name="object-factory" type="xs:string" default="org.moqui.impl.entity.EntityDatasourceFactoryImpl">
+                <xs:annotation><xs:documentation>The references class must implement the
+                    org.moqui.entity.EntityDatasourceFactory interface.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="inline-jdbc">

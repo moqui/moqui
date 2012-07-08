@@ -75,6 +75,10 @@ This release includes:
     databases that do not support the offset/limit or fetch syntax
     variations; using this option will result in an EntityListIterator
     being used instead of letting the database handle the partial results
+  - Added EntityDatasourceFactory interface and object-factory attribute
+    to the entity-facade.datasource element in the moqui-conf XML file;
+    the default implementation is for JDBC/SQL databases, and other
+    implementations can be used for other data sources
 
 Bug Fixes:
 

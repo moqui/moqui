@@ -11,57 +11,38 @@
  */
 package org.moqui.impl.entity
 
-import com.atomikos.jdbc.AtomikosDataSourceBean
-import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
-import com.atomikos.jdbc.AbstractDataSourceBean
-
-import java.sql.Connection
-import javax.sql.DataSource
-import javax.sql.XADataSource
-import javax.naming.InitialContext
-import javax.naming.Context
-import javax.naming.NamingException
+import net.sf.ehcache.Ehcache
+import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
-
-import org.moqui.entity.EntityCondition
-import org.moqui.entity.EntityConditionFactory
-import org.moqui.entity.EntityDataLoader
-import org.moqui.entity.EntityException
-import org.moqui.entity.EntityFacade
-import org.moqui.entity.EntityValue
-import org.moqui.entity.EntityFind
-import org.moqui.entity.EntityList
-
-import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.StupidUtilities
-
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
+import org.moqui.impl.context.ArtifactExecutionFacadeImpl
+import org.moqui.impl.context.CacheImpl
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 import org.w3c.dom.Element
-import org.apache.commons.collections.set.ListOrderedSet
-import org.moqui.entity.EntityDataWriter
+
+import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
-import org.moqui.entity.EntityListIterator
-import org.moqui.impl.context.CacheImpl
-import net.sf.ehcache.Ehcache
-import org.moqui.impl.context.ArtifactExecutionFacadeImpl
+import javax.sql.DataSource
+import javax.sql.XADataSource
+
+import org.moqui.entity.*
 
 class EntityFacadeImpl implements EntityFacade {
-    protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
     protected final String tenantId
 
     protected final EntityConditionFactoryImpl entityConditionFactory
 
-    protected final Map<String, DataSource> dataSourceByGroupMap = new HashMap()
+    protected final Map<String, EntityDatasourceFactory> datasourceFactoryByGroupMap = new HashMap()
 
     /** Cache with entity name as the key and an EntityDefinition as the value; clear this cache to reload entity def */
     protected final Cache entityDefinitionCache
@@ -99,124 +80,11 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected void initAllDatasources() {
-        EntityValue tenant = null
-        EntityFacadeImpl defaultEfi = null
-        if (this.tenantId != "DEFAULT") {
-            defaultEfi = ecfi.getEntityFacade("DEFAULT")
-            tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
-        }
-
-        for(Node datasource in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
-            EntityValue tenantDataSource = null
-            EntityList tenantDataSourceXaPropList = null
-            if (tenant != null) {
-                tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
-                        .condition("entityGroupName", datasource."@group-name").one()
-                tenantDataSourceXaPropList = defaultEfi.makeFind("moqui.tenant.TenantDataSourceXaProp")
-                        .condition("tenantId", this.tenantId).condition("entityGroupName", datasource."@group-name")
-                        .list()
-            }
-
-            if (datasource."jndi-jdbc") {
-                Node serverJndi = this.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]
-                try {
-                    InitialContext ic;
-                    if (serverJndi) {
-                        Hashtable<String, Object> h = new Hashtable<String, Object>()
-                        h.put(Context.INITIAL_CONTEXT_FACTORY, serverJndi."@initial-context-factory")
-                        h.put(Context.PROVIDER_URL, serverJndi."@context-provider-url")
-                        if (serverJndi."@url-pkg-prefixes") h.put(Context.URL_PKG_PREFIXES, serverJndi."@url-pkg-prefixes")
-                        if (serverJndi."@security-principal") h.put(Context.SECURITY_PRINCIPAL, serverJndi."@security-principal")
-                        if (serverJndi."@security-credentials") h.put(Context.SECURITY_CREDENTIALS, serverJndi."@security-credentials")
-                        ic = new InitialContext(h)
-                    } else {
-                        ic = new InitialContext()
-                    }
-
-                    String jndiName = tenantDataSource ? tenantDataSource.jndiName : datasource."jndi-jdbc"[0]."@jndi-name"
-                    XADataSource ds = (XADataSource) ic.lookup(jndiName)
-                    if (ds) {
-                        this.dataSourceByGroupMap.put(datasource."@group-name", (DataSource) ds)
-                    } else {
-                        logger.error("Could not find XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
-                    }
-                } catch (NamingException ne) {
-                    logger.error("Error finding XADataSource with name [${datasource."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasource."@group-name"}].")
-                }
-            } else if (datasource."inline-jdbc") {
-                Node inlineJdbc = datasource."inline-jdbc"[0]
-                Node xaProperties = inlineJdbc."xa-properties"[0]
-                Node database = this.getDatabaseNode(datasource."@group-name")
-
-                // special thing for embedded derby, just set an system property; for derby.log, etc
-                if (datasource."@database-conf-name" == "derby") {
-                    System.setProperty("derby.system.home", System.getProperty("moqui.runtime") + "/db/derby")
-                    logger.info("Set property derby.system.home to [${System.getProperty("derby.system.home")}]")
-                }
-
-                AbstractDataSourceBean ads
-                if (xaProperties) {
-                    AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
-                    ds.setUniqueResourceName(this.tenantId + datasource."@group-name")
-                    String xsDsClass = inlineJdbc."@xa-ds-class" ? inlineJdbc."@xa-ds-class" : database."@default-xa-ds-class"
-                    ds.setXaDataSourceClassName(xsDsClass)
-
-                    Properties p = new Properties()
-                    if (tenantDataSourceXaPropList) {
-                        for (EntityValue tenantDataSourceXaProp in tenantDataSourceXaPropList) {
-                            String propValue = tenantDataSourceXaProp.propValue
-                            // NOTE: consider changing this to expand for all system properties using groovy or something
-                            if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
-                            p.setProperty((String) tenantDataSourceXaProp.propName, propValue)
-                        }
-                    } else {
-                        for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
-                            // the Derby "databaseName" property has a ${moqui.runtime} which is a System property, others may have it too
-                            String propValue = entry.getValue()
-                            // NOTE: consider changing this to expand for all system properties using groovy or something
-                            if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
-                            p.setProperty(entry.getKey(), propValue)
-                        }
-                    }
-                    ds.setXaProperties(p)
-
-                    ads = ds
-                } else {
-                    AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
-                    ds.setUniqueResourceName(datasource."@group-name")
-                    String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
-                    ds.setDriverClassName(driver)
-                    ds.setUrl(tenantDataSource ? tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
-                    ds.setUser(tenantDataSource ? tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
-                    ds.setPassword(tenantDataSource ? tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
-
-                    ads = ds
-                }
-
-                String txIsolationLevel = inlineJdbc."@isolation-level" ? inlineJdbc."@isolation-level" : database."@default-isolation-level"
-                if (txIsolationLevel && getTxIsolationFromString(txIsolationLevel) != -1) {
-                    ads.setDefaultIsolationLevel(getTxIsolationFromString(txIsolationLevel))
-                }
-
-                // no need for this, just sets min and max sizes: ads.setPoolSize
-                if (inlineJdbc."@pool-minsize") ads.setMinPoolSize(inlineJdbc."@pool-minsize" as int)
-                if (inlineJdbc."@pool-maxsize") ads.setMaxPoolSize(inlineJdbc."@pool-maxsize" as int)
-
-                if (inlineJdbc."@pool-time-idle") ads.setMaxIdleTime(inlineJdbc."@pool-time-idle" as int)
-                if (inlineJdbc."@pool-time-reap") ads.setReapTimeout(inlineJdbc."@pool-time-reap" as int)
-                if (inlineJdbc."@pool-time-maint") ads.setMaintenanceInterval(inlineJdbc."@pool-time-maint" as int)
-                if (inlineJdbc."@pool-time-wait") ads.setBorrowConnectionTimeout(inlineJdbc."@pool-time-wait" as int)
-
-                if (inlineJdbc."@pool-test-query") {
-                    ads.setTestQuery(inlineJdbc."@pool-test-query")
-                } else if (database."@default-test-query") {
-                    ads.setTestQuery(database."@default-test-query")
-                }
-
-                this.dataSourceByGroupMap.put(datasource."@group-name", ads)
-            } else {
-                throw new EntityException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasource."@group-name"}])")
-            }
+        for(Node datasourceNode in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+            String groupName = datasourceNode."@group-name"
+            String objectFactoryClass = datasourceNode."@object-factory" ?: "org.moqui.impl.entity.EntityDatasourceFactoryImpl"
+            EntityDatasourceFactory edf = (EntityDatasourceFactory) Thread.currentThread().getContextClassLoader().loadClass(objectFactoryClass).newInstance()
+            datasourceFactoryByGroupMap.put(groupName, edf.init(this, datasourceNode, this.tenantId))
         }
     }
 
@@ -569,14 +437,11 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     void destroy() {
-        Set<String> groupNames = this.dataSourceByGroupMap.keySet()
+        Set<String> groupNames = this.datasourceFactoryByGroupMap.keySet()
         for (String groupName in groupNames) {
-            DataSource ds = this.dataSourceByGroupMap.get(groupName)
-            // destroy anything related to the internal impl, ie Atomikos
-            if (ds instanceof AtomikosDataSourceBean) {
-                this.dataSourceByGroupMap.put(groupName, null)
-                ((AtomikosDataSourceBean) ds).close()
-            }
+            EntityDatasourceFactory edf = this.datasourceFactoryByGroupMap.get(groupName)
+            this.datasourceFactoryByGroupMap.put(groupName, null)
+            edf.destroy()
         }
     }
 
@@ -974,8 +839,9 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#getConnection(String) */
     Connection getConnection(String groupName) {
-        DataSource ds = this.dataSourceByGroupMap.get(groupName)
-        if (!ds) throw new EntityException("DataSource not initialized for group-name [${groupName}]")
+        EntityDatasourceFactory edf = this.datasourceFactoryByGroupMap.get(groupName)
+        DataSource ds = edf.getDataSource()
+        if (ds == null) throw new EntityException("Cannot get JDBC Connection for group-name [${groupName}] because it has no DataSource")
         if (ds instanceof XADataSource) {
             return this.ecfi.transactionFacade.enlistConnection(((XADataSource) ds).getXAConnection())
         } else {
