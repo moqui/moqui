@@ -465,7 +465,7 @@ abstract class EntityFindBase implements EntityFind {
 
 
         // call the abstract method
-        EntityValueImpl newEntityValue = oneExtended(whereCondition)
+        EntityValue newEntityValue = oneExtended(whereCondition)
 
 
         // put it in whether null or not
@@ -486,7 +486,7 @@ abstract class EntityFindBase implements EntityFind {
 
         return newEntityValue
     }
-    abstract EntityValueImpl oneExtended(EntityConditionImplBase whereCondition) throws EntityException
+    abstract EntityValue oneExtended(EntityConditionImplBase whereCondition) throws EntityException
 
     /** @see org.moqui.entity.EntityFind#list() */
     EntityList list() throws EntityException {

@@ -24,6 +24,10 @@ import com.orientechnologies.orient.server.OServerMain
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool
 import com.orientechnologies.orient.core.db.document.ODatabaseDocument
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.metadata.schema.OClass
+import com.orientechnologies.orient.core.metadata.schema.OType
+import java.sql.Types
+import com.orientechnologies.orient.core.metadata.schema.OProperty
 
 class OrientDatasourceFactory implements EntityDatasourceFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(OrientDatasourceFactory.class)
@@ -110,4 +114,56 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
 
     @Override
     DataSource getDataSource() { return null }
+
+
+    void checkCreateDocumentClass(ODatabaseDocumentTx oddt, EntityDefinition ed) {
+        OClass oc = oddt.getMetadata().getSchema().getClass(ed.getEntityName())
+        if (oc == null) {
+            logger.info("Creating OrientDB class for entity [${ed.getEntityName()}] for database at [${uri}]")
+            oc = oddt.getMetadata().getSchema().createClass(ed.getEntityName())
+
+            // create all properties
+            List<String> pkFieldNames = ed.getPkFieldNames()
+            for (Node fieldNode in ed.getFieldNodes(true, true)) {
+                String fieldName = fieldNode."@name"
+                OProperty op = oc.createProperty(fieldName, getFieldType(fieldName, ed.getEntityName()))
+                if (pkFieldNames.contains(fieldName)) op.setMandatory(true).setNotNull(true)
+            }
+
+            // create "pk" index
+            oc.createIndex(ed.getEntityName() + "Pk", OClass.INDEX_TYPE.UNIQUE, pkFieldNames.toArray())
+            // TODO: will this work? method wants "String..." so String[] may not work...
+
+            // TODO: create other indexes
+
+            // TODO: create relationships
+        }
+    }
+
+    OType getFieldType(String fieldName, String entityName) {
+        String javaType = efi.getFieldJavaType(fieldName, entityName)
+        if (!javaType) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${entityName}]")
+        int javaTypeInt = efi.getJavaTypeInt(javaType)
+
+        OType fieldType = null
+        switch (javaTypeInt) {
+            case 1: fieldType = OType.STRING; break
+            case 2: fieldType = OType.DATETIME; break
+            case 3: fieldType = OType.STRING; break // NOTE: there doesn't seem to be a time only type...
+            case 4: fieldType = OType.DATE; break
+            case 5: fieldType = OType.INTEGER; break
+            case 6: fieldType = OType.LONG; break
+            case 7: fieldType = OType.FLOAT; break
+            case 8: fieldType = OType.DOUBLE; break
+            case 9: fieldType = OType.DECIMAL; break
+            case 10: fieldType = OType.BOOLEAN; break
+            case 11: fieldType = OType.BINARY; break // NOTE: looks like we'll have to take care of the serialization for objects
+            case 12: fieldType = OType.BINARY; break
+            case 13: fieldType = OType.STRING; break
+            case 14: fieldType = OType.DATETIME; break
+            case 15: fieldType = OType.EMBEDDEDLIST; break
+        }
+
+        return fieldType
+    }
 }

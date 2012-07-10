@@ -11,9 +11,15 @@
  */
 package org.moqui.impl.entity.orientdb
 
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.record.impl.ODocument
+import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery
+
+import org.apache.commons.collections.set.ListOrderedSet
+
+import org.moqui.entity.EntityException
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
-import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.entity.EntityValueBase
 
 class OrientEntityValue extends EntityValueBase {
@@ -29,25 +35,124 @@ class OrientEntityValue extends EntityValueBase {
     @Override
     void createExtended(ListOrderedSet fieldList) {
         EntityDefinition ed = getEntityDefinition()
-        // TODO
+        if (ed.isViewEntity()) throw new EntityException("Create not yet implemented for view-entity")
+
+        ODatabaseDocumentTx oddt = odf.getDatabase()
+        try {
+            odf.checkCreateDocumentClass(oddt, ed)
+
+            ODocument od = oddt.newInstance(ed.getEntityName())
+            for (Map.Entry<String, Object> valueEntry in getValueMap()) {
+                od.field(valueEntry.getKey(), valueEntry.getValue())
+            }
+            od.save()
+        } finally {
+            oddt.close()
+        }
     }
 
     @Override
     void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList) {
         EntityDefinition ed = getEntityDefinition()
-        // TODO
+        if (ed.isViewEntity()) throw new EntityException("Update not yet implemented for view-entity")
+
+        // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
+        ODatabaseDocumentTx oddt = odf.getDatabase()
+        try {
+            odf.checkCreateDocumentClass(oddt, ed)
+
+            StringBuilder sql = new StringBuilder()
+            List<Object> paramValues = new ArrayList<Object>()
+            sql.append("SELECT FROM ").append(ed.getEntityName()).append(" WHERE ")
+
+            boolean isFirstPk = true
+            for (String fieldName in pkFieldList) {
+                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                sql.append(ed.getColumnName(fieldName, false)).append("= ?")
+                paramValues.add(getValueMap().get(fieldName))
+            }
+
+            OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
+            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+
+            // there should only be one value since we're querying by a set of fields with a unique index (the pk)
+            if (!documentList) throw new IllegalArgumentException("Document not found for entity [${ed.getEntityName()}] with pk [${this.getPrimaryKeys()}]")
+
+            ODocument document = documentList[0]
+            for (String fieldName in nonPkFieldList) document.field(fieldName, getValueMap().get(fieldName))
+            document.save()
+        } finally {
+            oddt.close()
+        }
     }
 
     @Override
     void deleteExtended() {
         EntityDefinition ed = getEntityDefinition()
-        // TODO
+        if (ed.isViewEntity()) throw new EntityException("Delete not yet implemented for view-entity")
+
+        // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
+        ODatabaseDocumentTx oddt = odf.getDatabase()
+        try {
+            odf.checkCreateDocumentClass(oddt, ed)
+
+            StringBuilder sql = new StringBuilder()
+            List<Object> paramValues = new ArrayList<Object>()
+            sql.append("SELECT FROM ").append(ed.getEntityName()).append(" WHERE ")
+
+            boolean isFirstPk = true
+            for (String fieldName in ed.getPkFieldNames()) {
+                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                sql.append(ed.getColumnName(fieldName, false)).append("= ?")
+                paramValues.add(getValueMap().get(fieldName))
+            }
+
+            OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
+            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+
+            // there should only be one value since we're querying by a set of fields with a unique index (the pk)
+            if (!documentList) throw new IllegalArgumentException("Document not found for entity [${ed.getEntityName()}] with pk [${this.getPrimaryKeys()}]")
+
+            ODocument document = documentList[0]
+            document.delete()
+        } finally {
+            oddt.close()
+        }
     }
 
     @Override
     boolean refreshExtended() {
         EntityDefinition ed = getEntityDefinition()
-        // TODO
-        return false
+
+        // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
+        ODatabaseDocumentTx oddt = odf.getDatabase()
+        try {
+            odf.checkCreateDocumentClass(oddt, ed)
+
+            StringBuilder sql = new StringBuilder()
+            List<Object> paramValues = new ArrayList<Object>()
+            sql.append("SELECT FROM ").append(ed.getEntityName()).append(" WHERE ")
+
+            boolean isFirstPk = true
+            for (String fieldName in ed.getPkFieldNames()) {
+                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                sql.append(ed.getColumnName(fieldName, false)).append("= ?")
+                paramValues.add(getValueMap().get(fieldName))
+            }
+
+            OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
+            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+
+            // there should only be one value since we're querying by a set of fields with a unique index (the pk)
+            if (!documentList) return false
+
+            ODocument document = documentList[0]
+            for (String fieldName in ed.getFieldNames(false, true))
+                getValueMap().put(fieldName, document.field(fieldName))
+
+            return true
+        } finally {
+            oddt.close()
+        }
     }
 }

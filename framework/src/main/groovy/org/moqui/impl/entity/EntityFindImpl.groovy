@@ -42,7 +42,7 @@ class EntityFindImpl extends EntityFindBase {
     // ======================== Run Find Methods ==============================
 
     @Override
-    EntityValueImpl oneExtended(EntityConditionImplBase whereCondition) throws EntityException {
+    EntityValue oneExtended(EntityConditionImplBase whereCondition) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
 
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
@@ -63,10 +63,10 @@ class EntityFindImpl extends EntityFindBase {
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
-        EntityValueImpl newEntityValue = null
+        EntityValue newEntityValue = null
         try {
             efi.getEntityDbMeta().checkTableRuntime(ed)
-            newEntityValue = (EntityValueImpl) internalOne(efb, whereCondition.toString())
+            newEntityValue = internalOne(efb, whereCondition.toString())
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)
         } finally {

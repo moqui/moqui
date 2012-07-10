@@ -18,11 +18,11 @@ import org.moqui.impl.entity.condition.EntityConditionImplBase
 class EntityFindBuilder extends EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
 
-    protected EntityFindImpl entityFindImpl
+    protected EntityFindBase entityFindBase
 
-    EntityFindBuilder(EntityDefinition entityDefinition, EntityFindImpl entityFindImpl) {
-        super(entityDefinition, entityFindImpl.efi)
-        this.entityFindImpl = entityFindImpl
+    EntityFindBuilder(EntityDefinition entityDefinition, EntityFindBase entityFindBase) {
+        super(entityDefinition, entityFindBase.efi)
+        this.entityFindBase = entityFindBase
 
         // this is always going to start with "SELECT ", so just set it here
         this.sqlTopLevel.append("SELECT ")
@@ -49,7 +49,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
     void makeDistinct() { this.sqlTopLevel.append("DISTINCT ") }
 
     void makeCountFunction() {
-        boolean isDistinct = this.entityFindImpl.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&
+        boolean isDistinct = this.entityFindBase.getDistinct() || (this.mainEntityDefinition.isViewEntity() &&
                 "true" == this.mainEntityDefinition.getEntityNode()."entity-condition"?.getAt(0)?."@distinct")
         boolean isGroupBy = this.mainEntityDefinition.hasFunctionAlias()
 
@@ -64,15 +64,15 @@ class EntityFindBuilder extends EntityQueryBuilder {
              * some cases it seems to cause the "COUNT(DISTINCT " to appear twice, causing an attempt to try to count
              * a count (function="count-distinct", distinct=true in find options)
              */
-            if (this.entityFindImpl.fieldsToSelect) {
-                Node aliasNode = this.mainEntityDefinition.getFieldNode(this.entityFindImpl.fieldsToSelect[0])
+            if (this.entityFindBase.fieldsToSelect) {
+                Node aliasNode = this.mainEntityDefinition.getFieldNode(this.entityFindBase.fieldsToSelect[0])
                 if (aliasNode && aliasNode."@function") {
                     // if the field has a function already we don't want to count just it, would be meaningless
                     this.sqlTopLevel.append("COUNT(DISTINCT *) ")
                 } else {
                     this.sqlTopLevel.append("COUNT(DISTINCT ")
                     // TODO: possible to do all fieldsToSelect, or only one in SQL? if do all col names here it will blow up...
-                    this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(this.entityFindImpl.fieldsToSelect[0], false))
+                    this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(this.entityFindBase.fieldsToSelect[0], false))
                     this.sqlTopLevel.append(")")
                 }
             } else {
@@ -364,9 +364,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
         if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
         String sql = this.getSqlTopLevel().toString()
         try {
-            this.ps = connection.prepareStatement(sql, this.entityFindImpl.resultSetType, this.entityFindImpl.resultSetConcurrency)
-            if (this.entityFindImpl.maxRows > 0) this.ps.setMaxRows(this.entityFindImpl.maxRows)
-            if (this.entityFindImpl.fetchSize > 0) this.ps.setFetchSize(this.entityFindImpl.fetchSize)
+            this.ps = connection.prepareStatement(sql, this.entityFindBase.resultSetType, this.entityFindBase.resultSetConcurrency)
+            if (this.entityFindBase.maxRows > 0) this.ps.setMaxRows(this.entityFindBase.maxRows)
+            if (this.entityFindBase.fetchSize > 0) this.ps.setFetchSize(this.entityFindBase.fetchSize)
         } catch (SQLException e) {
             handleSqlException(e, sql)
         }

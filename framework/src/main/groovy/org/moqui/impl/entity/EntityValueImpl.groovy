@@ -173,7 +173,6 @@ class EntityValueImpl extends EntityValueBase {
         // NOTE: this simple approach may not work for view-entities, but not restricting for now
 
         List<String> pkFieldList = ed.getPkFieldNames()
-        if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
         ListOrderedSet nonPkFieldList = ed.getFieldNames(false, true)
         // NOTE: even if there are no non-pk fields do a refresh in order to see if the record exists or not
 

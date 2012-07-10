@@ -65,7 +65,8 @@ abstract class EntityValueBase implements EntityValue {
         return entityDefinition
     }
 
-    protected Map<String, Object> getValueMap() { return valueMap }
+    // NOTE: this is no longer protected so that external add-on code can set original values from a datasource
+    Map<String, Object> getValueMap() { return valueMap }
     protected Map<String, Object> getDbValueMap() { return dbValueMap }
     protected void setDbValueMap(Map<String, Object> map) { dbValueMap = map }
 
@@ -837,6 +838,9 @@ abstract class EntityValueBase implements EntityValue {
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", true)
+
+        List<String> pkFieldList = ed.getPkFieldNames()
+        if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
 
         // call the abstract method
         boolean retVal = this.refreshExtended()
