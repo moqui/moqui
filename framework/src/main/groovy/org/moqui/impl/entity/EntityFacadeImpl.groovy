@@ -88,6 +88,8 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    ExecutionContextFactoryImpl getEcfi() { return ecfi }
+
     static int getTxIsolationFromString(String isolationLevel) {
         if (!isolationLevel) return -1
         if ("Serializable".equals(isolationLevel)) {

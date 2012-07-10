@@ -405,6 +405,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:choice minOccurs="1" maxOccurs="1">
                     <xs:element minOccurs="0" maxOccurs="1" ref="jndi-jdbc"/>
                     <xs:element minOccurs="0" maxOccurs="1" ref="inline-jdbc"/>
+                    <xs:element minOccurs="0" maxOccurs="1" ref="inline-other"/>
                 </xs:choice>
             </xs:sequence>
             <xs:attribute name="group-name" type="xs:string" use="required"/>
@@ -460,6 +461,9 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="xa-properties">
+        <xs:complexType><xs:anyAttribute processContents="skip"/></xs:complexType>
+    </xs:element>
+    <xs:element name="inline-other">
         <xs:complexType><xs:anyAttribute processContents="skip"/></xs:complexType>
     </xs:element>
     <xs:element name="load-entity">
