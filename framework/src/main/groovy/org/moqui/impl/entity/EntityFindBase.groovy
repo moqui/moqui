@@ -557,7 +557,7 @@ abstract class EntityFindBase implements EntityFind {
 
         EntityListImpl el
         Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed.getEntityName()))
-        if (this.limit != null && databaseNode."@offset-style" == "cursor") {
+        if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
             el = eli.getPartialList(this.offset ?: 0, this.limit, true)
         } else {
             el = eli.getCompleteList(true)

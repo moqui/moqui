@@ -55,6 +55,8 @@ class EntityDbMeta {
         if (entityTablesChecked.containsKey(ed.entityName)) return
 
         Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
+        // if there is no @database-conf-name skip this, it's probably not a SQL/JDBC datasource
+        if (!datasourceNode."@database-conf-name") return
 
         long startTime = System.currentTimeMillis()
         boolean suspendedTransaction = false

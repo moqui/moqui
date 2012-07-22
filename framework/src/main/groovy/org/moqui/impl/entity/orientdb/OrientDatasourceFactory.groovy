@@ -29,6 +29,19 @@ import com.orientechnologies.orient.core.metadata.schema.OType
 import java.sql.Types
 import com.orientechnologies.orient.core.metadata.schema.OProperty
 
+/**
+ * To use this:
+ * 1. add a datasource under the entity-facade element in the Moqui Conf file; for example:
+ *      <datasource group-name="transactional_nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory">
+ *          <inline-other uri="local:runtime/db/orient/transactional" username="moqui" password="moqui"/>
+ *      </datasource>
+ *
+ * 2. to get OrientDB to automatically create the database, add a corresponding "storage" element to the
+ *      orientdb-server-config.xml file
+ *
+ * 3. add the group-name attribute to entity elements as needed to point them to the new datasource; for example:
+ *      group-name="transactional_nosql"
+ */
 class OrientDatasourceFactory implements EntityDatasourceFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(OrientDatasourceFactory.class)
 
@@ -117,22 +130,28 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
 
 
     void checkCreateDocumentClass(ODatabaseDocumentTx oddt, EntityDefinition ed) {
-        OClass oc = oddt.getMetadata().getSchema().getClass(ed.getEntityName())
+        // TODO: do something with view entities
+        if (ed.isViewEntity()) return
+
+        OClass oc = oddt.getMetadata().getSchema().getClass(ed.getTableName())
         if (oc == null) {
             logger.info("Creating OrientDB class for entity [${ed.getEntityName()}] for database at [${uri}]")
-            oc = oddt.getMetadata().getSchema().createClass(ed.getEntityName())
+            oc = oddt.getMetadata().getSchema().createClass(ed.getTableName())
 
             // create all properties
             List<String> pkFieldNames = ed.getPkFieldNames()
             for (Node fieldNode in ed.getFieldNodes(true, true)) {
                 String fieldName = fieldNode."@name"
-                OProperty op = oc.createProperty(fieldName, getFieldType(fieldName, ed.getEntityName()))
+                OProperty op = oc.createProperty(ed.getColumnName(fieldName, false), getFieldType(fieldName, ed.getEntityName()))
                 if (pkFieldNames.contains(fieldName)) op.setMandatory(true).setNotNull(true)
             }
 
             // create "pk" index
-            oc.createIndex(ed.getEntityName() + "Pk", OClass.INDEX_TYPE.UNIQUE, pkFieldNames.toArray())
-            // TODO: will this work? method wants "String..." so String[] may not work...
+            // this silly API uses the Java ellipses syntax for a variable number of arguments instead of allowing an array or list to be passed in, so do a silly mini-script...
+            StringBuilder createIndexSb = new StringBuilder("oc.createIndex(ed.getTableName() + \"_PK\", OClass.INDEX_TYPE.UNIQUE")
+            for (String pkFieldName in pkFieldNames) createIndexSb.append(", \"").append(ed.getColumnName(pkFieldName, false)).append("\"")
+            createIndexSb.append(")")
+            Eval.me(createIndexSb.toString())
 
             // TODO: create other indexes
 
@@ -141,7 +160,9 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
     }
 
     OType getFieldType(String fieldName, String entityName) {
-        String javaType = efi.getFieldJavaType(fieldName, entityName)
+        EntityDefinition ed = efi.getEntityDefinition(entityName)
+        Node fieldNode = ed.getFieldNode(fieldName)
+        String javaType = efi.getFieldJavaType(fieldNode."@type", entityName)
         if (!javaType) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${entityName}]")
         int javaTypeInt = efi.getJavaTypeInt(javaType)
 

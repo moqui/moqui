@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- For configuration documentation see: http://code.google.com/p/orient/wiki/DBServer -->
+
 <orient-server>
 	<handlers>
 		<handler class="com.orientechnologies.orient.server.handler.distributed.ODistributedServerManager">
@@ -61,9 +64,12 @@
 	</network>
 	<storages>
 		<!-- Default in-memory storage. Data are not saved permanently. -->
-		<storage path="memory:temp" name="temp" userName="admin" userPassword="admin" loaded-at-startup="true" />
+		<storage name="temp" path="memory:temp" userName="admin" userPassword="admin" loaded-at-startup="true" />
+        <storage name="transactional" path="local:runtime/db/orient/transactional"
+                 userName="moqui" userPassword="moqui" loaded-at-startup="true" />
 	</storages>
 	<users>
+        <user name="moqui" password="moqui" resources="*" />
 	</users>
 	<properties>
 		<!-- Caches static contents. If enabled the files will be kept in memory the first time are loaded. Changes to the files will be taken on the next restart -->
@@ -71,6 +77,6 @@
 
 		<!-- Enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
 		<entry name="log.console.level" value="info" />
-		<entry name="log.file.level" value="fine" />
+		<entry name="log.file.level" value="info" />
 	</properties>
 </orient-server>

@@ -66,7 +66,26 @@ class EntityFindImpl extends EntityFindBase {
         EntityValue newEntityValue = null
         try {
             efi.getEntityDbMeta().checkTableRuntime(ed)
-            newEntityValue = internalOne(efb, whereCondition.toString())
+
+            efb.makeConnection()
+            efb.makePreparedStatement()
+            efb.setPreparedStatementValues()
+
+            String condSql = whereCondition.toString()
+            ResultSet rs = efb.executeQuery()
+            if (rs.next()) {
+                newEntityValue = new EntityValueImpl(this.entityDef, this.efi)
+                int j = 1
+                for (String fieldName in this.fieldsToSelect) {
+                    EntityQueryBuilder.getResultSetValue(rs, j, this.entityDef.getFieldNode(fieldName), newEntityValue, this.efi)
+                    j++
+                }
+            } else {
+                logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${condSql}]")
+            }
+            if (rs.next()) {
+                logger.trace("Found more than one result for condition [${condSql}] on entity [${this.entityDef.getEntityName()}]")
+            }
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)
         } finally {
@@ -77,25 +96,6 @@ class EntityFindImpl extends EntityFindBase {
     }
 
     protected EntityValue internalOne(EntityFindBuilder efb, String condSql) {
-        efb.makeConnection()
-        efb.makePreparedStatement()
-        efb.setPreparedStatementValues()
-
-        EntityValue newEntityValue = null
-        ResultSet rs = efb.executeQuery()
-        if (rs.next()) {
-            newEntityValue = new EntityValueImpl(this.entityDef, this.efi)
-            int j = 1
-            for (String fieldName in this.fieldsToSelect) {
-                EntityQueryBuilder.getResultSetValue(rs, j, this.entityDef.getFieldNode(fieldName), newEntityValue, this.efi)
-                j++
-            }
-        } else {
-            logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${condSql}]")
-        }
-        if (rs.next()) {
-            logger.trace("Found more than one result for condition [${condSql}] on entity [${this.entityDef.getEntityName()}]")
-        }
         return newEntityValue
     }
 
@@ -103,43 +103,47 @@ class EntityFindImpl extends EntityFindBase {
     EntityListIterator iteratorExtended(EntityConditionImplBase whereCondition, EntityConditionImplBase havingCondition,
                                         List<String> orderByExpanded) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
-
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
-
         if (this.getDistinct()) efb.makeDistinct()
 
         // select fields
         efb.makeSqlSelectFields(this.fieldsToSelect)
-        
-        // from Clause
+        // FROM Clause
         efb.makeSqlFromClause()
 
-        // where clause
+        // WHERE clause
         if (whereCondition) {
             efb.startWhereClause()
             whereCondition.makeSqlWhere(efb)
         }
-
-        // group by clause
+        // GROUP BY clause
         efb.makeGroupByClause(this.fieldsToSelect)
-
-        // having clause
+        // HAVING clause
         if (havingCondition) {
             efb.startHavingClause()
             havingCondition.makeSqlWhere(efb)
         }
 
-        // order by clause
+        // ORDER BY clause
         efb.makeOrderByClause(orderByExpanded)
-
+        // LIMIT/OFFSET clause
         efb.addLimitOffset(this.limit, this.offset)
+        // FOR UPDATE
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
         EntityListIterator eli
         try {
             efi.getEntityDbMeta().checkTableRuntime(ed)
-            eli = internalIterator(efb)
+
+            Connection con = efb.makeConnection()
+            efb.makePreparedStatement()
+            efb.setPreparedStatementValues()
+
+            ResultSet rs = efb.executeQuery()
+            eli = new EntityListIteratorImpl(con, rs, this.getEntityDef(), this.fieldsToSelect, this.efi)
+            // ResultSet will be closed in the EntityListIterator
+            efb.releaseAll()
         } catch (EntityException e) {
             efb.closeAll()
             throw e
@@ -151,43 +155,25 @@ class EntityFindImpl extends EntityFindBase {
         return eli
     }
 
-    protected EntityListIteratorImpl internalIterator(EntityFindBuilder efb) {
-        EntityListIteratorImpl eli
-        Connection con = efb.makeConnection()
-        efb.makePreparedStatement()
-        efb.setPreparedStatementValues()
-
-        ResultSet rs = efb.executeQuery()
-
-        eli = new EntityListIteratorImpl(con, rs, this.getEntityDef(), this.fieldsToSelect, this.efi)
-        // ResultSet will be closed in the EntityListIterator
-        efb.releaseAll()
-        return eli
-    }
-
     @Override
     long countExtended(EntityConditionImplBase whereCondition, EntityConditionImplBase havingCondition)
             throws EntityException {
         EntityDefinition ed = this.getEntityDef()
-
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
         // count function instead of select fields
         efb.makeCountFunction()
-
-        // from Clause
+        // FROM Clause
         efb.makeSqlFromClause()
 
-        // where clause
+        // WHERE clause
         if (whereCondition) {
             efb.startWhereClause()
             whereCondition.makeSqlWhere(efb)
         }
-
-        // group by clause
+        // GROUP BY clause
         efb.makeGroupByClause(this.fieldsToSelect)
-
-        // having clause
+        // HAVING clause
         if (havingCondition) {
             efb.startHavingClause()
             havingCondition.makeSqlWhere(efb)

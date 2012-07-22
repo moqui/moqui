@@ -31,16 +31,19 @@ class EntityFindBuilder extends EntityQueryBuilder {
     void addLimitOffset(Integer limit, Integer offset) {
         if (limit == null && offset == null) return
         Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(mainEntityDefinition.getEntityName()))
-        if (databaseNode."@offset-style" == "limit") {
-            // use the LIMIT/OFFSET style
-            this.sqlTopLevel.append(" LIMIT ").append(limit ?: "ALL")
-            this.sqlTopLevel.append(" OFFSET ").append(offset ?: 0)
-        } else if (databaseNode."@offset-style" == "fetch" || !databaseNode."@offset-style") {
-            // use SQL2008 OFFSET/FETCH style by default
-            if (offset != null) this.sqlTopLevel.append(" OFFSET ").append(offset).append(" ROWS")
-            if (limit != null) this.sqlTopLevel.append(" FETCH FIRST ").append(limit).append(" ROWS ONLY")
+        // if no databaseNode do nothing, means it is not a standard SQL/JDBC database
+        if (databaseNode != null) {
+            if (databaseNode."@offset-style" == "limit") {
+                // use the LIMIT/OFFSET style
+                this.sqlTopLevel.append(" LIMIT ").append(limit ?: "ALL")
+                this.sqlTopLevel.append(" OFFSET ").append(offset ?: 0)
+            } else if (databaseNode."@offset-style" == "fetch" || !databaseNode."@offset-style") {
+                // use SQL2008 OFFSET/FETCH style by default
+                if (offset != null) this.sqlTopLevel.append(" OFFSET ").append(offset).append(" ROWS")
+                if (limit != null) this.sqlTopLevel.append(" FETCH FIRST ").append(limit).append(" ROWS ONLY")
+            }
+            // do nothing here for offset-style=cursor, taken care of in EntityFindImpl
         }
-        // do nothing here for offset-style=cursor, taken care of in EntityFindImpl
     }
 
     /** Adds FOR UPDATE, should be added to end of query */
@@ -113,10 +116,10 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
         if (localEntityDefinition.isViewEntity()) {
             Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(localEntityDefinition.getEntityName()))
-            String joinStyle = databaseNode."@join-style" ?: "ansi"
+            String joinStyle = databaseNode?."@join-style" ?: "ansi"
 
             if ("ansi" != joinStyle && "ansi-no-parenthesis" != joinStyle) {
-                throw new IllegalArgumentException("The join-style [${joinStyle}] is not supported, found on database [${databaseNode."@name"}]")
+                throw new IllegalArgumentException("The join-style [${joinStyle}] is not supported, found on database [${databaseNode?."@name"}]")
             }
 
             boolean useParenthesis = ("ansi" == joinStyle)

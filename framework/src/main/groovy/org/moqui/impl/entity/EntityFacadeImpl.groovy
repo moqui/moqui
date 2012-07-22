@@ -717,15 +717,15 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#makeValue(String) */
     EntityValue makeValue(String entityName) {
-        EntityDefinition entityDefinition = this.getEntityDefinition(entityName)
-        if (!entityDefinition) {
-            throw new EntityException("Entity not found for name [${entityName}]")
-        }
-        return new EntityValueImpl(entityDefinition, this)
+        EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
+        return edf.makeEntityValue(entityName)
     }
 
     /** @see org.moqui.entity.EntityFacade#makeFind(String) */
-    EntityFind makeFind(String entityName) { return new EntityFindImpl(this, entityName) }
+    EntityFind makeFind(String entityName) {
+        EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
+        return edf.makeEntityFind(entityName)
+    }
 
     /** @see org.moqui.entity.EntityFacade#sqlFind(String, List<Object>, String, List<String>) */
     EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList) {

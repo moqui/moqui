@@ -32,6 +32,12 @@ class OrientEntityValue extends EntityValueBase {
         this.odf = odf
     }
 
+    OrientEntityValue(EntityDefinition ed, EntityFacadeImpl efip, OrientDatasourceFactory odf, ODocument document) {
+        super(ed, efip)
+        this.odf = odf
+        for (String fieldName in ed.getAllFieldNames()) getValueMap().put(fieldName, document.field(ed.getColumnName(fieldName, false)))
+    }
+
     @Override
     void createExtended(ListOrderedSet fieldList) {
         EntityDefinition ed = getEntityDefinition()
@@ -41,9 +47,9 @@ class OrientEntityValue extends EntityValueBase {
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
-            ODocument od = oddt.newInstance(ed.getEntityName())
+            ODocument od = oddt.newInstance(ed.getTableName())
             for (Map.Entry<String, Object> valueEntry in getValueMap()) {
-                od.field(valueEntry.getKey(), valueEntry.getValue())
+                od.field(ed.getColumnName(valueEntry.getKey(), false), valueEntry.getValue())
             }
             od.save()
         } finally {
@@ -63,7 +69,7 @@ class OrientEntityValue extends EntityValueBase {
 
             StringBuilder sql = new StringBuilder()
             List<Object> paramValues = new ArrayList<Object>()
-            sql.append("SELECT FROM ").append(ed.getEntityName()).append(" WHERE ")
+            sql.append("SELECT FROM ").append(ed.getTableName()).append(" WHERE ")
 
             boolean isFirstPk = true
             for (String fieldName in pkFieldList) {
@@ -98,7 +104,7 @@ class OrientEntityValue extends EntityValueBase {
 
             StringBuilder sql = new StringBuilder()
             List<Object> paramValues = new ArrayList<Object>()
-            sql.append("SELECT FROM ").append(ed.getEntityName()).append(" WHERE ")
+            sql.append("SELECT FROM ").append(ed.getTableName()).append(" WHERE ")
 
             boolean isFirstPk = true
             for (String fieldName in ed.getPkFieldNames()) {
@@ -131,7 +137,7 @@ class OrientEntityValue extends EntityValueBase {
 
             StringBuilder sql = new StringBuilder()
             List<Object> paramValues = new ArrayList<Object>()
-            sql.append("SELECT FROM ").append(ed.getEntityName()).append(" WHERE ")
+            sql.append("SELECT FROM ").append(ed.getTableName()).append(" WHERE ")
 
             boolean isFirstPk = true
             for (String fieldName in ed.getPkFieldNames()) {

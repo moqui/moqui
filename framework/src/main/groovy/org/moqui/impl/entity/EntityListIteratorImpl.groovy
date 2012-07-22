@@ -323,7 +323,7 @@ class EntityListIteratorImpl implements EntityListIterator {
                 logger.error("EntityListIterator not closed for entity [${entityDefinition.getEntityName()}], caught in finalize()")
             }
         } catch (Exception e) {
-            logger.error("Error closing the SQLProcessor in finalize EntityListIterator", e);
+            logger.error("Error closing the ResultSet or Connection in finalize EntityListIterator", e);
         }
         super.finalize()
     }

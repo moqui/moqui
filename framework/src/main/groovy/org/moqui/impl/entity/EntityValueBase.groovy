@@ -661,11 +661,11 @@ abstract class EntityValueBase implements EntityValue {
 
     static class EntityFieldEntry implements Map.Entry<String, Object> {
         protected String key
-        protected EntityValueImpl evi
-        EntityFieldEntry(String key, EntityValueImpl evi) { this.key = key; this.evi = evi; }
+        protected EntityValueBase evb
+        EntityFieldEntry(String key, EntityValueBase evb) { this.key = key; this.evb = evb; }
         String getKey() { return key }
-        Object getValue() { return evi.get(key) }
-        Object setValue(Object v) { return evi.set(key, v) }
+        Object getValue() { return evb.get(key) }
+        Object setValue(Object v) { return evb.set(key, v) }
     }
 
     // ========== Object Override Methods ==========

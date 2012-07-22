@@ -167,7 +167,90 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             }
         }
 
-        // handle sd.serviceNode."@semaphore"
+        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
+
+        // validation
+        sd.convertValidateCleanParameters(currentParameters, eci)
+        // if error(s) in parameters, return now with no results
+        if (eci.getMessage().getErrors().size() > 0) return null
+
+        TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
+        boolean suspendedTransaction = false
+        Map<String, Object> result = null
+        try {
+            // authentication
+            sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
+            // NOTE: auto user login done above, before first authz check
+            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId())
+                eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
+
+            // if error in auth or for other reasons, return now with no results
+            if (eci.getMessage().getErrors().size() > 0) return null
+
+            if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+            boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(sd.getTxTimeout()) : false
+            try {
+                // handle sd.serviceNode."@semaphore"; do this after local transaction created, etc.
+                checkAddSemaphore(sd, eci)
+
+                sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
+                sfi.registerTxSecaRules(getServiceName(), currentParameters)
+                result = sr.runService(sd, currentParameters)
+                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
+                // if we got any errors added to the message list in the service, rollback for that too
+                if (eci.getMessage().getErrors().size() > 0) {
+                    tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.getMessage().getErrors().get(0), null)
+                }
+            } catch (ArtifactAuthorizationException e) {
+                // this is a local call, pass certain exceptions through
+                throw e
+            } catch (Throwable t) {
+                tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
+                // add all exception messages to the error messages list
+                eci.getMessage().addError(t.getMessage())
+                Throwable parent = t.getCause()
+                while (parent != null) {
+                    eci.getMessage().addError(parent.getMessage())
+                    parent = parent.getCause()
+                }
+            } finally {
+                // clear the semaphore
+                String semaphore = sd.getServiceNode()."@semaphore"
+                if (semaphore == "fail" || semaphore == "wait") {
+                    eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
+                            .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
+                }
+
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
+            }
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            try {
+                if (suspendedTransaction) tf.resume()
+            } catch (Throwable t) {
+                logger.error("Error resuming parent transaction after call to service [${getServiceName()}]")
+            }
+            try {
+                if (userLoggedIn) eci.getUser().logoutUser()
+            } catch (Throwable t) {
+                logger.error("Error logging out user after call to service [${getServiceName()}]")
+            }
+
+            long endTime = System.currentTimeMillis()
+            sfi.getEcfi().countArtifactHit("service", serviceType, getServiceName(), currentParameters, callStartTime, endTime, null)
+
+            if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds" + (eci.message.errors ? " with ${eci.message.errors.size()} error messages" : ", was successful"))
+        }
+
+        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
+        eci.getArtifactExecution().pop()
+
+        return result
+    }
+
+    protected void checkAddSemaphore(ServiceDefinition sd, ExecutionContextImpl eci) {
         String semaphore = sd.getServiceNode()."@semaphore"
         if (semaphore == "fail" || semaphore == "wait") {
             EntityValue serviceSemaphore = eci.getEntity().makeFind("moqui.service.semaphore.ServiceSemaphore")
@@ -176,7 +259,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 long ignoreMillis = ((sd.getServiceNode()."@semaphore-ignore" ?: "3600") as Long) * 1000
                 Timestamp lockTime = serviceSemaphore.getTimestamp("lockTime")
                 if (System.currentTimeMillis() > (lockTime.getTime() + ignoreMillis)) {
-                    eci.getService().sync().name("delete", "ServiceSemaphore").parameters([serviceName:getServiceName()]).call()
+                    eci.getService().sync().name("delete", "moqui.service.semaphore.ServiceSemaphore")
+                            .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
                 }
 
                 if (semaphore == "fail") {
@@ -201,88 +285,11 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             }
 
             // if we got to here the semaphore didn't exist or has cleared, so create one
-            eci.getService().sync().name("create", "ServiceSemaphore")
+            eci.getService().sync().name("create", "moqui.service.semaphore.ServiceSemaphore")
                     .parameters([serviceName:getServiceName(), lockThread:Thread.currentThread().getName(),
-                            lockTime:new Timestamp(System.currentTimeMillis())])
-                    .call()
+                    lockTime:new Timestamp(System.currentTimeMillis())])
+                    .requireNewTransaction(true).call()
         }
-
-        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
-
-        // validation
-        sd.convertValidateCleanParameters(currentParameters, eci)
-        // if error(s) in parameters, return now with no results
-        if (eci.getMessage().getErrors().size() > 0) return null
-
-        TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
-        boolean suspendedTransaction = false
-        Map<String, Object> result = null
-        try {
-            // authentication
-            sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
-            // NOTE: auto user login done above, before first authz check
-            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId())
-                eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
-
-            // if error in auth or for other reasons, return now with no results
-            if (eci.getMessage().getErrors().size() > 0) return null
-
-            if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
-            boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(sd.getTxTimeout()) : false
-            try {
-                sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
-                sfi.registerTxSecaRules(getServiceName(), currentParameters)
-                result = sr.runService(sd, currentParameters)
-                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
-                // if we got any errors added to the message list in the service, rollback for that too
-                if (eci.getMessage().getErrors().size() > 0) {
-                    tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (message): " + eci.getMessage().getErrors().get(0), null)
-                }
-            } catch (ArtifactAuthorizationException e) {
-                // this is a local call, pass certain exceptions through
-                throw e
-            } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
-                // add all exception messages to the error messages list
-                eci.getMessage().addError(t.getMessage())
-                Throwable parent = t.getCause()
-                while (parent != null) {
-                    eci.getMessage().addError(parent.getMessage())
-                    parent = parent.getCause()
-                }
-            } finally {
-                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
-                sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
-            }
-        } catch (TransactionException e) {
-            throw e
-        } finally {
-            // clear the semaphore
-            if (semaphore == "fail" || semaphore == "wait") {
-                eci.getService().sync().name("delete", "ServiceSemaphore").parameters([serviceName:getServiceName()]).call()
-            }
-
-            try {
-                if (suspendedTransaction) tf.resume()
-            } catch (Throwable t) {
-                logger.error("Error resuming parent transaction after call to service [${getServiceName()}]")
-            }
-            try {
-                if (userLoggedIn) eci.getUser().logoutUser()
-            } catch (Throwable t) {
-                logger.error("Error logging out user after call to service [${getServiceName()}]")
-            }
-
-            long endTime = System.currentTimeMillis()
-            sfi.getEcfi().countArtifactHit("service", serviceType, getServiceName(), currentParameters, callStartTime, endTime, null)
-
-            if (logger.traceEnabled) logger.trace("Finished call to service [${getServiceName()}] in ${(endTime-callStartTime)/1000} seconds" + (eci.message.errors ? " with ${eci.message.errors.size()} error messages" : ", was successful"))
-        }
-
-        // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
-        eci.getArtifactExecution().pop()
-
-        return result
     }
 
     protected Map<String, Object> runImplicitEntityAuto(Map<String, Object> currentParameters, ExecutionContextImpl eci) {

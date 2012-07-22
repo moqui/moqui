@@ -51,6 +51,12 @@ public class EntityDefinition {
         this.internalEntityNode = entityNode
 
         if (isViewEntity()) {
+            // get group-name, etc from member-entity
+            for (Node memberEntity in entityNode."member-entity") {
+                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                Node memberEntityNode = memberEd.getEntityNode()
+                if (memberEntityNode."@group-name") entityNode.attributes().put("group-name", memberEntityNode."@group-name")
+            }
             // if this is a view-entity, expand the alias-all elements into alias elements here
             this.expandAliasAlls()
             // set @type, set is-pk on all alias Nodes if the related field is-pk
