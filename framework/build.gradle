@@ -86,12 +86,6 @@ dependencies {
     compile name: 'org.eclipse.mylyn.wikitext.tracwiki.core_1.6.0.I20110830-0427', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.twiki.core_1.6.0.I20110830-0427', version: '' // EPL
 
-    compile name: 'orient-commons', version: '1.0.1' // Apache 2.0
-    compile name: 'orientdb-client', version: '1.0.1' // Apache 2.0
-    compile name: 'orientdb-core', version: '1.0.1' // Apache 2.0
-    compile name: 'orientdb-enterprise', version: '1.0.1' // Apache 2.0
-    compile name: 'orientdb-server', version: '1.0.1' // Apache 2.0
-
     compile name: 'quartz-all', version: '2.1.5' // Apache 2.0
 
     compile name: 'ws-commons-util', version: '1.0.2' // Apache 2.0

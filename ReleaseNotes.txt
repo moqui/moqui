@@ -79,6 +79,12 @@ This release includes:
     to the entity-facade.datasource element in the moqui-conf XML file;
     the default implementation is for JDBC/SQL databases, and other
     implementations can be used for other data sources
+  - Refactored EntityValueImpl and EntityFindImpl to create abstract base
+    classes that can be extended to more easily create custom datasource
+    interfaces for the Entity Facade
+  - There is an add-on component that uses this custom datasource facility
+    to add support for OrientDB, and other NoSQL and alternative
+    datasource interfaces will be added as add-ons over time
 
 Bug Fixes:
 
