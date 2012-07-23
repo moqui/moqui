@@ -423,17 +423,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </div>
     </#if>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>
-        <table class="form-list-outer" id="${formNode["@name"]}-table">
-        <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-        <#if needHeaderForm && !skipStart>
-            <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-            <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
-                <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
-        </#if>
-            <thead>
-                <tr class="form-header">
+        <div class="form-list-outer" id="${formNode["@name"]}-table">
+            <div class="form-header-group">
+                <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
+                <#if needHeaderForm && !skipStart>
+                    <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+                <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
+                    <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                <#else>
+                <div class="form-header-row">
+                </#if>
                     <#list formListColumnList as fieldListColumn>
-                        <th>
+                        <div class="form-header-cell">
                         <#list fieldListColumn["field-ref"] as fieldRef>
                             <#assign fieldRefName = fieldRef["@name"]>
                             <#assign fieldNode = "invalid">
@@ -448,14 +449,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                 </#if>
                             </#if>
                         </#list>
-                        </th>
+                        </div>
                     </#list>
-                </tr>
-            </thead>
-        <#if needHeaderForm && !skipStart>
-            </form>
-        </#if>
-            <tbody>
+                <#if needHeaderForm && !skipStart>
+                </form>
+                <#else>
+                </div>
+                </#if>
+            </div>
+            <div class="form-body">
             <#if isMulti && !skipStart>
                 <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
             </#if>
@@ -463,12 +465,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <#assign listEntryIndex = listEntry_index>
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                     ${sri.startFormListRow(formNode["@name"], listEntry)}
-                    <#if !isMulti>
-                        <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
+                    <#if isMulti>
+                    <div class="form-row">
+                    <#else>
+                    <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
                     </#if>
-                    <tr class="form-row">
                         <#list formNode["form-list-column"] as fieldListColumn>
-                            <td>
+                            <div class="form-cell">
                             <#list fieldListColumn["field-ref"] as fieldRef>
                                 <#assign fieldRefName = fieldRef["@name"]>
                                 <#assign fieldNode = "invalid">
@@ -476,89 +479,100 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                 <#if fieldNode == "invalid">
                                     <div>Error: could not find field with name [${fieldRefName}] referred to in a form-list-column.field-ref.@name attribute.</div>
                                 <#else>
-                                    <#assign formListFieldTag = "div">
+                                    <#assign formListSkipClass = true>
                                     <@formListSubField fieldNode/>
                                 </#if>
                             </#list>
-                            </td>
+                            </div>
                         </#list>
-                    </tr>
-                    <#if !isMulti>
-                        </form>
+                    <#if isMulti>
+                    </div>
+                    <#else>
                         <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
+                    </form>
                     </#if>
                     ${sri.endFormListRow()}
                 </#list>
             <#if isMulti && !skipEnd>
-                <tr class="form-row">
+                <div class="form-row">
                     <#assign isMultiFinalRow = true>
                     <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
-                </tr>
+                </div>
                 </form>
             </#if>
             <#if isMulti && !skipStart>
                 <script>$("#${formNode["@name"]}").validate();</script>
             </#if>
-            </tbody>
+            </div><!-- close table-body -->
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
-        </table>
+        </div><!-- close table -->
         ${sri.getAfterFormWriterText()}
     <#else>
-        <table class="form-list-outer" id="${formNode["@name"]}-table">
-        <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-        <#if needHeaderForm && !skipStart>
-            <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-            <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" method="post" action="${curUrlInfo.url}">
-        </#if>
-            <thead>
-                <tr class="form-header">
+        <div class="form-list-outer" id="${formNode["@name"]}-table">
+            <div class="form-header-group">
+                <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
+                <#if needHeaderForm && !skipStart>
+                    <#assign curUrlInfo = sri.getCurrentScreenUrl()>
+                    <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
+                <#else>
+                    <div class="form-header-row">
+                </#if>
                     <#list formNode["field"] as fieldNode>
                         <#if !(fieldNode["@hide"]?if_exists == "true" ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                 (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content))) &&
                                 !(isMulti && fieldNode["default-field"]?has_content && fieldNode["default-field"][0]["submit"]?has_content)>
-                            <th><@formListHeaderField fieldNode/></th>
+                            <div class="form-header-cell"><@formListHeaderField fieldNode/></div>
                         </#if>
                     </#list>
-                </tr>
-            </thead>
-        <#if needHeaderForm && !skipStart>
-            </form>
-        </#if>
-            <tbody>
-            <#if isMulti && !skipStart>
-                <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
-                    <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                <#if needHeaderForm && !skipStart>
+                    </form>
+                <#else>
+                    </div>
+                </#if>
+            </div>
+            <#if !skipStart>
+                <#if isMulti>
+                    <form name="${formNode["@name"]}" id="${formNode["@name"]}" class="form-body" method="post" action="${urlInfo.url}">
+                        <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                <#else>
+                    <div class="form-body">
+                </#if>
             </#if>
                 <#list listObject as listEntry>
                     <#assign listEntryIndex = listEntry_index>
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                     ${sri.startFormListRow(formNode["@name"], listEntry)}
-                    <#if !isMulti>
-                        <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" method="post" action="${urlInfo.url}">
+                    <#if isMulti>
+                        <div class="form-row">
+                    <#else>
+                        <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
                     </#if>
-                    <tr class="form-row">
                         <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
-                    </tr>
-                    <#if !isMulti>
+                    <#if isMulti>
+                        </div>
+                    <#else>
+                            <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
                         </form>
-                        <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
                     </#if>
                     ${sri.endFormListRow()}
                 </#list>
-            <#if isMulti && !skipEnd>
-                <tr class="form-row">
-                    <#assign isMultiFinalRow = true>
-                    <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
-                </tr>
-                </form>
+            <#if !skipEnd>
+                <#if isMulti>
+                    <div class="form-row">
+                        <#assign isMultiFinalRow = true>
+                        <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
+                    </div>
+                    </form>
+                <#else>
+                    </div>
+                </#if>
             </#if>
             <#if isMulti && !skipStart>
                 <script>$("#${formNode["@name"]}").validate();</script>
             </#if>
-            </tbody>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
-        </table>
+        </div>
         ${sri.getAfterFormWriterText()}
     </#if>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
@@ -613,7 +627,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#-- don't do a column for submit fields, they'll go in their own row at the bottom -->
     <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
     <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
-    <${formListFieldTag!"td"}>
+    <div<#if !formListSkipClass?if_exists> class="form-cell"</#if>>
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
                 <#assign linkNode = widgetNode>
@@ -626,7 +640,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#t><#visit widgetNode>
             </#if>
         </#list>
-    </${formListFieldTag!"td"}>
+    </div>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 

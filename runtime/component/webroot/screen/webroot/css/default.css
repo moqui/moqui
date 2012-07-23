@@ -91,36 +91,45 @@ tr:hover { background-color: #DDD; }
 fieldset.form-single-outer {
 margin: 4px;
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #DDDDDF;
-padding: 4px;
-width: 95%;
+padding: 4px; width: 95%;
 }
-table.form-list-outer {
-margin: 4px;
-border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
-padding: 4px;
-width: 100%;
-}
-
-.form-title { padding: 0px 8px 0px 2px; font-size: .9em; font-weight: bold; }
-table.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
-
-.form-header-field { white-space: nowrap; }
-tr.form-header th, th div.form-title { vertical-align: top; }
 
 .single-form-field { padding-right: 10px; }
 .single-form-field span { font-size: .8em; }
 .single-form-field span input { margin-right: 4px; }
 label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
 
-.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select, tr.form-row td { font-size: .8em; }
+.field-row { }
+.field-row-item { float: left; display: inline-block; }
+
+.form-list-outer {
+margin: 4px;
+border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
+padding: 4px; width: 100%;
+display: table; table-layout: auto; border-collapse: separate; empty-cells: show;
+}
+.form-header-group { display: table-header-group; }
+.form-header-row { display: table-row; }
+.form-header-cell { display: table-cell; text-align: left; padding: 0px 4px 0px 2px; }
+.form-body { display: table-row-group; }
+.form-row { display: table-row; background-color: #FFF; }
+.form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: .8em; }
+.form-row:nth-child(odd) { background-color: #EEE; }
+/* .form-row:nth-child(even) { background-color: #FFF; } */
+.form-row:hover { background-color: #DDD; }
+
+.form-title { padding: 0px 8px 0px 2px; font-size: .9em; font-weight: bold; }
+.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
+
+.form-header-field { white-space: nowrap; }
+.form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
+
+.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
 a.form-order-by:hover { color: blue; }
 a.active { color: red; }
-
-.field-row { }
-.field-row-item { float: left; display: inline-block; }
 
 /* ======================= Screen-specific ======================= */
 

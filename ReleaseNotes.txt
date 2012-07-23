@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.1.0 - 21 July 2012
+Release 1.1.0 - 22 July 2012
 ===========================================================================
 
 Version 1.1.0 includes various bug fixes and library updates. It is also a
@@ -107,6 +107,8 @@ Bug Fixes:
   value; now parses strings without sub-seconds as well
 - Fixed bug where service definition was not found if it had no noun
   attribute even if service name matched the verb
+- Fixed invalid HTML with a form elements between the table and td elements
+  by using styled div elements and the "display: table*" CSS attributes
 
 ===========================================================================
 Release 1.0.1 - 31 December 2011
