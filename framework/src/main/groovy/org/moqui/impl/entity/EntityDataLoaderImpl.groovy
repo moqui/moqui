@@ -260,7 +260,6 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 return
             }
 
-
             if (!loadElements) return
 
             if (currentValue != null) {
@@ -346,8 +345,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                         valuesRead++
                         currentValue = null
                     } catch (EntityException e) {
-                        logger.error("Error storing value", e)
-                        throw new SAXException("Error storing value: " + e.toString())
+                        throw new SAXException("Error storing value: " + e.toString(), e)
                     }
                 }
             }
