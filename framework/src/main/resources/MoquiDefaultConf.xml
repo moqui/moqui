@@ -66,7 +66,7 @@
     </artifact-execution-facade>
     <user-facade>
         <password encrypt-hash-type="SHA-256" min-length="6" min-digits="1" min-others="1"
-                  history-limit="5" change-weeks="12" email-require-change="true" email-expire-hours="48"/>
+                  history-limit="5" change-weeks="26" email-require-change="true" email-expire-hours="48"/>
         <login max-failures="3" disable-minutes="5" history-store="true" history-incorrect-password="true"/>
     </user-facade>
 
