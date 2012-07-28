@@ -111,9 +111,13 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     // if directory doesn't exist skip it, component doesn't have a data directory
                     if (!dataDirRr.exists || !dataDirRr.isDirectory()) continue
                     // get all files in the directory
+                    TreeMap<String, ResourceReference> dataDirEntries = new TreeMap<String, ResourceReference>()
                     for (ResourceReference dataRr in dataDirRr.directoryEntries) {
                         if (!dataRr.isFile() || !dataRr.location.endsWith(".xml")) continue
-                        locationList.add(dataRr.location)
+                        dataDirEntries.put(dataRr.getFileName(), dataRr)
+                    }
+                    for (Map.Entry<String, ResourceReference> dataDirEntry in dataDirEntries) {
+                        locationList.add(dataDirEntry.getValue().location)
                     }
                 } else {
                     // just warn here, no exception because any non-file component location would blow everything up
