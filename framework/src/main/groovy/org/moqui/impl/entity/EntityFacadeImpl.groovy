@@ -122,9 +122,13 @@ class EntityFacadeImpl implements EntityFacade {
                 // if directory doesn't exist skip it, component doesn't have an entity directory
                 if (!entityDirRr.exists || !entityDirRr.isDirectory()) continue
                 // get all files in the directory
+                TreeMap<String, ResourceReference> entityDirEntries = new TreeMap<String, ResourceReference>()
                 for (ResourceReference entityRr in entityDirRr.directoryEntries) {
                     if (!entityRr.isFile() || !entityRr.location.endsWith(".xml")) continue
-                    entityRrList.add(entityRr)
+                    entityDirEntries.put(entityRr.getFileName(), entityRr)
+                }
+                for (Map.Entry<String, ResourceReference> entityDirEntry in entityDirEntries) {
+                    entityRrList.add(entityDirEntry.getValue())
                 }
             } else {
                 // just warn here, no exception because any non-file component location would blow everything up
