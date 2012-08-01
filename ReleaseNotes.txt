@@ -2,6 +2,20 @@
 Moqui Framework Release Notes
 
 ===========================================================================
+Release 1.1.1 - Not Yet Decided
+===========================================================================
+
+TODO
+
+Bug Fixes:
+
+- fixed incorrect link paths for ArtifactHitBins and ArtifactSummary PDFs
+- when no transaction is in place using current system time for the
+  automatically populated lastUpdateStamp field
+- changed SpeedTest.xml screen to run in a transaction
+
+
+===========================================================================
 Release 1.1.0 - 22 July 2012
 ===========================================================================
 

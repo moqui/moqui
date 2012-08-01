@@ -318,6 +318,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
             } catch (ArtifactAuthorizationException e) {
+                tf.rollback(beganTransaction, "Authorization error running service [${getServiceName()}] ", e)
                 // this is a local call, pass certain exceptions through
                 throw e
             } catch (Throwable t) {

@@ -34,6 +34,7 @@ import java.sql.Connection
 
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
+import org.moqui.BaseException
 
 class TransactionFacadeImpl implements TransactionFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TransactionFacadeImpl.class)
@@ -113,7 +114,11 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     TransactionManager getTransactionManager() { return tm }
     UserTransaction getUserTransaction() { return ut }
-    Long getCurrentTransactionStartTime() { return getTransactionBeginStartTimeList() ? getTransactionBeginStartTimeList().get(0) : null }
+    Long getCurrentTransactionStartTime() {
+        Long time = getTransactionBeginStartTimeList() ? getTransactionBeginStartTimeList().get(0) : null
+        if (time == null) logger.warn("The transactionBeginStackList is empty, transaction in place? [${this.isTransactionInPlace()}]", new BaseException("Empty transactionBeginStackList location"))
+        return time
+    }
 
     protected ArrayList<Exception> getTransactionBeginStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()

@@ -702,15 +702,17 @@ abstract class EntityValueBase implements EntityValue {
     EntityValue create() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
 
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
+        ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", true)
 
+        Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
-            this.set("lastUpdatedStamp", new Timestamp(getEntityFacadeImpl().ecfi.getTransactionFacade().getCurrentTransactionStartTime()))
+            this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         ListOrderedSet fieldList = new ListOrderedSet()
         for (String fieldName in ed.getAllFieldNames()) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
@@ -722,10 +724,10 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", false)
         // count the artifact hit
-        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1)
+        ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(), startTime,
+                System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
+        ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return this
     }
@@ -736,8 +738,9 @@ abstract class EntityValueBase implements EntityValue {
     EntityValue update() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
 
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
+        ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -784,8 +787,9 @@ abstract class EntityValueBase implements EntityValue {
                 throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${dbValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }
 
+        Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
-            this.set("lastUpdatedStamp", new Timestamp(getEntityFacadeImpl().ecfi.getTransactionFacade().getCurrentTransactionStartTime()))
+            this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         // call the abstract method
         this.updateExtended(pkFieldList, nonPkFieldList)
@@ -794,10 +798,10 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", false)
         // count the artifact hit
-        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
+        ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
+        ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return this
     }
@@ -807,8 +811,9 @@ abstract class EntityValueBase implements EntityValue {
     EntityValue delete() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
 
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
+        ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -819,10 +824,10 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", false)
         // count the artifact hit
-        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
+        ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
+        ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return this
     }
@@ -832,8 +837,9 @@ abstract class EntityValueBase implements EntityValue {
     boolean refresh() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
 
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().push(
+        ecfi.getExecutionContext().getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -847,10 +853,10 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", false)
         // count the artifact hit
-        getEntityFacadeImpl().ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
+        ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
         // pop the ArtifactExecutionInfo to clean it up
-        getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().pop()
+        ecfi.getExecutionContext().getArtifactExecution().pop()
 
         return retVal
     }

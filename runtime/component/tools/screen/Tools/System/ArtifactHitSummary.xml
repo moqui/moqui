@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="pageNoLimit" value="true"/><parameter name="lastStandalone" value="true"/></default-response>
     </transition>
     <transition name="ArtifactHitSummaryStats.pdf">
-        <default-response url="/fop/apps/tools/ArtifactHitSummary" url-type="plain">
+        <default-response url="/fop/apps/tools/System/ArtifactHitSummary" url-type="plain">
             <parameter name="renderMode" value="xsl-fo"/><parameter name="pageNoLimit" value="true"/>
             <!--<parameter name="lastStandalone" value="true"/>-->
         </default-response>
