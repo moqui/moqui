@@ -75,7 +75,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     it is in. If true this screen will automatically be included in the parent's subscreens menu.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="require-authentication" default="true" type="boolean">
+            <xs:attribute name="require-authentication" default="true">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="true"/>
