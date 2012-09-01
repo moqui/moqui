@@ -121,7 +121,7 @@ class EntityDbMeta {
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ").append(ed.getFullTableName()).append(" (")
 
-        for (String fieldName in ed.getAllFieldNames()) {
+        for (String fieldName in ed.getFieldNames(true, true, false)) {
             Node fieldNode = ed.getFieldNode(fieldName)
             String sqlType = efi.getFieldSqlType(fieldNode."@type", ed.entityName)
             String javaType = efi.getFieldJavaType(fieldNode."@type", ed.entityName)
@@ -173,7 +173,7 @@ class EntityDbMeta {
             con = efi.getConnection(groupName)
             DatabaseMetaData dbData = con.getMetaData()
 
-            ListOrderedSet fnSet = ed.getFieldNames(true, true)
+            ListOrderedSet fnSet = ed.getFieldNames(true, true, false)
             int fieldCount = fnSet.size()
             colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
             while (colSet.next()) {
@@ -205,6 +205,9 @@ class EntityDbMeta {
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         Node fieldNode = ed.getFieldNode(fieldName)
+
+        if (fieldNode."@is-user-field" == "true") throw new IllegalArgumentException("Cannot add column for a UserField")
+
         String sqlType = efi.getFieldSqlType(fieldNode."@type", ed.entityName)
         String javaType = efi.getFieldJavaType(fieldNode."@type", ed.entityName)
 

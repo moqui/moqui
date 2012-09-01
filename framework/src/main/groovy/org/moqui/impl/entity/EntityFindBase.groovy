@@ -461,7 +461,8 @@ abstract class EntityFindBase implements EntityFind {
         this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getAllFieldNames())
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
+        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
 
         // call the abstract method
@@ -526,7 +527,8 @@ abstract class EntityFindBase implements EntityFind {
         }
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getAllFieldNames())
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
+        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
         if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
 
@@ -597,7 +599,8 @@ abstract class EntityFindBase implements EntityFind {
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", true)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getAllFieldNames())
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
+        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
         if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
 
@@ -682,7 +685,8 @@ abstract class EntityFindBase implements EntityFind {
             }
         }
 
-        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true))
+        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true, false))
+        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
         if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
 

@@ -23,6 +23,9 @@ import org.moqui.impl.entity.condition.EntityConditionImplBase
 import org.moqui.impl.entity.condition.ConditionField
 import org.moqui.impl.entity.condition.FieldValueCondition
 import org.moqui.impl.entity.condition.FieldToFieldCondition
+import org.moqui.entity.EntityValue
+import org.moqui.entity.EntityList
+import org.moqui.impl.context.ContextStack
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -96,7 +99,7 @@ public class EntityDefinition {
     boolean hasFunctionAlias() { return isViewEntity() && this.internalEntityNode."alias".find({ it."@function" }) }
 
     String getDefaultDescriptionField() {
-        ListOrderedSet nonPkFields = getFieldNames(false, true)
+        ListOrderedSet nonPkFields = getFieldNames(false, true, false)
         // find the first *Name
         for (String fn in nonPkFields)
             if (fn.endsWith("Name")) return fn
@@ -111,7 +114,12 @@ public class EntityDefinition {
     boolean needsAuditLog() {
         if (needsAuditLogVal != null) return needsAuditLogVal
         needsAuditLogVal = false
-        for (Node fieldNode in getFieldNodes(true, true)) {
+        for (Node fieldNode in getFieldNodes(true, true, false)) {
+            if (fieldNode."@enable-audit-log" == "true") needsAuditLogVal = true
+        }
+        if (needsAuditLogVal) return true
+
+        for (Node fieldNode in getFieldNodes(false, false, true)) {
             if (fieldNode."@enable-audit-log" == "true") needsAuditLogVal = true
         }
         return needsAuditLogVal
@@ -120,9 +128,15 @@ public class EntityDefinition {
     boolean needsEncrypt() {
         if (needsEncryptVal != null) return needsEncryptVal
         needsEncryptVal = false
-        for (Node fieldNode in getFieldNodes(true, true)) {
+        for (Node fieldNode in getFieldNodes(true, true, false)) {
             if (fieldNode."@encrypt" == "true") needsEncryptVal = true
         }
+        if (needsEncryptVal) return true
+
+        for (Node fieldNode in getFieldNodes(false, false, true)) {
+            if (fieldNode."@encrypt" == "true") needsEncryptVal = true
+        }
+
         return needsEncryptVal
     }
 
@@ -132,7 +146,42 @@ public class EntityDefinition {
         String nodeName = this.isViewEntity() ? "alias" : "field"
         fn = (Node) this.internalEntityNode[nodeName].find({ it.@name == fieldName })
         fieldNodeMap.put(fieldName, fn)
+
+        if (fn == null && !this.isViewEntity()) {
+            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+                if (userFieldList) {
+                    Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
+                    for (EntityValue userField in userFieldList) {
+                        if (userField.fieldName != fieldName) continue
+                        if (userGroupIdSet.contains(userField.userGroupId)) {
+                            fn = makeUserFieldNode(userField)
+                            break
+                        }
+                    }
+                }
+            } finally {
+                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            }
+        }
+
         return fn
+    }
+
+    protected Node makeUserFieldNode(EntityValue userField) {
+        String fieldType = userField.fieldType ?: "text-long"
+        if (fieldType == "text-very-long" || fieldType == "binary-very-long")
+            throw new EntityException("UserField for entityName ${getFullEntityName()}, fieldName ${userField.fieldName} and userGroupId ${userField.userGroupId} has a fieldType that is not allowed: ${fieldType}")
+
+        Node fieldNode = new Node(null, "field", [name: userField.fieldName, type: fieldType, "is-user-field": "true"])
+
+        fieldNode.attributes().put("user-group-id", userField.userGroupId)
+        if (userField.enableAuditLog == "Y") fieldNode.attributes().put("enable-audit-log", "true")
+        if (userField.enableLocalization == "Y") fieldNode.attributes().put("enable-localization", "true")
+        if (userField.encrypt == "Y") fieldNode.attributes().put("encrypt", "true")
+
+        return fieldNode
     }
 
     Node getRelationshipNode(String relationshipName) {
@@ -394,7 +443,7 @@ public class EntityDefinition {
         return pks
     }
 
-    ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk) {
+    ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
         ListOrderedSet nameSet = new ListOrderedSet()
         String nodeName = this.isViewEntity() ? "alias" : "field"
         for (Node node in this.internalEntityNode[nodeName]) {
@@ -402,23 +451,61 @@ public class EntityDefinition {
                 nameSet.add(node."@name")
             }
         }
+
+        if (includeUserFields) {
+            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+                if (userFieldList) {
+                    Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
+                    for (EntityValue userField in userFieldList) {
+                        if (userGroupIdSet.contains(userField.userGroupId)) nameSet.add((String) userField.fieldName)
+                    }
+                }
+            } finally {
+                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            }
+        }
+
         return nameSet
     }
     List<String> getPkFieldNames() {
         if (pkFieldNameList == null) {
-            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, false).asList()))
+            pkFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, false, false).asList()))
         }
         return pkFieldNameList
     }
     List<String> getAllFieldNames() {
         if (allFieldNameList == null) {
-            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true).asList()))
+            allFieldNameList = new ArrayList(getFieldNames(true, true, false).asList())
         }
-        return allFieldNameList
+
+        List<String> returnList = allFieldNameList
+
+        // add UserFields to it if needed
+        boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+        try {
+            EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+            if (userFieldList) {
+                Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
+                Set<String> userFieldNames = new HashSet<String>()
+                for (EntityValue userField in userFieldList) {
+                    if (userGroupIdSet.contains(userField.userGroupId)) userFieldNames.add((String) userField.fieldName)
+                }
+                if (userFieldNames) {
+                    returnList = new ArrayList<String>(allFieldNameList)
+                    returnList.addAll(userFieldNames)
+                }
+            }
+        } finally {
+            if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+
+        return Collections.unmodifiableList(returnList)
     }
 
-    List<Node> getFieldNodes(boolean includePk, boolean includeNonPk) {
-        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local Set of field names
+    List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
+        // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local List of field Nodes
         List<Node> nodeList = new ArrayList<Node>()
         String nodeName = this.isViewEntity() ? "alias" : "field"
         for (Node node in this.internalEntityNode[nodeName]) {
@@ -426,6 +513,25 @@ public class EntityDefinition {
                 nodeList.add(node)
             }
         }
+
+        if (includeUserFields && !this.isViewEntity()) {
+            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
+                if (userFieldList) {
+                    Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
+                    for (EntityValue userField in userFieldList) {
+                        if (userGroupIdSet.contains(userField.userGroupId)) {
+                            nodeList.add(makeUserFieldNode(userField))
+                            break
+                        }
+                    }
+                }
+            } finally {
+                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            }
+        }
+
         return nodeList
     }
 
@@ -509,8 +615,9 @@ public class EntityDefinition {
 
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
+        boolean srcIsContextStack = src instanceof ContextStack
 
-        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks) : this.getAllFieldNames())) {
+        for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
             String sourceFieldName
             if (namePrefix) {
                 sourceFieldName = namePrefix + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)
@@ -518,7 +625,8 @@ public class EntityDefinition {
                 sourceFieldName = fieldName
             }
 
-            if (src.containsKey(sourceFieldName)) {
+            if ((!srcIsContextStack && src.containsKey(sourceFieldName)) ||
+                    (srcIsContextStack && ((ContextStack) src).reallyContainsKey(sourceFieldName))) {
                 Object value = src.get(sourceFieldName)
                 if (value) {
                     if (value instanceof String) {
@@ -543,31 +651,39 @@ public class EntityDefinition {
             dest.put(name, null)
             return
         }
-        if (value == "\null") value == "null"
-
         Node fieldNode = this.getFieldNode(name)
         if (!fieldNode) dest.put(name, value) // cause an error on purpose
+        dest.put(name, convertFieldString(name, value))
+    }
 
+    Object convertFieldString(String name, String value) {
+        if (value == "null") value = null
+
+        Object outValue
+        Node fieldNode = this.getFieldNode(name)
         String javaType = this.efi.getFieldJavaType(fieldNode."@type", internalEntityName)
         switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
-        case 1: dest.put(name, value); break
-        case 2: dest.put(name, java.sql.Timestamp.valueOf(value)); break
-        case 3: dest.put(name, java.sql.Time.valueOf(value)); break
-        case 4: dest.put(name, java.sql.Date.valueOf(value)); break
-        case 5: dest.put(name, Integer.valueOf(value)); break
-        case 6: dest.put(name, Long.valueOf(value)); break
-        case 7: dest.put(name, Float.valueOf(value)); break
-        case 8: dest.put(name, Double.valueOf(value)); break
-        case 9: dest.put(name, new BigDecimal(value)); break
-        case 10: dest.put(name, Boolean.valueOf(value)); break
-        case 11: dest.put(name, value); break
-        // better way for Blob (12)? probably not...
-        case 12: dest.put(name, value); break
-        case 13: dest.put(name, value); break
-        case 14: dest.put(name, value.asType(java.util.Date.class)); break
-        // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
-        case 15: dest.put(name, value); break
+            case 1: outValue = value; break
+            case 2: outValue = java.sql.Timestamp.valueOf(value); break
+            case 3: outValue = java.sql.Time.valueOf(value); break
+            case 4: outValue = java.sql.Date.valueOf(value); break
+            case 5: outValue = Integer.valueOf(value); break
+            case 6: outValue = Long.valueOf(value); break
+            case 7: outValue = Float.valueOf(value); break
+            case 8: outValue = Double.valueOf(value); break
+            case 9: outValue = new BigDecimal(value); break
+            case 10: outValue = Boolean.valueOf(value); break
+            case 11: outValue = value; break
+            // better way for Blob (12)? probably not...
+            case 12: outValue = value; break
+            case 13: outValue = value; break
+            case 14: outValue = value.asType(java.util.Date.class); break
+            // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
+            case 15: outValue = value; break
+            default: outValue = value; break
         }
+
+        return outValue
     }
 
     protected void expandAliasAlls() {

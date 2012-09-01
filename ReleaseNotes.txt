@@ -5,7 +5,12 @@ Moqui Framework Release Notes
 Release 1.1.1 - Not Yet Decided
 ===========================================================================
 
-TODO
+This release includes:
+
+- User Field support for transparent user-defined fields with a definition
+  in the database (using the UserField entity) and values for the fields
+  isolated to groups of users stored in a separate table (using the
+  UserFieldValue entity)
 
 Bug Fixes:
 

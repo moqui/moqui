@@ -38,4 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
         fieldTypeEnumId="DBFFT_label" layoutSequenceNum="1"/>
     <moqui.screen.form.DbFormFieldAttribute formId="ExampleAdmin" fieldName="dbTestLabel" attributeName="text"
         value="This label is from a DbFormField"/>
+
+    <moqui.entity.UserField entityName="moqui.example.Example" fieldName="testUserField" userGroupId="ALL_USERS"
+                            fieldType="text-long" enableAuditLog="Y" enableLocalization="N" encrypt="N"/>
 </entity-facade-xml>

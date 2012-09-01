@@ -29,6 +29,8 @@ import org.w3c.dom.Element
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
+import org.moqui.entity.EntityCondition
+import org.moqui.context.ExecutionContext
 
 abstract class EntityValueBase implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityValueBase.class)
@@ -128,6 +130,29 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
+        if (fieldNode."@is-user-field" == "true") {
+            logger.warn("TOREMOVE get on [${name}] is-user-field")
+            // get if from the UserFieldValue entity instead
+            Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: name]
+            addThreeFieldPkValues(parms)
+
+            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
+                EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
+                        .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
+                        .condition(parms).list()
+                logger.warn("TOREMOVE in get [${ed.entityName}] find with parms ${parms} and userGroupIdSet ${userGroupIdSet}, userFieldValueList=${userFieldValueList}")
+                if (userFieldValueList) {
+                    logger.warn("TOREMOVE get on [${name}] is-user-field, userFieldValueList=${userFieldValueList}")
+                    // do type conversion according to field type
+                    return ed.convertFieldString(name, (String) userFieldValueList[0].valueText)
+                }
+            } finally {
+                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            }
+        }
+
         return valueMap.get(name)
     }
 
@@ -156,6 +181,12 @@ abstract class EntityValueBase implements EntityValue {
             dbValueMap.put(name, oldValue)
         }
         valueMap.put(name, value)
+        return this
+    }
+
+    /** @see org.moqui.entity.EntityValue#setAll(Map<String, ?>) */
+    EntityValue setAll(Map<String, ?> fields) {
+        entityDefinition.setFields(fields, this, true, null, null)
         return this
     }
 
@@ -260,7 +291,7 @@ abstract class EntityValueBase implements EntityValue {
             if (result != 0) return result
         }
         // then non-PK fields
-        for (String fieldName in this.getEntityDefinition().getFieldNames(false, true)) {
+        for (String fieldName in this.getEntityDefinition().getFieldNames(false, true, true)) {
             result = compareFields(that, fieldName)
             if (result != 0) return result
         }
@@ -298,18 +329,10 @@ abstract class EntityValueBase implements EntityValue {
         // in this case DON'T use the ec.user.nowTimestamp because we want the real time for audits
         Timestamp nowTimestamp = new Timestamp(System.currentTimeMillis())
 
-        ListOrderedSet pkFieldList = ed.getFieldNames(true, false)
-        String firstPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
-        String secondPkField = pkFieldList.size() > 1 ? pkFieldList.remove(0) : null
-        StringBuffer pkTextSb = new StringBuffer()
-        boolean firstField = true
-        for (String fieldName in pkFieldList) {
-            if (firstField) firstField = false else pkTextSb.append(",")
-            pkTextSb.append(fieldName).append("=").append(get(fieldName) as String)
-        }
-        String pkText = pkTextSb.toString()
+        Map<String, Object> pksValueMap = new HashMap<String, Object>()
+        addThreeFieldPkValues(pksValueMap)
 
-        for (Node fieldNode in ed.getFieldNodes(true, true)) {
+        for (Node fieldNode in ed.getFieldNodes(true, true, true)) {
             if (fieldNode."@enable-audit-log" == "true") {
                 String fieldName = fieldNode."@name"
 
@@ -330,15 +353,33 @@ abstract class EntityValueBase implements EntityValue {
                         changedByUserId:getEntityFacadeImpl().ecfi.executionContext.user.userId,
                         changedInVisitId:getEntityFacadeImpl().ecfi.executionContext.user.visitId]
                 parms.oldValueText = oldValue
-                if (firstPkField) parms.pkPrimaryValue = get(firstPkField)
-                if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
-                if (pkText) parms.pkRestCombinedValue = pkText
+                parms.putAll(pksValueMap)
 
                 // logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}], oldValues=[${oldValues}]", new Exception("AuditLog location"))
 
                 getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
         }
+    }
+
+    protected void addThreeFieldPkValues(Map<String, Object> parms) {
+        EntityDefinition ed = getEntityDefinition()
+
+        // get pkPrimaryValue, pkSecondaryValue, pkRestCombinedValue (just like the AuditLog stuff)
+        ListOrderedSet pkFieldList = ed.getFieldNames(true, false, false)
+        String firstPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
+        String secondPkField = pkFieldList.size() > 0 ? pkFieldList.remove(0) : null
+        StringBuffer pkTextSb = new StringBuffer()
+        boolean firstField = true
+        for (String fieldName in pkFieldList) {
+            if (firstField) firstField = false else pkTextSb.append(",")
+            pkTextSb.append(fieldName).append("=").append(get(fieldName) as String)
+        }
+        String pkText = pkTextSb.toString()
+
+        if (firstPkField) parms.pkPrimaryValue = get(firstPkField)
+        if (secondPkField) parms.pkSecondaryValue = get(secondPkField)
+        if (pkText) parms.pkRestCombinedValue = pkText
     }
 
     /** @see org.moqui.entity.EntityValue#getOriginalDbValue(String) */
@@ -424,7 +465,7 @@ abstract class EntityValueBase implements EntityValue {
                 return
             }
 
-            for (String nonpkFieldName in this.getEntityDefinition().getFieldNames(false, true)) {
+            for (String nonpkFieldName in this.getEntityDefinition().getFieldNames(false, true, true)) {
                 // skip the lastUpdatedStamp field
                 if (nonpkFieldName == "lastUpdatedStamp") continue
 
@@ -703,8 +744,9 @@ abstract class EntityValueBase implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
 
-        ecfi.getExecutionContext().getArtifactExecution().push(
+        ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
 
@@ -715,10 +757,32 @@ abstract class EntityValueBase implements EntityValue {
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         ListOrderedSet fieldList = new ListOrderedSet()
-        for (String fieldName in ed.getAllFieldNames()) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+        for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
-        // call the abstract method
+        // call the abstract method to create the main record
         this.createExtended(fieldList)
+
+        // create records for the UserFields
+        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        if (userFieldNameList) {
+            logger.warn("TOREMOVE in create [${ed.entityName}] userFieldNameList=${userFieldNameList}; valueMap=${this.getValueMap()}")
+            boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
+            try {
+                for (String userFieldName in userFieldNameList) {
+                    Node userFieldNode = ed.getFieldNode(userFieldName)
+                    Object valueObj = this.getValueMap().get(userFieldName)
+                    if (valueObj == null) continue
+
+                    Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: userFieldName,
+                            userGroupId: userFieldNode."@user-group-id", valueText: valueObj as String]
+                    addThreeFieldPkValues(parms)
+                    EntityValue newUserFieldValue = efi.makeValue("moqui.entity.UserFieldValue").setAll(parms)
+                    newUserFieldValue.setSequencedIdPrimary().create()
+                }
+            } finally {
+                if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
+            }
+        }
 
         handleAuditLog(false, null)
 
@@ -727,7 +791,7 @@ abstract class EntityValueBase implements EntityValue {
         ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(), startTime,
                 System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        ecfi.getExecutionContext().getArtifactExecution().pop()
+        ec.getArtifactExecution().pop()
 
         return this
     }
@@ -739,8 +803,9 @@ abstract class EntityValueBase implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
 
-        ecfi.getExecutionContext().getArtifactExecution().push(
+        ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -767,7 +832,7 @@ abstract class EntityValueBase implements EntityValue {
 
         List<String> pkFieldList = ed.getPkFieldNames()
 
-        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true)
+        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
         ListOrderedSet nonPkFieldList = new ListOrderedSet()
         for (String fieldName in nonPkAllFieldList) {
             if (valueMap.containsKey(fieldName) &&
@@ -794,6 +859,50 @@ abstract class EntityValueBase implements EntityValue {
         // call the abstract method
         this.updateExtended(pkFieldList, nonPkFieldList)
 
+        // create or update records for the UserFields
+        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        if (userFieldNameList) {
+            logger.warn("TOREMOVE in update [${ed.entityName}] userFieldNameList=${userFieldNameList}; valueMap=${this.getValueMap()}")
+            boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
+            try {
+                // get values for all fields in one query, for all groups the user is in
+                Map<String, Object> findParms = [entityName: ed.getFullEntityName()]
+                addThreeFieldPkValues(findParms)
+                Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
+                EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
+                        .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
+                        .condition(findParms).list()
+
+                for (String userFieldName in userFieldNameList) {
+                    // if the field hasn't been updated, skip it
+                    if (!(valueMap.containsKey(userFieldName) &&
+                            (!dbValueMapFromDb || valueMap.get(userFieldName) != dbValueMap.get(userFieldName)))) {
+                        continue
+                    }
+
+                    EntityList fieldOnlyUserFieldValueList = userFieldValueList.filterByAnd([fieldName: userFieldName])
+                    if (fieldOnlyUserFieldValueList) {
+                        for (EntityValue userFieldValue in fieldOnlyUserFieldValueList) {
+                            userFieldValue.valueText = this.getValueMap().get(userFieldName) as String
+                            userFieldValue.update()
+                            logger.warn("TOREMOVE in update [${ed.entityName}] updated UserFieldValue: ${userFieldValue}")
+                        }
+                    } else {
+                        Node userFieldNode = ed.getFieldNode(userFieldName)
+
+                        Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: userFieldName,
+                                userGroupId: userFieldNode."@user-group-id", valueText: this.getValueMap().get(userFieldName) as String]
+                        addThreeFieldPkValues(parms)
+                        EntityValue newUserFieldValue = efi.makeValue("moqui.entity.UserFieldValue").setAll(parms)
+                        newUserFieldValue.setSequencedIdPrimary().create()
+                        logger.warn("TOREMOVE in update [${ed.entityName}] created UserFieldValue: ${newUserFieldValue}")
+                    }
+                }
+            } finally {
+                if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
+            }
+        }
+
         handleAuditLog(true, oldValues)
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", false)
@@ -801,7 +910,7 @@ abstract class EntityValueBase implements EntityValue {
         ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        ecfi.getExecutionContext().getArtifactExecution().pop()
+        ec.getArtifactExecution().pop()
 
         return this
     }
@@ -812,8 +921,9 @@ abstract class EntityValueBase implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
 
-        ecfi.getExecutionContext().getArtifactExecution().push(
+        ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
                 ed.entityNode."@authorize-skip" != "true")
 
@@ -822,12 +932,31 @@ abstract class EntityValueBase implements EntityValue {
         // call the abstract method
         this.deleteExtended()
 
+        // delete records for the UserFields
+        ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
+        if (userFieldNameList) {
+            logger.warn("TOREMOVE in delete [${ed.entityName}] userFieldNameList=${userFieldNameList}; valueMap=${this.getValueMap()}")
+            boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
+            try {
+                // get values for all fields in one query, for all groups the user is in
+                Map<String, Object> findParms = [entityName: ed.getFullEntityName()]
+                addThreeFieldPkValues(findParms)
+                Set<String> userGroupIdSet = ec.getUser().getUserGroupIdSet()
+                efi.makeFind("moqui.entity.UserFieldValue")
+                        .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
+                        .condition(findParms).deleteAll()
+                logger.warn("TOREMOVE in delete [${ed.entityName}] deleted with findParms ${findParms} and userGroupIdSet ${userGroupIdSet}")
+            } finally {
+                if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
+            }
+        }
+
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
-        ecfi.getExecutionContext().getArtifactExecution().pop()
+        ec.getArtifactExecution().pop()
 
         return this
     }
@@ -838,9 +967,9 @@ abstract class EntityValueBase implements EntityValue {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
 
-        ecfi.getExecutionContext().getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+        ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", true)
@@ -851,12 +980,14 @@ abstract class EntityValueBase implements EntityValue {
         // call the abstract method
         boolean retVal = this.refreshExtended()
 
+        // NOTE: clear out UserFields
+
         getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
         // pop the ArtifactExecutionInfo to clean it up
-        ecfi.getExecutionContext().getArtifactExecution().pop()
+        ec.getArtifactExecution().pop()
 
         return retVal
     }

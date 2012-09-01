@@ -133,7 +133,7 @@ class ServiceDefinition {
         String requiredStr = autoParameters."@required" ?: "false"
         String allowHtmlStr = autoParameters."@allow-html" ?: "none"
         for (String fieldName in ed.getFieldNames(includeStr == "all" || includeStr == "pk",
-                includeStr == "all" || includeStr == "nonpk")) {
+                includeStr == "all" || includeStr == "nonpk", includeStr == "all" || includeStr == "nonpk")) {
             if (fieldsToExclude.contains(fieldName)) continue
 
             String javaType = sfi.ecfi.entityFacade.getFieldJavaType(ed.getFieldNode(fieldName)."@type", entityName)

@@ -60,6 +60,15 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     EntityValue set(String name, Object value);
 
+    /** Sets fields on this entity from the Map of fields passed in using the entity definition to only get valid
+     * fields from the Map. For any String values passed in this will call setString to convert based on the field
+     * definition, otherwise it sets the Object as-is.
+     *
+     * @param fields The fields Map to get the values from
+     * @return reference to this for convenience
+     */
+    EntityValue setAll(Map<String, ?> fields);
+
     /** Sets the named field to the passed value, converting the value from a String to the corresponding type using 
      *   <code>Type.valueOf()</code>
      *

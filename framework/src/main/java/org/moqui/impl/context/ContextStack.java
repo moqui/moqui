@@ -107,6 +107,14 @@ public class ContextStack implements Map<Object, Object> {
         return true;
     }
 
+    public boolean reallyContainsKey(Object key) {
+        for (Map curMap: stackList) {
+            if (key == null && curMap instanceof Hashtable) continue;
+            if (curMap.containsKey(key)) return true;
+        }
+        return false;
+    }
+
     /** @see java.util.Map#containsValue(java.lang.Object) */
     public boolean containsValue(Object value) {
         // this keeps track of keys looked at for values at each level of the stack so that the same key is not

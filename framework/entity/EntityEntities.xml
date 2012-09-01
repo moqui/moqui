@@ -76,6 +76,31 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="seqNum" type="number-integer"/>
     </entity>
 
+    <entity entity-name="UserField" package-name="moqui.entity" cache="true">
+        <field name="entityName" type="text-medium" is-pk="true">
+            <description>This should be the full entity name, ie like "${package-name}.${entity-name}"</description>
+        </field>
+        <field name="fieldName" type="text-medium" is-pk="true"/>
+        <field name="userGroupId" type="id" is-pk="true">
+            <description>These settings are for a UserGroup. To apply to all users just use the ALL_USERS UserGroup.</description>
+        </field>
+        <field name="fieldType" type="text-medium"/>
+        <field name="enableAuditLog" type="text-indicator"/>
+        <field name="enableLocalization" type="text-indicator"/>
+        <field name="encrypt" type="text-indicator"/>
+        <relationship type="one" related-entity-name="UserGroup"/>
+    </entity>
+    <entity entity-name="UserFieldValue" package-name="moqui.entity">
+        <field name="fieldValueSeqId" type="id" is-pk="true"/>
+        <field name="entityName" type="text-medium"/>
+        <field name="fieldName" type="text-medium"/>
+        <field name="userGroupId" type="id"/>
+        <field name="pkPrimaryValue" type="text-medium"/>
+        <field name="pkSecondaryValue" type="text-medium"/>
+        <field name="pkRestCombinedValue" type="text-medium"/>
+        <field name="valueText" type="text-long"/>
+    </entity>
+
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="EntityGroup" package-name="moqui.entity.group">
         <field name="entityGroupId" type="id" is-pk="true"/>
