@@ -14,54 +14,54 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.1.xsd"
         default-menu-title="Find" default-menu-index="2">
 
-    <parameter name="entityName"/>
+    <parameter name="aen"/>
 
     <transition name="list"><default-response url="../MainEntityList"/></transition>
     <transition name="find"><default-response url="."/></transition>
     <transition name="create">
-        <actions><service-call name="create#${entityName}" in-map="true"/></actions>
+        <actions><service-call name="create#${aen}" in-map="true"/></actions>
         <default-response url="."/>
     </transition>
     <transition name="listSubmit">
         <actions>
             <if condition="delete">
-                <service-call name="delete#${entityName}" in-map="true"/>
+                <service-call name="delete#${aen}" in-map="true"/>
             </if>
         </actions>
         <conditional-response url=".">
             <condition><expression>delete</expression></condition>
         </conditional-response>
-        <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>
 
     <actions>
-        <entity-find entity-name="${entityName}" list="entityValueList" offset="0" limit="50">
+        <entity-find entity-name="${aen}" list="entityValueList" offset="0" limit="50">
             <search-form-inputs/>
         </entity-find>
     </actions>
     <widgets>
         <container>
             <link url="list" text="Entity List"/>
-            <container-dialog id="FindValueDialog" button-text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}">
+            <container-dialog id="FindValueDialog" button-text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}">
                 <form-single name="FindEntityValue" transition="find" dynamic="true">
-                    <auto-fields-entity entity-name="${entityName}" field-type="find"/>
-                    <field name="entityName"><default-field><hidden/></default-field></field>
+                    <auto-fields-entity entity-name="${aen}" field-type="find"/>
+                    <field name="aen"><default-field><hidden/></default-field></field>
                     <field name="submitButton"><default-field title="Find"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
             <container-dialog id="CreateValueDialog" button-text="New Value">
                 <form-single name="CreateEntityValue" transition="create" dynamic="true">
-                    <auto-fields-entity entity-name="${entityName}" field-type="edit"/>
-                    <field name="entityName"><default-field><hidden/></default-field></field>
+                    <auto-fields-entity entity-name="${aen}" field-type="edit"/>
+                    <field name="aen"><default-field><hidden/></default-field></field>
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
         </container>
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
-            <field name="entityName"><default-field><hidden/></default-field></field>
+            <field name="aen"><default-field><hidden/></default-field></field>
             <field name="edit"><default-field title="Edit"><submit/></default-field></field>
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
-            <auto-fields-entity entity-name="${entityName}" field-type="display"/>
+            <auto-fields-entity entity-name="${aen}" field-type="display"/>
         </form-list>
     </widgets>
 </screen>

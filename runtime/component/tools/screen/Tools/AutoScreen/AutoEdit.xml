@@ -15,8 +15,8 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Edit" default-menu-index="3">
 
     <actions>
-        <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
-        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(entityName).getRelationshipsInfo(context, true)"/>
+        <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
+        <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(aen).getRelationshipsInfo(context, true)"/>
     </actions>
     <widgets>
         <!-- NOTE: this template will take care of the active subscreen, if needed; it's not needed for the dynamic menu -->

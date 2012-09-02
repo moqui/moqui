@@ -14,19 +14,19 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.1.xsd"
         default-menu-title="Edit" default-menu-index="3">
 
-    <parameter name="entityName"/>
-    <parameter name="detailEntityName"/>
+    <parameter name="aen"/><!-- Auto Entity Name -->
+    <parameter name="den"/><!-- Detail Entity Name -->
 
     <transition name="list"><default-response url="../../MainEntityList"/></transition>
     <transition name="find"><default-response url="../../AutoFind"/></transition>
     <transition name="edit"><default-response url="."/></transition>
     <transition name="update">
-        <actions><service-call name="update#${entityName}" in-map="true"/></actions>
-        <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <actions><service-call name="update#${aen}" in-map="true"/></actions>
+        <default-response url="." parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>
     <transition name="export">
         <actions>
-            <entity-find-one entity-name="${entityName}" value-field="entityValue"/>
+            <entity-find-one entity-name="${aen}" value-field="entityValue"/>
             <script><![CDATA[
             File outFile = new File(filename)
             if (!outFile.createNewFile()) {
@@ -42,26 +42,26 @@ This Work includes contributions authored by David E. Jones, not as a
             }
             ]]></script>
         </actions>
-        <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <default-response url="." parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>
 
     <actions>
-        <entity-find-one entity-name="${entityName}" value-field="fieldValues"/>
+        <entity-find-one entity-name="${aen}" value-field="fieldValues"/>
     </actions>
     <widgets>
         <container>
             <link url="list" text="Entity List"/>
-            <link url="find" text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/>
+            <link url="find" text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}"/>
         </container>
         <form-single name="UpdateMasterEntityValue" transition="update" dynamic="true">
-            <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
-            <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
-            <field name="entityName"><default-field><hidden/></default-field></field>
+            <auto-fields-entity entity-name="${aen}" include="pk" field-type="display"/>
+            <auto-fields-entity entity-name="${aen}" include="nonpk" field-type="edit"/>
+            <field name="aen"><default-field><hidden/></default-field></field>
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
         </form-single>
         <form-single name="ExportMasterEntity" transition="export" dynamic="true">
-            <auto-fields-entity entity-name="${entityName}" include="pk" field-type="hidden"/>
-            <field name="entityName"><default-field><hidden/></default-field></field>
+            <auto-fields-entity entity-name="${aen}" include="pk" field-type="hidden"/>
+            <field name="aen"><default-field><hidden/></default-field></field>
             <field name="filename"><default-field><text-line size="100"/></default-field></field>
             <field name="submitButton"><default-field title="Export with Dependents to File"><submit/></default-field></field>
         </form-single>

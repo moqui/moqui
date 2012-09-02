@@ -14,56 +14,56 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.1.xsd"
         default-menu-title="Edit" default-menu-index="3">
 
-    <parameter name="entityName"/>
-    <parameter name="detailEntityName"/>
+    <parameter name="aen"/><!-- Auto Entity Name -->
+    <parameter name="den"/><!-- Detail Entity Name -->
 
     <transition name="list"><default-response url="../../MainEntityList"/></transition>
     <transition name="find"><default-response url="../../AutoFind"/></transition>
     <transition name="create">
-        <actions><service-call name="create#${detailEntityName}" in-map="true"/></actions>
+        <actions><service-call name="create#${den}" in-map="true"/></actions>
         <default-response url="."/>
     </transition>
     <transition name="update">
-        <actions><service-call name="update#${detailEntityName}" in-map="true"/></actions>
-        <default-response url="." parameter-map="ec.entity.getEntityDefinition(entityName).getPrimaryKeys(context)"/>
+        <actions><service-call name="update#${den}" in-map="true"/></actions>
+        <default-response url="." parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>
     <transition name="listSubmit">
         <actions>
-            <if condition="delete"><service-call name="delete#${detailEntityName}" in-map="true"/></if>
+            <if condition="delete"><service-call name="delete#${den}" in-map="true"/></if>
         </actions>
         <conditional-response url=".">
             <condition><expression>delete</expression></condition>
         </conditional-response>
-        <default-response url="../AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(detailEntityName).getPrimaryKeys(context)">
-            <parameter name="detailEntityName" from="entityName"/>
-            <parameter name="entityName" from="detailEntityName"/>
+        <default-response url="../AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(den).getPrimaryKeys(context)">
+            <parameter name="den" from="aen"/>
+            <parameter name="aen" from="den"/>
         </default-response>
     </transition>
 
     <actions>
-        <entity-find entity-name="${detailEntityName}" list="entityValueList" offset="0" limit="50">
+        <entity-find entity-name="${den}" list="entityValueList" offset="0" limit="50">
             <search-form-inputs/>
         </entity-find>
     </actions>
     <widgets>
         <container>
             <link url="list" text="Entity List"/>
-            <link url="find" text="Find ${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/>
-            <container-dialog id="CreateValueDialog" button-text="New ${ec.entity.getEntityDefinition(detailEntityName).getPrettyName(null, entityName)}">
+            <link url="find" text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}"/>
+            <container-dialog id="CreateValueDialog" button-text="New ${ec.entity.getEntityDefinition(den).getPrettyName(null, aen)}">
                 <form-single name="CreateEntityValue" transition="create" dynamic="true">
-                    <auto-fields-entity entity-name="${detailEntityName}" field-type="edit"/>
-                    <field name="entityName"><default-field><hidden/></default-field></field>
-                    <field name="detailEntityName"><default-field><hidden/></default-field></field>
+                    <auto-fields-entity entity-name="${den}" field-type="edit"/>
+                    <field name="aen"><default-field><hidden/></default-field></field>
+                    <field name="den"><default-field><hidden/></default-field></field>
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
         </container>
         <form-list name="ListEntityValue" list="entityValueList" transition="listSubmit" multi="false" dynamic="true">
-            <field name="entityName"><default-field><hidden/></default-field></field>
-            <field name="detailEntityName"><default-field><hidden/></default-field></field>
+            <field name="aen"><default-field><hidden/></default-field></field>
+            <field name="den"><default-field><hidden/></default-field></field>
             <field name="edit"><default-field title="Edit"><submit/></default-field></field>
             <field name="delete"><default-field title="Delete"><submit confirmation="Are you sure?"/></default-field></field>
-            <auto-fields-entity entity-name="${detailEntityName}" field-type="display"/>
+            <auto-fields-entity entity-name="${den}" field-type="display"/>
         </form-list>
     </widgets>
 </screen>

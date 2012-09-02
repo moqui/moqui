@@ -24,23 +24,25 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <form-single name="SelectEntity" transition="find">
-            <field name="entityName"><default-field title="All Entities">
+            <field name="aen"><default-field title="All Entities">
                 <drop-down combo-box="true" allow-empty="true">
                     <list-options list="allEntityList" key="${entityName}"
                                   text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
                 </drop-down>
             </default-field></field>
             <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
-            <field-layout><field-row><field-ref name="entityName"/><field-ref name="submitButton"/></field-row></field-layout>
+            <field-layout><field-row><field-ref name="aen"/><field-ref name="submitButton"/></field-row></field-layout>
         </form-single>
         <form-list name="EntityList" list="masterEntityList">
             <field name="package">
                 <header-field show-order-by="true"/>
                 <default-field><display also-hidden="false"/></default-field>
             </field>
-            <field name="entityName">
+            <field name="aen">
                 <header-field title="Master Entity" show-order-by="true"/>
-                <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}"/></default-field>
+                <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}">
+                    <parameter name="aen" from="entityName"/>
+                </link></default-field>
             </field>
         </form-list>
     </widgets>
