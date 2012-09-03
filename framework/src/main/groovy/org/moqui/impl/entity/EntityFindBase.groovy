@@ -574,7 +574,8 @@ abstract class EntityFindBase implements EntityFind {
         // run the final rules
         efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "list", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), el ? el.size() : 0)
+        efi.ecfi.countArtifactHit("entity", "list", ed.getEntityName(), simpleAndMap, startTime,
+                System.currentTimeMillis(), el ? el.size() : 0)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 

@@ -609,7 +609,7 @@ class ScreenRenderImpl implements ScreenRender {
     String startFormListRow(String formName, Object listEntry) {
         ScreenDefinition sd = getActiveScreenDef()
         ScreenForm form = sd.getForm(formName)
-        if (!form) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
+        if (form == null) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
         ((ContextStack) ec.context).push()
         form.runFormListRowActions(this, listEntry)
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written

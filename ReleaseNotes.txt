@@ -18,6 +18,8 @@ Bug Fixes:
 - when no transaction is in place using current system time for the
   automatically populated lastUpdateStamp field
 - changed SpeedTest.xml screen to run in a transaction
+- fixed issue in Auto Screens where the entityName and detailEntityName
+  parameters were conflicting with field names on certain entities
 
 
 ===========================================================================

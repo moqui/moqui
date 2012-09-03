@@ -131,7 +131,6 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         if (fieldNode."@is-user-field" == "true") {
-            logger.warn("TOREMOVE get on [${name}] is-user-field")
             // get if from the UserFieldValue entity instead
             Map<String, Object> parms = [entityName: ed.getFullEntityName(), fieldName: name]
             addThreeFieldPkValues(parms)
@@ -142,9 +141,7 @@ abstract class EntityValueBase implements EntityValue {
                 EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
                         .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
                         .condition(parms).list()
-                logger.warn("TOREMOVE in get [${ed.entityName}] find with parms ${parms} and userGroupIdSet ${userGroupIdSet}, userFieldValueList=${userFieldValueList}")
                 if (userFieldValueList) {
-                    logger.warn("TOREMOVE get on [${name}] is-user-field, userFieldValueList=${userFieldValueList}")
                     // do type conversion according to field type
                     return ed.convertFieldString(name, (String) userFieldValueList[0].valueText)
                 }
@@ -685,18 +682,25 @@ abstract class EntityValueBase implements EntityValue {
 
     void clear() { valueMap.clear() }
 
-    Set<String> keySet() { return Collections.unmodifiableSet(valueMap.keySet()) }
+    Set<String> keySet() {
+        // Was this way through 1.1.0, only showing currently populated fields (not good for User Fields or other
+        //     convenient things): return Collections.unmodifiableSet(valueMap.keySet())
+        return new HashSet<String>(getEntityDefinition().getAllFieldNames())
+    }
 
     Collection<Object> values() {
-        // everything needs to go through the get method, so iterate through the keys and get the values
-        List<Object> values = new ArrayList<Object>(valueMap.size())
-        for (String key in valueMap.keySet()) values.add(get(key))
+        // everything needs to go through the get method, so iterate through the fields and get the values
+        List<String> allFieldNames = getEntityDefinition().getAllFieldNames()
+        List<Object> values = new ArrayList<Object>(allFieldNames.size())
+        for (String fieldName in allFieldNames) values.add(get(fieldName))
         return values
     }
 
     Set<Map.Entry<String, Object>> entrySet() {
+        // everything needs to go through the get method, so iterate through the fields and get the values
+        List<String> allFieldNames = getEntityDefinition().getAllFieldNames()
         Set<Map.Entry<String, Object>> entries = new HashSet()
-        for (String key in valueMap.keySet()) entries.add(new EntityFieldEntry(key, this))
+        for (String fieldName in allFieldNames) entries.add(new EntityFieldEntry(fieldName, this))
         return entries
     }
 
@@ -765,7 +769,6 @@ abstract class EntityValueBase implements EntityValue {
         // create records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
         if (userFieldNameList) {
-            logger.warn("TOREMOVE in create [${ed.entityName}] userFieldNameList=${userFieldNameList}; valueMap=${this.getValueMap()}")
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 for (String userFieldName in userFieldNameList) {
@@ -862,7 +865,6 @@ abstract class EntityValueBase implements EntityValue {
         // create or update records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
         if (userFieldNameList) {
-            logger.warn("TOREMOVE in update [${ed.entityName}] userFieldNameList=${userFieldNameList}; valueMap=${this.getValueMap()}")
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 // get values for all fields in one query, for all groups the user is in
@@ -885,7 +887,6 @@ abstract class EntityValueBase implements EntityValue {
                         for (EntityValue userFieldValue in fieldOnlyUserFieldValueList) {
                             userFieldValue.valueText = this.getValueMap().get(userFieldName) as String
                             userFieldValue.update()
-                            logger.warn("TOREMOVE in update [${ed.entityName}] updated UserFieldValue: ${userFieldValue}")
                         }
                     } else {
                         Node userFieldNode = ed.getFieldNode(userFieldName)
@@ -895,7 +896,6 @@ abstract class EntityValueBase implements EntityValue {
                         addThreeFieldPkValues(parms)
                         EntityValue newUserFieldValue = efi.makeValue("moqui.entity.UserFieldValue").setAll(parms)
                         newUserFieldValue.setSequencedIdPrimary().create()
-                        logger.warn("TOREMOVE in update [${ed.entityName}] created UserFieldValue: ${newUserFieldValue}")
                     }
                 }
             } finally {
@@ -935,7 +935,6 @@ abstract class EntityValueBase implements EntityValue {
         // delete records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
         if (userFieldNameList) {
-            logger.warn("TOREMOVE in delete [${ed.entityName}] userFieldNameList=${userFieldNameList}; valueMap=${this.getValueMap()}")
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
                 // get values for all fields in one query, for all groups the user is in
@@ -945,7 +944,6 @@ abstract class EntityValueBase implements EntityValue {
                 efi.makeFind("moqui.entity.UserFieldValue")
                         .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
                         .condition(findParms).deleteAll()
-                logger.warn("TOREMOVE in delete [${ed.entityName}] deleted with findParms ${findParms} and userGroupIdSet ${userGroupIdSet}")
             } finally {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
             }
