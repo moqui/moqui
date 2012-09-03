@@ -649,9 +649,9 @@ abstract class EntityValueBase implements EntityValue {
 
     boolean isEmpty() { return valueMap.isEmpty() }
 
-    boolean containsKey(Object o) { return valueMap.containsKey(o) }
+    boolean containsKey(Object o) { return o instanceof String ? getEntityDefinition().isField((String) o) : false }
 
-    boolean containsValue(Object o) { return valueMap.containsValue(o) }
+    boolean containsValue(Object o) { return values().contains(o) }
 
     Object get(Object o) {
         if (o instanceof String) {
