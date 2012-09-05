@@ -656,12 +656,16 @@ class ScreenForm {
                     baseFormNode.remove(fieldLayoutNode)
                     Node newFieldLayoutNode = baseFormNode.appendNode("field-layout", fieldLayoutNode.attributes())
                     int index = 0
+                    boolean addedNode = false
                     for (Node child in fieldLayoutNode.children()) {
-                        if (index == layoutSequenceNum)
+                        if (index == layoutSequenceNum) {
                             newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
+                            addedNode = true
+                        }
                         newFieldLayoutNode.append(child)
                         index++
                     }
+                    if (!addedNode) newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
                 }
             }
         }
