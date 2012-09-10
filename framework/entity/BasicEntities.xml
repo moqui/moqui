@@ -42,7 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="enumCode" type="text-medium"/>
         <field name="sequenceNum" type="number-integer"/>
         <field name="description" type="text-medium" enable-localization="true"/>
-        <relationship type="one" related-entity-name="EnumerationType"/>
+        <relationship type="one" related-entity-name="moqui.basic.EnumerationType"/>
         <relationship type="one-nofk" title="Parent" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="parentEnumId"/>
         </relationship>
