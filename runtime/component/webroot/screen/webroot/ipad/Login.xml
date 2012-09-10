@@ -40,7 +40,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <form-single name="login" transition="login">
                 <field name="username"><default-field><text-line size="20"/></default-field></field>
                 <field name="password"><default-field><password size="20"/></default-field></field>
-                <field name="tenantId"><default-field><text-line size="20"/></default-field></field>
+                <field name="tenantId"><conditional-field
+                        condition="ec.web == null || ec.web.session.getAttribute('moqui.tenantAllowOverride') != 'N'">
+                    <text-line size="20"/></conditional-field></field>
                 <field name="submitButton"><default-field title="Login"><submit/></default-field></field>
             </form-single>
         </container>

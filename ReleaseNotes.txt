@@ -11,6 +11,9 @@ This release includes:
   in the database (using the UserField entity) and values for the fields
   isolated to groups of users stored in a separate table (using the
   UserFieldValue entity)
+- Option to specify a default tenantId for a given host name
+  (request.getServerName()) in the database, using the TenantHostDefault
+  entity for deployment of tenants with a virtual host approach
 
 Bug Fixes:
 

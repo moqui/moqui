@@ -27,6 +27,7 @@ import org.moqui.context.WebFacade
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpServletRequest
 import org.apache.camel.CamelContext
+import org.moqui.entity.EntityValue
 
 class ExecutionContextImpl implements ExecutionContext {
 
@@ -104,6 +105,22 @@ class ExecutionContextImpl implements ExecutionContext {
     /** @see org.moqui.context.ExecutionContext#initWebFacade(String, HttpServletRequest, HttpServletResponse) */
     void initWebFacade(String webappMoquiName, HttpServletRequest request, HttpServletResponse response) {
         this.tenantId = request.session.getAttribute("moqui.tenantId")
+        if (!this.tenantId) {
+            boolean alreadyDisabled = getArtifactExecution().disableAuthz()
+            try {
+                EntityValue tenantHostDefault = getEntity().makeFind("TenantHostDefault")
+                        .condition("hostName", request.getServerName()).useCache(true).one()
+                if (tenantHostDefault) {
+                    this.tenantId = tenantHostDefault.tenantId
+                    request.session.setAttribute("moqui.tenantId", this.tenantId)
+                    request.session.setAttribute("moqui.tenantHostName", tenantHostDefault.hostName)
+                    if (tenantHostDefault.allowOverride)
+                        request.session.setAttribute("moqui.tenantAllowOverride", tenantHostDefault.allowOverride)
+                }
+            } finally {
+                if (!alreadyDisabled) getArtifactExecution().enableAuthz()
+            }
+        }
         this.webFacade = new WebFacadeImpl(webappMoquiName, request, response, this)
         this.getUser().initFromHttpRequest(request, response)
 
@@ -115,10 +132,10 @@ class ExecutionContextImpl implements ExecutionContext {
     }
 
     void changeTenant(String tenantId) {
+        if (webFacade != null && webFacade.session.getAttribute("moqui.tenantAllowOverride") == "N")
+            throw new IllegalArgumentException("Tenant override is not allowed for host [${webFacade.session.getAttribute("moqui.tenantHostName")?:"Unknown"}].")
         this.tenantId = tenantId
-        if (this.webFacade != null) {
-            this.webFacade.session.setAttribute("moqui.tenantId", tenantId)
-        }
+        if (webFacade != null) webFacade.session.setAttribute("moqui.tenantId", tenantId)
     }
 
     /** @see org.moqui.context.ExecutionContext#destroy() */
