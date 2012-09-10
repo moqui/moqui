@@ -17,6 +17,10 @@ This release includes:
 
 Bug Fixes:
 
+- fixed data file load order to explicitly sort files in data directories
+  alpha-numerically; on some systems this is the way they came back in
+  directory listings but not all, causing inconsistent behavior without
+  this explicit sorting (symptom is FK errors in data load)
 - fixed incorrect link paths for ArtifactHitBins and ArtifactSummary PDFs
 - when no transaction is in place using current system time for the
   automatically populated lastUpdateStamp field
