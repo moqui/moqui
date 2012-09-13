@@ -569,7 +569,8 @@ class ScreenForm {
             break
         case "find-display":
             if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
-            Node headerFieldNode = newFieldNode."header-field" ?: newFieldNode.appendNode("header-field")
+            Node headerFieldNode = newFieldNode."header-field" ?
+                newFieldNode."header-field"[0] : newFieldNode.appendNode("header-field")
             if (efType.startsWith("date") || efType.startsWith("time")) {
                 headerFieldNode.appendNode("date-find", [type:efType])
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
@@ -665,7 +666,9 @@ class ScreenForm {
                         newFieldLayoutNode.append(child)
                         index++
                     }
-                    if (!addedNode) newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
+                    if (!addedNode) {
+                        newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
+                    }
                 }
             }
         }
