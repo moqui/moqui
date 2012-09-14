@@ -27,7 +27,10 @@ Bug Fixes:
 - changed SpeedTest.xml screen to run in a transaction
 - fixed issue in Auto Screens where the entityName and detailEntityName
   parameters were conflicting with field names on certain entities
-
+- fixed class cast exception for form-list when using the
+  auto-fields-entity element with @field-type=find-display
+- fixed and improved screen menu title defaults, especially for subscreens
+  added by subdirectory files
 
 ===========================================================================
 Release 1.1.0 - 22 July 2012

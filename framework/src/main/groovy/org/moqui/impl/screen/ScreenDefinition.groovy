@@ -68,13 +68,13 @@ class ScreenDefinition {
         if (rootSection && rootSection.widgets) {
             // get all of the other sections by name
             for (Node sectionNode in rootSection.widgets.widgetsNode.depthFirst()
-                    .findAll({ it.name() == "section" || it.name() == "section-iterate" })) {
+                    .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
                 sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"].replace('-','_')}"))
             }
 
             // get all forms by name
             for (Node formNode in rootSection.widgets.widgetsNode.depthFirst()
-                    .findAll({ it.name() == "form-single" || it.name() == "form-list" })) {
+                    .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
                 formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"].replace('-','_')}"))
             }
         }
@@ -438,16 +438,16 @@ class ScreenDefinition {
         SubscreensItem(String name, String location, GPathResult screen) {
             this.name = name
             this.location = location
-            menuTitle = screen."@default-menu-title"[0]
-            menuIndex = (screen."@default-menu-index"[0] as String ?: "5") as Integer
+            menuTitle = screen."@default-menu-title" as String ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            menuIndex = (screen."@default-menu-index" as String ?: "5") as Integer
             menuInclude = (!screen."@default-menu-include"?.getAt(0) || screen."@default-menu-include"[0] == "true")
         }
 
         SubscreensItem(Node subscreensItem, ScreenDefinition parentScreen) {
             name = subscreensItem."@name"
             location = subscreensItem."@location"
-            menuTitle = subscreensItem."@menu-title"
-            menuIndex = (subscreensItem."@menu-index" ?: "5") as int
+            menuTitle = subscreensItem."@menu-title" as String ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            menuIndex = (subscreensItem."@menu-index" as String ?: "5") as int
             menuInclude = (!subscreensItem."@menu-include"?.getAt(0) || subscreensItem."@menu-include"[0] == "true")
 
             if (subscreensItem."@disable-when") disableWhenGroovy = new GroovyClassLoader().parseClass(
@@ -457,7 +457,7 @@ class ScreenDefinition {
         SubscreensItem(EntityValue subscreensItem) {
             name = subscreensItem.subscreenName
             location = subscreensItem.subscreenLocation
-            menuTitle = subscreensItem.menuTitle
+            menuTitle = subscreensItem.menuTitle ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
             menuIndex = subscreensItem.menuIndex as int
             menuInclude = (subscreensItem.menuInclude == "Y")
         }
