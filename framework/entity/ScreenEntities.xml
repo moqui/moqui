@@ -54,8 +54,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <seed-data>
             <!-- Screen Themes -->
             <moqui.basic.EnumerationType description="Screen Theme Type" enumTypeId="ScreenThemeType"/>
-            <moqui.basic.Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL" enumTypeId="ScreenThemeType"/>
-            <moqui.basic.Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC" enumTypeId="ScreenThemeType"/>
+            <moqui.basic.Enumeration description="Internal Applications Theme Type" enumId="STT_INTERNAL"
+                                     enumTypeId="ScreenThemeType" enumCode="DEFAULT"/>
+            <moqui.basic.Enumeration description="Public Web Site/etc Theme Type" enumId="STT_PUBLIC"
+                                     enumTypeId="ScreenThemeType"/>
 
             <!-- Default Theme -->
             <moqui.screen.ScreenTheme screenThemeId="DEFAULT" screenThemeTypeEnumId="STT_INTERNAL"

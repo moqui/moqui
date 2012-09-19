@@ -30,7 +30,8 @@ This Work includes contributions authored by David E. Jones, not as a
                          resourceValue="/moqui.ico"/>
 
     <!-- Theme for Internal iPad apps -->
-    <moqui.basic.Enumeration description="Internal Applications for iPad Theme Type" enumId="STT_INTERNAL_IPAD" enumTypeId="ScreenThemeType"/>
+    <moqui.basic.Enumeration description="Internal Applications for iPad Theme Type" enumId="STT_INTERNAL_IPAD"
+                             enumTypeId="ScreenThemeType" enumCode="DEFAULT_IPAD"/>
     <moqui.screen.ScreenTheme screenThemeId="DEFAULT_IPAD" screenThemeTypeEnumId="STT_INTERNAL_IPAD" description="Moqui Default iPad Theme: simple, flat, default"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/smoothness/jquery-ui-1.8.21.css"/>
