@@ -864,9 +864,14 @@ class ScreenRenderImpl implements ScreenRender {
                 .one()?.screenThemeId
         // use the Enumeration.enumCode from the type to find the theme type's default screenThemeId
         if (!themeId) {
-            EntityValue themeTypeEnum = sfi.ecfi.entityFacade.makeFind("moqui.basic.Enumeration")
-                    .condition("enumId", stteId).useCache(true).one()
-            if (themeTypeEnum.enumCode) themeId = themeTypeEnum.enumCode
+            boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
+            try {
+                EntityValue themeTypeEnum = sfi.ecfi.entityFacade.makeFind("moqui.basic.Enumeration")
+                        .condition("enumId", stteId).useCache(true).one()
+                if (themeTypeEnum.enumCode) themeId = themeTypeEnum.enumCode
+            } finally {
+                if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
+            }
         }
         // theme with "DEFAULT" in the ID
         if (!themeId) {
