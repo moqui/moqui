@@ -14,6 +14,8 @@ This release includes:
 - Option to specify a default tenantId for a given host name
   (request.getServerName()) in the database, using the TenantHostDefault
   entity for deployment of tenants with a virtual host approach
+- Can now specify the default screenThemeId for a ScreenThemeType
+  Enumeration record using the Enumeration.enumCode field
 
 Bug Fixes:
 
@@ -31,6 +33,10 @@ Bug Fixes:
   auto-fields-entity element with @field-type=find-display
 - fixed and improved screen menu title defaults, especially for subscreens
   added by subdirectory files
+- fixed issue with isPermitted() call when determining if screens with
+  require-authentication=false should be included in the menu; they were
+  showing an error and not getting added to the menu but now they do get
+  added because no authz is necessary to access them
 
 ===========================================================================
 Release 1.1.0 - 22 July 2012

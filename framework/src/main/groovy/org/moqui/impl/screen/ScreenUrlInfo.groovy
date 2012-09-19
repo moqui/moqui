@@ -108,8 +108,10 @@ class ScreenUrlInfo {
             // logger.warn("TOREMOVE checking screen for user ${username} - ${aeii}")
 
             boolean isLast = (index == screenPathDefList.size())
-            if (!((ArtifactExecutionFacadeImpl) sri.getEc().getArtifactExecution()).isPermitted(username, aeii,
-                    lastAeii, isLast, false, sri.getEc().getUser().getNowTimestamp())) {
+            Node screenNode = screenDef.getScreenNode()
+            if (!((ArtifactExecutionFacadeImpl) sri.getEc().getArtifactExecution()).isPermitted(username, aeii, lastAeii,
+                    isLast ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false,
+                    false, sri.getEc().getUser().getNowTimestamp())) {
                 // logger.warn("TOREMOVE user ${username} is NOT allowed to view screen at path ${this.fullPathNameList} because of screen at ${screenDef.location}")
                 return false
             }
