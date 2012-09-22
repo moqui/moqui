@@ -2,8 +2,17 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.1.1 - Not Yet Decided
+Release 1.1.1 - 22 Sep 2012
 ===========================================================================
+
+The 1.1.1 release of Moqui Framework is primarily a bug fix release. While
+a few issues have been fixed the most important one for those just trying
+Moqui is the explicit sorting of files by name during data loading which
+addresses an issue on Linux servers where the files in a directory listing
+through the Java File API can come back in any order.
+
+Minor new features include DB configured User Fields on entities, host name
+based tenant selection, and an easier way to specify default themes.
 
 This release includes:
 
