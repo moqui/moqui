@@ -868,7 +868,7 @@ class ScreenRenderImpl implements ScreenRender {
             try {
                 EntityValue themeTypeEnum = sfi.ecfi.entityFacade.makeFind("moqui.basic.Enumeration")
                         .condition("enumId", stteId).useCache(true).one()
-                if (themeTypeEnum.enumCode) themeId = themeTypeEnum.enumCode
+                if (themeTypeEnum?.enumCode) themeId = themeTypeEnum.enumCode
             } finally {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
             }
