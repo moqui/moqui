@@ -55,7 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="artifactSubType">
                 <header-field show-order-by="true">
-                    <drop-down allow-empty="true" combo-box="true">
+                    <drop-down allow-empty="true">
                         <option key="one"/><option key="list"/><option key="iterator"/><option key="count"/>
                         <option key="create"/><option key="update"/><option key="delete"/><option key="refresh"/>
                         <option key="entity-auto"/><option key="entity-implicit"/><option key="inline"/>
