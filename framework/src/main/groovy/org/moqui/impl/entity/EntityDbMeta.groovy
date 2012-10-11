@@ -98,7 +98,7 @@ class EntityDbMeta {
 
             String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
             tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
-            if (!tableSet.isClosed() && tableSet.next()) {
+            if (tableSet.next()) {
                 return true
             } else {
                 logger.info("Table for entity [${ed.entityName}] does NOT exist")
@@ -144,7 +144,7 @@ class EntityDbMeta {
             String pkName = "PK_" + ed.getTableName()
             int constraintNameClipLength = (databaseNode."@constraint-name-clip-length"?:"30") as int
             if (pkName.length() > constraintNameClipLength) pkName = pkName.substring(0, constraintNameClipLength)
-            sql.append("CONSTRAINT ").append(pkName)
+            sql.append("CONSTRAINT ").append(ed.getSchemaName() ? ed.getSchemaName() + "." : "").append(pkName)
         }
         sql.append(" PRIMARY KEY (")
         boolean isFirstPk = true
@@ -409,7 +409,8 @@ class EntityDbMeta {
                 }
                 sql.append(")")
             } else {
-                sql.append("CONSTRAINT ").append(constraintName.toString()).append(" FOREIGN KEY (")
+                sql.append("CONSTRAINT ").append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
+                        .append(constraintName.toString()).append(" FOREIGN KEY (")
                 boolean isFirst = true
                 for (String fieldName in keyMapKeys) {
                     if (isFirst) isFirst = false else sql.append(", ")
