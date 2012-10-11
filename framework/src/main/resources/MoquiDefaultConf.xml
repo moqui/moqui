@@ -335,6 +335,28 @@
 
             <database-type type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
+        <database name="db2" join-style="ansi" default-isolation-level="ReadCommitted"
+                  default-test-query="SELECT 1 FROM SYSIBM.SYSDUMMY1"
+                  default-jdbc-driver="com.ibm.db2.jcc.DB2Driver"
+                  default-xa-ds-class="com.ibm.db2.jcc.DB2XADataSource">
+            <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
+            <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
+            <database-type type="number-float" sql-type="DECIMAL(32,12)"/>
+
+            <database-type type="currency-amount" sql-type="DECIMAL(22,2)"/>
+            <database-type type="currency-precise" sql-type="DECIMAL(23,3)"/>
+        </database>
+        <database name="db2i" join-style="ansi" default-isolation-level="ReadCommitted"
+                  default-test-query="SELECT 1 FROM SYSIBM.SYSDUMMY1"
+                  default-jdbc-driver="com.ibm.as400.access.AS400JDBCDriver"
+                  default-xa-ds-class="com.ibm.as400.access.AS400JDBCXADataSource">
+            <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
+            <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
+            <database-type type="number-float" sql-type="DECIMAL(32,12)"/>
+
+            <database-type type="currency-amount" sql-type="DECIMAL(22,2)"/>
+            <database-type type="currency-precise" sql-type="DECIMAL(23,3)"/>
+        </database>
         <database name="oracle" join-style="ansi" default-isolation-level="ReadCommitted"
                   default-test-query="SELECT 1 FROM DUAL" default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
                   default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource">
