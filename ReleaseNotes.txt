@@ -14,6 +14,8 @@ Bug Fixes:
 - Fixed bug where secondary sequened ID (setSequencedIdSecondary() method)
   was not finding IDs of existing records causing conflicting IDs to be
   generated
+- Fixed bug with EntityFindBase.updateAll() to not use EntityListIterator
+  as it caused problems trying to update records with the ResultSet open
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

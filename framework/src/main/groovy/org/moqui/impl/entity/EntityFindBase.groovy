@@ -729,22 +729,15 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
         // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
         this.useCache(false).forUpdate(true)
-        EntityListIterator eli
         long totalUpdated = 0
-        try {
-            eli = iterator()
-            EntityValue value
-            while ((value = eli.next()) != null) {
-                value.putAll(fieldsToSet)
-                if (value.isModified()) {
-                    // NOTE: this may blow up in some cases, if it does then change this to put all values to update in a
-                    // list and update them after the eli is closed, or implement and use the eli.set(value) method
-                    value.update()
-                    totalUpdated++
-                }
+        EntityList el = list()
+        for (EntityValue value in el) {
+            value.putAll(fieldsToSet)
+            if (value.isModified()) {
+                // NOTE: consider implement and use the eli.set(value) method to update within a ResultSet
+                value.update()
+                totalUpdated++
             }
-        } finally {
-            eli.close()
         }
         return totalUpdated
     }
