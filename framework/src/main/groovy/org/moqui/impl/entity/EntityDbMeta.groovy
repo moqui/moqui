@@ -239,7 +239,7 @@ class EntityDbMeta {
         for (Node indexNode in ed.entityNode."index") {
             StringBuilder sql = new StringBuilder("CREATE ")
             if (databaseNode."@use-indexes-unique" != "false" && indexNode."@unique" == "true") sql.append("UNIQUE ")
-            sql.append("INDEX ").append(indexNode."@name")
+            sql.append("INDEX ").append(ed.getSchemaName() ? ed.getSchemaName() + "." : "").append(indexNode."@name")
             sql.append(" ON ").append(ed.getFullTableName())
 
             sql.append(" (")
@@ -279,6 +279,7 @@ class EntityDbMeta {
             indexName.insert(0, "IDX")
 
             StringBuilder sql = new StringBuilder("CREATE INDEX ")
+            sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
             sql.append(indexName.toString()).append(" ON ").append(ed.getFullTableName())
 
             sql.append(" (")
