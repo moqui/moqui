@@ -160,7 +160,9 @@ abstract class EntityValueBase implements EntityValue {
     Map<String, Object> getPrimaryKeys() {
         Map<String, Object> pks = new HashMap()
         for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
-            pks.put(fieldName, valueMap.get(fieldName))
+            // only include PK fields which has a non-empty value, leave others out of the Map
+            Object value = valueMap.get(fieldName)
+            if (value) pks.put(fieldName, value)
         }
         return pks
     }
@@ -250,7 +252,16 @@ abstract class EntityValueBase implements EntityValue {
         List<EntityValue> allValues
         this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
-            allValues = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue).list()
+            // NOTE: DEJ 2012-10-11 Added the call to getPrimaryKeys() even though the setFields() call above is only
+            //     supposed to move over PK fields; somehow a bunch of other fields were getting set to null, causing
+            //     null constraints for those fields; based on debug logging this happened somewhere after the last
+            //     line of the EntityValueBase.put() method (according to a log statement there) and a log statement
+            //     after the line that calls put() in the EntityDefinition.setString() method; theory is that groovy
+            //     is doing something that results in fields getting set to null, probably a call to a method on
+            //     EntityValueBase or EntityValueImpl that is not expected to be called
+            EntityFind ef = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue.getPrimaryKeys())
+            // logger.warn("TOREMOVE in setSequencedIdSecondary ef WHERE=${ef.getWhereEntityCondition()}")
+            allValues = ef.list()
         } finally {
             this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
         }

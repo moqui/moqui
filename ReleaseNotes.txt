@@ -11,7 +11,9 @@ This release includes:
 
 Bug Fixes:
 
-- TODO
+- Fixed bug where secondary sequened ID (setSequencedIdSecondary() method)
+  was not finding IDs of existing records causing conflicting IDs to be
+  generated
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
