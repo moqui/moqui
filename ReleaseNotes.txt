@@ -16,6 +16,7 @@ Bug Fixes:
   generated
 - Fixed bug with EntityFindBase.updateAll() to not use EntityListIterator
   as it caused problems trying to update records with the ResultSet open
+- Added support for @confirmation attribute for hidden-form type links
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
