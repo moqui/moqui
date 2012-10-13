@@ -20,6 +20,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <!-- refer to the UNDECORATED (or self-decorating) app roots here -->
     </subscreens>
+    <pre-actions>
+        <set field="html_scripts" from="['/js/jquery-1.8.2.min.js', '/js/jquery-ui-1.9.0.min.js',
+            '/js/jquery-ui-timepicker-addon-1.0.0.js', '/js/jquery-ui-combobox.js', '/js/jquery-validate-1.9.0.min.js']"/>
+    </pre-actions>
     <widgets>
         <render-mode>
             <text type="html" location="component://webroot/screen/includes/Header.html.ftl"/>

@@ -12,8 +12,10 @@ This release includes:
   and they will be picked up, instead of setting explicitly in result Map
 - When auto-parameters has an entity-name specified the generated
   parameters will have entity-name and field-name attributes, and the
-  auto-fields-service not looks for those to do better fields based on the
+  auto-fields-service now looks for those to do better fields based on the
   entity field details
+- Moved JS file reference to webroot.xml isntead of in the theme; all
+  themes need them, and they are more closely related to HTML generated
 
 Bug Fixes:
 

@@ -16,16 +16,6 @@ This Work includes contributions authored by David E. Jones, not as a
                          resourceValue="/css/smoothness/jquery-ui-1.9.0.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/default.css"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-1.8.2.min.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-1.9.0.min.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-timepicker-addon-1.0.0.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-combobox.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-validate-1.9.0.min.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
                          resourceValue="/moqui.ico"/>
 
@@ -39,16 +29,6 @@ This Work includes contributions authored by David E. Jones, not as a
                          resourceValue="/css/default.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/ipad/css/ipad.css"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="5" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-1.8.2.min.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="6" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-1.9.0.min.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="7" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-timepicker-addon-1.0.0.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="8" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-ui-combobox.js"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="9" resourceTypeEnumId="STRT_SCRIPT"
-                         resourceValue="/js/jquery-validate-1.9.0.min.js"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
                          resourceValue="/ipad.ico"/>
 </entity-facade-xml>
