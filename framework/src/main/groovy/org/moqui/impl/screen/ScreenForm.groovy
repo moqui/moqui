@@ -360,9 +360,9 @@ class ScreenForm {
     protected void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
         String serviceVerb = sd.verb
         //String serviceType = sd.serviceNode."@type"
-        EntityDefinition ed = null
+        EntityDefinition nounEd = null
         try {
-            ed = ecfi.entityFacade.getEntityDefinition(sd.noun)
+            nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
         } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
 
         List<Node> parameterNodes = []
@@ -371,10 +371,13 @@ class ScreenForm {
 
         for (Node parameterNode in parameterNodes) {
             // if the parameter corresponds to an entity field, we can do better with that
-            if (ed != null && ed.getFieldNode(parameterNode."@name") != null) {
-                Node newFieldNode = new Node(null, "field", [name:parameterNode."@name"])
+            EntityDefinition fieldEd = nounEd
+            if (parameterNode."@entity-name") fieldEd = ecfi.entityFacade.getEntityDefinition(parameterNode."@entity-name")
+            String fieldName = parameterNode."@field-name" ?: parameterNode."@name"
+            if (fieldEd != null && fieldEd.getFieldNode(fieldName) != null) {
+                Node newFieldNode = new Node(null, "field", [name:fieldName])
                 Node subFieldNode = newFieldNode.appendNode("default-field")
-                addAutoEntityField(ed, parameterNode."@name", fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
+                addAutoEntityField(fieldEd, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
                 mergeFieldNode(baseFormNode, newFieldNode, false)
                 continue
             }

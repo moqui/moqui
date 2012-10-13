@@ -137,7 +137,9 @@ class ServiceDefinition {
             if (fieldsToExclude.contains(fieldName)) continue
 
             String javaType = sfi.ecfi.entityFacade.getFieldJavaType(ed.getFieldNode(fieldName)."@type", entityName)
-            mergeParameter(parametersNode, fieldName, [type:javaType, required:requiredStr, "allow-html":allowHtmlStr])
+            mergeParameter(parametersNode, fieldName,
+                    [type:javaType, required:requiredStr, "allow-html":allowHtmlStr,
+                            "entity-name":entityName, "field-name":fieldName])
         }
     }
 

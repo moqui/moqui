@@ -686,7 +686,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     void putAll(Map<? extends String, ? extends Object> map) {
-        for(Map.Entry entry in map.entrySet()) {
+        for (Map.Entry entry in map.entrySet()) {
             this.set((String) entry.key, entry.value)
         }
     }

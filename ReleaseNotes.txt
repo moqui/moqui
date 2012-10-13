@@ -10,6 +10,10 @@ This release includes:
 - Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
 - Inline and script services can leave out parameter values in the context
   and they will be picked up, instead of setting explicitly in result Map
+- When auto-parameters has an entity-name specified the generated
+  parameters will have entity-name and field-name attributes, and the
+  auto-fields-service not looks for those to do better fields based on the
+  entity field details
 
 Bug Fixes:
 
