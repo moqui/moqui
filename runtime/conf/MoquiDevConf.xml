@@ -10,21 +10,21 @@
         <!-- longer timeout since this basically looks through all files to check for new or moved entity defs -->
         <cache name="entity.location" expire-time-idle="300"/>
 
-        <cache name="service.location" expire-time-idle="20"/>
-        <cache name="service.java.class" expire-time-idle="20"/>
+        <cache name="service.location" expire-time-idle="5"/>
+        <cache name="service.java.class" expire-time-idle="5"/>
 
-        <cache name="screen.location" expire-time-idle="20"/>
-        <cache name="screen.template.mode" expire-time-idle="20"/>
-        <cache name="screen.template.location" expire-time-idle="20"/>
+        <cache name="screen.location" expire-time-idle="5"/>
+        <cache name="screen.template.mode" expire-time-idle="5"/>
+        <cache name="screen.template.location" expire-time-idle="5"/>
 
-        <cache name="resource.xml-actions.location" expire-time-idle="20"/>
-        <cache name="resource.groovy.location" expire-time-idle="20"/>
+        <cache name="resource.xml-actions.location" expire-time-idle="5"/>
+        <cache name="resource.groovy.location" expire-time-idle="5"/>
         <!-- longer timeout because these are cached by the expression text itself, so changed text is a new entry -->
         <cache name="resource.groovy.expression" expire-time-idle="600"/>
 
-        <cache name="resource.ftl.location" expire-time-idle="20"/>
-        <cache name="resource.cwiki.location" expire-time-idle="20"/>
-        <cache name="resource.text.location" expire-time-idle="20"/>
+        <cache name="resource.ftl.location" expire-time-idle="5"/>
+        <cache name="resource.cwiki.location" expire-time-idle="5"/>
+        <cache name="resource.text.location" expire-time-idle="5"/>
     </cache-list>
     
     <server-stats>
@@ -51,7 +51,9 @@
                             macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
     </screen-facade>
 
-    <entity-facade crypt-pass="MoquiDevDefaultPassword:CHANGEME"/>
+    <entity-facade crypt-pass="MoquiDevDefaultPassword:CHANGEME">
+        <!-- add datasource elements here to configure databases -->
+    </entity-facade>
 
     <repository-list>
         <repository name="main" location="http://localhost:8081/server" type="davex" workspace="development"/>
