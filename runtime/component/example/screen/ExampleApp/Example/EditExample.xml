@@ -58,7 +58,7 @@ This Work includes contributions authored by David E. Jones, not as a
     $(document).ready(function() {
         var data;
         jQuery.ajax({ type: 'POST', url: 'EditExample/getExampleTypeEnumList', data: [{ name: 'enumTypeId', value: 'ExampleType' }],
-            async: false, cache: false, dataType: 'json', success: function(result) { data = result; }
+            cache: false, dataType: 'json', success: function(result) { data = result; }
         });
         list = data["exampleTypeEnumList"];
         if (list) {
