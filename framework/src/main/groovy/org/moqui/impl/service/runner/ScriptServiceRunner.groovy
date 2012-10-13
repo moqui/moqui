@@ -38,16 +38,20 @@ public class ScriptServiceRunner implements ServiceRunner {
             cs.push()
             // ec is already in place, in the contextRoot, so no need to put here
             // context is handled by the ContextStack itself, always there
-            ec.context.put("result", new HashMap())
+            Map<String, Object> autoResult = new HashMap()
+            ec.context.put("result", autoResult)
 
             Object result = ec.resource.runScriptInCurrentContext(sd.serviceNode."@location", sd.serviceNode."@method")
 
             if (result instanceof Map) {
                 return (Map<String, Object>) result
-            } else if (ec.context.get("result")) {
-                return (Map<String, Object>) ec.context.get("result")
             } else {
-                return null
+                // if there are fields in ec.context that match out-parameters but that aren't in the result, set them
+                for (String outParameterName in sd.getOutParameterNames()) {
+                    if (!autoResult.containsKey(outParameterName) && ec.context.get(outParameterName))
+                        autoResult.put(outParameterName, ec.context.get(outParameterName))
+                }
+                return autoResult
             }
         } finally {
             // in the push we pushed two Maps to protect the parameters Map, so pop twice

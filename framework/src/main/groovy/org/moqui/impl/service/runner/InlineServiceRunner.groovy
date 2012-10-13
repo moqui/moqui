@@ -36,17 +36,21 @@ public class InlineServiceRunner implements ServiceRunner {
             cs.push()
             // ec is already in place, in the contextRoot, so no need to put here
             // context is handled by the ContextStack itself, always there
-            ec.context.put("result", new HashMap())
+            Map<String, Object> autoResult = new HashMap()
+            ec.context.put("result", autoResult)
 
             XmlAction xa = sd.getXmlAction()
             Object result = xa.run(ec)
 
             if (result instanceof Map) {
                 return (Map<String, Object>) result
-            } else if (ec.context.get("result")) {
-                return (Map<String, Object>) ec.context.get("result")
             } else {
-                return null
+                // if there are fields in ec.context that match out-parameters but that aren't in the result, set them
+                for (String outParameterName in sd.getOutParameterNames()) {
+                    if (!autoResult.containsKey(outParameterName) && ec.context.get(outParameterName))
+                        autoResult.put(outParameterName, ec.context.get(outParameterName))
+                }
+                return autoResult
             }
         } catch (Throwable t) {
             logger.error("Error running inline XML Actions in service [${sd.serviceName}]: ", t)

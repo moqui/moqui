@@ -169,7 +169,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
 
-        // validation
+        // in-parameter validation
         sd.convertValidateCleanParameters(currentParameters, eci)
         // if error(s) in parameters, return now with no results
         if (eci.getMessage().getErrors().size() > 0) return null
@@ -195,7 +195,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
                 sfi.registerTxSecaRules(getServiceName(), currentParameters)
+
+                // run the service through the ServiceRunner
                 result = sr.runService(sd, currentParameters)
+
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
                 // if we got any errors added to the message list in the service, rollback for that too
                 if (eci.getMessage().getErrors().size() > 0) {
