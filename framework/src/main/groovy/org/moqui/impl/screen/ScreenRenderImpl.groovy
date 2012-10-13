@@ -232,11 +232,8 @@ class ScreenRenderImpl implements ScreenRender {
                     int i = 0
                     for (String extraPathName in screenUrlInfo.getExtraPathNameList()) {
                         if (pathParameterList.size() > i) {
-                            if (ec.web) {
-                                ec.web.addDeclaredPathParameter(pathParameterList.get(i), extraPathName)
-                            } else {
-                                ec.context.put(extraPathName, pathParameterList.get(i))
-                            }
+                            if (ec.web) ec.web.addDeclaredPathParameter(pathParameterList.get(i), extraPathName)
+                            ec.context.put(pathParameterList.get(i), extraPathName)
                             i++
                         } else {
                             break
