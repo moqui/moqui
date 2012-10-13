@@ -17,6 +17,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <subscreens default-item="FindExample"/>
 
     <widgets>
-        <subscreens-panel id="example-panel" type="tab" dynamic="true"/>
+        <subscreens-panel id="example-panel" type="tab" dynamic="false"/>
     </widgets>
 </screen>
