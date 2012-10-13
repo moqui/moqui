@@ -56,17 +56,17 @@ This Work includes contributions authored by David E. Jones, not as a
                 <render-mode><text type="html"><![CDATA[
     <script language="javascript">
     $(document).ready(function() {
-        var data;
-        jQuery.ajax({ type: 'POST', url: 'EditExample/getExampleTypeEnumList', data: [{ name: 'enumTypeId', value: 'ExampleType' }],
-            cache: false, dataType: 'json', success: function(result) { data = result; }
+        var list;
+        $.ajax({ type: 'POST', url: 'EditExample/getExampleTypeEnumList', data: [{ name: 'enumTypeId', value: 'ExampleType' }],
+                dataType: 'json' }).done( function(data) {
+            list = data["exampleTypeEnumList"];
+            if (list) {
+                $('#CreateExample_exampleTypeEnumId').html(""); /* clear out the drop-down */
+                $.each(list, function(key, value) {
+                    $('#CreateExample_exampleTypeEnumId').append("<option value = '" + value["enumId"] + "'>" + value["description"] + "</option>");
+                })
+            };
         });
-        list = data["exampleTypeEnumList"];
-        if (list) {
-            jQuery('#CreateExample_exampleTypeEnumId').html(""); /* clear out the drop-down */
-            jQuery.each(list, function(key, value) {
-                jQuery('#CreateExample_exampleTypeEnumId').append("<option value = '" + value["enumId"] + "'>" + value["description"] + "</option>");
-            })
-        };
     })
     </script>
                 ]]></text></render-mode>
