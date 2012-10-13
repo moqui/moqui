@@ -20,6 +20,8 @@ import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ResourceReference
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.StupidUtilities
+import org.moqui.entity.EntityFind
+import org.moqui.entity.EntityCondition
 
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
@@ -124,22 +126,15 @@ class ScreenDefinition {
         }
 
         // override dir structure and subscreens-item elements with moqui.screen.SubscreensItem entity
-        EntityList subscreensItemList = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
-                .condition([screenLocation:location, userId:"_NA_"]).useCache(true).list()
+        EntityFind subscreensItemFind = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
+                .condition([screenLocation:location])
+        subscreensItemFind.condition("userGroupId", EntityCondition.ComparisonOperator.IN,
+                sfi.ecfi.executionContext.user.userGroupIdSet)
+        EntityList subscreensItemList = subscreensItemFind.useCache(true).list()
         for (EntityValue subscreensItem in subscreensItemList) {
             SubscreensItem si = new SubscreensItem(subscreensItem)
             subscreensByName.put(si.name, si)
             if (logger.traceEnabled) logger.trace("Added database subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
-        }
-        // override rest with SubscreensItem entity with userId of current user
-        if (sfi.ecfi.executionContext.user.userId) {
-            EntityList userSubscreensItemList = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
-                    .condition([screenLocation:location, userId:sfi.ecfi.executionContext.user.userId]).useCache(true).list()
-            for (EntityValue subscreensItem in userSubscreensItemList) {
-                SubscreensItem si = new SubscreensItem(subscreensItem)
-                subscreensByName.put(si.name, si)
-                if (logger.traceEnabled) logger.trace("Added user-specific database subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
-            }
         }
     }
 

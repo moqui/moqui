@@ -352,10 +352,15 @@ class UserFacadeImpl implements UserFacade {
         if (usernameStack.size() == 0) return allUserGroupIdOnly
         if (internalUserGroupIdSet == null) {
             internalUserGroupIdSet = new HashSet(allUserGroupIdOnly)
-            // expand the userGroupId Set with UserGroupMember
-            for (EntityValue userGroupMember in eci.getEntity().makeFind("moqui.security.UserGroupMember").condition("userId", userId)
-                    .useCache(true).list().filterByDate(null, null, null))
-                userGroupIdSet.add((String) userGroupMember.userGroupId)
+            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+            try {
+                // expand the userGroupId Set with UserGroupMember
+                for (EntityValue userGroupMember in eci.getEntity().makeFind("moqui.security.UserGroupMember")
+                        .condition("userId", userId).useCache(true).list().filterByDate(null, null, null))
+                    internalUserGroupIdSet.add((String) userGroupMember.userGroupId)
+            } finally {
+                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+            }
         }
         return internalUserGroupIdSet
     }

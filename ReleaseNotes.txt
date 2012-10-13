@@ -17,6 +17,18 @@ This release includes:
 - Moved JS file reference to webroot.xml isntead of in the theme; all
   themes need them, and they are more closely related to HTML generated
 
+Non-backward-compatible changes:
+
+- Changed *SubscreensItem.userId* to *userGroupId* for greater flexibility
+  setting up subscreen structures and menus
+-- this is consistent with how other database-driven artifacts are
+   structured
+-- to have a record apply to all users use the ALL_USERS userGroupId that
+   all users are automatically a member of
+-- for migrating other data a user will have to be a member of a group and
+   that group can be a single-user group or you can simplify existing data
+   by consolidating users into groups that have the same subscreens
+
 Bug Fixes:
 
 - Fixed bug where secondary sequened ID (setSequencedIdSecondary() method)
