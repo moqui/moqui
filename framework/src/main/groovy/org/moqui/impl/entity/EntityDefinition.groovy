@@ -26,6 +26,7 @@ import org.moqui.impl.entity.condition.FieldToFieldCondition
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.impl.context.ContextStack
+import org.moqui.BaseException
 
 public class EntityDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
@@ -630,7 +631,11 @@ public class EntityDefinition {
                 Object value = src.get(sourceFieldName)
                 if (value) {
                     if (value instanceof String) {
-                        this.setString(fieldName, (String) value, dest)
+                        try {
+                            this.setString(fieldName, (String) value, dest)
+                        } catch (BaseException be) {
+                            this.efi.ecfi.executionContext.message.addError(be.getMessage())
+                        }
                     } else {
                         dest.put(fieldName, value)
                     }
@@ -662,25 +667,29 @@ public class EntityDefinition {
         Object outValue
         Node fieldNode = this.getFieldNode(name)
         String javaType = this.efi.getFieldJavaType(fieldNode."@type", internalEntityName)
-        switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
-            case 1: outValue = value; break
-            case 2: outValue = java.sql.Timestamp.valueOf(value); break
-            case 3: outValue = java.sql.Time.valueOf(value); break
-            case 4: outValue = java.sql.Date.valueOf(value); break
-            case 5: outValue = Integer.valueOf(value); break
-            case 6: outValue = Long.valueOf(value); break
-            case 7: outValue = Float.valueOf(value); break
-            case 8: outValue = Double.valueOf(value); break
-            case 9: outValue = new BigDecimal(value); break
-            case 10: outValue = Boolean.valueOf(value); break
-            case 11: outValue = value; break
+        try {
+            switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
+                case 1: outValue = value; break
+                case 2: outValue = java.sql.Timestamp.valueOf(value); break
+                case 3: outValue = java.sql.Time.valueOf(value); break
+                case 4: outValue = java.sql.Date.valueOf(value); break
+                case 5: outValue = Integer.valueOf(value); break
+                case 6: outValue = Long.valueOf(value); break
+                case 7: outValue = Float.valueOf(value); break
+                case 8: outValue = Double.valueOf(value); break
+                case 9: outValue = new BigDecimal(value); break
+                case 10: outValue = Boolean.valueOf(value); break
+                case 11: outValue = value; break
             // better way for Blob (12)? probably not...
-            case 12: outValue = value; break
-            case 13: outValue = value; break
-            case 14: outValue = value.asType(java.util.Date.class); break
+                case 12: outValue = value; break
+                case 13: outValue = value; break
+                case 14: outValue = value.asType(java.util.Date.class); break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
-            case 15: outValue = value; break
-            default: outValue = value; break
+                case 15: outValue = value; break
+                default: outValue = value; break
+            }
+        } catch (IllegalArgumentException e) {
+            throw new BaseException("The value [${value}] is not valid for field [${name}] with type [${javaType}]")
         }
 
         return outValue
