@@ -10,7 +10,7 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<secas xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-eca-1.1.xsd">
+<secas xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-eca-1.2.xsd">
 <!-- this is just an example of what was used for keeping ExampleStatus records; now handled with the audit-log, so
         this is no longer needed or used:
     <seca service="org.moqui.example.ExampleServices.updateExample" when="post-commit">
