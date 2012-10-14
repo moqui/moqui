@@ -10,7 +10,7 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.1.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="entity-definition-1.2.xsd">
 
     <view-entity entity-name="ExampleStatusDetail" package-name="moqui.example">
         <member-entity entity-alias="EXPL" entity-name="Example"/>
