@@ -512,12 +512,13 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="econdition-object">
-        <xs:annotation><xs:documentation>Add a econdition that has been defined elsewhere and is available in the
-            current context.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Add a condition that has been defined elsewhere and is available in the
+            current context. Can also be a Map and it will add conditions where the entries are ANDed together and each
+            key/value are compared with equal.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="field" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>Field in the current context that implements the EntityCondition
-                    interface.</xs:documentation></xs:annotation>
+                    interface or the Map interface.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
