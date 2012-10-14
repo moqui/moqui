@@ -15,6 +15,7 @@ import org.moqui.context.MessageFacade
 import org.moqui.context.ValidationError
 
 public class MessageFacadeImpl implements MessageFacade {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageFacadeImpl.class)
 
     protected List<String> messageList = new LinkedList<String>()
     protected List<String> errorList = new LinkedList<String>()
@@ -42,4 +43,7 @@ public class MessageFacadeImpl implements MessageFacade {
 
     /** @see org.moqui.context.MessageFacade#getValidationErrors() */
     List<ValidationError> getValidationErrors() { return this.validationErrorList }
+    void addValidationError(String form, String field, String message, Throwable nested) {
+        this.validationErrorList.add(new ValidationError(form, field, message, nested))
+    }
 }

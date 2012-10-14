@@ -19,6 +19,11 @@ This release includes:
 - Added subscreens.always-use-full-path attribute to use the full path in
   menus and such instead of minimal path; helpful for wiki and other
   screens that use relative URLs that are not based on the screen path
+- Fleshed out ValidationError functionality including display in apps.xml
+  and considering the ec.message.validationErrors list for storing error
+  details in session between redirects, and changed entity and service
+  validation to add ValidationErrors instead of plain error Strings
+
 
 Non-backward-compatible changes:
 

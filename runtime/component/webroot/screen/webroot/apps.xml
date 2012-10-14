@@ -44,6 +44,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
                     <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
                 </section-iterate>
+                <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
+                    <!-- TODO: put these by fields instead of in header -->
+                    <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
+                </section-iterate>
 
                 <container id="header-menu"><subscreens-menu/></container>
                 <subscreens-active id="apps-active"/>

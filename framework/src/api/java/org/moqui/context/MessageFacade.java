@@ -42,4 +42,5 @@ public interface MessageFacade {
      * fields that triggered the error.
      */
     List<ValidationError> getValidationErrors();
+    void addValidationError(String form, String field, String message, Throwable nested);
 }

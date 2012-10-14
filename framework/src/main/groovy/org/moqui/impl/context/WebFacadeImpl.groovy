@@ -73,12 +73,16 @@ class WebFacadeImpl implements WebFacade {
 
         // get any messages saved to the session, and clear them from the session
         if (session.getAttribute("moqui.message.messages")) {
-            eci.message.messageList.addAll((Collection) session.getAttribute("moqui.message.messages"))
+            eci.message.messages.addAll((Collection) session.getAttribute("moqui.message.messages"))
             session.removeAttribute("moqui.message.messages")
         }
         if (session.getAttribute("moqui.message.errors")) {
-            eci.message.errorList.addAll((Collection) session.getAttribute("moqui.message.errors"))
+            eci.message.errors.addAll((Collection) session.getAttribute("moqui.message.errors"))
             session.removeAttribute("moqui.message.errors")
+        }
+        if (session.getAttribute("moqui.message.validationErrors")) {
+            eci.message.validationErrors.addAll((Collection) session.getAttribute("moqui.message.validationErrors"))
+            session.removeAttribute("moqui.message.validationErrors")
         }
 
         // if this is a multi-part request, get the data for it
@@ -305,6 +309,7 @@ class WebFacadeImpl implements WebFacade {
     void saveMessagesToSession() {
         if (eci.message.messages) session.setAttribute("moqui.message.messages", eci.message.messages)
         if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
+        if (eci.message.validationErrors) session.setAttribute("moqui.message.validationErrors", eci.message.validationErrors)
     }
     /** Save request parameters and attributes to a Map in the moqui.saved.parameters session attribute */
     void saveRequestParametersToSession() {

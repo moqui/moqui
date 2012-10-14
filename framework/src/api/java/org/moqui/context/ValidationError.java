@@ -22,14 +22,21 @@ import org.moqui.BaseException;
  * things are running, and then all of them can be shown in context of the fields with the errors.
  */
 public class ValidationError extends BaseException {
+    protected final String form;
     protected final String field;
 
     public ValidationError(String field, String message, Throwable nested) {
         super(message, nested);
+        this.form = null;
         this.field = field;
     }
 
-    public String getField() {
-        return this.field;
+    public ValidationError(String form, String field, String message, Throwable nested) {
+        super(message, nested);
+        this.form = form;
+        this.field = field;
     }
+
+    public String getForm() { return this.form; }
+    public String getField() { return this.field; }
 }

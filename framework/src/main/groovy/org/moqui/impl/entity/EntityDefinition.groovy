@@ -634,7 +634,7 @@ public class EntityDefinition {
                         try {
                             this.setString(fieldName, (String) value, dest)
                         } catch (BaseException be) {
-                            this.efi.ecfi.executionContext.message.addError(be.getMessage())
+                            this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, be.getMessage(), be)
                         }
                     } else {
                         dest.put(fieldName, value)
@@ -689,7 +689,7 @@ public class EntityDefinition {
                 default: outValue = value; break
             }
         } catch (IllegalArgumentException e) {
-            throw new BaseException("The value [${value}] is not valid for field [${name}] with type [${javaType}]")
+            throw new BaseException("The value [${value}] is not valid for type [${javaType}]")
         }
 
         return outValue
