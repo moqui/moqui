@@ -540,7 +540,7 @@ class EntityFacadeImpl implements EntityFacade {
 
             EntityValue dbViewEntityMember = null
             if (dbViewEntity) dbViewEntityMember = makeFind("moqui.entity.DbViewEntityMember")
-                    .condition([dbViewEntityName:dbViewEntityName, entityName:red.entityName]).one()
+                    .condition([dbViewEntityName:dbViewEntityName, entityName:red.getFullEntityName()]).one()
 
             for (String fn in red.getAllFieldNames()) {
                 Node fieldNode = red.getFieldNode(fn)

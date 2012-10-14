@@ -42,6 +42,8 @@ Bug Fixes:
 - Added support for @confirmation attribute for hidden-form type links
 - Fixed issue where transition.path-parameter values were not making it
   into the context since parameters were already added to the context
+- Fixed issue in Data View screen with related entities using the full
+  entity name (name with package)
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

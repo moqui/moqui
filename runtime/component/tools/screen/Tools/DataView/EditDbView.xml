@@ -67,19 +67,20 @@ This Work includes contributions authored by David E. Jones, not as a
                     String entityName
                     String fieldName
 
-                    String relationshipName = field.substring(0, field.indexOf('.'))
+                    String relationshipName = field.substring(0, field.lastIndexOf('.'))
                     Node relNode = masterEd.getRelationshipNode(relationshipName)
                     if (relNode != null) {
                         entityName = relNode."@related-entity-name"
-                        fieldName = field.substring(field.indexOf('.') + 1)
+                        fieldName = field.substring(field.lastIndexOf('.') + 1)
                     } else if (relationshipName == masterEntityName) {
                         entityName = masterEntityName
-                        fieldName = field.substring(field.indexOf('.') + 1)
+                        fieldName = field.substring(field.lastIndexOf('.') + 1)
                     } else {
                         ec.message.addError("No relationship definition found for name ${relationshipName}")
                         continue
                     }
 
+                    ec.logger.log(ec.logger.WARN_INT, "relationshipName: ${relationshipName}, entityName: ${entityName}, fieldName: ${fieldName}", null)
                     def memberValue = (relationshipName == masterDbViewEntityMember.entityName) ?
                             masterDbViewEntityMember : members.get(entityName)
                     if (!memberValue) {
@@ -175,7 +176,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-list name="SetMasterFields" list="masterFieldList" transition="setMasterFields" multi="true">
                     <field name="dbViewEntityName"><default-field><hidden/></default-field></field>
                     <field name="field"><default-field>
-                        <check all-checked="${inDbView?'true':'false'}"><option key="${title?:''}${entityName}.${fieldName}" text=" "/></check>
+                        <check all-checked="${inDbView?'true':'false'}">
+                            <option key="${title ? title+'#' : ''}${entityName}.${fieldName}" text=" "/></check>
                     </default-field></field>
                     <field name="fieldName">
                         <header-field show-order-by="true"/>
