@@ -109,7 +109,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </subscreens>
 
     <widgets>
-        <subscreens-panel id="example-app" type="tab"/>
+        <subscreens-panel id="example-app" type="popup" title="Example App"/>
         <!-- for a header and panel in an app can use something like this, though the basic approach above is cleaner:
         <container-panel id="example-app">
             <panel-header>

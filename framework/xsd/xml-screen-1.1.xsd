@@ -453,26 +453,36 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="subscreens-menu" substitutionGroup="AllWidgets">
         <xs:complexType>
-            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="type" default="tab">
+                <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="tab"/>
+                    <xs:enumeration value="popup"/>
+                    <xs:enumeration value="popup-tree"/>
+                </xs:restriction></xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="title" type="xs:string"/>
+            <xs:attribute name="width" type="xs:string" default="200px"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="subscreens-active" substitutionGroup="AllWidgets">
         <xs:complexType>
-            <xs:attribute name="id" type="xs:string"/>
+            <xs:attribute name="id" type="xs:string" use="optional"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="subscreens-panel" substitutionGroup="AllWidgets">
         <xs:complexType>
-            <xs:attribute name="id" type="xs:string"/>
             <xs:attribute name="type" default="tab">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="tab"/>
-                        <!-- TABLED, not to be part of 1.0: <xs:enumeration value="stack"/> -->
-                        <!-- TABLED, not to be part of 1.0: <xs:enumeration value="wizard"/> -->
-                    </xs:restriction>
-                </xs:simpleType>
+                <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="tab"/>
+                    <xs:enumeration value="popup"/>
+                    <!-- TABLED, not to be part of 1.0: <xs:enumeration value="stack"/> -->
+                    <!-- TABLED, not to be part of 1.0: <xs:enumeration value="wizard"/> -->
+                </xs:restriction></xs:simpleType>
             </xs:attribute>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="title" type="xs:string"/>
+            <xs:attribute name="menu-width" type="xs:string" default="200px"/>
             <xs:attribute name="dynamic" type="boolean" default="false"/>
         </xs:complexType>
     </xs:element>

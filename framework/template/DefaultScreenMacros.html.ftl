@@ -25,31 +25,84 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
-    <div class="ui-tabs ui-tabs-collapsible">
-        <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
-        <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
-            <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-            <#if urlInfo.isPermitted()>
-                <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
-            </#if>
-        </#if></#list>
+    <#if .node["@type"]?if_exists == "popup">
+        <#assign menuId = .node["@id"]!"subscreensMenu">
+        <ul id="${menuId}" style="width: ${.node["@width"]!"200px"};">
+            <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
+                <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+            </#list>
+            <li><a href="#">${.node["@title"]!"Menu"}<#if currentItemName?has_content> (${currentItemName})</#if></a>
+                <ul>
+                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInfo.isPermitted()>
+                            <li class="<#if urlInfo.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        </#if>
+                    </#if></#list>
+                </ul>
+            </li>
         </ul>
-    </div>
+        <script>$("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});</script>
+    <#elseif .node["@type"]?if_exists == "popup-tree">
+    <#else>
+        <#-- default to type=tab -->
+        <div class="ui-tabs ui-tabs-collapsible">
+            <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
+                <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                    <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                    <#if urlInfo.isPermitted()>
+                        <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+                    </#if>
+                </#if></#list>
+            </ul>
+        </div>
+    </#if>
 </#macro>
 
 <#macro "subscreens-active">
-    <div class="ui-tabs">
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-panel">
-        ${sri.renderSubscreen()}
+    <#if .node["@id"]?has_content>
+        <div class="ui-tabs">
+            <div id="${.node["@id"]}" class="ui-tabs-panel">
+            ${sri.renderSubscreen()}
+            </div>
         </div>
-    </div>
+    <#else>
+        ${sri.renderSubscreen()}
+    </#if>
 </#macro>
 
 <#macro "subscreens-panel">
     <#assign dynamic = .node["@dynamic"]?if_exists == "true" && .node["@id"]?has_content>
     <#assign dynamicActive = 0>
     <#assign displayMenu = sri.activeInCurrentMenu?if_exists>
-    <#if !(.node["@type"]?has_content) || .node["@type"] == "tab">
+    <#if .node["@type"]?if_exists == "popup">
+        <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
+        <ul id="${menuId}" style="width: ${.node["@menu-width"]!"200px"};">
+            <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
+                <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+            </#list>
+            <li><a href="#">${.node["@title"]!"Menu"}<#if currentItemName?has_content> (${currentItemName})</#if></a>
+                <ul>
+                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInfo.isPermitted()>
+                            <li class="<#if urlInfo.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        </#if>
+                    </#if></#list>
+                </ul>
+            </li>
+        </ul>
+        <script>$("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});</script>
+
+        ${sri.renderSubscreen()}
+    <#elseif .node["@type"]?if_exists == "stack">
+        <h1>LATER stack type subscreens-panel not yet supported.</h1>
+    <#elseif .node["@type"]?if_exists == "wizard">
+        <h1>LATER wizard type subscreens-panel not yet supported.</h1>
+    <#else>
+        <#-- default to type=tab -->
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs ui-tabs-collapsible">
         <#if displayMenu?if_exists>
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
@@ -81,10 +134,6 @@ This Work includes contributions authored by David E. Jones, not as a
             });
             </script>
         </#if>
-    <#elseif .node["@type"] == "stack">
-    <h1>LATER stack type subscreens-panel not yet supported.</h1>
-    <#elseif .node["@type"] == "wizard">
-    <h1>LATER wizard type subscreens-panel not yet supported.</h1>
     </#if>
 </#macro>
 
@@ -131,11 +180,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <button id="${.node["@id"]}-button">${buttonText}</button>
     <script>
 	$(function() {
-		$("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:true
-		    <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
-			<#--, close: function() { } -->
-		});
-		$("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
+		$("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:true });
+        <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
+        <#--, close: function() { } -->
+        $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
 	});
 	</script>
     <div id="${.node["@id"]}" title="${buttonText}">

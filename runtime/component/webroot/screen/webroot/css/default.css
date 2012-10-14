@@ -157,6 +157,8 @@ button.ui-button-icons-only { width: 1.5em; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .1em .5em; text-decoration: none; }
 .ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 4px 0px; background: none; }
 
+.ui-menu { z-index: 9; display: inline-block; }
+
 /* ================ Extensions for jquery-ui theme =============== */
 
 .ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 300px; }

@@ -8,6 +8,8 @@ Release 1.1.2 - TBA
 This release includes:
 
 - Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
+- Added popup type subscreens menu using new jQuery UI Menu widget to help
+  compress header into single row of menus instead of layers of tabs
 - Inline and script services can leave out parameter values in the context
   and they will be picked up, instead of setting explicitly in result Map
 - When auto-parameters has an entity-name specified the generated
