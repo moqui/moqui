@@ -16,6 +16,9 @@ This release includes:
   entity field details
 - Moved JS file reference to webroot.xml isntead of in the theme; all
   themes need them, and they are more closely related to HTML generated
+- Added subscreens.always-use-full-path attribute to use the full path in
+  menus and such instead of minimal path; helpful for wiki and other
+  screens that use relative URLs that are not based on the screen path
 
 Non-backward-compatible changes:
 

@@ -391,6 +391,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     If empty the first subscreen-item will be the default.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="always-use-full-path" type="boolean" default="false"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="conditional-default">

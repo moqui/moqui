@@ -38,6 +38,7 @@ class ScreenUrlInfo {
     boolean hasActions = false
     boolean inCurrentScreenPath = false
     boolean disableLink = false
+    boolean alwaysUseFullPath = false
     boolean beginTransaction = false
 
     /** The full path name list for the URL */
@@ -132,7 +133,12 @@ class ScreenUrlInfo {
 
     String getMinimalPathUrl() {
         StringBuilder urlBuilder = new StringBuilder(baseUrl)
-        for (String pathName in this.minimalPathNameList) urlBuilder.append('/').append(pathName)
+        if (alwaysUseFullPath) {
+            // really get the full path instead of minimal
+            for (String pathName in this.fullPathNameList) urlBuilder.append('/').append(pathName)
+        } else {
+            for (String pathName in this.minimalPathNameList) urlBuilder.append('/').append(pathName)
+        }
         return urlBuilder.toString()
     }
 
@@ -181,7 +187,6 @@ class ScreenUrlInfo {
                         }
                     }
                 }
-
             }
         }
         // add all of the parameters specified inline in the screen path or added after
@@ -315,11 +320,13 @@ class ScreenUrlInfo {
                 throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName,
                         new Exception("Screen sub-content not found here"))
             }
+
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
 
-            if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
-            if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+            if (nextSd.webSettingsNode?."@require-encryption"?.getAt(0) != "false") this.requireEncryption = true
+            if (nextSd.screenNode?."@begin-transaction"?.getAt(0) == "true") this.beginTransaction = true
+            if (nextSd.screenNode?."subscreens"?."@always-use-full-path"?.getAt(0) == "true") alwaysUseFullPath = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
             if (nextSd.screenNode?."@standalone" == "true" ||
@@ -344,6 +351,9 @@ class ScreenUrlInfo {
         // beyond the last screenPathName, see if there are any screen.default-item values (keep following until none found)
         while (targetTransition == null && fileResourceRef == null && lastSd.screenNode."subscreens" && lastSd.screenNode."subscreens"."@default-item"[0]) {
             String subscreenName = lastSd.screenNode."subscreens"."@default-item"[0]
+            if (lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0) == "true") alwaysUseFullPath = true
+            // logger.warn("TOREMOVE lastSd ${minimalPathNameList} subscreens: ${lastSd.screenNode?.subscreens}, alwaysUseFullPath=${alwaysUseFullPath}, from ${lastSd.screenNode."subscreens"?."@always-use-full-path"?.getAt(0)}, subscreenName=${subscreenName}")
+
             // if any conditional-default.@condition eval to true, use that conditional-default.@item instead
             for (Node conditionalDefaultNode in lastSd.screenNode."subscreens"."conditional-default") {
                 if (!conditionalDefaultNode."@condition") continue
@@ -359,6 +369,7 @@ class ScreenUrlInfo {
                 targetTransition = lastSd.getTransitionItem(subscreenName, ec.web ? ec.web.request.method : "")
                 if (targetTransition) {
                     targetTransitionActualName = subscreenName
+                    fullPathNameList.add(subscreenName)
                     break
                 }
 
@@ -366,6 +377,7 @@ class ScreenUrlInfo {
                 ResourceReference existingFileRef = lastSd.getSubContentRef([subscreenName])
                 if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
                     fileResourceRef = existingFileRef
+                    fullPathNameList.add(subscreenName)
                     break
                 }
 
