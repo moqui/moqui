@@ -166,10 +166,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // everything else ready to go, init Camel
         this.initCamel()
 
-        // now that evrything is started up, if configured check all entity tables
+        // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
 
-        logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
+        logger.info("Moqui ExecutionContextFactory Initialization Complete")
     }
 
     /** This constructor takes the runtime directory path and conf file path directly. */
@@ -225,10 +225,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // everything else ready to go, init Camel
         this.initCamel()
 
-        // now that evrything is started up, if configured check all entity tables
+        // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
 
-        logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
+        logger.info("Moqui ExecutionContextFactory Initialization Complete")
     }
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */
