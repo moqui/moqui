@@ -10,13 +10,15 @@ This release includes:
 - Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
 - Added popup type subscreens menu using new jQuery UI Menu widget to help
   compress header into single row of menus instead of layers of tabs
+- Updated Apache Shiro to 1.2.1, ehcache to 2.6.0, Groovy to 2.0.5, and
+  Quartz Scheduler to 2.1.6
 - Inline and script services can leave out parameter values in the context
   and they will be picked up, instead of setting explicitly in result Map
 - When auto-parameters has an entity-name specified the generated
   parameters will have entity-name and field-name attributes, and the
   auto-fields-service now looks for those to do better fields based on the
   entity field details
-- Moved JS file reference to webroot.xml isntead of in the theme; all
+- Moved JS file reference to webroot.xml instead of in the theme; all
   themes need them, and they are more closely related to HTML generated
 - Added subscreens.always-use-full-path attribute to use the full path in
   menus and such instead of minimal path; helpful for wiki and other
@@ -43,7 +45,7 @@ Non-backward-compatible changes:
 
 Bug Fixes:
 
-- Fixed bug where secondary sequened ID (setSequencedIdSecondary() method)
+- Fixed bug where secondary sequenced ID (setSequencedIdSecondary() method)
   was not finding IDs of existing records causing conflicting IDs to be
   generated
 - Fixed bug with EntityFindBase.updateAll() to not use EntityListIterator
