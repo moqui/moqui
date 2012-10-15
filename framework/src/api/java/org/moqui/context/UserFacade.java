@@ -45,6 +45,9 @@ public interface UserFacade {
      */
     void setCurrencyUomId(String uomId);
 
+    String getPreference(String preferenceKey);
+    void setPreference(String preferenceKey, String preferenceValue);
+
     /** Get the current date and time in a Timestamp object. This is either the current system time, or the Effective
      * Time if that has been set for this context (allowing testing of past and future system behavior).
      *
