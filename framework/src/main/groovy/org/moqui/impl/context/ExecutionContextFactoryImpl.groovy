@@ -166,6 +166,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // everything else ready to go, init Camel
         this.initCamel()
 
+        // now that evrything is started up, if configured check all entity tables
+        this.entityFacade.checkInitDatasourceTables()
+
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }
 
@@ -221,6 +224,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // everything else ready to go, init Camel
         this.initCamel()
+
+        // now that evrything is started up, if configured check all entity tables
+        this.entityFacade.checkInitDatasourceTables()
 
         logger.info("Moqui ExecutionContextFactoryImpl Initialization Complete")
     }

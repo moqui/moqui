@@ -79,8 +79,22 @@ class EntityFacadeImpl implements EntityFacade {
         loadEecaRulesAll()
     }
 
+    void checkInitDatasourceTables() {
+        // if startup-add-missing=true check tables now
+        for (Node datasourceNode in ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+            if (datasourceNode."@startup-add-missing" == "true") {
+                loadAllEntityLocations()
+                String groupName = datasourceNode."@group-name"
+                logger.info("Checking all tables in group [${groupName}]")
+                long currentTime = System.currentTimeMillis()
+                checkAllEntityTables(groupName)
+                logger.info("Checked all tables in group [${groupName}] in ${(System.currentTimeMillis() - currentTime)/1000} seconds")
+            }
+        }
+    }
+
     protected void initAllDatasources() {
-        for(Node datasourceNode in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
+        for (Node datasourceNode in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource") {
             String groupName = datasourceNode."@group-name"
             String objectFactoryClass = datasourceNode."@object-factory" ?: "org.moqui.impl.entity.EntityDatasourceFactoryImpl"
             EntityDatasourceFactory edf = (EntityDatasourceFactory) Thread.currentThread().getContextClassLoader().loadClass(objectFactoryClass).newInstance()
@@ -451,6 +465,15 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    void checkAllEntityTables(String groupName) {
+        // TODO: load framework entities first, then component/mantle/etc entities for better FKs on first pass
+        for (String entityName in getAllEntityNames()) {
+            EntityDefinition ed = getEntityDefinition(entityName)
+            String entityGroupName = getEntityGroupName(entityName)
+            if (!groupName || groupName == entityGroupName) getEntityDbMeta().checkTableRuntime(ed)
+        }
+    }
+
     /** This uses the data from the loadAllEntityLocations() method, so that must be called first (it is called in the
      * constructor, and the cache must not have been cleared since. */
     Set<String> getAllEntityNames() {
@@ -708,16 +731,12 @@ class EntityFacadeImpl implements EntityFacade {
         return (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
     }
 
-    EntityDbMeta getEntityDbMeta() {
-        return dbMeta ? dbMeta : (dbMeta = new EntityDbMeta(this))
-    }
+    EntityDbMeta getEntityDbMeta() { return dbMeta ? dbMeta : (dbMeta = new EntityDbMeta(this)) }
 
     // ========== Interface Implementations ==========
 
     /** @see org.moqui.entity.EntityFacade#getConditionFactory() */
-    EntityConditionFactory getConditionFactory() {
-        return this.entityConditionFactory
-    }
+    EntityConditionFactory getConditionFactory() { return this.entityConditionFactory }
 
     /** @see org.moqui.entity.EntityFacade#makeValue(String) */
     EntityValue makeValue(String entityName) {

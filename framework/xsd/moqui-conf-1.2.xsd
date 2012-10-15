@@ -413,6 +413,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>This is only required for JDBC/SQL datasources.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="schema-name" type="xs:string"/>
+            <xs:attribute name="startup-add-missing" default="false" type="boolean"/>
             <xs:attribute name="runtime-add-missing" default="true" type="boolean"/>
             <xs:attribute name="runtime-add-fks" default="false" type="boolean"/>
             <xs:attribute name="object-factory" type="xs:string" default="org.moqui.impl.entity.EntityDatasourceFactoryImpl">
