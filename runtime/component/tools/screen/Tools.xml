@@ -15,6 +15,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <subscreens default-item="AutoScreen">
     </subscreens>
     <widgets>
-        <subscreens-panel id="tools-app" type="popup" title="Tool" menu-width="160px"/>
+        <subscreens-panel id="tools-app" type="popup" title="Tool"/>
     </widgets>
 </screen>

@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
                 </section-iterate>
 
-                <subscreens-menu type="popup" id="header-menu" title="Application" width="260px"/>
+                <subscreens-menu type="popup" id="header-menu" title="Application"/>
                 <subscreens-active/>
             </panel-center>
             <panel-footer>

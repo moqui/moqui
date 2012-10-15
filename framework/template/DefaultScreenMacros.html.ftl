@@ -27,7 +27,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-menu">
     <#if .node["@type"]?if_exists == "popup">
         <#assign menuId = .node["@id"]!"subscreensMenu">
-        <ul id="${menuId}" style="width: ${.node["@width"]!"200px"};">
+        <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>>
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
@@ -78,7 +78,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign displayMenu = sri.activeInCurrentMenu?if_exists>
     <#if .node["@type"]?if_exists == "popup">
         <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
-        <ul id="${menuId}" style="width: ${.node["@menu-width"]!"200px"};">
+        <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
