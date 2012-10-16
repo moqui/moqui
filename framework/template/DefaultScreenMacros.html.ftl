@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>>
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
-                <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
+                <#if urlInfo?exists && urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list>
             <li><a href="#">${.node["@title"]!"Menu"}<#if currentItemName?has_content> (${currentItemName})</#if></a>
                 <ul>
