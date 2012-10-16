@@ -152,12 +152,12 @@ button.ui-button-icon-only { width: 1.1em; }
 button.ui-button-icons-only { width: 1.5em; }
 .ui-button .ui-button-text { display: block; line-height: .4;  }
 
-.ui-tabs { position: relative; padding: 0em; zoom: 1; border: 0px; }
+.ui-tabs { position: relative; padding: 0px; zoom: 1; border: 0px; }
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .1em .2em 0; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .1em .5em; text-decoration: none; }
 .ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 4px 0px; background: none; }
 
-.ui-menu { z-index: 9; display: inline-block; overflow: visible; white-space: nowrap; }
+.ui-menu { z-index: 9; display: inline-block; overflow: visible; white-space: nowrap; margin-bottom: 4px; }
 
 /* ================ Extensions for jquery-ui theme =============== */
 
