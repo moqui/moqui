@@ -426,7 +426,10 @@ class ScreenUrlInfo {
                             urlBuilder.append("localhost")
                         }
                     }
-                    if (webappNode."@https-port") urlBuilder.append(":").append(webappNode."@https-port")
+                    String httpsPort = webappNode."@https-port"
+                    // try the local port; this won't work when switching from http to https, conf required for that
+                    if (!httpsPort && ec.web && ec.web.request.isSecure()) httpsPort = ec.web.request.getLocalPort() as String
+                    if (httpsPort != "443") urlBuilder.append(":").append(httpsPort)
                 } else {
                     urlBuilder.append("http://")
                     if (webappNode."@http-host") {
@@ -439,7 +442,10 @@ class ScreenUrlInfo {
                             urlBuilder.append("localhost")
                         }
                     }
-                    if (webappNode."@http-port") urlBuilder.append(":").append(webappNode."@http-port")
+                    String httpPort = webappNode."@http-port"
+                    // try the local port; this won't work when switching from https to http, conf required for that
+                    if (!httpPort && ec.web && !ec.web.request.isSecure()) httpPort = ec.web.request.getLocalPort() as String
+                    if (httpPort != "80") urlBuilder.append(":").append(httpPort)
                 }
                 urlBuilder.append("/")
             } else {

@@ -12,7 +12,10 @@
     </server-stats>
 
     <webapp-list>
-        <webapp name="webroot" https-enabled="false">
+        <!-- NOTE: when you set https-enabled="true" make sure to set the http-port and https-port attributes -->
+        <webapp name="webroot" http-port="" http-host=""
+                https-port="" https-host="" https-enabled="false"
+                content-prefix-secure="" content-prefix-standard="" cookie-domain="">
             <root-screen host=".*" location="component://webroot/screen/webroot.xml"/>
         </webapp>
     </webapp-list>

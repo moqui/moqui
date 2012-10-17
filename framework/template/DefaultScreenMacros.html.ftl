@@ -26,13 +26,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
     <#if .node["@type"]?if_exists == "popup">
+        <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
         <#assign menuId = .node["@id"]!"subscreensMenu">
         <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>>
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo?exists && urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list>
-            <li><a href="#">${.node["@title"]!"Menu"}<#if currentItemName?has_content> (${currentItemName})</#if></a>
+            <li><a href="#">${menuTitle}<#if currentItemName?has_content> (${currentItemName})</#if></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
@@ -77,13 +78,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign dynamicActive = 0>
     <#assign displayMenu = sri.activeInCurrentMenu?if_exists>
     <#if .node["@type"]?if_exists == "popup">
+        <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
         <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
         <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list>
-            <li><a href="#">${.node["@title"]!"Menu"}<#if currentItemName?has_content> (${currentItemName})</#if></a>
+            <li><a href="#">${menuTitle}<#if currentItemName?has_content> (${currentItemName})</#if></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>

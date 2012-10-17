@@ -15,6 +15,6 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Service">
     <subscreens default-item="ServiceRun"/>
     <widgets>
-        <subscreens-panel/>
+        <subscreens-panel id="service-panel" type="popup"/>
     </widgets>
 </screen>

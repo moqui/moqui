@@ -117,9 +117,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="root-screen-location" type="xs:string"/>
             <xs:attribute name="https-enabled" default="true" type="boolean"/>
-            <xs:attribute name="https-port" type="xs:string" default="8443"/>
+            <xs:attribute name="https-port" type="xs:string"/>
             <xs:attribute name="https-host" type="xs:string"/>
-            <xs:attribute name="http-port" type="xs:string" default="8080"/>
+            <xs:attribute name="http-port" type="xs:string"/>
             <xs:attribute name="http-host" type="xs:string"/>
             <!-- Content URL prefixes to make it easy to move the serving load for static content to other machines -->
             <!-- TODO use in code -->

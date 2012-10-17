@@ -59,8 +59,8 @@
         <repository name="main" location="http://localhost:8081/server" type="davex" workspace="development"/>
     </repository-list>
     <component-list>
-        <!-- This loads the example component over top of the default one, which will result in a warning but works
+        <!-- This loads the tools component over top of the default one, which will result in a warning but works
             fine. Use something like this to refer to components in a JCR repository. -->
-        <component name="example" location="component/example"/>
+        <component name="tools" location="component/tools"/>
     </component-list>
 </moqui-conf>

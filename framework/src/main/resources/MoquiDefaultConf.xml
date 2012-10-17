@@ -40,11 +40,9 @@
     <webapp-list>
         <!-- The webapp.@name attribute value is looked up based on the value of the moqui-name context-param in
         the web.xml file. This configuration will allow the framework to do various things for that webapp. -->
-        <webapp name="webroot"
-                http-port="8080" http-host=""
-                https-port="8443" https-host="" https-enabled="true"
-                content-prefix-secure="" content-prefix-standard=""
-                cookie-domain="">
+        <webapp name="webroot" http-port="" http-host=""
+                https-port="" https-host="" https-enabled="false"
+                content-prefix-secure="" content-prefix-standard="" cookie-domain="">
             <!-- example only, no default actions right now:
             <first-hit-in-visit><actions><log level="info" message="========================== first-hit-in-visit actions"/></actions></first-hit-in-visit>
             <before-request><actions><log level="info" message="========================== before-request actions"/></actions></before-request>
