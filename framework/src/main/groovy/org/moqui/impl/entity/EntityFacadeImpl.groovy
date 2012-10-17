@@ -516,7 +516,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
 
             eil.add((Map<String, Object>) [entityName:ed.entityName, "package":ed.entityNode."@package-name",
-                    isView:(ed.isViewEntity() ? "true" : "false")])
+                    isView:(ed.isViewEntity() ? "true" : "false"), fullEntityName:ed.fullEntityName])
         }
 
         tempEntityFileNodeMap = null

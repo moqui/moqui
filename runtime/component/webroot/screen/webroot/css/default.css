@@ -148,6 +148,7 @@ a.active { color: red; }
 /* ================ Overrides for jquery-ui theme ================ */
 
 .ui-widget { font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 1em; }
+.ui-widget button { font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 0.8em; }
 input.ui-widget, select.ui-widget, select option.ui-widget, textarea.ui-widget, li.ui-menu-item a {
     font-family: Lucida Console, Monaco, monospace; font-size: .8em; }
 

@@ -26,8 +26,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-single name="SelectEntity" transition="find">
             <field name="aen"><default-field title="All Entities">
                 <drop-down combo-box="true" allow-empty="true">
-                    <list-options list="allEntityList" key="${entityName}"
-                                  text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
+                    <list-options list="allEntityList" key="${fullEntityName}"
+                                  text="${entityName} - ${context.package}"/>
                 </drop-down>
             </default-field></field>
             <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
@@ -41,7 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="aen">
                 <header-field title="Master Entity" show-order-by="true"/>
                 <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}">
-                    <parameter name="aen" from="entityName"/>
+                    <parameter name="aen" from="fullEntityName"/>
                 </link></default-field>
             </field>
         </form-list>
