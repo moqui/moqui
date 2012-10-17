@@ -15,6 +15,12 @@ allprojects { version = '1.2.0' }
 def tomcatHome = '../apache-tomcat-7.0.27'
 def warName = 'moqui-' + version + '.war'
 
+def moquiConfDev = 'conf/MoquiDevConf.xml'
+def moquiRuntimeDev = './runtime'
+
+def moquiConfProduction = 'conf/MoquiProductionConf.xml'
+def moquiRuntimeProduction = './runtime'
+
 // ========== clean tasks ==========
 
 task clean(type: Delete) { delete file(warName) }
@@ -35,7 +41,7 @@ task cleanAll {
 task run(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    systemProperties = ['moqui.conf':'conf/MoquiDevConf.xml', 'moqui.runtime':'./runtime']
+    systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntimeDev]
     // NOTE: this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
     main = '-jar'; args = [warName]
 }
@@ -48,20 +54,20 @@ task runStaging(type: JavaExec) {
 task runProduction(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m', '-Xms512M']; maxHeapSize = '512M'
-    systemProperties = ['moqui.conf':'conf/MoquiProductionConf.xml']
+    systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntimeProduction]
     main = '-jar'; args = [warName]
 }
 
 task load(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    systemProperties = ['moqui.conf':'conf/MoquiDevConf.xml', 'moqui.runtime':'./runtime']
+    systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntimeDev]
     main = '-jar'; args = [warName, '-load']
 }
 task loadProduction(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    systemProperties = ['moqui.conf':'conf/MoquiProductionConf.xml']
+    systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntimeProduction]
     main = '-jar'; args = [warName, '-load']
 }
 
