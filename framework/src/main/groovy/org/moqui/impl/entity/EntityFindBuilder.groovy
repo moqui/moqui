@@ -387,20 +387,21 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 descending = false
                 startIndex++
             }
-
-            if (fieldName.endsWith(")")) {
-                String upperText = fieldName.toUpperCase()
-                endIndex--
-                if (upperText.startsWith("UPPER(")) {
-                    caseUpperLower = true
-                    startIndex += 6
-                } else if (upperText.startsWith("LOWER(")) {
-                    caseUpperLower = false
-                    startIndex += 6
-                }
-            }
-
             fieldName = fieldName.substring(startIndex, endIndex)
+
+            String upperText = fieldName.toUpperCase()
+            if (upperText.startsWith("UPPER(")) {
+                caseUpperLower = true
+                fieldName = fieldName.substring(6)
+            } else if (upperText.startsWith("^")) {
+                caseUpperLower = true
+                fieldName = fieldName.substring(1)
+            } else if (upperText.startsWith("LOWER(")) {
+                caseUpperLower = false
+                fieldName = fieldName.substring(6)
+            }
+            if (fieldName.endsWith(")")) { fieldName = fieldName.substring(0,fieldName.length()-1) }
+
 
             // not that it's all torn down, build it back up using the column name
             if (caseUpperLower != null) this.sqlTopLevel.append(caseUpperLower ? "UPPER(" : "LOWER(")

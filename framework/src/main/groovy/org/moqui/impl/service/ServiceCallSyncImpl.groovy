@@ -78,6 +78,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         }
         if (multi) {
             for (int i = 0; ; i++) {
+                if ((parameters.get("_useRowSubmit") == "true" || parameters.get("_useRowSubmit_" + i) == "true")
+                        && parameters.get("_rowSubmit_" + i) != "true") continue
                 Map<String, Object> currentParms = new HashMap()
                 for (String ipn in inParameterNames) {
                     String key = ipn + "_" + i
