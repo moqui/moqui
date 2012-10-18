@@ -52,6 +52,11 @@ class BasicJoinCondition extends EntityConditionImplBase {
         return this.rhs.mapMatches(map)
     }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
+        lhs.getAllAliases(entityAliasSet, fieldAliasSet)
+        rhs.getAllAliases(entityAliasSet, fieldAliasSet)
+    }
+
     @Override
     EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 

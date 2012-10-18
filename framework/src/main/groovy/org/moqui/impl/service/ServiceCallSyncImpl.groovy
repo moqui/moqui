@@ -209,6 +209,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 throw e
             } catch (Throwable t) {
                 tf.rollback(beganTransaction, "Error running service [${getServiceName()}] (Throwable)", t)
+                logger.warn("Error running service [${getServiceName()}] (Throwable)", t)
                 // add all exception messages to the error messages list
                 eci.getMessage().addError(t.getMessage())
                 Throwable parent = t.getCause()

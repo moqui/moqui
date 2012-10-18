@@ -58,6 +58,10 @@ class ListCondition extends EntityConditionImplBase {
         return (this.operator == EntityCondition.JoinOperator.AND)
     }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
+        for (EntityConditionImplBase cond in conditionList) cond.getAllAliases(entityAliasSet, fieldAliasSet)
+    }
+
     @Override
     EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 

@@ -24,4 +24,6 @@ abstract class EntityConditionImplBase implements EntityCondition {
 
     /** Build SQL Where text to evaluate condition in a database. */
     public abstract void makeSqlWhere(EntityQueryBuilder eqb)
+
+    public abstract void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet)
 }

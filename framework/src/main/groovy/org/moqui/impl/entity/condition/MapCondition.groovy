@@ -32,6 +32,10 @@ class MapCondition extends EntityConditionImplBase {
         return this.makeCondition().mapMatches(map)
     }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
+        for (Map.Entry<String, Object> entry in fieldMap) fieldAliasSet.add(entry.key)
+    }
+
     @Override
     EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 

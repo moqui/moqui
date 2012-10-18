@@ -152,12 +152,13 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind distinct(boolean distinct);
     boolean getDistinct();
 
-    /** The limit, ie max number of rows to return. Default (null) means all rows.
+    /** The offset, ie the starting row to return. Default (null) means start from the first actual row.
      * Only applicable for list() and iterator() finds.
      *
      * @return Returns this for chaining of method calls.
      */
     EntityFind offset(Integer offset);
+    EntityFind offset(int pageIndex, int pageSize);
     Integer getOffset();
 
     /** The limit, ie max number of rows to return. Default (null) means all rows.

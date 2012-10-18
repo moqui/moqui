@@ -384,7 +384,7 @@ class ScreenForm {
 
             // otherwise use the old approach and do what we can with the service def
             String spType = parameterNode."@type" ?: "String"
-            String efType = ed != null ? ed.getFieldNode(parameterNode."@name")?."@type" : null
+            String efType = fieldEd != null ? fieldEd.getFieldNode(parameterNode."@name")?."@type" : null
 
             Node newFieldNode = new Node(null, "field", [name:parameterNode."@name",
                     "validate-service":sd.serviceName, "validate-parameter":parameterNode."@name"])

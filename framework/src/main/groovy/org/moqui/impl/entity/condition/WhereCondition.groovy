@@ -36,6 +36,8 @@ class WhereCondition extends EntityConditionImplBase {
         return false
     }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) { }
+
     @Override
     EntityCondition ignoreCase() { throw new IllegalArgumentException("Ignore case not supported for this type of condition.") }
 

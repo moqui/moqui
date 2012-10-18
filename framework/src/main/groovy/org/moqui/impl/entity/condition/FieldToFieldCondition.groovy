@@ -51,6 +51,20 @@ class FieldToFieldCondition extends EntityConditionImplBase {
         return compareByOperator(map.get(field.getFieldName()), this.operator, map.get(toField.getFieldName()))
     }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
+        // this will only be called for view-entity, so we'll either have a entityAlias or an aliased fieldName
+        if (field.entityAlias) {
+            entityAliasSet.add(field.entityAlias)
+        } else {
+            fieldAliasSet.add(field.fieldName)
+        }
+        if (toField.entityAlias) {
+            entityAliasSet.add(toField.entityAlias)
+        } else {
+            fieldAliasSet.add(toField.fieldName)
+        }
+    }
+
     @Override
     EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 

@@ -29,6 +29,12 @@ This release includes:
   validation to add ValidationErrors instead of plain error Strings
 - Added datasource.@startup-add-missing option; set to true to check tables
   for all entities in the database on startup and create missing ones
+- Entity find on a view-entity now automatically determines which
+  member-entities to join in based on the fields selected, in order by, and
+  in conditions; with this in place the need for DynamicViewEntity is
+  minimal because you can just select the relevant fields and not worry
+  about tables being joined in to the query that are not needed; this makes
+  it much easier to write queries that will run well on large databases
 
 
 Non-backward-compatible changes:

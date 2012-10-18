@@ -218,13 +218,7 @@ abstract class EntityFindBase implements EntityFind {
 
         // always look for an orderByField parameter too
         String orderByString = inf.get("orderByField") ?: defaultOrderBy
-        if (orderByString) {
-            if (orderByString.contains(",")) {
-                for (String obsPart in orderByString.split(",")) this.orderBy(obsPart.trim())
-            } else {
-                this.orderBy(orderByString)
-            }
-        }
+        this.orderBy(orderByString)
 
         // look for the pageIndex and optional pageSize parameters
         if (alwaysPaginate || inf.get("pageIndex")) {
@@ -308,7 +302,13 @@ abstract class EntityFindBase implements EntityFind {
     /** @see org.moqui.entity.EntityFind#orderBy(String) */
     EntityFind orderBy(String orderByFieldName) {
         if (!this.orderByFields) this.orderByFields = new ArrayList()
-        if (orderByFieldName) this.orderByFields.add(orderByFieldName)
+        if (orderByFieldName) {
+            if (orderByFieldName.contains(",")) {
+                for (String obsPart in orderByFieldName.split(",")) this.orderByFields.add(obsPart.trim())
+            } else {
+                this.orderByFields.add(orderByFieldName)
+            }
+        }
         return this
     }
 
@@ -337,6 +337,8 @@ abstract class EntityFindBase implements EntityFind {
 
     /** @see org.moqui.entity.EntityFind#offset(int) */
     EntityFind offset(Integer offset) { this.offset = offset; return this }
+    /** @see org.moqui.entity.EntityFind#offset(int, int) */
+    EntityFind offset(int pageIndex, int pageSize) { offset(pageIndex * pageSize) }
     /** @see org.moqui.entity.EntityFind#getOffset() */
     Integer getOffset() { return this.offset }
 

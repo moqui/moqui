@@ -21,7 +21,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/>
     </transition>
     <transition name="run">
-        <service-call name="${serviceName}"/>
+        <actions>
+            <service-call name="${serviceName}" out-map="serviceResults"/>
+            <script>
+            ec.logger.log(ec.logger.WARN_INT, "Service Results: ${serviceResults}", null)
+            // TODO: this doesn't seem to be making it through to the results form on redirect
+            ec.web.session.setAttribute("moqui.saved.parameters", serviceResults)
+            </script>
+        </actions>
         <default-response url="." save-parameters="true"/>
     </transition>
 

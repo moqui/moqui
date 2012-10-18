@@ -88,6 +88,15 @@ class FieldValueCondition extends EntityConditionImplBase {
     @Override
     boolean mapMatches(Map<String, ?> map) { return EntityConditionFactoryImpl.compareByOperator(map.get(field.fieldName), operator, value) }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
+        // this will only be called for view-entity, so we'll either have a entityAlias or an aliased fieldName
+        if (field.entityAlias) {
+            entityAliasSet.add(field.entityAlias)
+        } else {
+            fieldAliasSet.add(field.fieldName)
+        }
+    }
+
     @Override
     EntityCondition ignoreCase() { this.ignoreCase = true; return this }
 

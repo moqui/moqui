@@ -14,6 +14,7 @@ package org.moqui.impl.entity
 import java.sql.PreparedStatement
 import java.sql.SQLException
 import org.moqui.impl.entity.condition.EntityConditionImplBase
+import org.moqui.entity.EntityException
 
 class EntityFindBuilder extends EntityQueryBuilder {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
@@ -106,6 +107,23 @@ class EntityFindBuilder extends EntityQueryBuilder {
         }
     }
 
+    void expandJoinFromAlias(Node entityNode, String searchEntityAlias, Set<String> entityAliasUsedSet, Set<String> entityAliasesJoinedInSet) {
+        // first see if it needs expanding
+        if (entityAliasesJoinedInSet.contains(searchEntityAlias)) return
+        // find the a link back one in the set
+        Node memberEntityNode = (Node) entityNode."member-entity".find({ it."@entity-alias" == searchEntityAlias })
+        if (memberEntityNode == null)
+            throw new EntityException("Could not find member-entity with entity-alias [${searchEntityAlias}] in entity [${entityNode."@entity-name"}]")
+        String joinFromAlias = memberEntityNode."@join-from-alias"
+        if (entityAliasesJoinedInSet.contains(joinFromAlias)) {
+            entityAliasesJoinedInSet.add(searchEntityAlias)
+            entityAliasUsedSet.add(joinFromAlias)
+        } else {
+            // recurse to find member-entity with joinFromAlias, add in its joinFromAlias until one is found that is already in the set
+            expandJoinFromAlias(entityNode, joinFromAlias, entityAliasUsedSet, entityAliasesJoinedInSet)
+        }
+    }
+
     void makeSqlFromClause() {
         makeSqlFromClause(this.mainEntityDefinition, this.sqlTopLevel)
     }
@@ -124,6 +142,33 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
             boolean useParenthesis = ("ansi" == joinStyle)
 
+            // get a list of all aliased fields selected or ordered by and don't bother joining in a member-entity
+            //     that is not selected or ordered by
+            Set<String> entityAliasUsedSet = new HashSet<String>()
+            Set<String> fieldUsedSet = new HashSet<String>()
+            EntityConditionImplBase viewWhere = localEntityDefinition.makeViewWhereCondition()
+            if (viewWhere != null) viewWhere.getAllAliases(entityAliasUsedSet, fieldUsedSet)
+            if (entityFindBase.whereEntityCondition != null)
+                entityFindBase.whereEntityCondition.getAllAliases(entityAliasUsedSet, fieldUsedSet)
+            if (entityFindBase.havingEntityCondition != null)
+                entityFindBase.havingEntityCondition.getAllAliases(entityAliasUsedSet, fieldUsedSet)
+            fieldUsedSet.addAll(entityFindBase.fieldsToSelect)
+            if (entityFindBase.orderByFields) fieldUsedSet.addAll(entityFindBase.orderByFields)
+            for (String fieldName in fieldUsedSet) {
+                Node aliasNode = localEntityDefinition.getFieldNode(fieldName)
+                if (aliasNode?."@entity-alias") entityAliasUsedSet.add(aliasNode."@entity-alias")
+            }
+
+            // make sure each entityAlias in the entityAliasUsedSet links back to the main
+            String mainEntityAlias = entityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-alias"
+            Set<String> entityAliasesJoinedInSet = new HashSet<String>()
+            entityAliasesJoinedInSet.add(mainEntityAlias)
+            for (String entityAlias in entityAliasUsedSet) {
+                expandJoinFromAlias(entityNode, entityAlias, entityAliasUsedSet, entityAliasesJoinedInSet)
+            }
+
+            // logger.warn("entityAliasUsedSet=${entityAliasUsedSet} for entity ${localEntityDefinition.entityName}, fieldsToSelect=${entityFindBase.fieldsToSelect}, orderByFields=${entityFindBase.orderByFields}")
+
             // keep a set of all aliases in the join so far and if the left entity alias isn't there yet, and this
             // isn't the first one, throw an exception
             Set<String> joinedAliasSet = new TreeSet<String>()
@@ -132,7 +177,10 @@ class EntityFindBuilder extends EntityQueryBuilder {
             boolean isFirst = true
             boolean fromEmpty = true
             for (Node relatedMemberEntity in entityNode."member-entity") {
+                // if this isn't joined in skip it (should be first one only); the first is handled below
                 if (!relatedMemberEntity."@join-from-alias") continue
+                // if entity alias not used don't join it in
+                if (!entityAliasUsedSet.contains(relatedMemberEntity."@entity-alias")) continue
 
                 if (isFirst && useParenthesis) localBuilder.append('(')
 
@@ -215,13 +263,16 @@ class EntityFindBuilder extends EntityQueryBuilder {
 
             // handle member-entities not referenced in any view-link element
             for (Node memberEntity in entityNode."member-entity") {
+                // if entity alias not used don't join it in
+                if (!entityAliasUsedSet.contains(memberEntity."@entity-alias")) continue
+
+                if (joinedAliasSet.contains(memberEntity."@entity-alias")) continue
+
                 EntityDefinition fromEntityDefinition = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                if (!joinedAliasSet.contains(memberEntity."@entity-alias")) {
-                    if (fromEmpty) fromEmpty = false else localBuilder.append(", ")
-                    makeSqlViewTableName(fromEntityDefinition, localBuilder)
-                    localBuilder.append(" ")
-                    localBuilder.append(memberEntity."@entity-alias")
-                }
+                if (fromEmpty) fromEmpty = false else localBuilder.append(", ")
+                makeSqlViewTableName(fromEntityDefinition, localBuilder)
+                localBuilder.append(" ")
+                localBuilder.append(memberEntity."@entity-alias")
             }
         } else {
             localBuilder.append(localEntityDefinition.getFullTableName())
@@ -366,6 +417,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
     PreparedStatement makePreparedStatement() {
         if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
         String sql = this.getSqlTopLevel().toString()
+        // logger.warn("making PreparedStatement for SQL: ${sql}")
         try {
             this.ps = connection.prepareStatement(sql, this.entityFindBase.resultSetType, this.entityFindBase.resultSetConcurrency)
             if (this.entityFindBase.maxRows > 0) this.ps.setMaxRows(this.entityFindBase.maxRows)

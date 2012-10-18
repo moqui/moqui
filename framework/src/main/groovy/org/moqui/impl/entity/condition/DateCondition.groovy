@@ -34,6 +34,11 @@ class DateCondition extends EntityConditionImplBase {
         this.makeCondition().makeSqlWhere(eqb)
     }
 
+    void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
+        fieldAliasSet.add(fromFieldName)
+        fieldAliasSet.add(thruFieldName)
+    }
+
     @Override
     boolean mapMatches(Map<String, ?> map) {
         return this.makeCondition().mapMatches(map)
