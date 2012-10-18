@@ -505,7 +505,7 @@ class ScreenForm {
             if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
                 subFieldNode.appendNode("hidden")
             } else {
-                if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
+                if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
                 if (efType.startsWith("date") || efType.startsWith("time")) {
                     Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
                     if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
@@ -555,7 +555,7 @@ class ScreenForm {
             }
             break
         case "find":
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             if (efType.startsWith("date") || efType.startsWith("time")) {
                 subFieldNode.appendNode("date-find", [type:efType])
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
@@ -565,13 +565,13 @@ class ScreenForm {
             }
             break
         case "display":
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             if (oneRelNode != null) subFieldNode.appendNode("display-entity",
                     ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
             else subFieldNode.appendNode("display")
             break
         case "find-display":
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"true"])
+            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             Node headerFieldNode = newFieldNode."header-field" ?
                 newFieldNode."header-field"[0] : newFieldNode.appendNode("header-field")
             if (efType.startsWith("date") || efType.startsWith("time")) {
