@@ -858,7 +858,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "text-line">
     <#assign id><@fieldId .node/></#assign>
     <#assign name><@fieldName .node/></#assign>
-    <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], name)>
+    <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])>
     <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#elseif validationClasses?contains("number")>number<#else>text</#if>" name="${name}" value="${sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}"<#if validationClasses?has_content> class="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if>>
     <#if .node["@ac-transition"]?has_content>
         <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
