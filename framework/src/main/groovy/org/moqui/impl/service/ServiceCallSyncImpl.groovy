@@ -76,6 +76,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
             if (ed != null) inParameterNames = ed.getAllFieldNames()
         }
+        if (parameters.get("_isMulti") == "true") multi = true
         if (multi) {
             for (int i = 0; ; i++) {
                 if ((parameters.get("_useRowSubmit") == "true" || parameters.get("_useRowSubmit_" + i) == "true")

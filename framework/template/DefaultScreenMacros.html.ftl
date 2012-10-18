@@ -585,6 +585,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#if isMulti>
                     <form name="${formNode["@name"]}" id="${formNode["@name"]}" class="form-body" method="post" action="${urlInfo.url}">
                         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
+                        <input type="hidden" name="_isMulti" value="true">
                 <#else>
                     <div class="form-body">
                 </#if>
