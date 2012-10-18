@@ -16,18 +16,17 @@ def tomcatHome = '../apache-tomcat-7.0.27'
 def warName = 'moqui-' + version + '.war'
 def execTempDir = 'execwartmp'
 
-def moquiConfDev = 'conf/MoquiDevConf.xml'
-def moquiRuntimeDev = './runtime'
+def moquiRuntime = './runtime'
 
+def moquiConfDev = 'conf/MoquiDevConf.xml'
 def moquiConfProduction = 'conf/MoquiProductionConf.xml'
-def moquiRuntimeProduction = './runtime'
 
 // ========== clean tasks ==========
 
 task clean(type: Delete) { delete file(warName); delete file(execTempDir) }
 task cleanTempDir(type: Delete) { delete file(execTempDir) }
-task cleanDb(type: Delete) { delete files(file('runtime/db/derby').listFiles()) - files('runtime/db/derby/derby.properties') }
-task cleanLog(type: Delete) { delete fileTree(dir: 'runtime/log', include: '*') }
+task cleanDb(type: Delete) { delete files(file(moquiRuntime+'/db/derby').listFiles()) - files(moquiRuntime+'/db/derby/derby.properties') }
+task cleanLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/log', include: '*') }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
 task cleanAll {
@@ -44,7 +43,7 @@ task run(type: JavaExec) {
     dependsOn ':framework:build'
     dependsOn cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntimeDev]
+    systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
     // NOTE: this is a hack, using -jar instead of a class name, and then the first argument is the name of the jar file
     main = '-jar'; args = [warName]
 }
@@ -59,20 +58,20 @@ task runProduction(type: JavaExec) {
     dependsOn ':framework:build'
     dependsOn cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m', '-Xms512M']; maxHeapSize = '512M'
-    systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntimeProduction]
+    systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName]
 }
 
 task load(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntimeDev]
+    systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName, '-load']
 }
 task loadProduction(type: JavaExec) {
     dependsOn ':framework:build'
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
-    systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntimeProduction]
+    systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName, '-load']
 }
 
@@ -94,11 +93,11 @@ task addRuntime << {
     copy { from zipTree(warName); into file('wartemp') }
     // copy runtime directory (with a few exceptions) into a runtime directory in the war
     copy {
-        from fileTree(dir: '.', include: 'runtime/**', excludes: ['**/*.jar', 'runtime/lib/**', 'runtime/db/**', 'runtime/log/**'])
+        from fileTree(dir: '.', include: moquiRuntime+'/**', excludes: ['**/*.jar', moquiRuntime+'/lib/**', moquiRuntime+'/db/**', moquiRuntime+'/log/**'])
         into file('wartemp')
     }
     // copy the jar files from runtime/lib
-    copy { from fileTree(dir: 'runtime/lib', include: '*.jar'); into 'wartemp/WEB-INF/lib' }
+    copy { from fileTree(dir: moquiRuntime+'/lib', include: '*.jar'); into 'wartemp/WEB-INF/lib' }
     // copy the jar files from components
     // this copies whole directory tree, how to just get files? copy { from fileTree(dir: 'runtime/component', include: '**/*.jar'); into 'wartemp/WEB-INF/lib' }
     // add MoquiInit.properties fresh copy, just in case it was changed
