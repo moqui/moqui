@@ -61,6 +61,10 @@ Bug Fixes:
   into the context since parameters were already added to the context
 - Fixed issue in Data View screen with related entities using the full
   entity name (name with package)
+- Updated startup in embedded mode to put jar files in a local temporary
+  directory and build files to delete it just in case it doesn't get
+  cleaned up on exit; should solve problem with dirty exit leaving temp
+  files in the OS temporary file location which can be hard to find
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
