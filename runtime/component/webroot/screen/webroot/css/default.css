@@ -19,6 +19,9 @@ font-size: 16px; /* set base font size here, all others relative using em */
 vertical-align: middle;
 }
 
+/* needed to get buttons inside and outside forms to align */
+div, form { vertical-align: top; }
+
 /* ========================== body, etc ========================== */
 
 body { background: #DDDDDF; margin: 0px; }
@@ -75,8 +78,8 @@ font-size: .8em; font-family: Lucida Console, Monaco, monospace;
 }
 
 select option {
-    margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
-    font-size: 1em; font-family: Lucida Console, Monaco, monospace;
+margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
+font-size: 1em; font-family: Lucida Console, Monaco, monospace;
 }
 
 input:required:invalid, input:invalid, textarea:invalid { background-color: #FDD; }
