@@ -544,7 +544,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     ${sri.endFormListRow()}
                 </#list>
             <#if isMulti && !skipEnd>
-                <div class="form-row">
+                <div class="form-bottom-row">
                     <#assign isMultiFinalRow = true>
                     <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
                 </div>
@@ -609,7 +609,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </#list>
             <#if !skipEnd>
                 <#if isMulti>
-                    <div class="form-row">
+                    <div class="form-bottom-row">
                         <#assign isMultiFinalRow = true>
                         <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
                     </div>
@@ -677,7 +677,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
     <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content>&nbsp;<#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
-    <div<#if !formListSkipClass?if_exists> class="form-cell"</#if>>
+    <#if !isMultiFinalRow><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
                 <#assign linkNode = widgetNode>
@@ -690,7 +690,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#t><#visit widgetNode>
             </#if>
         </#list>
-    </div>
+    <#if !isMultiFinalRow></div></#if>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 

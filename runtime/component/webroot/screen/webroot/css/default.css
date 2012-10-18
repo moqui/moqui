@@ -122,6 +122,7 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 .form-body { display: table-row-group; }
 .form-row { display: table-row; background-color: #FFF; }
 .form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; }
+.form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 .form-row:nth-child(odd) { background-color: #EEE; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .form-row:hover { background-color: #DDD; }
