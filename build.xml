@@ -55,6 +55,7 @@ The actual build is done with Gradle.
     </target>
 
     <target name="run" description="Run Moqui Web server in dev/default mode with Embedded Winstone (run the executable war file)">
+        <delete verbose="off" failonerror="false" dir="execwartmp"/>
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
             <jvmarg value="-Xmx256M"/>
@@ -64,6 +65,7 @@ The actual build is done with Gradle.
         </java>
     </target>
     <target name="run-production" description="Run Moqui Web server in production mode">
+        <delete verbose="off" failonerror="false" dir="execwartmp"/>
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
             <jvmarg value="-Xms512M"/>
