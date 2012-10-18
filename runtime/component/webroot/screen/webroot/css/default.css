@@ -121,7 +121,7 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 .form-header-cell { display: table-cell; text-align: left; padding: 0px 4px 0px 2px; }
 .form-body { display: table-row-group; }
 .form-row { display: table-row; background-color: #FFF; }
-.form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: .8em; }
+.form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; }
 .form-row:nth-child(odd) { background-color: #EEE; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .form-row:hover { background-color: #DDD; }
