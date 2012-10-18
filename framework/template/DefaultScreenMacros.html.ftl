@@ -262,13 +262,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
-            <a href="javascript:document.${linkFormId}.submit()" <#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if> class="button">
+            <button type="submit" form="${linkFormId}" <#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if>>
                 <#if linkNode["image"]?has_content>
-                <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
+                    <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
-                <#t>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}
+                    <#t>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}
                 </#if>
-            </a>
+            </button>
             </#if>
         </#if>
     </#if>
