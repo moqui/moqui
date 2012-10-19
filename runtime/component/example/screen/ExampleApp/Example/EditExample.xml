@@ -82,7 +82,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         </conditional-field>
                     </field>
                     <field name="exampleTypeEnumId">
-                        <default-field title="Type">
+                        <default-field title="Type" tooltip="Type of example">
                             <drop-down allow-empty="false">
                                 <!-- This is obviously more efficient and easier done this way, but for purposes of an example this list is
                                     retrieved after load through an AJAX call to the getExampleTypeEnumList transition defined above.
@@ -91,12 +91,14 @@ This Work includes contributions authored by David E. Jones, not as a
                         </default-field>
                     </field>
                     <field name="statusId">
-                        <default-field title="Status">
+                        <default-field title="Status" tooltip="The status of the example">
                             <drop-down allow-empty="false">
                                 <list-options list="exampleStatusItemList" text="${description}"/>
                             </drop-down>
                         </default-field>
                     </field>
+                    <field name="exampleName"><default-field tooltip="The name of the example"><text-line/></default-field></field>
+                    <field name="description"><default-field tooltip="The description of the example"><text-line/></default-field></field>
                     <!-- uncomment to see example of a render-mode embedded in a field:
                     <field name="testRenderMode"><default-field>
                         <render-mode><text type="html"><![CDATA[<span><div>This is test HTML text.</div><div>This is another line.</div></span>]]></text></render-mode>
@@ -143,7 +145,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         </conditional-field>
                     </field>
                     <field name="exampleTypeEnumId">
-                        <default-field title="Type">
+                        <default-field title="Type" tooltip="This is the type of example">
                             <drop-down allow-empty="false">
                                 <entity-options text="${description}">
                                     <entity-find entity-name="moqui.basic.Enumeration">
@@ -155,7 +157,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         </default-field>
                     </field>
                     <field name="statusId">
-                        <default-field title="Status">
+                        <default-field title="Status" tooltip="The status of the example">
                             <drop-down allow-empty="false" current-description="${currentStatus?.description}">
                                 <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                                     <entity-find entity-name="StatusValidChangeToDetail">
