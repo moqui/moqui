@@ -34,9 +34,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <entity-find entity-name="Example" list="exampleList" limit="20">
                 <econditions combine="or">
                     <econdition field-name="exampleId" operator="like" value="%${term}%"/>
-                    <econdition field-name="exampleName" operator="like" value="%${term}%"/>
+                    <econdition field-name="exampleName" operator="like" value="%${term}%" ignore-case="true"/>
                 </econditions>
-                <order-by field-name="exampleName"/>
+                <order-by field-name="^exampleName"/>
             </entity-find>
             <script>
                 def outList = []
