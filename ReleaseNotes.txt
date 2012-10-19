@@ -35,6 +35,7 @@ This release includes:
   minimal because you can just select the relevant fields and not worry
   about tables being joined in to the query that are not needed; this makes
   it much easier to write queries that will run well on large databases
+- Added more support for configuring case-insensitive order-by
 
 
 Non-backward-compatible changes:
