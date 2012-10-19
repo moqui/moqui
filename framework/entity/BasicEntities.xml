@@ -274,8 +274,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="bccAddresses" type="text-very-long"/>
         <field name="contentType" type="text-medium"/>
         <field name="messageId" type="text-medium"/>
-        <field name="fromUserId" type="id-very-long"/>
-        <field name="toUserId" type="id-very-long"/>
+        <field name="fromUserId" type="id-long"/>
+        <field name="toUserId" type="id-long"/>
         <field name="emailTemplateId" type="id">
             <description>For outgoing messages that came from an EmailTemplate.</description>
         </field>

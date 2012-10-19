@@ -420,6 +420,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The references class must implement the
                     org.moqui.entity.EntityDatasourceFactory interface.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="sequence-primary-use-uuid" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Uses java.util.UUID.randomUUID() to get sequenced IDs for this entity.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="inline-jdbc">

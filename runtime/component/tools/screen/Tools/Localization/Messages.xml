@@ -19,7 +19,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="."/>
     </transition>
     <transition name="updateLocalizedMessage">
-        <service-call name="update#moqui.basic.LocalizedMessage" multi="true"/>
+        <service-call name="update#moqui.basic.LocalizedMessage"/>
         <default-response url="."/>
     </transition>
     <transition name="deleteLocalizedMessage">
@@ -29,7 +29,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="moqui.basic.LocalizedMessage" list="localizedMessageList" offset="0" limit="50">
-            <search-form-inputs default-order-by="original,locale"/>
+            <search-form-inputs default-order-by="^original,locale"/>
         </entity-find>
     </actions>
     <widgets>
@@ -52,7 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-list name="UpdateLocalizedMessages" list="localizedMessageList" transition="updateLocalizedMessage"
                    multi="true">
             <field name="original">
-                <header-field show-order-by="true"><text-find hide-options="true" size="15"/></header-field>
+                <header-field show-order-by="case-insensitive"><text-find hide-options="true" size="15"/></header-field>
                 <default-field><display/></default-field>
             </field>
             <field name="locale">
@@ -60,11 +60,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display/></default-field>
             </field>
             <field name="localized">
+                <header-field show-order-by="case-insensitive"><text-find hide-options="true" size="30"/></header-field>
                 <default-field><text-area rows="2" cols="60"/></default-field>
             </field>
-            <field name="update">
-                <default-field title="Update"><submit/></default-field>
-            </field>
+            <field name="_useRowSubmit"><default-field><hidden default-value="true"/></default-field></field>
+            <field name="_rowSubmit"><default-field title="Update"><check><option key="true" text=" "/></check></default-field></field>
             <field name="delete">
                 <header-field title="Find"><submit/></header-field>
                 <default-field>
@@ -72,6 +72,9 @@ This Work includes contributions authored by David E. Jones, not as a
                         <parameter name="original"/><parameter name="locale"/>
                     </link>
                 </default-field>
+            </field>
+            <field name="update">
+                <default-field title="Update"><submit/></default-field>
             </field>
         </form-list>
     </widgets>

@@ -781,7 +781,21 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, Long, Long) */
-    synchronized String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
+    String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
+        // is the seqName an entityName?
+        EntityDefinition ed = getEntityDefinition(seqName)
+        if (ed != null) {
+            String groupName = getEntityGroupName(seqName)
+            if (ed.getEntityNode()?."@sequence-primary-use-uuid" == "true" ||
+                    getDatasourceNode(groupName)?."@sequence-primary-use-uuid" == "true")
+                return UUID.randomUUID().toString()
+        }
+        // fall through to default to the db sequenced ID
+        return dbSequencedIdPrimary(seqName, staggerMax, bankSize)
+    }
+
+    /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, Long, Long) */
+    protected synchronized String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
         // TODO:     traffic creates; is it creates only?)

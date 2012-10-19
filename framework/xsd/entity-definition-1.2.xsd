@@ -59,6 +59,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="package-name" type="xs:string" use="required"/>
             <xs:attribute name="table-name" type="xs:string"/>
             <xs:attribute name="group-name" type="xs:string" use="optional"/>
+            <xs:attribute name="sequence-primary-use-uuid" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Uses java.util.UUID.randomUUID() to get sequenced IDs for this entity.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="sequence-bank-size" type="xs:nonNegativeInteger" default="50"/>
             <xs:attribute name="sequence-primary-stagger" type="xs:nonNegativeInteger" default="1">
                 <xs:annotation><xs:documentation>The maximum amount to stagger the sequenced ID, if 1 the sequence will
@@ -111,7 +114,6 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="id"/>
                         <xs:enumeration value="id-long"/>
-                        <xs:enumeration value="id-very-long"/>
                         <xs:enumeration value="date"/>
                         <xs:enumeration value="time"/>
                         <xs:enumeration value="date-time"/>

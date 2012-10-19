@@ -263,9 +263,8 @@
         <load-data location="classpath://data/UnitData.xml"/>
     </entity-facade>
     <database-list>
-        <dictionary-type type="id" java-type="java.lang.String" default-sql-type="VARCHAR(20)"/>
-        <dictionary-type type="id-long" java-type="java.lang.String" default-sql-type="VARCHAR(60)"/>
-        <dictionary-type type="id-very-long" java-type="java.lang.String" default-sql-type="VARCHAR(255)"/>
+        <dictionary-type type="id" java-type="java.lang.String" default-sql-type="VARCHAR(40)"/>
+        <dictionary-type type="id-long" java-type="java.lang.String" default-sql-type="VARCHAR(255)"/>
 
         <dictionary-type type="date" java-type="java.sql.Date" default-sql-type="DATE"/>
         <dictionary-type type="time" java-type="java.sql.Time" default-sql-type="TIME"/>
@@ -301,7 +300,6 @@
                   default-test-query="SELECT 1 FROM SEQUENCE_VALUE_ITEM WHERE 1=0">
             <database-type type="id" sql-type="VARCHAR"/>
             <database-type type="id-long" sql-type="VARCHAR"/>
-            <database-type type="id-very-long" sql-type="VARCHAR"/>
 
             <database-type type="number-integer" sql-type="BIGINT"/>
             <database-type type="number-decimal" sql-type="DOUBLE"/>
@@ -358,9 +356,8 @@
         <database name="oracle" join-style="ansi" default-isolation-level="ReadCommitted"
                   default-test-query="SELECT 1 FROM DUAL" default-jdbc-driver="oracle.jdbc.driver.OracleDriver"
                   default-xa-ds-class="oracle.jdbc.xa.client.OracleXADataSource">
-            <database-type type="id" sql-type="VARCHAR2(20)"/>
-            <database-type type="id-long" sql-type="VARCHAR2(60)"/>
-            <database-type type="id-very-long" sql-type="VARCHAR2(255)"/>
+            <database-type type="id" sql-type="VARCHAR2(40)"/>
+            <database-type type="id-long" sql-type="VARCHAR2(255)"/>
 
             <database-type type="number-integer" sql-type="NUMBER(20,0)"/>
             <database-type type="number-decimal" sql-type="NUMBER(26,6)"/>
@@ -378,7 +375,6 @@
                   default-jdbc-driver="org.postgresql.Driver" default-xa-ds-class="org.postgresql.xa.PGXADataSource">
             <database-type type="id" sql-type="TEXT"/>
             <database-type type="id-long" sql-type="TEXT"/>
-            <database-type type="id-very-long" sql-type="TEXT"/>
 
             <database-type type="number-float" sql-type="FLOAT8"/>
 
@@ -393,9 +389,8 @@
                   default-test-query="SELECT 1" default-jdbc-driver="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                   default-xa-ds-class="com.microsoft.sqlserver.jdbc.SQLServerXADataSource">
             <!-- NOTE: for MS SQL Server 2012 and later can use offset-style=fetch for better performance and consistent behavior -->
-            <database-type type="id" sql-type="NVARCHAR(20)"/>
-            <database-type type="id-long" sql-type="NVARCHAR(60)"/>
-            <database-type type="id-very-long" sql-type="NVARCHAR(255)"/>
+            <database-type type="id" sql-type="NVARCHAR(40)"/>
+            <database-type type="id-long" sql-type="NVARCHAR(255)"/>
 
             <database-type type="date" sql-type="DATETIME"/>
             <database-type type="time" sql-type="DATETIME"/>

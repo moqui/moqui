@@ -323,7 +323,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="userId" type="id"/>
         <field name="responseDate" type="date-time"/>
         <field name="lastModifiedDate" type="date-time"/>
-        <field name="externalReferenceId" type="id-very-long"/>
+        <field name="externalReferenceId" type="id-long"/>
         <field name="statusId" type="id"/>
         <field name="entityPrimaryKeyValue" type="text-very-long">
             <description>When the DynamicForm.entityName is used this is the primary key for the value.</description>
@@ -353,7 +353,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="DynamicScreen" package-name="moqui.screen.dynscreen">
         <field name="screenId" type="id" is-pk="true"/>
         <field name="screenName" type="text-medium"/>
-        <field name="userId" type="id-very-long">
+        <field name="userId" type="id-long">
             <description>These settings are per-user. To apply to all users set this to null.</description>
         </field>
         <field name="modifyXmlScreen" type="text-medium">

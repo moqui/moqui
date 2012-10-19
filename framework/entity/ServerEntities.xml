@@ -20,7 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
             cache="never" sequence-bank-size="100" authorize-skip="create">
         <field name="hitId" type="id" is-pk="true"/>
         <field name="visitId" type="id"/>
-        <field name="userId" type="id-very-long"/>
+        <field name="userId" type="id-long"/>
         <field name="artifactType" type="text-medium"/>
         <field name="artifactSubType" type="text-medium"/>
         <field name="artifactName" type="text-medium">
@@ -69,9 +69,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="Visit" package-name="moqui.server" sequence-bank-size="100">
         <field name="visitId" type="id" is-pk="true"/>
         <field name="visitorId" type="id"/>
-        <field name="userId" type="id-very-long"/>
+        <field name="userId" type="id-long"/>
         <field name="userCreated" type="text-indicator"/>
-        <field name="sessionId" type="id-very-long"/>
+        <field name="sessionId" type="id-long"/>
         <field name="serverIpAddress" type="id"/>
         <field name="serverHostName" type="text-medium"/>
         <field name="webappName" type="text-medium"/>

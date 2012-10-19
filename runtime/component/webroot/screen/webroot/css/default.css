@@ -171,7 +171,10 @@ button.ui-button-icons-only { width: 1.5em; }
 
 /* ================ Extensions for jquery-ui theme =============== */
 
-.ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 300px; padding: 2px; padding-left: 4px; }
+/* this applies to combo-box and autocomplete */
+input.ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 250px; padding: 2px; padding-left: 4px; }
+/* this applies to autocomplete only */
+input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 
