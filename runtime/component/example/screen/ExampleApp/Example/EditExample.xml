@@ -26,12 +26,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="getExampleTypeEnumList">
         <actions>
+            <log level="warn" message="In getExampleTypeEnumList transition statusId=${statusId}"/>
             <entity-find entity-name="moqui.basic.Enumeration" list="exampleTypeEnumList">
-                <!-- for purposes of the example, get this as a parameter instead of the inline value: <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/> -->
-                <econdition field-name="enumTypeId" from="enumTypeId"/>
+                <econdition field-name="enumTypeId" value="ExampleType"/>
                 <order-by field-name="description"/>
             </entity-find>
-            <script>ec.web.sendJsonResponse([exampleTypeEnumList:exampleTypeEnumList])</script>
+            <script>ec.web.sendJsonResponse(exampleTypeEnumList)</script>
         </actions>
         <default-response type="none"/>
     </transition>
@@ -52,24 +52,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
             </actions>
             <widgets>
-                <!-- TODO: add some framework stuff to make this much easier to do: -->
-                <render-mode><text type="html"><![CDATA[
-    <script language="javascript">
-    $(document).ready(function() {
-        var list;
-        $.ajax({ type: 'POST', url: 'EditExample/getExampleTypeEnumList', data: [{ name: 'enumTypeId', value: 'ExampleType' }],
-                dataType: 'json' }).done( function(data) {
-            list = data["exampleTypeEnumList"];
-            if (list) {
-                $('#CreateExample_exampleTypeEnumId').html(""); /* clear out the drop-down */
-                $.each(list, function(key, value) {
-                    $('#CreateExample_exampleTypeEnumId').append("<option value = '" + value["enumId"] + "'>" + value["description"] + "</option>");
-                })
-            };
-        });
-    })
-    </script>
-                ]]></text></render-mode>
                 <form-single name="CreateExample" transition="createExample" focus-field="exampleName">
                     <auto-fields-service service-name="org.moqui.example.ExampleServices.create#Example"/>
                     <!-- for the auto-service, basically the entity and operation: <auto-fields-service service-name="create#Example"/> -->
@@ -85,8 +67,11 @@ This Work includes contributions authored by David E. Jones, not as a
                         <default-field title="Type" tooltip="Type of example">
                             <drop-down allow-empty="false">
                                 <!-- This is obviously more efficient and easier done this way, but for purposes of an example this list is
-                                    retrieved after load through an AJAX call to the getExampleTypeEnumList transition defined above.
-                                <list-options list="exampleTypeEnumList" text="${description}"/> -->
+                                    retrieved after load through an AJAX call to the getExampleTypeEnumList transition defined above. -->
+                                <dynamic-options transition="getExampleTypeEnumList" value-field="enumId" label-field="description">
+                                    <!-- this type drop-down doesn't change based on the statusId drop-down, but included here as an example of dependence on another field -->
+                                    <depends-on field="statusId"/>
+                                </dynamic-options>
                             </drop-down>
                         </default-field>
                     </field>

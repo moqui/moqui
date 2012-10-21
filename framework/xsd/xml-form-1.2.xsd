@@ -494,10 +494,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="drop-down" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:sequence>
-                <xs:choice minOccurs="0" maxOccurs="unbounded">
-                    <xs:element ref="entity-options"/>
-                    <xs:element ref="list-options"/>
-                    <xs:element ref="option"/>
+                <xs:choice>
+                    <xs:element ref="dynamic-options"/>
+                    <xs:choice minOccurs="0" maxOccurs="unbounded">
+                        <xs:element ref="entity-options"/>
+                        <xs:element ref="list-options"/>
+                        <xs:element ref="option"/>
+                    </xs:choice>
                 </xs:choice>
             </xs:sequence>
             <xs:attribute name="allow-empty" type="boolean" default="false"/>
@@ -630,9 +633,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ================== Field Sub-Sub-Elements ==================== -->
     <xs:element name="entity-options">
-        <xs:annotation>
-            <xs:documentation>Look up options for the field using the named entity.</xs:documentation>
-        </xs:annotation>
+        <xs:annotation><xs:documentation>Look up options for the field using the named entity.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="entity-find"/>
@@ -673,6 +674,32 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>What the user will see in the widget; defaults to the value of the key
                     attribute.</xs:documentation></xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="dynamic-options">
+        <xs:annotation><xs:documentation>Look up options for the field using a JSON over HTTP call to a server.
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="depends-on">
+                    <xs:annotation><xs:documentation>When getting data from the server the value of this field will be
+                        passed in the request. When the field named here changes these options will be updated.</xs:documentation></xs:annotation>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute name="transition" type="xs:string">
+                <xs:annotation><xs:documentation>The transition in this screen to get the option list from.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="value-field" type="xs:string" default="value">
+                <xs:annotation><xs:documentation>The field in the result that represents the value (key) for the option.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="label-field" type="xs:string" default="label">
+                <xs:annotation><xs:documentation>The field in the result that represents the label for the option.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="depends-on">
+        <xs:complexType>
+            <xs:attribute name="field" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>

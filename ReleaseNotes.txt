@@ -38,6 +38,10 @@ This release includes:
 - More support for configuring case-insensitive order-by
 - Support for java.util.UUID sequenced primary IDs; can be configured
   per-entity and/or per-datasource
+- Added dynamic-options for drop-down to get options from a server request
+  via AJAX request and can depend on other field(s) to use as parameters
+  and triggers for updating options on change, including example in the
+  EditExample screen
 
 
 Non-backward-compatible changes:

@@ -800,10 +800,39 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if (.node["@allow-empty"]?if_exists == "true") || !(options?has_content)>
         <option value="">&nbsp;</option>
     </#if>
-    <#list (options.keySet())?if_exists as key>
-        <option<#if currentValue?has_content && currentValue == key> selected="selected"</#if> value="${key}">${options.get(key)}</option>
-    </#list>
+
+    <#if !.node["dynamic-options"]?has_content>
+        <#list (options.keySet())?if_exists as key>
+            <option<#if currentValue?has_content && currentValue == key> selected="selected"</#if> value="${key}">${options.get(key)}</option>
+        </#list>
+    </#if>
     </select>
+
+    <#if .node["dynamic-options"]?has_content>
+        <#assign doNode = .node["dynamic-options"][0]>
+        <#assign depNodeList = doNode["depends-on"]>
+        <#assign formName = formNode["@name"]>
+        <script>
+            function populate_${id}() {
+                $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
+                    function(list) {
+                        if (list) {
+                            $('#${id}').html(""); /* clear out the drop-down */
+                            $.each(list, function(key, value) {
+                                $('#${id}').append("<option value = '" + value["${doNode["@value-field"]!"value"}"] + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
+                            })
+                        };
+                    }
+                );
+            };
+            $(document).ready(function() {
+            <#list depNodeList as depNode>
+                $("#${formName}_${depNode["@field"]}").change(function() { populate_${id}(); });
+            </#list>
+                populate_${id}();
+            });
+        </script>
+    </#if>
     <#if .node["@combo-box"]?if_exists == "true">
         <script language="JavaScript" type="text/javascript">$("#${id}").combobox();</script>
     </#if>
