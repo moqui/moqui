@@ -31,7 +31,6 @@ import org.moqui.context.ScriptRunner
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.renderer.FtlTemplateRenderer
 import org.moqui.impl.context.runner.XmlActionsScriptRunner
-import java.lang.reflect.Constructor
 import org.moqui.impl.context.runner.JavaxScriptRunner
 import javax.script.ScriptEngineManager
 import javax.script.ScriptEngine

@@ -10,8 +10,8 @@ This release includes:
 - Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
 - Added popup type subscreens menu using new jQuery UI Menu widget to help
   compress header into single row of menus instead of layers of tabs
-- Updated Apache Shiro to 1.2.1, ehcache to 2.6.0, Groovy to 2.0.5, and
-  Quartz Scheduler to 2.1.6
+- Updated Apache Jackrabbit to 2.5.2, Apache Shiro to 1.2.1, ehcache to
+  2.6.0, Groovy to 2.0.5, and Quartz Scheduler to 2.1.6
 - Inline and script services can leave out parameter values in the context
   and they will be picked up, instead of setting explicitly in result Map
 - When auto-parameters has an entity-name specified the generated
@@ -42,7 +42,8 @@ This release includes:
   via AJAX request and can depend on other field(s) to use as parameters
   and triggers for updating options on change, including example in the
   EditExample screen
-
+- Added ExampleContent entity and corresponding screen that supports
+  uploading and downloading JCR content
 
 Non-backward-compatible changes:
 

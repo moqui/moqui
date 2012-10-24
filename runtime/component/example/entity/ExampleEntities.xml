@@ -82,6 +82,23 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
         <relationship type="one" related-entity-name="moqui.example.Example"/>
     </entity>
+    <entity entity-name="ExampleContent" package-name="moqui.example">
+        <field name="exampleId" type="id" is-pk="true"/>
+        <field name="contentLocation" type="text-medium" is-pk="true"/>
+        <field name="purposeEnumId" type="id"/>
+        <field name="locale" type="text-short" is-pk="true"/>
+        <relationship type="one" title="ExampleContentPurpose" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="purposeEnumId"/>
+        </relationship>
+        <relationship type="one" related-entity-name="moqui.example.Example"/>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Example Content Purpose" enumTypeId="ExampleContentPurpose"/>
+            <moqui.basic.Enumeration description="Sketch" enumId="EXCNTPRP_SKETCH" enumTypeId="ExampleContentPurpose"/>
+            <moqui.basic.Enumeration description="Specification" enumId="EXCNTPRP_SPEC" enumTypeId="ExampleContentPurpose"/>
+            <moqui.basic.Enumeration description="Requirement" enumId="EXCNTPRP_REQ" enumTypeId="ExampleContentPurpose"/>
+            <moqui.basic.Enumeration description="Design" enumId="EXCNTPRP_DES" enumTypeId="ExampleContentPurpose"/>
+        </seed-data>
+    </entity>
 
     <!-- Example Feature -->
     <entity entity-name="ExampleFeature" package-name="moqui.example">

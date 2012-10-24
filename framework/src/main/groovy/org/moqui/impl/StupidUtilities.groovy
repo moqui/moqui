@@ -235,6 +235,19 @@ class StupidUtilities {
         }
     }
 
+    static int copyStream(InputStream is, OutputStream os) {
+        byte[] buffer = new byte[4096]
+        int totalLen = 0
+        int len = is.read(buffer)
+        while (len != -1) {
+            totalLen += len
+            os.write(buffer, 0, len)
+            len = is.read(buffer)
+            if (Thread.interrupted()) throw new InterruptedException()
+        }
+        return totalLen
+    }
+
     static void addToListInMap(String key, Object value, Map theMap) {
         if (!theMap) return
         List theList = (List) theMap.get(key)

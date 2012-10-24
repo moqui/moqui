@@ -68,8 +68,8 @@ dependencies {
     apiCompile name: 'groovy-all', version: '2.0.5' // Apache 2.0
     compile name: 'groovy-all', version: '2.0.5' // Apache 2.0
 
-    compile name: 'jackrabbit-api', version: '2.4.1' // Apache 2.0
-    compile name: 'jackrabbit-jcr-commons', version: '2.4.1' // Apache 2.0
+    compile name: 'jackrabbit-api', version: '2.5.2' // Apache 2.0
+    compile name: 'jackrabbit-jcr-commons', version: '2.5.2' // Apache 2.0
     compile name: 'jcr', version: '2.0' // Apache 2.0???
 
     compile name: 'jsonrpc2-base', version: '1.20' // Apache 2.0

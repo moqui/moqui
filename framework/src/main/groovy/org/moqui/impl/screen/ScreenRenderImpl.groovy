@@ -37,6 +37,7 @@ import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.impl.entity.EntityValueImpl
+import org.moqui.impl.StupidUtilities
 
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
@@ -346,15 +347,8 @@ class ScreenRenderImpl implements ScreenRender {
                     try {
                         is = screenUrlInfo.fileResourceRef.openStream()
                         OutputStream os = response.outputStream
-                        byte[] buffer = new byte[4096]
-                        int totalLen = 0
-                        int len = is.read(buffer)
-                        while (len != -1) {
-                            totalLen += len
-                            os.write(buffer, 0, len)
-                            len = is.read(buffer)
-                            if (Thread.interrupted()) throw new InterruptedException()
-                        }
+                        int totalLen = StupidUtilities.copyStream(is, os)
+
                         if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
                             sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.url,
                                     (ec.web ? ec.web.requestParameters : null), resourceStartTime,
