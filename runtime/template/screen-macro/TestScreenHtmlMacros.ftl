@@ -13,5 +13,5 @@ This Work includes contributions authored by David E. Jones, not as a
 <#include "classpath://template/DefaultScreenMacros.html.ftl"/>
 
 <#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
-    </div><!-- CONTAINER OVERRIDE FOR THE Tests.xml screen -->
+    </div><!-- CONTAINER OVERRIDE FOR THE Example.xml screen -->
 </#macro>

@@ -14,6 +14,9 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.2.xsd"
         default-menu-title="Example" default-menu-index="1">
 
+    <!-- this is a test, and example, of overriding the default FTL macro template to use for this screen -->
+    <macro-template type="html" location="template/screen-macro/TestScreenHtmlMacros.ftl"/>
+
     <subscreens default-item="FindExample"/>
 
     <widgets>
