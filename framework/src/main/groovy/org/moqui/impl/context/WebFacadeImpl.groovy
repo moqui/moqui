@@ -334,8 +334,9 @@ class WebFacadeImpl implements WebFacade {
 
         DiskFileItemFactory factory = new DiskFileItemFactory(DiskFileItemFactory.DEFAULT_SIZE_THRESHOLD, repository)
 
-        FileCleaningTracker fileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(context)
-        factory.setFileCleaningTracker(fileCleaningTracker)
+        // TODO: this was causing files to get deleted before the upload was streamed... need to figure out something else
+        //FileCleaningTracker fileCleaningTracker = FileCleanerCleanup.getFileCleaningTracker(context)
+        //factory.setFileCleaningTracker(fileCleaningTracker)
         return factory
     }
 }

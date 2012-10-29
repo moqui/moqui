@@ -590,8 +590,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="name" type="xs:string" use="required"/>
 
             <xs:attribute name="location" type="xs:string" use="required"/>
-            <xs:attribute name="conf-location" type="xs:string" use="optional">
-                <xs:annotation><xs:documentation>Defaults to: [${location}/repository.xml]</xs:documentation></xs:annotation>
+            <xs:attribute name="conf-location" type="xs:string">
+                <xs:annotation><xs:documentation>Defaults to: [${location}/repository.xml]; only used for local</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="type" use="required">
                 <xs:simpleType>
@@ -606,9 +606,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
 
-            <xs:attribute name="workspace" type="xs:string" use="optional">
+            <xs:attribute name="workspace" type="xs:string">
                 <xs:annotation><xs:documentation>Defaults to the repository's default workspace.</xs:documentation></xs:annotation>
             </xs:attribute>
+
+            <xs:attribute name="username" type="xs:string"/>
+            <xs:attribute name="password" type="xs:string"/>
         </xs:complexType>
     </xs:element>
 

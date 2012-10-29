@@ -86,7 +86,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleId" type="id" is-pk="true"/>
         <field name="contentLocation" type="text-medium" is-pk="true"/>
         <field name="purposeEnumId" type="id"/>
-        <field name="locale" type="text-short" is-pk="true"/>
+        <field name="locale" type="text-short"/>
         <relationship type="one" title="ExampleContentPurpose" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="purposeEnumId"/>
         </relationship>

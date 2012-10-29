@@ -20,6 +20,7 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ResourceFacadeImpl
 
 class ContentResourceReference implements ResourceReference {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
 
     ExecutionContext ec = null
 
@@ -34,17 +35,10 @@ class ContentResourceReference implements ResourceReference {
     @Override
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
-        this.locationUri = new URI(location)
 
-        String strippedLoc = locationUri.path
-        if (strippedLoc.contains("/")) {
-            repositoryName = strippedLoc.substring(0, strippedLoc.indexOf("/"))
-            // NOTE: the nodePath should include a leading /
-            nodePath = strippedLoc.substring(strippedLoc.indexOf("/"))
-        } else {
-            repositoryName = strippedLoc
-            nodePath = "/"
-        }
+        locationUri = new URI(location)
+        repositoryName = locationUri.host
+        nodePath = locationUri.path
 
         return this
     }
@@ -144,17 +138,4 @@ class ContentResourceReference implements ResourceReference {
         Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
         return session.getNode(nodePath)
     }
-    /* Some example code for adding a file, shows the various properties and types
-        //create the file node - see section 6.7.22.6 of the spec
-        Node fileNode = folderNode.addNode (file.getName (), "nt:file");
-
-        //create the mandatory child node - jcr:content
-        Node resNode = fileNode.addNode ("jcr:content", "nt:resource");
-        resNode.setProperty ("jcr:mimeType", mimeType);
-        resNode.setProperty ("jcr:encoding", encoding);
-        resNode.setProperty ("jcr:data", valueFactory.createBinary(new FileInputStream (file)));
-        Calendar lastModified = Calendar.getInstance ();
-        lastModified.setTimeInMillis (file.lastModified ());
-        resNode.setProperty ("jcr:lastModified", lastModified);
-     */
 }

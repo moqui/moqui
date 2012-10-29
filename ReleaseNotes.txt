@@ -42,8 +42,9 @@ This release includes:
   via AJAX request and can depend on other field(s) to use as parameters
   and triggers for updating options on change, including example in the
   EditExample screen
-- Added ExampleContent entity and corresponding screen that supports
+- ExampleContent entity and corresponding screen that supports
   uploading and downloading JCR content
+- Support for username and password for remote JCR repository access
 
 Non-backward-compatible changes:
 
@@ -75,6 +76,11 @@ Bug Fixes:
   directory and build files to delete it just in case it doesn't get
   cleaned up on exit; should solve problem with dirty exit leaving temp
   files in the OS temporary file location which can be hard to find
+- Fixed JCR repository connection, using RMI instead of DavEx by default
+  (requires fewer jars for client while retaining full functionality)
+- Fixed repository name and content path reference for JCR content in the
+  ContentResourceReference class
+- Fixed file upload temporary file being deleted before being accessed/used
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

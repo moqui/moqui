@@ -56,7 +56,8 @@
     </entity-facade>
 
     <repository-list>
-        <repository name="main" location="http://localhost:8081/server" type="davex" workspace="development"/>
+        <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"
+                    username="admin" password="admin"/>
     </repository-list>
     <component-list>
         <!-- This loads the tools component over top of the default one, which will result in a warning but works

@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.2.xsd"
-        default-menu-title="Content" default-menu-index="3">
+        default-menu-title="Content" default-menu-index="4">
     
     <parameter name="exampleId"/>
 
@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="uploadExampleContent">
         <actions><script><![CDATA[
-            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(this.class)
+            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("uploadExampleContent")
             org.moqui.context.ExecutionContext ec = context.ec
             org.apache.commons.fileupload.FileItem contentFile = context.contentFile
             String fileName = contentFile.getName()
@@ -69,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <script><![CDATA[
                 import org.moqui.context.ResourceReference
 
-                org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(this.class)
+                org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("downloadContent")
                 org.moqui.context.ExecutionContext ec = context.ec
 
                 ResourceReference rr = ec.resource.getLocationReference(exampleContent.contentLocation)
@@ -111,7 +111,6 @@ This Work includes contributions authored by David E. Jones, not as a
             </container-dialog>
             <container-dialog id="UploadContentDialog" button-text="Upload Content">
                 <form-single name="UploadExampleContent" transition="uploadExampleContent">
-                    <auto-fields-service service-name="create#ExampleContent"/>
                     <field name="exampleId"><default-field><hidden/></default-field></field>
                     <field name="contentFile"><default-field><file/></default-field></field>
                     <field name="repositoryName"><default-field><text-line size="20" default-value="main"/></default-field></field>
@@ -128,10 +127,9 @@ This Work includes contributions authored by David E. Jones, not as a
         </container>
 
         <form-list name="ListExampleContent" transition="updateExampleContent" list="exampleContentList">
-            <auto-fields-service service-name="update#ExampleContent"/>
+            <field name="download"><default-field><link url="downloadContent" text="Download" parameter-map="[exampleId:exampleId, contentLocation:contentLocation]"/></default-field></field>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="contentLocation"><default-field title="Location"><display/></default-field></field>
-            <field name="download"><default-field><link url="downloadContent" parameter-map="[exampleId:exampleId, contentLocation:contentLocation]"/></default-field></field>
             <field name="purposeEnumId"><default-field title="Purpose">
                 <drop-down><entity-options><entity-find entity-name="moqui.basic.Enumeration">
                     <econdition field-name="enumTypeId" value="ExampleContentPurpose"/>

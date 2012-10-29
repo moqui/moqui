@@ -11,29 +11,27 @@
  */
 package org.moqui.impl.context
 
+import org.apache.commons.mail.ByteArrayDataSource
+import org.apache.jackrabbit.jcr2dav.Jcr2davRepositoryFactory
+import org.apache.jackrabbit.rmi.repository.URLRemoteRepository
+
+import org.codehaus.groovy.runtime.InvokerHelper
+
+import org.moqui.impl.StupidUtilities
+import org.moqui.impl.context.renderer.FtlTemplateRenderer
+import org.moqui.impl.context.runner.JavaxScriptRunner
+import org.moqui.impl.context.runner.XmlActionsScriptRunner
+
 import javax.activation.DataSource
 import javax.activation.MimetypesFileTypeMap
 import javax.jcr.Repository
 import javax.jcr.Session
+import javax.jcr.SimpleCredentials
 import javax.naming.InitialContext
-
-import org.apache.commons.mail.ByteArrayDataSource
-import org.apache.jackrabbit.commons.JcrUtils
-
-import org.codehaus.groovy.runtime.InvokerHelper
-
-import org.moqui.context.Cache
-import org.moqui.context.ExecutionContext
-import org.moqui.context.TemplateRenderer
-import org.moqui.context.ResourceFacade
-import org.moqui.context.ResourceReference
-import org.moqui.context.ScriptRunner
-import org.moqui.impl.StupidUtilities
-import org.moqui.impl.context.renderer.FtlTemplateRenderer
-import org.moqui.impl.context.runner.XmlActionsScriptRunner
-import org.moqui.impl.context.runner.JavaxScriptRunner
-import javax.script.ScriptEngineManager
 import javax.script.ScriptEngine
+import javax.script.ScriptEngineManager
+
+import org.moqui.context.*
 
 public class ResourceFacadeImpl implements ResourceFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
@@ -54,7 +52,6 @@ public class ResourceFacadeImpl implements ResourceFacade {
     protected final ScriptEngineManager scriptEngineManager = new ScriptEngineManager();
 
     protected final Map<String, Repository> contentRepositories = new HashMap()
-    protected final Map<String, String> contentRepositoryWorkspaces = new HashMap()
 
     protected final ThreadLocal<Map<String, Session>> contentSessions = new ThreadLocal<Map<String, Session>>()
 
@@ -118,8 +115,12 @@ public class ResourceFacadeImpl implements ResourceFacade {
         // Setup content repositories
         for (Node repositoryNode in ecfi.confXmlRoot."repository-list"[0]."repository") {
             try {
-                if (repositoryNode."@type" == "davex" || repositoryNode."@type" == "rmi") {
-                    Repository repository = JcrUtils.getRepository((String) repositoryNode."@location")
+                if (repositoryNode."@type" == "davex") {
+                    Jcr2davRepositoryFactory j2drf = new Jcr2davRepositoryFactory()
+                    Repository repository = j2drf.getRepository(["org.apache.jackrabbit.spi2davex.uri":(String) repositoryNode."@location"])
+                    contentRepositories.put(repositoryNode."@name", repository)
+                } else if (repositoryNode."@type" == "rmi") {
+                    Repository repository = new URLRemoteRepository((String) repositoryNode."@location")
                     contentRepositories.put(repositoryNode."@name", repository)
                 } else if (repositoryNode."@type" == "jndi") {
                     InitialContext ic = new InitialContext()
@@ -128,7 +129,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 } else if (repositoryNode."@type" == "local") {
                     throw new IllegalArgumentException("The local type content repository is not yet supported, pending research into API support for the concept")
                 }
-                if (repositoryNode."@workspace") contentRepositoryWorkspaces.put(repositoryNode."@name", repositoryNode."@workspace")
+                logger.info("Added JCR Repository [${repositoryNode."@name"}] at [${repositoryNode."@location"}], workspace [${repositoryNode."@workspace"}]")
             } catch (Exception e) {
                 logger.error("Error getting JCR content repository with name [${repositoryNode."@name"}], is of type [${repositoryNode."@type"}] at location [${repositoryNode."@location"}]: ${e.toString()}")
             }
@@ -165,10 +166,13 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
         Repository rep = contentRepositories[name]
         if (!rep) return null
-        if (contentRepositoryWorkspaces[name]) {
-            newSession = rep.login(contentRepositoryWorkspaces[name])
+        Node repositoryNode = (Node) ecfi.confXmlRoot."repository-list"[0]."repository".find({ it."@name" == name })
+        SimpleCredentials credentials = new SimpleCredentials(repositoryNode."@username" ?: "anonymous",
+                (repositoryNode."@password" ?: "").toCharArray())
+        if (repositoryNode."@workspace") {
+            newSession = rep.login(credentials, repositoryNode."@workspace")
         } else {
-            newSession = rep.login()
+            newSession = rep.login(credentials)
         }
 
         if (newSession != null) sessionMap.put(name, newSession)
