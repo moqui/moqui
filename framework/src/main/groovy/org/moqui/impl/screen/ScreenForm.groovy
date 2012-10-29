@@ -762,7 +762,10 @@ class ScreenForm {
         if (!key) key = ec.context.get(fieldNode."@name")
         if (!key) return
 
-        String value = childNode."@text" ? ec.resource.evaluateStringExpand(childNode."@text", null) : key
+        String text = childNode."@text"
+        if (listOption["description"]) text = "\${description}"
+
+        String value = text ? ec.resource.evaluateStringExpand(text, null) : key
         if (value == "null") value = key
         options.put(key, value)
         ec.context.pop()
