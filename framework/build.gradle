@@ -134,6 +134,10 @@ dependencies {
     runtime name: 'jakarta-oro', version: '2.0.8' // Apache 2.0
     runtime name: 'shiro-ehcache', version: '1.2.1' // Apache 2.0
     runtime name: 'shiro-quartz', version: '1.2.1' // Apache 2.0
+
+    // ========== test dependencies ==========
+    testCompile name: 'spock-core', version: '1.0-groovy-2.0-20121024' // Apache 2.0
+    testCompile name: 'junit', version: '4.10' // Apache 2.0
 }
 
 task apiJavadoc(type: Javadoc) {
@@ -147,6 +151,32 @@ compileJava.dependsOn startClasses
 compileJava.dependsOn apiClasses
 // add the classes directory for the api SourceSet to the main compile classpath so that dependent classes are available
 sourceSets.main.compileClasspath += files(sourceSets.api.output.classesDir)
+
+compileTestGroovy.dependsOn apiClasses
+compileTestGroovy.dependsOn classes
+sourceSets.test.compileClasspath += files(sourceSets.api.output.classesDir)
+sourceSets.test.compileClasspath += files(sourceSets.main.output.classesDir)
+
+// by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
+check.dependsOn.remove('test')
+
+test {
+    systemProperty 'moqui.runtime', '../runtime'
+    systemProperty 'moqui.conf', 'conf/MoquiDevConf.xml'
+    systemProperty 'moqui.init.static', 'true'
+
+    testLogging.showStandardStreams = true
+
+    classpath += files(sourceSets.api.output.classesDir)
+    classpath += files(sourceSets.main.output.classesDir)
+    classpath += files(projectDir.absolutePath)
+    //classpath += fileTree(dir: projectDir.absolutePath,
+    //        includes: ['data/**', 'entity/**', 'screen/**', 'service/**', 'template/**', 'xsd/**'])
+
+    beforeTest { descriptor ->
+        logger.lifecycle("Running test: ${descriptor}")
+    }
+}
 
 jar {
     // this is necessary otherwise jar won't build when war plugin is applied

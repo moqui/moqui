@@ -33,6 +33,7 @@ import javax.sql.DataSource
 import javax.sql.XADataSource
 
 import org.moqui.entity.*
+import org.moqui.BaseException
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -197,6 +198,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected synchronized void loadEntityFileLocations(ResourceReference entityRr) {
         InputStream entityStream = entityRr.openStream()
+        if (entityStream == null) throw new BaseException("Could not open stream to entity file at [${entityRr.location}]")
         Node entityRoot = new XmlParser().parse(entityStream)
         entityStream.close()
         if (entityRoot.name() == "entities") {
