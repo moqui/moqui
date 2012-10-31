@@ -16,7 +16,7 @@ import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityValue
 import org.moqui.Moqui
 
-class EntityCrud extends Specification {
+class ServiceCrudImplicit extends Specification {
     @Shared
     ExecutionContext ec
 
@@ -31,38 +31,34 @@ class EntityCrud extends Specification {
 
     def setup() {
         ec.artifactExecution.disableAuthz()
-        ec.transaction.begin(null)
     }
 
     def cleanup() {
         ec.artifactExecution.enableAuthz()
-        ec.transaction.commit()
     }
 
-    def "create and find Example TEST1"() {
+    def "create and find Example TEST1 with service"() {
         when:
-        ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name"]).createOrUpdate()
+        // do a "store" to create or update
+        ec.service.sync().name("store", "Example").parameters([exampleId:"TEST1", exampleName:"Test Name"]).call()
 
         then:
         EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
         example.exampleName == "Test Name"
     }
 
-    def "update Example TEST1"() {
+    def "update Example TEST1 with service"() {
         when:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
-        example.exampleName = "Test Name 2"
-        example.update()
+        ec.service.sync().name("update", "Example").parameters([exampleId:"TEST1", exampleName:"Test Name 2"]).call()
 
         then:
         EntityValue exampleCheck = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
         exampleCheck.exampleName == "Test Name 2"
     }
 
-    def "delete Example TEST1"() {
+    def "delete Example TEST1 with service"() {
         when:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
-        example.delete()
+        ec.service.sync().name("delete", "Example").parameters([exampleId:"TEST1"]).call()
 
         then:
         EntityValue exampleCheck = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
