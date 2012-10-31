@@ -28,7 +28,7 @@ This Work includes contributions authored by David E. Jones, not as a
             columns = []
             records = []
 
-            int limitInt = (limit?:"0") as int
+            int limitInt = (limit?:"500") as int
 
             if (sql && groupName) {
                 Connection con = ec.entity.getConnection(groupName)
@@ -77,7 +77,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <list-options list="ec.entity.getDatasourceGroupNames()"/></drop-down>
             </default-field></field>
             <field name="sql"><default-field title="SQL Statement"><text-area cols="120" rows="6"/></default-field></field>
-            <field name="limit"><default-field><text-line size="5"/></default-field></field>
+            <field name="limit"><default-field><text-line size="5" default-value="500"/></default-field></field>
             <field name="submitButton"><default-field title="Run SQL"><submit/></default-field></field>
         </form-single>
 
