@@ -103,6 +103,13 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    Set<String> getDatasourceGroupNames() {
+        Set<String> groupNames = new TreeSet<String>()
+        for (Node datasourceNode in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource")
+            groupNames.add(datasourceNode."@group-name")
+        return groupNames
+    }
+
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
     static int getTxIsolationFromString(String isolationLevel) {
