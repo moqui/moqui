@@ -2,50 +2,78 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.2.0 - TBA
+Release 1.2.0 - 1 Nov 2012
 ===========================================================================
+
+Moqui Framework release 1.2.0 is a minor new feature release and includes
+a number of bug fixes too.
+
+The new features include popup menus (using the new jQueryUI menu widget),
+dynamic-options in XML Form drop-downs with dependency on other fields,
+automatic optimization of queries on view-entities to old select member
+entities necessary, support for UUID generated primary keys, expanded JCR
+support and an Example Content screen, and a number of small improvements
+that generally make the framework easier to use and more reliable.
+
+There are some non-backward-compatible changes in this release including
+elimination of id-very-long from the data type dictionary (expanding the id
+and id-long types), and changed database configuration of subscreens to be
+based on UserGroup instead of the individual UserAccount (this is a
+primary-key change and may require a database metadata update and data
+migration).
 
 This release includes:
 
 - Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
-- Added popup type subscreens menu using new jQuery UI Menu widget to help
-  compress header into single row of menus instead of layers of tabs
 - Updated Apache Camel to 2.10.1, Apache Derby to 10.9.1.0, Apache
   Jackrabbit to 2.5.2, Apache Shiro to 1.2.1, ehcache to 2.6.0, Groovy to
   2.0.5, and Quartz Scheduler to 2.1.6
-- Inline and script services can leave out parameter values in the context
-  and they will be picked up, instead of setting explicitly in result Map
-- When auto-parameters has an entity-name specified the generated
-  parameters will have entity-name and field-name attributes, and the
-  auto-fields-service now looks for those to do better fields based on the
-  entity field details
-- Moved JS file reference to webroot.xml instead of in the theme; all
-  themes need them, and they are more closely related to HTML generated
-- Added subscreens.always-use-full-path attribute to use the full path in
-  menus and such instead of minimal path; helpful for wiki and other
-  screens that use relative URLs that are not based on the screen path
+- Support for Spock specification and unit testing framework run with the
+  gradle "test" task, and a few entity and service unit tests
+- Screen Facade
+  - Added popup type subscreens menu using new jQuery UI Menu widget to
+    help compress header into single row of menus instead of layers of tabs
+  - Moved JS file reference to webroot.xml instead of in the theme; all
+    themes need them, and they are more closely related to HTML generated
+  - Added subscreens.always-use-full-path attribute to use the full path in
+    menus and such instead of minimal path; helpful for wiki and other
+    screens that use relative URLs that are not based on the screen path
+  - More support for configuring case-insensitive order-by
+  - Added dynamic-options for drop-down to get options from a server
+    request via AJAX request and can depend on other field(s) to use as
+    parameters and triggers for updating options on change, including
+    example in the EditExample screen
+- Service Facade
+  - Inline and script services can leave out parameter values in the
+    context and they will be picked up, instead of setting explicitly in
+    result Map
+  - When auto-parameters has an entity-name specified the generated
+    parameters will have entity-name and field-name attributes, and the
+    auto-fields-service now looks for those to do better fields based on
+    the entity field details
+- Entity Facade
+  - Added datasource.@startup-add-missing option; set to true to check
+    tables for all entities in the database on startup and create missing
+    ones
+  - Entity find on a view-entity now automatically determines which
+    member-entities to join in based on the fields selected, in order by,
+    and in conditions; with this in place the need for DynamicViewEntity is
+    minimal because you can just select the relevant fields and not worry
+    about tables being joined in to the query that are not needed; this
+    makes it much easier to write queries that will run well on large
+    databases
+  - Support for java.util.UUID sequenced primary IDs; can be configured
+    per-entity and/or per-datasource
+- Resource Facade
+  - ExampleContent entity and corresponding screen that supports
+    uploading and downloading JCR content
+  - Support for username and password for remote JCR repository access
 - Fleshed out ValidationError functionality including display in apps.xml
   and considering the ec.message.validationErrors list for storing error
   details in session between redirects, and changed entity and service
   validation to add ValidationErrors instead of plain error Strings
-- Added datasource.@startup-add-missing option; set to true to check tables
-  for all entities in the database on startup and create missing ones
-- Entity find on a view-entity now automatically determines which
-  member-entities to join in based on the fields selected, in order by, and
-  in conditions; with this in place the need for DynamicViewEntity is
-  minimal because you can just select the relevant fields and not worry
-  about tables being joined in to the query that are not needed; this makes
-  it much easier to write queries that will run well on large databases
-- More support for configuring case-insensitive order-by
-- Support for java.util.UUID sequenced primary IDs; can be configured
-  per-entity and/or per-datasource
-- Added dynamic-options for drop-down to get options from a server request
-  via AJAX request and can depend on other field(s) to use as parameters
-  and triggers for updating options on change, including example in the
-  EditExample screen
-- ExampleContent entity and corresponding screen that supports
-  uploading and downloading JCR content
-- Support for username and password for remote JCR repository access
+- Screen in Tools app for SQL Query Run/View
+
 
 Non-backward-compatible changes:
 
@@ -842,7 +870,6 @@ Features designed or considered, but not to be included in 1.0 series
   - Dynamic Forms (database-driven: DynForm* entities) like the OFBiz
     Survey and related entities (DbForm already in place to extend
     XML Screen Forms)
-  - Form render template for cwiki render mode (even useful?)
 - Entity Facade
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
@@ -857,7 +884,6 @@ Features designed or considered, but not to be included in 1.0 series
     - Editable data grid, created by form-list, for detail and assoc
       related entities
   - Entity
-    - SQL Query Run/View
     - Entity model internal check (relationship, view-link.key-map, ?)
     - Database meta-data check/report against entity definitions; NOTE:
       use LiquiBase for this
