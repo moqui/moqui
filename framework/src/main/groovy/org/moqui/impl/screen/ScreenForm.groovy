@@ -737,7 +737,8 @@ class ScreenForm {
                         if (listOption instanceof Map) {
                             addFieldOption(options, fieldNode, childNode, listOption, ec)
                         } else {
-                            addFieldOption(options, fieldNode, childNode, [entry:listOption], ec)
+                            options.put(listOption, listOption)
+                            // addFieldOption(options, fieldNode, childNode, [entry:listOption], ec)
                         }
                     }
                 }
