@@ -30,7 +30,7 @@ This release includes:
   2.0.5, and Quartz Scheduler to 2.1.6
 - Support for Spock specification and unit testing framework run with the
   gradle "test" task, and a few entity and service unit tests
-- Screen Facade
+- XML Screens
   - Added popup type subscreens menu using new jQuery UI Menu widget to
     help compress header into single row of menus instead of layers of tabs
   - Moved JS file reference to webroot.xml instead of in the theme; all
@@ -110,6 +110,8 @@ Bug Fixes:
 - Fixed repository name and content path reference for JCR content in the
   ContentResourceReference class
 - Fixed file upload temporary file being deleted before being accessed/used
+- Fixed link with link-type=hidden-form within a form-single to not produce
+  HTML with nested form elements
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
@@ -870,6 +872,7 @@ Features designed or considered, but not to be included in 1.0 series
   - Dynamic Forms (database-driven: DynForm* entities) like the OFBiz
     Survey and related entities (DbForm already in place to extend
     XML Screen Forms)
+  - Form field widget library (pre-defined drop-down, etc)
 - Entity Facade
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element

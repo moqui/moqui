@@ -258,7 +258,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
             <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if> class="button">
-            <#t><#if linkNode["image"]?has_content><#visit linkNode["image"]><#else/>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
+            <#t><#if linkNode["image"]?has_content><#visit linkNode["image"]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
@@ -415,7 +415,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <script>$(document).tooltip();</script>
     </#if>
     <#if formNode["@focus-field"]?has_content><script>$("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();</script></#if>
-<#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
+    ${sri.getAfterFormWriterText()}
+    <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formSingleSubField fieldNode>
     <#list fieldNode["conditional-field"] as fieldSubNode>
@@ -436,7 +437,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <div class="single-form-field">
         <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
         <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label></#if>
-        <#recurse fieldSubNode/>
+        <#list fieldSubNode?children as widgetNode>
+            <#if widgetNode?node_name == "link">
+                <#assign linkNode = widgetNode>
+                <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
+                <#assign linkFormId><@fieldId linkNode/></#assign>
+                <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
+                <#t>${sri.appendToAfterFormWriter(afterFormText)}
+                <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
+            <#else>
+                <#t><#visit widgetNode>
+            </#if>
+        </#list>
     </div>
 </#macro>
 

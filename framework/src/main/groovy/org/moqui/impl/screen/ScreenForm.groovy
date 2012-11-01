@@ -32,6 +32,7 @@ import org.moqui.entity.EntityCondition
 import java.sql.Timestamp
 import org.moqui.impl.entity.EntityListImpl
 import org.moqui.BaseException
+import org.moqui.impl.entity.EntityValueBase
 
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
@@ -751,24 +752,37 @@ class ScreenForm {
         return options
     }
 
-    static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption, ExecutionContext ec) {
+    static void addFieldOption(ListOrderedMap options, Node fieldNode, Node childNode, Map listOption,
+                               ExecutionContext ec) {
         ec.context.push(listOption)
-        String key = null
-        if (childNode."@key") {
-            key = ec.resource.evaluateStringExpand(childNode."@key", null)
-        } else if (listOption instanceof EntityValueImpl) {
-            String keyFieldName = listOption.getEntityDefinition().getPkFieldNames().get(0)
-            if (keyFieldName) key = ec.context.get(keyFieldName)
+        try {
+            String key = null
+            if (childNode."@key") {
+                key = ec.resource.evaluateStringExpand(childNode."@key", null)
+            } else if (listOption instanceof EntityValueImpl) {
+                String keyFieldName = listOption.getEntityDefinition().getPkFieldNames().get(0)
+                if (keyFieldName) key = ec.context.get(keyFieldName)
+            }
+            if (!key) key = ec.context.get(fieldNode."@name")
+            if (!key) return
+
+            String text = childNode."@text"
+            if (!text) {
+                if ((!(listOption instanceof EntityValueBase)
+                            || ((EntityValueBase) listOption).getEntityDefinition().isField("description"))
+                        && listOption["description"]) {
+                    options.put(key, listOption["description"])
+                } else {
+                    options.put(key, key)
+                }
+
+            } else {
+                String value = ec.resource.evaluateStringExpand(text, null)
+                if (value == "null") value = key
+                options.put(key, value)
+            }
+        } finally {
+            ec.context.pop()
         }
-        if (!key) key = ec.context.get(fieldNode."@name")
-        if (!key) return
-
-        String text = childNode."@text"
-        if (listOption["description"]) text = "\${description}"
-
-        String value = text ? ec.resource.evaluateStringExpand(text, null) : key
-        if (value == "null") value = key
-        options.put(key, value)
-        ec.context.pop()
     }
 }

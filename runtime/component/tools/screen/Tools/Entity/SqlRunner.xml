@@ -47,7 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
                                     limitReached = true
                                     break
                                 }
-                                record = [];
+                                record = []
                                 for (i = 1; i <= columnCount; i++) record.add(rs.getObject(i))
                                 records.add(record)
                             }
