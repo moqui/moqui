@@ -93,12 +93,14 @@ task addRuntime << {
     copy { from zipTree(warName); into file('wartemp') }
     // copy runtime directory (with a few exceptions) into a runtime directory in the war
     copy {
-        from fileTree(dir: '.', include: moquiRuntime+'/**', excludes: ['**/*.jar', moquiRuntime+'/lib/**', moquiRuntime+'/db/**', moquiRuntime+'/log/**'])
+        from fileTree(dir: '.', include: moquiRuntime+'/**', excludes: ['**/*.jar', moquiRuntime+'/classes/**', moquiRuntime+'/lib/**', moquiRuntime+'/db/**', moquiRuntime+'/log/**'])
         into file('wartemp')
     }
     // copy the jar files from runtime/lib
     copy { from fileTree(dir: moquiRuntime+'/lib', include: '*.jar'); into 'wartemp/WEB-INF/lib' }
-    // copy the jar files from components
+    // copy the classpath resource files from runtime/classes
+    copy { from fileTree(dir: moquiRuntime+'/classes', include: '**/*'); into 'wartemp/WEB-INF/classes' }
+    // TODO copy the jar files from components?
     // this copies whole directory tree, how to just get files? copy { from fileTree(dir: 'runtime/component', include: '**/*.jar'); into 'wartemp/WEB-INF/lib' }
     // add MoquiInit.properties fresh copy, just in case it was changed
     copy { from file('MoquiInit.properties'); into 'wartemp/WEB-INF/classes' }
