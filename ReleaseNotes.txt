@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.2.0 - 1 Nov 2012
+Release 1.2.0 - TBD
 ===========================================================================
 
 Moqui Framework release 1.2.0 is a minor new feature release and includes
