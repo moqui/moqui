@@ -314,6 +314,16 @@ public class MoquiStart extends ClassLoader {
     protected URL findResource(String resourceName) {
         if (resourceCache.containsKey(resourceName)) return resourceCache.get(resourceName);
 
+        // try the runtime/classes directory for conf files and such
+        String runtimePath = System.getProperty("moqui.runtime");
+        String fullPath = runtimePath + "/classes/" + resourceName;
+        File resourceFile = new File(fullPath);
+        if (resourceFile.exists()) try {
+            return resourceFile.toURI().toURL();
+        } catch (MalformedURLException e) {
+            System.out.println("Error making URL for [" + resourceName + "] in runtime classes directory [" + runtimePath + "/classes/" + "]: " + e.toString());
+        }
+
         for (JarFile jarFile : jarFileList) {
             JarEntry jarEntry = jarFile.getJarEntry(resourceName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
