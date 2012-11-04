@@ -73,7 +73,9 @@ This release includes:
   details in session between redirects, and changed entity and service
   validation to add ValidationErrors instead of plain error Strings
 - Screen in Tools app for SQL Query Run/View
-
+- Improved classpath overrides for configuration and such in the
+  runtime/classes directory for both add-runtime/addRuntime and executable
+  WAR file deployment approaches
 
 Non-backward-compatible changes:
 
