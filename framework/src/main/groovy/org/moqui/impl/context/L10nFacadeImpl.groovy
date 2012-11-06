@@ -20,6 +20,7 @@ import org.apache.commons.validator.routines.BigDecimalValidator
 import org.apache.commons.validator.routines.CalendarValidator
 
 public class L10nFacadeImpl implements L10nFacade {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(L10nFacadeImpl.class)
 
     final static BigDecimalValidator bigDecimalValidator = new BigDecimalValidator(false)
     final static CalendarValidator calendarValidator = new CalendarValidator()
@@ -53,9 +54,17 @@ public class L10nFacadeImpl implements L10nFacade {
 
     /** @see org.moqui.context.L10nFacade#formatCurrency(Object, String, int) */
     String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
+        logger.warn("formatCurrency amount=[${amount}], uomId=${uomId}")
+        if (amount == null) return ""
+        if (amount instanceof String) if (((String) amount).length() == 0) {
+            return ""
+        } else {
+            amount = new BigDecimal((String) amount)
+        }
+
         if (fractionDigits == null) fractionDigits = 2
         NumberFormat nf = NumberFormat.getCurrencyInstance(locale)
-        nf.setCurrency(Currency.getInstance(uomId))
+        if (uomId) nf.setCurrency(Currency.getInstance(uomId))
         nf.setMaximumFractionDigits(fractionDigits)
         nf.setMinimumFractionDigits(fractionDigits)
         return nf.format(amount)

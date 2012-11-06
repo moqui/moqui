@@ -782,7 +782,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign fieldValue = sri.getFieldValue(.node?parent?parent, "")>
     </#if>
     <#if .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, .node["@currency-unit-field"], 2)>
+        <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
     <#else>
         <#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>

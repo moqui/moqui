@@ -126,8 +126,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 (sd != null && sd.getAuthenticate() == "true"))
         if (sd != null && sd.getAuthenticate() == "anonymous-all") {
             eci.getArtifactExecution().setAnonymousAuthorizedAll()
+            eci.getUser().loginAnonymousIfNoUser()
         } else if (sd != null && sd.getAuthenticate() == "anonymous-view") {
             eci.getArtifactExecution().setAnonymousAuthorizedView()
+            eci.getUser().loginAnonymousIfNoUser()
         }
         // NOTE: don't require authz if the service def doesn't authenticate
         // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
@@ -253,6 +255,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
         eci.getArtifactExecution().pop()
+
+        if (sd != null && (sd.getAuthenticate() == "anonymous-all" || sd.getAuthenticate() == "anonymous-view")) {
+            eci.getUser().logoutAnonymousOnly()
+        }
 
         return result
     }

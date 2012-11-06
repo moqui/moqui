@@ -119,7 +119,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     void setAnonymousAuthorizedAll() {
         ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()
         aeii.authorizationInheritable = true
-        aeii.authorizedUserId = "_NA_"
+        aeii.authorizedUserId = eci.getUser().getUserId() ?: "_NA_"
         aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
         aeii.authorizedActionEnumId = "AUTHZA_ALL"
     }
@@ -127,7 +127,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     void setAnonymousAuthorizedView() {
         ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()
         aeii.authorizationInheritable = true
-        aeii.authorizedUserId = "_NA_"
+        aeii.authorizedUserId = eci.getUser().getUserId() ?: "_NA_"
         aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
         aeii.authorizedActionEnumId = "AUTHZA_VIEW"
     }

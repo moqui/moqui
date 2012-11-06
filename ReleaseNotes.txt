@@ -114,6 +114,10 @@ Bug Fixes:
 - Fixed file upload temporary file being deleted before being accessed/used
 - Fixed link with link-type=hidden-form within a form-single to not produce
   HTML with nested form elements
+- Fixed anonymous-all and anonymous-view authenticate options for services
+  to login as the _NA_ user so the called services requiring authentication
+  and permission will run as expected
+- Fixed display.@currency-unit-field attribute handling
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

@@ -281,11 +281,11 @@ class UserFacadeImpl implements UserFacade {
 
             // do this first so that the rest will be done as this user
             // just in case there is already a user authenticated push onto a stack to remember
-            this.usernameStack.addFirst(username)
-            this.internalUserAccount = null
-            this.internalUserGroupIdSet = null
-            this.internalArtifactTarpitCheckList = null
-            this.internalArtifactAuthzCheckList = null
+            usernameStack.addFirst(username)
+            internalUserAccount = null
+            internalUserGroupIdSet = null
+            internalArtifactTarpitCheckList = null
+            internalArtifactAuthzCheckList = null
 
             // after successful login trigger the after-login actions
             if (eci.web != null) eci.web.runAfterLoginActions()
@@ -307,10 +307,10 @@ class UserFacadeImpl implements UserFacade {
 
         if (usernameStack) {
             usernameStack.removeFirst()
-            this.internalUserAccount = null
-            this.internalUserGroupIdSet = null
-            this.internalArtifactTarpitCheckList = null
-            this.internalArtifactAuthzCheckList = null
+            internalUserAccount = null
+            internalUserGroupIdSet = null
+            internalArtifactTarpitCheckList = null
+            internalArtifactAuthzCheckList = null
         }
 
         if (eci.web != null) {
@@ -318,6 +318,26 @@ class UserFacadeImpl implements UserFacade {
             eci.web.session.removeAttribute("moqui.visitId")
         }
         currentUser.logout()
+    }
+
+    void loginAnonymousIfNoUser() {
+        if (usernameStack.size() == 0) {
+            usernameStack.addFirst("_NA_")
+            internalUserAccount = null
+            internalUserGroupIdSet = null
+            internalArtifactTarpitCheckList = null
+            internalArtifactAuthzCheckList = null
+        }
+    }
+
+    void logoutAnonymousOnly() {
+        if (usernameStack && usernameStack.getFirst() == "_NA_") {
+            usernameStack.removeFirst()
+            internalUserAccount = null
+            internalUserGroupIdSet = null
+            internalArtifactTarpitCheckList = null
+            internalArtifactAuthzCheckList = null
+        }
     }
 
     /* @see org.moqui.context.UserFacade#hasPermission(String) */
