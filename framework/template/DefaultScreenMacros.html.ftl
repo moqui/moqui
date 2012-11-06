@@ -322,93 +322,93 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
     </#if>
-        <#if formNode["field-layout"]?has_content>
-            <#assign fieldLayout = formNode["field-layout"][0]>
-            <fieldset class="form-single-outer">
-                <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
-                <#assign collapsible = (fieldLayout["@collapsible"]?if_exists == "true")>
-                <#assign collapsibleOpened = false>
-                <#list formNode["field-layout"][0]?children as layoutNode>
-                    <#if layoutNode?node_name == "field-ref">
-                      <#if collapsibleOpened>
-                        <#assign collapsibleOpened = false>
-                        </div>
-                        <script>$("#${accordionId}").accordion({ collapsible: true });</script>
-                        <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
-                      </#if>
-                        <#assign fieldRef = layoutNode["@name"]>
-                        <#assign fieldNode = "invalid">
-                        <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                        <#if fieldNode == "invalid">
-                            <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
-                        <#else>
-                            <@formSingleSubField fieldNode/>
-                        </#if>
-                    <#elseif layoutNode?node_name == "field-row">
-                      <#if collapsibleOpened>
-                        <#assign collapsibleOpened = false>
-                        </div>
-                        <script>$("#${accordionId}").accordion({ collapsible: true });</script>
-                        <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
-                      </#if>
-                        <div class="field-row ui-helper-clearfix">
-                        <#assign inFieldRow = true>
-                        <#list layoutNode["field-ref"] as rowFieldRefNode>
-                            <div class="field-row-item">
-                                <#assign fieldRef = rowFieldRefNode["@name"]>
-                                <#assign fieldNode = "invalid">
-                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                <#if fieldNode == "invalid">
-                                    <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
-                                <#else>
-                                    <@formSingleSubField fieldNode/>
-                                </#if>
-                            </div>
-                        </#list>
-                        <#assign inFieldRow = false>
-                        </div>
-                    <#elseif layoutNode?node_name == "field-group">
-                      <#if collapsible && !collapsibleOpened><#assign collapsibleOpened = true>
-                        <div id="${accordionId}">
-                      </#if>
-                        <h3><a href="#">${layoutNode["@title"]?default("Section " + layoutNode_index)}</a></h3>
-                        <div<#if layoutNode["@style"]?has_content> class="${layoutNode["@style"]}"</#if>>
-                            <#list layoutNode?children as groupNode>
-                                <#if groupNode?node_name == "field-ref">
-                                    <#assign fieldRef = groupNode["@name"]>
-                                    <#assign fieldNode = "invalid">
-                                    <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                    <@formSingleSubField fieldNode/>
-                                <#elseif groupNode?node_name == "field-row">
-                                    <div class="field-row ui-helper-clearfix">
-                                    <#list groupNode["field-ref"] as rowFieldRefNode>
-                                        <div class="field-row-item">
-                                            <#assign fieldRef = rowFieldRefNode["@name"]>
-                                            <#assign fieldNode = "invalid">
-                                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                            <#if fieldNode == "invalid">
-                                                <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
-                                            <#else>
-                                                <@formSingleSubField fieldNode/>
-                                            </#if>
-                                        </div>
-                                    </#list>
-                                    </div>
-                                </#if>
-                            </#list>
-                        </div>
-                    </#if>
-                </#list>
-                <#if collapsibleOpened>
+    <#if formNode["field-layout"]?has_content>
+        <#assign fieldLayout = formNode["field-layout"][0]>
+        <fieldset class="form-single-outer">
+            <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
+            <#assign collapsible = (fieldLayout["@collapsible"]?if_exists == "true")>
+            <#assign collapsibleOpened = false>
+            <#list formNode["field-layout"][0]?children as layoutNode>
+                <#if layoutNode?node_name == "field-ref">
+                  <#if collapsibleOpened>
+                    <#assign collapsibleOpened = false>
                     </div>
                     <script>$("#${accordionId}").accordion({ collapsible: true });</script>
+                    <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
+                  </#if>
+                    <#assign fieldRef = layoutNode["@name"]>
+                    <#assign fieldNode = "invalid">
+                    <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                    <#if fieldNode == "invalid">
+                        <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                    <#else>
+                        <@formSingleSubField fieldNode/>
+                    </#if>
+                <#elseif layoutNode?node_name == "field-row">
+                  <#if collapsibleOpened>
+                    <#assign collapsibleOpened = false>
+                    </div>
+                    <script>$("#${accordionId}").accordion({ collapsible: true });</script>
+                    <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
+                  </#if>
+                    <div class="field-row ui-helper-clearfix">
+                    <#assign inFieldRow = true>
+                    <#list layoutNode["field-ref"] as rowFieldRefNode>
+                        <div class="field-row-item">
+                            <#assign fieldRef = rowFieldRefNode["@name"]>
+                            <#assign fieldNode = "invalid">
+                            <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                            <#if fieldNode == "invalid">
+                                <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                            <#else>
+                                <@formSingleSubField fieldNode/>
+                            </#if>
+                        </div>
+                    </#list>
+                    <#assign inFieldRow = false>
+                    </div>
+                <#elseif layoutNode?node_name == "field-group">
+                  <#if collapsible && !collapsibleOpened><#assign collapsibleOpened = true>
+                    <div id="${accordionId}">
+                  </#if>
+                    <h3><a href="#">${layoutNode["@title"]?default("Section " + layoutNode_index)}</a></h3>
+                    <div<#if layoutNode["@style"]?has_content> class="${layoutNode["@style"]}"</#if>>
+                        <#list layoutNode?children as groupNode>
+                            <#if groupNode?node_name == "field-ref">
+                                <#assign fieldRef = groupNode["@name"]>
+                                <#assign fieldNode = "invalid">
+                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                                <@formSingleSubField fieldNode/>
+                            <#elseif groupNode?node_name == "field-row">
+                                <div class="field-row ui-helper-clearfix">
+                                <#list groupNode["field-ref"] as rowFieldRefNode>
+                                    <div class="field-row-item">
+                                        <#assign fieldRef = rowFieldRefNode["@name"]>
+                                        <#assign fieldNode = "invalid">
+                                        <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                                        <#if fieldNode == "invalid">
+                                            <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                                        <#else>
+                                            <@formSingleSubField fieldNode/>
+                                        </#if>
+                                    </div>
+                                </#list>
+                                </div>
+                            </#if>
+                        </#list>
+                    </div>
                 </#if>
-            </fieldset>
-        <#else>
-            <fieldset class="form-single-outer">
-                <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
-            </fieldset>
-        </#if>
+            </#list>
+            <#if collapsibleOpened>
+                </div>
+                <script>$("#${accordionId}").accordion({ collapsible: true });</script>
+            </#if>
+        </fieldset>
+    <#else>
+        <fieldset class="form-single-outer">
+            <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
+        </fieldset>
+    </#if>
     <#if !skipEnd></form></#if>
     <#if !skipStart>
             <script>$("#${formNode["@name"]}").validate();</script>
