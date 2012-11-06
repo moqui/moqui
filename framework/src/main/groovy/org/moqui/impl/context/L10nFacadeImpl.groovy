@@ -54,7 +54,6 @@ public class L10nFacadeImpl implements L10nFacade {
 
     /** @see org.moqui.context.L10nFacade#formatCurrency(Object, String, int) */
     String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
-        logger.warn("formatCurrency amount=[${amount}], uomId=${uomId}")
         if (amount == null) return ""
         if (amount instanceof String) if (((String) amount).length() == 0) {
             return ""
