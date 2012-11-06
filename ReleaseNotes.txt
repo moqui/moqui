@@ -43,6 +43,9 @@ This release includes:
     request via AJAX request and can depend on other field(s) to use as
     parameters and triggers for updating options on change, including
     example in the EditExample screen
+  - Added text-line.@format attribute like display.@format
+  - Field values are not automatically converted to strings before going
+    to the FTL file for more control over formatting
 - Service Facade
   - Inline and script services can leave out parameter values in the
     context and they will be picked up, instead of setting explicitly in

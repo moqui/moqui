@@ -465,8 +465,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 Will only format as currency if this is specified.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="format" type="xs:string">
-                <xs:annotation><xs:documentation>Used to format the output of Time/Date/Timestamp objects. With
-                    auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Used to format the output of Number/Time/Date/Timestamp/etc objects.
+                    With auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="encode" default="true" type="boolean">
                 <xs:annotation><xs:documentation>
@@ -585,6 +585,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="maxlength" type="xs:positiveInteger"/>
             <xs:attribute name="default-value" type="xs:string"/>
             <xs:attribute name="disabled" default="false" type="boolean"/>
+            <xs:attribute name="format" type="xs:string">
+                <xs:annotation><xs:documentation>Used to format the output of Number/Time/Date/Timestamp/etc objects.
+                    With auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="ac-transition" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>If specified the text-line will have auto-complete added to it with
                     this transition as the source of the auto-complete options.</xs:documentation></xs:annotation>
