@@ -631,9 +631,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
         return formNode
     }
-    FtlNodeWrapper getFtlFormNode(String formName) {
-        return FtlNodeWrapper.wrapNode(getFormNode(formName))
-    }
+    FtlNodeWrapper getFtlFormNode(String formName) { return FtlNodeWrapper.wrapNode(getFormNode(formName)) }
 
     boolean isFormUpload(String formName) {
         Node cachedFormNode = this.getFormNode(formName)
