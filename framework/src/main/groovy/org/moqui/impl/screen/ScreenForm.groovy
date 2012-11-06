@@ -158,6 +158,13 @@ class ScreenForm {
         mergeFieldNode(newFormNode, newFieldNode, false)
          */
 
+        // check form-single.field-layout and add any fields that are missing
+        if (newFormNode."field-layout") for (Node fieldNode in newFormNode."field") {
+            Node fieldLayoutNode = newFormNode."field-layout"[0]
+            if (!fieldLayoutNode.depthFirst().find({ it.name() == "field-ref" && it."@name" == fieldNode."@name" }))
+                addFieldToFieldLayout(newFormNode, fieldNode)
+        }
+
         if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
 
         // prep row-actions
@@ -358,7 +365,8 @@ class ScreenForm {
         return null
     }
 
-    protected void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode, ExecutionContextFactoryImpl ecfi) {
+    void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode,
+                          ExecutionContextFactoryImpl ecfi) {
         String serviceVerb = sd.verb
         //String serviceType = sd.serviceNode."@type"
         EntityDefinition nounEd = null
@@ -459,7 +467,7 @@ class ScreenForm {
         }
     }
 
-    protected void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
+    void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk", include == "all" || include == "nonpk")) {
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             Node subFieldNode = newFieldNode.appendNode("default-field")
@@ -652,28 +660,30 @@ class ScreenForm {
         } else {
             baseFormNode.append(deepCopy ? StupidUtilities.deepCopyNode(overrideFieldNode) : overrideFieldNode)
             // this is a new field... if the form has a field-layout element add a reference under that too
-            if (baseFormNode."field-layout") {
-                Node fieldLayoutNode = baseFormNode."field-layout"[0]
-                Long layoutSequenceNum = overrideFieldNode.attribute("layoutSequenceNum")
-                if (layoutSequenceNum == null) {
-                    fieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
-                } else {
-                    baseFormNode.remove(fieldLayoutNode)
-                    Node newFieldLayoutNode = baseFormNode.appendNode("field-layout", fieldLayoutNode.attributes())
-                    int index = 0
-                    boolean addedNode = false
-                    for (Node child in fieldLayoutNode.children()) {
-                        if (index == layoutSequenceNum) {
-                            newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
-                            addedNode = true
-                        }
-                        newFieldLayoutNode.append(child)
-                        index++
-                    }
-                    if (!addedNode) {
-                        newFieldLayoutNode.appendNode("field-ref", [name:overrideFieldNode."@name"])
-                    }
+            if (baseFormNode."field-layout") addFieldToFieldLayout(baseFormNode, overrideFieldNode)
+        }
+    }
+
+    void addFieldToFieldLayout(Node formNode, Node fieldNode) {
+        Node fieldLayoutNode = formNode."field-layout"[0]
+        Long layoutSequenceNum = fieldNode.attribute("layoutSequenceNum")
+        if (layoutSequenceNum == null) {
+            fieldLayoutNode.appendNode("field-ref", [name:fieldNode."@name"])
+        } else {
+            formNode.remove(fieldLayoutNode)
+            Node newFieldLayoutNode = formNode.appendNode("field-layout", fieldLayoutNode.attributes())
+            int index = 0
+            boolean addedNode = false
+            for (Node child in fieldLayoutNode.children()) {
+                if (index == layoutSequenceNum) {
+                    newFieldLayoutNode.appendNode("field-ref", [name:fieldNode."@name"])
+                    addedNode = true
                 }
+                newFieldLayoutNode.append(child)
+                index++
+            }
+            if (!addedNode) {
+                newFieldLayoutNode.appendNode("field-ref", [name:fieldNode."@name"])
             }
         }
     }
