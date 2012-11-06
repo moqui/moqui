@@ -814,7 +814,7 @@ class EntityFacadeImpl implements EntityFacade {
 
         // first get a bank if we don't have one already
         ArrayList<Long> bank = (ArrayList) this.entitySequenceBankCache.get(seqName)
-        if (bank == null || bank[0] > bank[1]) {
+        if (bank == null || bank[0] == null || bank[0] > bank[1]) {
             if (bank == null) {
                 bank = new ArrayList<Long>(2)
                 this.entitySequenceBankCache.put(seqName, bank)
