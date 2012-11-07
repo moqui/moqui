@@ -121,6 +121,7 @@ Bug Fixes:
   to login as the _NA_ user so the called services requiring authentication
   and permission will run as expected
 - Fixed display.@currency-unit-field attribute handling
+- Fixed XML Actions filter-map-list operation, wasn't quoting field names
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

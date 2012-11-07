@@ -61,7 +61,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "filter-map-list"><#if .node["field-map"]?has_content>
     StupidUtilities.filterMapList(${.node["@list"]}, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from"]?has_content>${fm["@from"]}<#else/>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
     </#if><#list .node["date-filter"] as df>
-    StupidUtilities.filterMapListByDate(${.node["@list"]}, ${df["@from-field-name"]?default("fromDate")}, ${df["@thru-field-name"]?default("thruDate")}, <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else/>ec.user.nowTimestamp</#if>)
+    StupidUtilities.filterMapListByDate(${.node["@list"]}, "${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else>ec.user.nowTimestamp</#if>)
     </#list>
 </#macro>
 
