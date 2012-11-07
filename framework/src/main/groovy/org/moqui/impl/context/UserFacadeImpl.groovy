@@ -320,13 +320,16 @@ class UserFacadeImpl implements UserFacade {
         currentUser.logout()
     }
 
-    void loginAnonymousIfNoUser() {
+    boolean loginAnonymousIfNoUser() {
         if (usernameStack.size() == 0) {
             usernameStack.addFirst("_NA_")
             internalUserAccount = null
             internalUserGroupIdSet = null
             internalArtifactTarpitCheckList = null
             internalArtifactAuthzCheckList = null
+            return true
+        } else {
+            return false
         }
     }
 
