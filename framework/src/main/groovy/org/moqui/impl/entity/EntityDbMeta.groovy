@@ -144,7 +144,9 @@ class EntityDbMeta {
             String pkName = "PK_" + ed.getTableName()
             int constraintNameClipLength = (databaseNode."@constraint-name-clip-length"?:"30") as int
             if (pkName.length() > constraintNameClipLength) pkName = pkName.substring(0, constraintNameClipLength)
-            sql.append("CONSTRAINT ").append(ed.getSchemaName() ? ed.getSchemaName() + "." : "").append(pkName)
+            sql.append("CONSTRAINT ")
+            if (databaseNode."@use-schema-for-all" == "true") sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
+            sql.append(pkName)
         }
         sql.append(" PRIMARY KEY (")
         boolean isFirstPk = true
@@ -239,8 +241,9 @@ class EntityDbMeta {
         for (Node indexNode in ed.entityNode."index") {
             StringBuilder sql = new StringBuilder("CREATE ")
             if (databaseNode."@use-indexes-unique" != "false" && indexNode."@unique" == "true") sql.append("UNIQUE ")
-            sql.append("INDEX ").append(ed.getSchemaName() ? ed.getSchemaName() + "." : "").append(indexNode."@name")
-            sql.append(" ON ").append(ed.getFullTableName())
+            sql.append("INDEX ")
+            if (databaseNode."@use-schema-for-all" == "true") sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
+            sql.append(indexNode."@name").append(" ON ").append(ed.getFullTableName())
 
             sql.append(" (")
             boolean isFirst = true
@@ -279,7 +282,7 @@ class EntityDbMeta {
             indexName.insert(0, "IDX")
 
             StringBuilder sql = new StringBuilder("CREATE INDEX ")
-            sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
+            if (databaseNode."@use-schema-for-all" == "true") sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
             sql.append(indexName.toString()).append(" ON ").append(ed.getFullTableName())
 
             sql.append(" (")
@@ -410,8 +413,9 @@ class EntityDbMeta {
                 }
                 sql.append(")")
             } else {
-                sql.append("CONSTRAINT ").append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
-                        .append(constraintName.toString()).append(" FOREIGN KEY (")
+                sql.append("CONSTRAINT ")
+                if (databaseNode."@use-schema-for-all" == "true") sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
+                sql.append(constraintName.toString()).append(" FOREIGN KEY (")
                 boolean isFirst = true
                 for (String fieldName in keyMapKeys) {
                     if (isFirst) isFirst = false else sql.append(", ")

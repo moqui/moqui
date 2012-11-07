@@ -58,6 +58,8 @@ This release includes:
   - Added datasource.@startup-add-missing option; set to true to check
     tables for all entities in the database on startup and create missing
     ones
+  - Added database.@use-schema-for-all option; set to true to include the
+    schema name for non-table meta data (constraints, indexes, etc)
   - Entity find on a view-entity now automatically determines which
     member-entities to join in based on the fields selected, in order by,
     and in conditions; with this in place the need for DynamicViewEntity is

@@ -332,6 +332,7 @@
             <database-type type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
         <database name="db2" join-style="ansi" offset-style="limit" default-isolation-level="ReadCommitted"
+                  use-schema-for-all="true"
                   default-test-query="SELECT 1 FROM SYSIBM.SYSDUMMY1"
                   default-jdbc-driver="com.ibm.db2.jcc.DB2Driver"
                   default-xa-ds-class="com.ibm.db2.jcc.DB2XADataSource">
@@ -343,6 +344,7 @@
             <database-type type="currency-precise" sql-type="DECIMAL(23,3)"/>
         </database>
         <database name="db2i" join-style="ansi" offset-style="cursor" default-isolation-level="ReadCommitted"
+                  use-schema-for-all="true"
                   default-test-query="SELECT 1 FROM SYSIBM.SYSDUMMY1"
                   default-jdbc-driver="com.ibm.as400.access.AS400JDBCDriver"
                   default-xa-ds-class="com.ibm.as400.access.AS400JDBCXADataSource">
