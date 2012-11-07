@@ -26,7 +26,7 @@ public class LoggerFacadeImpl implements LoggerFacade {
     }
 
     public void log(String levelStr, String message, Throwable thrown) {
-        int level
+        int level = OFF_INT
         switch (levelStr) {
             case "trace": level = TRACE_INT; break;
             case "debug": level = DEBUG_INT; break;
@@ -75,6 +75,12 @@ public class LoggerFacadeImpl implements LoggerFacade {
             break;
         }
     }
+
+    void trace(String message) { log(TRACE_INT, message, null) }
+    void debug(String message) { log(DEBUG_INT, message, null) }
+    void info(String message) { log(INFO_INT, message, null) }
+    void warn(String message) { log(WARN_INT, message, null) }
+    void error(String message) { log(ERROR_INT, message, null) }
 
     /** @see org.moqui.context.LoggerFacade#logEnabled(int) */
     public boolean logEnabled(int level) {

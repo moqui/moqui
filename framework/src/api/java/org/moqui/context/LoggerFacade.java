@@ -49,6 +49,12 @@ public interface LoggerFacade {
      */
     void log(int level, String message, Throwable thrown);
 
+    void trace(String message);
+    void debug(String message);
+    void info(String message);
+    void warn(String message);
+    void error(String message);
+
     /** Is the given logging level enabled? */
     boolean logEnabled(int level);
 }
