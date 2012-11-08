@@ -120,10 +120,12 @@ Bug Fixes:
 - Fixed link with link-type=hidden-form within a form-single to not produce
   HTML with nested form elements
 - Fixed anonymous-all and anonymous-view authenticate options for services
-  to login as the _NA_ user so the called services requiring authentication
-  and permission will run as expected
+  and screens to login as the _NA_ user so the called services requiring
+  authentication and permission will run as expected
 - Fixed display.@currency-unit-field attribute handling
 - Fixed XML Actions filter-map-list operation, wasn't quoting field names
+- Fixed bug where authorization failures were getting logged but not
+  throwing an exception to stop operations
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

@@ -181,14 +181,21 @@ class ScreenDefinition {
         // NOTE: don't require authz if the screen doesn't require auth
         sri.ec.artifactExecution.push(new ArtifactExecutionInfoImpl(location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
                 isTargetScreen ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false)
+
+        boolean loggedInAnonymous = false
         if (screenNode."@require-authentication" == "anonymous-all") {
             sri.ec.artifactExecution.setAnonymousAuthorizedAll()
+            loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
         } else if (screenNode."@require-authentication" == "anonymous-view") {
             sri.ec.artifactExecution.setAnonymousAuthorizedView()
+            loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
         }
+
         rootSection.render(sri)
+
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
         sri.ec.artifactExecution.pop()
+        if (loggedInAnonymous) sri.ec.getUser().logoutAnonymousOnly()
     }
 
     ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
@@ -329,6 +336,15 @@ class ScreenDefinition {
                     (!parentScreen.screenNode."@require-authentication" ||
                      parentScreen.screenNode."@require-authentication" == "true"))
 
+            boolean loggedInAnonymous = false
+            if (parentScreen.screenNode."@require-authentication" == "anonymous-all") {
+                sri.ec.artifactExecution.setAnonymousAuthorizedAll()
+                loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
+            } else if (parentScreen.screenNode."@require-authentication" == "anonymous-view") {
+                sri.ec.artifactExecution.setAnonymousAuthorizedView()
+                loggedInAnonymous = sri.ec.getUser().loginAnonymousIfNoUser()
+            }
+
             // put parameters in the context
             if (sri.ec.web) {
                 for (ParameterItem pi in parentScreen.parameterMap.values()) {
@@ -364,6 +380,7 @@ class ScreenDefinition {
             // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally
             // clause because if there is an error this will help us know how we got there
             sri.ec.artifactExecution.pop()
+            if (loggedInAnonymous) sri.ec.getUser().logoutAnonymousOnly()
 
             return ri
         }

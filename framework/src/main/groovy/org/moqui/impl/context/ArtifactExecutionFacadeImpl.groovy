@@ -104,6 +104,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         if (!isPermitted(username, aeii, lastAeii, requiresAuthz, true, eci.getUser().getNowTimestamp())) {
             Exception e = new ArtifactAuthorizationException("User [${username}] is not authorized for ${artifactActionDescriptionMap.get(aeii.getActionEnumId())} on ${artifactTypeDescriptionMap.get(aeii.getTypeEnumId())?:aeii.getTypeEnumId()} [${aeii.getName()}]")
             logger.warn("Artifact authorization failed", e)
+            throw e
         }
 
         // NOTE: if needed the isPermitted method will set additional info in aeii
@@ -390,7 +391,12 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             }
         } else {
             // no perms found for this, only allow if the current AEI has inheritable auth and same user, and (ALL action or same action)
-            if (lastAeii != null && lastAeii.authorizationInheritable && lastAeii.authorizedUserId == userId &&
+
+            // NOTE: this condition allows any user to be authenticated and allow inheritance if the last artifact was
+            //       logged in anonymously (ie userId="_NA_"); consider alternate approaches; an alternate approach is
+            //       in place when no user is logged in, but when one is this is the only solution so far
+            if (lastAeii != null && lastAeii.authorizationInheritable &&
+                    (lastAeii.authorizedUserId == "_NA_" || lastAeii.authorizedUserId == userId) &&
                     (lastAeii.authorizedActionEnumId == "AUTHZA_ALL" || lastAeii.authorizedActionEnumId == aeii.getActionEnumId())) {
                 aeii.copyAuthorizedInfo(lastAeii)
                 // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted inheritable and same user and ALL or same action for user ${userId} - ${aeii}")
