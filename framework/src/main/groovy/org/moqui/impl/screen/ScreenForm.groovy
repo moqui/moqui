@@ -492,7 +492,7 @@ class ScreenForm {
         Map oneRelKeyMap = null
         for (Node rn in ed.entityNode."relationship") {
             Map km = ed.getRelationshipExpandedKeyMap(rn)
-            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many") {
+            if (km.size() == 1 && km.containsKey(fieldName) && rn."@type" != "many" && rn."@is-one-reverse" != "true") {
                 oneRelNode = rn
                 oneRelKeyMap = km
             }
@@ -590,9 +590,12 @@ class ScreenForm {
             } else {
                 headerFieldNode.appendNode("text-find")
             }
-            if (oneRelNode != null) subFieldNode.appendNode("display-entity",
-                    ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
-            else subFieldNode.appendNode("display")
+            if (oneRelNode != null) {
+                subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name",
+                        "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
+            } else {
+                subFieldNode.appendNode("display")
+            }
             break
         case "hidden":
             subFieldNode.appendNode("hidden")
