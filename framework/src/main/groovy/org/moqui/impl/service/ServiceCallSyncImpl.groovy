@@ -203,7 +203,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // authentication
             sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
             // NOTE: auto user login done above, before first authz check
-            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId())
+            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId() && !eci.getUser().getLoggedInAnonymous())
                 eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
 
             // if error in auth or for other reasons, return now with no results

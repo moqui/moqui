@@ -43,6 +43,9 @@ class UserFacadeImpl implements UserFacade {
     protected EntityList internalArtifactTarpitCheckList = null
     protected EntityList internalArtifactAuthzCheckList = null
 
+    /** This is set instead of adding _NA_ user as logged in to pass authc tests but not generally behave as if a user is logged in */
+    protected boolean loggedInAnonymous = false
+
     /** The Shiro Subject (user) */
     protected Subject currentUser = null
 
@@ -321,27 +324,15 @@ class UserFacadeImpl implements UserFacade {
     }
 
     boolean loginAnonymousIfNoUser() {
-        if (usernameStack.size() == 0) {
-            usernameStack.addFirst("_NA_")
-            internalUserAccount = null
-            internalUserGroupIdSet = null
-            internalArtifactTarpitCheckList = null
-            internalArtifactAuthzCheckList = null
+        if (usernameStack.size() == 0 && !loggedInAnonymous) {
+            loggedInAnonymous = true
             return true
         } else {
             return false
         }
     }
-
-    void logoutAnonymousOnly() {
-        if (usernameStack && usernameStack.getFirst() == "_NA_") {
-            usernameStack.removeFirst()
-            internalUserAccount = null
-            internalUserGroupIdSet = null
-            internalArtifactTarpitCheckList = null
-            internalArtifactAuthzCheckList = null
-        }
-    }
+    void logoutAnonymousOnly() { loggedInAnonymous = false }
+    boolean getLoggedInAnonymous() { return loggedInAnonymous }
 
     /* @see org.moqui.context.UserFacade#hasPermission(String) */
     boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, getNowTimestamp(), eci) }

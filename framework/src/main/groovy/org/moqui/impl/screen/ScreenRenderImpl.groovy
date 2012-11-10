@@ -415,9 +415,32 @@ class ScreenRenderImpl implements ScreenRender {
         long screenStartTime = System.currentTimeMillis()
         boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
         try {
+
             // before we kick-off rendering run all pre-actions
-            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+            Iterator<ScreenDefinition> screenDefIterator = screenUrlInfo.screenRenderDefList.iterator()
+            ScreenDefinition sd = null
+            while (screenDefIterator.hasNext()) {
+                sd = screenDefIterator.next()
+                // check authz first, including anonymous-* handling so that permissions and auth are in place
+                // NOTE: don't require authz if the screen doesn't require auth
+                Node screenNode = sd.getScreenNode()
+                ec.artifactExecution.push(new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
+                        !screenDefIterator.hasNext() ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false)
+
+                boolean loggedInAnonymous = false
+                if (screenNode."@require-authentication" == "anonymous-all") {
+                    ec.artifactExecution.setAnonymousAuthorizedAll()
+                    loggedInAnonymous = ec.getUser().loginAnonymousIfNoUser()
+                } else if (screenNode."@require-authentication" == "anonymous-view") {
+                    ec.artifactExecution.setAnonymousAuthorizedView()
+                    loggedInAnonymous = ec.getUser().loginAnonymousIfNoUser()
+                }
+
                 if (sd.preActions != null) sd.preActions.run(ec)
+
+                // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
+                ec.artifactExecution.pop()
+                if (loggedInAnonymous) ec.getUser().logoutAnonymousOnly()
             }
             if (response != null) {
                 response.setContentType(this.outputContentType)
@@ -467,7 +490,8 @@ class ScreenRenderImpl implements ScreenRender {
 
         // if screen requires auth and there is not active user redirect to login screen, save this request
         if (logger.traceEnabled) logger.trace("Checking screen [${currentSd.location}] for require-authentication, current user is [${ec.user.userId}]")
-        if ((!(currentSd.screenNode?."@require-authentication") || currentSd.screenNode?."@require-authentication" == "true") && !ec.user.userId) {
+        if ((!(currentSd.screenNode?."@require-authentication") || currentSd.screenNode?."@require-authentication" == "true")
+                && !ec.getUser().getUserId() && !ec.getUser().getLoggedInAnonymous()) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
             if (ec.web) {
