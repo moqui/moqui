@@ -34,6 +34,7 @@ class ScreenDefinition {
     protected Map<String, TransitionItem> transitionByName = new HashMap()
     protected Map<String, SubscreensItem> subscreensByName = new HashMap()
 
+    protected XmlAction alwaysActions = null
     protected XmlAction preActions = null
 
     protected ScreenSection rootSection = null
@@ -52,6 +53,10 @@ class ScreenDefinition {
         // parameter
         for (Node parameterNode in screenNode."parameter")
             parameterByName.put(parameterNode."@name", new ParameterItem(parameterNode, location))
+        // prep always-actions
+        if (screenNode."always-actions") {
+            alwaysActions = new XmlAction(sfi.ecfi, (Node) screenNode."always-actions"[0], location + ".always_actions")
+        }
         // transition
         for (Node transitionNode in screenNode."transition") {
             TransitionItem ti = new TransitionItem(transitionNode, this)

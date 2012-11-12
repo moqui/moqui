@@ -16,8 +16,11 @@ import org.moqui.impl.StupidUtilities
 <#macro actions>
 <#recurse/>
 </#macro>
-<#macro "pre-actions">
+<#macro "always-actions">
 <#recurse/>
+</#macro>
+<#macro "pre-actions">
+    <#recurse/>
 </#macro>
 <#macro "row-actions">
 <#recurse/>

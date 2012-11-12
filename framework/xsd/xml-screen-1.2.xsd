@@ -55,6 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         with their own parameter sub-elements.
                     </xs:documentation></xs:annotation>
                 </xs:element>
+                <xs:element ref="always-actions" minOccurs="0"/>
                 <xs:element ref="transition" minOccurs="0" maxOccurs="unbounded"/>
                 <xs:element ref="subscreens" minOccurs="0"/>
                 <xs:element ref="pre-actions" minOccurs="0"/>
@@ -137,6 +138,15 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- TABLED, not to be part of 1.0: <xs:attribute name="http-no-cache" default="false" type="boolean"/> -->
             <!-- NOTE: Right now we send some cache headers, could add config for cache headers for screen,
                  static screen content, template screen content -->
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="always-actions">
+        <xs:annotation><xs:documentation>These actions always run when this screen appears in a screen path, including
+            both screen rendering and transition running. One difference between this and the pre-actions element is
+            that this runs before transitions are processed while pre-actions do not. The always-actions also run for
+            all screens in a path while the pre-actions only run for screens that will be rendered.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="pre-actions">

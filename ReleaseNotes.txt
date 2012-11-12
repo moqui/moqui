@@ -46,6 +46,9 @@ This release includes:
   - Added text-line.@format attribute like display.@format
   - Field values are not automatically converted to strings before going
     to the FTL file for more control over formatting
+  - Added screen.always-actions element with actions that will run
+    whenever the screen is in the path, whether rendered or not, and
+    before both rendering screens and running transitions
 - Service Facade
   - Inline and script services can leave out parameter values in the
     context and they will be picked up, instead of setting explicitly in
