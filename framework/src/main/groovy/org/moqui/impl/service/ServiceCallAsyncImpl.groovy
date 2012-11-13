@@ -83,7 +83,7 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
             ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
             sd.convertValidateCleanParameters(this.parameters, eci)
             // if error(s) in parameters, return now with no results
-            if (eci.message.errors) return
+            if (eci.getMessage().hasError()) return
         }
 
         // NOTE: is this the best way to get a unique job name? (needed to register a listener below)

@@ -644,7 +644,7 @@ abstract class EntityValueBase implements EntityValue {
                 for (EntityValueImpl ev in el) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
             } else {
                 EntityValueImpl ev = (EntityValueImpl) findRelatedOne((String) relInfo.title+relInfo.relatedEntityName, false, false)
-                valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
+                if (ev != null) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
             }
 
             finishedRelationshipNames.add(relInfo.title+relInfo.relatedEntityName)

@@ -45,7 +45,7 @@ class EntityEcaRule {
     void runIfMatches(String entityName, Map fieldValues, String operation, boolean before, ExecutionContext ec) {
         // see if we match this event and should run
         if (entityName != eecaNode."@entity") return
-        if (ec.message.errors && eecaNode."@run-on-error" != "true") return
+        if (ec.getMessage().hasError() && eecaNode."@run-on-error" != "true") return
         if (before && eecaNode."@run-before" != "true") return
         if (!before && eecaNode."@run-before" == "true") return
 

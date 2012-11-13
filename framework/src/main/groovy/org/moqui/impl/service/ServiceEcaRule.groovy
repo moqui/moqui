@@ -53,7 +53,7 @@ class ServiceEcaRule {
         // see if we match this event and should run
         if (serviceName != secaNode."@service") return
         if (when != secaNode."@when") return
-        if (ec.message.errors && secaNode."@run-on-error" != "true") return
+        if (ec.getMessage().hasError() && secaNode."@run-on-error" != "true") return
 
         standaloneRun(parameters, results, ec)
     }

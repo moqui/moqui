@@ -319,8 +319,7 @@ class ScreenRenderImpl implements ScreenRender {
                 if (ec.web) {
                     ((WebFacadeImpl) ec.web).saveMessagesToSession()
                     if (ri.saveParameters) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
-                    if (ec.message.errors || ec.message.validationErrors)
-                        ((WebFacadeImpl) ec.web).saveErrorParametersToSession()
+                    if (ec.message.hasError()) ((WebFacadeImpl) ec.web).saveErrorParametersToSession()
                 }
 
                 if (urlType == "plain") {

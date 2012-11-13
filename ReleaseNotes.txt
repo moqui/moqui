@@ -80,6 +80,8 @@ This release includes:
   and considering the ec.message.validationErrors list for storing error
   details in session between redirects, and changed entity and service
   validation to add ValidationErrors instead of plain error Strings
+- Added MessageFacade.hasError() method to check for error messages or
+  validation errors, and more reliably handle future forms of errors
 - Screen in Tools app for SQL Query Run/View
 - Improved classpath overrides for configuration and such in the
   runtime/classes directory for both add-runtime/addRuntime and executable
@@ -131,6 +133,8 @@ Bug Fixes:
   throwing an exception to stop operations
 - Fixed issue where the root screen was not added to the screenPathDefList
   causing incorrect push on the artifact facade's stack
+- Fixed issue where the last statement of XML Actions might have been
+  unintentionally considered to be the return/result Map
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

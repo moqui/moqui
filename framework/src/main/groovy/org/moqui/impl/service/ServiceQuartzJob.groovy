@@ -42,15 +42,13 @@ class ServiceQuartzJob implements Job {
             }
         }
 
-        if (ec.message.errors) {
+        if (ec.getMessage().hasError()) {
             StringBuilder sb = new StringBuilder()
             sb.append("Error calling service [${serviceName}] with parameters [${parameters}]\n")
-            for (String message in ec.message.errors) {
-                sb.append(message).append("\n")
-            }
+            sb.append(ec.getMessage().getErrorsString())
             logger.error(sb.toString())
 
-            // TODO handle retry on error with max-retry
+            // TODO handle retry on error with max-retry?
         }
 
         ec.destroy()

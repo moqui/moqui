@@ -100,7 +100,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
             ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
             sd.convertValidateCleanParameters(this.parameters, eci)
             // if error(s) in parameters, return now with no results
-            if (eci.message.errors) return
+            if (eci.getMessage().hasError()) return
         }
 
         // NOTE: get existing job based on jobName/serviceName pair IFF a jobName is specified

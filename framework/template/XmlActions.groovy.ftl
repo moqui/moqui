@@ -15,15 +15,23 @@ import org.moqui.impl.StupidUtilities
 
 <#macro actions>
 <#recurse/>
+// make sure the last statement is not considered the return value
+return;
 </#macro>
 <#macro "always-actions">
 <#recurse/>
+// make sure the last statement is not considered the return value
+return;
 </#macro>
 <#macro "pre-actions">
-    <#recurse/>
+<#recurse/>
+// make sure the last statement is not considered the return value
+return;
 </#macro>
 <#macro "row-actions">
 <#recurse/>
+// make sure the last statement is not considered the return value
+return;
 </#macro>
 
 <#-- NOTE should we handle out-map?has_content and async!=false with a ServiceResultWaiter? -->

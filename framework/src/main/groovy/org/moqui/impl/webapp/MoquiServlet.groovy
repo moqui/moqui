@@ -66,7 +66,7 @@ class MoquiServlet extends HttpServlet {
             logger.warn("Web Resource Not Found: " + e.message)
             response.sendError(404, e.message)
         } catch (Throwable t) {
-            if (ec.message.errors) {
+            if (ec.message.hasError()) {
                 String errorsString = ec.message.errorsString
                 logger.error(errorsString, t)
                 response.sendError(500, errorsString)

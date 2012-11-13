@@ -178,6 +178,7 @@ public class ContextStack implements Map<Object, Object> {
     /** @see java.util.Map#keySet() */
     public Set<Object> keySet() {
         Set<Object> resultSet = new HashSet<Object>();
+        resultSet.add("context");
         for (Map<Object,Object> curMap: stackList) {
             resultSet.addAll(curMap.keySet());
         }

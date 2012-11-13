@@ -554,7 +554,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 ahp.parameterString = ps.toString()
             }
             if (outputSize != null) ahp.outputSize = outputSize
-            if (eci.message.errors) {
+            if (eci.getMessage().hasError()) {
                 ahp.wasError = "Y"
                 StringBuilder errorMessage = new StringBuilder()
                 for (String curErr in eci.message.errors) errorMessage.append(curErr).append(";")

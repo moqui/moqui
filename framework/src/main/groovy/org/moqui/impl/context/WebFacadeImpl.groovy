@@ -249,12 +249,12 @@ class WebFacadeImpl implements WebFacade {
     /** @see org.moqui.context.WebFacade#sendJsonResponse(Object) */
     void sendJsonResponse(Object responseObj) {
         JsonBuilder jb = new JsonBuilder()
-        if (eci.message.errors) {
+        if (eci.getMessage().hasError()) {
             // if there are return those
             Map responseMap = new HashMap()
             // if the responseObj is a Map add all of it's data
             if (responseObj instanceof Map) responseMap.putAll((Map) responseObj)
-            responseMap.put("errors", eci.message.errors)
+            responseMap.put("errors", eci.message.errorsString)
             jb.call(responseMap)
 
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)

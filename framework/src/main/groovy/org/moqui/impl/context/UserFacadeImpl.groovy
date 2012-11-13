@@ -297,7 +297,7 @@ class UserFacadeImpl implements UserFacade {
             //     UnknownAccountException, IncorrectCredentialsException, ExpiredCredentialsException,
             //     CredentialsException, LockedAccountException, DisabledAccountException, ExcessiveAttemptsException
             eci.message.addError(ae.message)
-            logger.warn("Login failure: ${eci.message.errors}", ae)
+            logger.warn("Login failure: ${eci.message.errorsString}", ae)
             return false
         }
 

@@ -34,16 +34,19 @@ public class MessageFacadeImpl implements MessageFacade {
 
     /** @see org.moqui.context.MessageFacade#getErrors() */
     List<String> getErrors() { return this.errorList }
-    String getErrorsString() {
-        StringBuilder errorBuilder = new StringBuilder()
-        for (String errorMessage in errorList) errorBuilder.append(errorMessage).append("\n")
-        return errorBuilder.toString()
-    }
     void addError(String error) { if (error) this.errorList.add(error) }
 
     /** @see org.moqui.context.MessageFacade#getValidationErrors() */
     List<ValidationError> getValidationErrors() { return this.validationErrorList }
     void addValidationError(String form, String field, String message, Throwable nested) {
         this.validationErrorList.add(new ValidationError(form, field, message, nested))
+    }
+
+    boolean hasError() { return errorList || validationErrorList }
+    String getErrorsString() {
+        StringBuilder errorBuilder = new StringBuilder()
+        for (String errorMessage in errorList) errorBuilder.append(errorMessage).append("\n")
+        for (ValidationError validationError in validationErrorList) errorBuilder.append("${validationError.message} (for field ${validationError.field}${validationError.form ? ' on form ' + validationError : ''})").append("\n")
+        return errorBuilder.toString()
     }
 }

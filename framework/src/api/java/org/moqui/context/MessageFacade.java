@@ -28,10 +28,6 @@ public interface MessageFacade {
 
     /** A freely modifiable List of error messages that will be shown to the user. */
     List<String> getErrors();
-    /** Make a single String with all error messages separated by the new-line character.
-     * @return String with all error messages.
-     */
-    String getErrorsString();
     /** Add a error message for the user to see.
      * NOTE: system errors not meant for the user should be thrown as exceptions instead.
      * @param error The error message to add
@@ -43,4 +39,11 @@ public interface MessageFacade {
      */
     List<ValidationError> getValidationErrors();
     void addValidationError(String form, String field, String message, Throwable nested);
+
+    /** See if there is are any errors. Checks both error strings and validation errors. */
+    boolean hasError();
+    /** Make a single String with all error messages separated by the new-line character.
+     * @return String with all error messages.
+     */
+    String getErrorsString();
 }

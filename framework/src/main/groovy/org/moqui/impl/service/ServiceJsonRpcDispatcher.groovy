@@ -56,9 +56,9 @@ public class ServiceJsonRpcDispatcher {
         Map result = eci.service.sync().name(sd.serviceName).parameters(params).call()
 
         String jsonStr
-        if (eci.message.errors) {
-            logger.warn("Got errors in JSON-RPC call to service [${sd.serviceName}]: ${eci.message.errors}")
-            JSONRPC2Response respOut = new JSONRPC2Response(eci.message.errors, jrr.getID())
+        if (eci.getMessage().hasError()) {
+            logger.warn("Got errors in JSON-RPC call to service [${sd.serviceName}]: ${eci.message.errorsString}")
+            JSONRPC2Response respOut = new JSONRPC2Response(eci.message.errorsString, jrr.getID())
             jsonStr = respOut.toString()
         } else {
             JSONRPC2Response respOut = new JSONRPC2Response(result, jrr.getID())

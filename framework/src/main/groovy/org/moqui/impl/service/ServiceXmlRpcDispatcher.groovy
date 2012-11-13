@@ -111,7 +111,7 @@ public class ServiceXmlRpcDispatcher extends XmlRpcHttpServer {
             }
 
             Map result = eci.service.sync().name(sd.serviceName).parameters(params).call()
-            if (eci.message.errors) {
+            if (eci.getMessage().hasError()) {
                 throw new XmlRpcException(eci.message.errorsString)
             }
 
