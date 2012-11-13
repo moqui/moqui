@@ -129,6 +129,8 @@ Bug Fixes:
 - Fixed XML Actions filter-map-list operation, wasn't quoting field names
 - Fixed bug where authorization failures were getting logged but not
   throwing an exception to stop operations
+- Fixed issue where the root screen was not added to the screenPathDefList
+  causing incorrect push on the artifact facade's stack
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

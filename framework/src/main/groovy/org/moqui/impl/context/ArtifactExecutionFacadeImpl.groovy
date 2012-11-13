@@ -121,7 +121,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()
         aeii.authorizationInheritable = true
         aeii.authorizedUserId = eci.getUser().getUserId() ?: "_NA_"
-        aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
+        if (aeii.authorizedAuthzTypeId != "AUTHZT_ALWAYS") aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
         aeii.authorizedActionEnumId = "AUTHZA_ALL"
     }
 
@@ -129,8 +129,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()
         aeii.authorizationInheritable = true
         aeii.authorizedUserId = eci.getUser().getUserId() ?: "_NA_"
-        aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
-        aeii.authorizedActionEnumId = "AUTHZA_VIEW"
+        if (aeii.authorizedAuthzTypeId != "AUTHZT_ALWAYS") aeii.authorizedAuthzTypeId = "AUTHZT_ALLOW"
+        if (aeii.authorizedActionEnumId != "AUTHZA_ALL") aeii.authorizedActionEnumId = "AUTHZA_VIEW"
     }
 
     boolean disableAuthz() { boolean alreadyDisabled = this.authzDisabled; this.authzDisabled = true; return alreadyDisabled }

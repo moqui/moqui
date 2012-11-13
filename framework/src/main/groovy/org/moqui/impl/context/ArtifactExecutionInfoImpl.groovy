@@ -13,6 +13,7 @@ package org.moqui.impl.context
 
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityValue
+import org.moqui.BaseException
 
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
@@ -23,11 +24,13 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String authorizedAuthzTypeId = null
     protected String authorizedActionEnumId = null
     protected boolean authorizationInheritable = false
+    //protected Exception createdLocation = null
 
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
         this.typeEnumId = typeEnumId
         this.actionEnumId = actionEnumId ?: "AUTHZA_ALL"
+        //createdLocation = new Exception("Create AEII location for ${name}, type ${typeEnumId}, action ${actionEnumId}")
     }
 
     /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
