@@ -263,6 +263,7 @@ class ScreenUrlInfo {
 
         // start the render list with the from/base SD
         screenRenderDefList.add(fromSd)
+        screenPathDefList.add(fromSd)
 
         // loop through path for various things: check validity, see if we can do a transition short-cut and go right
         //     to its response url, etc
