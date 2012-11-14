@@ -271,10 +271,15 @@ class ScreenRenderImpl implements ScreenRender {
                 throw t
             } finally {
                 try {
-                    if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace())
-                        sfi.ecfi.transactionFacade.commit()
+                    if (sfi.ecfi.transactionFacade.isTransactionInPlace()) {
+                        if (ec.getMessage().hasError()) {
+                            sfi.ecfi.transactionFacade.rollback(beganTransaction, ec.getMessage().getErrorsString(), null)
+                        } else {
+                            sfi.ecfi.transactionFacade.commit(beganTransaction)
+                        }
+                    }
                 } catch (Exception e) {
-                    logger.error("Error committing screen transition transaction", e)
+                    logger.error("Error ending screen transition transaction", e)
                 }
 
                 if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
@@ -286,7 +291,7 @@ class ScreenRenderImpl implements ScreenRender {
 
             if (ri == null) throw new IllegalArgumentException("No response found for transition [${screenUrlInfo.targetTransition.name}] on screen [${screenUrlInfo.targetScreen.location}]")
 
-            if (ri.saveCurrentScreen && ec.web) {
+            if (ri.saveCurrentScreen && ec.web != null) {
                 StringBuilder screenPath = new StringBuilder()
                 for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
                 ((WebFacadeImpl) ec.web).saveScreenLastInfo(screenPath.toString(), null)
@@ -298,7 +303,7 @@ class ScreenRenderImpl implements ScreenRender {
             String urlType = ri.urlType ?: "screen-path"
 
             // handle screen-last, etc
-            if (ec.web) {
+            if (ec.web != null) {
                 WebFacadeImpl wfi = (WebFacadeImpl) ec.web
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
                     String savedUrl = wfi.getRemoveScreenLastPath()
@@ -316,7 +321,7 @@ class ScreenRenderImpl implements ScreenRender {
             // either send a redirect for the response, if possible, or just render the response now
             if (this.response != null) {
                 // save messages in session before redirecting so they can be displayed on the next screen
-                if (ec.web) {
+                if (ec.web != null) {
                     ((WebFacadeImpl) ec.web).saveMessagesToSession()
                     if (ri.saveParameters) ((WebFacadeImpl) ec.web).saveRequestParametersToSession()
                     if (ec.message.hasError()) ((WebFacadeImpl) ec.web).saveErrorParametersToSession()

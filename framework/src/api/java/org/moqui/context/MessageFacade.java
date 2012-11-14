@@ -38,7 +38,7 @@ public interface MessageFacade {
      * fields that triggered the error.
      */
     List<ValidationError> getValidationErrors();
-    void addValidationError(String form, String field, String message, Throwable nested);
+    void addValidationError(String form, String field, String serviceName, String message, Throwable nested);
 
     /** See if there is are any errors. Checks both error strings and validation errors. */
     boolean hasError();

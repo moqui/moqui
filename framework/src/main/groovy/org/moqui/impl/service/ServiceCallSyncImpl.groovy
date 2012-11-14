@@ -87,14 +87,14 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     Map<String, Object> currentParms = new HashMap()
                     for (String ipn in inParameterNames) {
                         String key = ipn + "_" + i
-                        if (this.parameters.containsKey(key)) {
-                            currentParms.put(ipn, this.parameters.get(key))
-                        } else if (this.parameters.containsKey(ipn)) {
-                            currentParms.put(ipn, this.parameters.get(ipn))
-                        }
+                        if (parameters.containsKey(key)) currentParms.put(ipn, parameters.get(key))
                     }
                     // if the map stayed empty we have no parms, so we're done
                     if (currentParms.size() == 0) break
+                    // now that we have checked the per-row parameters, add in others available
+                    for (String ipn in inParameterNames) {
+                        if (!currentParms.get(ipn) && parameters.get(ipn)) currentParms.put(ipn, parameters.get(ipn))
+                    }
                     // call the service, ignore the result...
                     callSingle(currentParms, sd, eci)
                     // ... and break if there are any errors
@@ -194,7 +194,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // in-parameter validation
         sd.convertValidateCleanParameters(currentParameters, eci)
         // if error(s) in parameters, return now with no results
-        if (eci.getMessage().hasError()) return null
+        if (eci.getMessage().hasError()) {
+            logger.warn("Found error(s) when validating input parameters for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}")
+            return null
+        }
 
         TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false

@@ -135,6 +135,9 @@ Bug Fixes:
   causing incorrect push on the artifact facade's stack
 - Fixed issue where the last statement of XML Actions might have been
   unintentionally considered to be the return/result Map
+- Fixed issue with multi (multi-row) service calls where parameters shared
+  between rows caused an attempt to process an additional non-existent row
+- Changed screen transition transaction handling to rollback on error
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

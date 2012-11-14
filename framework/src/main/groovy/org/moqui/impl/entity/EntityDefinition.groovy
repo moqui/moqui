@@ -634,7 +634,7 @@ public class EntityDefinition {
                         try {
                             this.setString(fieldName, (String) value, dest)
                         } catch (BaseException be) {
-                            this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, be.getMessage(), be)
+                            this.efi.ecfi.executionContext.message.addValidationError(null, fieldName, null, be.getMessage(), be)
                         }
                     } else {
                         dest.put(fieldName, value)

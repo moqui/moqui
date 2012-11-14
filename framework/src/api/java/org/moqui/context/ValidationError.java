@@ -24,19 +24,23 @@ import org.moqui.BaseException;
 public class ValidationError extends BaseException {
     protected final String form;
     protected final String field;
+    protected final String serviceName;
 
     public ValidationError(String field, String message, Throwable nested) {
         super(message, nested);
         this.form = null;
         this.field = field;
+        this.serviceName = null;
     }
 
-    public ValidationError(String form, String field, String message, Throwable nested) {
+    public ValidationError(String form, String field, String serviceName, String message, Throwable nested) {
         super(message, nested);
         this.form = form;
         this.field = field;
+        this.serviceName = serviceName;
     }
 
-    public String getForm() { return this.form; }
-    public String getField() { return this.field; }
+    public String getForm() { return form; }
+    public String getField() { return field; }
+    public String getServiceName() { return serviceName; }
 }

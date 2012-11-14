@@ -38,8 +38,8 @@ public class MessageFacadeImpl implements MessageFacade {
 
     /** @see org.moqui.context.MessageFacade#getValidationErrors() */
     List<ValidationError> getValidationErrors() { return this.validationErrorList }
-    void addValidationError(String form, String field, String message, Throwable nested) {
-        this.validationErrorList.add(new ValidationError(form, field, message, nested))
+    void addValidationError(String form, String field, String serviceName, String message, Throwable nested) {
+        this.validationErrorList.add(new ValidationError(form, field, serviceName, message, nested))
     }
 
     boolean hasError() { return errorList || validationErrorList }
