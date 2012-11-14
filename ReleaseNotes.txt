@@ -100,6 +100,12 @@ Non-backward-compatible changes:
 -- for migrating other data a user will have to be a member of a group and
    that group can be a single-user group or you can simplify existing data
    by consolidating users into groups that have the same subscreens
+- Local service calls (inline, java, and script) now run with an isolated
+  context so that fields from whatever called the service are not
+  available in the service (which would cause things to work when they
+  really shouldn't and wouldn't work if it was called remotely)
+-- make sure to retest all service calls as there could be hidden bugs
+   where a service worked because whatever called it had certain fields
 
 Bug Fixes:
 

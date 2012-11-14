@@ -12,17 +12,33 @@
 package org.moqui.impl.context;
 
 import java.util.*;
-import java.util.Hashtable;
 
 public class ContextStack implements Map<Object, Object> {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class);
 
+    protected Deque<Deque<Map<Object,Object>>> contextStack = new LinkedList<Deque<Map<Object,Object>>>();
     protected Deque<Map<Object,Object>> stackList = new LinkedList<Map<Object,Object>>();
     protected Map<Object,Object> firstMap = null;
 
     public ContextStack() {
         // start with a single Map
         push();
+    }
+
+    /** Push (save) the entire context, ie the whole Map stack, to create an isolated empty context. */
+    public ContextStack pushContext() {
+        contextStack.addFirst(stackList);
+        stackList = new LinkedList<Map<Object,Object>>();
+        firstMap = null;
+        push();
+        return this;
+    }
+
+    /** Pop (restore) the entire context, ie the whole Map stack, undo isolated empty context and get the original one. */
+    public ContextStack popContext() {
+        stackList = contextStack.removeFirst();
+        firstMap = stackList.getFirst();
+        return this;
     }
 
     /** Puts a new Map on the top of the stack for a fresh local context
@@ -37,11 +53,13 @@ public class ContextStack implements Map<Object, Object> {
 
     /** Puts an existing Map on the top of the stack (top meaning will override lower layers on the stack)
      * @param existingMap An existing Map
+     * @return Returns reference to this ContextStack
      */
-    public void push(Map<Object,Object> existingMap) {
+    public ContextStack push(Map<Object,Object> existingMap) {
         if (existingMap == null) throw new IllegalArgumentException("Cannot push null as an existing Map");
         stackList.addFirst(existingMap);
         firstMap = existingMap;
+        return this;
     }
 
     /** Remove and returns the Map from the top of the stack (the local context).

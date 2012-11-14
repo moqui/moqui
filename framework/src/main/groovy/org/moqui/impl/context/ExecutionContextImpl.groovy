@@ -52,7 +52,7 @@ class ExecutionContextImpl implements ExecutionContext {
     ExecutionContextFactoryImpl getEcfi() { ecfi }
 
     /** @see org.moqui.context.ExecutionContext#getContext() */
-    Map<String, Object> getContext() { this.context }
+    Map<String, Object> getContext() { (Map<String, Object>) this.context }
 
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
     Map<String, Object> getContextRoot() { this.context.getRootMap() }

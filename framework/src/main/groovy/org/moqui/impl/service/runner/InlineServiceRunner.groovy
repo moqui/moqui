@@ -31,11 +31,15 @@ public class InlineServiceRunner implements ServiceRunner {
         ExecutionContext ec = sfi.ecfi.getExecutionContext()
         ContextStack cs = (ContextStack) ec.context
         try {
+            // push the entire context to isolate the context for the service call
+            cs.pushContext()
+            // we have an empty context so add the ec
+            cs.put("ec", ec)
+            // now add the parameters to this service call
             cs.push(parameters)
             // push again to get a new Map that will protect the parameters Map passed in
             cs.push()
-            // ec is already in place, in the contextRoot, so no need to put here
-            // context is handled by the ContextStack itself, always there
+            // add a convenience Map to explicitly put results in
             Map<String, Object> autoResult = new HashMap()
             ec.context.put("result", autoResult)
 
@@ -56,9 +60,8 @@ public class InlineServiceRunner implements ServiceRunner {
             logger.error("Error running inline XML Actions in service [${sd.serviceName}]: ", t)
             throw t
         } finally {
-            // in the push we pushed two Maps to protect the parameters Map, so pop twice
-            cs.pop()
-            cs.pop()
+            // pop the entire context to get back to where we were before isolating the context with pushContext
+            cs.popContext()
         }
     }
 
