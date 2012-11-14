@@ -256,6 +256,8 @@ class ServiceDefinition {
             Object converted = checkConvertType(parameterNode, namePrefix, parameterName, parameterValue, rootParameters, eci)
             if (converted != null) {
                 parameterValue = converted
+                // put the final parameterValue back into the parameters Map
+                parameters.put(parameterName, parameterValue)
             } else if (parameterValue) {
                 // no type conversion? error time...
                 eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
@@ -267,9 +269,6 @@ class ServiceDefinition {
 
             // do this after the convert so we can deal with objects when needed
             validateParameter(parameterNode, parameterName, parameterValue, eci)
-
-            // put the final parameterValue back into the parameters Map
-            parameters.put(parameterName, parameterValue)
 
             // now check parameter sub-elements
             if (parameterValue instanceof Map) {

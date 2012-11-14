@@ -6,7 +6,9 @@ Release 1.2.0 - TBD
 ===========================================================================
 
 Moqui Framework release 1.2.0 is a minor new feature release and includes
-a number of bug fixes too.
+a number of bug fixes too. This release has undergone significantly more
+testing than previous releases because of a wider variety of functionality
+that has now been built and tested using the framework.
 
 The new features include popup menus (using the new jQueryUI menu widget),
 dynamic-options in XML Form drop-downs with dependency on other fields,
@@ -144,6 +146,8 @@ Bug Fixes:
 - Fixed issue with multi (multi-row) service calls where parameters shared
   between rows caused an attempt to process an additional non-existent row
 - Changed screen transition transaction handling to rollback on error
+- Fixed phantom parameter issue where declared parameters got a null value
+  in the parameters to a service even if no null was passed in
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
