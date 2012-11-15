@@ -464,7 +464,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")>
+    <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
     <#if !(formNode["@paginate"]?if_exists == "false") && context[listName + "Count"]?exists && (context[listName + "Count"]?if_exists > 0)>
         <div class="form-list-paginate">
@@ -528,7 +528,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#if isMulti && !skipStart>
                 <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}">
             </#if>
-                <#list listObject as listEntry>
+                <#list listObject?if_exists as listEntry>
                     <#assign listEntryIndex = listEntry_index>
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                     ${sri.startFormListRow(formNode["@name"], listEntry)}
@@ -610,7 +610,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <div class="form-body">
                 </#if>
             </#if>
-                <#list listObject as listEntry>
+                <#list listObject?if_exists as listEntry>
                     <#assign listEntryIndex = listEntry_index>
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
                     ${sri.startFormListRow(formNode["@name"], listEntry)}

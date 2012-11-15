@@ -74,6 +74,8 @@ This release includes:
     databases
   - Support for java.util.UUID sequenced primary IDs; can be configured
     per-entity and/or per-datasource
+  - Added eeca.@get-entire-entity attribute to make sure we have the entire
+    record and not just PK fields before doing update and delete ops
 - Resource Facade
   - ExampleContent entity and corresponding screen that supports
     uploading and downloading JCR content

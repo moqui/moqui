@@ -50,6 +50,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     the operation.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="run-on-error" default="false" type="boolean"/>
+            <xs:attribute name="get-entire-entity" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Get the entire entity before running the actions for update and delete
+                    operations.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 </xs:schema>

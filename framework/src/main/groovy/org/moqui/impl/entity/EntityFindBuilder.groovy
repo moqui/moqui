@@ -354,6 +354,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
         }
         boolean isFirst = true
         for (String fieldName in orderByFieldList) {
+            if (!fieldName) continue
             if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
 
             // Parse the fieldName (can have other stuff in it, need to tear down to just the field name)

@@ -422,7 +422,7 @@ abstract class EntityFindBase implements EntityFind {
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-one", true)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-one", true)
 
         // if over-constrained (anything in addition to a full PK), just use the full PK
         EntityConditionImplBase whereCondition
@@ -450,7 +450,7 @@ abstract class EntityFindBase implements EntityFind {
                 } else {
                     EntityValue cacheHit = (EntityValue) cacheElement.objectValue
                     // if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
-                    efi.runEecaRules(ed.getEntityName(), cacheHit, "find-one", false)
+                    efi.runEecaRules(ed.getFullEntityName(), cacheHit, "find-one", false)
                     // pop the ArtifactExecutionInfo
                     ec.getArtifactExecution().pop()
                     return cacheHit
@@ -481,7 +481,7 @@ abstract class EntityFindBase implements EntityFind {
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
 
         // final ECA trigger
-        efi.runEecaRules(ed.getEntityName(), newEntityValue, "find-one", false)
+        efi.runEecaRules(ed.getFullEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "one", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
         // pop the ArtifactExecutionInfo
@@ -506,7 +506,7 @@ abstract class EntityFindBase implements EntityFind {
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", true)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         CacheImpl entityListCache = null
@@ -520,7 +520,7 @@ abstract class EntityFindBase implements EntityFind {
                     entityListCache.removeElement(cacheElement)
                 } else {
                     EntityList cacheHit = (EntityList) cacheElement.objectValue
-                    efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
+                    efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
                     // pop the ArtifactExecutionInfo
                     ec.getArtifactExecution().pop()
                     return cacheHit
@@ -574,7 +574,7 @@ abstract class EntityFindBase implements EntityFind {
             efi.registerCacheListRa(this.entityName, whereCondition, elToCache)
         }
         // run the final rules
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-list", false)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "list", ed.getEntityName(), simpleAndMap, startTime,
                 System.currentTimeMillis(), el ? el.size() : 0)
@@ -599,7 +599,7 @@ abstract class EntityFindBase implements EntityFind {
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", true)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", true)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
@@ -642,7 +642,7 @@ abstract class EntityFindBase implements EntityFind {
             }
         }
 
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-iterator", false)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "iterator", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
         // pop the ArtifactExecutionInfo
@@ -666,7 +666,7 @@ abstract class EntityFindBase implements EntityFind {
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", true)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         CacheImpl entityCountCache = null
@@ -680,7 +680,7 @@ abstract class EntityFindBase implements EntityFind {
                     entityCountCache.removeElement(cacheElement)
                 } else {
                     Long cacheHit = (Long) cacheElement.objectValue
-                    efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
+                    efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
                     // pop the ArtifactExecutionInfo
                     ec.getArtifactExecution().pop()
                     return cacheHit
@@ -715,7 +715,7 @@ abstract class EntityFindBase implements EntityFind {
 
         if (doCache) entityCountCache.put(whereCondition, count)
 
-        efi.runEecaRules(ed.getEntityName(), simpleAndMap, "find-count", false)
+        efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
         efi.ecfi.countArtifactHit("entity", "count", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
         // pop the ArtifactExecutionInfo

@@ -14,6 +14,8 @@ package org.moqui.impl.entity
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.entity.EntityFind
+import org.moqui.entity.EntityValue
 
 class EntityEcaRule {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityEcaRule.class)
@@ -44,12 +46,30 @@ class EntityEcaRule {
 
     void runIfMatches(String entityName, Map fieldValues, String operation, boolean before, ExecutionContext ec) {
         // see if we match this event and should run
+
+        // check this first since it is the most common disqualifier
+        String attrName = "on-${operation}"
+        if (eecaNode.attributes().get(attrName) != "true") return
+
         if (entityName != eecaNode."@entity") return
         if (ec.getMessage().hasError() && eecaNode."@run-on-error" != "true") return
+
+        if (before && (operation == "update" || operation == "delete") && eecaNode."@get-entire-entity" == "true") {
+            Map saveMap = new HashMap(fieldValues)
+            EntityDefinition ed = ec.entity.getEntityDefinition(entityName)
+            EntityFind ef = ec.entity.makeFind(entityName)
+            for (String pkFieldName in ed.getPkFieldNames()) ef.condition(pkFieldName, saveMap.get(pkFieldName))
+            EntityValue ev = ef.one()
+            if (ev) {
+                fieldValues.putAll(ev)
+                // add these second so they override the DB values in case anything was updated as part of this call
+                for (Map.Entry entry in saveMap.entrySet()) if (entry.value) fieldValues.put(entry.key, entry.value)
+            }
+        }
+
         if (before && eecaNode."@run-before" != "true") return
         if (!before && eecaNode."@run-before" == "true") return
 
-        if (eecaNode.attributes().get("on-${operation}") != "true") return
 
         try {
             ec.context.push()

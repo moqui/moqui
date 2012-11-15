@@ -42,7 +42,7 @@ return;
             <#if .node["@in-map"]?if_exists == "true">.parameters(context)<#elseif .node["@in-map"]?has_content && .node["@in-map"] != "false">.parameters(${.node["@in-map"]})</#if><#list .node["field-map"] as fieldMap>.parameter("${fieldMap["@field-name"]}",<#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list>.call()
         <#if handleResult>
         if (context.${.node["@out-map"]} != null) {
-            context.${.node["@out-map"]}.putAll(call_service_result)
+            if (call_service_result) context.${.node["@out-map"]}.putAll(call_service_result)
         } else {
             context.${.node["@out-map"]} = call_service_result
         }

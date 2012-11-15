@@ -765,7 +765,7 @@ abstract class EntityValueBase implements EntityValue {
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_CREATE"),
                 (ed.entityNode."@authorize-skip" != "true" && !ed.entityNode."@authorize-skip"?.contains("create")))
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", true)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
@@ -800,7 +800,7 @@ abstract class EntityValueBase implements EntityValue {
 
         handleAuditLog(false, null)
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "create", false)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(), startTime,
                 System.currentTimeMillis(), 1)
@@ -823,7 +823,7 @@ abstract class EntityValueBase implements EntityValue {
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
                 ed.entityNode."@authorize-skip" != "true")
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", true)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
 
         boolean dbValueMapFromDb = false
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
@@ -916,7 +916,7 @@ abstract class EntityValueBase implements EntityValue {
 
         handleAuditLog(true, oldValues)
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "update", false)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
@@ -938,7 +938,7 @@ abstract class EntityValueBase implements EntityValue {
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),
                 ed.entityNode."@authorize-skip" != "true")
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", true)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
 
         // call the abstract method
         this.deleteExtended()
@@ -960,7 +960,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "delete", false)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
@@ -981,7 +981,7 @@ abstract class EntityValueBase implements EntityValue {
         ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
                 ed.entityNode."@authorize-skip" != "true")
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", true)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
 
         List<String> pkFieldList = ed.getPkFieldNames()
         if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
@@ -991,7 +991,7 @@ abstract class EntityValueBase implements EntityValue {
 
         // NOTE: clear out UserFields
 
-        getEntityFacadeImpl().runEecaRules(this.getEntityName(), this, "find-one", false)
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
