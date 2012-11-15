@@ -46,11 +46,11 @@ div.error span { color: red; }
 /* ====================== headings, general ====================== */
 
 h1 { font-size: 1.5em; font-weight: bold; }
-h2 { font-size: 1.2em; font-weight: bold; }
-h3 { font-size: 1.0em; font-weight: bold; }
-h4 { font-size: .9em; font-weight: bold; }
-h5 { font-size: .8em; font-weight: bold; }
-h6 { font-size: .6em; }
+h2 { font-size: 1.2em; font-weight: bold; display: inline; }
+h3 { font-size: 1.0em; font-weight: bold; display: inline; }
+h4 { font-size: .9em; font-weight: bold; display: inline; }
+h5 { font-size: .8em; font-weight: bold; display: inline; }
+h6 { font-size: .6em; display: inline; }
 
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 

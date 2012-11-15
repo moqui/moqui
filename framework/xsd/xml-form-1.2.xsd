@@ -257,6 +257,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     HTML-specific characters are escaped.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="display-if-empty" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Generate text container even if text value is empty (or just whitespace)?
+                    Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="parameter">
