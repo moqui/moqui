@@ -617,7 +617,6 @@ public class EntityDefinition {
 
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
-        boolean srcIsContextStack = src instanceof ContextStack
 
         for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
             String sourceFieldName
@@ -627,8 +626,7 @@ public class EntityDefinition {
                 sourceFieldName = fieldName
             }
 
-            if ((!srcIsContextStack && src.containsKey(sourceFieldName)) ||
-                    (srcIsContextStack && ((ContextStack) src).reallyContainsKey(sourceFieldName))) {
+            if (src.containsKey(sourceFieldName)) {
                 Object value = src.get(sourceFieldName)
                 if (value) {
                     if (value instanceof String) {

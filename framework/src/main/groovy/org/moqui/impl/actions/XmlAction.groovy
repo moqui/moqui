@@ -20,6 +20,7 @@ import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.impl.StupidUtilities
+import org.moqui.impl.context.ContextBinding
 
 class XmlAction {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(XmlAction.class)
@@ -88,7 +89,7 @@ class XmlAction {
     Object run(ExecutionContext ec) {
         if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
 
-        Script script = InvokerHelper.createScript(groovyClass, new Binding(ec.context))
+        Script script = InvokerHelper.createScript(groovyClass, new ContextBinding(ec.context))
         try {
             Object result = script.run()
             return result

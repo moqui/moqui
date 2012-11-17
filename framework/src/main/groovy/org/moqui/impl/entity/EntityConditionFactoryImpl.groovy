@@ -84,17 +84,17 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     EntityCondition.ComparisonOperator comparisonOperatorFromEnumId(String enumId) {
         switch (enumId) {
-            case "ENTCO_LESS": return EntityCondition.ComparisonOperator.LESS_THAN
-            case "ENTCO_GREATER": return EntityCondition.ComparisonOperator.GREATER_THAN
-            case "ENTCO_LESS_EQ": return EntityCondition.ComparisonOperator.LESS_THAN_EQUAL_TO
-            case "ENTCO_GREATER_EQ": return EntityCondition.ComparisonOperator.GREATER_THAN_EQUAL_TO
-            case "ENTCO_EQUALS": return EntityCondition.ComparisonOperator.EQUALS
-            case "ENTCO_NOT_EQUALS": return EntityCondition.ComparisonOperator.NOT_EQUAL
-            case "ENTCO_IN": return EntityCondition.ComparisonOperator.IN
-            case "ENTCO_NOT_IN": return EntityCondition.ComparisonOperator.NOT_IN
-            case "ENTCO_BETWEEN": return EntityCondition.ComparisonOperator.BETWEEN
-            case "ENTCO_LIKE": return EntityCondition.ComparisonOperator.LIKE
-            case "ENTCO_NOT_LIKE": return EntityCondition.ComparisonOperator.NOT_LIKE
+            case "ENTCO_LESS": return EntityCondition.LESS_THAN
+            case "ENTCO_GREATER": return EntityCondition.GREATER_THAN
+            case "ENTCO_LESS_EQ": return EntityCondition.LESS_THAN_EQUAL_TO
+            case "ENTCO_GREATER_EQ": return EntityCondition.GREATER_THAN_EQUAL_TO
+            case "ENTCO_EQUALS": return EntityCondition.EQUALS
+            case "ENTCO_NOT_EQUALS": return EntityCondition.NOT_EQUAL
+            case "ENTCO_IN": return EntityCondition.IN
+            case "ENTCO_NOT_IN": return EntityCondition.NOT_IN
+            case "ENTCO_BETWEEN": return EntityCondition.BETWEEN
+            case "ENTCO_LIKE": return EntityCondition.LIKE
+            case "ENTCO_NOT_LIKE": return EntityCondition.NOT_LIKE
             default: return null
         }
     }

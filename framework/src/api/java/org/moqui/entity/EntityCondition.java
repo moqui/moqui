@@ -11,6 +11,8 @@
  */
 package org.moqui.entity;
 
+import com.sun.org.apache.xpath.internal.operations.Equals;
+
 import java.io.Serializable;
 import java.util.Map;
 
@@ -22,6 +24,22 @@ import java.util.Map;
  * is internal only.
  */
 public interface EntityCondition extends Serializable {
+
+    public static final ComparisonOperator EQUALS = ComparisonOperator.EQUALS;
+    public static final ComparisonOperator NOT_EQUAL = ComparisonOperator.NOT_EQUAL;
+    public static final ComparisonOperator LESS_THAN = ComparisonOperator.LESS_THAN;
+    public static final ComparisonOperator GREATER_THAN = ComparisonOperator.GREATER_THAN;
+    public static final ComparisonOperator LESS_THAN_EQUAL_TO = ComparisonOperator.LESS_THAN_EQUAL_TO;
+    public static final ComparisonOperator GREATER_THAN_EQUAL_TO = ComparisonOperator.GREATER_THAN_EQUAL_TO;
+    public static final ComparisonOperator IN = ComparisonOperator.IN;
+    public static final ComparisonOperator NOT_IN = ComparisonOperator.NOT_IN;
+    public static final ComparisonOperator BETWEEN = ComparisonOperator.BETWEEN;
+    public static final ComparisonOperator LIKE = ComparisonOperator.LIKE;
+    public static final ComparisonOperator NOT_LIKE = ComparisonOperator.NOT_LIKE;
+
+    public static final JoinOperator AND = JoinOperator.AND;
+    public static final JoinOperator OR = JoinOperator.OR;
+
     public enum ComparisonOperator { EQUALS, NOT_EQUAL,
         LESS_THAN, GREATER_THAN, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO,
         IN, NOT_IN, BETWEEN, LIKE, NOT_LIKE }

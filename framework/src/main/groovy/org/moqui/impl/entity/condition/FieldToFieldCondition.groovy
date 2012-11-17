@@ -26,7 +26,7 @@ class FieldToFieldCondition extends EntityConditionImplBase {
             ConditionField field, EntityCondition.ComparisonOperator operator, ConditionField toField) {
         super(ecFactoryImpl)
         this.field = field
-        this.operator = operator ?: EntityCondition.ComparisonOperator.EQUALS
+        this.operator = operator ?: EntityCondition.EQUALS
         this.toField = toField
     }
 

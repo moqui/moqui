@@ -16,7 +16,7 @@ class MapCondition extends EntityConditionImplBase {
             EntityCondition.JoinOperator joinOperator) {
         super(ecFactoryImpl)
         this.fieldMap = fieldMap ? fieldMap : new HashMap()
-        this.comparisonOperator = comparisonOperator ? comparisonOperator : EntityCondition.ComparisonOperator.EQUALS
+        this.comparisonOperator = comparisonOperator ? comparisonOperator : EntityCondition.EQUALS
         this.joinOperator = joinOperator ? joinOperator : EntityCondition.JoinOperator.AND
     }
 

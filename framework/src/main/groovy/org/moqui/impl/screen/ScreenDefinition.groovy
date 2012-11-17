@@ -22,6 +22,7 @@ import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.StupidUtilities
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition
+import org.moqui.impl.context.ContextBinding
 
 class ScreenDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
@@ -133,7 +134,7 @@ class ScreenDefinition {
         // override dir structure and subscreens-item elements with moqui.screen.SubscreensItem entity
         EntityFind subscreensItemFind = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
                 .condition([screenLocation:location])
-        subscreensItemFind.condition("userGroupId", EntityCondition.ComparisonOperator.IN,
+        subscreensItemFind.condition("userGroupId", EntityCondition.IN,
                 sfi.ecfi.executionContext.user.userGroupIdSet)
         EntityList subscreensItemList = subscreensItemFind.useCache(true).list()
         for (EntityValue subscreensItem in subscreensItemList) {
@@ -260,10 +261,10 @@ class ScreenDefinition {
         Object getValue(ExecutionContext ec) {
             Object value = null
             if (fromFieldGroovy) {
-                value = InvokerHelper.createScript(fromFieldGroovy, new Binding(ec.context)).run()
+                value = InvokerHelper.createScript(fromFieldGroovy, new ContextBinding(ec.context)).run()
             }
             if (valueGroovy && !value) {
-                value = InvokerHelper.createScript(valueGroovy, new Binding(ec.context)).run()
+                value = InvokerHelper.createScript(valueGroovy, new ContextBinding(ec.context)).run()
             }
             if (!value) value = ec.context.get(name)
             if (!value && ec.web) value = ec.web.parameters.get(name)
@@ -437,7 +438,7 @@ class ScreenDefinition {
             Map ep = new HashMap()
             for (ParameterItem pi in parameterMap.values()) ep.put(pi.name, pi.getValue(ec))
             if (parameterMapNameGroovy != null) {
-                Object pm = InvokerHelper.createScript(parameterMapNameGroovy, new Binding(ec.context)).run()
+                Object pm = InvokerHelper.createScript(parameterMapNameGroovy, new ContextBinding(ec.context)).run()
                 if (pm && pm instanceof Map) ep.putAll(pm)
             }
             // logger.info("Expanded response map to url [${url}] to: ${ep}; parameterMapNameGroovy=[${parameterMapNameGroovy}]")
@@ -487,7 +488,7 @@ class ScreenDefinition {
         boolean getMenuInclude() { return menuInclude }
         boolean getDisable(ExecutionContext ec) {
             if (!disableWhenGroovy) return false
-            return InvokerHelper.createScript(disableWhenGroovy, new Binding(ec.context)).run() as boolean
+            return InvokerHelper.createScript(disableWhenGroovy, new ContextBinding(ec.context)).run() as boolean
         }
     }
 

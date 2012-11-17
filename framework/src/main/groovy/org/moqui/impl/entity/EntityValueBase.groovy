@@ -139,7 +139,7 @@ abstract class EntityValueBase implements EntityValue {
             try {
                 Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                 EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
-                        .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
+                        .condition("userGroupId", EntityCondition.IN, userGroupIdSet)
                         .condition(parms).list()
                 if (userFieldValueList) {
                     // do type conversion according to field type
@@ -883,7 +883,7 @@ abstract class EntityValueBase implements EntityValue {
                 addThreeFieldPkValues(findParms)
                 Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                 EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
-                        .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
+                        .condition("userGroupId", EntityCondition.IN, userGroupIdSet)
                         .condition(findParms).list()
 
                 for (String userFieldName in userFieldNameList) {
@@ -953,7 +953,7 @@ abstract class EntityValueBase implements EntityValue {
                 addThreeFieldPkValues(findParms)
                 Set<String> userGroupIdSet = ec.getUser().getUserGroupIdSet()
                 efi.makeFind("moqui.entity.UserFieldValue")
-                        .condition("userGroupId", EntityCondition.ComparisonOperator.IN, userGroupIdSet)
+                        .condition("userGroupId", EntityCondition.IN, userGroupIdSet)
                         .condition(findParms).deleteAll()
             } finally {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()

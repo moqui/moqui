@@ -181,7 +181,7 @@ class ScreenForm {
             // find DbForm records and merge them in as well
             String formName = sd.getLocation() + "#" + internalFormNode."@name"
             EntityList dbFormLookupList = this.ecfi.getEntityFacade().makeFind("DbFormLookup")
-                    .condition("userGroupId", EntityCondition.ComparisonOperator.IN, ecfi.getExecutionContext().getUser().getUserGroupIdSet())
+                    .condition("userGroupId", EntityCondition.IN, ecfi.getExecutionContext().getUser().getUserGroupIdSet())
                     .condition("modifyXmlScreenForm", formName)
                     .useCache(true).list()
             // logger.warn("TOREMOVE: looking up DbForms for form [${formName}], found: ${dbFormLookupList}")

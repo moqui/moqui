@@ -55,15 +55,15 @@ class DateCondition extends EntityConditionImplBase {
     protected EntityConditionImplBase makeCondition() {
         return (EntityConditionImplBase) ecFactoryImpl.makeCondition(
             ecFactoryImpl.makeCondition(
-                ecFactoryImpl.makeCondition(thruFieldName, EntityCondition.ComparisonOperator.EQUALS, null),
+                ecFactoryImpl.makeCondition(thruFieldName, EntityCondition.EQUALS, null),
                 EntityCondition.JoinOperator.OR,
-                ecFactoryImpl.makeCondition(thruFieldName, EntityCondition.ComparisonOperator.GREATER_THAN, compareStamp)
+                ecFactoryImpl.makeCondition(thruFieldName, EntityCondition.GREATER_THAN, compareStamp)
             ),
             EntityCondition.JoinOperator.AND,
             ecFactoryImpl.makeCondition(
-                ecFactoryImpl.makeCondition(fromFieldName, EntityCondition.ComparisonOperator.EQUALS, null),
+                ecFactoryImpl.makeCondition(fromFieldName, EntityCondition.EQUALS, null),
                 EntityCondition.JoinOperator.OR,
-                ecFactoryImpl.makeCondition(fromFieldName, EntityCondition.ComparisonOperator.LESS_THAN_EQUAL_TO, compareStamp)
+                ecFactoryImpl.makeCondition(fromFieldName, EntityCondition.LESS_THAN_EQUAL_TO, compareStamp)
             )
         )
     }

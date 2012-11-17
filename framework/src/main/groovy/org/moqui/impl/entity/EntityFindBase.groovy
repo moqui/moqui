@@ -174,45 +174,40 @@ abstract class EntityFindBase implements EntityFind {
                     case "equals":
                         if (value) {
                             ec = efi.conditionFactory.makeCondition(fn,
-                                    not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
-                                    value)
+                                    not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, value)
                             if (ic) ec.ignoreCase()
                         }
                         break;
                     case "like":
                         if (value) {
                             ec = efi.conditionFactory.makeCondition(fn,
-                                    not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
-                                    value)
+                                    not ? EntityCondition.NOT_LIKE : EntityCondition.LIKE, value)
                             if (ic) ec.ignoreCase()
                         }
                         break;
                     case "contains":
                         if (value) {
                             ec = efi.conditionFactory.makeCondition(fn,
-                                    not ? EntityCondition.ComparisonOperator.NOT_LIKE : EntityCondition.ComparisonOperator.LIKE,
-                                    "%${value}%")
+                                    not ? EntityCondition.NOT_LIKE : EntityCondition.LIKE, "%${value}%")
                             if (ic) ec.ignoreCase()
                         }
                         break;
                     case "empty":
                         ec = efi.conditionFactory.makeCondition(
                                 efi.conditionFactory.makeCondition(fn,
-                                        not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
-                                        null),
+                                        not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, null),
                                 not ? EntityCondition.JoinOperator.AND : EntityCondition.JoinOperator.OR,
                                 efi.conditionFactory.makeCondition(fn,
-                                        not ? EntityCondition.ComparisonOperator.NOT_EQUAL : EntityCondition.ComparisonOperator.EQUALS,
-                                        ""))
+                                        not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, ""))
                         break;
                 }
                 if (ec != null) this.condition(ec)
             } else {
                 // these will handle range-find and date-find
                 if (inf.containsKey(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.ComparisonOperator.GREATER_THAN_EQUAL_TO, inf.get(fn + "_from")))
+                        EntityCondition.GREATER_THAN_EQUAL_TO, inf.get(fn + "_from")))
                 if (inf.containsKey(fn + "_thru")) this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.ComparisonOperator.LESS_THAN, inf.get(fn + "_thru")))
+                        EntityCondition.LESS_THAN, inf.get(fn + "_thru")))
             }
         }
 

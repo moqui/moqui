@@ -90,6 +90,8 @@ This release includes:
 - Improved classpath overrides for configuration and such in the
   runtime/classes directory for both add-runtime/addRuntime and executable
   WAR file deployment approaches
+- EntityCondition has all JoinOperator and ComparisonOperator vales in it
+  for convenience
 
 Non-backward-compatible changes:
 
@@ -150,6 +152,10 @@ Bug Fixes:
 - Changed screen transition transaction handling to rollback on error
 - Fixed phantom parameter issue where declared parameters got a null value
   in the parameters to a service even if no null was passed in
+- Changed the ContextStack.containsKey() to not always return true and
+  added ContextBinding.java which extends groovy.lang.Binding and is used
+  for all Groovy script running to do the same thing without all the
+  side-effects; this fixes a number of bugs
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
