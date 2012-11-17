@@ -209,8 +209,9 @@ public class EntityDefinition {
                             && (it."@type" == "one" || it."@type" == "one-nofk")) })
                 if (reverseRelNode != null) {
                     Map keyMap = ed.getRelationshipExpandedKeyMap(reverseRelNode)
+                    String relType = (this.getPkFieldNames() == ed.getPkFieldNames()) ? "one-nofk" : "many"
                     Node newRelNode = this.internalEntityNode.appendNode("relationship",
-                            ["related-entity-name":relationshipName, "type":"many"])
+                            ["related-entity-name":relationshipName, "type":relType])
                     for (Map.Entry keyEntry in keyMap) {
                         // add a key-map with the reverse fields
                         newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
