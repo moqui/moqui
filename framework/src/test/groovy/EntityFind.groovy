@@ -6,7 +6,8 @@
  * You are solely responsible for determining the appropriateness of using
  * this Work and assume any risks associated with your use of this Work.
  *
- * NOTE: copyright disclaimer pending from Paul Z. X.; PLEASE ADD HERE
+ * This Work includes contributions authored by Paul Z. Xu, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
  *
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
@@ -30,7 +31,7 @@ class EntityFind extends Specification {
     def setupSpec() {
         // init the framework, get the ec
         ec = Moqui.getExecutionContext()
-        timestamp = new Timestamp(System.currentTimeMillis())//.valueOf("2012-11-13 10:21:32")
+        timestamp = new Timestamp(System.currentTimeMillis())
     }
 
     def cleanupSpec() {
