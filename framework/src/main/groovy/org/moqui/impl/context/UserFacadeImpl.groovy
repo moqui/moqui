@@ -388,10 +388,15 @@ class UserFacadeImpl implements UserFacade {
         EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
         if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
         if (ua == null) return false
-        return (eci.getEntity().makeFind("moqui.security.UserPermissionCheck").condition([userId:ua.userId, userPermissionId:userPermissionId])
-                .useCache(true).list()
-                .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
-                .filterByDate("permissionFromDate", "permissionThruDate", nowTimestamp)) as boolean
+        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+        try {
+            return (eci.getEntity().makeFind("moqui.security.UserPermissionCheck")
+                    .condition([userId:ua.userId, userPermissionId:userPermissionId]).useCache(true).list()
+                    .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
+                    .filterByDate("permissionFromDate", "permissionThruDate", nowTimestamp)) as boolean
+        } finally {
+            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+        }
     }
 
     /* @see org.moqui.context.UserFacade#isInGroup(String) */
