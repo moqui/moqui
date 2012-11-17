@@ -14,6 +14,7 @@ import spock.lang.*
 
 import org.moqui.context.ExecutionContext
 import org.moqui.Moqui
+import org.moqui.entity.EntityValue
 
 class L10nFacadeTests extends Specification {
     @Shared
@@ -34,6 +35,9 @@ class L10nFacadeTests extends Specification {
         ec.user.setLocale(new Locale(locale))
         localized == ec.l10n.getLocalizedMessage(original)
 
+        cleanup:
+        ec.user.setLocale(Locale.US)
+
         where:
         original | locale | localized
         "Create" | "en" | "Create"
@@ -45,7 +49,29 @@ class L10nFacadeTests extends Specification {
         "Not Localized" | "zh" | "Not Localized"
     }
 
-    // TODO test LocalizedEntityField with Enumeration.description
+    @Unroll
+    def "LocalizedEntityField with Enumeration.description (#enumId - #locale)"() {
+        setup:
+        ec.artifactExecution.disableAuthz()
+
+        expect:
+        ec.user.setLocale(new Locale(locale))
+        EntityValue enumValue = ec.entity.makeFind("Enumeration").condition("enumId", enumId).one()
+        localized == enumValue.get("description")
+
+        cleanup:
+        ec.artifactExecution.enableAuthz()
+        ec.user.setLocale(Locale.US)
+
+        where:
+        enumId | locale | localized
+        "GEOT_CITY" | "en" | "City"
+        "GEOT_CITY" | "es" | "Ciudad"
+        "GEOT_CITY" | "zh" | "?"
+        "GEOT_STATE" | "en" | "State"
+        "GEOT_STATE" | "es" | "Estado"
+        "GEOT_COUNTRY" | "es" | "Pa’s"
+    }
 
     // TODO test localized message with variable expansion (ensure translate then expand)
 
