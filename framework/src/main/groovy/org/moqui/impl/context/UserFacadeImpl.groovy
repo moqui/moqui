@@ -44,6 +44,12 @@ class UserFacadeImpl implements UserFacade {
     protected EntityList internalArtifactTarpitCheckList = null
     protected EntityList internalArtifactAuthzCheckList = null
 
+    // these are used only when there is no logged in user
+    protected Locale internalLocale = null
+    protected TimeZone internalTimeZone = null
+    protected String internalCurrencyUomId = null
+    // TODO: if one of these is set before login, set it on the account on login?
+
     /** This is set instead of adding _NA_ user as logged in to pass authc tests but not generally behave as if a user is logged in */
     protected boolean loggedInAnonymous = false
 
@@ -204,6 +210,8 @@ class UserFacadeImpl implements UserFacade {
         if (this.username) {
             String localeStr = this.userAccount.locale
             if (localeStr) locale = new Locale(localeStr)
+        } else {
+            locale = internalLocale
         }
         return (locale ?: (request ? request.getLocale() : Locale.getDefault()))
     }
@@ -223,7 +231,7 @@ class UserFacadeImpl implements UserFacade {
                 if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
             }
         } else {
-            throw new IllegalStateException("No user logged in, can't set Locale")
+            internalLocale = locale
         }
     }
 
@@ -233,6 +241,8 @@ class UserFacadeImpl implements UserFacade {
         if (this.username) {
             String tzStr = this.userAccount.timeZone
             if (tzStr) tz = TimeZone.getTimeZone(tzStr)
+        } else {
+            tz = internalTimeZone
         }
         return tz ?: TimeZone.getDefault()
     }
@@ -252,12 +262,12 @@ class UserFacadeImpl implements UserFacade {
                 if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
             }
         } else {
-            throw new IllegalStateException("No user logged in, can't set Time Zone")
+            internalTimeZone = tz
         }
     }
 
     /** @see org.moqui.context.UserFacade#getCurrencyUomId() */
-    String getCurrencyUomId() { return this.username ? this.userAccount.currencyUomId : null }
+    String getCurrencyUomId() { return this.username ? this.userAccount.currencyUomId : internalCurrencyUomId }
 
     /** @see org.moqui.context.UserFacade#setCurrencyUomId(String) */
     void setCurrencyUomId(String uomId) {
@@ -274,7 +284,7 @@ class UserFacadeImpl implements UserFacade {
                 if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
             }
         } else {
-            throw new IllegalStateException("No user logged in, can't set Currency")
+            internalCurrencyUomId = uomId
         }
     }
 
