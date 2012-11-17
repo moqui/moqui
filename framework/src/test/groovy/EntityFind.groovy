@@ -19,7 +19,6 @@ import org.moqui.context.ExecutionContext
 import org.moqui.entity.EntityValue
 import org.moqui.Moqui
 import java.sql.Timestamp
-import java.text.SimpleDateFormat
 import org.moqui.entity.EntityCondition
 
 class EntityFind extends Specification {
@@ -31,7 +30,7 @@ class EntityFind extends Specification {
     def setupSpec() {
         // init the framework, get the ec
         ec = Moqui.getExecutionContext()
-        timestamp = new Timestamp(System.currentTimeMillis())
+        timestamp = ec.user.nowTimestamp
     }
 
     def cleanupSpec() {
@@ -47,7 +46,7 @@ class EntityFind extends Specification {
     }
 
     def cleanup() {
-        ec.entity.makeValue("Example").setAll([exampleId:"TEST1"]).delete()
+        ec.entity.makeValue("Example").set("exampleId", "TEST1").delete()
         ec.artifactExecution.enableAuthz()
         ec.transaction.commit()
     }
@@ -64,7 +63,7 @@ class EntityFind extends Specification {
         "exampleId" | "TEST1"
         "exampleSize" | "100"
         "exampleSize" | 100
-        "exampleDate" | new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(timestamp)
+        "exampleDate" | ec.l10n.formatValue(timestamp, "yyyy-MM-dd HH:mm:ss.SSS")
         "exampleDate" | timestamp
     }
 
