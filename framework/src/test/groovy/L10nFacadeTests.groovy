@@ -1,0 +1,60 @@
+/*
+ * This Work is in the public domain and is provided on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+ * including, without limitation, any warranties or conditions of TITLE,
+ * NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+ * You are solely responsible for determining the appropriateness of using
+ * this Work and assume any risks associated with your use of this Work.
+ *
+ * This Work includes contributions authored by David E. Jones, not as a
+ * "work for hire", who hereby disclaims any copyright to the same.
+ */
+
+import spock.lang.*
+
+import org.moqui.context.ExecutionContext
+import org.moqui.Moqui
+
+class L10nFacadeTests extends Specification {
+    @Shared
+    ExecutionContext ec
+
+    def setupSpec() {
+        // init the framework, get the ec
+        ec = Moqui.getExecutionContext()
+    }
+
+    def cleanupSpec() {
+        ec.destroy()
+    }
+
+    @Unroll
+    def "get Localized Message (#original - #locale)"() {
+        expect:
+        ec.user.setLocale(new Locale(locale))
+        localized == ec.l10n.getLocalizedMessage(original)
+
+        where:
+        original | locale | localized
+        "Create" | "en" | "Create"
+        "Create" | "es" | "Crear"
+        "Create" | "fr" | "Créer" // NOTE: currently fails, needs fixing
+        "Create" | "zh" | "??" // NOTE: currently fails, needs fixing
+        "Not Localized" | "en" | "Not Localized"
+        "Not Localized" | "es" | "Not Localized"
+        "Not Localized" | "zh" | "Not Localized"
+    }
+
+    // TODO test LocalizedEntityField with Enumeration.description
+
+    // TODO test localized message with variable expansion (ensure translate then expand)
+
+    // TODO test formatCurrency
+    // TODO test formatValue
+
+    // TODO test parseTime
+    // TODO test parseDate
+    // TODO test parseTimestamp
+    // TODO test parseDateTime
+    // TODO test parseNumber
+}
