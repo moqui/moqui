@@ -156,6 +156,8 @@ Bug Fixes:
   added ContextBinding.java which extends groovy.lang.Binding and is used
   for all Groovy script running to do the same thing without all the
   side-effects; this fixes a number of bugs
+- User login now works outside a web context
+- Fixed authz and tx issues with user preferences
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

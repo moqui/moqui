@@ -28,6 +28,7 @@ import org.moqui.context.UserFacade
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.impl.entity.EntityListImpl
+import org.apache.shiro.subject.support.DefaultSubjectContext
 
 class UserFacadeImpl implements UserFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
@@ -251,14 +252,28 @@ class UserFacadeImpl implements UserFacade {
     }
 
     String getPreference(String preferenceKey) {
-        EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", getUserId())
-                .condition("preferenceKey", preferenceKey).useCache(true).one()
-        return up ? up.preferenceValue : null
+        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+        try {
+            EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", getUserId())
+                    .condition("preferenceKey", preferenceKey).useCache(true).one()
+            return up ? up.preferenceValue : null
+        } finally {
+            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+        }
     }
 
     void setPreference(String preferenceKey, String preferenceValue) {
-        eci.getEntity().makeValue("moqui.security.UserPreference").set("userId", getUserId())
-                .set("preferenceKey", preferenceKey).set("preferenceValue", preferenceValue).createOrUpdate()
+        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+        boolean beganTransaction = eci.transaction.begin(null)
+        try {
+            eci.getEntity().makeValue("moqui.security.UserPreference").set("userId", getUserId())
+                    .set("preferenceKey", preferenceKey).set("preferenceValue", preferenceValue).createOrUpdate()
+        } catch (Throwable t) {
+            eci.transaction.rollback(beganTransaction, "Error saving UserPreference", t)
+        } finally {
+            if (eci.transaction.isTransactionInPlace()) eci.transaction.commit(beganTransaction)
+            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+        }
     }
 
     /** @see org.moqui.context.UserFacade#getNowTimestamp() */
@@ -279,6 +294,10 @@ class UserFacadeImpl implements UserFacade {
 
         UsernamePasswordToken token = new UsernamePasswordToken(username, password)
         token.rememberMe = true
+        if (currentUser == null) {
+            // no currentUser, this usually means we are running outside of a web/servlet context
+            currentUser = eci.getEcfi().getSecurityManager().createSubject(new DefaultSubjectContext())
+        }
         try {
             currentUser.login(token)
 
@@ -352,12 +371,18 @@ class UserFacadeImpl implements UserFacade {
     boolean isInGroup(String userGroupId) { return isInGroup(getUserId(), userGroupId, getNowTimestamp(), eci) }
 
     static boolean isInGroup(String username, String userGroupId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
+        if (userGroupId == "ALL_USERS") return true
         if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
-        EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
-        if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
-        if (ua == null) return false
-        return (eci.getEntity().makeFind("moqui.security.UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
-                .useCache(true).list().filterByDate("fromDate", "thruDate", nowTimestamp)) as boolean
+        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+        try {
+            EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
+            if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
+            if (ua == null) return false
+            return (eci.getEntity().makeFind("moqui.security.UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
+                    .useCache(true).list().filterByDate("fromDate", "thruDate", nowTimestamp)) as boolean
+        } finally {
+            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+        }
     }
 
     /* @see org.moqui.context.UserFacade#getUserGroupIdSet() */
