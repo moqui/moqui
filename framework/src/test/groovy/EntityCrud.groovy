@@ -44,13 +44,13 @@ class EntityCrud extends Specification {
         ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name"]).createOrUpdate()
 
         then:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
+        EntityValue example = ec.entity.makeFind("Example").condition("exampleId", "TEST1").one()
         example.exampleName == "Test Name"
     }
 
     def "update Example TEST1"() {
         when:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
+        EntityValue example = ec.entity.makeFind("Example").condition("exampleId", "TEST1").one()
         example.exampleName = "Test Name 2"
         example.update()
 
@@ -61,8 +61,7 @@ class EntityCrud extends Specification {
 
     def "delete Example TEST1"() {
         when:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
-        example.delete()
+        ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one().delete()
 
         then:
         EntityValue exampleCheck = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
