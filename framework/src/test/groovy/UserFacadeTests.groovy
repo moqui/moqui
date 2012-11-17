@@ -43,33 +43,50 @@ class UserFacadeTests extends Specification {
         ec.user.userAccount.userFullName == "John Doe"
     }
 
-    def "set and get Locale"() {
-        expect:
+    def "set and get Locale UK"() {
+        when:
         ec.user.setLocale(Locale.UK)
+        then:
         // doesn't work because of Java API (results in "en_gb" == "en_GB) ec.user.getLocale() == Locale.UK
         ec.user.getLocale().toString() == "en_gb"
+    }
+    def "set and get Locale US"() {
+        when:
         // set back to en_us
         ec.user.setLocale(Locale.US)
+        then:
         ec.user.locale.toString() == "en_us"
     }
 
-    def "set and get TimeZone"() {
-        expect:
+    def "set and get TimeZone US/Pacific"() {
+        when:
         ec.user.setTimeZone(TimeZone.getTimeZone("US/Pacific"))
+        then:
         ec.user.getTimeZone() == TimeZone.getTimeZone("US/Pacific")
         ec.user.getTimeZone().getID() == "US/Pacific"
         ec.user.getTimeZone().getRawOffset() == -28800000
+    }
+
+    def "set and get TimeZone US/Central"() {
+        when:
         // set TimeZone back to default US/Central
         ec.user.setTimeZone(TimeZone.getTimeZone("US/Central"))
+        then:
         ec.user.getTimeZone().getID() == "US/Central"
     }
 
-    def "set and get currencyUomId"() {
-        expect:
+    def "set and get currencyUomId GBP"() {
+        when:
         ec.user.setCurrencyUomId("GBP")
+        then:
         ec.user.getCurrencyUomId() == "GBP"
+    }
+
+    def "set and get currencyUomId USD"() {
+        when:
         // reset to the default USD
         ec.user.setCurrencyUomId("USD")
+        then:
         ec.user.getCurrencyUomId() == "USD"
     }
 
@@ -93,8 +110,9 @@ class UserFacadeTests extends Specification {
     }
 
     def "set and get Preference"() {
-        expect:
+        when:
         ec.user.setPreference("testPref1", "prefValue1")
+        then:
         ec.user.getPreference("testPref1") == "prefValue1"
     }
 
