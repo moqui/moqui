@@ -211,8 +211,17 @@ class UserFacadeImpl implements UserFacade {
     /** @see org.moqui.context.UserFacade#setLocale(Locale) */
     void setLocale(Locale locale) {
         if (this.username) {
-            eci.service.sync().name("update", "moqui.security.UserAccount")
-                    .parameters((Map<String, Object>) [userId:getUserId(), locale:locale.toString()]).call()
+            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+            boolean beganTransaction = eci.transaction.begin(null)
+            try {
+                userAccount.set("locale", locale.toString())
+                userAccount.update()
+            } catch (Throwable t) {
+                eci.transaction.rollback(beganTransaction, "Error saving timeZone", t)
+            } finally {
+                if (eci.transaction.isTransactionInPlace()) eci.transaction.commit(beganTransaction)
+                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+            }
         } else {
             throw new IllegalStateException("No user logged in, can't set Locale")
         }
@@ -231,8 +240,17 @@ class UserFacadeImpl implements UserFacade {
     /** @see org.moqui.context.UserFacade#setTimeZone(TimeZone) */
     void setTimeZone(TimeZone tz) {
         if (this.username) {
-            eci.service.sync().name("update", "moqui.security.UserAccount")
-                    .parameters((Map<String, Object>) [userId:getUserId(), timeZone:tz.getID()]).call()
+            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+            boolean beganTransaction = eci.transaction.begin(null)
+            try {
+                userAccount.set("timeZone", tz.getID())
+                userAccount.update()
+            } catch (Throwable t) {
+                eci.transaction.rollback(beganTransaction, "Error saving timeZone", t)
+            } finally {
+                if (eci.transaction.isTransactionInPlace()) eci.transaction.commit(beganTransaction)
+                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+            }
         } else {
             throw new IllegalStateException("No user logged in, can't set Time Zone")
         }
@@ -244,8 +262,17 @@ class UserFacadeImpl implements UserFacade {
     /** @see org.moqui.context.UserFacade#setCurrencyUomId(String) */
     void setCurrencyUomId(String uomId) {
         if (this.username) {
-            eci.service.sync().name("update", "moqui.security.UserAccount")
-                    .parameters((Map<String, Object>) [userId:getUserId(), currencyUomId:uomId]).call()
+            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+            boolean beganTransaction = eci.transaction.begin(null)
+            try {
+                userAccount.set("currencyUomId", uomId)
+                userAccount.update()
+            } catch (Throwable t) {
+                eci.transaction.rollback(beganTransaction, "Error saving currencyUomId", t)
+            } finally {
+                if (eci.transaction.isTransactionInPlace()) eci.transaction.commit(beganTransaction)
+                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+            }
         } else {
             throw new IllegalStateException("No user logged in, can't set Currency")
         }
@@ -440,7 +467,7 @@ class UserFacadeImpl implements UserFacade {
     EntityValue getUserAccount() {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
-            internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", this.getUsername()).useCache(true).one()
+            internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", this.getUsername()).useCache(false).one()
         }
         // logger.info("Got UserAccount [${internalUserAccount}] with userIdStack [${userIdStack}]")
         return internalUserAccount
