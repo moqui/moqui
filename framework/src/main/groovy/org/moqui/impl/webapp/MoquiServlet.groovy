@@ -48,6 +48,7 @@ class MoquiServlet extends HttpServlet {
         if (logger.traceEnabled) logger.trace("Start request to [${pathInfo}] at time [${startTime}] in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
 
         ExecutionContext ec = executionContextFactory.getExecutionContext()
+        if (!request.characterEncoding) request.setCharacterEncoding("UTF-8")
         ec.initWebFacade(moquiWebappName, request, response)
 
         /** NOTE to set render settings manually do something like this, but it is not necessary to set these things
