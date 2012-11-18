@@ -27,7 +27,7 @@ public class MessageFacadeImpl implements MessageFacade {
     List<String> getMessages() { return this.messageList }
     String getMessagesString() {
         StringBuilder messageBuilder = new StringBuilder()
-        for (String message in errorList) messageBuilder.append(message).append("\n")
+        for (String message in messageList) messageBuilder.append(message).append("\n")
         return messageBuilder.toString()
     }
     void addMessage(String message) { if (message) this.messageList.add(message) }
