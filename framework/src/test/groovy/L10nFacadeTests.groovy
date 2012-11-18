@@ -15,6 +15,7 @@ import spock.lang.*
 import org.moqui.context.ExecutionContext
 import org.moqui.Moqui
 import org.moqui.entity.EntityValue
+import java.sql.Timestamp
 
 class L10nFacadeTests extends Specification {
     @Shared
@@ -31,6 +32,7 @@ class L10nFacadeTests extends Specification {
 
     @Unroll
     def "get Localized Message (#original - #locale)"() {
+        // NOTE: this relies on a LocalizedMessage records in CommonL10nData.xml
         expect:
         ec.user.setLocale(new Locale(locale))
         localized == ec.l10n.getLocalizedMessage(original)
@@ -51,6 +53,7 @@ class L10nFacadeTests extends Specification {
 
     @Unroll
     def "LocalizedEntityField with Enumeration.description (#enumId - #locale)"() {
+        // NOTE: this relies on a LocalizedEntityField records in CommonL10nData.xml
         setup:
         ec.artifactExecution.disableAuthz()
 
@@ -73,14 +76,60 @@ class L10nFacadeTests extends Specification {
         "GEOT_COUNTRY" | "es" | "Pa\u00EDs"
     }
 
-    // TODO test localized message with variable expansion (ensure translate then expand)
+    def "localized message with variable expansion"() {
+        // test localized message with variable expansion (ensure translate then expand)
+        // NOTE: this relies on a LocalizedMessage record in ExampleL10nData.xml
+        expect:
+        ec.l10n.getLocalizedMessage("Test expansion \${ec.user.locale} original") == "Test expansion \${ec.tenantId} localized"
+        ec.resource.evaluateStringExpand("Test expansion \${ec.user.locale} original", "") == "Test expansion DEFAULT localized"
+    }
 
-    // TODO test formatCurrency
-    // TODO test formatValue
+    def "format USD and GBP currency in US and UK locales"() {
+        expect:
+        ec.user.setLocale(Locale.US)
+        ec.l10n.formatCurrency(new BigDecimal("12.34"), "USD", 2) == "\$12.34"
+        ec.l10n.formatCurrency(new BigDecimal("43.21"), "GBP", 2) == "GBP43.21"
+        ec.user.setLocale(Locale.UK)
+        ec.l10n.formatCurrency(new BigDecimal("12.34"), "USD", 2) == "USD12.34"
+        ec.l10n.formatCurrency(new BigDecimal("43.21"), "GBP", 2) == "\u00A343.21"
 
-    // TODO test parseTime
-    // TODO test parseDate
-    // TODO test parseTimestamp
+        cleanup:
+        // back to the default
+        ec.user.setLocale(Locale.US)
+    }
+
+    @Unroll
+    def "format output value (#value - #format)"() {
+        expect:
+        result == ec.l10n.formatValue(value, format)
+
+        where:
+        value | format | result
+        new BigDecimal("5") | "##.#" | "5"
+        new BigDecimal("5") | "##.00" | "5.00"
+        Timestamp.valueOf("2010-01-02 12:34:56.789") | "yyyy-MM-dd" | "2010-01-02"
+        Timestamp.valueOf("2010-01-02 12:34:56.789") | "d MMM yyyy" | "2 Jan 2010"
+        Timestamp.valueOf("2010-01-02 12:34:56.789") | "hh:mm:ss" | "12:34:56"
+    }
+
+    def "parse time"() {
+        expect:
+        java.sql.Time.valueOf("12:34:56") == ec.l10n.parseTime("12:34:56", "HH:mm:ss")
+        java.sql.Time.valueOf("00:34:56") == ec.l10n.parseTime("12:34:56 AM", "hh:mm:ss a")
+        java.sql.Time.valueOf("12:34:56") == ec.l10n.parseTime("12:34:56 PM", "hh:mm:ss a")
+    }
+
+    def "parse date"() {
+        expect:
+        java.sql.Date.valueOf("2010-01-02") == ec.l10n.parseDate("2010-01-02", "yyyy-MM-dd")
+        java.sql.Date.valueOf("2010-01-02") == ec.l10n.parseDate("2 Jan 2010", "d MMM yyyy")
+    }
+
+    def "parse timestamp"() {
+        expect:
+        Timestamp.valueOf("2010-01-02 12:34:56.000") == ec.l10n.parseTimestamp("2010-01-02 12:34:56", "yyyy-MM-dd HH:mm:ss")
+    }
+
     // TODO test parseDateTime
     // TODO test parseNumber
 }

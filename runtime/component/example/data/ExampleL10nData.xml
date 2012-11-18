@@ -20,4 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.basic.LocalizedMessage original="Example Feature" locale="fr" localized="Caractéristique exemple"/>
     <moqui.basic.LocalizedMessage original="Example Feature" locale="it" localized="Caratteristica Esempio"/>
     <moqui.basic.LocalizedMessage original="Example Feature" locale="zh" localized="样例特征"/>
+
+    <moqui.basic.LocalizedMessage original="Test expansion ${ec.user.locale} original" locale="en"
+            localized="Test expansion ${ec.tenantId} localized"/>
 </entity-facade-xml>
