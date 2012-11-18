@@ -43,7 +43,7 @@ class L10nFacadeTests extends Specification {
         "Create" | "en" | "Create"
         "Create" | "es" | "Crear"
         "Create" | "fr" | "Cr\u00E9er"
-        "Create" | "zh" | "??" // NOTE: currently fails, needs fixing
+        "Create" | "zh" | "\u65B0\u5EFA" // for XML: &#26032;&#24314;
         "Not Localized" | "en" | "Not Localized"
         "Not Localized" | "es" | "Not Localized"
         "Not Localized" | "zh" | "Not Localized"
@@ -67,7 +67,7 @@ class L10nFacadeTests extends Specification {
         enumId | locale | localized
         "GEOT_CITY" | "en" | "City"
         "GEOT_CITY" | "es" | "Ciudad"
-        "GEOT_CITY" | "zh" | "?" // NOTE: currently fails, needs fixing
+        "GEOT_CITY" | "zh" | "\u5E02" // for XML: &#24066;
         "GEOT_STATE" | "en" | "State"
         "GEOT_STATE" | "es" | "Estado"
         "GEOT_COUNTRY" | "es" | "Pa\u00EDs"
