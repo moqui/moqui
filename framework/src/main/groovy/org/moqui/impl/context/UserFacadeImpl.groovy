@@ -209,7 +209,9 @@ class UserFacadeImpl implements UserFacade {
         Locale locale = null
         if (this.username) {
             String localeStr = this.userAccount.locale
-            if (localeStr) locale = new Locale(localeStr)
+            if (localeStr) locale = localeStr.contains("_") ?
+                new Locale(localeStr.substring(0, localeStr.indexOf("_")), localeStr.substring(localeStr.indexOf("_")+1).toUpperCase()) :
+                new Locale(localeStr)
         } else {
             locale = internalLocale
         }

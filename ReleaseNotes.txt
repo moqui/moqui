@@ -161,6 +161,8 @@ Bug Fixes:
 - Fixed authz and tx issues with user preferences
 - Fixed issue with LocalizedEntityField because the code was still looking
   for the basic entity name and not the full entity name
+- Fixed issue with parsing locale from the database to include separate
+  language and country codes (was ignoring the country)
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

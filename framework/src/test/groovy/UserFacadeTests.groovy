@@ -37,7 +37,7 @@ class UserFacadeTests extends Specification {
         expect:
         ec.user.userId == "EX_JOHN_DOE"
         ec.user.username == "john.doe"
-        ec.user.locale.toString() == "en_us"
+        ec.user.locale.toString() == "en_US"
         ec.user.timeZone.ID == "US/Central"
         ec.user.currencyUomId == "USD"
         ec.user.userAccount.userFullName == "John Doe"
@@ -47,15 +47,15 @@ class UserFacadeTests extends Specification {
         when:
         ec.user.setLocale(Locale.UK)
         then:
-        // doesn't work because of Java API (results in "en_gb" == "en_GB) ec.user.getLocale() == Locale.UK
-        ec.user.getLocale().toString() == "en_gb"
+        ec.user.getLocale() == Locale.UK
+        ec.user.getLocale().toString() == "en_GB"
     }
     def "set and get Locale US"() {
         when:
         // set back to en_us
         ec.user.setLocale(Locale.US)
         then:
-        ec.user.locale.toString() == "en_us"
+        ec.user.locale.toString() == "en_US"
     }
 
     def "set and get TimeZone US/Pacific"() {

@@ -66,7 +66,8 @@ public class L10nFacadeImpl implements L10nFacade {
         if (uomId) nf.setCurrency(Currency.getInstance(uomId))
         nf.setMaximumFractionDigits(fractionDigits)
         nf.setMinimumFractionDigits(fractionDigits)
-        return nf.format(amount)
+        String formattedAmount = nf.format(amount)
+        return formattedAmount
     }
 
     /** @see org.moqui.context.L10nFacade#parseTime(String, String) */
