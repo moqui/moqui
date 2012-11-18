@@ -31,34 +31,36 @@ class L10nFacadeTests extends Specification {
     }
 
     @Unroll
-    def "get Localized Message (#original - #locale)"() {
+    def "get Localized Message (#original - #language #country)"() {
         // NOTE: this relies on a LocalizedMessage records in CommonL10nData.xml
         expect:
-        ec.user.setLocale(new Locale(locale))
+        ec.user.setLocale(new Locale(language, country))
         localized == ec.l10n.getLocalizedMessage(original)
 
         cleanup:
         ec.user.setLocale(Locale.US)
 
         where:
-        original | locale | localized
-        "Create" | "en" | "Create"
-        "Create" | "es" | "Crear"
-        "Create" | "fr" | "Cr\u00E9er"
-        "Create" | "zh" | "\u65B0\u5EFA" // for XML: &#26032;&#24314;
-        "Not Localized" | "en" | "Not Localized"
-        "Not Localized" | "es" | "Not Localized"
-        "Not Localized" | "zh" | "Not Localized"
+        original | language | country | localized
+        "Create" | "en" | ""  | "Create"
+        "Create" | "es" | ""  | "Crear"
+        "Create" | "es" | "ES"  | "Crear"
+        "Create" | "es" | "MX"  | "Crear"
+        "Create" | "fr" | ""  | "Cr\u00E9er"
+        "Create" | "zh" | ""  | "\u65B0\u5EFA" // for XML: &#26032;&#24314;
+        "Not Localized" | "en" | ""  | "Not Localized"
+        "Not Localized" | "es" | ""  | "Not Localized"
+        "Not Localized" | "zh" | ""  | "Not Localized"
     }
 
     @Unroll
-    def "LocalizedEntityField with Enumeration.description (#enumId - #locale)"() {
+    def "LocalizedEntityField with Enumeration.description (#enumId - #language #country)"() {
         // NOTE: this relies on a LocalizedEntityField records in CommonL10nData.xml
         setup:
         ec.artifactExecution.disableAuthz()
 
         expect:
-        ec.user.setLocale(new Locale(locale))
+        ec.user.setLocale(new Locale(language, country))
         EntityValue enumValue = ec.entity.makeFind("Enumeration").condition("enumId", enumId).one()
         localized == enumValue.get("description")
 
@@ -67,13 +69,15 @@ class L10nFacadeTests extends Specification {
         ec.user.setLocale(Locale.US)
 
         where:
-        enumId | locale | localized
-        "GEOT_CITY" | "en" | "City"
-        "GEOT_CITY" | "es" | "Ciudad"
-        "GEOT_CITY" | "zh" | "\u5E02" // for XML: &#24066;
-        "GEOT_STATE" | "en" | "State"
-        "GEOT_STATE" | "es" | "Estado"
-        "GEOT_COUNTRY" | "es" | "Pa\u00EDs"
+        enumId | language | country | localized
+        "GEOT_CITY" | "en" | "" | "City"
+        "GEOT_CITY" | "es" | ""  | "Ciudad"
+        "GEOT_CITY" | "es" | "ES"  | "Ciudad"
+        "GEOT_CITY" | "es" | "MX"  | "Ciudad"
+        "GEOT_CITY" | "zh" | ""  | "\u5E02" // for XML: &#24066;
+        "GEOT_STATE" | "en" | ""  | "State"
+        "GEOT_STATE" | "es" | ""  | "Estado"
+        "GEOT_COUNTRY" | "es" | ""  | "Pa\u00EDs"
     }
 
     def "localized message with variable expansion"() {
