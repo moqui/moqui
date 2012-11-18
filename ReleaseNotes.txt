@@ -8,7 +8,8 @@ Release 1.2.0 - TBD
 Moqui Framework release 1.2.0 is a minor new feature release and includes
 a number of bug fixes too. This release has undergone significantly more
 testing than previous releases because of a wider variety of functionality
-that has now been built and tested using the framework.
+that has now been built and tested using the framework, and because of a
+unit testing effort (framework unit tests built using Spock).
 
 The new features include popup menus (using the new jQueryUI menu widget),
 dynamic-options in XML Form drop-downs with dependency on other fields,
@@ -158,6 +159,8 @@ Bug Fixes:
   side-effects; this fixes a number of bugs
 - User login now works outside a web context
 - Fixed authz and tx issues with user preferences
+- Fixed issue with LocalizedEntityField because the code was still looking
+  for the basic entity name and not the full entity name
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
