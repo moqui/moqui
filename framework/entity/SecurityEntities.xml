@@ -275,6 +275,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <member-entity entity-alias="UGP" entity-name="moqui.security.UserGroupPermission" join-from-alias="UGM" >
             <key-map field-name="userGroupId"/>
         </member-entity>
+        <alias name="userGroupId" entity-alias="UGM"/>
         <alias name="userId" entity-alias="UGM"/>
         <alias name="userPermissionId" entity-alias="UGP"/>
         <alias name="groupFromDate" entity-alias="UGM" field="fromDate"/>
