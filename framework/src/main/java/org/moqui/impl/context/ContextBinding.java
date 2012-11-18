@@ -12,11 +12,25 @@
 package org.moqui.impl.context;
 
 import groovy.lang.Binding;
+import groovy.lang.MissingPropertyException;
 
 import java.util.Map;
 
 public class ContextBinding extends Binding {
     public ContextBinding(Map variables) { super(variables); }
+
+    @Override
+    public Object getVariable(String name) {
+        Object result = getVariables().get(name);
+
+        // NOTE: this code is part of the original Groovy groovy.lang.Binding.getVariable() method and leaving it out
+        //     is the reason to override this method:
+        //if (result == null && !variables.containsKey(name)) {
+        //    throw new MissingPropertyException(name, this.getClass());
+        //}
+
+        return result;
+    }
 
     @Override
     public boolean hasVariable(String name) {
