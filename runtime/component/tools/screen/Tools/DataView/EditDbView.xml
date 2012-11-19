@@ -162,8 +162,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="entityAlias"><default-field><hidden default-value="MASTER"/></default-field></field>
                     <field name="entityName">
                         <default-field><drop-down combo-box="true" allow-empty="true">
-                            <list-options list="masterEntityList" key="${entityName}"
-                                          text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)} - ${context.package}"/>
+                            <list-options list="masterEntityList" key="${fullEntityName}"
+                                          text="${entityName} - ${context.package}"/>
                         </drop-down></default-field>
                     </field>
                     <field name="submitButton"><default-field title="Set Master"><submit/></default-field></field>
