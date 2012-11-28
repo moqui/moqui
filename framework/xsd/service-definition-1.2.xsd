@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="services">
         <xs:complexType>
             <xs:sequence>
-                <xs:element maxOccurs="unbounded" ref="service"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="service"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>
