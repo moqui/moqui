@@ -22,9 +22,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="run">
         <actions>
-            <service-call name="${serviceName}" out-map="serviceResults"/>
+            <service-call name="${serviceName}" in-map="context" out-map="serviceResults"/>
             <script>
-            ec.logger.log(ec.logger.WARN_INT, "Service Results: ${serviceResults}", null)
+            ec.logger.warn("Service Results: ${serviceResults}")
             // TODO: this doesn't seem to be making it through to the results form on redirect
             ec.web.session.setAttribute("moqui.saved.parameters", serviceResults)
             </script>

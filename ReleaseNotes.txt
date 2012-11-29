@@ -163,6 +163,7 @@ Bug Fixes:
   for the basic entity name and not the full entity name
 - Fixed issue with parsing locale from the database to include separate
   language and country codes (was ignoring the country)
+- Fixed bug on ServiceRun screen where parameters were not getting passed
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
