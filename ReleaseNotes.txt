@@ -164,6 +164,7 @@ Bug Fixes:
 - Fixed issue with parsing locale from the database to include separate
   language and country codes (was ignoring the country)
 - Fixed bug on ServiceRun screen where parameters were not getting passed
+- Fixed bug where group-by clause was missing on EntityFind.one() calls
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

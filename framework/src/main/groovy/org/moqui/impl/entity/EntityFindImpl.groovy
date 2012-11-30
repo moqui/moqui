@@ -59,6 +59,8 @@ class EntityFindImpl extends EntityFindBase {
             (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         efb.startWhereClause()
         whereCondition.makeSqlWhere(efb)
+        // GROUP BY clause
+        efb.makeGroupByClause(this.fieldsToSelect)
 
         if (this.forUpdate) efb.makeForUpdate()
 
@@ -92,10 +94,6 @@ class EntityFindImpl extends EntityFindBase {
             efb.closeAll()
         }
 
-        return newEntityValue
-    }
-
-    protected EntityValue internalOne(EntityFindBuilder efb, String condSql) {
         return newEntityValue
     }
 

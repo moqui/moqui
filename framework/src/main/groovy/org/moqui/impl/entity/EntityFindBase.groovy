@@ -605,16 +605,16 @@ abstract class EntityFindBase implements EntityFind {
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (whereCondition && viewWhere) {
-            whereCondition =
-                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
+            whereCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition,
+                    EntityCondition.JoinOperator.AND, viewWhere)
         } else if (viewWhere) {
             whereCondition = viewWhere
         }
         EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
         EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
         if (havingCondition && viewHaving) {
-            havingCondition =
-                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
+            havingCondition = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition,
+                        EntityCondition.JoinOperator.AND, viewHaving)
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
