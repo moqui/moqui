@@ -45,6 +45,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     protected final Cache scriptGroovyExpressionCache
     protected final Cache textLocationCache
+    protected final Cache resourceReferenceByLocation
 
     protected final Map<String, Class> resourceReferenceClasses = new HashMap()
     protected final Map<String, TemplateRenderer> templateRenderers = new HashMap()
@@ -58,15 +59,15 @@ public class ResourceFacadeImpl implements ResourceFacade {
     ResourceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
 
-        this.ftlTemplateRenderer = new FtlTemplateRenderer()
-        this.ftlTemplateRenderer.init(ecfi)
+        ftlTemplateRenderer = new FtlTemplateRenderer()
+        ftlTemplateRenderer.init(ecfi)
 
-        this.xmlActionsScriptRunner = new XmlActionsScriptRunner()
-        this.xmlActionsScriptRunner.init(ecfi)
+        xmlActionsScriptRunner = new XmlActionsScriptRunner()
+        xmlActionsScriptRunner.init(ecfi)
 
-        this.textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
-
-        this.scriptGroovyExpressionCache = ecfi.getCacheFacade().getCache("resource.groovy.expression")
+        textLocationCache = ecfi.getCacheFacade().getCache("resource.text.location")
+        scriptGroovyExpressionCache = ecfi.getCacheFacade().getCache("resource.groovy.expression")
+        resourceReferenceByLocation = ecfi.getCacheFacade().getCache("resource.reference.location")
 
         // Setup resource reference classes
         for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
@@ -182,6 +183,10 @@ public class ResourceFacadeImpl implements ResourceFacade {
     /** @see org.moqui.context.ResourceFacade#getLocationReference(String) */
     ResourceReference getLocationReference(String location) {
         if (location == null) return null
+
+        ResourceReference cachedRr = (ResourceReference) resourceReferenceByLocation.get(location)
+        if (cachedRr != null) return cachedRr
+
         String scheme = "file"
         // how to get the scheme for windows? the Java URI class doesn't like spaces, the if we look for the first ":"
         //    it may be a drive letter instead of a scheme/protocol
@@ -194,7 +199,9 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (!rrClass) throw new IllegalArgumentException("Prefix (scheme) not supported for location [${location}]")
 
         ResourceReference rr = (ResourceReference) rrClass.newInstance()
-        return rr.init(location, ecfi.executionContext)
+        rr.init(location, ecfi.executionContext)
+        resourceReferenceByLocation.put(location, rr)
+        return rr
     }
 
     /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */

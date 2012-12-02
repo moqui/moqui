@@ -50,6 +50,7 @@ class WrapperResourceReference implements ResourceReference {
     boolean isFile() { return rr.isFile() }
     boolean isDirectory() { return rr.isDirectory() }
     List<ResourceReference> getDirectoryEntries() { return rr.getDirectoryEntries() }
+    ResourceReference findChildResource(String relativePath) { return rr.findChildResource(relativePath) }
 
     boolean supportsExists() { return rr.supportsExists() }
     boolean getExists() { return rr.getExists()}

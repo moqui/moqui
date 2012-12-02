@@ -35,7 +35,7 @@ class StupidWebUtilities {
             while ((current = pathInfoStr.indexOf('/', last + 1)) != -1) {
                 String element = pathInfoStr.substring(last + 1, current)
                 last = current
-                if (element.charAt(0) == '~' && element.contains('=')) {
+                if (element.length() > 0 && element.charAt(0) == '~' && element.contains('=')) {
                     String name = element.substring(1, element.indexOf('='))
                     String value = element.substring(element.indexOf('=') + 1)
                     // NOTE: currently ignoring existing values, likely won't be any: Object curValue = paramMap.get(name)

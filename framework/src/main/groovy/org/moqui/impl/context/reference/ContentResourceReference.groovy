@@ -19,10 +19,8 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ResourceFacadeImpl
 
-class ContentResourceReference implements ResourceReference {
+class ContentResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
-
-    ExecutionContext ec = null
 
     URI locationUri
     String repositoryName
@@ -111,6 +109,8 @@ class ContentResourceReference implements ResourceReference {
         }
         return dirEntries
     }
+    // TODO: consider overriding findChildResource() to let the JCR impl do the query
+    // ResourceReference findChildResource(String relativePath)
 
     @Override
     boolean supportsExists() { return true }
@@ -126,12 +126,6 @@ class ContentResourceReference implements ResourceReference {
         // TODO: more research to see if we can get a last modified time
         System.currentTimeMillis()
     }
-
-    @Override
-    void destroy() { }
-
-    @Override
-    String toString() { return getLocation() }
 
     javax.jcr.Node getNode() {
         if (theNode != null) return theNode

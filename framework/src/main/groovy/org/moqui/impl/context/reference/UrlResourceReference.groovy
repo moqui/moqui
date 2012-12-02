@@ -15,14 +15,13 @@ import org.moqui.context.ResourceReference
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.StupidUtilities
 
-class UrlResourceReference implements ResourceReference {
+class UrlResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UrlResourceReference.class)
 
     URL locationUrl = null
-    ExecutionContext ec = null
     Boolean exists = null
     boolean isFile = false
-    
+
     UrlResourceReference() { }
     
     @Override
@@ -132,10 +131,4 @@ class UrlResourceReference implements ResourceReference {
             System.currentTimeMillis()
         }
     }
-
-    @Override
-    void destroy() { }
-
-    @Override
-    String toString() { return getLocation() ?: "[no location (${this.class.getName()})]" }
 }
