@@ -84,6 +84,7 @@ This release includes:
   - Added ResourceReference.findChildResource() method to replace the code
     used only for subscreen references, expand that functionality and make
     it reusable for wiki content, etc
+  - Added methods to ResourceReference for writing to the resource
 - Fleshed out ValidationError functionality including display in apps.xml
   and considering the ec.message.validationErrors list for storing error
   details in session between redirects, and changed entity and service
@@ -170,6 +171,7 @@ Bug Fixes:
 - Fixed bug where group-by clause was missing on EntityFind.one() calls
 - Fixed issues with ResourceReference directory listings where filenames
   have spaces in them
+- Fixed bug in service parameter text-length.@max checking
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

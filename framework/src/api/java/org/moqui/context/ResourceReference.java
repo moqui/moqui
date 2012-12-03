@@ -12,6 +12,7 @@
 package org.moqui.context;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -48,6 +49,10 @@ public interface ResourceReference {
 
     boolean supportsLastModified();
     long getLastModified();
+
+    boolean supportsWrite();
+    void putText(String text);
+    OutputStream openOutputStream();
 
     void destroy();
 }

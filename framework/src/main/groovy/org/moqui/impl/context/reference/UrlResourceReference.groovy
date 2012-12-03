@@ -133,4 +133,17 @@ class UrlResourceReference extends BaseResourceReference {
             System.currentTimeMillis()
         }
     }
+
+    boolean supportsWrite() { isFile }
+    void putText(String text) {
+        // first make sure the directory exists that this is in
+        if (!getFile().parentFile.exists()) getFile().parentFile.mkdirs()
+        // now write the text to the file and close it
+        FileWriter fw = new FileWriter(getFile())
+        fw.write(text)
+        fw.close()
+    }
+    OutputStream openOutputStream() {
+        return new FileOutputStream(getFile())
+    }
 }

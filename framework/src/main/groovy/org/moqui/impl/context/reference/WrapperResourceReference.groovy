@@ -58,6 +58,10 @@ class WrapperResourceReference implements ResourceReference {
     boolean supportsLastModified() { return rr.supportsLastModified() }
     long getLastModified() { return rr.getLastModified() }
 
+    boolean supportsWrite() { return rr.supportsWrite() }
+    void putText(String text) { rr.putText(text) }
+    OutputStream openOutputStream() { return rr.openOutputStream() }
+
     void destroy() { rr.destroy() }
 
     @Override

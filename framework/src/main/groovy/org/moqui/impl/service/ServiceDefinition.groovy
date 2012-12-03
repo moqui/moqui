@@ -577,7 +577,7 @@ class ServiceDefinition {
             }
             if (valNode."@max") {
                 int max = valNode."@max" as int
-                if (max >= str.length()) {
+                if (str.length() > max) {
                     eci.message.addValidationError(null, parameterName, getServiceName(), "Value: [${pv}] length ${str.length()}, is longer than ${max} characters.", null)
                     return false
                 }

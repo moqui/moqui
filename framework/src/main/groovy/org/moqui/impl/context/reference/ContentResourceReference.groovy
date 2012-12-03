@@ -18,6 +18,7 @@ import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ResourceFacadeImpl
+import org.moqui.BaseException
 
 class ContentResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
@@ -50,10 +51,10 @@ class ContentResourceReference extends BaseResourceReference {
     }
 
     @Override
-    String getLocation() { return locationUri.toString() }
+    String getLocation() { locationUri.toString() }
 
     @Override
-    URI getUri() { return locationUri }
+    URI getUri() { locationUri }
     @Override
     String getFileName() {
         return nodePath.contains("/") ? nodePath.substring(nodePath.lastIndexOf("/")+1) : nodePath
@@ -85,7 +86,7 @@ class ContentResourceReference extends BaseResourceReference {
     URL getUrl() { return null }
 
     @Override
-    boolean supportsDirectory() { return true }
+    boolean supportsDirectory() { true }
     @Override
     boolean isFile() {
         javax.jcr.Node node = getNode()
@@ -113,7 +114,7 @@ class ContentResourceReference extends BaseResourceReference {
     // ResourceReference findChildResource(String relativePath)
 
     @Override
-    boolean supportsExists() { return true }
+    boolean supportsExists() { true }
     @Override
     boolean getExists() {
         if (theNode != null) return true
@@ -121,10 +122,46 @@ class ContentResourceReference extends BaseResourceReference {
         return session.nodeExists(nodePath)
     }
 
-    boolean supportsLastModified() { return false }
+    boolean supportsLastModified() { false }
     long getLastModified() {
         // TODO: more research to see if we can get a last modified time
         System.currentTimeMillis()
+    }
+
+    boolean supportsWrite() { true }
+    void putText(String text) {
+        Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
+        javax.jcr.Node rootNode = session.getRootNode()
+
+        // first make sure the directory exists that this is in
+        List<String> nodePathList = nodePath.split('/')
+        if (nodePathList) nodePathList.remove(nodePathList.size()-1)
+        javax.jcr.Node folderNode = rootNode
+        if (nodePathList) {
+            for (String nodePathElement in nodePathList) {
+                if (folderNode.hasNode(nodePathElement)) {
+                    folderNode = folderNode.getNode(nodePathElement)
+                } else {
+                    folderNode = folderNode.addNode(nodePathElement, "nt:folder")
+                }
+            }
+        }
+
+        // now write the text to the node and save it
+        javax.jcr.Node fileNode = folderNode.addNode(fileName, "nt:file")
+        javax.jcr.Node fileContent = fileNode.addNode("jcr:content", "nt:resource")
+        fileContent.setProperty("jcr:mimeType", contentType)
+        // fileContent.setProperty("jcr:encoding", ?)
+        Calendar lastModified = Calendar.getInstance(); lastModified.setTimeInMillis(System.currentTimeMillis())
+        fileContent.setProperty("jcr:lastModified", lastModified)
+
+        fileContent.setProperty("jcr:data", session.valueFactory.createValue(text))
+
+        session.save()
+    }
+    OutputStream openOutputStream() {
+        // TODO implement openOutputStream
+        throw new BaseException("openOutputStream for content not yet supported")
     }
 
     javax.jcr.Node getNode() {
