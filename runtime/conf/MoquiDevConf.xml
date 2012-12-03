@@ -21,9 +21,11 @@
         <cache name="resource.groovy.location" expire-time-idle="5"/>
         <!-- longer timeout because these are cached by the expression text itself, so changed text is a new entry -->
         <cache name="resource.groovy.expression" expire-time-idle="600"/>
+        <cache name="resource.javascript.location" expire-time-idle="5"/>
 
         <cache name="resource.ftl.location" expire-time-idle="5"/>
-        <cache name="resource.cwiki.location" expire-time-idle="5"/>
+        <cache name="resource.gstring.location" expire-time-idle="5"/>
+        <cache name="resource.wiki.location" expire-time-idle="5"/>
         <cache name="resource.text.location" expire-time-idle="5"/>
         <cache name="resource.reference.location" expire-time-idle="5"/>
     </cache-list>
