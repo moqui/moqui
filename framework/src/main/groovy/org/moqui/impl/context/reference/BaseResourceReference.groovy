@@ -69,66 +69,68 @@ abstract class BaseResourceReference implements ResourceReference {
         // no path to child? that means this resource
         if (!relativePath) return this
 
-        ResourceReference childRef = null
+        if (!supportsAll()) {
+            ec.message.addError("Not looking for child resource at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
+            return null
+        }
 
+        ResourceReference childRef = null
         // logger.warn("============= finding child resource of [${toString()}] path [${relativePath}]")
 
         // check the cache first
         childRef = getSubContentRefByPath().get(relativePath)
         if (childRef != null && childRef.exists) return childRef
 
-        if (supportsAll()) {
-            // this finds a file in a directory with the same name as this resource, unless this resource is a directory
-            StringBuilder dirLoc = new StringBuilder(getLocation())
-            ResourceReference directoryRef = ec.resource.getLocationReference(dirLoc.toString())
-            while (!(directoryRef.exists && directoryRef.isDirectory()) && dirLoc.lastIndexOf(".") > 0) {
-                // get rid of one suffix at a time (for screens probably .xml but use .* for other files, etc)
-                dirLoc.delete(dirLoc.lastIndexOf("."), dirLoc.length())
-                directoryRef = ec.resource.getLocationReference(dirLoc.toString())
+        // this finds a file in a directory with the same name as this resource, unless this resource is a directory
+        StringBuilder dirLoc = new StringBuilder(getLocation())
+        ResourceReference directoryRef = ec.resource.getLocationReference(dirLoc.toString())
+        while (!(directoryRef.exists && directoryRef.isDirectory()) && dirLoc.lastIndexOf(".") > 0) {
+            // get rid of one suffix at a time (for screens probably .xml but use .* for other files, etc)
+            dirLoc.delete(dirLoc.lastIndexOf("."), dirLoc.length())
+            directoryRef = ec.resource.getLocationReference(dirLoc.toString())
+        }
+
+        // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}]")
+        if (directoryRef.exists) {
+            StringBuilder fileLoc = new StringBuilder(dirLoc)
+            if (fileLoc.charAt(fileLoc.length()-1) == '/') fileLoc.deleteCharAt(fileLoc.length()-1)
+            if (relativePath.charAt(0) != '/') fileLoc.append('/')
+            fileLoc.append(relativePath)
+
+            ResourceReference theFile = ec.resource.getLocationReference(fileLoc.toString())
+            if (theFile.exists && theFile.isFile()) childRef = theFile
+
+            // logger.warn("============= finding child resource path [${relativePath}] childRef 1 [${childRef}]")
+            /* this approach is no longer needed; the more flexible approach below will handle this and more:
+            if (childRef == null) {
+                // try adding known extensions
+                for (String extToTry in ec.resource.templateRenderers.keySet()) {
+                    if (childRef != null) break
+                    theFile = ec.resource.getLocationReference(fileLoc.toString() + extToTry)
+                    if (theFile.exists && theFile.isFile()) childRef = theFile
+                    // logger.warn("============= finding child resource path [${relativePath}] fileLoc [${fileLoc}] extToTry [${extToTry}] childRef [${theFile}]")
+                }
             }
+            */
 
-            // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}]")
-            if (directoryRef.exists) {
-                StringBuilder fileLoc = new StringBuilder(dirLoc)
-                if (fileLoc.charAt(fileLoc.length()-1) == '/') fileLoc.deleteCharAt(fileLoc.length()-1)
-                if (relativePath.charAt(0) != '/') fileLoc.append('/')
-                fileLoc.append(relativePath)
+            // logger.warn("============= finding child resource path [${relativePath}] childRef 2 [${childRef}]")
+            if (childRef == null) {
+                // didn't find it at a literal path, try searching for it in all subdirectories
+                List<String> relativePathNameList = relativePath.split("/")
+                String childFilename = relativePathNameList.get(relativePathNameList.size()-1)
+                relativePathNameList = relativePathNameList.subList(0, relativePathNameList.size()-1)
 
-                ResourceReference theFile = ec.resource.getLocationReference(fileLoc.toString())
-                if (theFile.exists && theFile.isFile()) childRef = theFile
-
-                // logger.warn("============= finding child resource path [${relativePath}] childRef 1 [${childRef}]")
-                if (childRef == null) {
-                    // try adding known extensions
-                    for (String extToTry in ec.resource.templateRenderers.keySet()) {
-                        if (childRef != null) break
-                        theFile = ec.resource.getLocationReference(fileLoc.toString() + extToTry)
-                        if (theFile.exists && theFile.isFile()) childRef = theFile
-                        // logger.warn("============= finding child resource path [${relativePath}] fileLoc [${fileLoc}] extToTry [${extToTry}] childRef [${theFile}]")
-                    }
+                // search remaining relativePathNameList, ie partial directories leading up to filename
+                for (String relativePathName in relativePathNameList) {
+                    directoryRef = internalFindChildDir(directoryRef, relativePathName)
+                    if (directoryRef == null) break
                 }
 
-                // logger.warn("============= finding child resource path [${relativePath}] childRef 2 [${childRef}]")
-                if (childRef == null) {
-                    // didn't find it at a literal path, try searching for it in all subdirectories
-                    List<String> relativePathNameList = relativePath.split("/")
-                    String childFilename = relativePathNameList.get(relativePathNameList.size()-1)
-                    relativePathNameList = relativePathNameList.subList(0, relativePathNameList.size()-1)
-
-                    // search remaining relativePathNameList, ie partial directories leading up to filename
-                    for (String relativePathName in relativePathNameList) {
-                        directoryRef = internalFindChildDir(directoryRef, relativePathName)
-                        if (directoryRef == null) break
-                    }
-
-                    // recursively walk the directory tree and find the childFilename
-                    childRef = internalFindChildFile(directoryRef, childFilename)
-                    // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}] childFilename [${childFilename}] childRef [${childRef}]")
-                }
-                // logger.warn("============= finding child resource path [${relativePath}] childRef 3 [${childRef}]")
+                // recursively walk the directory tree and find the childFilename
+                childRef = internalFindChildFile(directoryRef, childFilename)
+                // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}] childFilename [${childFilename}] childRef [${childRef}]")
             }
-        } else {
-            ec.message.addError("Not looking for child resource at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
+            // logger.warn("============= finding child resource path [${relativePath}] childRef 3 [${childRef}]")
         }
 
         // put it in the cache before returning
@@ -140,13 +142,26 @@ abstract class BaseResourceReference implements ResourceReference {
 
     ResourceReference internalFindChildDir(ResourceReference directoryRef, String childDirName) {
         if (directoryRef == null || !directoryRef.exists) return null
+        // no child dir name, means this/current dir
+        if (!childDirName) return directoryRef
+
+        // try a direct sub-directory, if it is there it's more efficient than a brute-force search
+        StringBuilder dirLocation = new StringBuilder(directoryRef.getLocation())
+        if (dirLocation.charAt(dirLocation.length()-1) == '/') dirLocation.deleteCharAt(dirLocation.length()-1)
+        if (childDirName.charAt(0) != '/') dirLocation.append('/')
+        dirLocation.append(childDirName)
+        ResourceReference directRef = ec.resource.getLocationReference(dirLocation.toString())
+        if (directRef != null && directRef.exists) return directRef
+
+        // if no direct reference is found, try the more flexible search
         for (ResourceReference childRef in directoryRef.directoryEntries) {
             if (childRef.isDirectory() && (childRef.fileName == childDirName || childRef.fileName.contains(childDirName + '.'))) {
                 // matching directory name, use it
                 return childRef
             } else if (childRef.isDirectory()) {
                 // non-matching directory name, recurse into it
-                return internalFindChildDir(childRef, childDirName)
+                ResourceReference subRef = internalFindChildDir(childRef, childDirName)
+                if (subRef != null) return subRef
             }
         }
         return null
@@ -154,11 +169,17 @@ abstract class BaseResourceReference implements ResourceReference {
 
     ResourceReference internalFindChildFile(ResourceReference directoryRef, String childFilename) {
         if (directoryRef == null || !directoryRef.exists) return null
-        for (ResourceReference childRef in directoryRef.directoryEntries) {
+        List<ResourceReference> childEntries = directoryRef.directoryEntries
+        // look through all files first, ie do a breadth-first search
+        for (ResourceReference childRef in childEntries) {
             if (childRef.isFile() && (childRef.fileName == childFilename || childRef.fileName.contains(childFilename + '.'))) {
                 return childRef
-            } else if (childRef.isDirectory()) {
-                return internalFindChildFile(childRef, childFilename)
+            }
+        }
+        for (ResourceReference childRef in childEntries) {
+            if (childRef.isDirectory()) {
+                ResourceReference subRef = internalFindChildFile(childRef, childFilename)
+                if (subRef != null) return subRef
             }
         }
         return null
