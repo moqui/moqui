@@ -791,10 +791,11 @@ class ScreenRenderImpl implements ScreenRender {
         return ui
     }
 
-    ScreenUrlInfo makeUrlByType(String url, String urlType, FtlNodeWrapper parameterParentNodeWrapper) {
+    ScreenUrlInfo makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper) {
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
          */
+        String url = ec.resource.evaluateStringExpand(origUrl, "")
         ScreenUrlInfo sui
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
