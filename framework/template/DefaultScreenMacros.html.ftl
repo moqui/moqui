@@ -221,10 +221,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if textToUse?exists>
         <#if textToUse["@location"]?has_content>
-<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
+        <#assign textLocation = ec.resource.evaluateStringExpand(textToUse["@location"], "")>
+<#if sri.doBoundaryComments()><!-- BEGIN render-mode.text[@location=${textLocation}][@template=${textToUse["@template"]?default("true")}] --></#if>
     <#-- NOTE: this still won't encode templates that are rendered to the writer -->
-    <#if .node["@encode"]!"false" == "true">${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)?html}<#else/>${sri.renderText(textToUse["@location"], textToUse["@template"]?if_exists)}</#if>
-<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textToUse["@location"]}][@template=${textToUse["@template"]?default("true")}] --></#if>
+    <#if .node["@encode"]!"false" == "true">${sri.renderText(textLocation, textToUse["@template"]?if_exists)?html}<#else>${sri.renderText(textLocation, textToUse["@template"]?if_exists)}</#if>
+<#if sri.doBoundaryComments()><!-- END   render-mode.text[@location=${textLocation}][@template=${textToUse["@template"]?default("true")}] --></#if>
         </#if>
         <#assign inlineTemplateSource = textToUse?string/>
         <#if inlineTemplateSource?has_content>

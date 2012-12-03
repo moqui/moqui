@@ -51,7 +51,7 @@ class ResourceFacadeTests extends Specification {
         "classpath://jta.properties" | "file" | null | "jta.properties" | "text/x-java-properties" | true | true | false
         "classpath://shiro.ini" | "file" | null | "shiro.ini" | "text/plain" | true | true | false
         "template/screen-macro/ScreenHtmlMacros.ftl" | "file" | null | "ScreenHtmlMacros.ftl" | "text/x-freemarker" | true | true | false
-        "template/screen-macro" | "file" | null | "" | null | true | false | true
+        "template/screen-macro" | "file" | null | "screen-macro" | null | true | false | true
     }
 
     @Unroll

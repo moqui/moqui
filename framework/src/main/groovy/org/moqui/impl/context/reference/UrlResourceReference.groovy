@@ -21,6 +21,7 @@ class UrlResourceReference extends BaseResourceReference {
     URL locationUrl = null
     Boolean exists = null
     boolean isFile = false
+    File localFile = null
 
     UrlResourceReference() { }
     
@@ -30,7 +31,7 @@ class UrlResourceReference extends BaseResourceReference {
         if (location.startsWith("/") || location.indexOf(":") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
             if (location.charAt(0) != '/') location = ec.ecfi.runtimePath + '/' + location
-            locationUrl = new File(location).toURI().toURL()
+            locationUrl = new URL("file:" + location)
             isFile = true
         } else {
             locationUrl = new URL(location)
@@ -40,9 +41,10 @@ class UrlResourceReference extends BaseResourceReference {
     }
 
     File getFile() {
+        if (localFile != null) return localFile
         // NOTE: using toExternalForm().substring(5) instead of toURI because URI does not allow spaces in a filename
-        File f = new File(locationUrl.toExternalForm().substring(5))
-        return f
+        localFile = new File(locationUrl.toExternalForm().substring(5))
+        return localFile
     }
 
     @Override
@@ -101,7 +103,7 @@ class UrlResourceReference extends BaseResourceReference {
             File f = getFile()
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
-                children.add(new UrlResourceReference().init(dirFile.toURI().toString(), ec))
+                children.add(new UrlResourceReference().init(dirFile.absolutePath, ec))
             }
             return children
         } else {

@@ -467,6 +467,9 @@ class ScreenRenderImpl implements ScreenRender {
         long screenStartTime = System.currentTimeMillis()
         boolean beganTransaction = screenUrlInfo.beginTransaction ? sfi.ecfi.transactionFacade.begin(null) : false
         try {
+            // make sure this (sri) is in the context before running actions
+            ec.context.put("sri", this)
+
             // run always-actions for all screens in path
             boolean hasAlwaysActions = false
             for (ScreenDefinition sd in screenUrlInfo.screenPathDefList) if (sd.alwaysActions != null) { hasAlwaysActions = true; break }

@@ -66,6 +66,9 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract List<ResourceReference> getDirectoryEntries();
     @Override
     ResourceReference findChildResource(String relativePath) {
+        // no path to child? that means this resource
+        if (!relativePath) return this
+
         ResourceReference childRef = null
 
         // logger.warn("============= finding child resource of [${toString()}] path [${relativePath}]")
@@ -87,6 +90,8 @@ abstract class BaseResourceReference implements ResourceReference {
             // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}]")
             if (directoryRef.exists) {
                 StringBuilder fileLoc = new StringBuilder(dirLoc)
+                if (fileLoc.charAt(fileLoc.length()-1) == '/') fileLoc.deleteCharAt(fileLoc.length()-1)
+                if (relativePath.charAt(0) != '/') fileLoc.append('/')
                 fileLoc.append(relativePath)
 
                 ResourceReference theFile = ec.resource.getLocationReference(fileLoc.toString())
@@ -99,6 +104,7 @@ abstract class BaseResourceReference implements ResourceReference {
                         if (childRef != null) break
                         theFile = ec.resource.getLocationReference(fileLoc.toString() + extToTry)
                         if (theFile.exists && theFile.isFile()) childRef = theFile
+                        // logger.warn("============= finding child resource path [${relativePath}] fileLoc [${fileLoc}] extToTry [${extToTry}] childRef [${theFile}]")
                     }
                 }
 
@@ -117,6 +123,7 @@ abstract class BaseResourceReference implements ResourceReference {
 
                     // recursively walk the directory tree and find the childFilename
                     childRef = internalFindChildFile(directoryRef, childFilename)
+                    // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}] childFilename [${childFilename}] childRef [${childRef}]")
                 }
                 // logger.warn("============= finding child resource path [${relativePath}] childRef 3 [${childRef}]")
             }
