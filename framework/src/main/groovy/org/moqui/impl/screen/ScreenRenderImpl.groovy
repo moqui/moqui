@@ -906,6 +906,14 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenUrlInfo getCurrentScreenUrl() { return screenUrlInfo }
+    URI getBaseLinkUri() {
+        String urlString = baseLinkUrl ?: getCurrentScreenUrl().getUrl()
+        URL blu = new URL(urlString)
+        // NOTE: not including user info, query, or fragment... should consider them?
+        // NOTE: using the multi-argument constructor so it will encode stuff
+        URI baseUri = new URI(blu.getProtocol(), null, blu.getHost(), blu.getPort(), blu.getPath(), null, null)
+        return baseUri
+    }
 
     String getCurrentThemeId() {
         String stteId = null

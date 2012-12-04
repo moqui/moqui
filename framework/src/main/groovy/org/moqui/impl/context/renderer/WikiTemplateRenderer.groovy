@@ -11,26 +11,25 @@
  */
 package org.moqui.impl.context.renderer
 
-import org.moqui.context.TemplateRenderer
-import org.slf4j.LoggerFactory
-import org.slf4j.Logger
-import org.moqui.context.Cache
-import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
-import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
 import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
+import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
+import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
 import org.eclipse.mylyn.wikitext.mediawiki.core.MediaWikiLanguage
 import org.eclipse.mylyn.wikitext.textile.core.TextileLanguage
 import org.eclipse.mylyn.wikitext.tracwiki.core.TracWikiLanguage
 import org.eclipse.mylyn.wikitext.twiki.core.TWikiLanguage
-import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.context.ExecutionContextFactory
+
 import org.moqui.BaseException
+import org.moqui.context.Cache
+import org.moqui.context.ExecutionContextFactory
+import org.moqui.context.TemplateRenderer
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.screen.ScreenRenderImpl
 
 class WikiTemplateRenderer implements TemplateRenderer {
-    protected final static Logger logger = LoggerFactory.getLogger(WikiTemplateRenderer.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WikiTemplateRenderer.class)
 
     protected ExecutionContextFactoryImpl ecfi
-
     protected Cache templateWikiLocationCache
 
     WikiTemplateRenderer() { }
@@ -52,6 +51,9 @@ class WikiTemplateRenderer implements TemplateRenderer {
         HtmlDocumentBuilder builder = new HtmlDocumentBuilder(localWriter)
         // avoid the <html> and <body> tags
         builder.setEmitAsDocument(false)
+        // if we're in the context of a screen render, use it's URL for the base
+        ScreenRenderImpl sri = (ScreenRenderImpl) ecfi.getExecutionContext().getContext().get("sri")
+        if (sri != null) builder.setBase(sri.getBaseLinkUri())
 
         MarkupParser parser
         if (location.endsWith(".cwiki") || location.endsWith(".confluence")) parser = new MarkupParser(new ConfluenceLanguage())

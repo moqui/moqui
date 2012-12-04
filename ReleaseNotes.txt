@@ -30,7 +30,7 @@ This release includes:
 - Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
 - Updated Apache Camel to 2.10.1, Apache Derby to 10.9.1.0, Apache
   Jackrabbit to 2.5.2, Apache Shiro to 1.2.1, ehcache to 2.6.0, Groovy to
-  2.0.5, and Quartz Scheduler to 2.1.6
+  2.0.5, Quartz Scheduler to 2.1.6, and WikiText to 1.8.0 (20121130)
 - Support for Spock specification and unit testing framework run with the
   gradle "test" task, and a few entity, service, user, and resource tests
 - XML Screens
@@ -85,6 +85,7 @@ This release includes:
     used only for subscreen references, expand that functionality and make
     it reusable for wiki content, etc
   - Added methods to ResourceReference for writing to the resource
+  - Wiki template renderer gets linkBaseUrl from ScreenRender
 - Fleshed out ValidationError functionality including display in apps.xml
   and considering the ec.message.validationErrors list for storing error
   details in session between redirects, and changed entity and service
