@@ -16,9 +16,8 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ExecutionContextImpl
 
-class WrapperResourceReference implements ResourceReference {
+class WrapperResourceReference extends BaseResourceReference  {
     ResourceReference rr = null
-    ExecutionContext ec = null
 
     WrapperResourceReference() { }
     
@@ -50,7 +49,6 @@ class WrapperResourceReference implements ResourceReference {
     boolean isFile() { return rr.isFile() }
     boolean isDirectory() { return rr.isDirectory() }
     List<ResourceReference> getDirectoryEntries() { return rr.getDirectoryEntries() }
-    ResourceReference findChildResource(String relativePath) { return rr.findChildResource(relativePath) }
 
     boolean supportsExists() { return rr.supportsExists() }
     boolean getExists() { return rr.getExists()}
@@ -63,7 +61,4 @@ class WrapperResourceReference implements ResourceReference {
     OutputStream openOutputStream() { return rr.openOutputStream() }
 
     void destroy() { rr.destroy() }
-
-    @Override
-    String toString() { rr?.toString() ?: "[no location (${this.class.getName()})]" }
 }

@@ -21,6 +21,8 @@ abstract class BaseResourceReference implements ResourceReference {
     ExecutionContext ec = null
     protected Map<String, ResourceReference> subContentRefByPath = null
 
+    ResourceReference childOfResource = null
+
     BaseResourceReference() { }
 
     @Override
@@ -133,12 +135,19 @@ abstract class BaseResourceReference implements ResourceReference {
                 // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}] childFilename [${childFilename}] childRef [${childRef}]")
             }
             // logger.warn("============= finding child resource path [${relativePath}] childRef 3 [${childRef}]")
+
+            if (childRef != null && childRef instanceof BaseResourceReference) {
+                ((BaseResourceReference) childRef).childOfResource = directoryRef
+            }
         }
 
         if (childRef == null) {
             // still nothing? treat the path to the file as a literal and return it (exists will be false)
             if (directoryRef.exists) {
                 childRef = ec.resource.getLocationReference(directoryRef.getLocation() + '/' + relativePath)
+                if (childRef instanceof BaseResourceReference) {
+                    ((BaseResourceReference) childRef).childOfResource = directoryRef
+                }
             } else {
                 String newDirectoryLoc = getLocation()
                 // pop off the extension, everything past the first dot after the last slash
@@ -197,6 +206,18 @@ abstract class BaseResourceReference implements ResourceReference {
                 if (subRef != null) return subRef
             }
         }
+        return null
+    }
+
+    String getActualChildPath() {
+        if (childOfResource == null) return null
+        String parentLocation = childOfResource.getLocation()
+        String childLocation = getLocation()
+        // this should be true, but just in case:
+        if (childLocation.startsWith(parentLocation)) {
+            return childLocation.substring(parentLocation.length())
+        }
+        // if not, what to do?
         return null
     }
 
