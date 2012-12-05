@@ -755,6 +755,10 @@ class ScreenRenderImpl implements ScreenRender {
     String renderText(String location, String isTemplateStr) {
         boolean isTemplate = (isTemplateStr != "false")
 
+        if (!location || location == "null") {
+            logger.warn("Not rendering text in screen [${getActiveScreenDef().location}], location was empty")
+            return ""
+        }
         if (isTemplate) {
             writer.flush()
             // NOTE: run templates with their own variable space so we can add sri, and avoid getting anything added from within

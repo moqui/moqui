@@ -14,6 +14,7 @@ package org.moqui.impl.context.reference
 import org.moqui.context.ResourceReference
 import org.moqui.context.ExecutionContext
 import org.moqui.impl.StupidUtilities
+import org.moqui.BaseException
 
 class UrlResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UrlResourceReference.class)
@@ -28,6 +29,7 @@ class UrlResourceReference extends BaseResourceReference {
     @Override
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
+        if (!location) throw new BaseException("Cannot create URL Resource Reference with empty location")
         if (location.startsWith("/") || location.indexOf(":") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
             if (location.charAt(0) != '/') location = ec.ecfi.runtimePath + '/' + location
@@ -51,7 +53,12 @@ class UrlResourceReference extends BaseResourceReference {
     String getLocation() { return locationUrl?.toString() }
 
     @Override
-    URI getUri() { return locationUrl?.toURI() }
+    URI getUri() {
+        // use the multi-argument constructor to have it do character encoding and avoid an exception
+        // WARNING: a String from this URI may not equal the String from the URL (ie if characters are encoded)
+        return new URI(locationUrl.getProtocol(), locationUrl.getUserInfo(), locationUrl.getHost(),
+                locationUrl.getPort(), locationUrl.getPath(), locationUrl.getQuery(), locationUrl.getRef())
+    }
     @Override
     String getFileName() {
         if (!locationUrl) return null
