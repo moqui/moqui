@@ -772,12 +772,14 @@ class ScreenForm {
             String key = null
             if (childNode."@key") {
                 key = ec.resource.evaluateStringExpand(childNode."@key", null)
+                // we just did a string expand, if it evaluates to a literal "null" then there was no value
+                if (key == "null") key = null
             } else if (listOption instanceof EntityValueImpl) {
                 String keyFieldName = listOption.getEntityDefinition().getPkFieldNames().get(0)
                 if (keyFieldName) key = ec.context.get(keyFieldName)
             }
-            if (!key) key = ec.context.get(fieldNode."@name")
-            if (!key) return
+            if (key == null) key = ec.context.get(fieldNode."@name")
+            if (key == null) return
 
             String text = childNode."@text"
             if (!text) {
