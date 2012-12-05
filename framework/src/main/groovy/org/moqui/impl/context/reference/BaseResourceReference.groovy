@@ -120,21 +120,36 @@ abstract class BaseResourceReference implements ResourceReference {
                 String childFilename = relativePathNameList.get(relativePathNameList.size()-1)
                 relativePathNameList = relativePathNameList.subList(0, relativePathNameList.size()-1)
 
+                ResourceReference childDirectoryRef = directoryRef
+
                 // search remaining relativePathNameList, ie partial directories leading up to filename
                 for (String relativePathName in relativePathNameList) {
-                    directoryRef = internalFindChildDir(directoryRef, relativePathName)
-                    if (directoryRef == null) break
+                    childDirectoryRef = internalFindChildDir(childDirectoryRef, relativePathName)
+                    if (childDirectoryRef == null) break
                 }
 
                 // recursively walk the directory tree and find the childFilename
-                childRef = internalFindChildFile(directoryRef, childFilename)
+                childRef = internalFindChildFile(childDirectoryRef, childFilename)
                 // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}] childFilename [${childFilename}] childRef [${childRef}]")
             }
             // logger.warn("============= finding child resource path [${relativePath}] childRef 3 [${childRef}]")
         }
 
-        // put it in the cache before returning
-        getSubContentRefByPath().put(relativePath, childRef)
+        if (childRef == null) {
+            // still nothing? treat the path to the file as a literal and return it (exists will be false)
+            if (directoryRef.exists) {
+                childRef = ec.resource.getLocationReference(directoryRef.getLocation() + '/' + relativePath)
+            } else {
+                String newDirectoryLoc = getLocation()
+                // pop off the extension, everything past the first dot after the last slash
+                int lastSlashLoc = newDirectoryLoc.lastIndexOf("/")
+                if (newDirectoryLoc.contains(".")) newDirectoryLoc = newDirectoryLoc.substring(0, newDirectoryLoc.indexOf(".", lastSlashLoc))
+                childRef = ec.resource.getLocationReference(newDirectoryLoc + '/' + relativePath)
+            }
+        } else {
+            // put it in the cache before returning, but don't cache the literal reference
+            getSubContentRefByPath().put(relativePath, childRef)
+        }
 
         // logger.warn("============= finding child resource of [${toString()}] path [${relativePath}] got [${childRef}]")
         return childRef
