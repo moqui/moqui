@@ -84,17 +84,11 @@ abstract class BaseResourceReference implements ResourceReference {
         if (childRef != null && childRef.exists) return childRef
 
         // this finds a file in a directory with the same name as this resource, unless this resource is a directory
-        StringBuilder dirLoc = new StringBuilder(getLocation())
-        ResourceReference directoryRef = ec.resource.getLocationReference(dirLoc.toString())
-        while (!(directoryRef.exists && directoryRef.isDirectory()) && dirLoc.lastIndexOf(".") > 0) {
-            // get rid of one suffix at a time (for screens probably .xml but use .* for other files, etc)
-            dirLoc.delete(dirLoc.lastIndexOf("."), dirLoc.length())
-            directoryRef = ec.resource.getLocationReference(dirLoc.toString())
-        }
+        ResourceReference directoryRef = findMatchingDirectory()
 
         // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}]")
         if (directoryRef.exists) {
-            StringBuilder fileLoc = new StringBuilder(dirLoc)
+            StringBuilder fileLoc = new StringBuilder(directoryRef.getLocation())
             if (fileLoc.charAt(fileLoc.length()-1) == '/') fileLoc.deleteCharAt(fileLoc.length()-1)
             if (relativePath.charAt(0) != '/') fileLoc.append('/')
             fileLoc.append(relativePath)
@@ -164,6 +158,17 @@ abstract class BaseResourceReference implements ResourceReference {
         return childRef
     }
 
+    ResourceReference findMatchingDirectory() {
+        StringBuilder dirLoc = new StringBuilder(getLocation())
+        ResourceReference directoryRef = this
+        while (!(directoryRef.exists && directoryRef.isDirectory()) && dirLoc.lastIndexOf(".") > 0) {
+            // get rid of one suffix at a time (for screens probably .xml but use .* for other files, etc)
+            dirLoc.delete(dirLoc.lastIndexOf("."), dirLoc.length())
+            directoryRef = ec.resource.getLocationReference(dirLoc.toString())
+        }
+        return directoryRef
+    }
+
     ResourceReference internalFindChildDir(ResourceReference directoryRef, String childDirName) {
         if (directoryRef == null || !directoryRef.exists) return null
         // no child dir name, means this/current dir
@@ -215,10 +220,53 @@ abstract class BaseResourceReference implements ResourceReference {
         String childLocation = getLocation()
         // this should be true, but just in case:
         if (childLocation.startsWith(parentLocation)) {
-            return childLocation.substring(parentLocation.length())
+            String childPath = childLocation.substring(parentLocation.length())
+            if (childPath.startsWith("/")) return childPath.substring(1)
+            else return childPath
         }
         // if not, what to do?
         return null
+    }
+
+    void walkChildTree(List<Map> allChildFileFlatList, List<Map> childResourceList) {
+        if (this.isFile()) {
+            walkChildFileTree(this, "", allChildFileFlatList, childResourceList)
+        }
+
+        if (this.isDirectory()) {
+            for (BaseResourceReference childRef in this.getDirectoryEntries()) {
+                childRef.walkChildFileTree(this, "", allChildFileFlatList, childResourceList)
+            }
+        }
+    }
+
+    void walkChildFileTree(ResourceReference rootResource, String pathFromRoot,
+                       List<Map> allChildFileFlatList, List<Map> childResourceList) {
+        // logger.warn("================ walkChildFileTree rootResource=${rootResource} pathFromRoot=${pathFromRoot} curLocation=${getLocation()}")
+
+        String childPathBase = pathFromRoot ? pathFromRoot + '/' : ''
+
+        if (this.isFile()) {
+            List<Map> curChildResourceList = []
+
+            String curFileName = this.getFileName()
+            if (curFileName.contains(".")) curFileName = curFileName.substring(0, curFileName.indexOf('.'))
+            String curPath = childPathBase + curFileName
+
+            if (allChildFileFlatList != null)
+                allChildFileFlatList.add([path:curPath, name:curFileName, location:this.getLocation()])
+            if (childResourceList != null)
+                childResourceList.add([path:curPath, name:curFileName, location:this.getLocation(),
+                    childResourceList:curChildResourceList])
+
+            ResourceReference matchingDirReference = this.findMatchingDirectory()
+            String childPath = childPathBase + matchingDirReference.fileName
+            for (BaseResourceReference childRef in matchingDirReference.getDirectoryEntries()) {
+                childRef.walkChildFileTree(rootResource, childPath, allChildFileFlatList, curChildResourceList)
+            }
+        }
+
+        // TODO: walk child directories somehow or just stick with files with matching directories?
     }
 
     @Override
