@@ -597,16 +597,17 @@ class EntityFacadeImpl implements EntityFacade {
 
     CacheImpl getCacheOne(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one.${entityName}") }
     CacheImpl getCacheOneRa(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one_ra.${entityName}") }
+    CacheImpl getCacheOneBf() { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one_bf") }
     CacheImpl getCacheList(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.list.${entityName}") }
     CacheImpl getCacheListRa(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.list_ra.${entityName}") }
     CacheImpl getCacheCount(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.count.${entityName}") }
 
-    void clearCacheForValue(EntityValueImpl evi, boolean isCreate) {
+    void clearCacheForValue(EntityValueBase evb, boolean isCreate) {
         try {
-            EntityDefinition ed = evi.getEntityDefinition()
+            EntityDefinition ed = evb.getEntityDefinition()
             if (ed.getEntityNode()."@use-cache" == "never") return
             String entityName = ed.getEntityName()
-            EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
+            EntityCondition pkCondition = getConditionFactory().makeCondition(evb.getPrimaryKeys())
 
             // clear one cache
             if (ecfi.getCacheFacade().cacheExists("entity.${tenantId}.one.${entityName}")) {
@@ -614,7 +615,9 @@ class EntityFacadeImpl implements EntityFacade {
                 Ehcache eocEhc = entityOneCache.getInternalCache()
                 // clear by PK, most common scenario
                 eocEhc.remove(pkCondition)
-                // also see if there are any one RA entries
+
+                // NOTE: these two have to be done whether or not it is a create because of non-pk updates, etc
+                // see if there are any one RA entries
                 Cache oneRaCache = getCacheOneRa(entityName)
                 if (oneRaCache.containsKey(pkCondition)) {
                     List raKeyList = (List) oneRaCache.get(pkCondition)
@@ -623,6 +626,19 @@ class EntityFacadeImpl implements EntityFacade {
                     }
                     // we've cleared all entries that this was referring to, so clean it out too
                     oneRaCache.remove(pkCondition)
+                }
+                // see if there are any cached entries with no result using the bf (brute-force) matching
+                Cache oneBfCache = getCacheOneBf()
+                Set bfKeySet = (Set) oneBfCache.get(entityName)
+                if (bfKeySet) {
+                    Set keysToRemove = new HashSet()
+                    for (EntityCondition bfKey in bfKeySet) {
+                        if (bfKey.mapMatches(evb)) {
+                            eocEhc.remove(bfKey)
+                            keysToRemove.add(bfKey)
+                        }
+                    }
+                    for (EntityCondition key in keysToRemove) bfKeySet.remove(key)
                 }
             }
 
@@ -634,7 +650,7 @@ class EntityFacadeImpl implements EntityFacade {
                     Ehcache elEhc = entityListCache.getInternalCache()
                     for (EntityCondition ec in elEhc.getKeys()) {
                         // any way to efficiently clear out the RA cache for these? for now just leave and they are handled eventually
-                        if (ec.mapMatches(evi)) elEhc.remove(ec)
+                        if (ec.mapMatches(evb)) elEhc.remove(ec)
                     }
                 } else {
                     Cache listRaCache = getCacheListRa(entityName)
@@ -667,25 +683,36 @@ class EntityFacadeImpl implements EntityFacade {
                 CacheImpl entityCountCache = getCacheCount(entityName)
                 Ehcache elEhc = entityCountCache.getInternalCache()
                 for (EntityCondition ec in elEhc.getKeys()) {
-                    if (ec.mapMatches(evi)) elEhc.remove(ec)
+                    if (ec.mapMatches(evb)) elEhc.remove(ec)
                 }
             }
         } catch (Throwable t) {
-            logger.error("Suppressed error in entity cache clearing [${evi.getEntityName()}; ${isCreate ? 'create' : 'non-create'}]", t)
+            logger.error("Suppressed error in entity cache clearing [${evb.getEntityName()}; ${isCreate ? 'create' : 'non-create'}]", t)
         }
     }
-    void registerCacheOneRa(String entityName, EntityCondition ec, EntityValueImpl evi) {
-        if (evi == null) return
-        Cache oneRaCache = getCacheOneRa(entityName)
-        EntityCondition pkCondition = getConditionFactory().makeCondition(evi.getPrimaryKeys())
-        // if the condition matches the primary key, no need for an RA entry
-        if (pkCondition == ec) return
-        List raKeyList = (List) oneRaCache.get(pkCondition)
-        if (!raKeyList) {
-            raKeyList = new ArrayList()
-            oneRaCache.put(pkCondition, raKeyList)
+    void registerCacheOneRa(String entityName, EntityCondition ec, EntityValueBase evb) {
+        // don't skip it for null values because we're caching those too: if (evb == null) return
+        if (evb == null) {
+            // can't use RA cache because we don't know the PK, so use a brute-force cache but keep it separate to perform better
+            Cache oneBfCache = getCacheOneBf()
+            Set bfKeySet = (Set) oneBfCache.get(entityName)
+            if (bfKeySet == null) {
+                bfKeySet = new HashSet()
+                oneBfCache.put(entityName, bfKeySet)
+            }
+            bfKeySet.add(ec)
+        } else {
+            Cache oneRaCache = getCacheOneRa(entityName)
+            EntityCondition pkCondition = getConditionFactory().makeCondition(evb.getPrimaryKeys())
+            // if the condition matches the primary key, no need for an RA entry
+            if (pkCondition == ec) return
+            List raKeyList = (List) oneRaCache.get(pkCondition)
+            if (raKeyList == null) {
+                raKeyList = new ArrayList()
+                oneRaCache.put(pkCondition, raKeyList)
+            }
+            raKeyList.add(ec)
         }
-        raKeyList.add(ec)
     }
     void registerCacheListRa(String entityName, EntityCondition ec, EntityListImpl eli) {
         EntityDefinition ed = getEntityDefinition(entityName)

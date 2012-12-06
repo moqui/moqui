@@ -177,6 +177,8 @@ Bug Fixes:
 - Fixed issues with ResourceReference directory listings where filenames
   have spaces in them
 - Fixed bug in service parameter text-length.@max checking
+- Fixed bug where a cached one query on non-PK fields with no result would
+  not be automatically cleared
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
