@@ -53,30 +53,10 @@ class UrlResourceReference extends BaseResourceReference {
     String getLocation() { return locationUrl?.toString() }
 
     @Override
-    URI getUri() {
-        // use the multi-argument constructor to have it do character encoding and avoid an exception
-        // WARNING: a String from this URI may not equal the String from the URL (ie if characters are encoded)
-        return new URI(locationUrl.getProtocol(), locationUrl.getUserInfo(), locationUrl.getHost(),
-                locationUrl.getPort(), locationUrl.getPath(), locationUrl.getQuery(), locationUrl.getRef())
-    }
-    @Override
-    String getFileName() {
-        if (!locationUrl) return null
-        String path = locationUrl.getPath()
-        return path.contains("/") ? path.substring(path.lastIndexOf("/")+1) : path
-    }
-
-    @Override
     InputStream openStream() { return locationUrl?.openStream() }
 
     @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }
-
-    @Override
-    String getContentType() {
-        if (!locationUrl) return null
-        ec.resource.getContentType(getFileName())
-    }
 
     @Override
     boolean supportsAll() { isFile }
@@ -150,7 +130,10 @@ class UrlResourceReference extends BaseResourceReference {
         fw.write(text)
         fw.close()
     }
-    OutputStream openOutputStream() {
-        return new FileOutputStream(getFile())
+    void putStream(InputStream stream) {
+        OutputStream os = new FileOutputStream(getFile())
+        StupidUtilities.copyStream(stream, os)
+        stream.close()
+        os.close()
     }
 }

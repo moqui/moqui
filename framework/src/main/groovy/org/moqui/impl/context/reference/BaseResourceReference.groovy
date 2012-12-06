@@ -37,9 +37,26 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract String getLocation();
 
     @Override
-    abstract URI getUri();
+    URI getUri() {
+        String loc = getLocation()
+        if (!loc) return null
+        if (supportsUrl()) {
+            URL locUrl = getUrl()
+            // use the multi-argument constructor to have it do character encoding and avoid an exception
+            // WARNING: a String from this URI may not equal the String from the URL (ie if characters are encoded)
+            return new URI(locUrl.getProtocol(), locUrl.getUserInfo(), locUrl.getHost(),
+                    locUrl.getPort(), locUrl.getPath(), locUrl.getQuery(), locUrl.getRef())
+        } else {
+            // TODO: handle encoding for URI to avoid errors
+            return new URI(loc)
+        }
+    }
     @Override
-    abstract String getFileName();
+    String getFileName() {
+        String loc = getLocation()
+        if (!loc) return null
+        return loc.contains("/") ? loc.substring(loc.lastIndexOf("/")+1) : loc
+    }
 
     @Override
     abstract InputStream openStream();
@@ -48,7 +65,10 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract String getText();
 
     @Override
-    abstract String getContentType();
+    String getContentType() {
+        String fn = getFileName()
+        return fn ? ec.resource.getContentType(fn) : null
+    }
 
     @Override
     abstract boolean supportsAll();
@@ -66,6 +86,7 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract boolean isDirectory();
     @Override
     abstract List<ResourceReference> getDirectoryEntries();
+
     @Override
     ResourceReference findChildResource(String relativePath) {
         // no path to child? that means this resource

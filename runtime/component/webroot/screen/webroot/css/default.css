@@ -91,6 +91,15 @@ tr:nth-child(odd) { background-color: #EEE; }
 /*tr:nth-child(even) { background-color: #FFF; }*/
 tr:hover { background-color: #DDD; }
 
+/* ======================= XML Screen Styles ======================= */
+
+div.panel-left { float: left; width: 180px; }
+div.panel-center-only { }
+div.panel-center-left { float: left; width: 780px; }
+div.panel-center-both { float: left; width: 600px; }
+div.panel-center-right { float: left; width: 780px; }
+div.panel-right { float: right; width: 180px; }
+
 /* ======================= XML Form Styles ======================= */
 
 .form-list-paginate a, .form-list-paginate span { padding-right: 4px;

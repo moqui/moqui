@@ -14,6 +14,7 @@ package org.moqui.entity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.sql.rowset.serial.SerialBlob;
 import java.io.Serializable;
 import java.io.Writer;
 import java.math.BigDecimal;
@@ -86,16 +87,15 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     String getString(String name);
 
     java.sql.Timestamp getTimestamp(String name);
-
     java.sql.Time getTime(String name);
-
     java.sql.Date getDate(String name);
 
     Long getLong(String name);
-
     Double getDouble(String name);
-
     BigDecimal getBigDecimal(String name);
+
+    byte[] getBytes(String name);
+    SerialBlob getSerialBlob(String name);
 
     /** Sets fields on this entity from the Map of fields passed in using the entity definition to only get valid
      * fields from the Map. For any String values passed in this will call setString to convert based on the field

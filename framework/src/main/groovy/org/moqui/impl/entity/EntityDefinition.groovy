@@ -679,8 +679,7 @@ public class EntityDefinition {
                 case 9: outValue = new BigDecimal(value); break
                 case 10: outValue = Boolean.valueOf(value); break
                 case 11: outValue = value; break
-            // better way for Blob (12)? probably not...
-                case 12: outValue = value; break
+                case 12: outValue = value.getBytes(); break
                 case 13: outValue = value; break
                 case 14: outValue = value.asType(java.util.Date.class); break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place

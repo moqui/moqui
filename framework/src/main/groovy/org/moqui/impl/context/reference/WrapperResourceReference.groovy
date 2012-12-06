@@ -33,12 +33,9 @@ class WrapperResourceReference extends BaseResourceReference  {
     }
 
     String getLocation() { return rr.getLocation() }
-    URI getUri() { return rr.getUri() }
-    String getFileName() { rr.getFileName() }
 
     InputStream openStream() { return rr.openStream() }
     String getText() { return rr.getText() }
-    String getContentType() { return rr.getContentType() }
 
     boolean supportsAll() { return rr.supportsAll() }
 
@@ -58,7 +55,7 @@ class WrapperResourceReference extends BaseResourceReference  {
 
     boolean supportsWrite() { return rr.supportsWrite() }
     void putText(String text) { rr.putText(text) }
-    OutputStream openOutputStream() { return rr.openOutputStream() }
+    void putStream(InputStream stream) { rr.putStream(stream) }
 
     void destroy() { rr.destroy() }
 }

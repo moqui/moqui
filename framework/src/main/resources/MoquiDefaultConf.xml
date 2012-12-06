@@ -99,6 +99,7 @@
         <resource-reference scheme="classpath" class="org.moqui.impl.context.reference.ClasspathResourceReference"/>
         <resource-reference scheme="component" class="org.moqui.impl.context.reference.ComponentResourceReference"/>
         <resource-reference scheme="content" class="org.moqui.impl.context.reference.ContentResourceReference"/>
+        <resource-reference scheme="dbresource" class="org.moqui.impl.context.reference.DbResourceReference"/>
 
         <!-- renderer class needs to implement the org.moqui.context.TemplateRenderer interface -->
         <template-renderer extension=".ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
@@ -250,6 +251,7 @@
         <load-entity location="classpath://entity/BasicEntities.xml"/>
         <load-entity location="classpath://entity/EntityEntities.xml"/>
         <load-entity location="classpath://entity/OlapEntities.xml"/>
+        <load-entity location="classpath://entity/ResourceEntities.xml"/>
         <load-entity location="classpath://entity/ScreenEntities.xml"/>
         <load-entity location="classpath://entity/SecurityEntities.xml"/>
         <load-entity location="classpath://entity/ServerEntities.xml"/>

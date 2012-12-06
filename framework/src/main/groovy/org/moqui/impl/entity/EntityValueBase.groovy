@@ -31,6 +31,7 @@ import java.sql.Time
 import java.sql.Timestamp
 import org.moqui.entity.EntityCondition
 import org.moqui.context.ExecutionContext
+import javax.sql.rowset.serial.SerialBlob
 
 abstract class EntityValueBase implements EntityValue {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityValueBase.class)
@@ -218,6 +219,22 @@ abstract class EntityValueBase implements EntityValue {
 
     /** @see org.moqui.entity.EntityValue#getBigDecimal(String) */
     BigDecimal getBigDecimal(String name) { return this.get(name) as BigDecimal }
+
+    byte[] getBytes(String name) {
+        Object o = this.get(name)
+        if (o instanceof SerialBlob) return ((SerialBlob) o).getBytes(1, (int) o.length())
+        if (o instanceof byte[]) return o
+        // try groovy...
+        return o as byte[]
+    }
+
+    SerialBlob getSerialBlob(String name) {
+        Object o = this.get(name)
+        if (o instanceof SerialBlob) return o
+        if (o instanceof byte[]) return new SerialBlob((byte[]) o)
+        // try groovy...
+        return o as SerialBlob
+    }
 
     /** @see org.moqui.entity.EntityValue#setFields(Map, boolean, java.lang.String, boolean) */
     EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {

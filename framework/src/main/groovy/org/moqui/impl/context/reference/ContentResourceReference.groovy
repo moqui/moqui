@@ -23,7 +23,7 @@ import org.moqui.BaseException
 class ContentResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
 
-    URI locationUri
+    String location
     String repositoryName
     String nodePath
 
@@ -35,7 +35,9 @@ class ContentResourceReference extends BaseResourceReference {
     ResourceReference init(String location, ExecutionContext ec) {
         this.ec = ec
 
-        locationUri = new URI(location)
+        this.location = location
+        // TODO: change to not rely on URI, or to encode properly
+        URI locationUri = new URI(location)
         repositoryName = locationUri.host
         nodePath = locationUri.path
 
@@ -45,20 +47,13 @@ class ContentResourceReference extends BaseResourceReference {
     ResourceReference init(String repositoryName, javax.jcr.Node node, ExecutionContext ec) {
         this.repositoryName = repositoryName
         this.nodePath = node.path
-        this.locationUri = new URI("content", repositoryName, nodePath, null, null)
+        this.location = "content://${repositoryName}/${nodePath}"
         this.theNode = node
         return this
     }
 
     @Override
-    String getLocation() { locationUri.toString() }
-
-    @Override
-    URI getUri() { locationUri }
-    @Override
-    String getFileName() {
-        return nodePath.contains("/") ? nodePath.substring(nodePath.lastIndexOf("/")+1) : nodePath
-    }
+    String getLocation() { location }
 
     @Override
     InputStream openStream() {
@@ -73,9 +68,6 @@ class ContentResourceReference extends BaseResourceReference {
 
     @Override
     String getText() { return StupidUtilities.getStreamText(openStream()) }
-
-    @Override
-    String getContentType() { ec.resource.getContentType(getFileName()) }
 
     @Override
     boolean supportsAll() { true }
@@ -131,37 +123,44 @@ class ContentResourceReference extends BaseResourceReference {
     boolean supportsWrite() { true }
     void putText(String text) {
         Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
-        javax.jcr.Node rootNode = session.getRootNode()
+        javax.jcr.Node fileNode = getNode()
+        if (fileNode != null) {
+            javax.jcr.Node fileContent = fileNode.getNode("jcr:content")
+            fileContent.setProperty("jcr:data", session.valueFactory.createValue(text))
+            session.save()
+        } else {
+            javax.jcr.Node rootNode = session.getRootNode()
 
-        // first make sure the directory exists that this is in
-        List<String> nodePathList = nodePath.split('/')
-        if (nodePathList) nodePathList.remove(nodePathList.size()-1)
-        javax.jcr.Node folderNode = rootNode
-        if (nodePathList) {
-            for (String nodePathElement in nodePathList) {
-                if (folderNode.hasNode(nodePathElement)) {
-                    folderNode = folderNode.getNode(nodePathElement)
-                } else {
-                    folderNode = folderNode.addNode(nodePathElement, "nt:folder")
+            // first make sure the directory exists that this is in
+            List<String> nodePathList = nodePath.split('/')
+            if (nodePathList) nodePathList.remove(nodePathList.size()-1)
+            javax.jcr.Node folderNode = rootNode
+            if (nodePathList) {
+                for (String nodePathElement in nodePathList) {
+                    if (folderNode.hasNode(nodePathElement)) {
+                        folderNode = folderNode.getNode(nodePathElement)
+                    } else {
+                        folderNode = folderNode.addNode(nodePathElement, "nt:folder")
+                    }
                 }
             }
+
+            // now write the text to the node and save it
+            fileNode = folderNode.addNode(fileName, "nt:file")
+            javax.jcr.Node fileContent = fileNode.addNode("jcr:content", "nt:resource")
+            fileContent.setProperty("jcr:mimeType", contentType)
+            // fileContent.setProperty("jcr:encoding", ?)
+            Calendar lastModified = Calendar.getInstance(); lastModified.setTimeInMillis(System.currentTimeMillis())
+            fileContent.setProperty("jcr:lastModified", lastModified)
+
+            fileContent.setProperty("jcr:data", session.valueFactory.createValue(text))
+
+            session.save()
         }
-
-        // now write the text to the node and save it
-        javax.jcr.Node fileNode = folderNode.addNode(fileName, "nt:file")
-        javax.jcr.Node fileContent = fileNode.addNode("jcr:content", "nt:resource")
-        fileContent.setProperty("jcr:mimeType", contentType)
-        // fileContent.setProperty("jcr:encoding", ?)
-        Calendar lastModified = Calendar.getInstance(); lastModified.setTimeInMillis(System.currentTimeMillis())
-        fileContent.setProperty("jcr:lastModified", lastModified)
-
-        fileContent.setProperty("jcr:data", session.valueFactory.createValue(text))
-
-        session.save()
     }
-    OutputStream openOutputStream() {
+    void putStream(InputStream stream) {
         // TODO implement openOutputStream
-        throw new BaseException("openOutputStream for content not yet supported")
+        throw new BaseException("putStream for content not yet supported")
     }
 
     javax.jcr.Node getNode() {

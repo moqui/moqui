@@ -262,25 +262,17 @@ class EntityQueryBuilder {
                 }
                 break
             case 12:
-                Object originalObject
-                byte[] fieldBytes
+                SerialBlob sblob = null
                 try {
                     Blob theBlob = rs.getBlob(index)
-                    fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
-                    originalObject = theBlob
+                    // fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
+                    sblob = new SerialBlob(theBlob)
                 } catch (SQLException e) {
                     // if getBlob didn't work try getBytes
-                    fieldBytes = rs.getBytes(index)
-                    originalObject = fieldBytes
+                    byte[] fieldBytes = rs.getBytes(index)
+                    sblob = new SerialBlob(fieldBytes)
                 }
-                if (originalObject != null) {
-                    if (originalObject instanceof Blob) {
-                        // NOTE using SerialBlob here instead of the Blob from the database to make sure we can pass it around, serialize it, etc
-                        value = new SerialBlob((Blob) originalObject)
-                    } else {
-                        value = originalObject
-                    }
-                }
+                value = sblob
                 break
             case 13: value = new SerialClob(rs.getClob(index)); break
             case 14:

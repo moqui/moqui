@@ -161,17 +161,19 @@ This Work includes contributions authored by David E. Jones, not as a
         <#if .node["panel-header"]?has_content>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header ui-helper-clearfix"><#recurse .node["panel-header"][0]>
         </div></#if>
-        <#if .node["panel-left"]?has_content>
-        <#-- LATER <xs:attribute name="draggable" default="false" type="boolean"/> -->
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-left"</#if> class="panel-left"><#recurse .node["panel-left"][0]>
-        </div></#if>
-        <#if .node["panel-right"]?has_content>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-right"</#if> class="panel-right"><#recurse .node["panel-right"][0]>
-        </div></#if>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-center"</#if> class="panel-center"><#recurse .node["panel-center"][0]>
+        <div class="ui-helper-clearfix">
+            <#if .node["panel-left"]?has_content>
+            <#-- LATER <xs:attribute name="draggable" default="false" type="boolean"/> -->
+            <div<#if .node["@id"]?has_content> id="${.node["@id"]}-left"</#if> class="panel-left"><#recurse .node["panel-left"][0]>
+            </div></#if>
+            <#if .node["panel-right"]?has_content>
+            <div<#if .node["@id"]?has_content> id="${.node["@id"]}-right"</#if> class="panel-right"><#recurse .node["panel-right"][0]>
+            </div></#if>
+            <#assign centerClass><#if .node["panel-left"]?has_content><#if .node["panel-right"]?has_content>panel-center-both<#else>panel-center-left</#if><#else><#if .node["panel-right"]?has_content>panel-center-right<#else>panel-center-only</#if></#if></#assign>
+            <div<#if .node["@id"]?has_content> id="${.node["@id"]}-center"</#if> class="${centerClass}"><#recurse .node["panel-center"][0]>
+            </div>
         </div>
         <#if .node["panel-footer"]?has_content>
-        <div class="ui-helper-clearfix"></div>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
         </div></#if>
     </div>

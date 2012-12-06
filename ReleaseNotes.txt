@@ -77,6 +77,7 @@ This release includes:
     per-entity and/or per-datasource
   - Added eeca.@get-entire-entity attribute to make sure we have the entire
     record and not just PK fields before doing update and delete ops
+  - Improved handling and options for binary/blob fields
 - Resource Facade
   - ExampleContent entity and corresponding screen that supports
     uploading and downloading JCR content
@@ -86,6 +87,9 @@ This release includes:
     it reusable for wiki content, etc
   - Added methods to ResourceReference for writing to the resource
   - Wiki template renderer gets linkBaseUrl from ScreenRender
+  - Added DbResourceReference and the DbResource/File entities to have a
+    filesystem like data store in the database and accessed through the
+    Resource Facade like any other (file, jcr/content, etc)
 - Fleshed out ValidationError functionality including display in apps.xml
   and considering the ec.message.validationErrors list for storing error
   details in session between redirects, and changed entity and service

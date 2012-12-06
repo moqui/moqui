@@ -47,6 +47,12 @@ class WikiTemplateRenderer implements TemplateRenderer {
             return
         }
 
+        String sourceText = ecfi.resourceFacade.getLocationText(location, false)
+        if (!sourceText) {
+            logger.warn("In wiki template render got no text from location ${location}")
+            return
+        }
+
         StringWriter localWriter = new StringWriter()
         HtmlDocumentBuilder builder = new HtmlDocumentBuilder(localWriter)
         // avoid the <html> and <body> tags
@@ -64,7 +70,7 @@ class WikiTemplateRenderer implements TemplateRenderer {
         else throw new BaseException("Extension not supported for wiki rendering for location ${location}")
 
         parser.setBuilder(builder)
-        parser.parse(ecfi.resourceFacade.getLocationText(location, false))
+        parser.parse(sourceText)
 
         wikiText = localWriter.toString()
         if (wikiText) {

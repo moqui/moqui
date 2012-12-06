@@ -52,7 +52,7 @@ public interface ResourceReference {
 
     boolean supportsWrite();
     void putText(String text);
-    OutputStream openOutputStream();
+    void putStream(InputStream stream);
 
     void destroy();
 }
