@@ -20,6 +20,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.Moqui
 import java.sql.Timestamp
 import org.moqui.entity.EntityCondition
+import org.moqui.entity.EntityList
 
 class EntityFind extends Specification {
     @Shared
@@ -101,5 +102,49 @@ class EntityFind extends Specification {
         [exampleId: "TEST1", exampleId_op: "equals", exampleDate_from: timestamp, exampleDate_thru: timestamp + 1] | "TEST1"
         [exampleId: "TEST1", exampleId_op: "equals", exampleName_not: "Y", exampleName_op: "equals", exampleName: ""] | "TEST1"
         [exampleId: "TEST1", exampleId_op: "equals", exampleName_not: "Y", exampleName_op: "empty"] | "TEST1"
+    }
+
+    def "auto cache clear for list"() {
+        // update the exampleName and make sure we get the new value
+        when:
+        EntityList exampleList = ec.entity.makeFind("Example").condition("exampleSize", 100).useCache(true).list()
+        ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 2"]).update()
+        exampleList = ec.entity.makeFind("Example").condition("exampleSize", 100).useCache(true).list()
+
+        then:
+        exampleList.size() == 1
+        exampleList.first.exampleName == "Test Name 2"
+    }
+
+    def "auto cache clear for one by primary key"() {
+        when:
+        EntityValue example = ec.entity.makeFind("Example").condition("exampleId", "TEST1").useCache(true).one()
+        ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 3"]).update()
+        example = ec.entity.makeFind("Example").condition("exampleId", "TEST1").useCache(true).one()
+
+        then:
+        example.exampleName == "Test Name 3"
+    }
+
+    def "auto cache clear for one by non-primary key"() {
+        when:
+        EntityValue example = ec.entity.makeFind("Example").condition([exampleSize:100, exampleDate:timestamp]).useCache(true).one()
+        ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 4"]).update()
+        example = ec.entity.makeFind("Example").condition([exampleSize:100, exampleDate:timestamp]).useCache(true).one()
+
+        then:
+        example.exampleName == "Test Name 4"
+    }
+
+    def "auto cache clear for one by non-pk and initially no result"() {
+        when:
+        EntityValue example1 = ec.entity.makeFind("Example").condition([exampleName:"Test Name 5"]).useCache(true).one()
+        ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 5"]).update()
+        EntityValue example2 = ec.entity.makeFind("Example").condition([exampleName:"Test Name 5"]).useCache(true).one()
+
+        then:
+        example1 == null
+        example2 != null
+        example2.exampleName == "Test Name 5"
     }
 }
