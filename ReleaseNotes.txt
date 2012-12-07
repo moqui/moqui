@@ -52,6 +52,8 @@ This release includes:
   - Added screen.always-actions element with actions that will run
     whenever the screen is in the path, whether rendered or not, and
     before both rendering screens and running transitions
+  - After login and other screen-last redirects parameters declared on the
+    screen are now included in the URL and not just in the session
 - Service Facade
   - Inline and script services can leave out parameter values in the
     context and they will be picked up, instead of setting explicitly in
@@ -179,6 +181,8 @@ Bug Fixes:
 - Fixed bug in service parameter text-length.@max checking
 - Fixed bug where a cached one query on non-PK fields with no result would
   not be automatically cleared
+- Fixed bug where request to a rile resource under a screen that requires
+  authc would result in a redirect to the file resource
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

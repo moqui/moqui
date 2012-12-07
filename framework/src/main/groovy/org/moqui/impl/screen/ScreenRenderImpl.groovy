@@ -308,8 +308,8 @@ class ScreenRenderImpl implements ScreenRender {
                 if (ri.type == "screen-last" || ri.type == "screen-last-noparam") {
                     String savedUrl = wfi.getRemoveScreenLastPath()
                     urlType = "screen-path"
-                    url = savedUrl ?: "/"
                     // if no saved URL, just go to root/default; avoid getting stuck on Login screen, etc
+                    url = savedUrl ?: "/"
                 }
                 if (ri.type == "screen-last") {
                     wfi.removeScreenLastParameters(true)
@@ -333,6 +333,14 @@ class ScreenRenderImpl implements ScreenRender {
                     // default is screen-path
                     ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
                     fullUrl.addParameters(ri.expandParameters(ec))
+                    // if this was a screen-last and the screen has declared parameters include them in the URL
+                    Map savedParameters = ((WebFacadeImpl) ec.web)?.getSavedParameters()
+                    if (ri.type == "screen-last" && savedParameters && fullUrl.getTargetScreen()?.getParameterMap()) {
+                        for (String parmName in fullUrl.getTargetScreen().getParameterMap().keySet()) {
+                            if (savedParameters.get(parmName))
+                                fullUrl.addParameter(parmName, savedParameters.get(parmName))
+                        }
+                    }
                     response.sendRedirect(fullUrl.getUrlWithParams())
                 }
             } else {
@@ -537,7 +545,7 @@ class ScreenRenderImpl implements ScreenRender {
                 && !ec.getUser().getUserId() && !ec.getUser().getLoggedInAnonymous()) {
             logger.info("Screen at location [${currentSd.location}], which is part of [${screenUrlInfo.fullPathNameList}] under screen [${screenUrlInfo.fromSd.location}] requires authentication but no user is currently logged in.")
             // save the request as a save-last to use after login
-            if (ec.web) {
+            if (ec.web && screenUrlInfo.fileResourceRef == null) {
                 StringBuilder screenPath = new StringBuilder()
                 for (String pn in screenUrlInfo.fullPathNameList) screenPath.append("/").append(pn)
                 ((WebFacadeImpl) ec.web).saveScreenLastInfo(screenPath.toString(), null)

@@ -301,6 +301,7 @@ class WebFacadeImpl implements WebFacade {
         session.removeAttribute("moqui.screen.last.path")
         return path
     }
+    Map getSavedParameters() { return (Map) session.getAttribute("moqui.saved.parameters") }
     void removeScreenLastParameters(boolean moveToSaved) {
         if (moveToSaved) session.setAttribute("moqui.saved.parameters", session.getAttribute("moqui.screen.last.parameters"))
         session.removeAttribute("moqui.screen.last.parameters")
