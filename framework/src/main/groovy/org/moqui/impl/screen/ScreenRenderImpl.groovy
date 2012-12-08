@@ -72,6 +72,8 @@ class ScreenRenderImpl implements ScreenRender {
     protected Writer internalWriter = null
     protected Writer afterFormWriter = null
 
+    protected boolean dontDoRender = false
+
     protected Map<String, Node> screenFormNodeCache = new HashMap()
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
@@ -153,6 +155,15 @@ class ScreenRenderImpl implements ScreenRender {
         internalWriter = new StringWriter()
         internalRender()
         return internalWriter.toString()
+    }
+
+    /** this should be called as part of a always-actions or pre-actions block to stop rendering before it starts */
+    void sendRedirectAndStopRender(String redirectUrl) {
+        if (response != null) {
+            response.sendRedirect(redirectUrl)
+            dontDoRender = true
+            logger.info("Redirecting to [${redirectUrl}] instead of rendering [${this.getScreenUrlInfo().getFullPathNameList()}]")
+        }
     }
 
     protected ResponseItem recursiveRunTransition(Iterator<ScreenDefinition> sdIterator) {
@@ -341,7 +352,9 @@ class ScreenRenderImpl implements ScreenRender {
                                 fullUrl.addParameter(parmName, savedParameters.get(parmName))
                         }
                     }
-                    response.sendRedirect(fullUrl.getUrlWithParams())
+                    String fullUrlString = fullUrl.getUrlWithParams()
+                    logger.info("Finished transition [${getScreenUrlInfo().getFullPathNameList()}], redirecting to [${fullUrlString}]")
+                    response.sendRedirect(fullUrlString)
                 }
             } else {
                 List<String> pathElements = url.split("/") as List
@@ -493,6 +506,9 @@ class ScreenRenderImpl implements ScreenRender {
                 recursiveRunActions(screenDefIterator, false, true)
             }
 
+            // if dontDoRender then quit now; this should be set during always-actions or pre-actions
+            if (dontDoRender) return
+
             if (response != null) {
                 response.setContentType(this.outputContentType)
                 response.setCharacterEncoding(this.characterEncoding)
@@ -606,6 +622,7 @@ class ScreenRenderImpl implements ScreenRender {
         return boundaryComments
     }
 
+    ScreenDefinition getRootScreenDef() { return rootScreenDef }
     ScreenDefinition getActiveScreenDef() { return screenUrlInfo.screenRenderDefList[screenPathIndex] }
 
     List<String> getActiveScreenPath() {

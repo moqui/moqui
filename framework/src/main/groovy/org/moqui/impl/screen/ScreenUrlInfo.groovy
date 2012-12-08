@@ -159,6 +159,7 @@ class ScreenUrlInfo {
         return urlBuilder.toString()
     }
 
+    List<String> getPreTransitionPathNameList() { return preTransitionPathNameList }
     List<String> getExtraPathNameList() { return extraPathNameList }
 
     Map<String, String> getParameterMap() {
