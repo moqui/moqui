@@ -102,7 +102,8 @@ class UrlResourceReference extends BaseResourceReference {
     boolean supportsExists() { return isFile || exists != null }
     @Override
     boolean getExists() {
-        if (exists != null) return exists
+        // only count exists if true
+        if (exists) return true
 
         if (isFile) {
             exists = getFile().exists()
@@ -129,11 +130,13 @@ class UrlResourceReference extends BaseResourceReference {
         FileWriter fw = new FileWriter(getFile())
         fw.write(text)
         fw.close()
+        this.exists = null
     }
     void putStream(InputStream stream) {
         OutputStream os = new FileOutputStream(getFile())
         StupidUtilities.copyStream(stream, os)
         stream.close()
         os.close()
+        this.exists = null
     }
 }
