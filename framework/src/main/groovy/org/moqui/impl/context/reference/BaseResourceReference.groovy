@@ -88,7 +88,7 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract List<ResourceReference> getDirectoryEntries();
 
     @Override
-    ResourceReference findChildResource(String relativePath) {
+    ResourceReference findChildFile(String relativePath) {
         // no path to child? that means this resource
         if (!relativePath) return this
 

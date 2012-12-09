@@ -84,7 +84,7 @@ This release includes:
   - ExampleContent entity and corresponding screen that supports
     uploading and downloading JCR content
   - Support for username and password for remote JCR repository access
-  - Added ResourceReference.findChildResource() method to replace the code
+  - Added ResourceReference.findChildFile() method to replace the code
     used only for subscreen references, expand that functionality and make
     it reusable for wiki content, etc
   - Added methods to ResourceReference for writing to the resource

@@ -102,8 +102,8 @@ class ContentResourceReference extends BaseResourceReference {
         }
         return dirEntries
     }
-    // TODO: consider overriding findChildResource() to let the JCR impl do the query
-    // ResourceReference findChildResource(String relativePath)
+    // TODO: consider overriding findChildFile() to let the JCR impl do the query
+    // ResourceReference findChildFile(String relativePath)
 
     @Override
     boolean supportsExists() { true }
