@@ -56,6 +56,7 @@ class WrapperResourceReference extends BaseResourceReference  {
     boolean supportsWrite() { return rr.supportsWrite() }
     void putText(String text) { rr.putText(text) }
     void putStream(InputStream stream) { rr.putStream(stream) }
+    void move(String newLocation) { rr.move(newLocation) }
 
     void destroy() { rr.destroy() }
 }

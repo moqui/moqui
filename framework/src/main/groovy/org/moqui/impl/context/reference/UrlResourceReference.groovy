@@ -21,7 +21,7 @@ class UrlResourceReference extends BaseResourceReference {
 
     URL locationUrl = null
     Boolean exists = null
-    boolean isFile = false
+    boolean isFileProtocol = false
     File localFile = null
 
     UrlResourceReference() { }
@@ -34,10 +34,10 @@ class UrlResourceReference extends BaseResourceReference {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
             if (location.charAt(0) != '/') location = ec.ecfi.runtimePath + '/' + location
             locationUrl = new URL("file:" + location)
-            isFile = true
+            isFileProtocol = true
         } else {
             locationUrl = new URL(location)
-            isFile = (locationUrl?.protocol == "file")
+            isFileProtocol = (locationUrl?.protocol == "file")
         }
         return this
     }
@@ -59,7 +59,7 @@ class UrlResourceReference extends BaseResourceReference {
     String getText() { return StupidUtilities.getStreamText(openStream()) }
 
     @Override
-    boolean supportsAll() { isFile }
+    boolean supportsAll() { isFileProtocol }
 
     @Override
     boolean supportsUrl() { return true }
@@ -67,10 +67,10 @@ class UrlResourceReference extends BaseResourceReference {
     URL getUrl() { return locationUrl }
 
     @Override
-    boolean supportsDirectory() { isFile }
+    boolean supportsDirectory() { isFileProtocol }
     @Override
     boolean isFile() {
-        if (isFile) {
+        if (isFileProtocol) {
             return getFile().isFile()
         } else {
             throw new IllegalArgumentException("Is file not supported for resource with protocol [${locationUrl.protocol}]")
@@ -78,7 +78,7 @@ class UrlResourceReference extends BaseResourceReference {
     }
     @Override
     boolean isDirectory() {
-        if (isFile) {
+        if (isFileProtocol) {
             return getFile().isDirectory()
         } else {
             throw new IllegalArgumentException("Is directory not supported for resource with protocol [${locationUrl.protocol}]")
@@ -86,7 +86,7 @@ class UrlResourceReference extends BaseResourceReference {
     }
     @Override
     List<ResourceReference> getDirectoryEntries() {
-        if (isFile) {
+        if (isFileProtocol) {
             File f = getFile()
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
@@ -99,13 +99,13 @@ class UrlResourceReference extends BaseResourceReference {
     }
 
     @Override
-    boolean supportsExists() { return isFile || exists != null }
+    boolean supportsExists() { return isFileProtocol || exists != null }
     @Override
     boolean getExists() {
         // only count exists if true
         if (exists) return true
 
-        if (isFile) {
+        if (isFileProtocol) {
             exists = getFile().exists()
             return exists
         } else {
@@ -113,16 +113,16 @@ class UrlResourceReference extends BaseResourceReference {
         }
     }
 
-    boolean supportsLastModified() { isFile }
+    boolean supportsLastModified() { isFileProtocol }
     long getLastModified() {
-        if (isFile) {
+        if (isFileProtocol) {
             return getFile().lastModified()
         } else {
             System.currentTimeMillis()
         }
     }
 
-    boolean supportsWrite() { isFile }
+    boolean supportsWrite() { isFileProtocol }
     void putText(String text) {
         // first make sure the directory exists that this is in
         if (!getFile().parentFile.exists()) getFile().parentFile.mkdirs()
@@ -138,5 +138,22 @@ class UrlResourceReference extends BaseResourceReference {
         stream.close()
         os.close()
         this.exists = null
+    }
+
+    void move(String newLocation) {
+        if (!newLocation) throw new IllegalArgumentException("No location specified, not moving resource at ${getLocation()}")
+        ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        String path = null
+        if (newRr.getUrl().getProtocol() == "file") {
+            path = newRr.getUrl().toExternalForm().substring(5)
+        } else {
+            throw new IllegalArgumentException("Location [${newLocation}] is not a file location, not moving resource at ${getLocation()}")
+        }
+
+        if (isFileProtocol) {
+            getFile().renameTo(new File(path))
+        } else {
+            throw new IllegalArgumentException("Move not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
+        }
     }
 }

@@ -33,7 +33,7 @@ class ClasspathResourceReference extends UrlResourceReference {
         // if the URL was found this way then it exists, so remember that
         if (locationUrl != null) {
             this.exists = true
-            this.isFile = (locationUrl?.protocol == "file")
+            this.isFileProtocol = (locationUrl?.protocol == "file")
         } else {
             logger.warn("Could not find location [${strippedLocation}] on the classpath")
         }

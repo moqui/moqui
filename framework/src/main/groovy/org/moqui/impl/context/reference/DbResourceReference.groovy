@@ -145,6 +145,10 @@ class DbResourceReference extends BaseResourceReference {
         // TODO implement openOutputStream
         throw new BaseException("putStream for dbresource not yet supported")
     }
+    void move(String newLocation) {
+        // TODO implement move
+        throw new BaseException("move for dbresource not yet supported")
+    }
 
     EntityValue getDbResource() {
         if (dbResource != null) return dbResource

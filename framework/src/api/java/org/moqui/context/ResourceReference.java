@@ -53,6 +53,7 @@ public interface ResourceReference {
     boolean supportsWrite();
     void putText(String text);
     void putStream(InputStream stream);
+    void move(String newLocation);
 
     void destroy();
 }

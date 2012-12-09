@@ -159,8 +159,12 @@ class ContentResourceReference extends BaseResourceReference {
         }
     }
     void putStream(InputStream stream) {
-        // TODO implement openOutputStream
+        // TODO implement putStream
         throw new BaseException("putStream for content not yet supported")
+    }
+    void move(String newLocation) {
+        // TODO implement move
+        throw new BaseException("move for content not yet supported")
     }
 
     javax.jcr.Node getNode() {
