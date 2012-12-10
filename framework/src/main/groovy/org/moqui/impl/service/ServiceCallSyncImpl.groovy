@@ -11,19 +11,18 @@
  */
 package org.moqui.impl.service
 
-import javax.transaction.Transaction
-
+import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
-import org.moqui.service.ServiceCallSync
-
+import org.moqui.entity.EntityValue
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextImpl
+import org.moqui.impl.context.UserFacadeImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
-import org.moqui.impl.context.ArtifactExecutionInfoImpl
+import org.moqui.service.ServiceCallSync
 import org.moqui.service.ServiceException
-import org.moqui.context.ArtifactAuthorizationException
-import org.moqui.entity.EntityValue
+
 import java.sql.Timestamp
 
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
@@ -148,10 +147,10 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         boolean loggedInAnonymous = false
         if (sd != null && sd.getAuthenticate() == "anonymous-all") {
             eci.getArtifactExecution().setAnonymousAuthorizedAll()
-            loggedInAnonymous = eci.getUser().loginAnonymousIfNoUser()
+            loggedInAnonymous = ((UserFacadeImpl) eci.getUser()).loginAnonymousIfNoUser()
         } else if (sd != null && sd.getAuthenticate() == "anonymous-view") {
             eci.getArtifactExecution().setAnonymousAuthorizedView()
-            loggedInAnonymous = eci.getUser().loginAnonymousIfNoUser()
+            loggedInAnonymous = ((UserFacadeImpl) eci.getUser()).loginAnonymousIfNoUser()
         }
         // NOTE: don't require authz if the service def doesn't authenticate
         // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
@@ -211,11 +210,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             // authentication
             sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
             // NOTE: auto user login done above, before first authz check
-            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId() && !eci.getUser().getLoggedInAnonymous())
+            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId() &&
+                    !((UserFacadeImpl) eci.getUser()).getLoggedInAnonymous())
                 eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
 
             // if error in auth or for other reasons, return now with no results
-            if (eci.getMessage().hasError()) return null
+            if (eci.getMessage().hasError()) {
+                logger.warn("Found error(s) when checking authc for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}; the artifact stack is:\n ${eci.artifactExecution.stack}")
+                return null
+            }
 
             if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(sd.getTxTimeout()) : false
@@ -264,12 +267,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             try {
                 if (suspendedTransaction) tf.resume()
             } catch (Throwable t) {
-                logger.error("Error resuming parent transaction after call to service [${getServiceName()}]")
+                logger.error("Error resuming parent transaction after call to service [${getServiceName()}]", t)
             }
             try {
                 if (userLoggedIn) eci.getUser().logoutUser()
             } catch (Throwable t) {
-                logger.error("Error logging out user after call to service [${getServiceName()}]")
+                logger.error("Error logging out user after call to service [${getServiceName()}]", t)
             }
 
             long endTime = System.currentTimeMillis()
@@ -281,7 +284,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally clause because if there is an error this will help us know how we got there
         eci.getArtifactExecution().pop()
 
-        if (loggedInAnonymous) eci.getUser().logoutAnonymousOnly()
+        if (loggedInAnonymous) ((UserFacadeImpl) eci.getUser()).logoutAnonymousOnly()
 
         return result
     }
