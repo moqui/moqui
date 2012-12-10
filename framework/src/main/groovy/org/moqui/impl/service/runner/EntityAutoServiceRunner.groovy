@@ -13,19 +13,15 @@ package org.moqui.impl.service.runner
 
 import org.moqui.BaseException
 import org.moqui.entity.EntityValue
+import org.moqui.impl.context.ExecutionContextFactoryImpl
+import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
-import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.ServiceRunner
 import org.moqui.service.ServiceException
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-import org.apache.commons.collections.set.ListOrderedSet
-import org.moqui.impl.context.ExecutionContextFactoryImpl
-
 public class EntityAutoServiceRunner implements ServiceRunner {
-    protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityAutoServiceRunner.class)
     protected ServiceFacadeImpl sfi = null
 
     EntityAutoServiceRunner() {}
@@ -99,7 +95,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
             Object pkValue = parameters.get(singlePkField."@name")
             if (pkValue) {
-                newEntityValue.set(singlePkField."@name", pkValue)
+                newEntityValue.set((String) singlePkField."@name", pkValue)
             } else {
                 newEntityValue.setSequencedIdPrimary()
                 pkValue = newEntityValue.get(singlePkField."@name")
