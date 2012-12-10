@@ -15,15 +15,13 @@ import java.nio.charset.Charset
 import java.sql.Timestamp
 import java.util.regex.Pattern
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import org.w3c.dom.Element
 
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
  */
 class StupidUtilities {
-    protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StupidUtilities.class)
 
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)

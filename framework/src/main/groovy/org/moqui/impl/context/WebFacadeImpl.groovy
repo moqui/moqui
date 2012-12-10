@@ -179,7 +179,7 @@ class WebFacadeImpl implements WebFacade {
         // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread
 
         // only create when requested, then keep for additional requests
-        if (parameters) return parameters
+        if (parameters != null) return parameters
 
         // Uses the approach of creating a series of this objects wrapping the other non-Map attributes/etc instead of
         // copying everything from the various places into a single combined Map; this should be much faster to create
@@ -198,14 +198,14 @@ class WebFacadeImpl implements WebFacade {
 
     /** @see org.moqui.context.WebFacade#getRequestAttributes() */
     Map<String, Object> getRequestAttributes() {
-        if (requestAttributes) return requestAttributes
+        if (requestAttributes != null) return requestAttributes
         requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
         return requestAttributes
     }
 
     /** @see org.moqui.context.WebFacade#getRequestParameters() */
     Map<String, Object> getRequestParameters() {
-        if (requestParameters) return requestParameters
+        if (requestParameters != null) return requestParameters
 
         ContextStack cs = new ContextStack()
         if (savedParameters) cs.push(savedParameters)

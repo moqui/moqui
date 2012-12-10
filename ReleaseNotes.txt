@@ -185,6 +185,9 @@ Bug Fixes:
   authc would result in a redirect to the file resource
 - Fixed bug in UrlResourceReference with cached exists not picking up
   created files; now only uses cached exists if it is true
+- Fixed handling of transition actions (or service-call) output where a Map
+  was pushed on the ContextStack and then popped, eliminating the output
+  from the actions
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012

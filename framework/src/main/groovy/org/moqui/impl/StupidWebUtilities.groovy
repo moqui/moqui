@@ -15,15 +15,14 @@ import javax.servlet.ServletRequest
 import javax.servlet.http.HttpSession
 import javax.servlet.ServletContext
 
-import org.owasp.esapi.codecs.Codec
-import org.owasp.esapi.codecs.HTMLEntityCodec
-import org.owasp.esapi.codecs.PercentCodec
 import org.owasp.esapi.reference.DefaultEncoder
 import org.owasp.esapi.Encoder
 import org.owasp.esapi.Validator
 import org.owasp.esapi.reference.DefaultValidator
 
 class StupidWebUtilities {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StupidUtilities.class)
+
     public static Map<String, Object> getPathInfoParameterMap(String pathInfoStr) {
         Map<String, Object> paramMap = new HashMap()
 
@@ -71,7 +70,9 @@ class StupidWebUtilities {
         Object remove(Object o) { Object orig = req.getAttribute((String) o); req.removeAttribute((String) o); return orig; }
         void putAll(Map<? extends String, ? extends Object> map) {
             if (!map) return
-            for (Map.Entry entry in map.entrySet()) req.setAttribute((String) entry.getKey(), entry.getValue())
+            for (Map.Entry entry in map.entrySet()) {
+                req.setAttribute((String) entry.getKey(), entry.getValue())
+            }
         }
         void clear() { for (String name in req.getAttributeNames()) req.removeAttribute(name) }
         Set<String> keySet() { Set<String> ks = new HashSet<String>(); ks.addAll(req.getAttributeNames().toList()); return ks; }
@@ -80,6 +81,16 @@ class StupidWebUtilities {
             Set<Map.Entry<String, Object>> es = new HashSet<Map.Entry<String,Object>>()
             for (String name in req.getAttributeNames()) es.add(new SimpleEntry(name, req.getAttribute(name)))
             return es
+        }
+        @Override
+        String toString() {
+            StringBuilder sb = new StringBuilder("[")
+            for (String name in req.getAttributeNames()) {
+                if (sb.size() > 1) sb.append(", ")
+                sb.append(name).append(":").append(req.getAttribute(name))
+            }
+            sb.append("]")
+            return sb.toString()
         }
     }
 
@@ -107,6 +118,15 @@ class StupidWebUtilities {
             Set<Map.Entry<String, Object>> es = new HashSet<Map.Entry<String,Object>>()
             for (String name in ses.getAttributeNames()) es.add(new SimpleEntry(name, ses.getAttribute(name)))
             return es
+        }
+        String toString() {
+            StringBuilder sb = new StringBuilder("[")
+            for (String name in ses.getAttributeNames()) {
+                if (sb.size() > 1) sb.append(", ")
+                sb.append(name).append(":").append(ses.getAttribute(name))
+            }
+            sb.append("]")
+            return sb.toString()
         }
     }
 
@@ -146,6 +166,15 @@ class StupidWebUtilities {
             for (String name in sc.getAttributeNames())
                 if (!keysToIgnore.contains(name)) es.add(new SimpleEntry(name, sc.getAttribute(name)))
             return es
+        }
+        String toString() {
+            StringBuilder sb = new StringBuilder("[")
+            for (String name in sc.getAttributeNames()) {
+                if (sb.size() > 1) sb.append(", ")
+                sb.append(name).append(":").append(sc.getAttribute(name))
+            }
+            sb.append("]")
+            return sb.toString()
         }
     }
     

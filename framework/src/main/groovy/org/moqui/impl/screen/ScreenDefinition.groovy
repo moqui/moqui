@@ -295,7 +295,7 @@ class ScreenDefinition {
             if (transitionNode."service-call") {
                 Node callServiceNode = (Node) transitionNode."service-call"[0]
                 if (!callServiceNode."@in-map") callServiceNode.attributes().put("in-map", "true")
-                if (!callServiceNode."@out-map") callServiceNode.attributes().put("out-map", "ec.web.requestAttributes")
+                if (!callServiceNode."@out-map") callServiceNode.attributes().put("out-map", "context")
                 if (!callServiceNode."@multi") callServiceNode.attributes().put("multi", "parameter")
                 actions = new XmlAction(parentScreen.sfi.ecfi, callServiceNode, location + ".service_call")
                 singleServiceName = callServiceNode."@name"
@@ -352,7 +352,7 @@ class ScreenDefinition {
                 return defaultResponse
             }
 
-            sri.ec.context.push()
+            // don't push a map on the context, let the transition actions set things that will remain: sri.ec.context.push()
             sri.ec.context.put("sri", sri)
             if (actions) actions.run(sri.ec)
 
@@ -368,7 +368,7 @@ class ScreenDefinition {
             if (ri == null) ri = defaultResponse
 
             // don't pop the context until after evaluating conditions so that data set in the actions can be used
-            sri.ec.context.pop()
+            // don't pop the context at all, see note above about push: sri.ec.context.pop()
 
             // all done so pop the artifact info; don't bother making sure this is done on errors/etc like in a finally
             // clause because if there is an error this will help us know how we got there
