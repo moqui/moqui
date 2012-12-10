@@ -1,1 +1,2 @@
 include 'framework'
+include 'runtime/component/example'
