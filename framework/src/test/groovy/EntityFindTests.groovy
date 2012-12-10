@@ -22,7 +22,7 @@ import java.sql.Timestamp
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityList
 
-class EntityFind extends Specification {
+class EntityFindTests extends Specification {
     @Shared
     ExecutionContext ec
     @Shared
