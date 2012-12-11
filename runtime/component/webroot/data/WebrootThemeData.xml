@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <entity-facade-xml type="seed">
     <!-- Default Theme Extensions (rest of the theme defined in ScreenTypeData.xml) -->
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/css/smoothness/jquery-ui-1.9.0.min.css"/>
+                         resourceValue="/css/smoothness/jquery-ui-1.9.2.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/default.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
                              enumTypeId="ScreenThemeType" enumCode="DEFAULT_IPAD"/>
     <moqui.screen.ScreenTheme screenThemeId="DEFAULT_IPAD" screenThemeTypeEnumId="STT_INTERNAL_IPAD" description="Moqui Default iPad Theme: simple, flat, default"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/css/smoothness/jquery-ui-1.9.0.min.css"/>
+                         resourceValue="/css/smoothness/jquery-ui-1.9.2.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
                          resourceValue="/css/default.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"

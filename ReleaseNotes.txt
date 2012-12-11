@@ -27,7 +27,7 @@ migration), and context isolation for service calls.
 
 This release includes:
 
-- Updated jQuery to 1.8.2 and jQuery UI to 1.9.0
+- Updated jQuery to 1.8.3 and jQuery UI to 1.9.2
 - Updated Apache Camel to 2.10.1, Apache Derby to 10.9.1.0, Apache
   Jackrabbit to 2.5.2, Apache Shiro to 1.2.1, ehcache to 2.6.0, Groovy to
   2.0.5, OWASP ESAPI to 2.0.1, Quartz Scheduler to 2.1.6, and WikiText to
