@@ -19,116 +19,15 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 // maybe in the future: repositories { mavenCentral() }
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
-    flatDir name: 'localLibFop', dirs: frameworkDir.absolutePath + '/lib/fop'
     flatDir name: 'moquiLib', dirs: frameworkDir.absolutePath + '/build/libs'
 }
-
-// TODO: find a way to use the framework build dependencies instead of repeating them all here for compile and test
 
 dependencies {
     // groovy dependencies (just the library to compile with)
     groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.5' // Apache 2.0
 
-    compile name: 'antisamy', version: '1.4' // New BSD
-
-    compile module(name: 'atomikos-transactions', version: '3.8.0') { // Apache 2.0
-        dependencies module(name: 'atomikos-util', version: '3.8.0') } // Apache 2.0
-    compile name: 'atomikos-transactions-api', version: '3.8.0' // Apache 2.0
-    compile name: 'atomikos-transactions-jdbc', version: '3.8.0' // Apache 2.0
-    // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.7.0' // Apache 2.0
-    compile name: 'atomikos-transactions-jta', version: '3.8.0' // Apache 2.0
-
-    compile name: 'camel-core', version: '2.10.1' // Apache 2.0
-
-    compile name: 'commons-codec', version: '1.4' // Apache 2.0
-    compile name: 'commons-collections', version: '3.2.1' // Apache 2.0
-    compile name: 'commons-email', version: '1.2' // Apache 2.0
-    compile name: 'commons-fileupload', version: '1.2.2' // Apache 2.0
-    compile name: 'commons-httpclient', version: '4.1' // Apache 2.0
-    compile name: 'commons-httpcore', version: '4.1' // Apache 2.0
-    compile name: 'commons-io', version: '2.0.1' // Apache 2.0
-    compile name: 'commons-validator', version: '1.3.1' // Apache 2.0
-
-    compile name: 'ehcache-core', version: '2.6.0' // Apache 2.0
-    compile name: 'esapi', version: '2.0GA' // New BSD
-    compile name: 'freemarker', version: '2.3.19' // BSD
-
-    compile name: 'geronimo-j2ee-connector_1.5_spec', version: '' // Apache 2.0
-    compile name: 'geronimo-jms_1.1_spec', version: '1.0' // Apache 2.0
-    compile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
-
-    compile name: 'groovy-all', version: '2.0.5' // Apache 2.0
-
-    compile name: 'jackrabbit-api', version: '2.5.2' // Apache 2.0
-    compile name: 'jackrabbit-jcr-commons', version: '2.5.2' // Apache 2.0
-    compile name: 'jackrabbit-jcr2dav', version: '2.5.2' // Apache 2.0
-    compile name: 'jackrabbit-jcr-rmi', version: '2.5.2' // Apache 2.0
-    compile name: 'jcr', version: '2.0' // Apache 2.0???
-
-    compile name: 'jsonrpc2-base', version: '1.20' // Apache 2.0
-    compile name: 'jsonrpc2-client', version: '1.4' // Apache 2.0
-    compile name: 'jsonrpc2-server', version: '1.4.1' // Apache 2.0
-
-    compile name: 'jsr173_1.0_api', version: '' // ???
-    compile name: 'liquibase', version: '2.0.1' // Apache 2.0
-    compile name: 'mail', version: '' // ???
-    compile name: 'org.eclipse.mylyn.wikitext.core_1.8.0.I20121130-0624', version: '' // EPL
-    compile name: 'org.eclipse.mylyn.wikitext.confluence.core_1.8.0.I20121130-0624', version: '' // EPL
-    compile name: 'org.eclipse.mylyn.wikitext.mediawiki.core_1.8.0.I20121130-0624', version: '' // EPL
-    compile name: 'org.eclipse.mylyn.wikitext.textile.core_1.8.0.I20121130-0624', version: '' // EPL
-    compile name: 'org.eclipse.mylyn.wikitext.tracwiki.core_1.8.0.I20121130-0624', version: '' // EPL
-    compile name: 'org.eclipse.mylyn.wikitext.twiki.core_1.8.0.I20121130-0624', version: '' // EPL
-
-    compile name: 'quartz-all', version: '2.1.6' // Apache 2.0
-
-    compile name: 'ws-commons-util', version: '1.0.2' // Apache 2.0
-    compile name: 'xmlrpc-client', version: '3.1.3' // Apache 2.0
-    compile name: 'xmlrpc-common', version: '3.1.3' // Apache 2.0
-    compile name: 'xmlrpc-server', version: '3.1.3' // Apache 2.0
-
-    compile module(name: 'shiro-core', version: '1.2.1') { // Apache 2.0
-        dependencies module(name: 'commons-beanutils', version: '1.8.3'), module(name: 'commons-logging', version: '1.1.1') }
-    compile name: 'shiro-web', version: '1.2.1' // Apache 2.0
-
-    compile module(name: 'slf4j-api', version: '1.6.5') { // MIT license
-        dependencies module(name: 'log4j', version: '1.2.17'), module(name: 'slf4j-log4j12', version: '1.6.5') }
-
-    // winstone is in providedCompile so that it won't be included in the war file WEB-INF/lib
-    compile name: 'winstone', version: '0.9.10' // CDDL
-
-    compile module(name: 'fop', version: '1.0') { // Apache 2.0
-        dependencies module(name: 'avalon-framework', version: '4.2.0'), module(name: 'xmlgraphics-commons', version: '1.4') // Apache 2.0
-    }
-
-    // NOTE: even if/when other dependencies are inherited this must still be here for moqui-framework:
+    compile fileTree(dir: frameworkDir.absolutePath + '/lib', includes: ['*.jar'])
     compile name: 'moqui-framework', version: version // Public Domain
-
-    // ========== runtime-only dependencies ==========
-    runtime name: 'camel-freemarker', version: '2.10.1' // Apache 2.0
-    runtime name: 'camel-groovy', version: '2.10.1' // Apache 2.0
-    runtime name: 'camel-http4', version: '2.10.1' // Apache 2.0
-    runtime name: 'camel-jms', version: '2.10.1' // Apache 2.0
-    runtime name: 'camel-mail', version: '2.10.1' // Apache 2.0
-    runtime name: 'camel-quartz', version: '2.10.1' // Apache 2.0
-    runtime name: 'camel-shiro', version: '2.10.1' // Apache 2.0
-
-    /* For extended WebDAV connection to Jackrabbit these are needed:
-    runtime name: 'jackrabbit-spi', version: '2.5.2' // Apache 2.0
-    runtime name: 'jackrabbit-spi-commons', version: '2.5.2' // Apache 2.0
-    runtime name: 'jackrabbit-jcr2spi', version: '2.5.2' // Apache 2.0
-    runtime name: 'jackrabbit-spi2dav', version: '2.5.2' // Apache 2.0
-    runtime name: 'jackrabbit-webdav', version: '2.5.2' // Apache 2.0
-    runtime name: 'commons-httpclient', version: '3.1' // Apache 2.0
-    */
-
-    runtime name: 'derby', version: '10.9.1.0' // Apache 2.0
-    runtime name: 'jakarta-oro', version: '2.0.8' // Apache 2.0
-    runtime name: 'shiro-ehcache', version: '1.2.1' // Apache 2.0
-    runtime name: 'shiro-quartz', version: '1.2.1' // Apache 2.0
-
-    // ========== test dependencies ==========
-    testCompile name: 'spock-core', version: '1.0-groovy-2.0-20121024' // Apache 2.0
-    testCompile name: 'junit', version: '4.10' // Apache 2.0
 }
 
 // by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
