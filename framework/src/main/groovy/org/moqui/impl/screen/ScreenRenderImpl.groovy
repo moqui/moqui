@@ -857,16 +857,25 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
+    String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
+        Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
+        String strValue
+        if (format) {
+            strValue = ec.l10n.formatValue(obj, format)
+        } else {
+            strValue = obj ? obj.toString() : ""
+        }
+        return strValue
+    }
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
-        if (fieldNode."@entry-name") return ec.resource.evaluateContextField(fieldNode."@entry-name", null)
+        if (fieldNode."@entry-name") return ec.resource.evaluateContextField((String) fieldNode."@entry-name", null)
         String fieldName = fieldNode."@name"
         String mapName = fieldNode.parent()."@map" ?: "fieldValues"
-        Object value
+        Object value = null
         // if this is an error situation try parameters first, otherwise try parameters last
         if (ec.web != null && ec.web.errorParameters != null && (ec.web.errorParameters.moquiFormName == fieldNode.parent()."@name"))
             value = ec.web.errorParameters.get(fieldName)
-        // logger.warn("TOREMOVE fieldName=${fieldName} value=${value}; ec.web.errorParameters=${ec.web.errorParameters}; ec.web.errorParameters.moquiFormName=${ec.web.parameters.moquiFormName}, fieldNode.parent().@name=${fieldNode.parent().'@name'}")
         if (!value && ec.context.get(mapName) && fieldNode.parent().name() == "form-single") {
             try {
                 Map valueMap = (Map) ec.context.get(mapName)
@@ -881,7 +890,6 @@ class ScreenRenderImpl implements ScreenRender {
         }
         if (!value) value = ec.context.get(fieldName)
         // this isn't needed since the parameters are copied to the context: if (!isError && isWebAndSameForm && !value) value = ec.web.parameters.get(fieldName)
-
         if (value) return value
         return ec.resource.evaluateStringExpand(defaultValue, null)
     }
@@ -891,12 +899,12 @@ class ScreenRenderImpl implements ScreenRender {
         Object fieldValue = getFieldValue(fieldNodeWrapper, "")
         if (!fieldValue) return ""
         Node widgetNode = widgetNodeWrapper.getGroovyNode()
-        EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(widgetNode."@entity-name")
+        EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition((String) widgetNode."@entity-name")
 
         // find the entity value
         String keyFieldName = widgetNode."@key-field-name"
         if (!keyFieldName) keyFieldName = ed.getPkFieldNames().get(0)
-        EntityValue ev = ec.entity.makeFind(widgetNode."@entity-name").condition(keyFieldName, fieldValue)
+        EntityValue ev = ec.entity.makeFind((String) widgetNode."@entity-name").condition(keyFieldName, fieldValue)
                 .useCache(widgetNode."@use-cache"?:"true" == "true").one()
         if (ev == null) return ""
 
@@ -904,7 +912,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (widgetNode."@text") {
             // push onto the context and then expand the text
             ec.context.push(ev)
-            value = ec.resource.evaluateStringExpand(widgetNode."@text", null)
+            value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
             ec.context.pop()
         } else {
             // get the value of the default description field for the entity

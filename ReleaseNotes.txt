@@ -188,6 +188,9 @@ Bug Fixes:
 - Fixed handling of transition actions (or service-call) output where a Map
   was pushed on the ContextStack and then popped, eliminating the output
   from the actions
+- Fixed object formatting in XML Screen/Form output, now done in a groovy
+  method instead of with ?string in FTL which produced undesirable results
+  in many scenarios
 
 ===========================================================================
 Release 1.1.1 - 22 Sep 2012
