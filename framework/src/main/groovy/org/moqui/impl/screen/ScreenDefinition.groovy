@@ -464,7 +464,7 @@ class ScreenDefinition {
             name = subscreensItem.subscreenName
             location = subscreensItem.subscreenLocation
             menuTitle = subscreensItem.menuTitle ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
-            menuIndex = subscreensItem.menuIndex as int
+            menuIndex = (subscreensItem.menuIndex ?: 5) as int
             menuInclude = (subscreensItem.menuInclude == "Y")
         }
 
