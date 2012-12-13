@@ -36,7 +36,12 @@ class UrlResourceReference extends BaseResourceReference {
             locationUrl = new URL("file:" + location)
             isFileProtocol = true
         } else {
-            locationUrl = new URL(location)
+            try {
+                locationUrl = new URL(location)
+            } catch (MalformedURLException e) {
+                // special case for Windows, try going through a file:
+                locationUrl = new URL("file:/" + location)
+            }
             isFileProtocol = (locationUrl?.protocol == "file")
         }
         return this

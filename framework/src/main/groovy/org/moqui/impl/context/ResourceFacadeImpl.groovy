@@ -188,9 +188,10 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (cachedRr != null) return cachedRr
 
         String scheme = "file"
-        // how to get the scheme for windows? the Java URI class doesn't like spaces, the if we look for the first ":"
+        // Q: how to get the scheme for windows? the Java URI class doesn't like spaces, the if we look for the first ":"
         //    it may be a drive letter instead of a scheme/protocol
-        if (location.contains(":")) {
+        // A: ignore colon if only one character before it
+        if (location.indexOf(":") > 1) {
             String prefix = location.substring(0, location.indexOf(":"))
             if (!prefix.contains("/") && prefix.length() > 2) scheme = prefix
         }
