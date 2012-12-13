@@ -143,17 +143,13 @@ class UrlResourceReference extends BaseResourceReference {
     void move(String newLocation) {
         if (!newLocation) throw new IllegalArgumentException("No location specified, not moving resource at ${getLocation()}")
         ResourceReference newRr = ec.resource.getLocationReference(newLocation)
-        String path = null
-        if (newRr.getUrl().getProtocol() == "file") {
-            path = newRr.getUrl().toExternalForm().substring(5)
-        } else {
-            throw new IllegalArgumentException("Location [${newLocation}] is not a file location, not moving resource at ${getLocation()}")
-        }
 
-        if (isFileProtocol) {
-            getFile().renameTo(new File(path))
-        } else {
+        if (newRr.getUrl().getProtocol() != "file")
+            throw new IllegalArgumentException("Location [${newLocation}] is not a file location, not moving resource at ${getLocation()}")
+        if (!isFileProtocol)
             throw new IllegalArgumentException("Move not supported for resource [${getLocation()}] with protocol [${locationUrl?.protocol}]")
-        }
+
+        String path = newRr.getUrl().toExternalForm().substring(5)
+        getFile().renameTo(new File(path))
     }
 }

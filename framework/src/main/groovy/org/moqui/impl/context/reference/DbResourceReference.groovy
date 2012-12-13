@@ -25,6 +25,7 @@ import javax.sql.rowset.serial.SerialBlob
 
 class DbResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DbResourceReference.class)
+    public final static String locationPrefix = "dbresource://"
 
     String location
     EntityValue dbResource = null
@@ -52,7 +53,7 @@ class DbResourceReference extends BaseResourceReference {
     String getPath() {
         if (!location) return ""
         // should have a prefix of "dbresource://"
-        return location.substring("dbresource://".length())
+        return location.substring(locationPrefix.length())
     }
 
     @Override
@@ -104,50 +105,79 @@ class DbResourceReference extends BaseResourceReference {
     boolean supportsWrite() { true }
     void putText(String text) {
         SerialBlob sblob = text ? new SerialBlob(text.getBytes()) : null
+        this.putObject(sblob)
+    }
+    void putStream(InputStream stream) {
+        this.putObject(stream)
+    }
+    protected void putObject(Object fileObj) {
         EntityValue dbrf = getDbResourceFile()
 
         if (dbrf != null) {
             ec.service.sync().name("update", "DbResourceFile")
-                    .parameters([resourceId:dbrf.resourceId, fileData:sblob]).call()
+                    .parameters([resourceId:dbrf.resourceId, fileData:fileObj]).call()
             dbResourceFile = null
         } else {
             // first make sure the directory exists that this is in
             List<String> filenameList = getPath().split("/")
             if (filenameList) filenameList.remove(filenameList.size()-1)
-            EntityValue directoryValue = null
-            String parentResourceId = null
-            if (filenameList) {
-                for (String filename in filenameList) {
-                    directoryValue = ec.entity.makeFind("DbResource")
-                            .condition([parentResourceId:parentResourceId, filename:filename])
-                            .useCache(true).list().getFirst()
-                    if (directoryValue == null) {
-                        Map createResult = ec.service.sync().name("create", "DbResource")
-                                .parameters([parentResourceId:parentResourceId, filename:filename, isFile:"N"]).call()
-                        parentResourceId = createResult.resourceId
-                        // logger.warn("=============== put text to ${location}, created dir ${filename}")
-                    } else {
-                        parentResourceId = directoryValue.resourceId
-                        // logger.warn("=============== put text to ${location}, found existing dir ${filename}")
-                    }
-                }
-            }
+            String parentResourceId = findDirectoryId(filenameList, true)
 
             // now write the DbResource and DbResourceFile records
             Map createDbrResult = ec.service.sync().name("create", "DbResource")
                     .parameters([parentResourceId:parentResourceId, filename:getFileName(), isFile:"Y"]).call()
             ec.service.sync().name("create", "DbResourceFile")
-                    .parameters([resourceId:createDbrResult.resourceId, mimeType:getContentType(), fileData:sblob]).call()
+                    .parameters([resourceId:createDbrResult.resourceId, mimeType:getContentType(), fileData:fileObj]).call()
+            // clear out the local reference to the old file record
             dbResourceFile = null
         }
     }
-    void putStream(InputStream stream) {
-        // TODO implement openOutputStream
-        throw new BaseException("putStream for dbresource not yet supported")
+    String findDirectoryId(List<String> pathList, boolean create) {
+        String parentResourceId = null
+        if (pathList) {
+            for (String filename in pathList) {
+                EntityValue directoryValue = ec.entity.makeFind("DbResource")
+                        .condition([parentResourceId:parentResourceId, filename:filename])
+                        .useCache(true).list().getFirst()
+                if (directoryValue == null) {
+                    if (create) {
+                        Map createResult = ec.service.sync().name("create", "DbResource")
+                                .parameters([parentResourceId:parentResourceId, filename:filename, isFile:"N"]).call()
+                        parentResourceId = createResult.resourceId
+                        // logger.warn("=============== put text to ${location}, created dir ${filename}")
+                    }
+                } else {
+                    parentResourceId = directoryValue.resourceId
+                    // logger.warn("=============== put text to ${location}, found existing dir ${filename}")
+                }
+            }
+        }
+        return parentResourceId
     }
+
     void move(String newLocation) {
-        // TODO implement move
-        throw new BaseException("move for dbresource not yet supported")
+        EntityValue dbr = getDbResource()
+        // if the current resource doesn't exist, nothing to move
+        if (!dbr) {
+            logger.warn("Could not find dbresource at [${getPath()}]")
+            return
+        }
+
+        if (!newLocation) throw new IllegalArgumentException("No location specified, not moving resource at ${getLocation()}")
+        ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        if (!newLocation.startsWith(locationPrefix))
+            throw new IllegalArgumentException("Location [${newLocation}] is not a dbresource location, not moving resource at ${getLocation()}")
+
+        List<String> filenameList = newLocation.substring(locationPrefix.length()).split("/")
+        if (filenameList) {
+            String newFilename = filenameList.get(filenameList.size()-1)
+            filenameList.remove(filenameList.size()-1)
+            String parentResourceId = findDirectoryId(filenameList, true)
+
+            dbr.parentResourceId = parentResourceId
+            dbr.filename = newFilename
+            dbr.update()
+        }
     }
 
     EntityValue getDbResource() {
