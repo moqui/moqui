@@ -13,6 +13,7 @@ package org.moqui.impl.context.reference
 
 import javax.jcr.Session
 import javax.jcr.Property
+import javax.jcr.Value
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
@@ -121,7 +122,18 @@ class ContentResourceReference extends BaseResourceReference {
     }
 
     boolean supportsWrite() { true }
+
     void putText(String text) {
+        putObject(text)
+    }
+    void putStream(InputStream stream) {
+        putObject(stream)
+    }
+    protected void putObject(Object obj) {
+        if (obj == null) {
+            logger.warn("Data was null, not saving to resource [${getLocation()}]")
+            return
+        }
         Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
         javax.jcr.Node fileNode = getNode()
         if (fileNode != null) {
@@ -134,16 +146,7 @@ class ContentResourceReference extends BaseResourceReference {
             // first make sure the directory exists that this is in
             List<String> nodePathList = nodePath.split('/')
             if (nodePathList) nodePathList.remove(nodePathList.size()-1)
-            javax.jcr.Node folderNode = rootNode
-            if (nodePathList) {
-                for (String nodePathElement in nodePathList) {
-                    if (folderNode.hasNode(nodePathElement)) {
-                        folderNode = folderNode.getNode(nodePathElement)
-                    } else {
-                        folderNode = folderNode.addNode(nodePathElement, "nt:folder")
-                    }
-                }
-            }
+            javax.jcr.Node folderNode = findDirectoryNode(nodePathList, true)
 
             // now write the text to the node and save it
             fileNode = folderNode.addNode(fileName, "nt:file")
@@ -152,16 +155,38 @@ class ContentResourceReference extends BaseResourceReference {
             // fileContent.setProperty("jcr:encoding", ?)
             Calendar lastModified = Calendar.getInstance(); lastModified.setTimeInMillis(System.currentTimeMillis())
             fileContent.setProperty("jcr:lastModified", lastModified)
+            if (obj instanceof String) {
+                fileContent.setProperty("jcr:data", session.valueFactory.createValue((String) obj))
+            } else if (obj instanceof InputStream) {
+                fileContent.setProperty("jcr:data", session.valueFactory.createBinary((InputStream) obj))
+            } else {
+                throw new IllegalArgumentException("Cannot save content for obj with type ${obj.class.name}")
+            }
 
-            fileContent.setProperty("jcr:data", session.valueFactory.createValue(text))
 
             session.save()
         }
     }
-    void putStream(InputStream stream) {
-        // TODO implement putStream
-        throw new BaseException("putStream for content not yet supported")
+
+    javax.jcr.Node findDirectoryNode(List<String> pathList, boolean create) {
+        javax.jcr.Node folderNode = rootNode
+        if (nodePathList) {
+            for (String nodePathElement in nodePathList) {
+                if (folderNode.hasNode(nodePathElement)) {
+                    folderNode = folderNode.getNode(nodePathElement)
+                } else {
+                    if (create) {
+                        folderNode = folderNode.addNode(nodePathElement, "nt:folder")
+                    } else {
+                        folderNode = null
+                        break
+                    }
+                }
+            }
+        }
+        return folderNode
     }
+
     void move(String newLocation) {
         // TODO implement move
         throw new BaseException("move for content not yet supported")
