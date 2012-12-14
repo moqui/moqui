@@ -138,6 +138,8 @@ class UrlResourceReference extends BaseResourceReference {
         this.exists = null
     }
     void putStream(InputStream stream) {
+        // first make sure the directory exists that this is in
+        if (!getFile().parentFile.exists()) getFile().parentFile.mkdirs()
         OutputStream os = new FileOutputStream(getFile())
         StupidUtilities.copyStream(stream, os)
         stream.close()
