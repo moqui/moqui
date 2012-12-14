@@ -23,6 +23,7 @@ import org.moqui.BaseException
 
 class ContentResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
+    public final static String locationPrefix = "content://"
 
     String location
     String repositoryName
@@ -48,7 +49,7 @@ class ContentResourceReference extends BaseResourceReference {
     ResourceReference init(String repositoryName, javax.jcr.Node node, ExecutionContext ec) {
         this.repositoryName = repositoryName
         this.nodePath = node.path
-        this.location = "content://${repositoryName}/${nodePath}"
+        this.location = "${locationPrefix}${repositoryName}/${nodePath}"
         this.theNode = node
         return this
     }
@@ -141,12 +142,10 @@ class ContentResourceReference extends BaseResourceReference {
             fileContent.setProperty("jcr:data", session.valueFactory.createValue(text))
             session.save()
         } else {
-            javax.jcr.Node rootNode = session.getRootNode()
-
             // first make sure the directory exists that this is in
             List<String> nodePathList = nodePath.split('/')
             if (nodePathList) nodePathList.remove(nodePathList.size()-1)
-            javax.jcr.Node folderNode = findDirectoryNode(nodePathList, true)
+            javax.jcr.Node folderNode = findDirectoryNode(session, nodePathList, true)
 
             // now write the text to the node and save it
             fileNode = folderNode.addNode(fileName, "nt:file")
@@ -163,15 +162,15 @@ class ContentResourceReference extends BaseResourceReference {
                 throw new IllegalArgumentException("Cannot save content for obj with type ${obj.class.name}")
             }
 
-
             session.save()
         }
     }
 
-    javax.jcr.Node findDirectoryNode(List<String> pathList, boolean create) {
+    javax.jcr.Node findDirectoryNode(Session session, List<String> pathList, boolean create) {
+        javax.jcr.Node rootNode = session.getRootNode()
         javax.jcr.Node folderNode = rootNode
-        if (nodePathList) {
-            for (String nodePathElement in nodePathList) {
+        if (pathList) {
+            for (String nodePathElement in pathList) {
                 if (folderNode.hasNode(nodePathElement)) {
                     folderNode = folderNode.getNode(nodePathElement)
                 } else {
@@ -188,8 +187,24 @@ class ContentResourceReference extends BaseResourceReference {
     }
 
     void move(String newLocation) {
-        // TODO implement move
-        throw new BaseException("move for content not yet supported")
+        if (!newLocation.startsWith(locationPrefix))
+            throw new IllegalArgumentException("New location [${newLocation}] is not a content location, not moving resource at ${getLocation()}")
+
+        Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
+
+        ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        if (!newRr instanceof ContentResourceReference)
+            throw new IllegalArgumentException("New location [${newLocation}] is not a content location, not moving resource at ${getLocation()}")
+        ContentResourceReference newCrr = (ContentResourceReference) newRr
+
+        // make sure the target folder exists
+        List<String> nodePathList = newCrr.getNodePath().split('/')
+        if (nodePathList) nodePathList.remove(nodePathList.size()-1)
+        findDirectoryNode(session, nodePathList, true)
+
+        session.move(this.getNodePath(), newCrr.getNodePath())
+
+        this.node = null
     }
 
     javax.jcr.Node getNode() {

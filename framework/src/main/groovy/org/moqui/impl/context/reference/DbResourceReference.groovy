@@ -11,16 +11,12 @@
  */
 package org.moqui.impl.context.reference
 
-import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
-import org.moqui.impl.context.ResourceFacadeImpl
-
-import javax.jcr.Property
-import javax.jcr.Session
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
+
 import javax.sql.rowset.serial.SerialBlob
 
 class DbResourceReference extends BaseResourceReference {
@@ -164,7 +160,7 @@ class DbResourceReference extends BaseResourceReference {
         }
 
         if (!newLocation) throw new IllegalArgumentException("No location specified, not moving resource at ${getLocation()}")
-        ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        // ResourceReference newRr = ec.resource.getLocationReference(newLocation)
         if (!newLocation.startsWith(locationPrefix))
             throw new IllegalArgumentException("Location [${newLocation}] is not a dbresource location, not moving resource at ${getLocation()}")
 
