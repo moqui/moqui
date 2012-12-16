@@ -957,11 +957,15 @@ Features designed or considered, but not to be included in 1.0 series
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
+  - Added view log like current change audit log (AuditLogView?)
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
     Component, Webapp, Screen Section, Screen Form, Screen Form Field,
     Template, Script, Entity Field
+  - For record-level authz automatically add constraints to queries if
+    the query follows an adequate pattern and authz requires it, or fail
+    authz if can't add constraint
 - Tools Screens
   - Auto Screen
     - Editable data grid, created by form-list, for detail and assoc
