@@ -13,13 +13,11 @@ package org.moqui.impl.context.reference
 
 import javax.jcr.Session
 import javax.jcr.Property
-import javax.jcr.Value
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ResourceFacadeImpl
-import org.moqui.BaseException
 
 class ContentResourceReference extends BaseResourceReference {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
@@ -204,7 +202,7 @@ class ContentResourceReference extends BaseResourceReference {
 
         session.move(this.getNodePath(), newCrr.getNodePath())
 
-        this.node = null
+        this.theNode = null
     }
 
     javax.jcr.Node getNode() {
