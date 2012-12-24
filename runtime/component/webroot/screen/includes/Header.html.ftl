@@ -25,6 +25,13 @@
 <#list sri.getThemeValues("STRT_SHORTCUT_ICON") as iconLocation>
     <link rel="shortcut icon" href="${sri.buildUrl(iconLocation).url}">
 </#list>
+    <script>
+        $(function() {
+            $("input[type=submit], input[type=reset], a.button, button").each(function() {
+                $(this).button({icons: {primary: $(this).attr("iconcls")}});
+            })
+        });
+    </script>
 </head>
 
 <body>

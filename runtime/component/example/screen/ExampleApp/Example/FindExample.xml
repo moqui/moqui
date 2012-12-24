@@ -61,7 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
-            <link url="newExample" text="New Example"/>
+            <link url="newExample" text="New Example" link-type="hidden-form" icon="plusthick"/>
         </container>
         <form-list name="ListExamples" list="exampleList">
             <field name="exampleId">

@@ -56,8 +56,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
                 </section-iterate>
 
-                <container id="header-menu"><subscreens-menu/></container>
-                <subscreens-active id="apps-active"/>
+                <subscreens-menu type="popup" id="header-menu" title="Application"/>
+                <subscreens-active/>
             </panel-center>
             <panel-footer>
                 <render-mode><text type="html"><![CDATA[<h6>Built on <a href="http://www.moqui.org/">Moqui</a> for Apple iPad</h6>]]></text></render-mode>
