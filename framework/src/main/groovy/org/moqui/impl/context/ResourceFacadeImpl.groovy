@@ -329,6 +329,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         String expression = '"""' + inputString + '"""'
         try {
             Script script = getGroovyScript(expression)
+            if (script == null) return null
             Object result = script.run()
             return result as String
         } catch (Exception e) {

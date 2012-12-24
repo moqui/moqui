@@ -43,6 +43,8 @@ public interface ResourceReference {
     boolean isDirectory();
     List<ResourceReference> getDirectoryEntries();
     ResourceReference findChildFile(String relativePath);
+    ResourceReference findChildDirectory(String relativePath);
+    ResourceReference findMatchingDirectory();
 
     boolean supportsExists();
     boolean getExists();
