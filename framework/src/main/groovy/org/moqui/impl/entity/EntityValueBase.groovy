@@ -227,6 +227,10 @@ abstract class EntityValueBase implements EntityValue {
         // try groovy...
         return o as byte[]
     }
+    EntityValue setBytes(String name, byte[] theBytes) {
+        if (theBytes != null) set(name, new SerialBlob(theBytes))
+        return this
+    }
 
     SerialBlob getSerialBlob(String name) {
         Object o = this.get(name)

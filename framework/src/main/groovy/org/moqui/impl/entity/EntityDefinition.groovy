@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import javax.sql.rowset.serial.SerialBlob
 import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
@@ -679,7 +680,7 @@ public class EntityDefinition {
                 case 9: outValue = new BigDecimal(value); break
                 case 10: outValue = Boolean.valueOf(value); break
                 case 11: outValue = value; break
-                case 12: outValue = value.getBytes(); break
+                case 12: outValue = new SerialBlob(value.getBytes()); break
                 case 13: outValue = value; break
                 case 14: outValue = value.asType(java.util.Date.class); break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place

@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import javax.sql.rowset.serial.SerialBlob
 import javax.xml.parsers.SAXParserFactory
 
 import org.apache.commons.codec.binary.Base64
@@ -34,7 +35,7 @@ import org.xml.sax.Locator
 import org.xml.sax.SAXException
 
 class EntityDataLoaderImpl implements EntityDataLoader {
-    protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDataLoaderImpl.class)
 
     protected EntityFacadeImpl efi
 
@@ -324,7 +325,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                             String type = fieldNode."@type"
                             if (type == "binary-very-long") {
                                 byte[] binData = Base64.decodeBase64(currentFieldValue.toString())
-                                currentValue.set(currentFieldName, binData)
+                                currentValue.setBytes(currentFieldName, binData)
                             } else {
                                 currentValue.setString(currentFieldName, currentFieldValue.toString())
                             }

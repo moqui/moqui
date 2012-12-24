@@ -357,6 +357,8 @@ class EntityQueryBuilder {
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
         try {
             setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob)
+        } catch (EntityException e) {
+            throw e
         } catch (Exception e) {
             throw new EntityException("Error setting prepared statement field [${fieldName}] of entity [${entityName}]", e)
         }
@@ -412,8 +414,14 @@ class EntityQueryBuilder {
                 case 12:
                     if (value instanceof byte[]) {
                         ps.setBytes(index, (byte[]) value)
+                    } else if (value instanceof ArrayList) {
+                        byte[] theBytes = new byte[((ArrayList) value).size()]
+                        ((ArrayList) value).toArray(theBytes)
+                        ps.setBytes(index, theBytes)
                     } else if (value instanceof java.nio.ByteBuffer) {
                         ps.setBytes(index, ((java.nio.ByteBuffer) value).array())
+                    } else if (value instanceof String) {
+                        ps.setBytes(index, ((String) value).getBytes())
                     } else {
                         if (value != null) {
                             ps.setBlob(index, (java.sql.Blob) value)

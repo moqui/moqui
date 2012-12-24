@@ -95,6 +95,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
     BigDecimal getBigDecimal(String name);
 
     byte[] getBytes(String name);
+    EntityValue setBytes(String name, byte[] theBytes);
     SerialBlob getSerialBlob(String name);
 
     /** Sets fields on this entity from the Map of fields passed in using the entity definition to only get valid
