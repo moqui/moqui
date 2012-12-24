@@ -26,11 +26,12 @@
     <link rel="shortcut icon" href="${sri.buildUrl(iconLocation).url}">
 </#list>
     <script>
-        $(function() {
+        function activateAllButtons() {
             $("input[type=submit], input[type=reset], a.button, button").each(function() {
                 $(this).button({icons: {primary: $(this).attr("iconcls")}});
             })
-        });
+        }
+        $(function() { activateAllButtons() });
     </script>
 </head>
 

@@ -50,8 +50,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <container>
-            <link url="list" text="Entity List"/>
-            <link url="find" text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}"/>
+            <link url="list" text="Entity List" link-type="hidden-form"/>
+            <link url="find" text="Find ${ec.entity.getEntityDefinition(aen).getPrettyName(null, null)}" link-type="hidden-form"/>
         </container>
         <form-single name="UpdateMasterEntityValue" transition="update" dynamic="true">
             <auto-fields-entity entity-name="${aen}" include="pk" field-type="display"/>
