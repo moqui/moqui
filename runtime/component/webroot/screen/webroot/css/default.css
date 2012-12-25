@@ -172,8 +172,6 @@ input.ui-widget, select.ui-widget, select option.ui-widget, textarea.ui-widget, 
 button.ui-button-icon-only { width: 1.1em; }
 .ui-button-icons-only { width: 1.5em; }
 button.ui-button-icons-only { width: 1.5em; }
-.ui-button-text-only .ui-icon { position: absolute; top: 50%; margin-top: -8px; }
-.ui-button-text-only .ui-icon { left: 8px; margin-left: -8px; }
 .ui-button .ui-button-text { display: block; line-height: .8; font-size: 0.9em; }
 
 .ui-tabs { position: relative; padding: 0px; zoom: 1; border: 0px; }

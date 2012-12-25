@@ -203,6 +203,7 @@ This Work includes contributions authored by David E. Jones, not as a
                             transition has an event, otherwise the anchor type will be used.
                         </xs:documentation></xs:annotation></xs:enumeration>
                         <xs:enumeration value="anchor"/>
+                        <xs:enumeration value="anchor-button"/>
                         <xs:enumeration value="hidden-form"/>
                     </xs:restriction>
                 </xs:simpleType>
