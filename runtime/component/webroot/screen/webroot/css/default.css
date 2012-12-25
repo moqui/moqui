@@ -62,17 +62,18 @@ li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 form { display: inline; }
 
 /* NOTE: also using the jQueryUI ui-button style; skip:
+button, input[type="reset"], input[type="submit"], input[type="button"], a.button {
+font-size: 1em; font-weight: bold; text-decoration: none;
+}
  background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px 2px 2px 2px; outline: 0px;
  text-shadow: #fff 0 1px 1px; display: inline-block; overflow: visible; width: auto; cursor: pointer;
  -webkit-appearance: none; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; */
-button, input[type="reset"], input[type="submit"], input[type="button"], a.button {
-font-size: .8em; font-weight: bold; text-decoration: none;
-}
 /*
 button:active, input[type="reset"]:active, input[type="submit"]:active, input[type="button"]:active, a.button:active {
 border-color: #999 #bbb #ddd; color: #666;
 }
 */
+.ui-button-text { font-size: 0.9em; font-weight: bold; text-decoration: none; }
 
 input[type=""], input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select {
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
