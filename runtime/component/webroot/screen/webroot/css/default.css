@@ -172,7 +172,7 @@ input.ui-widget, select.ui-widget, select option.ui-widget, textarea.ui-widget, 
 button.ui-button-icon-only { width: 1.1em; }
 .ui-button-icons-only { width: 1.5em; }
 button.ui-button-icons-only { width: 1.5em; }
-.ui-button .ui-button-text { display: block; line-height: .8; font-size: 0.9em; }
+.ui-button .ui-button-text { display: block; line-height: .8; font-size: 0.9em; overflow: visible; white-space: nowrap; }
 
 .ui-tabs { position: relative; padding: 0px; zoom: 1; border: 0px; }
 .ui-tabs .ui-tabs-nav { margin: 0; padding: .1em .2em 0; }

@@ -32,7 +32,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <widgets>
                         <container id="header-user">
                             <label text="${ec.user.userAccount?.userFullName}"/>
-                            <link text="Logout" url="/Login/logout"/>
+                            <link text="Logout" url="/Login/logout" link-type="hidden-form" icon="key"/>
                         </container>
                     </widgets>
                 </section>
