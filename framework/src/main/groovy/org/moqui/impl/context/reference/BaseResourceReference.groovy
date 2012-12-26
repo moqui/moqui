@@ -86,6 +86,19 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract boolean isDirectory();
     @Override
     abstract List<ResourceReference> getDirectoryEntries();
+    @Override
+    ResourceReference getChild(String childName) {
+        ResourceReference directoryRef = findMatchingDirectory()
+        StringBuilder fileLoc = new StringBuilder(directoryRef.getLocation())
+        if (fileLoc.charAt(fileLoc.length()-1) == '/') fileLoc.deleteCharAt(fileLoc.length()-1)
+        if (childName.charAt(0) != '/') fileLoc.append('/')
+        fileLoc.append(childName)
+
+        // NOTE: don't really care if it exists or not at this point
+        ResourceReference childRef = ec.resource.getLocationReference(fileLoc.toString())
+        return childRef
+    }
+
 
     @Override
     ResourceReference findChildFile(String relativePath) {
@@ -215,6 +228,7 @@ abstract class BaseResourceReference implements ResourceReference {
     }
 
     ResourceReference findMatchingDirectory() {
+        if (this.isDirectory()) return this
         StringBuilder dirLoc = new StringBuilder(getLocation())
         ResourceReference directoryRef = this
         while (!(directoryRef.exists && directoryRef.isDirectory()) && dirLoc.lastIndexOf(".") > 0) {

@@ -42,6 +42,7 @@ public interface ResourceReference {
     boolean isFile();
     boolean isDirectory();
     List<ResourceReference> getDirectoryEntries();
+    ResourceReference getChild(String name);
     ResourceReference findChildFile(String relativePath);
     ResourceReference findChildDirectory(String relativePath);
     ResourceReference findMatchingDirectory();

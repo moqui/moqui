@@ -110,7 +110,9 @@ This Work includes contributions authored by David E. Jones, not as a
         </container>
 
         <form-list name="ListExampleContent" transition="updateExampleContent" list="exampleContentList">
-            <field name="download"><default-field><link url="downloadContent" text="Download" parameter-map="[exampleId:exampleId, contentLocation:contentLocation]"/></default-field></field>
+            <field name="download"><default-field>
+                <link url="downloadContent" text="Download" parameter-map="[exampleId:exampleId, contentLocation:contentLocation]"/>
+            </default-field></field>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="contentLocation"><default-field title="Location"><display/></default-field></field>
             <field name="purposeEnumId"><default-field title="Purpose">
