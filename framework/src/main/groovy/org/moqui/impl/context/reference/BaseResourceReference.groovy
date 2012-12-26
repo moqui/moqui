@@ -108,12 +108,10 @@ abstract class BaseResourceReference implements ResourceReference {
             ec.message.addError("Not looking for child file at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
             return null
         }
-
-        ResourceReference childRef = null
         // logger.warn("============= finding child resource of [${toString()}] path [${relativePath}]")
 
         // check the cache first
-        childRef = getSubContentRefByPath().get(relativePath)
+        ResourceReference childRef = getSubContentRefByPath().get(relativePath)
         if (childRef != null && childRef.exists) return childRef
 
         // this finds a file in a directory with the same name as this resource, unless this resource is a directory
@@ -153,8 +151,7 @@ abstract class BaseResourceReference implements ResourceReference {
                 ResourceReference childDirectoryRef = directoryRef.findChildDirectory(directoryPath)
 
                 // recursively walk the directory tree and find the childFilename
-                if (childDirectoryRef != null && childDirectoryRef.exists)
-                    childRef = internalFindChildFile(childDirectoryRef, childFilename)
+                childRef = internalFindChildFile(childDirectoryRef, childFilename)
                 // logger.warn("============= finding child resource path [${relativePath}] directoryRef [${directoryRef}] childFilename [${childFilename}] childRef [${childRef}]")
             }
             // logger.warn("============= finding child resource path [${relativePath}] childRef 3 [${childRef}]")
@@ -267,10 +264,15 @@ abstract class BaseResourceReference implements ResourceReference {
 
     ResourceReference internalFindChildFile(ResourceReference directoryRef, String childFilename) {
         if (directoryRef == null || !directoryRef.exists) return null
+
+        // find check exact filename first
+        ResourceReference exactMatchRef = directoryRef.getChild(childFilename)
+        if (exactMatchRef.isFile() && exactMatchRef.getExists()) return exactMatchRef
+
         List<ResourceReference> childEntries = directoryRef.directoryEntries
         // look through all files first, ie do a breadth-first search
         for (ResourceReference childRef in childEntries) {
-            if (childRef.isFile() && (childRef.fileName == childFilename || childRef.fileName.contains(childFilename + '.'))) {
+            if (childRef.isFile() && (childRef.getFileName() == childFilename || childRef.getFileName().contains(childFilename + '.'))) {
                 return childRef
             }
         }
