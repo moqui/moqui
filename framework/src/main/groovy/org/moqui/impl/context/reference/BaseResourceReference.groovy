@@ -99,7 +99,6 @@ abstract class BaseResourceReference implements ResourceReference {
         return childRef
     }
 
-
     @Override
     ResourceReference findChildFile(String relativePath) {
         // no path to child? that means this resource
@@ -148,7 +147,7 @@ abstract class BaseResourceReference implements ResourceReference {
                 // didn't find it at a literal path, try searching for it in all subdirectories
                 int lastSlashIdx = relativePath.lastIndexOf("/")
                 String directoryPath = lastSlashIdx > 0 ? relativePath.substring(0, lastSlashIdx) : ""
-                String childFilename = lastSlashIdx >= 0 ? relativePath.substring(lastSlashIdx + 1) : ""
+                String childFilename = lastSlashIdx >= 0 ? relativePath.substring(lastSlashIdx + 1) : relativePath
 
                 // first find the most matching directory
                 ResourceReference childDirectoryRef = directoryRef.findChildDirectory(directoryPath)
