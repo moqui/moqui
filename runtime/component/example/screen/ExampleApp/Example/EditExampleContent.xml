@@ -31,16 +31,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="uploadExampleContent">
         <actions><script><![CDATA[
             import org.moqui.context.ResourceReference
-
-            org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("uploadExampleContent")
             org.moqui.context.ExecutionContext ec = context.ec
+
             org.apache.commons.fileupload.FileItem contentFile = context.contentFile
             String fileName = contentFile.getName()
-
-            logger.info("Uploading file [${fileName}] for Example [${exampleId}] in repository [${repositoryName}] with purpose [${purposeEnumId}] and locale [${locale}]")
+            ec.logger.info("Uploading file [${fileName}] for Example [${exampleId}] in repository [${repositoryName}] with purpose [${purposeEnumId}] and locale [${locale}]")
 
             String contentLocation = "content://${repositoryName}/moqui/example/${exampleId}/${fileName}"
-
             ResourceReference newRr = ec.resource.getLocationReference(contentLocation)
             InputStream fileStream = contentFile.getInputStream()
             newRr.putStream(fileStream)
@@ -56,8 +53,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <entity-find-one entity-name="ExampleContent" value-field="exampleContent"/>
             <script><![CDATA[
                 import org.moqui.context.ResourceReference
-
-                org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("downloadContent")
                 org.moqui.context.ExecutionContext ec = context.ec
 
                 ResourceReference rr = ec.resource.getLocationReference(exampleContent.contentLocation)
@@ -68,7 +63,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 is.close()
                 os.close()
 
-                logger.info("Streamed ${totalLen} bytes from contentLocation ${exampleContent.contentLocation}")
+                ec.logger.info("Streamed ${totalLen} bytes from contentLocation ${exampleContent.contentLocation}")
             ]]></script>
         </actions>
         <default-response type="none"/>
