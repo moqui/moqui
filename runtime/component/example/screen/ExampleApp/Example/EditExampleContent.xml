@@ -30,6 +30,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="uploadExampleContent">
         <actions><script><![CDATA[
+            import org.moqui.context.ResourceReference
+
             org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("uploadExampleContent")
             org.moqui.context.ExecutionContext ec = context.ec
             org.apache.commons.fileupload.FileItem contentFile = context.contentFile
@@ -37,30 +39,16 @@ This Work includes contributions authored by David E. Jones, not as a
 
             logger.info("Uploading file [${fileName}] for Example [${exampleId}] in repository [${repositoryName}] with purpose [${purposeEnumId}] and locale [${locale}]")
 
-            javax.jcr.Session session = ec.resource.getContentRepositorySession(repositoryName)
-            javax.jcr.Node rootNode = session.getRootNode()
+            String contentLocation = "content://${repositoryName}/moqui/example/${exampleId}/${fileName}"
 
-            javax.jcr.Node moquiNode = rootNode.hasNode("moqui") ? rootNode.getNode("moqui") : rootNode.addNode("moqui", "nt:folder")
-            javax.jcr.Node exampleNode = moquiNode.hasNode("example") ? moquiNode.getNode("example") : moquiNode.addNode("example", "nt:folder")
-            javax.jcr.Node folderNode = exampleNode.hasNode(exampleId) ? exampleNode.getNode(exampleId) : exampleNode.addNode(exampleId, "nt:folder")
-
-            javax.jcr.Node fileNode = folderNode.addNode(fileName, "nt:file")
-            javax.jcr.Node fileContent = fileNode.addNode("jcr:content", "nt:resource")
-            fileContent.setProperty("jcr:mimeType", contentFile.contentType)
-            // fileContent.setProperty("jcr:encoding", ?)
-            Calendar lastModified = Calendar.getInstance(); lastModified.setTimeInMillis(System.currentTimeMillis())
-            fileContent.setProperty("jcr:lastModified", lastModified)
-
+            ResourceReference newRr = ec.resource.getLocationReference(contentLocation)
             InputStream fileStream = contentFile.getInputStream()
-            fileContent.setProperty("jcr:data", session.valueFactory.createBinary(fileStream))
+            newRr.putStream(fileStream)
             fileStream.close()
 
-            session.save()
-
-            String contentLocation = "content://${repositoryName}/moqui/example/${exampleId}/${fileName}"
-            ec.service.sync().name("create", "ExampleContent").parameters([exampleId:exampleId,
-                    contentLocation:contentLocation, purposeEnumId:purposeEnumId, locale:locale]).call()
-        ]]></script></actions>
+            ec.service.sync().name("create", "ExampleContent").parameters([exampleId: exampleId,
+                    contentLocation: contentLocation, purposeEnumId: purposeEnumId, locale: locale]).call()
+            ]]></script></actions>
         <default-response url="."/>
     </transition>
     <transition name="downloadContent">
@@ -81,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 os.close()
 
                 logger.info("Streamed ${totalLen} bytes from contentLocation ${exampleContent.contentLocation}")
-                ]]></script>
+            ]]></script>
         </actions>
         <default-response type="none"/>
     </transition>

@@ -142,6 +142,9 @@ class ContentResourceReference extends BaseResourceReference {
         } else {
             // first make sure the directory exists that this is in
             List<String> nodePathList = nodePath.split('/')
+            // if nodePath started with a '/' the first element will be empty
+            if (nodePathList && nodePathList[0] == "") nodePathList.remove(0)
+            // remove the filename to just get the directory
             if (nodePathList) nodePathList.remove(nodePathList.size()-1)
             javax.jcr.Node folderNode = findDirectoryNode(session, nodePathList, true)
 
@@ -208,6 +211,6 @@ class ContentResourceReference extends BaseResourceReference {
     javax.jcr.Node getNode() {
         if (theNode != null) return theNode
         Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
-        return session.getNode(nodePath)
+        return session.nodeExists(nodePath) ? session.getNode(nodePath) : null
     }
 }
