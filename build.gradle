@@ -16,7 +16,7 @@ def tomcatHome = '../apache-tomcat-7.0.32'
 def warName = 'moqui-' + version + '.war'
 def execTempDir = 'execwartmp'
 
-def moquiRuntime = './runtime'
+def moquiRuntime = 'runtime'
 
 def moquiConfDev = 'conf/MoquiDevConf.xml'
 def moquiConfProduction = 'conf/MoquiProductionConf.xml'
