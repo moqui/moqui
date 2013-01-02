@@ -7,8 +7,14 @@ Release 1.2.1 - TBD 2013
 
 Moqui Framework release 1.2.1 is a minor bug fix release... TODO
 
-This release includes:
+New Features:
 
+-
+
+Bug Fixes:
+
+- Fixed URLs for Mantle UBPL links using active screen URL as the default
+  base URL instead of the full URL of the current screen
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012

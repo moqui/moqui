@@ -944,7 +944,8 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenUrlInfo getCurrentScreenUrl() { return screenUrlInfo }
     URI getBaseLinkUri() {
-        String urlString = baseLinkUrl ?: getCurrentScreenUrl().getUrl()
+        String urlString = baseLinkUrl ?: getCurrentScreenUrl().getScreenPathUrl()
+        // logger.warn("=================== urlString=${urlString}, baseLinkUrl=${baseLinkUrl}")
         URL blu = new URL(urlString)
         // NOTE: not including user info, query, or fragment... should consider them?
         // NOTE: using the multi-argument constructor so it will encode stuff
