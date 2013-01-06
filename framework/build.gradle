@@ -158,7 +158,7 @@ sourceSets.test.compileClasspath += files(sourceSets.api.output.classesDir)
 sourceSets.test.compileClasspath += files(sourceSets.main.output.classesDir)
 
 // by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
-check.dependsOn.remove('test')
+check.dependsOn.remove(test)
 
 test {
     systemProperty 'moqui.runtime', '../runtime'

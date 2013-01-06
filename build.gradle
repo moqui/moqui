@@ -21,6 +21,16 @@ def moquiRuntime = 'runtime'
 def moquiConfDev = 'conf/MoquiDevConf.xml'
 def moquiConfProduction = 'conf/MoquiProductionConf.xml'
 
+def allBuildTasks = []
+def allCleanTasks = []
+allprojects {
+    afterEvaluate { project ->
+        for (def task in project.tasks) {
+            if (task.name == 'build') allBuildTasks.add(task)
+            if (task.name == 'clean') allCleanTasks.add(task)
+        }
+    }
+}
 // ========== clean tasks ==========
 
 task clean(type: Delete) { delete file(warName); delete file(execTempDir) }
@@ -31,7 +41,7 @@ task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattr
 
 task cleanAll {
     dependsOn clean
-    dependsOn ':framework:clean'
+    dependsOn allCleanTasks
     dependsOn cleanDb
     dependsOn cleanLog
     dependsOn cleanOther
@@ -40,7 +50,7 @@ task cleanAll {
 // ========== run tasks ==========
 
 task run(type: JavaExec) {
-    dependsOn ':framework:build'
+    dependsOn allBuildTasks
     dependsOn cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
@@ -48,14 +58,14 @@ task run(type: JavaExec) {
     main = '-jar'; args = [warName]
 }
 task runStaging(type: JavaExec) {
-    dependsOn ':framework:build'
+    dependsOn allBuildTasks
     dependsOn cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m', '-Xms512M']; maxHeapSize = '512M'
-    systemProperties = ['moqui.conf':'conf/MoquiStagingConf.xml']
+    systemProperties = ['moqui.conf':'conf/MoquiStagingConf.xml', 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName]
 }
 task runProduction(type: JavaExec) {
-    dependsOn ':framework:build'
+    dependsOn allBuildTasks
     dependsOn cleanTempDir
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m', '-Xms512M']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
@@ -63,13 +73,13 @@ task runProduction(type: JavaExec) {
 }
 
 task load(type: JavaExec) {
-    dependsOn ':framework:build'
+    dependsOn allBuildTasks
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName, '-load']
 }
 task loadProduction(type: JavaExec) {
-    dependsOn ':framework:build'
+    dependsOn allBuildTasks
     workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=64m']; maxHeapSize = '256M'
     systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName, '-load']

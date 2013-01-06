@@ -1,2 +1,1 @@
-include 'framework'
-include 'runtime/component/example'
+include 'framework', 'runtime/component/example'
