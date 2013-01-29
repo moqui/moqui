@@ -92,6 +92,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
 
                     <field-layout collapsible="true">
+                        <field-ref name="exampleId"/>
                         <fields-not-referenced/>
                         <field-row>
                             <field-ref name="exampleSize"/>
