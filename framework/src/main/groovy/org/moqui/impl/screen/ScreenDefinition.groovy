@@ -241,20 +241,20 @@ class ScreenDefinition {
 
             if (parameterNode."@from") fromFieldGroovy = new GroovyClassLoader().parseClass(
                     (String) parameterNode."@from", StupidUtilities.cleanStringForJavaName("${location}.parameter_${name}.from_field"))
-            if (parameterNode."@value") fromFieldGroovy = new GroovyClassLoader().parseClass(
+            if (parameterNode."@value") valueGroovy = new GroovyClassLoader().parseClass(
                     ('"""' + (String) parameterNode."@value" + '"""'), StupidUtilities.cleanStringForJavaName("${location}.parameter_${name}.value"))
         }
         String getName() { return name }
         Object getValue(ExecutionContext ec) {
             Object value = null
-            if (fromFieldGroovy) {
+            if (fromFieldGroovy != null) {
                 value = InvokerHelper.createScript(fromFieldGroovy, new ContextBinding(ec.context)).run()
             }
-            if (valueGroovy && !value) {
+            if (valueGroovy != null && !value) {
                 value = InvokerHelper.createScript(valueGroovy, new ContextBinding(ec.context)).run()
             }
-            if (!value) value = ec.context.get(name)
-            if (!value && ec.web) value = ec.web.parameters.get(name)
+            if (value == null) value = ec.context.get(name)
+            if (value == null && ec.web) value = ec.web.parameters.get(name)
             return value
         }
     }

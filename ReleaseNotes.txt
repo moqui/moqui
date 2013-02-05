@@ -12,11 +12,16 @@ New Features:
 - Updated gradle build files to work with Gradle 1.3
 - Added XML Form fields-not-referenced element to specify where to render
   the fields not explicitly referenced under the field-layout element
+- Small adjustment to transition parameter so that if explicitly defined as
+  empty that will be used instead of defaulting to value from context or
+  web parameters
 
 Bug Fixes:
 
 - Fixed URLs for Mantle UBPL links using active screen URL as the default
   base URL instead of the full URL of the current screen
+- Fixed issue where form-list-column and field-layout nodes in an extended
+  screen modified the original node from the base screen
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
