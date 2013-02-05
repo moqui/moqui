@@ -159,14 +159,15 @@ class ScreenForm {
         mergeFieldNode(newFormNode, newFieldNode, false)
          */
 
-        /* don't do this any more, now handled with the fields-not-referenced element:
-        // check form-single.field-layout and add any fields that are missing
-        if (newFormNode."field-layout") for (Node fieldNode in newFormNode."field") {
+        // check form-single.field-layout and add ONLY hidden fields that are missing
+        if (newFormNode."field-layout") {
             Node fieldLayoutNode = newFormNode."field-layout"[0]
-            if (!fieldLayoutNode.depthFirst().find({ it.name() == "field-ref" && it."@name" == fieldNode."@name" }))
-                addFieldToFieldLayout(newFormNode, fieldNode)
+            for (Node fieldNode in newFormNode."field") {
+                if (!fieldLayoutNode.depthFirst().find({ it.name() == "field-ref" && it."@name" == fieldNode."@name" })
+                        && fieldNode.depthFirst().find({ it.name() == "hidden" }))
+                    addFieldToFieldLayout(newFormNode, fieldNode)
+            }
         }
-        */
 
         if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
 
