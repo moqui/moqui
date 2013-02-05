@@ -20,6 +20,8 @@ import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
 import org.moqui.service.ServiceException
 
+import java.sql.Timestamp
+
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityAutoServiceRunner.class)
     protected ServiceFacadeImpl sfi = null
@@ -74,7 +76,9 @@ public class EntityAutoServiceRunner implements ServiceRunner {
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
         if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {
-            parameters.put("fromDate", ecfi.getExecutionContext().getUser().getNowTimestamp())
+            Timestamp fromDate = ecfi.getExecutionContext().getUser().getNowTimestamp()
+            parameters.put("fromDate", fromDate)
+            result.put("fromDate", fromDate)
             // logger.info("Set fromDate field to default [${parameters.fromDate}]")
         }
 

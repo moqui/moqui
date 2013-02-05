@@ -22,6 +22,8 @@ Bug Fixes:
   base URL instead of the full URL of the current screen
 - Fixed issue where form-list-column and field-layout nodes in an extended
   screen modified the original node from the base screen
+- Fixed issue in entity-auto create where automatically set fromDate was
+  not returned in the service result
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
