@@ -24,6 +24,9 @@ Bug Fixes:
   screen modified the original node from the base screen
 - Fixed issue in entity-auto create where automatically set fromDate was
   not returned in the service result
+- Fixed issue in screens with a form-list and then a form-single where
+  listEntryIndex bleeds over and results in a _?? to field IDs and such
+
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
