@@ -27,12 +27,10 @@ public class L10nFacadeImpl implements L10nFacade {
 
     protected ExecutionContextFactoryImpl ecfi
 
-    L10nFacadeImpl(ExecutionContextFactoryImpl ecfi) {
-        this.ecfi = ecfi
-    }
+    L10nFacadeImpl(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }
 
-    protected Locale getLocale() { return ecfi.executionContext.user.locale }
-    protected TimeZone getTimeZone() { return ecfi.executionContext.user.timeZone }
+    protected Locale getLocale() { return ecfi.getExecutionContext().getUser().getLocale() }
+    protected TimeZone getTimeZone() { return ecfi.getExecutionContext().getUser().getTimeZone() }
 
     /** @see org.moqui.context.L10nFacade#getLocalizedMessage(String) */
     public String getLocalizedMessage(String original) {
@@ -107,6 +105,7 @@ public class L10nFacadeImpl implements L10nFacade {
             cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
             if (cal == null) return null
         }
+        // logger.warn("=========== input=${input}, cal=${cal}, locale=${getLocale()}, timeZone=getTimeZone()")
         return new Timestamp(cal.getTimeInMillis())
     }
     String formatTimestamp(java.sql.Timestamp input, String format) {

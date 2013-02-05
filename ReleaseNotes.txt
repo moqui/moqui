@@ -26,6 +26,9 @@ Bug Fixes:
   not returned in the service result
 - Fixed issue in screens with a form-list and then a form-single where
   listEntryIndex bleeds over and results in a _?? to field IDs and such
+- Fixed issue with date/time parsing and formatting to more consistently
+  user user time zone, avoids time discrepancies between input and display
+  while leaving hidden fields as plain toString/etc
 
 
 ===========================================================================

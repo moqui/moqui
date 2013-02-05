@@ -812,7 +812,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"]?if_exists)>
     </#if>
     <#t><#if formNode?node_name == "form-single"><span id="<@fieldId .node/>"></#if><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if><#if formNode?node_name == "form-single"></span></#if>
-    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true"><input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, fieldValue!"", null)?html}"></#if>
+    <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true">
+        <#-- use getFieldValuePlainString() and not getFieldValueString() so we don't do timezone conversions, etc -->
+        <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, fieldValue!"")?html}">
+    </#if>
 </#macro>
 <#macro "display-entity">
     <#assign fieldValue = ""/><#assign fieldValue = sri.getFieldEntityValue(.node)/>
@@ -878,7 +881,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "file"><input type="file" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
 <#macro "hidden">
-    <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}">
+    <#-- use getFieldValuePlainString() and not getFieldValueString() so we don't do timezone conversions, etc -->
+    <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, .node["@default-value"]!"")?html}">
 </#macro>
 
 <#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
