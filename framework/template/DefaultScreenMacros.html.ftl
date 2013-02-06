@@ -682,8 +682,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#-- this only makes sense for fields with a single conditional -->
         <#assign fieldSubNode = fieldNode["conditional-field"][0]>
     </#if>
+    <#assign headerFieldNode = fieldNode["header-field"][0]?if_exists>
+    <#assign defaultFieldNode = fieldNode["default-field"][0]?if_exists>
     <div class="form-title">
-        <#if fieldSubNode["submit"]?has_content>&nbsp;<#else><@fieldTitle fieldSubNode/></#if>
+        <#if fieldSubNode["submit"]?has_content>&nbsp;<#else><#if headerFieldNode["@title"]?has_content><@fieldTitle headerFieldNode/><#elseif defaultFieldNode["@title"]?has_content><@fieldTitle defaultFieldNode/><#else><@fieldTitle fieldSubNode/></#if></#if>
         <#if fieldSubNode["@show-order-by"]?if_exists == "true" || fieldSubNode["@show-order-by"]?if_exists == "case-insensitive">
             <#assign caseInsensitive = fieldSubNode["@show-order-by"]?if_exists == "case-insensitive">
             <#assign orderByField = ec.web.requestParameters.orderByField?if_exists>
