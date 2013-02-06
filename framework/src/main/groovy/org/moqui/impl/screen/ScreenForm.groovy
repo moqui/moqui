@@ -160,8 +160,8 @@ class ScreenForm {
          */
 
         // check form-single.field-layout and add ONLY hidden fields that are missing
-        if (newFormNode."field-layout") {
-            Node fieldLayoutNode = newFormNode."field-layout"[0]
+        Node fieldLayoutNode = newFormNode."field-layout"[0]
+        if (fieldLayoutNode && !fieldLayoutNode.depthFirst().find({ it.name() == "fields-not-referenced" })) {
             for (Node fieldNode in newFormNode."field") {
                 if (!fieldLayoutNode.depthFirst().find({ it.name() == "field-ref" && it."@name" == fieldNode."@name" })
                         && fieldNode.depthFirst().find({ it.name() == "hidden" }))
