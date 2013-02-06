@@ -79,7 +79,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
             <field name="deleteLink">
-                <default-field>
+                <default-field title=" ">
                     <!-- no need to specify parameters for this link since the local env names match the parameter
                     names and will be auto-mapped (exampleId, exampleFeatureId, fromDate) -->
                     <link url="deleteExampleFeatureAppl" text="Delete"/>
