@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.impl.StupidUtilities
+
 import javax.sql.rowset.serial.SerialBlob
 import java.sql.Timestamp
 
@@ -26,7 +28,6 @@ import org.moqui.impl.entity.condition.FieldValueCondition
 import org.moqui.impl.entity.condition.FieldToFieldCondition
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
-import org.moqui.impl.context.ContextStack
 import org.moqui.BaseException
 
 public class EntityDefinition {
@@ -670,14 +671,30 @@ public class EntityDefinition {
         try {
             switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
                 case 1: outValue = value; break
-                case 2: outValue = java.sql.Timestamp.valueOf(value); break
-                case 3: outValue = java.sql.Time.valueOf(value); break
-                case 4: outValue = java.sql.Date.valueOf(value); break
-                case 5: outValue = Integer.valueOf(value); break
-                case 6: outValue = Long.valueOf(value); break
-                case 7: outValue = Float.valueOf(value); break
-                case 8: outValue = Double.valueOf(value); break
-                case 9: outValue = new BigDecimal(value); break
+                case 2: // outValue = java.sql.Timestamp.valueOf(value);
+                    outValue = efi.getEcfi().getL10nFacade().parseTimestamp(value, null)
+                    if (outValue == null) throw new BaseException("The value [${value}] is not a valid date/time")
+                    break
+                case 3: // outValue = java.sql.Time.valueOf(value);
+                    outValue = efi.getEcfi().getL10nFacade().parseTime(value, null)
+                    if (outValue == null) throw new BaseException("The value [${value}] is not a valid time")
+                    break
+                case 4: // outValue = java.sql.Date.valueOf(value);
+                    outValue = efi.getEcfi().getL10nFacade().parseDate(value, null)
+                    if (outValue == null) throw new BaseException("The value [${value}] is not a valid date")
+                    break
+                case 5: // outValue = Integer.valueOf(value); break
+                case 6: // outValue = Long.valueOf(value); break
+                case 7: // outValue = Float.valueOf(value); break
+                case 8: // outValue = Double.valueOf(value); break
+                case 9: // outValue = new BigDecimal(value); break
+                    BigDecimal bdVal = efi.getEcfi().getL10nFacade().parseNumber(value, null)
+                    if (bdVal == null) {
+                        throw new BaseException("The value [${value}] is not valid for type [${javaType}]")
+                    } else {
+                        outValue = StupidUtilities.basicConvert(bdVal, javaType)
+                    }
+                    break
                 case 10: outValue = Boolean.valueOf(value); break
                 case 11: outValue = value; break
                 case 12: outValue = new SerialBlob(value.getBytes()); break
