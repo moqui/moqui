@@ -39,6 +39,8 @@ import org.moqui.entity.EntityCondition.ComparisonOperator
 import org.moqui.impl.entity.EntityValueImpl
 import org.moqui.impl.StupidUtilities
 
+import java.sql.Timestamp
+
 class ScreenRenderImpl implements ScreenRender {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
     protected final static URLCodec urlCodec = new URLCodec()
@@ -876,6 +878,10 @@ class ScreenRenderImpl implements ScreenRender {
     }
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
+        // handle the special case of timestamps used for primary keys, make sure we avoid TZ, etc problems
+        if (obj instanceof Timestamp) return ((Timestamp) obj).getTime().toString()
+        // here's another alternative to consider, but sticking to the more reliable approach above for now:
+        //if (obj instanceof Timestamp) return ec.l10n.formatValue(obj, "yyyy-MM-dd hh:mm:ss.SSS z")
         return  obj ? obj.toString() : ""
     }
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {

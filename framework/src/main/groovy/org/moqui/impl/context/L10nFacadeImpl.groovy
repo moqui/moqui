@@ -98,15 +98,23 @@ public class L10nFacadeImpl implements L10nFacade {
 
     /** @see org.moqui.context.L10nFacade#parseTimestamp(String, String) */
     java.sql.Timestamp parseTimestamp(String input, String format) {
-        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
+        if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS z"
         Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) {
-            format = "yyyy-MM-dd HH:mm:ss"
-            cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-            if (cal == null) return null
-        }
+        // try a couple of other format strings
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss.SSS", getLocale(), getTimeZone())
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", getLocale(), getTimeZone())
+        if (cal != null) return new Timestamp(cal.getTimeInMillis())
         // logger.warn("=========== input=${input}, cal=${cal}, locale=${getLocale()}, timeZone=getTimeZone()")
-        return new Timestamp(cal.getTimeInMillis())
+
+        // try interpreting the String as a long
+        try {
+            Long lng = Long.valueOf(input)
+            return new Timestamp(lng)
+        } catch (NumberFormatException e) {
+            return null
+        }
+
+        return null
     }
     String formatTimestamp(java.sql.Timestamp input, String format) {
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
