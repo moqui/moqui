@@ -22,7 +22,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="updateExampleItem">
         <service-call name="update#ExampleItem"/>
-        <default-response url="."/>
+        <default-response url=".">
+            <parameter name="exampleId" from="exampleId_0"/>
+        </default-response>
     </transition>
     <transition name="deleteExampleItem">
         <service-call name="delete#ExampleItem"/>
@@ -41,7 +43,22 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList">
+        <container-dialog id="AddItemDialog" button-text="Add Item">
+            <form-single name="AddExampleItem" transition="createExampleItem">
+                <auto-fields-service service-name="create#ExampleItem"/>
+                <field name="exampleId"><default-field><hidden/></default-field></field>
+                <field name="exampleItemSeqId"><default-field><ignored/><!-- this will be auto-sequenced --></default-field></field>
+                <field name="amountUomId">
+                    <default-field title="UOM">
+                        <drop-down allow-empty="true">
+                            <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
+                        </drop-down>
+                    </default-field>
+                </field>
+                <field name="submitButton"><default-field title="Add"><submit confirmation="Really Add?"/></default-field></field>
+            </form-single>
+        </container-dialog>
+        <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList" multi="true">
             <auto-fields-service service-name="update#ExampleItem"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleItemSeqId"><default-field title="Item"><display/></default-field></field>
@@ -62,19 +79,5 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
         </form-list>
-
-        <form-single name="AddExampleItem" transition="createExampleItem">
-            <auto-fields-service service-name="create#ExampleItem"/>
-            <field name="exampleId"><default-field><hidden/></default-field></field>
-            <field name="exampleItemSeqId"><default-field><ignored/><!-- this will be auto-sequenced --></default-field></field>
-            <field name="amountUomId">
-                <default-field title="UOM">
-                    <drop-down allow-empty="true">
-                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
-                    </drop-down>
-                </default-field>
-            </field>
-            <field name="submitButton"><default-field title="Add"><submit confirmation="Really Add?"/></default-field></field>
-        </form-single>
     </widgets>
 </screen>
