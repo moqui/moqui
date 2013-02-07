@@ -241,7 +241,7 @@ class ScreenDefinition {
 
             if (parameterNode."@from") fromFieldGroovy = new GroovyClassLoader().parseClass(
                     (String) parameterNode."@from", StupidUtilities.cleanStringForJavaName("${location}.parameter_${name}.from_field"))
-            if (parameterNode."@value") valueGroovy = new GroovyClassLoader().parseClass(
+            if (parameterNode."@value" != null) valueGroovy = new GroovyClassLoader().parseClass(
                     ('"""' + (String) parameterNode."@value" + '"""'), StupidUtilities.cleanStringForJavaName("${location}.parameter_${name}.value"))
         }
         String getName() { return name }

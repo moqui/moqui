@@ -20,6 +20,11 @@ This Work includes contributions authored by David E. Jones, not as a
     <subscreens default-item="FindExample"/>
 
     <widgets>
-        <subscreens-panel id="example-panel" type="tab" dynamic="false"/>
+        <section name="ExampleMenu">
+            <condition><expression>exampleId</expression></condition>
+            <widgets><subscreens-menu id="example-menu" type="tab"/></widgets>
+        </section>
+        <subscreens-active/>
+        <!-- don't do it this way, we want the menu to be shown conditionally: <subscreens-panel id="example-panel" type="tab" dynamic="false"/> -->
     </widgets>
 </screen>

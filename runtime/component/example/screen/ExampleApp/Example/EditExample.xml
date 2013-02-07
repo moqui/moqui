@@ -15,7 +15,12 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Example" default-menu-index="1">
 
     <parameter name="exampleId"/>
-    
+
+    <transition name="newExample">
+        <default-response url=".">
+            <parameter name="exampleId" value=""/>
+        </default-response>
+    </transition>
     <transition name="createExample">
         <service-call name="org.moqui.example.ExampleServices.createExample"/>
         <default-response url="."/>
@@ -45,6 +50,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find-one>
     </actions>
     <widgets>
+        <section name="ExampleMenu">
+            <condition><expression>fieldValues</expression></condition>
+            <widgets><link url="newExample" text="New Example" link-type="hidden-form" icon="plusthick"/></widgets>
+        </section>
+
         <section name="create">
             <condition><compare field="fieldValues" operator="empty"/></condition>
             <actions>
