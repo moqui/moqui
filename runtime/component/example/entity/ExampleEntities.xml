@@ -33,6 +33,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="comments" type="text-long"/>
         <field name="exampleSize" type="number-integer"/>
         <field name="exampleDate" type="date-time"/>
+        <field name="testDate" type="date"/>
+        <field name="testTime" type="time"/>
         <!-- try uncommenting these while running to see how things change
         <field name="anotherDate" type="date-time"/>
         <field name="anotherText" type="text-medium"/>

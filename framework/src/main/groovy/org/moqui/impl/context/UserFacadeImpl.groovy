@@ -249,6 +249,15 @@ class UserFacadeImpl implements UserFacade {
         return tz ?: TimeZone.getDefault()
     }
 
+    Calendar getCalendarSafe() {
+        if (internalUserAccount != null) {
+            return Calendar.getInstance(getTimeZone(), getLocale())
+        } else {
+            return Calendar.getInstance(internalTimeZone ?: TimeZone.getDefault(),
+                    internalLocale ?: (request ? request.getLocale() : Locale.getDefault()))
+        }
+    }
+
     /** @see org.moqui.context.UserFacade#setTimeZone(TimeZone) */
     void setTimeZone(TimeZone tz) {
         if (this.username) {

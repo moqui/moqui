@@ -108,6 +108,10 @@ This Work includes contributions authored by David E. Jones, not as a
                             <field-ref name="exampleSize"/>
                             <field-ref name="exampleDate"/>
                         </field-row>
+                        <field-row>
+                            <field-ref name="testDate"/>
+                            <field-ref name="testTime"/>
+                        </field-row>
 
                         <field-group title="Special Fields">
                             <field-ref name="auditedField"/>
