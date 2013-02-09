@@ -226,6 +226,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="uomTypeEnumId" related-field-name="enumId"/>
         </member-entity>
         <alias entity-alias="UOM" name="uomId"/>
+        <alias entity-alias="UOM" name="uomTypeEnumId"/>
         <alias entity-alias="UOM" name="description"/>
         <alias entity-alias="UOM" name="abbreviation"/>
         <alias entity-alias="UTE" name="typeDescription" field="description"/>

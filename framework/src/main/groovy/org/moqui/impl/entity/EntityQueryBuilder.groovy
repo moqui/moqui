@@ -327,7 +327,7 @@ class EntityQueryBuilder {
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
                                           String entityName, EntityFacadeImpl efi) throws EntityException {
         String fieldName = fieldNode."@name"
-        String javaType = efi.getFieldJavaType(fieldNode."@type", entityName)
+        String javaType = efi.getFieldJavaType((String) fieldNode."@type", entityName)
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
         if (value != null) {
             if (!StupidUtilities.isInstanceOf(value, javaType)) {

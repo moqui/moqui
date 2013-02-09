@@ -36,6 +36,8 @@ Bug Fixes:
   the current user has a time zone different from the system by passing a
   Calendar object with the user's time zone to the PreparedStatement and
   ResultSet methods for Date, Time, and Timestamp
+- Fixed issue with automatic case insensitive order by on non-String
+  fields; now ignored automatically when not applicable
 
 
 ===========================================================================

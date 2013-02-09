@@ -33,11 +33,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <actions>
         <entity-find entity-name="ExampleItem" list="exampleItemList">
+            <search-form-inputs default-order-by="exampleItemSeqId"/>
             <econdition field-name="exampleId" from="exampleId"/>
-            <order-by field-name="exampleItemSeqId"/>
         </entity-find>
 
         <entity-find entity-name="moqui.basic.UomAndType" list="allUomAndTypeList">
+            <econdition field-name="uomTypeEnumId" operator="not-equals" value="UT_CURRENCY_MEASURE"/>
             <order-by field-name="typeDescription"/>
             <order-by field-name="description"/>
         </entity-find>
@@ -60,11 +61,25 @@ This Work includes contributions authored by David E. Jones, not as a
         </container-dialog>
         <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList" multi="true">
             <auto-fields-service service-name="update#ExampleItem"/>
-            <field name="exampleId"><default-field><hidden/></default-field></field>
+            <field name="exampleId">
+                <header-field><hidden/></header-field>
+                <default-field><hidden/></default-field>
+            </field>
             <field name="exampleItemSeqId"><default-field title="Item"><display/></default-field></field>
-            <field name="description"><default-field><text-line size="15"/></default-field></field>
-            <field name="amount"><default-field><text-line size="5"/></default-field></field>
+            <field name="description">
+                <header-field show-order-by="true"><text-find hide-options="true"/></header-field>
+                <default-field><text-line size="15"/></default-field>
+            </field>
+            <field name="amount">
+                <header-field show-order-by="true"><range-find size="5"/></header-field>
+                <default-field><text-line size="5"/></default-field>
+            </field>
             <field name="amountUomId">
+                <header-field>
+                    <drop-down allow-empty="true" combo-box="true">
+                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
+                    </drop-down>
+                </header-field>
                 <default-field title="UOM">
                     <drop-down allow-empty="true">
                         <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
