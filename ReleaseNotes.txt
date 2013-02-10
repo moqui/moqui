@@ -38,6 +38,10 @@ Bug Fixes:
   ResultSet methods for Date, Time, and Timestamp
 - Fixed issue with automatic case insensitive order by on non-String
   fields; now ignored automatically when not applicable
+- Fixed issue with hidden fields in form-list header-fields when rendered
+  in HTML with the default macros where the title appeared even if all
+  field types were hidden, and if @hide was set to true the hidden input
+  would not be rendered
 
 
 ===========================================================================

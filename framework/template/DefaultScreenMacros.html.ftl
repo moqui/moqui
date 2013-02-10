@@ -610,11 +610,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <div class="form-header-row">
                 </#if>
                     <#list formNode["field"] as fieldNode>
-                        <#if !(fieldNode["@hide"]?if_exists == "true" ||
+                        <#assign allHidden = true>
+                        <#list fieldNode?children as fieldSubNode><#if !fieldSubNode["hidden"]?has_content><#assign allHidden = false></#if></#list>
+                        <#if !(fieldNode["@hide"]?if_exists == "true" || allHidden ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
-                                (fieldNode?children[0]["hidden"]?has_content || fieldNode?children[0]["ignored"]?has_content))) &&
+                                (fieldNode["header-field"][0]?if_exists["hidden"]?has_content || fieldNode["header-field"][0]?if_exists["ignored"]?has_content))) &&
                                 !(isMulti && fieldNode["default-field"]?has_content && fieldNode["default-field"][0]["submit"]?has_content)>
                             <div class="form-header-cell"><@formListHeaderField fieldNode/></div>
+                        <#elseif fieldNode["header-field"][0]?if_exists["hidden"]?has_content>
+                            <#recurse fieldNode["header-field"][0]/>
                         </#if>
                     </#list>
                 <#if needHeaderForm && !skipStart>
