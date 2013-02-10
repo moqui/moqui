@@ -611,7 +611,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </#if>
                     <#list formNode["field"] as fieldNode>
                         <#assign allHidden = true>
-                        <#list fieldNode?children as fieldSubNode><#if !fieldSubNode["hidden"]?has_content><#assign allHidden = false></#if></#list>
+                        <#list fieldNode?children as fieldSubNode><#if !(fieldSubNode["hidden"]?has_content || fieldSubNode["ignored"]?has_content)><#assign allHidden = false></#if></#list>
                         <#if !(fieldNode["@hide"]?if_exists == "true" || allHidden ||
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                 (fieldNode["header-field"][0]?if_exists["hidden"]?has_content || fieldNode["header-field"][0]?if_exists["ignored"]?has_content))) &&
