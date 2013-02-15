@@ -57,8 +57,10 @@ class EntityFindImpl extends EntityFindBase {
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
         if (viewWhere) whereCondition =
             (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
-        efb.startWhereClause()
-        whereCondition.makeSqlWhere(efb)
+        if (whereCondition) {
+            efb.startWhereClause()
+            whereCondition.makeSqlWhere(efb)
+        }
         // GROUP BY clause
         efb.makeGroupByClause(this.fieldsToSelect)
 
