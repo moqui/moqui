@@ -395,7 +395,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
                                 <@formSingleSubField fieldNode/>
-                            <#elseif layoutNode?node_name == "fields-not-referenced">
+                            <#elseif groupNode?node_name == "fields-not-referenced">
                                 <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                 <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                             <#elseif groupNode?node_name == "field-row">
