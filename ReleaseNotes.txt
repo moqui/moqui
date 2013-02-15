@@ -42,6 +42,9 @@ Bug Fixes:
   in HTML with the default macros where the title appeared even if all
   field types were hidden, and if @hide was set to true the hidden input
   would not be rendered
+- Fixed issue in XML Form when a field-row is under a field-group element
+  where the field-row was ignored and the fields in the group were
+  displayed twice
 
 
 ===========================================================================

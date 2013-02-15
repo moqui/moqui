@@ -400,7 +400,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                                 <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                             <#elseif groupNode?node_name == "field-row">
                                 <div class="field-row ui-helper-clearfix">
-                                <#list layoutNode?children as rowChildNode>
+                                <#list groupNode?children as rowChildNode>
                                     <#if rowChildNode?node_name == "field-ref">
                                         <div class="field-row-item">
                                             <#assign fieldRef = rowChildNode["@name"]>
