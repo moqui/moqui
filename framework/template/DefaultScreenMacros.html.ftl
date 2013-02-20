@@ -259,15 +259,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#if urlInfo.disableLink>
         <span<#if linkFormId?has_content> id="${linkFormId}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
     <#else>
+        <#assign confirmationMessage = ec.resource.evaluateStringExpand(linkNode["@confirmation"]?if_exists, "")/>
         <#if (linkNode["@link-type"]?if_exists == "anchor" || linkNode["@link-type"]?if_exists == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
-            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "anchor-button"> class="button"</#if><#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if>>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "anchor-button"> class="button"</#if><#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if>>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
-            <button type="submit" form="${linkFormId}"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if>>
+            <button type="submit" form="${linkFormId}"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                 <#if linkNode["image"]?has_content>
                     <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
@@ -294,10 +295,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <input type="hidden" name="${pKey?html}" value="${targetParameters.get(pKey)?default("")?html}"/>
                 </#list></#if>
                 <#if !linkFormId?has_content>
+                    <#assign confirmationMessage = ec.resource.evaluateStringExpand(linkNode["@confirmation"]?if_exists, "")/>
                     <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
-                        <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if>>
+                        <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                     <#else>
-                        <button type="submit"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if linkNode["@confirmation"]?has_content> onclick="return confirm('${linkNode["@confirmation"]?js_string}')"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
+                        <button type="submit"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
                     </#if>
                 </#if>
             </form>
@@ -933,7 +935,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
 <#macro "submit">
-    <button type="submit" name="<@fieldName .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if .node["@confirmation"]?has_content> onclick="return confirm('${.node["@confirmation"]?js_string}');"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <#assign confirmationMessage = ec.resource.evaluateStringExpand(.node["@confirmation"]?if_exists, "")/>
+    <button type="submit" name="<@fieldName .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
         <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null)}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>>
     <#else>
