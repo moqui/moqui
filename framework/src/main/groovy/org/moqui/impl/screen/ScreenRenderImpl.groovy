@@ -877,12 +877,13 @@ class ScreenRenderImpl implements ScreenRender {
         return strValue
     }
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
-        Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
+        // NOTE: defaultValue is handled below so that for a plain string it is not run through evaluateStringExpand
+        Object obj = getFieldValue(fieldNodeWrapper, "")
         // handle the special case of timestamps used for primary keys, make sure we avoid TZ, etc problems
         if (obj instanceof Timestamp) return ((Timestamp) obj).getTime().toString()
         // here's another alternative to consider, but sticking to the more reliable approach above for now:
         //if (obj instanceof Timestamp) return ec.l10n.formatValue(obj, "yyyy-MM-dd hh:mm:ss.SSS z")
-        return  obj ? obj.toString() : ""
+        return  obj ? obj.toString() : (defaultValue ?: "")
     }
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
