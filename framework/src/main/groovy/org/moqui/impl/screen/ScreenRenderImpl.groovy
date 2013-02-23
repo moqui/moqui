@@ -341,7 +341,17 @@ class ScreenRenderImpl implements ScreenRender {
                 }
 
                 if (urlType == "plain") {
-                    response.sendRedirect(url)
+                    StringBuilder ps = new StringBuilder()
+                    Map<String, String> pm = ri.expandParameters(ec)
+                    if (pm) {
+                        for (Map.Entry<String, String> pme in pm) {
+                            if (!pme.value) continue
+                            if (ps.length() > 0) ps.append("&")
+                            ps.append(pme.key).append("=").append(urlCodec.encode(pme.value))
+                        }
+                    }
+                    String fullUrl = url + (ps ? ("?" + ps.toString()) : "")
+                    response.sendRedirect(fullUrl)
                 } else {
                     // default is screen-path
                     ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)

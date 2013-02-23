@@ -18,6 +18,8 @@ New Features:
   web parameters
 - Improved date/time and number parsing for String values passed to an
   entity, partly so that implicit entity-auto services are more usable
+- Screen transition response plain URLs now assemble parameters using
+  response parameter subelements
 
 Bug Fixes:
 
