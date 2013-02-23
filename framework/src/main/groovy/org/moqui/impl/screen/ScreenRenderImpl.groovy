@@ -350,7 +350,11 @@ class ScreenRenderImpl implements ScreenRender {
                             ps.append(pme.key).append("=").append(urlCodec.encode(pme.value))
                         }
                     }
-                    String fullUrl = url + (ps ? ("?" + ps.toString()) : "")
+                    String fullUrl = url
+                    if (ps) {
+                        if (url.contains("?")) fullUrl += "&" else fullUrl += "?"
+                        fullUrl += ps.toString()
+                    }
                     response.sendRedirect(fullUrl)
                 } else {
                     // default is screen-path
