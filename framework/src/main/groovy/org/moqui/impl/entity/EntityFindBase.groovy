@@ -453,6 +453,20 @@ abstract class EntityFindBase implements EntityFind {
             }
         }
 
+        // NOTE: do this as a separate condition because this will always be added on and isn't a part of the original where to use for the cache
+        EntityConditionImplBase conditionForQuery
+        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
+        if (viewWhere) {
+            if (whereCondition) {
+                conditionForQuery = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition,
+                        EntityCondition.JoinOperator.AND, viewWhere)
+            } else {
+                conditionForQuery = viewWhere
+            }
+        } else {
+            conditionForQuery = whereCondition
+        }
+
         // for find one we'll always use the basic result set type and concurrency:
         this.resultSetType(ResultSet.TYPE_FORWARD_ONLY)
         this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
@@ -463,7 +477,7 @@ abstract class EntityFindBase implements EntityFind {
 
 
         // call the abstract method
-        EntityValue newEntityValue = oneExtended(whereCondition)
+        EntityValue newEntityValue = oneExtended(conditionForQuery)
 
 
         // put it in whether null or not

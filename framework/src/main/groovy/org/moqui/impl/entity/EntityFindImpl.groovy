@@ -53,10 +53,6 @@ class EntityFindImpl extends EntityFindBase {
         efb.makeSqlFromClause()
 
         // WHERE clause only for one/pk query
-        // NOTE: do this here after caching because this will always be added on and isn't a part of the original where
-        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (viewWhere) whereCondition =
-            (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, JoinOperator.AND, viewWhere)
         if (whereCondition) {
             efb.startWhereClause()
             whereCondition.makeSqlWhere(efb)

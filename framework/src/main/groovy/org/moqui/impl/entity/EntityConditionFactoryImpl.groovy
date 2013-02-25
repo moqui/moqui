@@ -54,21 +54,25 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(List<EntityCondition>, JoinOperator) */
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
+        if (!conditionList) return null
         return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, operator)
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(List<EntityCondition>) */
     EntityCondition makeCondition(List<EntityCondition> conditionList) {
+        if (!conditionList) return null
         return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, JoinOperator.AND)
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(Map<String,?>, ComparisonOperator, JoinOperator) */
     EntityCondition makeCondition(Map<String, ?> fieldMap, ComparisonOperator comparisonOperator, JoinOperator joinOperator) {
+        if (!fieldMap) return null
         return new MapCondition(this, fieldMap, comparisonOperator, joinOperator)
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeCondition(Map<String,?>) */
     EntityCondition makeCondition(Map<String, ?> fieldMap) {
+        if (!fieldMap) return null
         return new MapCondition(this, fieldMap, ComparisonOperator.EQUALS, JoinOperator.AND)
     }
 
@@ -79,6 +83,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     /** @see org.moqui.entity.EntityConditionFactory#makeConditionWhere(String) */
     EntityCondition makeConditionWhere(String sqlWhereClause) {
+        if (!sqlWhereClause) return null
         return new WhereCondition(this, sqlWhereClause)
     }
 

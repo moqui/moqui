@@ -47,6 +47,11 @@ Bug Fixes:
 - Fixed issue in XML Form when a field-row is under a field-group element
   where the field-row was ignored and the fields in the group were
   displayed twice
+- Fixed issue when making a condition with an empty Map, List, etc returns
+  null instead of an invalid condition
+- Fixed issue with entity find one on a view-entity with no PK fields where
+  no matter the conditions it was considered a full set of PK field
+  constraints causing it to throw out the actual find constraints
 
 
 ===========================================================================

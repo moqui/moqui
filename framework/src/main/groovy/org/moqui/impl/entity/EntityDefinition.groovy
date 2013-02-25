@@ -437,7 +437,8 @@ public class EntityDefinition {
 
     boolean containsPrimaryKey(Map fields) {
         if (!fields) return false
-        for (String fieldName in this.getPkFieldNames()) if (!fields[fieldName]) return false
+        if (!getPkFieldNames()) return false
+        for (String fieldName in getPkFieldNames()) if (!fields[fieldName]) return false
         return true
     }
 
