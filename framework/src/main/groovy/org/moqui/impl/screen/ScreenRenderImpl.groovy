@@ -221,7 +221,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         if (logger.traceEnabled) logger.trace("Rendering screen [${rootScreenLocation}] with path list [${originalScreenPathNameList}]")
 
-        this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null)
+        this.screenUrlInfo = new ScreenUrlInfo(this, rootScreenDef, originalScreenPathNameList, null, null)
         if (ec.web) {
             // clear out the parameters used for special screen URL config
             if (ec.web.requestParameters.lastStandalone) ec.web.requestParameters.lastStandalone = ""
@@ -833,13 +833,13 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenUrlInfo buildUrl(String subscreenPath) {
         if (subscreenUrlInfos.containsKey(subscreenPath)) return subscreenUrlInfos.get(subscreenPath)
-        ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath)
+        ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath, null)
         subscreenUrlInfos.put(subscreenPath, sui)
         return sui
     }
 
     ScreenUrlInfo buildUrl(ScreenDefinition fromSd, List<String> fromPathList, String subscreenPath) {
-        ScreenUrlInfo ui = new ScreenUrlInfo(this, fromSd, fromPathList, subscreenPath)
+        ScreenUrlInfo ui = new ScreenUrlInfo(this, fromSd, fromPathList, subscreenPath, null)
         return ui
     }
 
@@ -851,7 +851,7 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenUrlInfo sui
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
-            case "transition": sui = new ScreenUrlInfo(this, null, null, url); break;
+            case "transition": sui = new ScreenUrlInfo(this, null, null, url, false); break;
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
             default: sui = new ScreenUrlInfo(this, url); break;

@@ -67,6 +67,7 @@ class ScreenUrlInfo {
     ScreenDefinition targetScreen = null
     /** If a transition is specified, the target transition within the targetScreen */
     TransitionItem targetTransition = null
+    boolean expandAliasTransition = true
     String targetTransitionActualName = null
     List<String> preTransitionPathNameList = new ArrayList<String>()
 
@@ -77,7 +78,9 @@ class ScreenUrlInfo {
         this.baseUrl = url
     }
 
-    ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl, String ssp) {
+    ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl, String ssp,
+                  Boolean expandAliasTransition) {
+        this.expandAliasTransition = expandAliasTransition != null ? expandAliasTransition : true
         this.sri = sri
 
         fromSd = fromScreenDef
@@ -289,12 +292,12 @@ class ScreenUrlInfo {
                     // of the name (if type is screen-path or empty, url-type is url or empty)
                     if (ti.condition == null && ti.actions == null && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&
-                            ti.defaultResponse.urlType == "screen-path" && ec.web != null) {
+                            ti.defaultResponse.urlType == "screen-path" && ec.web != null && expandAliasTransition) {
                         List<String> aliasPathList = new ArrayList(fullPathNameList)
                         // remove transition name
                         aliasPathList.remove(aliasPathList.size()-1)
                         // create a ScreenUrlInfo, then copy its info into this
-                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList, ti.defaultResponse.url)
+                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList, ti.defaultResponse.url, false)
 
                         // add transition parameters
                         aliasUrlInfo.addParameters(ti.defaultResponse.expandParameters(ec))
