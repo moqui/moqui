@@ -95,7 +95,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         if (!templateLocation) throw new IllegalArgumentException("Could not find macro-template-location for render mode (screen-text-output.@type) [${renderMode}]")
         // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
         String rootTemplate = """<#include "${templateLocation}"/>
-            <#recurse widgetsNode>
+            <#visit widgetsNode>
             """
 
         Template newTemplate
@@ -122,7 +122,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
         String rootTemplate = """<#include "${templateLocation}"/>
-            <#recurse widgetsNode>
+            <#visit widgetsNode>
             """
 
 

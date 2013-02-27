@@ -62,6 +62,7 @@ class ScreenUrlInfo {
     /** The list of screens to render, starting with the root screen OR the last standalone screen if applicable */
     List<ScreenDefinition> screenRenderDefList = new ArrayList<ScreenDefinition>()
     int renderPathDifference = 0
+    boolean lastStandalone = false
 
     /** The last screen found in the path list */
     ScreenDefinition targetScreen = null
@@ -79,8 +80,9 @@ class ScreenUrlInfo {
     }
 
     ScreenUrlInfo(ScreenRenderImpl sri, ScreenDefinition fromScreenDef, List<String> fpnl, String ssp,
-                  Boolean expandAliasTransition) {
+                  Boolean expandAliasTransition, Boolean lastStandalone) {
         this.expandAliasTransition = expandAliasTransition != null ? expandAliasTransition : true
+        this.lastStandalone = lastStandalone != null ? lastStandalone : false
         this.sri = sri
 
         fromSd = fromScreenDef
@@ -296,11 +298,16 @@ class ScreenUrlInfo {
                         List<String> aliasPathList = new ArrayList(fullPathNameList)
                         // remove transition name
                         aliasPathList.remove(aliasPathList.size()-1)
+
+                        Map transitionParameters = ti.defaultResponse.expandParameters(ec)
+
                         // create a ScreenUrlInfo, then copy its info into this
-                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList, ti.defaultResponse.url, false)
+                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList,
+                                ti.defaultResponse.url, false,
+                                (this.lastStandalone || transitionParameters.lastStandalone == "true"))
 
                         // add transition parameters
-                        aliasUrlInfo.addParameters(ti.defaultResponse.expandParameters(ec))
+                        aliasUrlInfo.addParameters(transitionParameters)
 
                         aliasUrlInfo.copyUrlInfoInto(this)
                         return
@@ -340,8 +347,7 @@ class ScreenUrlInfo {
             if (nextSd.screenNode?."subscreens"?."@always-use-full-path"?.getAt(0) == "true") alwaysUseFullPath = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?."@standalone" == "true" ||
-                    (ec.web != null && ec.web.requestParameters.lastStandalone == "true")) {
+            if (nextSd.screenNode?."@standalone" == "true" || this.lastStandalone) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -401,8 +407,7 @@ class ScreenUrlInfo {
             if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
-            if (nextSd.screenNode?."@standalone" == "true" ||
-                    (ec.web != null && ec.web.requestParameters.lastStandalone == "true")) {
+            if (nextSd.screenNode?."@standalone" == "true" || this.lastStandalone) {
                 renderPathDifference += screenRenderDefList.size()
                 screenRenderDefList.clear()
             }
@@ -510,8 +515,11 @@ class ScreenUrlInfo {
         sui.fileResourceContentType = this.fileResourceContentType
         sui.screenPathDefList = this.screenPathDefList!=null ? new ArrayList(this.screenPathDefList) : null
         sui.screenRenderDefList = this.screenRenderDefList!=null ? new ArrayList(this.screenRenderDefList) : null
+        sui.renderPathDifference = this.renderPathDifference
+        sui.lastStandalone = this.lastStandalone
         sui.targetScreen = this.targetScreen
         sui.targetTransition = this.targetTransition
+        sui.expandAliasTransition = this.expandAliasTransition
         sui.targetTransitionActualName = this.targetTransitionActualName
         sui.preTransitionPathNameList = this.preTransitionPathNameList!=null ? new ArrayList(this.preTransitionPathNameList) : null
     }

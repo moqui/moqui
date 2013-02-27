@@ -150,6 +150,11 @@ class ScreenDefinition {
 
     String getLocation() { return location }
 
+    String getScreenName() {
+        String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location
+        return filename.contains(".") ? filename.substring(0, filename.indexOf(".")) : filename
+    }
+
     String getDefaultMenuName() {
         return screenNode."@default-menu-title" ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
     }

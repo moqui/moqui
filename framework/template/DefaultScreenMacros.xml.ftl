@@ -12,8 +12,12 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro attributeValue textValue>${Static["org.moqui.impl.StupidUtilities"].encodeForXmlAttribute(textValue)}</#macro>
 
-<#macro @element><#-- do nothing for unknown elements --></#macro>
-<#macro widgets><#recurse></#macro>
+<#macro @element><#-- Doing nothing for element ${.node?node_name}, not yet implemented. --></#macro>
+<#macro widgets>
+<#if .node?parent?node_name == "screen"><${sri.getActiveScreenDef().getScreenName()}></#if>
+<#recurse>
+<#if .node?parent?node_name == "screen"></${sri.getActiveScreenDef().getScreenName()}></#if>
+</#macro>
 <#macro "fail-widgets"><#recurse></#macro>
 
 <#-- ================ Subscreens ================ -->
