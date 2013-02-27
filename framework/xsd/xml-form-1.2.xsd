@@ -227,14 +227,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>
                 A Map to get parameter names and values from in addition to the parameter sub-elements.
             </xs:documentation></xs:annotation></xs:attribute>
-            <!-- for now this is always false, consider making it configurable:
-            <xs:attribute name="expand-transition-url" default="false" type="boolean">
-                <xs:annotation><xs:documentation>If this transition has no condition, no actions, no
+            <xs:attribute name="expand-transition-url" default="true" type="boolean">
+                <xs:annotation><xs:documentation>If this target transition has no condition, no actions, no
                     conditional responses and the default-response type is "url" and url-type is "screen-path" then
                     URLs to this transition may be expanded. Set this to true to expand them to what the
                     default-response points to instead of a URL to this transition.</xs:documentation></xs:annotation>
             </xs:attribute>
-            -->
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">

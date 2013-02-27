@@ -36,8 +36,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <container>
-            <link url="ArtifactHitSummaryStats.csv" text="Get as CSV"/>
-            <link url="ArtifactHitSummaryStats.xml" text="Get as XML" target-window="_blank"/>
+            <link url="ArtifactHitSummaryStats.csv" text="Get as CSV" target-window="_blank" expand-transition-url="false"/>
+            <link url="ArtifactHitSummaryStats.xml" text="Get as XML" target-window="_blank" expand-transition-url="false"/>
             <link url="ArtifactHitSummaryStats.pdf" text="Get as PDF" target-window="_blank"/>
         </container>
         <form-list name="ArtifactHitSummary" list="artifactHitReportList">

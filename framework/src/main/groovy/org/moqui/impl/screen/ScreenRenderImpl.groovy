@@ -844,7 +844,9 @@ class ScreenRenderImpl implements ScreenRender {
         return ui
     }
 
-    ScreenUrlInfo makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper) {
+    ScreenUrlInfo makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper,
+                                String expandTransitionUrlString) {
+        Boolean expandTransitionUrl = expandTransitionUrlString != null ? expandTransitionUrlString == "true" : null
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
          */
@@ -852,7 +854,7 @@ class ScreenRenderImpl implements ScreenRender {
         ScreenUrlInfo sui
         switch (urlType) {
             // for transition we want a URL relative to the current screen, so just pass that to buildUrl
-            case "transition": sui = new ScreenUrlInfo(this, null, null, url, false, null); break;
+            case "transition": sui = new ScreenUrlInfo(this, null, null, url, expandTransitionUrl, null); break;
             case "content": throw new IllegalArgumentException("The url-type of content is not yet supported"); break;
             case "plain":
             default: sui = new ScreenUrlInfo(this, url); break;
