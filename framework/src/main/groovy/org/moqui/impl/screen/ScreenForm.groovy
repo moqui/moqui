@@ -191,6 +191,24 @@ class ScreenForm {
         return fieldList
     }
 
+    List<Node> getColumnNonReferencedHiddenFieldList() {
+        if (nonReferencedFieldList != null) return nonReferencedFieldList
+        List<Node> fieldList = []
+
+        if (getFormNode()."form-list-column") for (Node fieldNode in getFormNode()."field") {
+            if (!fieldNode.depthFirst().find({ it.name() == "hidden" })) continue
+            List<Node> formListColumnNodeList = getFormNode()."form-list-column"
+            boolean foundReference = false
+            for (Node formListColumnNode in formListColumnNodeList)
+                if (formListColumnNode.depthFirst().find({ it.name() == "field-ref" && it."@name" == fieldNode."@name" }))
+                    foundReference = true
+            if (!foundReference) fieldList.add(fieldNode)
+        }
+
+        nonReferencedFieldList = fieldList
+        return fieldList
+    }
+
     List<Node> getDbFormNodeList() {
         if (!hasDbExtensions) return null
 

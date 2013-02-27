@@ -748,6 +748,14 @@ class ScreenRenderImpl implements ScreenRender {
         for (Node fieldNode in fieldNodeList) fieldFtlNodeList.add(FtlNodeWrapper.wrapNode(fieldNode))
         return fieldFtlNodeList
     }
+    List<FtlNodeWrapper> getFtlFormListColumnNonReferencedHiddenFieldList(String formName) {
+        ScreenDefinition sd = getActiveScreenDef()
+        List<Node> fieldNodeList = sd.getForm(formName).getColumnNonReferencedHiddenFieldList()
+        List<FtlNodeWrapper> fieldFtlNodeList = []
+        for (Node fieldNode in fieldNodeList) fieldFtlNodeList.add(FtlNodeWrapper.wrapNode(fieldNode))
+        return fieldFtlNodeList
+    }
+
 
     boolean isFormUpload(String formName) {
         Node cachedFormNode = this.getFormNode(formName)

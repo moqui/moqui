@@ -92,6 +92,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     <link url="deleteExampleItem" text="Delete" confirmation="Really Delete?"/>
                 </default-field>
             </field>
+
+            <!-- NOTE: these are here to test the form-list-column rendering, especially combined with multi=true -->
+            <form-list-column><field-ref name="exampleItemSeqId"/></form-list-column>
+            <form-list-column><field-ref name="description"/></form-list-column>
+            <form-list-column><field-ref name="amount"/></form-list-column>
+            <form-list-column><field-ref name="amountUomId"/></form-list-column>
+            <form-list-column><field-ref name="deleteLink"/></form-list-column>
         </form-list>
     </widgets>
 </screen>

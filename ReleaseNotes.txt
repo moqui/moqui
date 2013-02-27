@@ -20,6 +20,8 @@ New Features:
   entity, partly so that implicit entity-auto services are more usable
 - Screen transition response plain URLs now assemble parameters using
   response parameter subelements
+- Improved form-list with form-list-column so that hidden fields are always
+  rendered along with the form element
 
 Bug Fixes:
 
@@ -52,6 +54,8 @@ Bug Fixes:
 - Fixed issue with entity find one on a view-entity with no PK fields where
   no matter the conditions it was considered a full set of PK field
   constraints causing it to throw out the actual find constraints
+- Fixed issue with form-list formatting when the @multi=true attribute and
+  form-list-column elements are both used in the same form
 
 
 ===========================================================================
