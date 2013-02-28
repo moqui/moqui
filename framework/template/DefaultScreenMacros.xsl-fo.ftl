@@ -127,7 +127,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Standalone Fields ==================== -->
 <#macro link>
-    <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node)>
+    <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
     <#assign linkNode = .node>
     <@linkFormLink linkNode linkNode["@id"]?if_exists urlInfo/>
 </#macro>
@@ -135,7 +135,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro image>
     <#-- TODO: make real xsl-fo image -->
-    <img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content",null)}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/>
+    <img src="${sri.makeUrlByType(.node["@url"],.node["@url-type"]!"content",null,"true")}" alt="${.node["@alt"]!"image"}"<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@width"]?has_content> width="${.node["@width"]}"</#if><#if .node["@height"]?has_content> height="${.node["@height"]}"</#if>/>
 </#macro>
 <#macro label>
     <#-- TODO: handle label type somehow -->
@@ -266,7 +266,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign isMulti = formNode["@multi"]?if_exists == "true">
     <#assign isMultiFinalRow = false>
-    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null)>
+    <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.evaluateContextField(listName, "")>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
@@ -396,7 +396,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
                 <#assign linkNode = widgetNode>
-                <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode)>
+                <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                 <#assign linkFormId><@fieldId linkNode/></#assign>
                 <#assign afterFormText><@linkFormForm linkNode linkFormId urlInfo/></#assign>
                 <#t>${sri.appendToAfterFormWriter(afterFormText)}
