@@ -11,8 +11,6 @@
  */
 package org.moqui.entity;
 
-import com.sun.org.apache.xpath.internal.operations.Equals;
-
 import java.io.Serializable;
 import java.util.Map;
 

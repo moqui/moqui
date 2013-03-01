@@ -14,7 +14,6 @@ package org.moqui.entity;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Used to setup various options for an entity find (query).

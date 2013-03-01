@@ -44,31 +44,38 @@ class FieldValueCondition extends EntityConditionImplBase {
         sql.append(' ')
         boolean valueDone = false
         if (this.value == null) {
-            if (this.operator == EQUALS || this.operator == LIKE ||
-                    this.operator == IN) {
+            if (this.operator == EQUALS || this.operator == LIKE || this.operator == IN) {
                 sql.append(" IS NULL")
                 valueDone = true
-            } else if (this.operator == NOT_EQUAL || this.operator == NOT_LIKE ||
-                    this.operator == NOT_IN) {
+            } else if (this.operator == NOT_EQUAL || this.operator == NOT_LIKE || this.operator == NOT_IN) {
                 sql.append(" IS NOT NULL")
                 valueDone = true
             }
         }
         if (!valueDone) {
             sql.append(EntityConditionFactoryImpl.getComparisonOperatorString(this.operator))
-            if ((this.operator == IN || this.operator == NOT_IN) &&
-                    this.value instanceof Collection) {
-                sql.append(" (")
-                boolean isFirst = true
-                for (Object curValue in this.value) {
-                    if (isFirst) isFirst = false else sql.append(", ")
-                    sql.append("?")
-                    if (this.ignoreCase && (curValue instanceof String || curValue instanceof GString)) curValue = ((String) curValue).toUpperCase()
-                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), curValue, eqb))
+            if (this.operator == IN || this.operator == NOT_IN) {
+                if (this.value instanceof String || this.value instanceof GString) {
+                    String valueStr = (String) this.value
+                    if (valueStr.contains(",")) this.value = valueStr.split(",")
                 }
-                sql.append(')')
-            } else if (this.operator == BETWEEN &&
-                    this.value instanceof Collection && ((Collection) this.value).size() == 2) {
+                if (this.value instanceof Collection) {
+                    sql.append(" (")
+                    boolean isFirst = true
+                    for (Object curValue in this.value) {
+                        if (isFirst) isFirst = false else sql.append(", ")
+                        sql.append("?")
+                        if (this.ignoreCase && (curValue instanceof String || curValue instanceof GString)) curValue = ((String) curValue).toUpperCase()
+                        eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), curValue, eqb))
+                    }
+                    sql.append(')')
+                } else {
+                    if (this.ignoreCase && (this.value instanceof String || this.value instanceof GString)) this.value = ((String) this.value).toUpperCase()
+                    sql.append(" (?)")
+                    eqb.getParameters().add(new EntityConditionParameter(field.getFieldNode(eqb.mainEntityDefinition), this.value, eqb))
+                }
+            } else if (this.operator == BETWEEN && this.value instanceof Collection &&
+                    ((Collection) this.value).size() == 2) {
                 sql.append(" ? AND ?")
                 Iterator iterator = ((Collection) this.value).iterator()
                 Object value1 = iterator.next()

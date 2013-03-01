@@ -56,6 +56,9 @@ Bug Fixes:
   constraints causing it to throw out the actual find constraints
 - Fixed issue with form-list formatting when the @multi=true attribute and
   form-list-column elements are both used in the same form
+- Fixed issue where IN and NOT IN did not add parenthesis if the value was
+  not a Colleciton; also added splitting of String values used with IN and
+  NOT IN by comma for convenience in specifying these lists of ID values
 
 
 ===========================================================================
