@@ -270,11 +270,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // if directory doesn't exist skip it, runtime doesn't always have an component directory
         if (componentDir.exists() && componentDir.isDirectory()) {
             // get all files in the directory
+            TreeMap<String, File> componentDirEntries = new TreeMap<String, File>()
             for (File componentSubDir in componentDir.listFiles()) {
                 // if it's a directory and doesn't start with a "." then add it as a component dir
-                if (componentSubDir.isDirectory() && !componentSubDir.getName().startsWith(".")) {
-                    this.initComponent(null, componentSubDir.toURI().toURL().toString())
-                }
+                if (!componentSubDir.isDirectory() || componentSubDir.getName().startsWith(".")) continue
+                componentDirEntries.put(componentSubDir.getName(), componentSubDir)
+            }
+            for (Map.Entry<String, File> componentDirEntry in componentDirEntries) {
+                this.initComponent(null, componentDirEntry.getValue().toURI().toURL().toString())
             }
         }
     }
