@@ -13,7 +13,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <entity-facade-xml type="seed">
     <!-- ========== Example/Test User ========== -->
     <!-- password=moqui -->
-    <moqui.security.UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe"
+    <mantle.party.party.Party partyId="EX_JOHN_DOE" partyTypeEnumId="PERSON"/>
+    <mantle.party.party.Person partyId="EX_JOHN_DOE" firstName="John" middleName="" lastName="Doe"/>
+    <mantle.party.contact.ContactMech contactMechId="EX_JOHN_DOE_PEM" contactMechTypeEnumId="EMAIL_ADDRESS"
+            infoString="john.doe@test.com"/>
+    <mantle.party.contact.PartyContactMech partyId="EX_JOHN_DOE" contactMechId="EX_JOHN_DOE_PEM"
+            contactMechPurposeId="PRIMARY_EMAIL" fromDate="2010-02-03 00:00:00.000"/>
+
+    <moqui.security.UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe" partyId="EX_JOHN_DOE"
             currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHashType="SHA"
             passwordHint="framework name, lowercase" currencyUomId="USD" locale="en_us" timeZone="US/Central"/>
     <moqui.security.UserGroupMember userGroupId="ADMIN" userId="EX_JOHN_DOE" fromDate="2010-02-03 00:00:00.000"/>
