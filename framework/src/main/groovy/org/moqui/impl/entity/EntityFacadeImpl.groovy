@@ -818,13 +818,17 @@ class EntityFacadeImpl implements EntityFacade {
 
     /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, Long, Long) */
     String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
-        // is the seqName an entityName?
-        EntityDefinition ed = getEntityDefinition(seqName)
-        if (ed != null) {
-            String groupName = getEntityGroupName(seqName)
-            if (ed.getEntityNode()?."@sequence-primary-use-uuid" == "true" ||
-                    getDatasourceNode(groupName)?."@sequence-primary-use-uuid" == "true")
-                return UUID.randomUUID().toString()
+        try {
+            // is the seqName an entityName?
+            EntityDefinition ed = getEntityDefinition(seqName)
+            if (ed != null) {
+                String groupName = getEntityGroupName(seqName)
+                if (ed.getEntityNode()?."@sequence-primary-use-uuid" == "true" ||
+                        getDatasourceNode(groupName)?."@sequence-primary-use-uuid" == "true")
+                    return UUID.randomUUID().toString()
+            }
+        } catch (EntityException e) {
+            // do nothing, just means seqName is not an entity name
         }
         // fall through to default to the db sequenced ID
         return dbSequencedIdPrimary(seqName, staggerMax, bankSize)
@@ -890,7 +894,7 @@ class EntityFacadeImpl implements EntityFacade {
             // NOTE: if bank[0] > bank[1] because of this just leave it and the next time we try to get a sequence
             //     value we'll get one from a new bank
         } else {
-            seqNum += 1
+            bank[0] += 1
         }
 
         String prefix = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@sequenced-id-prefix"

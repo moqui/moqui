@@ -59,6 +59,9 @@ Bug Fixes:
 - Fixed issue where IN and NOT IN did not add parenthesis if the value was
   not a Colleciton; also added splitting of String values used with IN and
   NOT IN by comma for convenience in specifying these lists of ID values
+- Fixed issues where sequenced values with a non-entity seqName threw an
+  exception and increment by one didn't increment the bank, causing a
+  duplicate key error from the database on insert
 
 
 ===========================================================================
