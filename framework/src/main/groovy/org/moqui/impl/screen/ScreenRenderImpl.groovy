@@ -951,7 +951,7 @@ class ScreenRenderImpl implements ScreenRender {
                     if (valueMap instanceof EntityValueImpl) {
                         // if it is an EntityValueImpl, only get if the fieldName is a value
                         EntityValueImpl evi = (EntityValueImpl) valueMap
-                        if (evi.getEntityDefinition().isField(fieldName)) value = evi.get(fieldName)
+                        if (evi.getEntityDefinition().isField(fieldName)) fieldValue = evi.get(fieldName)
                     } else {
                         fieldValue = valueMap.get(fieldName)
                     }
