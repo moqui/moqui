@@ -912,16 +912,16 @@ class ScreenRenderImpl implements ScreenRender {
     }
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
-        if (fieldNode."@entry-name") return ec.resource.evaluateContextField((String) fieldNode."@entry-name", null)
+        if (fieldNode."@entry-name") return ec.getResource().evaluateContextField((String) fieldNode."@entry-name", null)
         String fieldName = fieldNode."@name"
         String mapName = fieldNode.parent()."@map" ?: "fieldValues"
         Object value = null
         // if this is an error situation try parameters first, otherwise try parameters last
-        if (ec.web != null && ec.web.errorParameters != null && (ec.web.errorParameters.moquiFormName == fieldNode.parent()."@name"))
-            value = ec.web.errorParameters.get(fieldName)
-        if (!value && ec.context.get(mapName) && fieldNode.parent().name() == "form-single") {
+        if (ec.getWeb() != null && ec.getWeb().errorParameters != null && (ec.getWeb().errorParameters.moquiFormName == fieldNode.parent()."@name"))
+            value = ec.getWeb().errorParameters.get(fieldName)
+        if (!value && ec.getContext().get(mapName) && fieldNode.parent().name() == "form-single") {
             try {
-                Map valueMap = (Map) ec.context.get(mapName)
+                Map valueMap = (Map) ec.getContext().get(mapName)
                 if (valueMap instanceof EntityValueImpl) {
                     // if it is an EntityValueImpl, only get if the fieldName is a value
                     EntityValueImpl evi = (EntityValueImpl) valueMap
@@ -931,10 +931,36 @@ class ScreenRenderImpl implements ScreenRender {
                 }
             } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
         }
-        if (!value) value = ec.context.get(fieldName)
+        if (!value) value = ec.getContext().get(fieldName)
         // this isn't needed since the parameters are copied to the context: if (!isError && isWebAndSameForm && !value) value = ec.web.parameters.get(fieldName)
         if (value) return value
-        return ec.resource.evaluateStringExpand(defaultValue, null)
+        return ec.getResource().evaluateStringExpand(defaultValue, null)
+    }
+    String getFieldValueClass(FtlNodeWrapper fieldNodeWrapper) {
+        Object fieldValue = null
+
+        Node fieldNode = fieldNodeWrapper.getGroovyNode()
+        if (fieldNode."@entry-name")
+            fieldValue = ec.getResource().evaluateContextField((String) fieldNode."@entry-name", null)
+        if (fieldValue == null) {
+            String fieldName = fieldNode."@name"
+            String mapName = fieldNode.parent()."@map" ?: "fieldValues"
+            if (ec.getContext().get(mapName) && fieldNode.parent().name() == "form-single") {
+                try {
+                    Map valueMap = (Map) ec.getContext().get(mapName)
+                    if (valueMap instanceof EntityValueImpl) {
+                        // if it is an EntityValueImpl, only get if the fieldName is a value
+                        EntityValueImpl evi = (EntityValueImpl) valueMap
+                        if (evi.getEntityDefinition().isField(fieldName)) value = evi.get(fieldName)
+                    } else {
+                        fieldValue = valueMap.get(fieldName)
+                    }
+                } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
+            }
+            if (!fieldValue) fieldValue = ec.getContext().get(fieldName)
+        }
+
+        return fieldValue ? fieldValue.getClass().getSimpleName() : "String"
     }
 
     String getFieldEntityValue(FtlNodeWrapper widgetNodeWrapper) {

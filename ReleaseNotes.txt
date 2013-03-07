@@ -22,6 +22,9 @@ New Features:
   response parameter subelements
 - Improved form-list with form-list-column so that hidden fields are always
   rendered along with the form element
+- Added span with id for form-list cell display fields and classes on it
+  for currency and field value Java classes (BigDecimal, Timestamp, etc)
+  plus CSS to center numbers and right align currency amounts
 
 Bug Fixes:
 
