@@ -356,15 +356,6 @@ class EntityFindBuilder extends EntityQueryBuilder {
         for (String fieldName in orderByFieldList) {
             if (!fieldName) continue
 
-            int typeValue = 1
-            Node fieldNode = getMainEd().getFieldNode(fieldName)
-            if (fieldNode != null) {
-                String javaType = efi.getFieldJavaType((String) fieldNode."@type", getMainEd().getFullEntityName())
-                typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
-            } else {
-                logger.warn("Making ORDER BY clause, could not find field [${fieldName}] in entity [${getMainEd().getEntityName()}]")
-            }
-
             if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
 
             // Parse the fieldName (can have other stuff in it, need to tear down to just the field name)
@@ -413,6 +404,14 @@ class EntityFindBuilder extends EntityQueryBuilder {
             }
             if (fieldName.endsWith(")")) { fieldName = fieldName.substring(0,fieldName.length()-1) }
 
+            int typeValue = 1
+            Node fieldNode = getMainEd().getFieldNode(fieldName)
+            if (fieldNode != null) {
+                String javaType = efi.getFieldJavaType((String) fieldNode."@type", getMainEd().getFullEntityName())
+                typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
+            } else {
+                logger.warn("Making ORDER BY clause, could not find field [${fieldName}] in entity [${getMainEd().getEntityName()}]")
+            }
 
             // not that it's all torn down, build it back up using the column name
             if (caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(caseUpperLower ? "UPPER(" : "LOWER(")
