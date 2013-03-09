@@ -19,6 +19,8 @@ import org.moqui.impl.entity.EntityQueryBuilder
 import static org.moqui.entity.EntityCondition.ComparisonOperator.*
 
 class FieldValueCondition extends EntityConditionImplBase {
+    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FieldValueCondition.class)
+
     protected Class localClass = null
     protected ConditionField field
     protected EntityCondition.ComparisonOperator operator
@@ -57,7 +59,7 @@ class FieldValueCondition extends EntityConditionImplBase {
             if (this.operator == IN || this.operator == NOT_IN) {
                 if (this.value instanceof String || this.value instanceof GString) {
                     String valueStr = (String) this.value
-                    if (valueStr.contains(",")) this.value = valueStr.split(",")
+                    if (valueStr.contains(",")) this.value = valueStr.split(",").collect()
                 }
                 if (this.value instanceof Collection) {
                     sql.append(" (")
