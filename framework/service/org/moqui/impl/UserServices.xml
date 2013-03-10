@@ -12,43 +12,31 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.2.xsd">
 
-    <service verb="create" noun="UserAccount" authenticate="false" allow-remote="false">
+    <service verb="create" noun="UserAccount" authenticate="anonymous-all" allow-remote="false">
         <in-parameters>
             <parameter name="username" required="true"/>
             <parameter name="newPassword" required="true"/>
             <parameter name="newPasswordVerify" required="true"/>
-            <parameter name="userFullName" required="false"/>
-            <parameter name="currencyUomId" required="false"/>
-            <parameter name="locale" required="false"/>
+            <parameter name="userFullName"/>
+            <parameter name="emailAddress"/>
+            <parameter name="currencyUomId"/>
+            <parameter name="locale"/>
+            <parameter name="timeZone"/>
         </in-parameters>
         <out-parameters>
             <parameter name="userId" required="true"/>
         </out-parameters>
         <actions>
-            <!-- for ALL of this we don't want authz checks, though normally for services we would -->
-            <script>
-                alreadyDisabled = ec.artifactExecution.disableAuthz()
-                try {
-            </script>
-
-            <service-call name="create#UserAccount" out-map="createUaOut"
-                in-map="[username:username, userFullName:userFullName, currencyUomId:currencyUomId, locale:locale]"/>
+            <service-call name="create#UserAccount" out-map="createUaOut" in-map="context"/>
             <service-call name="org.moqui.impl.UserServices.update#PasswordInternal"
                 in-map="[userId:createUaOut.userId, newPassword:newPassword, newPasswordVerify:newPasswordVerify]"/>
             <set field="result.userId" from="createUaOut.userId"/>
-
-            <script>
-                } finally {
-                    if (!alreadyDisabled) ec.artifactExecution.enableAuthz()
-                }
-            </script>
         </actions>
     </service>
 
-    <service verb="increment" noun="UserAccountFailedLogins" authenticate="false" allow-remote="false">
+    <service verb="increment" noun="UserAccountFailedLogins" authenticate="anonymous-all" allow-remote="false">
         <in-parameters><parameter name="userId" type="String" required="true"/></in-parameters>
         <actions>
-            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
             <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
             <set field="userAccount.successiveFailedLogins"
                  from="userAccount.successiveFailedLogins ? userAccount.successiveFailedLogins + 1 : 1"/>
@@ -60,11 +48,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
             <log level="warn" message="================ Failed logins [${userAccount.successiveFailedLogins}], maxFailures [${maxFailures}], disabled [${userAccount.disabled}]"/>
             <entity-update value-field="userAccount"/>
-            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
         </actions>
     </service>
 
-    <service verb="update" noun="Password" authenticate="false" allow-remote="true">
+    <service verb="update" noun="Password" authenticate="anonymous-all" allow-remote="true">
         <description>Set a user's password. The userId must match the current user and the oldPassword must match the
             user's currentPassword or special permission is required.</description>
         <in-parameters>
@@ -77,11 +64,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <!-- TODO get perm from ? -->
             <set field="hasPwAdminPermission" from="false"/>
-            <!-- for ALL of this we don't want authz checks, though normally for services we would -->
-            <script>
-                alreadyDisabled = ec.artifactExecution.disableAuthz()
-                try {
-            </script>
 
             <if condition="userId">
                 <then>
@@ -117,12 +99,6 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <service-call name="org.moqui.impl.UserServices.update#PasswordInternal"
                 in-map="[userId:userId, newPassword:newPassword, newPasswordVerify:newPasswordVerify]"/>
-
-            <script>
-                } finally {
-                    if (!alreadyDisabled) ec.artifactExecution.enableAuthz()
-                }
-            </script>
         </actions>
     </service>
     <service verb="update" noun="PasswordInternal" authenticate="false" allow-remote="false">
@@ -201,14 +177,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </actions>
     </service>
 
-    <service verb="reset" noun="Password" type="inline" authenticate="false" allow-remote="true">
+    <service verb="reset" noun="Password" type="inline" authenticate="anonymous-all" allow-remote="true">
         <in-parameters>
             <parameter name="username" required="true"/>
         </in-parameters>
         <actions>
-            <!-- for this we don't want authz checks, though normally for these services we would -->
-            <script>alreadyDisabled = ec.artifactExecution.disableAuthz()</script>
-
             <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
                 <field-map field-name="username"/>
             </entity-find-one>
@@ -242,8 +215,6 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-map field-name="bodyParameters" from="[userAccount:userAccount, newPassword:newPassword]"/>
             </service-call>
             <message>Your password was reset and emailed to: ${userAccount.emailAddress}</message>
-
-            <script>if (!alreadyDisabled) ec.artifactExecution.enableAuthz()</script>
         </actions>
     </service>
 </services>
