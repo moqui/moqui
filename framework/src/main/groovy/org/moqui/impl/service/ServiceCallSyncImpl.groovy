@@ -71,7 +71,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         Collection<String> inParameterNames = null
         if (sd != null) {
             inParameterNames = sd.getInParameterNames()
-        } else {
+        } else if (isEntityAutoPattern()) {
             EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(noun)
             if (ed != null) inParameterNames = ed.getAllFieldNames()
         }
@@ -116,6 +116,12 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         }
     }
 
+    protected boolean isEntityAutoPattern() {
+        // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
+        return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
+                sfi.getEcfi().getEntityFacade().getEntityDefinition(noun) != null
+    }
+
     Map<String, Object> callSingle(Map<String, Object> currentParameters, ServiceDefinition sd, ExecutionContextImpl eci) {
         if (eci.getMessage().hasError()) {
             logger.warn("Found error(s) before service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}")
@@ -157,9 +163,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         //     the service on the stack)
 
         if (sd == null) {
-            // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
-            if (!path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
-                    sfi.getEcfi().getEntityFacade().getEntityDefinition(noun) != null) {
+            if (isEntityAutoPattern()) {
                 Map result = runImplicitEntityAuto(currentParameters, eci)
 
                 long endTime = System.currentTimeMillis()
