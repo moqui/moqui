@@ -69,11 +69,21 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro "order-map-list">
     StupidUtilities.orderMapList(${.node["@list"]}, [<#list .node["order-by"] as ob>'${ob["@field-name"]}'<#if ob_has_next>, </#if></#list>])
 </#macro>
-<#macro "filter-map-list"><#if .node["field-map"]?has_content>
-    StupidUtilities.filterMapList(${.node["@list"]}, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from"]?has_content>${fm["@from"]}<#else/>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
-    </#if><#list .node["date-filter"] as df>
-    StupidUtilities.filterMapListByDate(${.node["@list"]}, "${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else>ec.user.nowTimestamp</#if>)
+<#macro "filter-map-list">
+    if (${.node["@list"]}) {
+    <#if .node["@to-list"]?has_content>
+        ${.node["@to-list"]} = new ArrayList(${.node["@list"]})
+        def _listToFilter = ${.node["@to-list"]}
+    <#else>
+        def _listToFilter = ${.node["@list"]}
+    </#if>
+    <#if .node["field-map"]?has_content>
+        StupidUtilities.filterMapList(_listToFilter, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from"]?has_content>${fm["@from"]}<#else>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
+    </#if>
+    <#list .node["date-filter"] as df>
+        StupidUtilities.filterMapListByDate(_listToFilter, "${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else>ec.user.nowTimestamp</#if>)
     </#list>
+    }
 </#macro>
 
 <#macro "entity-sequenced-id-primary">

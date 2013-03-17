@@ -13,11 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <entity-facade-xml type="seed">
     <!-- ========== Example/Test User ========== -->
     <!-- password=moqui -->
-    <mantle.party.party.Party partyId="EX_JOHN_DOE" partyTypeEnumId="PERSON"/>
-    <mantle.party.party.Person partyId="EX_JOHN_DOE" firstName="John" middleName="" lastName="Doe"/>
-    <!-- NOTE: Party could have an email address ContactMech, but use the UserAccount.emailAddress as the primary address or when only one is needed/desired -->
-
-    <moqui.security.UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe" partyId="EX_JOHN_DOE"
+    <moqui.security.UserAccount userId="EX_JOHN_DOE" username="john.doe" userFullName="John Doe"
             currentPassword="16ac58bbfa332c1c55bd98b53e60720bfa90d394" passwordHashType="SHA"
             passwordHint="framework name, lowercase" currencyUomId="USD" locale="en_us" timeZone="US/Central"
             emailAddress="john.doe@test.com"/>
