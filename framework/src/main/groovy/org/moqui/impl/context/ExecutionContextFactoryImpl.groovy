@@ -572,10 +572,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 ahp.requestUrl = fullUrl
                 ahp.referrerUrl = eci.web.request.getHeader("Referrer") ?: ""
             }
-            InetAddress address = InetAddress.getLocalHost();
-            if (address) {
-                ahp.serverIpAddress = address.getHostAddress()
-                ahp.serverHostName = address.getHostName()
+            try {
+                InetAddress address = InetAddress.getLocalHost()
+                if (address) {
+                    ahp.serverIpAddress = address.getHostAddress()
+                    ahp.serverHostName = address.getHostName()
+                }
+            } catch (UnknownHostException e) {
+                logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
             }
 
             // call async, let the server do it whenever
@@ -621,10 +625,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         Map<String, Object> ahb = (Map<String, Object>) [artifactType:artifactType, artifactSubType:artifactSubType,
                 artifactName:artifactName, binStartDateTime:new Timestamp(startTime), binEndDateTime:null,
                 hitCount:0, totalTimeMillis:0, minTimeMillis:Long.MAX_VALUE, maxTimeMillis:0]
-        InetAddress address = InetAddress.getLocalHost()
-        if (address) {
-            ahb.serverIpAddress = address.getHostAddress()
-            ahb.serverHostName = address.getHostName()
+        try {
+            InetAddress address = InetAddress.getLocalHost()
+            if (address) {
+                ahb.serverIpAddress = address.getHostAddress()
+                ahb.serverHostName = address.getHostName()
+            }
+        } catch (UnknownHostException e) {
+            logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
         }
         artifactHitBinByType.put(artifactType + "." + artifactSubType + ":" + artifactName, ahb)
         return ahb

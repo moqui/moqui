@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import org.moqui.BaseException
+
 import java.sql.Timestamp
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
@@ -175,10 +177,15 @@ class UserFacadeImpl implements UserFacade {
                         initialReferrer:request.getHeader("Referrer")?:"",
                         initialUserAgent:request.getHeader("User-Agent")?:"",
                         clientHostName:request.getRemoteHost(), clientUser:request.getRemoteUser()]
-                InetAddress address = InetAddress.getLocalHost();
-                if (address) {
-                    parameters.serverIpAddress = address.getHostAddress()
-                    parameters.serverHostName = address.getHostName()
+
+                try {
+                    InetAddress address = InetAddress.getLocalHost()
+                    if (address) {
+                        parameters.serverIpAddress = address.getHostAddress()
+                        parameters.serverHostName = address.getHostName()
+                    }
+                } catch (UnknownHostException e) {
+                    logger.warn("Could not get localhost address", new BaseException("Could not get localhost address", e))
                 }
 
                 // handle proxy original address, if exists
