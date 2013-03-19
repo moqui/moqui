@@ -25,6 +25,10 @@ New Features:
 - Added span with id for form-list cell display fields and classes on it
   for currency and field value Java classes (BigDecimal, Timestamp, etc)
   plus CSS to center numbers and right align currency amounts
+- Added XML Form field widget element auto-widget-service and
+  auto-widget-entity to do the same thing as auto-fields-* except that
+  they are applied to a single field for more granular control without a
+  bunch of ignores
 
 Bug Fixes:
 
@@ -65,6 +69,8 @@ Bug Fixes:
 - Fixed issues where sequenced values with a non-entity seqName threw an
   exception and increment by one didn't increment the bank, causing a
   duplicate key error from the database on insert
+- Fixed issue in Auto Screens where automatic links had wrong parameter
+  name for the entity name (had entityName, now aen)
 
 
 ===========================================================================

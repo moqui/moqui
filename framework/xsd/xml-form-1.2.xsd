@@ -16,7 +16,17 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <xs:element name="AllWidgets" abstract="true"/>
     <xs:element name="StandaloneFields" abstract="true"/>
-    
+
+    <xs:simpleType name="auto-field-type">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="edit"/>
+            <xs:enumeration value="find"/>
+            <xs:enumeration value="display"/>
+            <xs:enumeration value="find-display"/>
+            <xs:enumeration value="hidden"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <!-- ================== form ==================== -->
     <xs:element name="form-single" substitutionGroup="AllWidgets">
         <xs:annotation><xs:documentation>A single form is used to view or edit fields of a single map/hash/record/etc.</xs:documentation></xs:annotation>
@@ -101,17 +111,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="auto-fields-service">
         <xs:complexType>
             <xs:attribute name="service-name" type="xs:string" use="required"/>
-            <xs:attribute name="field-type" default="edit">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="edit"/>
-                        <xs:enumeration value="find"/>
-                        <xs:enumeration value="display"/>
-                        <xs:enumeration value="find-display"/>
-                        <xs:enumeration value="hidden"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="field-type" default="edit" type="auto-field-type"/>
             <xs:attribute name="include" default="in">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
@@ -135,17 +135,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>
-            <xs:attribute name="field-type" default="find-display">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="edit"/>
-                        <xs:enumeration value="find"/>
-                        <xs:enumeration value="display"/>
-                        <xs:enumeration value="find-display"/>
-                        <xs:enumeration value="hidden"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
+            <xs:attribute name="field-type" default="find-display" type="auto-field-type"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="field-layout">
@@ -418,6 +408,20 @@ This Work includes contributions authored by David E. Jones, not as a
     -->
 
   <!-- ================== Field Sub-Elements ==================== -->
+    <xs:element name="auto-widget-service" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="service-name" type="xs:string" use="required"/>
+            <xs:attribute name="parameter-name" type="xs:string"/>
+            <xs:attribute name="field-type" default="edit" type="auto-field-type"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="auto-widget-entity" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="entity-name" type="xs:string" use="required"/>
+            <xs:attribute name="field-name" type="xs:string"/>
+            <xs:attribute name="field-type" default="find-display" type="auto-field-type"/>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="check" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:choice minOccurs="0" maxOccurs="unbounded">

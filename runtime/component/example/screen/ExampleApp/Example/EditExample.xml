@@ -140,6 +140,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     </field>
                     <field name="exampleTypeEnumId">
                         <default-field title="Type" tooltip="This is the type of example">
+                            <auto-widget-entity entity-name="Example" field-type="edit"/>
+                            <!-- the auto-widget-entity element will basically produce this:
                             <drop-down allow-empty="false">
                                 <entity-options text="${description}">
                                     <entity-find entity-name="moqui.basic.Enumeration">
@@ -147,11 +149,11 @@ This Work includes contributions authored by David E. Jones, not as a
                                         <order-by field-name="description"/>
                                     </entity-find>
                                 </entity-options>
-                            </drop-down>
+                            </drop-down> -->
                         </default-field>
                     </field>
                     <field name="statusId">
-                        <default-field title="Status" tooltip="The status of the example">
+                        <default-field title="Status" tooltip="This is the status of the example">
                             <drop-down allow-empty="false" current-description="${currentStatus?.description}">
                                 <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                                     <entity-find entity-name="StatusValidChangeToDetail">

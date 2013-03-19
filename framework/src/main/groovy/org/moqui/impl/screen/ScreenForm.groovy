@@ -100,7 +100,9 @@ class ScreenForm {
 
         for (Node formSubNode in baseFormNode.children()) {
             if (formSubNode.name() == "field") {
-                mergeFieldNode(newFormNode, StupidUtilities.deepCopyNode(formSubNode), false)
+                Node nodeCopy = StupidUtilities.deepCopyNode(formSubNode)
+                expandFieldNode(newFormNode, nodeCopy)
+                mergeFieldNode(newFormNode, nodeCopy, false)
             } else if (formSubNode.name() == "auto-fields-service") {
                 String serviceName = formSubNode."@service-name"
                 if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
@@ -401,40 +403,22 @@ class ScreenForm {
         return null
     }
 
-    void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode,
-                          ExecutionContextFactoryImpl ecfi) {
-        String serviceVerb = sd.verb
-        //String serviceType = sd.serviceNode."@type"
-        EntityDefinition nounEd = null
-        try {
-            nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
-        } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
+    void addAutoServiceField(ServiceDefinition sd, EntityDefinition nounEd, Node parameterNode, String fieldType,
+                             String serviceVerb, Node newFieldNode, Node subFieldNode, Node baseFormNode) {
+        // if the parameter corresponds to an entity field, we can do better with that
+        EntityDefinition fieldEd = nounEd
+        if (parameterNode."@entity-name") fieldEd = ecfi.entityFacade.getEntityDefinition(parameterNode."@entity-name")
+        String fieldName = parameterNode."@field-name" ?: parameterNode."@name"
+        if (fieldEd != null && fieldEd.getFieldNode(fieldName) != null) {
+            addAutoEntityField(fieldEd, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
+            return
+        }
 
-        List<Node> parameterNodes = []
-        if (include == "in" || include == "all") parameterNodes.addAll(sd.serviceNode."in-parameters"[0]."parameter")
-        if (include == "out" || include == "all") parameterNodes.addAll(sd.serviceNode."out-parameters"[0]."parameter")
+        // otherwise use the old approach and do what we can with the service def
+        String spType = parameterNode."@type" ?: "String"
+        String efType = fieldEd != null ? fieldEd.getFieldNode(parameterNode."@name")?."@type" : null
 
-        for (Node parameterNode in parameterNodes) {
-            // if the parameter corresponds to an entity field, we can do better with that
-            EntityDefinition fieldEd = nounEd
-            if (parameterNode."@entity-name") fieldEd = ecfi.entityFacade.getEntityDefinition(parameterNode."@entity-name")
-            String fieldName = parameterNode."@field-name" ?: parameterNode."@name"
-            if (fieldEd != null && fieldEd.getFieldNode(fieldName) != null) {
-                Node newFieldNode = new Node(null, "field", [name:fieldName])
-                Node subFieldNode = newFieldNode.appendNode("default-field")
-                addAutoEntityField(fieldEd, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
-                mergeFieldNode(baseFormNode, newFieldNode, false)
-                continue
-            }
-
-            // otherwise use the old approach and do what we can with the service def
-            String spType = parameterNode."@type" ?: "String"
-            String efType = fieldEd != null ? fieldEd.getFieldNode(parameterNode."@name")?."@type" : null
-
-            Node newFieldNode = new Node(null, "field", [name:parameterNode."@name",
-                    "validate-service":sd.serviceName, "validate-parameter":parameterNode."@name"])
-            Node subFieldNode = newFieldNode.appendNode("default-field")
-            switch (fieldType) {
+        switch (fieldType) {
             case "edit":
                 // lastUpdatedStamp is always hidden for edit (needed for optimistic lock)
                 if (parameterNode."@name" == "lastUpdatedStamp") {
@@ -498,7 +482,26 @@ class ScreenForm {
             case "hidden":
                 subFieldNode.appendNode("hidden")
                 break
-            }
+        }
+    }
+    void addServiceFields(ServiceDefinition sd, String include, String fieldType, Node baseFormNode,
+                          ExecutionContextFactoryImpl ecfi) {
+        String serviceVerb = sd.verb
+        //String serviceType = sd.serviceNode."@type"
+        EntityDefinition nounEd = null
+        try {
+            nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
+        } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
+
+        List<Node> parameterNodes = []
+        if (include == "in" || include == "all") parameterNodes.addAll(sd.serviceNode."in-parameters"[0]."parameter")
+        if (include == "out" || include == "all") parameterNodes.addAll(sd.serviceNode."out-parameters"[0]."parameter")
+
+        for (Node parameterNode in parameterNodes) {
+            Node newFieldNode = new Node(null, "field", [name:parameterNode."@name",
+                    "validate-service":sd.serviceName, "validate-parameter":parameterNode."@name"])
+            Node subFieldNode = newFieldNode.appendNode("default-field")
+            addAutoServiceField(sd, nounEd, parameterNode, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
             mergeFieldNode(baseFormNode, newFieldNode, false)
         }
     }
@@ -643,7 +646,7 @@ class ScreenForm {
             if (internalFormNode."@name" == "UpdateMasterEntityValue") {
                 Node linkNode = subFieldNode.appendNode("link",
                         ["url":"edit", "text":"Edit ${relatedEd.getPrettyName(null, null)} [\${fieldValues." + keyField + "}]"])
-                linkNode.appendNode("parameter", [name:"entityName", value:relatedEntityName])
+                linkNode.appendNode("parameter", [name:"aen", value:relatedEntityName])
                 linkNode.appendNode("parameter", [name:relKeyField, from:"fieldValues.${keyField}"])
             }
         }
@@ -675,6 +678,66 @@ class ScreenForm {
             }
             for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.append(StupidUtilities.deepCopyNode(flcNode))
         }
+    }
+
+    protected void expandFieldNode(Node baseFormNode, Node fieldNode) {
+        if (fieldNode."header-field") expandFieldSubNode(baseFormNode, fieldNode, (Node) fieldNode."header-field"[0])
+        for (Node conditionalFieldNode in fieldNode."conditional-field") expandFieldSubNode(baseFormNode, fieldNode, conditionalFieldNode)
+        if (fieldNode."default-field") expandFieldSubNode(baseFormNode, fieldNode, (Node) fieldNode."default-field"[0])
+    }
+
+    protected void expandFieldSubNode(Node baseFormNode, Node fieldNode, Node fieldSubNode) {
+        Node widgetNode = fieldSubNode.children() ? (Node) fieldSubNode.children().first() : null
+        if (widgetNode == null) return
+        if (widgetNode.name() == "auto-widget-service") {
+            fieldSubNode.remove(widgetNode)
+            addAutoWidgetServiceNode(baseFormNode, fieldNode, fieldSubNode, widgetNode)
+        } else if (widgetNode.name() == "auto-widget-entity") {
+            fieldSubNode.remove(widgetNode)
+            addAutoWidgetEntityNode(baseFormNode, fieldNode, fieldSubNode, widgetNode)
+        }
+    }
+
+    protected Node addAutoWidgetServiceNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node formSubNode) {
+        String serviceName = formSubNode."@service-name"
+        if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
+        ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
+        if (serviceDef != null) {
+            addAutoServiceField(serviceDef, (String) formSubNode."@parameter-name"?:fieldNode."@name",
+                    formSubNode."@field-type"?:"edit", fieldNode, fieldSubNode, baseFormNode)
+            return
+        }
+        if (serviceName.contains("#")) {
+            EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
+            if (ed != null) {
+                addAutoEntityField(ed, (String) formSubNode."@parameter-name"?:fieldNode."@name", formSubNode."@field-type"?:"edit",
+                        serviceName.substring(0, serviceName.indexOf("#")), fieldNode, fieldSubNode, baseFormNode)
+                return
+            }
+        }
+        throw new IllegalArgumentException("Cound not find service [${serviceName}] or entity noun referred to in auto-fields-service of form [${newFormNode."@name"}] of screen [${sd.location}]")
+
+    }
+    void addAutoServiceField(ServiceDefinition sd, String parameterName, String fieldType,
+                             Node newFieldNode, Node subFieldNode, Node baseFormNode) {
+        EntityDefinition nounEd = null
+        try {
+            nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
+        } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
+        Node parameterNode = sd.serviceNode."in-parameters"[0].find({ it."@name" == parameterName })
+
+        if (parameterNode == null) throw new IllegalArgumentException("Cound not find parameter [${parameterName}] in service [${sd.serviceName}] referred to in auto-widget-service of form [${baseFormNode."@name"}] of screen [${sd.location}]")
+        addAutoServiceField(sd, nounEd, parameterNode, fieldType, sd.verb, newFieldNode, subFieldNode, baseFormNode)
+    }
+
+    protected void addAutoWidgetEntityNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node formSubNode) {
+        String entityName = formSubNode."@entity-name"
+        if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
+        EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
+        if (ed == null) throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-widget-entity of form [${baseFormNode."@name"}] of screen [${sd.location}]")
+        addAutoEntityField(ed, (String) formSubNode."@field-name"?:fieldNode."@name", formSubNode."@field-type"?:"find-display",
+                null, fieldNode, fieldSubNode, baseFormNode)
+
     }
 
     protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode, boolean deepCopy) {
