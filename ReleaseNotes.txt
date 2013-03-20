@@ -29,6 +29,8 @@ New Features:
   auto-widget-entity to do the same thing as auto-fields-* except that
   they are applied to a single field for more granular control without a
   bunch of ignores
+- Added dynamic-dialog element to XML Screens; like the container-dialog
+  element but loads the dialog contents from the server when opened
 
 Bug Fixes:
 

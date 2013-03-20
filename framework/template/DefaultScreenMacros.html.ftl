@@ -197,6 +197,20 @@ This Work includes contributions authored by David E. Jones, not as a
     </div>
 </#macro>
 
+<#macro "dynamic-dialog">
+    <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
+    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
+<button id="${.node["@id"]}-button" iconcls="ui-icon-newwin">${buttonText}</button>
+<script>
+    $(function() {
+        $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
+            modal:true, open: function() { $(this).load('${urlInfo.urlWithParams}') } });
+        $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
+    });
+</script>
+<div id="${.node["@id"]}" title="${buttonText}"></div>
+</#macro>
+
 <#-- ==================== Includes ==================== -->
 <#macro "include-screen">
 <#if sri.doBoundaryComments()><!-- BEGIN include-screen[@location=${.node["@location"]}][@share-scope=${.node["@share-scope"]?if_exists}] --></#if>

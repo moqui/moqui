@@ -619,16 +619,28 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="container-dialog" substitutionGroup="AllWidgets">
-        <xs:annotation><xs:documentation>
-            The contents start out hidden with only a button with the button-text on it. When the button is clicked on
-            a dialog opens to show the contents.
-        </xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>The contents start out hidden with only a button with the button-text on it.
+            When the button is clicked on a dialog opens to show the contents.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
             <xs:attribute name="id" type="xs:string" use="required"/>
             <xs:attribute name="button-text" type="xs:string" use="required"/>
             <xs:attribute name="width" type="xs:string" default="600"/>
             <xs:attribute name="height" type="xs:string" default="600"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="dynamic-dialog" substitutionGroup="AllWidgets">
+        <xs:annotation><xs:documentation>When the button is pressed the dialog contents are loaded from the server at
+            the given transition.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/></xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="button-text" type="xs:string" use="required"/>
+            <xs:attribute name="width" type="xs:string" default="600"/>
+            <xs:attribute name="height" type="xs:string" default="600"/>
+            <xs:attribute name="transition" type="xs:string" use="required"/>
+            <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter
+                names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
 
