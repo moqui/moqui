@@ -629,7 +629,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="height" type="xs:string" default="600"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="dynamic-dialog" substitutionGroup="AllWidgets">
+    <xs:element name="dynamic-dialog" substitutionGroup="StandaloneFields">
         <xs:annotation><xs:documentation>When the button is pressed the dialog contents are loaded from the server at
             the given transition.</xs:documentation></xs:annotation>
         <xs:complexType>

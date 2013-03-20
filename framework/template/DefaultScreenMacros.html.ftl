@@ -200,15 +200,15 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-<button id="${.node["@id"]}-button" iconcls="ui-icon-newwin">${buttonText}</button>
+<button id="${.node["@id"]}-button<#if listEntryIndex?has_content>-${listEntryIndex}</#if>" iconcls="ui-icon-newwin">${buttonText}</button>
 <script>
     $(function() {
-        $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
+        $("#${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
             modal:true, open: function() { $(this).load('${urlInfo.urlWithParams}') } });
-        $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
+        $("#${.node["@id"]}-button<#if listEntryIndex?has_content>-${listEntryIndex}</#if>").click(function() { $("#${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>").dialog("open"); return false; });
     });
 </script>
-<div id="${.node["@id"]}" title="${buttonText}"></div>
+<div id="${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>" title="${buttonText}"></div>
 </#macro>
 
 <#-- ==================== Includes ==================== -->
