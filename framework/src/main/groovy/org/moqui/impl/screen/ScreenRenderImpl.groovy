@@ -515,16 +515,6 @@ class ScreenRenderImpl implements ScreenRender {
                 Iterator<ScreenDefinition> screenDefIterator = screenUrlInfo.screenPathDefList.iterator()
                 recursiveRunActions(screenDefIterator, true, false)
             }
-            // run pre-actions for just the screens that will be rendered
-            boolean hasPreActions = false
-            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) if (sd.preActions != null) { hasPreActions = true; break }
-            if (hasPreActions) {
-                Iterator<ScreenDefinition> screenDefIterator = screenUrlInfo.screenRenderDefList.iterator()
-                recursiveRunActions(screenDefIterator, false, true)
-            }
-
-            // if dontDoRender then quit now; this should be set during always-actions or pre-actions
-            if (dontDoRender) return
 
             if (response != null) {
                 response.setContentType(this.outputContentType)
@@ -542,6 +532,21 @@ class ScreenRenderImpl implements ScreenRender {
                     ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
                     screensPushed++
                 }
+            }
+
+            // run pre-actions for just the screens that will be rendered
+            boolean hasPreActions = false
+            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) if (sd.preActions != null) { hasPreActions = true; break }
+            if (hasPreActions) {
+                Iterator<ScreenDefinition> screenDefIterator = screenUrlInfo.screenRenderDefList.iterator()
+                recursiveRunActions(screenDefIterator, false, true)
+            }
+
+            // if dontDoRender then quit now; this should be set during always-actions or pre-actions
+            if (dontDoRender) {
+                // pop all screens, then good to go
+                for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
+                return
             }
 
             // start rendering at the root section of the root screen

@@ -73,7 +73,9 @@ Bug Fixes:
   duplicate key error from the database on insert
 - Fixed issue in Auto Screens where automatic links had wrong parameter
   name for the entity name (had entityName, now aen)
-
+- Fixed issue where if a standalone screen (or with lastStandalone set) has
+  pre-actions the screens before it were not pushed to get authz setup;
+  this resolved sourceforge Bug #30
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
