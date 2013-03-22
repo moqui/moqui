@@ -31,6 +31,9 @@ New Features:
   bunch of ignores
 - Added dynamic-dialog element to XML Screens; like the container-dialog
   element but loads the dialog contents from the server when opened
+- Added form-list.@paginate-always-show attribute, defaults to true; set
+  to false to hide pagination control and row count when there is only
+  one page of rows to display; SourceForge feature request #8
 
 Bug Fixes:
 
