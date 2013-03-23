@@ -53,10 +53,12 @@ public class L10nFacadeImpl implements L10nFacade {
     /** @see org.moqui.context.L10nFacade#formatCurrency(Object, String, int) */
     String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
         if (amount == null) return ""
-        if (amount instanceof String) if (((String) amount).length() == 0) {
-            return ""
-        } else {
-            amount = new BigDecimal((String) amount)
+        if (amount instanceof String) {
+            if (((String) amount).length() == 0) {
+                return ""
+            } else {
+                amount = parseNumber((String) amount, null)
+            }
         }
 
         if (fractionDigits == null) fractionDigits = 2

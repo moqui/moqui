@@ -78,7 +78,14 @@ Bug Fixes:
   name for the entity name (had entityName, now aen)
 - Fixed issue where if a standalone screen (or with lastStandalone set) has
   pre-actions the screens before it were not pushed to get authz setup;
-  this resolved sourceforge Bug #30
+  SourceForge Bug #30
+- Fixed issue with display.@currency-unit-field attribute with numbers
+  larger than 1000 because it used the BigDecimal String constructor to
+  parse a String formatted with a comma thousands separator; the
+  L10nFacade.formatCurrency() method now uses a proper locale-aware number
+  parser to parse numbers, and the display FTL macro has been updated to
+  use the field value object directly instead of changing it to a String
+  and then parsing it back to format as currency; SourceForge Bug #31
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
