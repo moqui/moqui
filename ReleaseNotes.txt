@@ -86,6 +86,9 @@ Bug Fixes:
   parser to parse numbers, and the display FTL macro has been updated to
   use the field value object directly instead of changing it to a String
   and then parsing it back to format as currency; SourceForge Bug #31
+- Fixed issue with two back-to-back form-list using skip-end on the first
+  and skip-start on the second; now rows are simply appended as would be
+  expected instead of multiple form-list-outer/etc elements
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
