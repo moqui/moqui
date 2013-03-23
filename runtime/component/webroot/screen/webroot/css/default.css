@@ -137,6 +137,7 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 .form-row { display: table-row; background-color: #FFF; vertical-align: middle; }
 .form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; vertical-align: middle; }
 .form-cell span { display: block; }
+.form-cell input, .form-cell span input  { font-size: 0.9em; }
 .form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 .form-row:nth-child(odd) { background-color: #EEE; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
@@ -148,7 +149,8 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 .form-header-field { white-space: nowrap; }
 .form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
 
-.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; }
+.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .9em; }
+.form-date-time { white-space: nowrap; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
