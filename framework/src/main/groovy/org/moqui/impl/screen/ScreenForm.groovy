@@ -95,7 +95,7 @@ class ScreenForm {
                 esf = sd.getForm(extendsForm)
             }
             if (esf == null) throw new IllegalArgumentException("Cound not find extends form [${extendsForm}] referred to in form [${newFormNode."@name"}] of screen [${sd.location}]")
-            mergeFormNodes(newFormNode, esf.formNode, true)
+            mergeFormNodes(newFormNode, esf.formNode, true, true)
         }
 
         for (Node formSubNode in baseFormNode.children()) {
@@ -132,7 +132,7 @@ class ScreenForm {
         }
 
         // merge original formNode to override any applicable settings
-        mergeFormNodes(newFormNode, baseFormNode, false)
+        mergeFormNodes(newFormNode, baseFormNode, false, false)
 
         // populate validate-service and validate-parameter attributes if the target transition calls a single service
         if (newFormNode."@transition") {
@@ -323,16 +323,16 @@ class ScreenForm {
             Node newFormNode = new Node(null, internalFormNode.name())
             initForm(internalFormNode, newFormNode)
             if (dbFormNodeList) {
-                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false)
+                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false, true)
             }
             return newFormNode
         } else {
             if (dbFormNodeList) {
                 Node newFormNode = new Node(null, internalFormNode.name(), [:])
                 // deep copy true to avoid bleed over of new fields and such
-                mergeFormNodes(newFormNode, internalFormNode, true)
+                mergeFormNodes(newFormNode, internalFormNode, true, true)
                 // logger.warn("TOREMOVE: merging in dbFormNodeList: ${dbFormNodeList}", new BaseException("getFormNode call location"))
-                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false)
+                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false, true)
                 return newFormNode
             } else {
                 return internalFormNode
@@ -553,7 +553,8 @@ class ScreenForm {
             if (pkFieldNameSet.contains(fieldName) && serviceVerb == "update") {
                 subFieldNode.appendNode("hidden")
             } else {
-                if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
+                if (baseFormNode.name() == "form-list" && !newFieldNode."header-field")
+                    newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
                 if (efType.startsWith("date") || efType.startsWith("time")) {
                     Node dateTimeNode = subFieldNode.appendNode("date-time", [type:efType])
                     if (fieldName == "fromDate") dateTimeNode.attributes().put("default-value", "\${ec.user.nowTimestamp}")
@@ -603,7 +604,8 @@ class ScreenForm {
             }
             break
         case "find":
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
+            if (baseFormNode.name() == "form-list" && !newFieldNode."header-field")
+                newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             if (efType.startsWith("date") || efType.startsWith("time")) {
                 subFieldNode.appendNode("date-find", [type:efType])
             } else if (efType.startsWith("number-") || efType.startsWith("currency-")) {
@@ -613,13 +615,15 @@ class ScreenForm {
             }
             break
         case "display":
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
+            if (baseFormNode.name() == "form-list" && !newFieldNode."header-field")
+                newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             if (oneRelNode != null) subFieldNode.appendNode("display-entity",
                     ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
             else subFieldNode.appendNode("display")
             break
         case "find-display":
-            if (baseFormNode.name() == "form-list") newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
+            if (baseFormNode.name() == "form-list" && !newFieldNode."header-field")
+                newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
             Node headerFieldNode = newFieldNode."header-field" ?
                 newFieldNode."header-field"[0] : newFieldNode.appendNode("header-field")
             if (efType.startsWith("date") || efType.startsWith("time")) {
@@ -652,34 +656,6 @@ class ScreenForm {
         }
     }
 
-    protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode, boolean deepCopy) {
-        if (overrideFormNode.attributes()) baseFormNode.attributes().putAll(overrideFormNode.attributes())
-
-        // if overrideFormNode has any row-actions add them all to the ones of the baseFormNode, ie both will run
-        if (overrideFormNode."row-actions") {
-            if (!baseFormNode."row-actions") baseFormNode.appendNode("row-actions")
-            Node baseRowActionsNode = baseFormNode."row-actions"[0]
-            for (Node actionNode in overrideFormNode."row-actions") baseRowActionsNode.append(actionNode)
-        }
-
-        for (Node overrideFieldNode in overrideFormNode."field") {
-            mergeFieldNode(baseFormNode, overrideFieldNode, deepCopy)
-        }
-
-        if (overrideFormNode."field-layout") {
-            // just use entire override field-layout, don't try to merge
-            if (baseFormNode."field-layout") baseFormNode.remove(baseFormNode."field-layout"[0])
-            baseFormNode.append(StupidUtilities.deepCopyNode(overrideFormNode."field-layout"[0]))
-        }
-        if (overrideFormNode."form-list-column") {
-            // if there are any form-list-column remove all from base and copy all from override
-            if (baseFormNode."form-list-column") {
-                for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.remove(flcNode)
-            }
-            for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.append(StupidUtilities.deepCopyNode(flcNode))
-        }
-    }
-
     protected void expandFieldNode(Node baseFormNode, Node fieldNode) {
         if (fieldNode."header-field") expandFieldSubNode(baseFormNode, fieldNode, (Node) fieldNode."header-field"[0])
         for (Node conditionalFieldNode in fieldNode."conditional-field") expandFieldSubNode(baseFormNode, fieldNode, conditionalFieldNode)
@@ -698,19 +674,19 @@ class ScreenForm {
         }
     }
 
-    protected Node addAutoWidgetServiceNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node formSubNode) {
-        String serviceName = formSubNode."@service-name"
+    protected Node addAutoWidgetServiceNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node widgetNode) {
+        String serviceName = widgetNode."@service-name"
         if (isDynamic) serviceName = ecfi.resourceFacade.evaluateStringExpand(serviceName, "")
         ServiceDefinition serviceDef = ecfi.serviceFacade.getServiceDefinition(serviceName)
         if (serviceDef != null) {
-            addAutoServiceField(serviceDef, (String) formSubNode."@parameter-name"?:fieldNode."@name",
-                    formSubNode."@field-type"?:"edit", fieldNode, fieldSubNode, baseFormNode)
+            addAutoServiceField(serviceDef, (String) widgetNode."@parameter-name"?:fieldNode."@name",
+                    widgetNode."@field-type"?:"edit", fieldNode, fieldSubNode, baseFormNode)
             return
         }
         if (serviceName.contains("#")) {
             EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
             if (ed != null) {
-                addAutoEntityField(ed, (String) formSubNode."@parameter-name"?:fieldNode."@name", formSubNode."@field-type"?:"edit",
+                addAutoEntityField(ed, (String) widgetNode."@parameter-name"?:fieldNode."@name", widgetNode."@field-type"?:"edit",
                         serviceName.substring(0, serviceName.indexOf("#")), fieldNode, fieldSubNode, baseFormNode)
                 return
             }
@@ -721,23 +697,54 @@ class ScreenForm {
     void addAutoServiceField(ServiceDefinition sd, String parameterName, String fieldType,
                              Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         EntityDefinition nounEd = null
-        try {
-            nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
-        } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
+        try { nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun) }
+        catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
         Node parameterNode = sd.serviceNode."in-parameters"[0].find({ it."@name" == parameterName })
 
         if (parameterNode == null) throw new IllegalArgumentException("Cound not find parameter [${parameterName}] in service [${sd.serviceName}] referred to in auto-widget-service of form [${baseFormNode."@name"}] of screen [${sd.location}]")
         addAutoServiceField(sd, nounEd, parameterNode, fieldType, sd.verb, newFieldNode, subFieldNode, baseFormNode)
     }
 
-    protected void addAutoWidgetEntityNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node formSubNode) {
-        String entityName = formSubNode."@entity-name"
+    protected void addAutoWidgetEntityNode(Node baseFormNode, Node fieldNode, Node fieldSubNode, Node widgetNode) {
+        String entityName = widgetNode."@entity-name"
         if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
-        EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(entityName)
+        EntityDefinition ed = null
+        try { ed = ecfi.entityFacade.getEntityDefinition(entityName) }
+        catch (EntityException e) { /* ignore so we can throw better exception below */ }
         if (ed == null) throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-widget-entity of form [${baseFormNode."@name"}] of screen [${sd.location}]")
-        addAutoEntityField(ed, (String) formSubNode."@field-name"?:fieldNode."@name", formSubNode."@field-type"?:"find-display",
+        addAutoEntityField(ed, (String) widgetNode."@field-name"?:fieldNode."@name", widgetNode."@field-type"?:"find-display",
                 null, fieldNode, fieldSubNode, baseFormNode)
 
+    }
+
+    protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode, boolean deepCopy, boolean copyFields) {
+        if (overrideFormNode.attributes()) baseFormNode.attributes().putAll(overrideFormNode.attributes())
+
+        // if overrideFormNode has any row-actions add them all to the ones of the baseFormNode, ie both will run
+        if (overrideFormNode."row-actions") {
+            if (!baseFormNode."row-actions") baseFormNode.appendNode("row-actions")
+            Node baseRowActionsNode = baseFormNode."row-actions"[0]
+            for (Node actionNode in overrideFormNode."row-actions") baseRowActionsNode.append(actionNode)
+        }
+
+        if (copyFields) {
+            for (Node overrideFieldNode in overrideFormNode."field") {
+                mergeFieldNode(baseFormNode, overrideFieldNode, deepCopy)
+            }
+        }
+
+        if (overrideFormNode."field-layout") {
+            // just use entire override field-layout, don't try to merge
+            if (baseFormNode."field-layout") baseFormNode.remove(baseFormNode."field-layout"[0])
+            baseFormNode.append(StupidUtilities.deepCopyNode(overrideFormNode."field-layout"[0]))
+        }
+        if (overrideFormNode."form-list-column") {
+            // if there are any form-list-column remove all from base and copy all from override
+            if (baseFormNode."form-list-column") {
+                for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.remove(flcNode)
+            }
+            for (Node flcNode in overrideFormNode."form-list-column") baseFormNode.append(StupidUtilities.deepCopyNode(flcNode))
+        }
     }
 
     protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode, boolean deepCopy) {
@@ -747,7 +754,7 @@ class ScreenForm {
 
             if (overrideFieldNode."header-field") {
                 if (baseFieldNode."header-field") baseFieldNode.remove(baseFieldNode."header-field"[0])
-                baseFieldNode.append(overrideFieldNode."header-field"[0])
+                baseFieldNode.append((Node) overrideFieldNode."header-field"[0])
             }
             for (Node overrideConditionalFieldNode in overrideFieldNode."conditional-field") {
                 Node baseConditionalFieldNode = (Node) baseFieldNode."conditional-field"
@@ -757,7 +764,7 @@ class ScreenForm {
             }
             if (overrideFieldNode."default-field") {
                 if (baseFieldNode."default-field") baseFieldNode.remove(baseFieldNode."default-field"[0])
-                baseFieldNode.append(overrideFieldNode."default-field"[0])
+                baseFieldNode.append((Node) overrideFieldNode."default-field"[0])
             }
         } else {
             baseFormNode.append(deepCopy ? StupidUtilities.deepCopyNode(overrideFieldNode) : overrideFieldNode)
