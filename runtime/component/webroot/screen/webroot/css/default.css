@@ -137,7 +137,7 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 .form-row { display: table-row; background-color: #FFF; vertical-align: middle; }
 .form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; vertical-align: middle; }
 .form-cell span { display: block; }
-.form-cell input, .form-cell span input  { font-size: 0.9em; }
+.form-cell input, .form-cell span input, .form-cell select, .form-cell span select { font-size: 0.9em; }
 .form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 .form-row:nth-child(odd) { background-color: #EEE; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
