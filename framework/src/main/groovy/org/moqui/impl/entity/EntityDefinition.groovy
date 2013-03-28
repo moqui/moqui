@@ -801,7 +801,7 @@ public class EntityDefinition {
         }
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
-            if (econdition."@value") {
+            if (econdition."@value" != null) {
                 ConditionField field
                 if (econdition."@entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
@@ -812,8 +812,10 @@ public class EntityDefinition {
                     field = new ConditionField(econdition."@field-name")
                 }
                 // NOTE: may need to convert value from String to object for field
+                String condValue = econdition."@value" ?: null
+                if (condValue) condValue = efi.getEcfi().getResourceFacade().evaluateStringExpand(condValue, "")
                 cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
-                        EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), econdition."@value")
+                        EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), condValue)
             } else {
                 ConditionField field
                 if (econdition."@entity-alias") {

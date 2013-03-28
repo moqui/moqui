@@ -20,9 +20,7 @@ class ConditionField {
     EntityDefinition aliasEntityDef = null
     String aliasEntityName = null
 
-    ConditionField(String fieldName) {
-        this.fieldName = fieldName.intern()
-    }
+    ConditionField(String fieldName) { this.fieldName = fieldName?.intern() }
     ConditionField(String entityAlias, String fieldName, EntityDefinition aliasEntityDef) {
         this.entityAlias = entityAlias.intern()
         this.fieldName = fieldName.intern()
