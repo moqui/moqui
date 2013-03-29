@@ -847,7 +847,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#else>
         <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, "", .node["@format"]?if_exists)>
     </#if>
-    <#t><span id="<@fieldId .node/>" class="${sri.getFieldValueClass(.node?parent?parent)}<#if .node["@currency-unit-field"]?has_content> currency</#if>"><#if .node["@encode"]!"true" == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
+    <#t><span id="<@fieldId .node/>" class="${sri.getFieldValueClass(.node?parent?parent)}<#if .node["@currency-unit-field"]?has_content> currency</#if>"><#if .node["@encode"]?if_exists == "false">${fieldValue!"&nbsp;"}<#else>${(fieldValue!" ")?html?replace("\n", "<br>")}</#if></span>
     <#t><#if !.node["@also-hidden"]?has_content || .node["@also-hidden"] == "true">
         <#-- use getFieldValuePlainString() and not getFieldValueString() so we don't do timezone conversions, etc -->
         <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, fieldValue!"")?html}">
