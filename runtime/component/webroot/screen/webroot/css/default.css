@@ -117,7 +117,7 @@ padding: 4px; width: 95%;
 }
 
 .single-form-field { padding-right: 10px; }
-.single-form-field span { font-size: 1em; }
+.single-form-field span { font-size: 1em; display: inline-block; }
 .single-form-field span input { margin-right: 4px; }
 label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
 
