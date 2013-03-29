@@ -797,7 +797,8 @@ public class EntityDefinition {
         for (Node dateFilter in conditionsParent."date-filter") {
             // NOTE: this doesn't do context expansion of the valid-date as it doesn't make sense for an entity def to depend on something being in the context
             condList.add((EntityConditionImplBase) this.efi.conditionFactory.makeConditionDate(
-                dateFilter."@from-field-name", dateFilter."@thru-field-name", dateFilter."@valid-date" as Timestamp))
+                    (String) dateFilter."@from-field-name", (String) dateFilter."@thru-field-name",
+                    dateFilter."@valid-date" ? efi.getEcfi().getResourceFacade().evaluateStringExpand(dateFilter."@valid-date") as Timestamp : null))
         }
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
@@ -845,11 +846,12 @@ public class EntityDefinition {
             EntityConditionImplBase cond = this.makeViewListCondition(econditions)
             if (cond) condList.add(cond)
         }
-        //logger.info("TOREMOVE In makeViewListCondition for entity [${entityName}] resulting condList: ${condList}")
         if (!condList) return null
-        if (condList.size() == 1) return condList.get(0)
+        if (condList.size() == 1) return (EntityConditionImplBase) condList.get(0)
         JoinOperator op = (conditionsParent."@combine" == "or" ? JoinOperator.OR : JoinOperator.AND)
-        return (EntityConditionImplBase) this.efi.conditionFactory.makeCondition((List<EntityCondition>) condList, op)
+        EntityConditionImplBase entityCondition = (EntityConditionImplBase) this.efi.conditionFactory.makeCondition((List<EntityCondition>) condList, op)
+        // logger.info("============== In makeViewListCondition for entity [${entityName}] resulting entityCondition: ${entityCondition}")
+        return entityCondition
     }
 
     EntityConditionImplBase makeViewHavingCondition() {

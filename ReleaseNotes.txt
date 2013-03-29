@@ -89,6 +89,8 @@ Bug Fixes:
 - Fixed issue with two back-to-back form-list using skip-end on the first
   and skip-start on the second; now rows are simply appended as would be
   expected instead of multiple form-list-outer/etc elements
+- Fixed issue where view-entity.entity-condition.date-filter did not work
+  with an empty @valid-date attribute
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012

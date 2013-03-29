@@ -78,7 +78,8 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     /** @see org.moqui.entity.EntityConditionFactory#makeConditionDate(String, String, Timestamp) */
     EntityCondition makeConditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp) {
-        return new DateCondition(this, fromFieldName, thruFieldName, compareStamp)
+        return new DateCondition(this, fromFieldName, thruFieldName,
+                compareStamp ?: efi.getEcfi().getExecutionContext().getUser().getNowTimestamp())
     }
 
     /** @see org.moqui.entity.EntityConditionFactory#makeConditionWhere(String) */
