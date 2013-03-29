@@ -839,6 +839,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#if .node["@currency-unit-field"]?has_content>
+            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+        </#if>
     <#elseif .node["@currency-unit-field"]?has_content>
         <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
     <#else>
