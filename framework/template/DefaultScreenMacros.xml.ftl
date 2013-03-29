@@ -185,13 +185,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+        <#if .node["@currency-unit-field"]?has_content>
+            <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
+        </#if>
+    <#elseif .node["@currency-unit-field"]?has_content>
+        <#assign fieldValue = ec.l10n.formatCurrency(sri.getFieldValue(.node?parent?parent, ""), ec.resource.evaluateContextField(.node["@currency-unit-field"], ""), 2)>
     <#else>
-        <#assign fieldValue = sri.getFieldValue(.node?parent?parent, "")>
-    </#if>
-    <#if .node["@currency-unit-field"]?has_content>
-        <#assign fieldValue = ec.l10n.formatCurrency(fieldValue, .node["@currency-unit-field"], 2)>
-    <#else>
-        <#assign fieldValue = ec.l10n.formatValue(fieldValue, .node["@format"]?if_exists)>
+        <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, "", .node["@format"]?if_exists)>
     </#if>
     <#t><@attributeValue fieldValue/>
 </#macro>
