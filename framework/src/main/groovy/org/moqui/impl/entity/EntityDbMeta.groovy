@@ -240,7 +240,10 @@ class EntityDbMeta {
         // first do index elements
         for (Node indexNode in ed.entityNode."index") {
             StringBuilder sql = new StringBuilder("CREATE ")
-            if (databaseNode."@use-indexes-unique" != "false" && indexNode."@unique" == "true") sql.append("UNIQUE ")
+            if (databaseNode."@use-indexes-unique" != "false" && indexNode."@unique" == "true") {
+                sql.append("UNIQUE ")
+                if (databaseNode."@use-indexes-unique-where-not-null" == "true") sql.append("WHERE NOT NULL ")
+            }
             sql.append("INDEX ")
             if (databaseNode."@use-schema-for-all" == "true") sql.append(ed.getSchemaName() ? ed.getSchemaName() + "." : "")
             sql.append(indexNode."@name").append(" ON ").append(ed.getFullTableName())

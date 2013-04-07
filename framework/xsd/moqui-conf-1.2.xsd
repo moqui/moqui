@@ -525,6 +525,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="use-indexes-unique" default="true" type="boolean">
                 <xs:annotation><xs:documentation>For manually declared indexes (if used), use the unique constraint?</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="use-indexes-unique-where-not-null" default="false" type="boolean">
+                <xs:annotation><xs:documentation>For manually declared indexes (if used), unique constraints should disregard null values?</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="join-style" default="ansi">
                 <xs:simpleType><xs:restriction base="xs:token">
                     <xs:enumeration value="ansi"/>

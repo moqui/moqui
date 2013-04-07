@@ -349,7 +349,7 @@
             <database-type type="currency-precise" sql-type="DECIMAL(23,3)"/>
         </database>
         <database name="db2i" join-style="ansi" offset-style="cursor" default-isolation-level="ReadCommitted"
-                  use-schema-for-all="true"
+                  use-schema-for-all="true" use-indexes-unique-where-not-null="true"
                   default-test-query="SELECT 1 FROM SYSIBM.SYSDUMMY1"
                   default-jdbc-driver="com.ibm.as400.access.AS400JDBCDriver"
                   default-xa-ds-class="com.ibm.as400.access.AS400JDBCXADataSource">
