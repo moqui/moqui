@@ -337,7 +337,7 @@
             <database-type type="binary-very-long" sql-type="LONGBLOB"/>
         </database>
         <database name="db2" join-style="ansi" offset-style="limit" default-isolation-level="ReadCommitted"
-                  use-schema-for-all="true"
+                  use-schema-for-all="true" use-indexes-unique="false"
                   default-test-query="SELECT 1 FROM SYSIBM.SYSDUMMY1"
                   default-jdbc-driver="com.ibm.db2.jcc.DB2Driver"
                   default-xa-ds-class="com.ibm.db2.jcc.DB2XADataSource">
