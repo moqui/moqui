@@ -60,7 +60,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
         }
 
         if (datasourceNode."jndi-jdbc") {
-            Node serverJndi = this.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]
+            Node serverJndi = efi.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]
             try {
                 InitialContext ic;
                 if (serverJndi) {
