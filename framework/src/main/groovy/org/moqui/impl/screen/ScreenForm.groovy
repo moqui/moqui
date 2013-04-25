@@ -671,6 +671,21 @@ class ScreenForm {
         } else if (widgetNode.name() == "auto-widget-entity") {
             fieldSubNode.remove(widgetNode)
             addAutoWidgetEntityNode(baseFormNode, fieldNode, fieldSubNode, widgetNode)
+        } else if (widgetNode.name() == "widget-template-include") {
+            fieldSubNode.remove(widgetNode)
+
+            String templateLocation = widgetNode."@location"
+            if (!templateLocation) throw new IllegalArgumentException("widget-template-include.@location cannot be empty")
+            if (!templateLocation.contains("#")) throw new IllegalArgumentException("widget-template-include.@location must contain a hash/pound sign to separate the file location and widget-template.@name: [${templateLocation}]")
+            String fileLocation = templateLocation.substring(0, templateLocation.indexOf("#"))
+            String widgetTemplateName = templateLocation.substring(templateLocation.indexOf("#") + 1)
+
+            Node widgetTemplatesNode = ecfi.getScreenFacade().getWidgetTemplatesNodeByLocation(fileLocation)
+            Node widgetTemplateNode = (Node) widgetTemplatesNode.find({ it."@name" == widgetTemplateName })
+            for (Node widgetChildNode in widgetTemplateNode.children()) {
+                fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
+            }
+
         }
     }
 

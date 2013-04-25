@@ -34,6 +34,8 @@ New Features:
 - Added form-list.@paginate-always-show attribute, defaults to true; set
   to false to hide pagination control and row count when there is only
   one page of rows to display; SourceForge feature request #8
+- Added widget-templates file and widget-template-include element under
+  XML Form fields to include widget-templates for widget reuse
 
 Bug Fixes:
 

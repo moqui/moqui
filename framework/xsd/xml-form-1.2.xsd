@@ -27,6 +27,28 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:restriction>
     </xs:simpleType>
 
+    <!-- ================== Widget Templates ==================== -->
+
+    <xs:element name="widget-templates">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="widget-template"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="widget-template">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:choice>
+                    <xs:element minOccurs="0" ref="SubFields"/>
+                    <xs:element minOccurs="0" ref="AllWidgets"/>
+                </xs:choice>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
     <!-- ================== form ==================== -->
     <xs:element name="form-single" substitutionGroup="AllWidgets">
         <xs:annotation><xs:documentation>A single form is used to view or edit fields of a single map/hash/record/etc.</xs:documentation></xs:annotation>
@@ -424,6 +446,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
             <xs:attribute name="field-name" type="xs:string"/>
             <xs:attribute name="field-type" default="find-display" type="auto-field-type"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="widget-template-include" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="check" substitutionGroup="SubFields">

@@ -787,7 +787,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#-- ================== Form Field Widgets ==================== -->
 
-<#macro "check">
+<#macro check>
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
     <#assign currentValue = sri.getFieldValueString(.node?parent?parent, "", null)>
     <#if !currentValue?has_content><#assign currentValue = ec.resource.evaluateStringExpand(.node["@no-current-selected-key"]?if_exists, "")/></#if>

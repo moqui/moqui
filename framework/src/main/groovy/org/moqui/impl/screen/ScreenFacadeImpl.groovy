@@ -27,12 +27,14 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final Cache screenLocationCache
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
+    protected final Cache widgetTemplateLocationCache
 
     ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.screenLocationCache = ecfi.cacheFacade.getCache("screen.location")
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
+        this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
@@ -138,6 +140,22 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         screenTemplateLocationCache.put(templateLocation, newTemplate)
         return newTemplate
+    }
+
+    Node getWidgetTemplatesNodeByLocation(String templateLocation) {
+        Node templatesNode = (Node) widgetTemplateLocationCache.get(templateLocation)
+        if (templatesNode) return templatesNode
+        return makeWidgetTemplatesNodeByLocation(templateLocation)
+    }
+
+    protected synchronized Node makeWidgetTemplatesNodeByLocation(String templateLocation) {
+        Node templatesNode = (Node) widgetTemplateLocationCache.get(templateLocation)
+        if (templatesNode) return templatesNode
+
+        templatesNode = new XmlParser().parse(ecfi.resourceFacade.getLocationStream(templateLocation))
+
+        widgetTemplateLocationCache.put(templateLocation, templatesNode)
+        return templatesNode
     }
 
     @Override
