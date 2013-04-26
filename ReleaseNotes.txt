@@ -1072,3 +1072,34 @@ Features designed or considered, but not to be included in 1.0 series
     - Configure and run chain of services (dynamic wizard)
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
+
+- Notifications
+  - WebSocket clients: track userAccountId, notificationName, connectionKey
+    - Add VisitClient entity visitId*, userAccountId*, notificationName*, connectionKey*
+    - when sending out WebSocket messages lookup all active Visits for userAccountId and send to each connectionKey
+    - API (with at least an example transition) for WebSocket client registry; set connectionKey on current Visit
+    - use Camel WebSocket? jWebSocket? (how to send message to client connection key)
+  - Manual notification:
+    - API pass in notificationName, Map message, userGroupId, boolean queue (true: queue if not connected, false: only send if connected)
+    - API to get all outstanding notifications
+    - Entity: NotificationMessage - notificationMessageId*, notificationName, userGroupId, messageJson (from message Map)
+    - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
+- Data sync:
+  - API get outstanding data changes
+  - API push outstanding data changes (registration/connection, time trigger)
+  - API push matching data change
+  - API receive/persist data change messages
+  - consumerSystemId, entityName (plain, view, db view), entityCondition (field value, cond list, date range, [where clause, field-field])
+  - Entity: ??? -
+
+- System-System Message Sending
+  - persist outgoing message
+  - status dates (sent, received/confirmed)
+  - retry on fail (sync or async from confirmation message)
+  - keep status in separate transaction
+- System-System Message Receiving
+  - persist incoming message, identify/link duplicate/retry messages
+  - trigger processing
+  - retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
+  - send async success/fail confirmation
+  - keep status in separate transaction
