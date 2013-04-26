@@ -385,6 +385,7 @@ class ScreenDefinition {
     }
 
     static class ResponseItem {
+        protected ScreenDefinition parentScreen
         protected XmlAction condition = null
         protected Map<String, ParameterItem> parameterMap = new HashMap()
 
@@ -397,6 +398,7 @@ class ScreenDefinition {
         protected boolean saveParameters
 
         ResponseItem(Node responseNode, TransitionItem ti, ScreenDefinition parentScreen) {
+            this.parentScreen = parentScreen
             String location = "${parentScreen.location}.transition_${ti.name}.${responseNode.name().replace("-","_")}"
             if (responseNode."condition" && responseNode."condition"[0].children()) {
                 // the script is effectively the first child of the condition element
@@ -420,7 +422,7 @@ class ScreenDefinition {
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
         String getType() { return type }
-        String getUrl() { return url }
+        String getUrl() { return parentScreen.sfi.ecfi.resourceFacade.evaluateStringExpand(url, "") }
         String getUrlType() { return urlType }
         // deferred for future version: boolean getSaveLastScreen() { return saveLastScreen }
         boolean getSaveCurrentScreen() { return saveCurrentScreen }
