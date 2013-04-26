@@ -351,13 +351,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <fieldset class="form-single-outer">
             <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
             <#assign collapsible = (fieldLayout["@collapsible"]?if_exists == "true")>
+            <#assign active = fieldLayout["@active"]?if_exists>
             <#assign collapsibleOpened = false>
             <#list formNode["field-layout"][0]?children as layoutNode>
                 <#if layoutNode?node_name == "field-ref">
                   <#if collapsibleOpened>
                     <#assign collapsibleOpened = false>
                     </div>
-                    <script>$("#${accordionId}").accordion({ collapsible: true, heightStyle: "content" });</script>
+                    <script>$("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });</script>
                     <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
                   </#if>
                     <#assign fieldRef = layoutNode["@name"]>
@@ -375,7 +376,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                   <#if collapsibleOpened>
                     <#assign collapsibleOpened = false>
                     </div>
-                    <script>$("#${accordionId}").accordion({ collapsible: true, heightStyle: "content" });</script>
+                    <script>$("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });</script>
                     <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
                   </#if>
                     <div class="field-row ui-helper-clearfix">
@@ -441,7 +442,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </#list>
             <#if collapsibleOpened>
                 </div>
-                <script>$("#${accordionId}").accordion({ collapsible: true, heightStyle: "content" });</script>
+                <script>$("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });</script>
             </#if>
         </fieldset>
     <#else>

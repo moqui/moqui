@@ -174,6 +174,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:choice>
             <xs:attribute name="id" type="xs:string"/>
             <xs:attribute name="collapsible" type="boolean"/>
+            <xs:attribute name="active" type="xs:string"><xs:annotation><xs:documentation>If collapsible=true use this
+                to specify the accordion section index to be open, or false for all to be closed.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="field-group">
