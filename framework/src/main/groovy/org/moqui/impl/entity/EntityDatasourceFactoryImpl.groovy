@@ -76,14 +76,12 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 }
 
                 String jndiName = tenantDataSource ? tenantDataSource.jndiName : datasourceNode."jndi-jdbc"[0]."@jndi-name"
-                XADataSource ds = (XADataSource) ic.lookup(jndiName)
-                if (ds) {
-                    this.dataSource = (DataSource) ds
-                } else {
-                    logger.error("Could not find XADataSource with name [${datasourceNode."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasourceNode."@group-name"}].")
+                this.dataSource = (DataSource) ic.lookup(jndiName)
+                if (this.dataSource == null) {
+                    logger.error("Could not find DataSource with name [${datasourceNode."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasourceNode."@group-name"}].")
                 }
             } catch (NamingException ne) {
-                logger.error("Error finding XADataSource with name [${datasourceNode."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasourceNode."@group-name"}].", ne)
+                logger.error("Error finding DataSource with name [${datasourceNode."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasourceNode."@group-name"}].", ne)
             }
         } else if (datasourceNode."inline-jdbc") {
             Node inlineJdbc = datasourceNode."inline-jdbc"[0]
