@@ -500,7 +500,13 @@ class UserFacadeImpl implements UserFacade {
     EntityValue getUserAccount() {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
-            internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", this.getUsername()).useCache(false).one()
+            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+            try {
+                internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount")
+                        .condition("username", this.getUsername()).useCache(false).one()
+            } finally {
+                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+            }
         }
         // logger.info("Got UserAccount [${internalUserAccount}] with userIdStack [${userIdStack}]")
         return internalUserAccount
