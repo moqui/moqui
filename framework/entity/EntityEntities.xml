@@ -109,13 +109,35 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.entity.document -->
     <!-- ========================================================= -->
 
-    <!--
-  - Entity: DataDocument - dataDocumentId*, documentName, indexName (optional), primaryEntityName
-  - Entity: DataDocumentField - dataDocumentId*, fieldPath*, fieldNameAlias (for last part of fieldPath only)
-    - fieldPath: [[RelationshipName.]RelationshipName.]fieldName, if no RelationshipName then is a primary entity field
-  - Entity: DataDocumentCondition - dataDocumentId*, fieldPath*, value
-  - Entity: DataDocumentLink - dataDocumentId*, label*, baseUrl or screenPath (check authz for screen when displaying links)
-    -->
+    <entity entity-name="DataDocument" package-name="moqui.entity.document">
+        <field name="dataDocumentId" type="id" is-pk="true"/>
+        <field name="documentName" type="text-medium"/>
+        <field name="indexName" type="text-medium"/>
+        <field name="primaryEntityName" type="text-medium"/>
+        <field name="manualDataServiceName" type="text-medium"><description>
+            Name of a service to call to get additional data to include in the document.
+            Input parameters: dataDocumentId (String), primaryEntityValue (EntityValue)
+            Output parameters: manualData (Map)
+        </description></field>
+    </entity>
+    <entity entity-name="DataDocumentField" package-name="moqui.entity.document">
+        <field name="dataDocumentId" type="id" is-pk="true"/>
+        <field name="fieldPath" type="text-medium" is-pk="true"/>
+        <field name="fieldNameAlias" type="text-medium"><description>Alias to put in document output for field name
+            (ie final part of fieldPath only).</description></field>
+    </entity>
+    <entity entity-name="DataDocumentCondition" package-name="moqui.entity.document">
+        <description>This is a very simple sort of condition to constrain data document output.</description>
+        <field name="dataDocumentId" type="id" is-pk="true"/>
+        <field name="fieldPath" type="text-medium" is-pk="true"/>
+        <field name="value" type="text-medium"/>
+    </entity>
+    <entity entity-name="DataDocumentLink" package-name="moqui.entity.document">
+        <description>This is a very simple sort of condition to constrain data document output.</description>
+        <field name="dataDocumentId" type="id" is-pk="true"/>
+        <field name="label" type="text-short" is-pk="true"/>
+        <field name="linkUrl" type="text-medium"/>
+    </entity>
 
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="EntityGroup" package-name="moqui.entity.group">

@@ -1108,7 +1108,7 @@ Features designed or considered, but not to be included in 1.0 series
     - if userAccountId passed in check record-level authz (both inclusions and exclusions)
   - Entity: DataDocument - dataDocumentId*, documentName, indexName (optional), primaryEntityName
   - Entity: DataDocumentField - dataDocumentId*, fieldPath*, fieldNameAlias (for last part of fieldPath only)
-    - fieldPath: [[RelationshipName.]RelationshipName.]fieldName, if no RelationshipName then is a primary entity field
+    - fieldPath: [[RelationshipName:]RelationshipName:]fieldName, if no RelationshipName then is a primary entity field
   - Entity: DataDocumentCondition - dataDocumentId*, fieldPath*, value
   - Entity: DataDocumentLink - dataDocumentId*, label*, baseUrl or screenPath (check authz for screen when displaying links)
 - Data Search
