@@ -1073,7 +1073,7 @@ Features designed or considered, but not to be included in 1.0 series
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
 
-- Notifications
+- User Notification
   - WebSocket clients: track userAccountId, notificationName, connectionKey
     - Add VisitClient entity visitId*, userAccountId*, notificationName*, connectionKey*
     - when sending out WebSocket messages lookup all active Visits for userAccountId and send to each connectionKey
@@ -1084,13 +1084,39 @@ Features designed or considered, but not to be included in 1.0 series
     - API to get all outstanding notifications
     - Entity: NotificationMessage - notificationMessageId*, notificationName, userGroupId, messageJson (from message Map)
     - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
-- Data sync:
+
+- Data Feed
   - API get outstanding data changes
   - API push outstanding data changes (registration/connection, time trigger)
   - API push matching data change
   - API receive/persist data change messages
   - consumerSystemId, entityName (plain, view, db view), entityCondition (field value, cond list, date range, [where clause, field-field])
-  - Entity: ??? -
+  - Entity: DataFeed - dataFeedId, ...
+  - Entity: DataFeedDocument - dataFeedId, dataDocumentId
+  - Consumer System Registry
+    - register service
+    - per DataDocument alreadySentDateTime
+    - feed transport (for each: supports confirmation?)
+      - WebSocket (use Notification system, based on notificationName (and userAccountId?))
+      - Moqui Service with receive#DataFeed service interface
+- Data Document
+  - Doc ID = primary entity PK fields
+  - API: makeDataDocument
+    - parameters: dataDocumentId, updatedSinceStamp, entityCondition
+    - returns List of Maps containing Map for primary entity, List of Maps for each related entity with aliased fields
+      - each Map: _index = indexName, _type = dataDocumentId, _id = (pk field values, underscore separated)
+    - if userAccountId passed in check record-level authz (both inclusions and exclusions)
+  - Entity: DataDocument - dataDocumentId*, documentName, indexName (optional), primaryEntityName
+  - Entity: DataDocumentField - dataDocumentId*, fieldPath*, fieldNameAlias (for last part of fieldPath only)
+    - fieldPath: [[RelationshipName.]RelationshipName.]fieldName, if no RelationshipName then is a primary entity field
+  - Entity: DataDocumentCondition - dataDocumentId*, fieldPath*, value
+  - Entity: DataDocumentLink - dataDocumentId*, label*, baseUrl or screenPath (check authz for screen when displaying links)
+- Data Search
+  - use elasticsearch.org
+  - get data from Data Feed, Data Search is a ConsumerSystem
+  - receive#DataFeed interface service implementation
+  - search includes documentName as a search term, key search term to constrain to results to documentName
+  - _index = indexName, _type = documentName, _id = (pk field values, underscore separated), use version?
 
 - System-System Message Sending
   - persist outgoing message
