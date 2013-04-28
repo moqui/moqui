@@ -16,47 +16,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.entity -->
     <!-- ========================================================= -->
 
-    <entity entity-name="DbViewEntity" package-name="moqui.entity" cache="true" authorize-skip="view">
-        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="packageName" type="text-medium"/>
-        <field name="cache" type="text-indicator"/>
-        <field name="isDataView" type="text-indicator"/>
-    </entity>
-    <entity entity-name="DbViewEntityMember" package-name="moqui.entity" cache="true" authorize-skip="view">
-        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="entityAlias" type="text-short" is-pk="true"/>
-        <field name="entityName" type="text-medium"/>
-        <field name="joinFromAlias" type="text-short"/>
-        <field name="joinOptional" type="text-indicator"/>
-        <relationship type="one" related-entity-name="moqui.entity.DbViewEntity"/>
-        <relationship type="one" title="JoinFrom" related-entity-name="moqui.entity.DbViewEntityMember">
-            <key-map field-name="dbViewEntityName"/>
-            <key-map field-name="joinFromAlias" related-field-name="entityAlias"/>
-        </relationship>
-    </entity>
-    <entity entity-name="DbViewEntityAlias" package-name="moqui.entity" cache="true" authorize-skip="view">
-        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="fieldAlias" type="text-medium" is-pk="true"/>
-        <field name="entityAlias" type="text-short"/>
-        <field name="fieldName" type="text-medium"/>
-        <field name="functionName" type="text-medium"/>
-        <relationship type="one" related-entity-name="moqui.entity.DbViewEntity"/>
-        <relationship type="one" related-entity-name="moqui.entity.DbViewEntityMember"/>
-    </entity>
-    <entity entity-name="DbViewEntityKeyMap" package-name="moqui.entity" cache="true" authorize-skip="view">
-        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
-        <field name="joinFromAlias" type="text-short" is-pk="true"/>
-        <field name="entityAlias" type="text-short" is-pk="true"/>
-        <field name="fieldName" type="text-medium" is-pk="true">
-            <description>The name of the field corresponding to the joinFromAlias.</description>
-        </field>
-        <field name="relatedFieldName" type="text-medium">
-            <description>The name of the field corresponding to the entityAlias, ie the related field.</description>
-        </field>
-        <relationship type="one" related-entity-name="moqui.entity.DbViewEntity"/>
-        <relationship type="one" related-entity-name="moqui.entity.DbViewEntityMember"/>
-    </entity>
-
     <entity entity-name="EntityAuditLog" package-name="moqui.entity" authorize-skip="create">
         <field name="auditHistorySeqId" type="id" is-pk="true"/>
         <field name="changedEntityName" type="text-medium"/>
@@ -100,6 +59,63 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="pkRestCombinedValue" type="text-medium"/>
         <field name="valueText" type="text-long"/>
     </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.entity.view -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="DbViewEntity" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="packageName" type="text-medium"/>
+        <field name="cache" type="text-indicator"/>
+        <field name="isDataView" type="text-indicator"/>
+    </entity>
+    <entity entity-name="DbViewEntityMember" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short" is-pk="true"/>
+        <field name="entityName" type="text-medium"/>
+        <field name="joinFromAlias" type="text-short"/>
+        <field name="joinOptional" type="text-indicator"/>
+        <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntity"/>
+        <relationship type="one" title="JoinFrom" related-entity-name="moqui.entity.view.DbViewEntityMember">
+            <key-map field-name="dbViewEntityName"/>
+            <key-map field-name="joinFromAlias" related-field-name="entityAlias"/>
+        </relationship>
+    </entity>
+    <entity entity-name="DbViewEntityAlias" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="fieldAlias" type="text-medium" is-pk="true"/>
+        <field name="entityAlias" type="text-short"/>
+        <field name="fieldName" type="text-medium"/>
+        <field name="functionName" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntity"/>
+        <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntityMember"/>
+    </entity>
+    <entity entity-name="DbViewEntityKeyMap" package-name="moqui.entity.view" cache="true" authorize-skip="view">
+        <field name="dbViewEntityName" type="text-medium" is-pk="true"/>
+        <field name="joinFromAlias" type="text-short" is-pk="true"/>
+        <field name="entityAlias" type="text-short" is-pk="true"/>
+        <field name="fieldName" type="text-medium" is-pk="true">
+            <description>The name of the field corresponding to the joinFromAlias.</description>
+        </field>
+        <field name="relatedFieldName" type="text-medium">
+            <description>The name of the field corresponding to the entityAlias, ie the related field.</description>
+        </field>
+        <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntity"/>
+        <relationship type="one" related-entity-name="moqui.entity,view.DbViewEntityMember"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.entity.document -->
+    <!-- ========================================================= -->
+
+    <!--
+  - Entity: DataDocument - dataDocumentId*, documentName, indexName (optional), primaryEntityName
+  - Entity: DataDocumentField - dataDocumentId*, fieldPath*, fieldNameAlias (for last part of fieldPath only)
+    - fieldPath: [[RelationshipName.]RelationshipName.]fieldName, if no RelationshipName then is a primary entity field
+  - Entity: DataDocumentCondition - dataDocumentId*, fieldPath*, value
+  - Entity: DataDocumentLink - dataDocumentId*, label*, baseUrl or screenPath (check authz for screen when displaying links)
+    -->
 
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="EntityGroup" package-name="moqui.entity.group">

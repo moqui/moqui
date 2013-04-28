@@ -11,15 +11,15 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <!-- In the seed data since code may rely on it: and example moqui.entity.DbViewEntity -->
-    <moqui.entity.DbViewEntity dbViewEntityName="StatusItemAndTypeDb" packageName="moqui.example" cache="Y"/>
-    <moqui.entity.DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" entityName="moqui.basic.StatusItem"/>
-    <moqui.entity.DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" entityName="moqui.basic.StatusType" joinFromAlias="SI"/>
-    <moqui.entity.DbViewEntityKeyMap dbViewEntityName="StatusItemAndTypeDb" joinFromAlias="SI" entityAlias="ST" fieldName="statusTypeId"/>
-    <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="statusId"/>
-    <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="description"/>
-    <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="sequenceNum"/>
-    <moqui.entity.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" fieldAlias="typeDescription" fieldName="description"/>
+    <!-- In the seed data since code may rely on it: and example moqui.entity.view.DbViewEntity -->
+    <moqui.entity.view.DbViewEntity dbViewEntityName="StatusItemAndTypeDb" packageName="moqui.example" cache="Y"/>
+    <moqui.entity.view.DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" entityName="moqui.basic.StatusItem"/>
+    <moqui.entity.view.DbViewEntityMember dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" entityName="moqui.basic.StatusType" joinFromAlias="SI"/>
+    <moqui.entity.view.DbViewEntityKeyMap dbViewEntityName="StatusItemAndTypeDb" joinFromAlias="SI" entityAlias="ST" fieldName="statusTypeId"/>
+    <moqui.entity.view.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="statusId"/>
+    <moqui.entity.view.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="description"/>
+    <moqui.entity.view.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="SI" fieldAlias="sequenceNum"/>
+    <moqui.entity.view.DbViewEntityAlias dbViewEntityName="StatusItemAndTypeDb" entityAlias="ST" fieldAlias="typeDescription" fieldName="description"/>
 
     <!-- This is an example of a field override and a field addition using DbForm -->
     <moqui.screen.form.DbForm formId="ExampleAdmin" isListForm="N"
