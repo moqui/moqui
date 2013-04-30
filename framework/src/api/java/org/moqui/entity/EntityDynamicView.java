@@ -11,6 +11,9 @@
  */
 package org.moqui.entity;
 
+import groovy.util.Node;
+
+import java.util.List;
 import java.util.Map;
 
 /** This class is used for declaring Dynamic View Entities, to be used and thrown away.
@@ -26,6 +29,8 @@ public interface EntityDynamicView {
 
     public EntityDynamicView addRelationshipMember(String entityAlias, String joinFromAlias, String relationshipName,
                                                    Boolean joinOptional);
+
+    public List<Node> getMemberEntityNodes();
 
     public EntityDynamicView addAliasAll(String entityAlias, String prefix);
 

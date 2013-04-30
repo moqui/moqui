@@ -67,6 +67,9 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     }
 
     @Override
+    List<Node> getMemberEntityNodes() { return this.entityNode."member-entity" }
+
+    @Override
     EntityDynamicView addAliasAll(String entityAlias, String prefix) {
         this.entityNode.appendNode("alias-all", ["entity-alias":entityAlias, "prefix":prefix])
         return this
