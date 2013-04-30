@@ -59,7 +59,7 @@ public class EntityDefinition {
         if (isViewEntity()) {
             // get group-name, etc from member-entity
             for (Node memberEntity in entityNode."member-entity") {
-                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                 Node memberEntityNode = memberEd.getEntityNode()
                 if (memberEntityNode."@group-name") entityNode.attributes().put("group-name", memberEntityNode."@group-name")
             }
@@ -75,7 +75,7 @@ public class EntityDefinition {
                         throw new EntityException("Could not find member-entity with entity-alias [${aliasNode."@entity-alias"}] in view-entity [${internalEntityName}]")
                     }
                 }
-                EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+                EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
                 String fieldName = aliasNode."@field" ?: aliasNode."@name"
                 Node fieldNode = memberEd.getFieldNode(fieldName)
                 if (fieldNode == null) throw new EntityException("In view-entity [${internalEntityName}] alias [${aliasNode."@name"}] referred to field [${fieldName}] that does not exist on entity [${memberEd.internalEntityName}].")
@@ -229,7 +229,7 @@ public class EntityDefinition {
 
     Map getRelationshipExpandedKeyMap(Node relationship) {
         ListOrderedMap eKeyMap = new ListOrderedMap()
-        EntityDefinition relEd = this.efi.getEntityDefinition(relationship."@related-entity-name")
+        EntityDefinition relEd = this.efi.getEntityDefinition((String) relationship."@related-entity-name")
         if (!relEd) throw new EntityException("Could not find entity [${relationship."@related-entity-name"}] referred to in a relationship in entity [${internalEntityName}]")
         if (!relationship."key-map" && ((String) relationship."@type").startsWith("one")) {
             // go through pks of related entity, assume field names match
@@ -265,7 +265,8 @@ public class EntityDefinition {
             if (valueSource)
                 for (Map.Entry keyEntry in keyMap) targetParameterMap.put(keyEntry.value, valueSource.get(keyEntry.key))
 
-            String prettyName = efi.getEntityDefinition(relNode."@related-entity-name").getPrettyName(relNode."@title", internalEntityName)
+            String prettyName = efi.getEntityDefinition((String) relNode."@related-entity-name")
+                    .getPrettyName((String) relNode."@title", internalEntityName)
 
             infoList.add([type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
                     keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName])
@@ -282,13 +283,13 @@ public class EntityDefinition {
 
         List<Map> relInfoList = getRelationshipsInfo(null, true)
         for (Map relInfo in relInfoList) {
-            edp.allDescendants.add(relInfo.relatedEntityName)
-            edp.relationshipInfos.put(relInfo.title+relInfo.relatedEntityName, relInfo)
-            EntityDefinition relEd = efi.getEntityDefinition(relInfo.relatedEntityName)
+            edp.allDescendants.add((String) relInfo.relatedEntityName)
+            edp.relationshipInfos.put((String) relInfo.title + (String) relInfo.relatedEntityName, relInfo)
+            EntityDefinition relEd = efi.getEntityDefinition((String) relInfo.relatedEntityName)
             if (!edp.dependentEntities.containsKey(relEd.internalEntityName) && !ancestorEntities.contains(relEd.internalEntityName)) {
                 EntityDependents relEpd = relEd.getDependentsTree(ancestorEntities)
                 edp.allDescendants.addAll(relEpd.allDescendants)
-                edp.dependentEntities.put(relInfo.relatedEntityName, relEpd)
+                edp.dependentEntities.put((String) relInfo.relatedEntityName, relEpd)
             }
         }
 
@@ -352,7 +353,7 @@ public class EntityDefinition {
                 colNameBuilder.append(fieldNode."@entity-alias").append('.')
 
                 String memberFieldName = fieldNode."@field" ?: fieldNode."@name"
-                colNameBuilder.append(getBasicFieldColName(internalEntityNode, fieldNode."@entity-alias", memberFieldName))
+                colNameBuilder.append(getBasicFieldColName(internalEntityNode, (String) fieldNode."@entity-alias", memberFieldName))
 
                 if (function) colNameBuilder.append(')')
             }
@@ -363,7 +364,7 @@ public class EntityDefinition {
             if (fieldNode."@column-name") {
                 cn = fieldNode."@column-name"
             } else {
-                cn = camelCaseToUnderscored(fieldNode."@name")
+                cn = camelCaseToUnderscored((String) fieldNode."@name")
             }
         }
 
@@ -373,21 +374,21 @@ public class EntityDefinition {
 
     protected String getBasicFieldColName(Node entityNode, String entityAlias, String fieldName) {
         Node memberEntity = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
-        EntityDefinition memberEd = this.efi.getEntityDefinition(memberEntity."@entity-name")
+        EntityDefinition memberEd = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
         return memberEd.getColumnName(fieldName, false)
     }
 
     protected void buildComplexAliasName(Node parentNode, String operator, StringBuilder colNameBuilder) {
         colNameBuilder.append('(')
         boolean isFirst = true
-        for (Node childNode in parentNode.children()) {
+        for (Node childNode in (List<Node>) parentNode.children()) {
             if (isFirst) isFirst=false else colNameBuilder.append(' ').append(operator).append(' ')
 
             if (childNode.name() == "complex-alias") {
-                buildComplexAliasName(childNode, childNode."@operator", colNameBuilder)
+                buildComplexAliasName(childNode, (String) childNode."@operator", colNameBuilder)
             } else if (childNode.name() == "complex-alias-field") {
                 String entityAlias = childNode."@entity-alias"
-                String basicColName = getBasicFieldColName(internalEntityNode, entityAlias, childNode."@field")
+                String basicColName = getBasicFieldColName(internalEntityNode, entityAlias, (String) childNode."@field")
                 String colName = entityAlias + "." + basicColName
                 String defaultValue = childNode."@default-value"
                 String function = childNode."@function"
@@ -406,7 +407,7 @@ public class EntityDefinition {
         colNameBuilder.append(')')
     }
 
-    protected String getFunctionPrefix(String function) {
+    static protected String getFunctionPrefix(String function) {
         return (function == "count-distinct") ? "COUNT(DISTINCT " : function.toUpperCase() + '('
     }
 
@@ -415,7 +416,7 @@ public class EntityDefinition {
         if (this.internalEntityNode."@table-name") {
             return this.internalEntityNode."@table-name"
         } else {
-            return camelCaseToUnderscored(this.internalEntityNode."@entity-name")
+            return camelCaseToUnderscored((String) this.internalEntityNode."@entity-name")
         }
     }
 
@@ -552,7 +553,7 @@ public class EntityDefinition {
         // do a reverse map on member-entity pk fields to view-entity aliases
         Node memberEntityNode = (Node) entityNode."member-entity".find({ it."@entity-alias" == entityAlias })
         //logger.warn("TOREMOVE 2 getMePkFieldToAliasNameMap entityAlias=${entityAlias} memberEntityNode=${memberEntityNode}")
-        EntityDefinition med = this.efi.getEntityDefinition(memberEntityNode."@entity-name")
+        EntityDefinition med = this.efi.getEntityDefinition((String) memberEntityNode."@entity-name")
         List<String> pkFieldNames = med.getPkFieldNames()
         for (String pkName in pkFieldNames) {
             Node matchingAliasNode = (Node) entityNode."alias".find({
@@ -668,7 +669,7 @@ public class EntityDefinition {
 
         Object outValue
         Node fieldNode = this.getFieldNode(name)
-        String javaType = this.efi.getFieldJavaType(fieldNode."@type", internalEntityName)
+        String javaType = this.efi.getFieldJavaType((String) fieldNode."@type", internalEntityName)
         try {
             switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
                 case 1: outValue = value; break
@@ -700,13 +701,13 @@ public class EntityDefinition {
                 case 11: outValue = value; break
                 case 12: outValue = new SerialBlob(value.getBytes()); break
                 case 13: outValue = value; break
-                case 14: outValue = value.asType(java.util.Date.class); break
+                case 14: outValue = value.asType(Date.class); break
             // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
                 case 15: outValue = value; break
                 default: outValue = value; break
             }
         } catch (IllegalArgumentException e) {
-            throw new BaseException("The value [${value}] is not valid for type [${javaType}]")
+            throw new BaseException("The value [${value}] is not valid for type [${javaType}]", e)
         }
 
         return outValue
@@ -721,7 +722,7 @@ public class EntityDefinition {
                 continue;
             }
 
-            EntityDefinition aliasedEntityDefinition = this.efi.getEntityDefinition(memberEntity."@entity-name")
+            EntityDefinition aliasedEntityDefinition = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
             if (!aliasedEntityDefinition) {
                 logger.error("Entity [${memberEntity."@entity-name"}] referred to in member-entity with entity-alias [${aliasAll."@entity-alias"}] not found, ignoring")
                 continue;
@@ -798,7 +799,7 @@ public class EntityDefinition {
             // NOTE: this doesn't do context expansion of the valid-date as it doesn't make sense for an entity def to depend on something being in the context
             condList.add((EntityConditionImplBase) this.efi.conditionFactory.makeConditionDate(
                     (String) dateFilter."@from-field-name", (String) dateFilter."@thru-field-name",
-                    dateFilter."@valid-date" ? efi.getEcfi().getResourceFacade().evaluateStringExpand(dateFilter."@valid-date") as Timestamp : null))
+                    dateFilter."@valid-date" ? efi.getEcfi().getResourceFacade().evaluateStringExpand((String) dateFilter."@valid-date", "") as Timestamp : null))
         }
         for (Node econdition in conditionsParent."econdition") {
             EntityConditionImplBase cond;
@@ -807,37 +808,37 @@ public class EntityDefinition {
                 if (econdition."@entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
                     if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
-                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                    field = new ConditionField(econdition."@entity-alias", econdition."@field-name", aliasEntityDef)
+                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
+                    field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
                 } else {
-                    field = new ConditionField(econdition."@field-name")
+                    field = new ConditionField((String) econdition."@field-name")
                 }
                 // NOTE: may need to convert value from String to object for field
                 String condValue = econdition."@value" ?: null
                 if (condValue) condValue = efi.getEcfi().getResourceFacade().evaluateStringExpand(condValue, "")
                 cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
-                        EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), condValue)
+                        EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             } else {
                 ConditionField field
                 if (econdition."@entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@entity-alias"})
                     if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
-                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                    field = new ConditionField(econdition."@entity-alias", econdition."@field-name", aliasEntityDef)
+                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
+                    field = new ConditionField((String) econdition."@entity-alias", (String) econdition."@field-name", aliasEntityDef)
                 } else {
-                    field = new ConditionField(econdition."@field-name")
+                    field = new ConditionField((String) econdition."@field-name")
                 }
                 ConditionField toField
                 if (econdition."@to-entity-alias") {
                     Node memberEntity = (Node) this.internalEntityNode."member-entity".find({ it."@entity-alias" == econdition."@to-entity-alias"})
                     if (!memberEntity) throw new EntityException("The entity-alias [${econdition."@to-entity-alias"}] was not found in view-entity [${this.internalEntityName}]")
-                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition(memberEntity."@entity-name")
-                    toField = new ConditionField(econdition."@to-entity-alias", econdition."@to-field-name", aliasEntityDef)
+                    EntityDefinition aliasEntityDef = this.efi.getEntityDefinition((String) memberEntity."@entity-name")
+                    toField = new ConditionField((String) econdition."@to-entity-alias", (String) econdition."@to-field-name", aliasEntityDef)
                 } else {
-                    toField = new ConditionField(econdition."@to-field-name")
+                    toField = new ConditionField((String) econdition."@to-field-name")
                 }
                 cond = new FieldToFieldCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
-                        EntityConditionFactoryImpl.getComparisonOperator(econdition."@operator"), toField)
+                        EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), toField)
             }
             if (cond && econdition."@ignore-case" == "true") cond.ignoreCase()
             if (cond) condList.add(cond)
