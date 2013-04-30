@@ -122,23 +122,32 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <entity entity-name="DataDocumentField" package-name="moqui.entity.document">
         <field name="dataDocumentId" type="id" is-pk="true"/>
-        <field name="fieldPath" type="text-medium" is-pk="true"/>
+        <field name="fieldPath" type="text-medium" is-pk="true"><description>String formatted like
+            "RelationshipName:RelationshipName:fieldName" with zero or more relationship names. If there is no
+            relationship name the field is on the primary entity. More than one relationship names means follow that
+            path of relationships to get to the field.</description></field>
         <field name="fieldNameAlias" type="text-medium"><description>Alias to put in document output for field name
-            (ie final part of fieldPath only).</description></field>
+            (ie final part of fieldPath only). Defaults to final part of fieldPath. Must be unique within the document
+            and can be used in EntityCondition passed into the EntityFacade.findDataDocuments() method.</description></field>
+        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
     <entity entity-name="DataDocumentCondition" package-name="moqui.entity.document">
         <description>This is a very simple sort of condition to constrain data document output.</description>
         <field name="dataDocumentId" type="id" is-pk="true"/>
-        <field name="fieldPath" type="text-medium" is-pk="true"/>
-        <field name="value" type="text-medium"/>
+        <field name="fieldNameAlias" type="text-medium" is-pk="true"/>
+        <field name="fieldValue" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
     <entity entity-name="DataDocumentLink" package-name="moqui.entity.document">
         <description>This is a very simple sort of condition to constrain data document output.</description>
         <field name="dataDocumentId" type="id" is-pk="true"/>
         <field name="label" type="text-short" is-pk="true"/>
         <field name="linkUrl" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
 
+    <!-- ========================================================= -->
+    <!-- ========================================================= -->
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="EntityGroup" package-name="moqui.entity.group">
         <field name="entityGroupId" type="id" is-pk="true"/>
