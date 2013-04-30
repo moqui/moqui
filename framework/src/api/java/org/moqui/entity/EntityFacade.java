@@ -13,6 +13,7 @@ package org.moqui.entity;
 
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,25 @@ public interface EntityFacade {
      * @return EntityListIterator with results of query.
      */
     EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList);
+
+    /** Find and assemble data documents represented by a Map that can be easily turned into a JSON document. This is
+     * used for searching by the Data Search feature and for data feeds to other systems with the Data Feed feature.
+     *
+     * @param dataDocumentId Used to look up the DataDocument and related records (DataDocument* entities).
+     * @param condition An optional condition to AND with from/thru updated timestamps and any DataDocumentCondition
+     *                  records associated with the DataDocument.
+     * @param fromUpdateStamp The lastUpdatedStamp on at least one entity selected must be after (>=) this Timestamp.
+     * @param thruUpdatedStamp The lastUpdatedStamp on at least one entity selected must be before (<) this Timestamp.
+     * @return List of Maps with these entries:
+     *      - _index = DataDocument.indexName
+     *      - _type = dataDocumentId
+     *      - _id = pk field values from primary entity, underscore separated
+     *      - Map for primary entity (with primaryEntityName as key)
+     *      - nested List of Maps for each related entity from DataDocumentField records with aliased fields
+     *          (with relationship name as key)
+     */
+    List<Map> findDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
+                                Timestamp thruUpdatedStamp);
 
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;
      * if the named sequence doesn't exist, it will be created.

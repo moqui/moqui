@@ -22,7 +22,8 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ArtifactExecutionFacadeImpl
 import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
+import org.moqui.impl.entity.condition.ConditionField
+import org.moqui.impl.entity.condition.FieldValueCondition
 import org.w3c.dom.Element
 
 import java.sql.Connection
@@ -34,6 +35,8 @@ import javax.sql.XADataSource
 
 import org.moqui.entity.*
 import org.moqui.BaseException
+
+import java.sql.Timestamp
 
 class EntityFacadeImpl implements EntityFacade {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFacadeImpl.class)
@@ -771,22 +774,22 @@ class EntityFacadeImpl implements EntityFacade {
 
     // ========== Interface Implementations ==========
 
-    /** @see org.moqui.entity.EntityFacade#getConditionFactory() */
+    @Override
     EntityConditionFactory getConditionFactory() { return this.entityConditionFactory }
 
-    /** @see org.moqui.entity.EntityFacade#makeValue(String) */
+    @Override
     EntityValue makeValue(String entityName) {
         EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
         return edf.makeEntityValue(entityName)
     }
 
-    /** @see org.moqui.entity.EntityFacade#makeFind(String) */
+    @Override
     EntityFind makeFind(String entityName) {
         EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
         return edf.makeEntityFind(entityName)
     }
 
-    /** @see org.moqui.entity.EntityFacade#sqlFind(String, List<Object>, String, List<String>) */
+    @Override
     EntityListIterator sqlFind(String sql, List<Object> sqlParameterList, String entityName, List<String> fieldList) {
         EntityDefinition ed = this.getEntityDefinition(entityName)
         this.entityDbMeta.checkTableRuntime(ed)
@@ -816,7 +819,123 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, Long, Long) */
+    @Override
+    List<Map> findDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
+                                Timestamp thruUpdatedStamp) {
+        EntityValue dataDocument = makeFind("moqui.entity.document.DataDocument")
+                .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+        EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+        EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
+
+        // build the field tree, nested Maps for relationship field path elements and field alias String for field name path elements
+        Map fieldTree = [:]
+        for (EntityValue dataDocumentField in dataDocumentFieldList) {
+            String fieldPath = dataDocumentField.fieldPath
+            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
+            Map currentTree = fieldTree
+            while (fieldPathElementIter.hasNext()) {
+                String fieldPathElement = fieldPathElementIter.next()
+                if (fieldPathElementIter.hasNext()) {
+                    Map subTree = (Map) currentTree.get(fieldPathElement)
+                    if (subTree == null) { subTree = [:]; currentTree.put(fieldPathElement, subTree) }
+                    currentTree = subTree
+                } else {
+                    currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
+                }
+            }
+        }
+        logger.warn("=========== fieldTree=${fieldTree}")
+
+        // build the query condition for the primary entity and all related entities
+        EntityFind mainFind = makeFind(null)
+        EntityDynamicView dynamicView = mainFind.makeEntityDynamicView()
+
+        // add member entities and field aliases to dynamic view
+        dynamicView.addMemberEntity("PRIMARY", (String) dataDocument.primaryEntityName, null, null, null)
+        fieldTree.put("_ALIAS", "PRIMARY")
+        StupidUtilities.Incrementer incrementer = new StupidUtilities.Incrementer()
+        addDataDocRelatedEntity(dynamicView, "PRIMARY", fieldTree, incrementer)
+
+        // build condition
+        List<EntityCondition> conditionList = []
+        if (condition) conditionList.add(condition)
+        // create a condition with an OR list of date range comparisons to check that at least one member-entity has lastUpdatedStamp in range
+        if (fromUpdateStamp != null || thruUpdatedStamp != null) {
+            List<EntityCondition> dateRangeOrCondList = []
+            for (Node memberEntityNode in dynamicView.getMemberEntityNodes()) {
+                ConditionField ludCf = new ConditionField((String) memberEntityNode."@entity-alias",
+                        "lastUpdatedStamp", getEntityDefinition((String) memberEntityNode."@entity-name"))
+                List<EntityCondition> dateRangeFieldCondList = []
+                if (fromUpdateStamp != null) {
+                    dateRangeFieldCondList.add(getConditionFactory().makeCondition(
+                            new FieldValueCondition(entityConditionFactory, ludCf, EntityCondition.EQUALS, null),
+                            EntityCondition.OR,
+                            new FieldValueCondition(entityConditionFactory, ludCf, EntityCondition.GREATER_THAN_EQUAL_TO, fromUpdateStamp)))
+                }
+                if (thruUpdatedStamp != null) {
+                    dateRangeFieldCondList.add(getConditionFactory().makeCondition(
+                            new FieldValueCondition(entityConditionFactory, ludCf, EntityCondition.EQUALS, null),
+                            EntityCondition.OR,
+                            new FieldValueCondition(entityConditionFactory, ludCf, EntityCondition.LESS_THAN, thruUpdatedStamp)))
+                }
+                dateRangeOrCondList.add(getConditionFactory().makeCondition(dateRangeFieldCondList, EntityCondition.AND))
+            }
+            conditionList.add(getConditionFactory().makeCondition(dateRangeOrCondList, EntityCondition.OR))
+        }
+        for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
+            // TODO
+            if (!dataDocumentCondition.fieldPath.contains(":"))
+                conditionList.add(getConditionFactory().makeCondition((String) dataDocumentCondition.fieldPath,
+                        EntityCondition.EQUALS, (String) dataDocumentCondition.fieldValue))
+            // TODO handle other conditions...
+        }
+
+
+        // build the document Maps
+        List<Map> documentMapList = []
+        // TODO
+        // TODO call the manualDataServiceName service for each document
+        return documentMapList
+    }
+
+    protected void addDataDocRelatedEntity(EntityDynamicView dynamicView, String parentEntityAlias,
+                                           Map fieldTreeCurrent, StupidUtilities.Incrementer incrementer) {
+        for (Map.Entry fieldTreeEntry in fieldTreeCurrent.entrySet()) {
+            if (fieldTreeEntry.getKey() instanceof String && fieldTreeEntry.getKey() == "_ALIAS") continue
+            if (fieldTreeEntry.getValue() instanceof Map) {
+                // add member entity, and entity alias in "_ALIAS" entry
+                String entityAlias = "MEMBER${incrementer.getAndIncrement()}"
+                Map fieldTreeChild = (Map) fieldTreeEntry.getValue()
+                dynamicView.addRelationshipMember(entityAlias, parentEntityAlias, (String) fieldTreeEntry.getKey(), true)
+                fieldTreeChild.put("_ALIAS", entityAlias)
+                // now time to recurse
+                addDataDocRelatedEntity(dynamicView, entityAlias, fieldTreeChild, incrementer)
+            } else {
+                // add alias for field
+                String entityAlias = fieldTreeCurrent.get("_ALIAS")
+                dynamicView.addAlias(entityAlias, (String) fieldTreeEntry.getValue(), (String) fieldTreeEntry.getKey(), null)
+            }
+        }
+    }
+
+    /* Find and assemble data documents represented by a Map that can be easily turned into a JSON document. This is
+     * used for searching by the Data Search feature and for data feeds to other systems with the Data Feed feature.
+     *
+     * @param dataDocumentId Used to look up the DataDocument and related records (DataDocument* entities).
+     * @param condition An optional condition to AND with from/thru updated timestamps and any DataDocumentCondition
+     *                  records associated with the DataDocument.
+     * @param fromUpdateStamp The lastUpdatedStamp on at least one entity selected must be after (>=) this Timestamp.
+     * @param thruUpdatedStamp The lastUpdatedStamp on at least one entity selected must be before (<) this Timestamp.
+     * @return List of Maps with these entries:
+     *      - _index = DataDocument.indexName
+     *      - _type = dataDocumentId
+     *      - _id = pk field values from primary entity, underscore separated
+     *      - Map for primary entity (with primaryEntityName as key)
+     *      - nested List of Maps for each related entity from DataDocumentField records with aliased fields
+     *          (with relationship name as key)
+     */
+
+    @Override
     String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         try {
             // is the seqName an entityName?
@@ -834,7 +953,7 @@ class EntityFacadeImpl implements EntityFacade {
         return dbSequencedIdPrimary(seqName, staggerMax, bankSize)
     }
 
-    /** @see org.moqui.entity.EntityFacade#sequencedIdPrimary(String, Long, Long) */
+    @Override
     protected synchronized String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
@@ -901,7 +1020,7 @@ class EntityFacadeImpl implements EntityFacade {
         return (prefix?:"") + seqNum.toString()
     }
 
-    /** @see org.moqui.entity.EntityFacade#getEntityGroupName(String) */
+    @Override
     String getEntityGroupName(String entityName) {
         String entityGroupName = entityGroupNameMap.get(entityName)
         if (entityGroupName != null) return entityGroupName
@@ -916,7 +1035,7 @@ class EntityFacadeImpl implements EntityFacade {
         return entityGroupName
     }
 
-    /** @see org.moqui.entity.EntityFacade#getConnection(String) */
+    @Override
     Connection getConnection(String groupName) {
         EntityDatasourceFactory edf = this.datasourceFactoryByGroupMap.get(groupName)
         DataSource ds = edf.getDataSource()
@@ -928,13 +1047,13 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    /** @see org.moqui.entity.EntityFacade#makeDataLoader() */
+    @Override
     EntityDataLoader makeDataLoader() { return new EntityDataLoaderImpl(this) }
 
-    /** @see org.moqui.entity.EntityFacade#makeDataWriter() */
+    @Override
     EntityDataWriter makeDataWriter() { return new EntityDataWriterImpl(this) }
 
-    /** @see org.moqui.entity.EntityFacade#makeValue(Element) */
+    @Override
     EntityValue makeValue(Element element) {
         if (!element) return null
 
