@@ -355,4 +355,10 @@ class StupidUtilities {
         }
         return sb.toString()
     }
+
+    public static class Incrementer {
+        protected int currentValue = 1
+        int getAndIncrement() { return currentValue++ }
+        int getCurrentValue() { return currentValue }
+    }
 }
