@@ -21,7 +21,11 @@ public interface EntityDynamicView {
     /** This optionally sets a name for the dynamic view entity. If not used will default to "DynamicView" */
     public EntityDynamicView setEntityName(String entityName);
 
-    public EntityDynamicView addMemberEntity(String entityAlias, String entityName, String joinFromAlias, Boolean joinOptional, Map<String, String> entityKeyMaps);
+    public EntityDynamicView addMemberEntity(String entityAlias, String entityName, String joinFromAlias,
+                                             Boolean joinOptional, Map<String, String> entityKeyMaps);
+
+    public EntityDynamicView addRelationshipMember(String entityAlias, String joinFromAlias, String relationshipName,
+                                                   Boolean joinOptional);
 
     public EntityDynamicView addAliasAll(String entityAlias, String prefix);
 
@@ -30,5 +34,6 @@ public interface EntityDynamicView {
     /** Add an alias, full detail. All parameters can be null except entityAlias and name. */
     public EntityDynamicView addAlias(String entityAlias, String name, String field, String function);
 
-    public EntityDynamicView addRelationship(String type, String title, String relatedEntityName, Map<String, String> entityKeyMaps);
+    public EntityDynamicView addRelationship(String type, String title, String relatedEntityName,
+                                             Map<String, String> entityKeyMaps);
 }

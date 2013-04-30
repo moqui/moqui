@@ -62,6 +62,8 @@ abstract class EntityFindBase implements EntityFind {
         this.entityName = entityName
     }
 
+    EntityFacadeImpl getEfi() { return efi }
+
     /** @see org.moqui.entity.EntityFind#entity(String) */
     EntityFind entity(String entityName) { this.entityName = entityName; return this }
 

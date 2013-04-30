@@ -35,13 +35,32 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     }
 
     @Override
-    EntityDynamicView addMemberEntity(String entityAlias, String entityName, String joinFromAlias, Boolean joinOptional, Map<String, String> entityKeyMaps) {
+    EntityDynamicView addMemberEntity(String entityAlias, String entityName, String joinFromAlias, Boolean joinOptional,
+                                      Map<String, String> entityKeyMaps) {
         Node memberEntity = this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":entityName])
         if (joinFromAlias) {
             memberEntity.attributes().put("join-from-alias", joinFromAlias)
             memberEntity.attributes().put("join-optional", (joinOptional ? "true" : "false"))
         }
         for (Map.Entry keyMapEntry in entityKeyMaps.entrySet()) {
+            memberEntity.appendNode("key-map", ["field-name":keyMapEntry.getKey(), "related-field-name":keyMapEntry.getValue()])
+        }
+        return this
+    }
+
+    @Override
+    EntityDynamicView addRelationshipMember(String entityAlias, String joinFromAlias, String relationshipName,
+                                            Boolean joinOptional) {
+        Node joinFromMemberEntityNode = (Node) this.entityNode."member-entity".find({ it."@entity-alias" == joinFromAlias })
+        EntityDefinition joinFromEd = entityFind.getEfi().getEntityDefinition(joinFromMemberEntityNode."@entity-name")
+        Node relationshipNode = joinFromEd.getRelationshipNode(relationshipName)
+        Map relationshipKeyMap = joinFromEd.getRelationshipExpandedKeyMap(relationshipNode)
+        String entityName = relationshipNode."@related-entity-name"
+
+        Node memberEntity = this.entityNode.appendNode("member-entity", ["entity-alias":entityAlias, "entity-name":entityName])
+        memberEntity.attributes().put("join-from-alias", joinFromAlias)
+        memberEntity.attributes().put("join-optional", (joinOptional ? "true" : "false"))
+        for (Map.Entry keyMapEntry in relationshipKeyMap.entrySet()) {
             memberEntity.appendNode("key-map", ["field-name":keyMapEntry.getKey(), "related-field-name":keyMapEntry.getValue()])
         }
         return this
