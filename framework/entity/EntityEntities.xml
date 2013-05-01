@@ -102,7 +102,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>The name of the field corresponding to the entityAlias, ie the related field.</description>
         </field>
         <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntity"/>
-        <relationship type="one" related-entity-name="moqui.entity,view.DbViewEntityMember"/>
+        <relationship type="one" related-entity-name="moqui.entity.view.DbViewEntityMember"/>
     </entity>
 
     <!-- ========================================================= -->
@@ -116,8 +116,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="primaryEntityName" type="text-medium"/>
         <field name="manualDataServiceName" type="text-medium"><description>
             Name of a service to call to get additional data to include in the document.
-            Input parameters: dataDocumentId (String), primaryEntityValue (EntityValue)
-            Output parameters: manualData (Map)
+            Input parameters: dataDocumentId (String), documentMap (Map)
+            Output parameters: dataToAdd (Map)
         </description></field>
     </entity>
     <entity entity-name="DataDocumentField" package-name="moqui.entity.document">

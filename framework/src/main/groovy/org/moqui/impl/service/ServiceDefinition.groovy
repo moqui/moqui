@@ -11,19 +11,19 @@
  */
 package org.moqui.impl.service
 
-import org.moqui.impl.actions.XmlAction
-import org.moqui.impl.entity.EntityDefinition
-import org.moqui.impl.StupidUtilities
+import org.apache.commons.validator.CreditCardValidator
+import org.apache.commons.validator.EmailValidator
+import org.apache.commons.validator.UrlValidator
 import org.moqui.impl.FtlNodeWrapper
-import org.moqui.impl.context.ExecutionContextImpl
-import org.owasp.esapi.errors.ValidationException
+import org.moqui.impl.StupidUtilities
 import org.moqui.impl.StupidWebUtilities
+import org.moqui.impl.actions.XmlAction
+import org.moqui.impl.context.ContextStack
+import org.moqui.impl.context.ExecutionContextImpl
+import org.moqui.impl.entity.EntityDefinition
 import org.owasp.esapi.ValidationErrorList
 import org.owasp.esapi.errors.IntrusionException
-import org.apache.commons.validator.CreditCardValidator
-import org.apache.commons.validator.UrlValidator
-import org.apache.commons.validator.EmailValidator
-import org.moqui.impl.context.ContextStack
+import org.owasp.esapi.errors.ValidationException
 
 class ServiceDefinition {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceDefinition.class)
@@ -126,7 +126,7 @@ class ServiceDefinition {
 
         Set<String> fieldsToExclude = new HashSet<String>()
         if (autoParameters."exclude") for (Node excludeNode in autoParameters."exclude") {
-            fieldsToExclude.add(excludeNode."@field-name")
+            fieldsToExclude.add((String) excludeNode."@field-name")
         }
 
         String includeStr = autoParameters."@include" ?: "all"
@@ -136,7 +136,7 @@ class ServiceDefinition {
                 includeStr == "all" || includeStr == "nonpk", includeStr == "all" || includeStr == "nonpk")) {
             if (fieldsToExclude.contains(fieldName)) continue
 
-            String javaType = sfi.ecfi.entityFacade.getFieldJavaType(ed.getFieldNode(fieldName)."@type", entityName)
+            String javaType = sfi.ecfi.entityFacade.getFieldJavaType((String) ed.getFieldNode(fieldName)."@type", ed)
             mergeParameter(parametersNode, fieldName,
                     [type:javaType, required:requiredStr, "allow-html":allowHtmlStr,
                             "entity-name":entityName, "field-name":fieldName])
@@ -144,7 +144,7 @@ class ServiceDefinition {
     }
 
     void mergeParameter(Node parametersNode, Node overrideParameterNode) {
-        Node baseParameterNode = mergeParameter(parametersNode, overrideParameterNode."@name",
+        Node baseParameterNode = mergeParameter(parametersNode, (String) overrideParameterNode."@name",
                 overrideParameterNode.attributes())
         // merge description, subtype, ParameterValidations
         for (Node childNode in overrideParameterNode.children()) {
@@ -385,7 +385,7 @@ class ServiceDefinition {
         // set the default-value if applicable
         if (!parameterValue && !(parameterValue instanceof Boolean) && parameterNode."@default-value") {
             ((ContextStack) eci.context).push(rootParameters)
-            parameterValue = eci.getResource().evaluateStringExpand(parameterNode."@default-value", "${this.location}_${parameterName}_default")
+            parameterValue = eci.getResource().evaluateStringExpand((String) parameterNode."@default-value", "${this.location}_${parameterName}_default")
             // logger.warn("For parameter ${namePrefix}${parameterName} new value ${parameterValue} from default-value [${parameterNode.'@default-value'}] and context: ${eci.context}")
             ((ContextStack) eci.context).pop()
         }
@@ -460,7 +460,7 @@ class ServiceDefinition {
             boolean allowSafe = (parameterNode."@allow-html" == "safe")
 
             if (parameterValue instanceof String) {
-                parameterValue = canonicalizeAndCheckHtml(parameterName, parameterValue, allowSafe, eci)
+                canonicalizeAndCheckHtml(parameterName, parameterValue, allowSafe, eci)
             } else {
                 List lst = parameterValue as List
                 parameterValue = new ArrayList(lst.size())

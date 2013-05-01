@@ -2,10 +2,10 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.2.1 - TBD 2013
+Release 1.3.0 - TBD 2013
 ===========================================================================
 
-Moqui Framework 1.2.1 is a minor new feature and bug fix release... TODO
+Moqui Framework 1.3.0 is a minor new feature and bug fix release... TODO
 
 New Features:
 
@@ -38,6 +38,10 @@ New Features:
   XML Form fields to include widget-templates for widget reuse
 - Added EntityDynamicView.addRelationshipMember() method to easily add
   member-entity based on relationship definition
+- Added Entity Data Document feature configured by DataDocument* entities
+  which produce a sort of view entity (built on the fly with
+  EntityDynamicView); the actual data documents are nested Maps and Lists
+  produced by the EntityFacade.getDataDocuments() method
 
 Bug Fixes:
 
@@ -95,6 +99,11 @@ Bug Fixes:
   expected instead of multiple form-list-outer/etc elements
 - Fixed issue where view-entity.entity-condition.date-filter did not work
   with an empty @valid-date attribute
+- Fixed a few issues with EntityDynamicView (failure to get group name,
+  some better error handling, etc)
+- Fixed issue with view-entity automatic trimming based on used fields
+  where a member-entity with no used fields but that is needed to joing to
+  another member-entity with used fields was not included
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
@@ -1094,7 +1103,7 @@ Features designed or considered, but not to be included in 1.0 series
     - returns List of Maps with these entries:
       - _index = DataDocument.indexName
       - _type = dataDocumentId
-      - _id = pk field values from primary entity, underscore separated
+      - _id = pk field values from primary entity, double colon separated
       - Map for primary entity with primaryEntityName as key
       - nested List of Maps for each related entity with aliased fields with relationship name as key
     - check record-level authz (both inclusions and exclusions); caller should disable authz to access all records

@@ -61,7 +61,7 @@ class EntityQueryBuilder {
     }
 
     Connection makeConnection() {
-        this.connection = this.efi.getConnection(this.efi.getEntityGroupName(this.mainEntityDefinition.getEntityName()))
+        this.connection = this.efi.getConnection(this.efi.getEntityGroupName(mainEntityDefinition))
         return this.connection
     }
 
@@ -138,7 +138,7 @@ class EntityQueryBuilder {
     }
 
     void setPreparedStatementValue(int index, Object value, Node fieldNode) throws EntityException {
-        setPreparedStatementValue(this.ps, index, value, fieldNode, this.mainEntityDefinition.getEntityName(), this.efi)
+        setPreparedStatementValue(this.ps, index, value, fieldNode, this.mainEntityDefinition, this.efi)
     }
 
     void setPreparedStatementValues() {
@@ -169,7 +169,7 @@ class EntityQueryBuilder {
 
         void setPreparedStatementValue(int index) throws EntityException {
             setPreparedStatementValue(this.eqb.ps, index, this.value, this.fieldNode,
-                    this.eqb.mainEntityDefinition.getEntityName(), this.eqb.efi)
+                    this.eqb.mainEntityDefinition, this.eqb.efi)
         }
 
         @Override
@@ -179,7 +179,7 @@ class EntityQueryBuilder {
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
         String fieldName = fieldNode."@name"
-        String javaType = efi.getFieldJavaType(fieldNode."@type", entityValueImpl.getEntityName())
+        String javaType = efi.getFieldJavaType((String) fieldNode."@type", entityValueImpl.getEntityDefinition())
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
         Calendar cal = (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()
 
@@ -325,9 +325,10 @@ class EntityQueryBuilder {
     }
 
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, Node fieldNode,
-                                          String entityName, EntityFacadeImpl efi) throws EntityException {
+                                          EntityDefinition ed, EntityFacadeImpl efi) throws EntityException {
+        String entityName = ed.getFullEntityName()
         String fieldName = fieldNode."@name"
-        String javaType = efi.getFieldJavaType((String) fieldNode."@type", entityName)
+        String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
         if (value != null) {
             if (!StupidUtilities.isInstanceOf(value, javaType)) {
@@ -355,7 +356,7 @@ class EntityQueryBuilder {
             }
         }
 
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
+        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
         try {
             setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe())
         } catch (EntityException e) {
@@ -365,9 +366,9 @@ class EntityQueryBuilder {
         }
     }
 
-    static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, String entityName,
+    static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, EntityDefinition ed,
                                           EntityFacadeImpl efi) throws EntityException {
-        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(entityName))."@use-binary-type-for-blob")
+        boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
         int typeValue = value ? EntityFacadeImpl.getJavaTypeInt(value.class.name) : 1
         setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe())
 

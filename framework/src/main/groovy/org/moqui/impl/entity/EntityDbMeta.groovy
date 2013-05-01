@@ -35,7 +35,7 @@ class EntityDbMeta {
     }
 
     void checkTableRuntime(EntityDefinition ed) {
-        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
+        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed))
         if (datasourceNode?."@runtime-add-missing" == "false") return
 
         if (ed.isViewEntity()) {
@@ -54,7 +54,7 @@ class EntityDbMeta {
         // if it's in this table we've already checked it
         if (entityTablesChecked.containsKey(ed.entityName)) return
 
-        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed.entityName))
+        Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed))
         // if there is no @database-conf-name skip this, it's probably not a SQL/JDBC datasource
         if (!datasourceNode."@database-conf-name") return
 
@@ -89,7 +89,7 @@ class EntityDbMeta {
     }
 
     boolean tableExists(EntityDefinition ed) {
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Connection con = null
         ResultSet tableSet = null
         try {
@@ -116,15 +116,15 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot create table")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot create table for a view entity")
 
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ").append(ed.getFullTableName()).append(" (")
 
         for (String fieldName in ed.getFieldNames(true, true, false)) {
             Node fieldNode = ed.getFieldNode(fieldName)
-            String sqlType = efi.getFieldSqlType(fieldNode."@type", ed.entityName)
-            String javaType = efi.getFieldJavaType(fieldNode."@type", ed.entityName)
+            String sqlType = efi.getFieldSqlType((String) fieldNode."@type", ed)
+            String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
 
             sql.append(ed.getColumnName(fieldName, false)).append(" ").append(sqlType)
 
@@ -168,7 +168,7 @@ class EntityDbMeta {
     }
 
     ListOrderedSet getMissingColumns(EntityDefinition ed) {
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Connection con = null
         ResultSet colSet = null
         try {
@@ -203,15 +203,15 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot add column")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot add column for a view entity")
 
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         Node fieldNode = ed.getFieldNode(fieldName)
 
         if (fieldNode."@is-user-field" == "true") throw new IllegalArgumentException("Cannot add column for a UserField")
 
-        String sqlType = efi.getFieldSqlType(fieldNode."@type", ed.entityName)
-        String javaType = efi.getFieldJavaType(fieldNode."@type", ed.entityName)
+        String sqlType = efi.getFieldSqlType((String) fieldNode."@type", ed)
+        String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
 
         StringBuilder sql = new StringBuilder("ALTER TABLE ").append(ed.getFullTableName())
         // NOTE: if any databases need "ADD COLUMN" instead of just "ADD", change this to try both or based on config
@@ -230,7 +230,7 @@ class EntityDbMeta {
         if (ed == null) throw new IllegalArgumentException("No EntityDefinition specified, cannot create indexes")
         if (ed.isViewEntity()) throw new IllegalArgumentException("Cannot create indexes for a view entity")
 
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         if (databaseNode."@use-indexes" == "false") return
@@ -313,7 +313,7 @@ class EntityDbMeta {
     }
 
     Boolean foreignKeyExists(EntityDefinition ed, EntityDefinition relEd, Node relNode) {
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Connection con = null
         ResultSet ikSet = null
         try {
@@ -361,7 +361,7 @@ class EntityDbMeta {
         // NOTE2: with the createForeignKeysForExistingTables() method this isn't strictly necessary, that can be run
         //     after the system is run for a bit and/or all tables desired have been created and it will take care of it
 
-        String groupName = efi.getEntityGroupName(ed.entityName)
+        String groupName = efi.getEntityGroupName(ed)
         Node databaseNode = efi.getDatabaseNode(groupName)
 
         if (databaseNode."@use-foreign-keys" == "false") return

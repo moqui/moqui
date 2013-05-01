@@ -481,7 +481,7 @@ class EntityFacadeImpl implements EntityFacade {
         // TODO: load framework entities first, then component/mantle/etc entities for better FKs on first pass
         for (String entityName in getAllEntityNames()) {
             EntityDefinition ed = getEntityDefinition(entityName)
-            String entityGroupName = getEntityGroupName(entityName)
+            String entityGroupName = getEntityGroupName(ed)
             if (!groupName || groupName == entityGroupName) getEntityDbMeta().checkTableRuntime(ed)
         }
     }
@@ -779,12 +779,14 @@ class EntityFacadeImpl implements EntityFacade {
 
     @Override
     EntityValue makeValue(String entityName) {
+        if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeValue")
         EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
         return edf.makeEntityValue(entityName)
     }
 
     @Override
     EntityFind makeFind(String entityName) {
+        if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeFind")
         EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
         return edf.makeEntityFind(entityName)
     }
@@ -802,7 +804,7 @@ class EntityFacadeImpl implements EntityFacade {
             // set the parameter values
             int paramIndex = 1
             for (Object parameterValue in sqlParameterList) {
-                EntityQueryBuilder.setPreparedStatementValue(ps, paramIndex, parameterValue, entityName, this)
+                EntityQueryBuilder.setPreparedStatementValue(ps, paramIndex, parameterValue, ed, this)
                 paramIndex++
             }
             // do the actual query
@@ -820,15 +822,21 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     @Override
-    List<Map> findDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
+    List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                 Timestamp thruUpdatedStamp) {
         EntityValue dataDocument = makeFind("moqui.entity.document.DataDocument")
                 .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+        if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
         EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
         EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
 
+        String primaryEntityName = dataDocument.primaryEntityName
+        EntityDefinition primaryEd = getEntityDefinition(primaryEntityName)
+        List<String> primaryPkFieldNames = primaryEd.getPkFieldNames()
+
         // build the field tree, nested Maps for relationship field path elements and field alias String for field name path elements
         Map fieldTree = [:]
+        Map<String, String> fieldAliasPathMap = [:]
         for (EntityValue dataDocumentField in dataDocumentFieldList) {
             String fieldPath = dataDocumentField.fieldPath
             Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
@@ -841,24 +849,35 @@ class EntityFacadeImpl implements EntityFacade {
                     currentTree = subTree
                 } else {
                     currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
+                    fieldAliasPathMap.put((String) dataDocumentField.fieldNameAlias ?: fieldPathElement, (String) dataDocumentField.fieldPath)
                 }
             }
         }
-        logger.warn("=========== fieldTree=${fieldTree}")
+        // make sure all PK fields of the primary entity are aliased
+        for (String pkFieldName in primaryPkFieldNames) if (!fieldAliasPathMap.containsKey(pkFieldName)) {
+            fieldTree.put(pkFieldName, pkFieldName)
+            fieldAliasPathMap.put(pkFieldName, pkFieldName)
+        }
+        logger.warn("=========== ${dataDocumentId} fieldTree=${fieldTree}")
+        logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${fieldAliasPathMap}")
 
         // build the query condition for the primary entity and all related entities
-        EntityFind mainFind = makeFind(null)
+        EntityFind mainFind = makeFind(primaryEntityName)
         EntityDynamicView dynamicView = mainFind.makeEntityDynamicView()
 
         // add member entities and field aliases to dynamic view
-        dynamicView.addMemberEntity("PRIMARY", (String) dataDocument.primaryEntityName, null, null, null)
-        fieldTree.put("_ALIAS", "PRIMARY")
+        dynamicView.addMemberEntity("PRIM_ENT", primaryEntityName, null, null, null)
+        fieldTree.put("_ALIAS", "PRIM_ENT")
         StupidUtilities.Incrementer incrementer = new StupidUtilities.Incrementer()
-        addDataDocRelatedEntity(dynamicView, "PRIMARY", fieldTree, incrementer)
+        addDataDocRelatedEntity(dynamicView, "PRIM_ENT", fieldTree, incrementer)
 
-        // build condition
-        List<EntityCondition> conditionList = []
-        if (condition) conditionList.add(condition)
+        // logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${((EntityDynamicViewImpl) dynamicView).getViewEntityNode()}")
+
+        // add conditions
+        if (condition) mainFind.condition(condition)
+        for (EntityValue dataDocumentCondition in dataDocumentConditionList)
+            mainFind.condition((String) dataDocumentCondition.fieldNameAlias, dataDocumentCondition.fieldValue)
+
         // create a condition with an OR list of date range comparisons to check that at least one member-entity has lastUpdatedStamp in range
         if (fromUpdateStamp != null || thruUpdatedStamp != null) {
             List<EntityCondition> dateRangeOrCondList = []
@@ -880,22 +899,124 @@ class EntityFacadeImpl implements EntityFacade {
                 }
                 dateRangeOrCondList.add(getConditionFactory().makeCondition(dateRangeFieldCondList, EntityCondition.AND))
             }
-            conditionList.add(getConditionFactory().makeCondition(dateRangeOrCondList, EntityCondition.OR))
+            mainFind.condition(getConditionFactory().makeCondition(dateRangeOrCondList, EntityCondition.OR))
         }
-        for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
-            // TODO
-            if (!dataDocumentCondition.fieldPath.contains(":"))
-                conditionList.add(getConditionFactory().makeCondition((String) dataDocumentCondition.fieldPath,
-                        EntityCondition.EQUALS, (String) dataDocumentCondition.fieldValue))
-            // TODO handle other conditions...
+        logger.warn("=========== ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
+
+        // do the one big query
+        EntityListIterator mainEli = mainFind.iterator()
+        Map<String, Map> documentMapMap = [:]
+        try {
+            for (EntityValue ev in mainEli) {
+                StringBuffer pkCombinedSb = new StringBuffer()
+                for (String pkFieldName in primaryPkFieldNames) {
+                    if (pkCombinedSb.length() > 0) pkCombinedSb.append("::")
+                    pkCombinedSb.append(ev.get(pkFieldName))
+                }
+                String docId = pkCombinedSb.toString()
+
+                /*
+                  - _index = DataDocument.indexName
+                  - _type = dataDocumentId
+                  - _id = pk field values from primary entity, double colon separated
+                  - Map for primary entity with primaryEntityName as key
+                  - nested List of Maps for each related entity with aliased fields with relationship name as key
+                 */
+                Map<String, Object> docMap = documentMapMap.get(docId)
+                if (docMap == null) {
+                    // add special entries
+                    docMap = (Map<String, Object>) [_type:dataDocumentId, _id:docId]
+                    if (dataDocument.indexName) docMap.put("_index", (String) dataDocument.indexName)
+                    // add Map for primary entity
+                    Map primaryEntityMap = [:]
+                    for (Map.Entry fieldTreeEntry in fieldTree.entrySet()) {
+                        if (fieldTreeEntry.getValue() instanceof String) {
+                            if (fieldTreeEntry.getKey() == "_ALIAS") continue
+                            String fieldName = fieldTreeEntry.getValue()
+                            primaryEntityMap.put(fieldName, ev.get(fieldName))
+                        }
+                    }
+                    docMap.put(primaryEntityName, primaryEntityMap)
+
+                    documentMapMap.put(docId, docMap)
+                }
+
+                // recursively add List of Maps for each related entity
+                populateDataDocRelatedMap(ev, docMap, fieldTree, false)
+            }
+        } finally {
+            mainEli.close()
         }
 
-
-        // build the document Maps
+        // make the actual list and return it
         List<Map> documentMapList = []
-        // TODO
-        // TODO call the manualDataServiceName service for each document
+        for (Map.Entry<String, Map> documentMapEntry in documentMapMap.entrySet()) {
+            Map docMap = documentMapEntry.getValue()
+            documentMapList.add(docMap)
+            // call the manualDataServiceName service for each document
+            if (dataDocument.manualDataServiceName) {
+                Map result = ecfi.getServiceFacade().sync().name((String) dataDocument.manualDataServiceName)
+                        .parameters([dataDocumentId:dataDocumentId, documentMap:docMap]).call()
+                if (result.dataToAdd) docMap.putAll(result.dataToAdd)
+            }
+        }
         return documentMapList
+    }
+
+    protected void populateDataDocRelatedMap(EntityValue ev, Map<String, Object> parentDocMap, Map fieldTreeCurrent,
+                                             boolean setFields) {
+        for (Map.Entry fieldTreeEntry in fieldTreeCurrent.entrySet()) {
+            if (fieldTreeEntry.getKey() instanceof String && fieldTreeEntry.getKey() == "_ALIAS") continue
+            if (fieldTreeEntry.getValue() instanceof Map) {
+                String relationshipName = fieldTreeEntry.getKey()
+                Map fieldTreeChild = (Map) fieldTreeEntry.getValue()
+
+                // see if there is a Map in the List in the matching entry
+                List<Map> relatedEntityDocList = (List<Map>) parentDocMap.get(relationshipName)
+                Map relatedEntityDocMap = null
+                if (relatedEntityDocList != null) {
+                    for (Map candidateMap in relatedEntityDocList) {
+                        boolean allMatch = true
+                        for (Map.Entry fieldTreeChildEntry in fieldTreeChild.entrySet()) {
+                            if (fieldTreeEntry.getValue() instanceof String) {
+                                if (fieldTreeEntry.getKey() == "_ALIAS") continue
+                                String fieldName = fieldTreeEntry.getValue()
+                                if (candidateMap.get(fieldName) != ev.get(fieldName)) {
+                                    allMatch = false
+                                    break
+                                }
+                            }
+                        }
+                        if (allMatch) {
+                            relatedEntityDocMap = candidateMap
+                            break
+                        }
+                    }
+                }
+                boolean recurseSetFields = true
+                if (relatedEntityDocMap == null) {
+                    // no matching Map? create a new one... and it will get populated in the recursive call
+                    if (relatedEntityDocList == null) {
+                        relatedEntityDocList = []
+                        parentDocMap.put(relationshipName, relatedEntityDocList)
+                    }
+
+                    relatedEntityDocMap = [:]
+                    relatedEntityDocList.add(relatedEntityDocMap)
+                } else {
+                    recurseSetFields = false
+                }
+
+                // now time to recurse
+                populateDataDocRelatedMap(ev, relatedEntityDocMap, fieldTreeChild, recurseSetFields)
+            } else {
+                if (setFields) {
+                    // set the field
+                    String fieldName = fieldTreeEntry.getValue()
+                    parentDocMap.put(fieldName, ev.get(fieldName))
+                }
+            }
+        }
     }
 
     protected void addDataDocRelatedEntity(EntityDynamicView dynamicView, String parentEntityAlias,
@@ -941,7 +1062,7 @@ class EntityFacadeImpl implements EntityFacade {
             // is the seqName an entityName?
             EntityDefinition ed = getEntityDefinition(seqName)
             if (ed != null) {
-                String groupName = getEntityGroupName(seqName)
+                String groupName = getEntityGroupName(ed)
                 if (ed.getEntityNode()?."@sequence-primary-use-uuid" == "true" ||
                         getDatasourceNode(groupName)?."@sequence-primary-use-uuid" == "true")
                     return UUID.randomUUID().toString()
@@ -1020,6 +1141,16 @@ class EntityFacadeImpl implements EntityFacade {
         return (prefix?:"") + seqNum.toString()
     }
 
+    String getEntityGroupName(EntityDefinition ed) {
+        String entityName = ed.getFullEntityName()
+        Node entityNode = ed.getEntityNode()
+        if (entityNode."@is-dynamic-view" == "true") {
+            // use the name of the first member-entity
+            entityName = entityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
+        }
+        return getEntityGroupName(entityName)
+    }
+
     @Override
     String getEntityGroupName(String entityName) {
         String entityGroupName = entityGroupNameMap.get(entityName)
@@ -1079,8 +1210,8 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected Map<String, Map<String, String>> javaTypeByGroup = [:]
-    String getFieldJavaType(String fieldType, String entityName) {
-        String groupName = this.getEntityGroupName(entityName)
+    String getFieldJavaType(String fieldType, EntityDefinition ed) {
+        String groupName = this.getEntityGroupName(ed)
         Map<String, String> javaTypeMap = javaTypeByGroup.get(groupName)
         if (javaTypeMap == null) {
             javaTypeMap = new HashMap()
@@ -1095,15 +1226,15 @@ class EntityFacadeImpl implements EntityFacade {
         if (!javaType) {
             Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
             javaType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@java-type" : null
-            if (!javaType) throw new EntityException("Could not find Java type for field type [${fieldType}] on entity [${entityName}]")
+            if (!javaType) throw new EntityException("Could not find Java type for field type [${fieldType}] on entity [${ed.getFullEntityName()}]")
         }
         javaTypeMap.put(fieldType, javaType)
         return javaType
     }
 
     protected Map<String, Map<String, String>> sqlTypeByGroup = [:]
-    protected String getFieldSqlType(String fieldType, String entityName) {
-        String groupName = this.getEntityGroupName(entityName)
+    protected String getFieldSqlType(String fieldType, EntityDefinition ed) {
+        String groupName = this.getEntityGroupName(ed)
         Map<String, String> sqlTypeMap = sqlTypeByGroup.get(groupName)
         if (sqlTypeMap == null) {
             sqlTypeMap = new HashMap()
@@ -1118,7 +1249,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (!sqlType) {
             Node databaseListNode = this.ecfi.confXmlRoot."database-list"[0]
             sqlType = databaseListNode ? databaseListNode."dictionary-type".find({ it.@type == fieldType })?."@default-sql-type" : null
-            if (!sqlType) throw new EntityException("Could not find SQL type for field type [${fieldType}] on entity [${entityName}]")
+            if (!sqlType) throw new EntityException("Could not find SQL type for field type [${fieldType}] on entity [${ed.getFullEntityName()}]")
         }
         sqlTypeMap.put(fieldType, sqlType)
         return sqlType

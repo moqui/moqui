@@ -191,9 +191,16 @@ public class EntityDefinition {
         Node relNode = relationshipNodeMap.get(relationshipName)
         if (relNode != null) return relNode
 
+        String entityName = relationshipName.contains("#") ? relationshipName.substring(relationshipName.indexOf("#") + 1) : relationshipName
+        String title = relationshipName.contains("#") ? relationshipName.substring(0, relationshipName.indexOf("#")) : null
+        EntityDefinition relatedEd = efi.getEntityDefinition(entityName)
+
         relNode = (Node) this.internalEntityNode."relationship"
                 .find({ ((it."@title" ?: "") + it."@related-entity-name") == relationshipName ||
-                    ((it."@title" ?: "") + "#" + it."@related-entity-name") == relationshipName})
+                    ((it."@title" ?: "") + "#" + it."@related-entity-name") == relationshipName ||
+                    (relatedEd != null && it."@title" == title &&
+                        (it."@related-entity-name" == relatedEd.getEntityName() ||
+                         it."@related-entity-name" == relatedEd.getFullEntityName())) })
 
         // handle automatic reverse-many nodes (based on one node coming the other way)
         if (relNode == null) {
@@ -421,7 +428,7 @@ public class EntityDefinition {
     }
 
     String getFullTableName() {
-        if (efi.getDatabaseNode(efi.getEntityGroupName(internalEntityName))?."@use-schemas" != "false") {
+        if (efi.getDatabaseNode(efi.getEntityGroupName(this))?."@use-schemas" != "false") {
             String schemaName = getSchemaName()
             return schemaName ? schemaName + "." + getTableName() : getTableName()
         } else {
@@ -430,7 +437,7 @@ public class EntityDefinition {
     }
 
     String getSchemaName() {
-        String schemaName = efi.getDatasourceNode(efi.getEntityGroupName(internalEntityName))?."@schema-name"
+        String schemaName = efi.getDatasourceNode(efi.getEntityGroupName(this))?."@schema-name"
         return schemaName ?: null
     }
 
@@ -669,7 +676,7 @@ public class EntityDefinition {
 
         Object outValue
         Node fieldNode = this.getFieldNode(name)
-        String javaType = this.efi.getFieldJavaType((String) fieldNode."@type", internalEntityName)
+        String javaType = this.efi.getFieldJavaType((String) fieldNode."@type", this)
         try {
             switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
                 case 1: outValue = value; break

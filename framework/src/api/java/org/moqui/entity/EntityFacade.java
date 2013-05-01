@@ -73,7 +73,7 @@ public interface EntityFacade {
      *      - nested List of Maps for each related entity from DataDocumentField records with aliased fields
      *          (with relationship name as key)
      */
-    List<Map> findDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
+    List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                 Timestamp thruUpdatedStamp);
 
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;

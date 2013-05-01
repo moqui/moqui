@@ -571,7 +571,7 @@ abstract class EntityFindBase implements EntityFind {
         EntityListIterator eli = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
 
         EntityListImpl el
-        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed.getEntityName()))
+        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
         if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
             el = eli.getPartialList(this.offset ?: 0, this.limit, true)
         } else {
@@ -645,7 +645,7 @@ abstract class EntityFindBase implements EntityFind {
         EntityListIterator eli = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
 
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
-        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed.getEntityName()))
+        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
         if (databaseNode."@offset-style" == "cursor") {
             if (!eli.absolute(offset)) {
                 // can't seek to desired offset? not enough results, just go to after last result
