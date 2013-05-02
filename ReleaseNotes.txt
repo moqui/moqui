@@ -2,10 +2,10 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.0 - TBD 2013
+Release 1.2.1 - TBD 2013
 ===========================================================================
 
-Moqui Framework 1.3.0 is a minor new feature and bug fix release... TODO
+Moqui Framework 1.2.1 is a minor new feature and bug fix release... TODO
 
 New Features:
 
@@ -1096,27 +1096,11 @@ Features designed or considered, but not to be included in 1.0 series
     - Entity: NotificationMessage - notificationMessageId*, notificationName, userGroupId, messageJson (from message Map)
     - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
 
-- Data Document
-  - Doc ID = primary entity PK fields
-  - API: makeDataDocument
-    - parameters: dataDocumentId, updatedSinceStamp, entityCondition
-    - returns List of Maps with these entries:
-      - _index = DataDocument.indexName
-      - _type = dataDocumentId
-      - _id = pk field values from primary entity, double colon separated
-      - Map for primary entity with primaryEntityName as key
-      - nested List of Maps for each related entity with aliased fields with relationship name as key
-    - check record-level authz (both inclusions and exclusions); caller should disable authz to access all records
-  - Entity: DataDocument - dataDocumentId*, documentName, indexName (optional), primaryEntityName
-  - Entity: DataDocumentField - dataDocumentId*, fieldPath*, fieldNameAlias (for last part of fieldPath only)
-    - fieldPath: [[RelationshipName:]RelationshipName:]fieldName, if no RelationshipName then is a primary entity field
-  - Entity: DataDocumentCondition - dataDocumentId*, fieldPath*, value
-  - Entity: DataDocumentLink - dataDocumentId*, label*, baseUrl or screenPath (check authz for screen when displaying links)
 - Data Search
   - use elasticsearch.org
-  - get data from Data Feed, Data Search is a ConsumerSystem
+  - get data from Data Feed, Data Search is a ConsumerSystem?
   - receive#DataFeed interface service implementation
-  - search includes documentName as a search term, key search term to constrain to results to documentName
+  - search includes documentName as a search term, key search term to constrain to results to documentName; limit search to specific indexName
   - _index = indexName, _type = documentName, _id = (pk field values, underscore separated), use version?
 - Data Feed
   - API get outstanding data changes
@@ -1127,7 +1111,7 @@ Features designed or considered, but not to be included in 1.0 series
   - Entity: DataFeed - dataFeedId, ...
   - Entity: DataFeedDocument - dataFeedId, dataDocumentId
   - Consumer System Registry
-    - register service
+    - register service for push (service to call, ID), another for pull (ID)
     - per DataDocument alreadySentDateTime
     - feed transport (for each: supports confirmation?)
       - WebSocket (use Notification system, based on notificationName (and userAccountId?))
