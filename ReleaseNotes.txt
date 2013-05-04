@@ -1086,7 +1086,7 @@ Features designed or considered, but not to be included in 1.0 series
 
 - User Notification (part of MessageFacade?)
   - WebSocket clients: track userAccountId, notificationName, connectionKey
-    - Add VisitClient entity visitId*, userAccountId*, notificationName*, connectionKey*
+    - Entity: VisitClient - visitId*, userAccountId*, notificationName*, connectionKey*
     - when sending out WebSocket messages lookup all active Visits for userAccountId and send to each connectionKey
     - API (with at least an example transition) for WebSocket client registry; set connectionKey on current Visit
     - use Camel WebSocket? jWebSocket? (how to send message to client connection key)
@@ -1100,14 +1100,14 @@ Features designed or considered, but not to be included in 1.0 series
   - use elasticsearch.org
   - get data from Data Feed, Data Search is a ConsumerSystem?
   - receive#DataFeed interface service implementation
-  - search includes documentName as a search term, key search term to constrain to results to documentName; limit search to specific indexName
-  - _index = indexName, _type = documentName, _id = (pk field values, underscore separated), use version?
+  - search includes dataDocumentId as a search term, key search term to constrain to results to dataDocumentId; limit search to specific indexName
+  - _index = indexName, _type = dataDocumentId, _id = (pk field values, underscore separated), use version?
 - Data Feed
   - API get outstanding data changes
   - API push outstanding data changes (registration/connection, time trigger)
   - API push matching data change
   - API receive/persist data change messages
-  - consumerSystemId, entityName (plain, view, db view), entityCondition (field value, cond list, date range, [where clause, field-field])
+  - DataDocument will handle entity name, conditions, etc: consumerSystemId, entityName (plain, view, db view), entityCondition (field value, cond list, date range, [where clause, field-field])
   - Entity: DataFeed - dataFeedId, ...
   - Entity: DataFeedDocument - dataFeedId, dataDocumentId
   - Consumer System Registry
