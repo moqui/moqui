@@ -926,6 +926,8 @@ class EntityFacadeImpl implements EntityFacade {
                 if (docMap == null) {
                     // add special entries
                     docMap = (Map<String, Object>) [_type:dataDocumentId, _id:docId]
+                    docMap.put("_timestamp", ecfi.getL10nFacade().formatValue(
+                            thruUpdatedStamp ?: new Timestamp(System.currentTimeMillis()), "yyyy-MM-dd'T'HH:mm:ss"))
                     if (dataDocument.indexName) docMap.put("_index", (String) dataDocument.indexName)
                     // add Map for primary entity
                     Map primaryEntityMap = [:]
@@ -952,13 +954,13 @@ class EntityFacadeImpl implements EntityFacade {
         List<Map> documentMapList = []
         for (Map.Entry<String, Map> documentMapEntry in documentMapMap.entrySet()) {
             Map docMap = documentMapEntry.getValue()
-            documentMapList.add(docMap)
             // call the manualDataServiceName service for each document
             if (dataDocument.manualDataServiceName) {
                 Map result = ecfi.getServiceFacade().sync().name((String) dataDocument.manualDataServiceName)
-                        .parameters([dataDocumentId:dataDocumentId, documentMap:docMap]).call()
-                if (result.dataToAdd) docMap.putAll(result.dataToAdd)
+                        .parameters([dataDocumentId:dataDocumentId, document:docMap]).call()
+                if (result.document) docMap = document
             }
+            documentMapList.add(docMap)
         }
         return documentMapList
     }
