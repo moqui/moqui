@@ -821,6 +821,65 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    Map<String, Map> getDataDocumentEntityInfo(String dataDocumentId) {
+        EntityValue dataDocument = makeFind("moqui.entity.document.DataDocument")
+                .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+        if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
+        EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+        EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
+
+        String primaryEntityName = dataDocument.primaryEntityName
+        EntityDefinition primaryEd = getEntityDefinition(primaryEntityName)
+
+        Map<String, Map> entityInfoMap = [:]
+
+        // start with the primary entity
+        entityInfoMap.put(primaryEntityName, [:])
+
+        // have to go through entire fieldTree instead of entity names directly from fieldPath because may not have hash (#) separator
+        Map<String, Object> fieldTree = [:]
+        for (EntityValue dataDocumentField in dataDocumentFieldList) {
+            String fieldPath = dataDocumentField.fieldPath
+            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
+            Map currentTree = fieldTree
+            Map currentEntityInfo = entityInfoMap.get(primaryEntityName)
+            EntityDefinition currentEd = primaryEd
+            while (fieldPathElementIter.hasNext()) {
+                String fieldPathElement = fieldPathElementIter.next()
+                if (fieldPathElementIter.hasNext()) {
+                    Map subTree = (Map) currentTree.get(fieldPathElement)
+                    if (subTree == null) { subTree = [:]; currentTree.put(fieldPathElement, subTree) }
+                    currentTree = subTree
+                    // make sure we have an entityInfo Map
+                    Node relNode = currentEd.getRelationshipNode(fieldPathElement)
+                    if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
+                    String relEntityName = relNode."@related-entity-name"
+                    if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName, [:])
+                    currentEntityInfo = entityInfoMap.get(relEntityName)
+                    currentEd = getEntityDefinition(relEntityName)
+                } else {
+                    currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
+                    // save the current field name (not the alias)
+                    StupidUtilities.addToSetInMap("fields", fieldPathElement, currentEntityInfo)
+                    // see if there are any conditions for this alias, if so add the fieldName/value to the entity conditions Map
+                    for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
+                        if (dataDocumentCondition.fieldNameAlias == dataDocumentField.fieldNameAlias) {
+                            Map conditions = (Map) currentEntityInfo.get("conditions")
+                            if (conditions == null) {
+                                conditions = [:]
+                                currentEntityInfo.put("conditions", conditions)
+                            }
+                            conditions.put(fieldPathElement, dataDocumentCondition.fieldValue)
+                        }
+                    }
+                }
+            }
+        }
+        logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
+
+        return entityInfoMap
+    }
+
     @Override
     List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                 Timestamp thruUpdatedStamp) {
@@ -835,29 +894,9 @@ class EntityFacadeImpl implements EntityFacade {
         List<String> primaryPkFieldNames = primaryEd.getPkFieldNames()
 
         // build the field tree, nested Maps for relationship field path elements and field alias String for field name path elements
-        Map fieldTree = [:]
+        Map<String, Object> fieldTree = [:]
         Map<String, String> fieldAliasPathMap = [:]
-        for (EntityValue dataDocumentField in dataDocumentFieldList) {
-            String fieldPath = dataDocumentField.fieldPath
-            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
-            Map currentTree = fieldTree
-            while (fieldPathElementIter.hasNext()) {
-                String fieldPathElement = fieldPathElementIter.next()
-                if (fieldPathElementIter.hasNext()) {
-                    Map subTree = (Map) currentTree.get(fieldPathElement)
-                    if (subTree == null) { subTree = [:]; currentTree.put(fieldPathElement, subTree) }
-                    currentTree = subTree
-                } else {
-                    currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
-                    fieldAliasPathMap.put((String) dataDocumentField.fieldNameAlias ?: fieldPathElement, (String) dataDocumentField.fieldPath)
-                }
-            }
-        }
-        // make sure all PK fields of the primary entity are aliased
-        for (String pkFieldName in primaryPkFieldNames) if (!fieldAliasPathMap.containsKey(pkFieldName)) {
-            fieldTree.put(pkFieldName, pkFieldName)
-            fieldAliasPathMap.put(pkFieldName, pkFieldName)
-        }
+        populateFieldTreeAndAliasPathMap(dataDocumentFieldList, primaryPkFieldNames, fieldTree, fieldAliasPathMap)
         logger.warn("=========== ${dataDocumentId} fieldTree=${fieldTree}")
         logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${fieldAliasPathMap}")
 
@@ -919,6 +958,7 @@ class EntityFacadeImpl implements EntityFacade {
                   - _index = DataDocument.indexName
                   - _type = dataDocumentId
                   - _id = pk field values from primary entity, double colon separated
+                  - _timestamp = document created time
                   - Map for primary entity with primaryEntityName as key
                   - nested List of Maps for each related entity with aliased fields with relationship name as key
                  */
@@ -963,6 +1003,31 @@ class EntityFacadeImpl implements EntityFacade {
             documentMapList.add(docMap)
         }
         return documentMapList
+    }
+
+    void populateFieldTreeAndAliasPathMap(EntityList dataDocumentFieldList, List<String> primaryPkFieldNames,
+                                          Map<String, Object> fieldTree, Map<String, String> fieldAliasPathMap) {
+        for (EntityValue dataDocumentField in dataDocumentFieldList) {
+            String fieldPath = dataDocumentField.fieldPath
+            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
+            Map currentTree = fieldTree
+            while (fieldPathElementIter.hasNext()) {
+                String fieldPathElement = fieldPathElementIter.next()
+                if (fieldPathElementIter.hasNext()) {
+                    Map subTree = (Map) currentTree.get(fieldPathElement)
+                    if (subTree == null) { subTree = [:]; currentTree.put(fieldPathElement, subTree) }
+                    currentTree = subTree
+                } else {
+                    currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
+                    fieldAliasPathMap.put((String) dataDocumentField.fieldNameAlias ?: fieldPathElement, (String) dataDocumentField.fieldPath)
+                }
+            }
+        }
+        // make sure all PK fields of the primary entity are aliased
+        for (String pkFieldName in primaryPkFieldNames) if (!fieldAliasPathMap.containsKey(pkFieldName)) {
+            fieldTree.put(pkFieldName, pkFieldName)
+            fieldAliasPathMap.put(pkFieldName, pkFieldName)
+        }
     }
 
     protected void populateDataDocRelatedMap(EntityValue ev, Map<String, Object> parentDocMap, Map fieldTreeCurrent,
