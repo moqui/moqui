@@ -113,6 +113,7 @@ public class L10nFacadeImpl implements L10nFacade {
         // try a couple of other format strings
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss.SSS", getLocale(), getTimeZone())
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", getLocale(), getTimeZone())
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ss", getLocale(), getTimeZone())
         // logger.warn("=========== input=${input}, cal=${cal}, long=${cal?.getTimeInMillis()}, locale=${getLocale()}, timeZone=${getTimeZone()}, System=${System.currentTimeMillis()}")
         if (cal != null) return new Timestamp(cal.getTimeInMillis())
 
