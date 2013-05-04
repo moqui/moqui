@@ -108,7 +108,7 @@ class ExecutionContextImpl implements ExecutionContext {
         if (!this.tenantId) {
             boolean alreadyDisabled = getArtifactExecution().disableAuthz()
             try {
-                EntityValue tenantHostDefault = getEntity().makeFind("TenantHostDefault")
+                EntityValue tenantHostDefault = getEntity().makeFind("moqui.tenant.TenantHostDefault")
                         .condition("hostName", request.getServerName()).useCache(true).one()
                 if (tenantHostDefault) {
                     this.tenantId = tenantHostDefault.tenantId
