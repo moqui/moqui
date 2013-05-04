@@ -154,14 +154,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="feedName" type="text-medium"/>
         <field name="feedReceiveServiceName" type="text-medium"><description>The service named here should implement the
             org.moqui.EntityServices.receive#DataFeed interface.</description></field>
-        <field name="lastFeedStamp" type="date-time"/>
+        <field name="lastFeedStamp" type="date-time"><description>Used only for periodic feeds.</description></field>
         <relationship type="one" title="DataFeedType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="dataFeedTypeEnumId"/>
         </relationship>
         <seed-data>
             <moqui.basic.EnumerationType description="Data Feed Type" enumTypeId="DataFeedType"/>
             <moqui.basic.Enumeration description="Real-time Service Push" enumId="DTFDTP_RT_PUSH" enumTypeId="DataFeedType"/>
-            <moqui.basic.Enumeration description="Periodic Service Push" enumId="DTFDTP_PER_PUSH" enumTypeId="DataFeedType"/>
+            <!-- <moqui.basic.Enumeration description="Periodic Service Push" enumId="DTFDTP_PER_PUSH" enumTypeId="DataFeedType"/> -->
             <moqui.basic.Enumeration description="Periodic Pull" enumId="DTFDTP_PER_PULL" enumTypeId="DataFeedType"/>
         </seed-data>
     </entity>
