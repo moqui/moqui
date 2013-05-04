@@ -114,11 +114,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="documentName" type="text-medium"/>
         <field name="indexName" type="text-medium"/>
         <field name="primaryEntityName" type="text-medium"/>
-        <field name="manualDataServiceName" type="text-medium"><description>
-            Name of a service to call to get additional data to include in the document.
-            Input parameters: dataDocumentId (String), documentMap (Map)
-            Output parameters: dataToAdd (Map)
-        </description></field>
+        <field name="manualDataServiceName" type="text-medium"><description>Name of a service to call to get additional
+            data to include in the document. This service should implement the
+            org.moqui.EntityServices.add#ManualDocumentData interface.</description></field>
     </entity>
     <entity entity-name="DataDocumentField" package-name="moqui.entity.document">
         <field name="dataDocumentId" type="id" is-pk="true"/>
@@ -144,6 +142,32 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="label" type="text-short" is-pk="true"/>
         <field name="linkUrl" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
+    </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.entity.feed -->
+    <!-- ========================================================= -->
+
+    <entity entity-name="DataFeed" package-name="moqui.entity.feed">
+        <field name="dataFeedId" type="id" is-pk="true"/>
+        <field name="dataFeedTypeEnumId" type="id"/>
+        <field name="feedName" type="text-medium"/>
+        <field name="feedReceiveServiceName" type="text-medium"><description>The service named here should implement the
+            org.moqui.EntityServices.receive#DataFeed interface.</description></field>
+        <field name="lastFeedStamp" type="date-time"/>
+        <relationship type="one" title="DataFeedType" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="dataFeedTypeEnumId"/>
+        </relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Data Feed Type" enumTypeId="DataFeedType"/>
+            <moqui.basic.Enumeration description="Real-time Service Push" enumId="DTFDTP_RT_PUSH" enumTypeId="DataFeedType"/>
+            <moqui.basic.Enumeration description="Periodic Service Push" enumId="DTFDTP_PER_PUSH" enumTypeId="DataFeedType"/>
+            <moqui.basic.Enumeration description="Periodic Pull" enumId="DTFDTP_PER_PULL" enumTypeId="DataFeedType"/>
+        </seed-data>
+    </entity>
+    <entity entity-name="DataFeedDocument" package-name="moqui.entity.feed">
+        <field name="dataFeedId" type="id" is-pk="true"/>
+        <field name="dataDocumentId" type="id" is-pk="true"/>
     </entity>
 
     <!-- ========================================================= -->
