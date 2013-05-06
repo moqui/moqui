@@ -5,7 +5,11 @@ Moqui Framework Release Notes
 Release 1.2.1 - TBD 2013
 ===========================================================================
 
-Moqui Framework 1.2.1 is a minor new feature and bug fix release... TODO
+Moqui Framework 1.2.1 is a new feature and bug fix release. The major new
+features include the EntityFacade Data Document, Data Feed, and Data Search
+features, the MessageFacade User Notification feature, and various
+improvements to XML Screens and Forms. This release is backward compatible
+with Moqui Framework release 1.2.0. ... TODO
 
 New Features:
 
@@ -19,7 +23,7 @@ New Features:
 - Improved date/time and number parsing for String values passed to an
   entity, partly so that implicit entity-auto services are more usable
 - Screen transition response plain URLs now assemble parameters using
-  response parameter subelements
+  response parameter sub-elements
 - Improved form-list with form-list-column so that hidden fields are always
   rendered along with the form element
 - Added span with id for form-list cell display fields and classes on it

@@ -69,6 +69,7 @@ public interface EntityFacade {
      *      - _index = DataDocument.indexName
      *      - _type = dataDocumentId
      *      - _id = pk field values from primary entity, underscore separated
+     *      - _timestamp = timestamp when the document was created
      *      - Map for primary entity (with primaryEntityName as key)
      *      - nested List of Maps for each related entity from DataDocumentField records with aliased fields
      *          (with relationship name as key)

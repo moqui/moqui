@@ -56,6 +56,8 @@ class EntityFacadeImpl implements EntityFacade {
      * available value and the second is the highest value reserved/cached in the bank. */
     protected final Cache entitySequenceBankCache
 
+    protected final Cache dataFeedEntityInfo
+
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
 
@@ -78,6 +80,7 @@ class EntityFacadeImpl implements EntityFacade {
         this.entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
         // NOTE: don't try to load entity locations before constructor is complete; this.loadAllEntityLocations()
         this.entitySequenceBankCache = ecfi.getCacheFacade().getCache("entity.sequence.bank")
+        this.dataFeedEntityInfo = ecfi.getCacheFacade().getCache("entity.data.feed.info")
 
         // EECA rule tables
         loadEecaRulesAll()
@@ -598,6 +601,10 @@ class EntityFacadeImpl implements EntityFacade {
         return efl
     }
 
+    /* ==================== */
+    /* Entity Cache Methods */
+    /* ==================== */
+
     CacheImpl getCacheOne(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one.${entityName}") }
     CacheImpl getCacheOneRa(String entityName) { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one_ra.${entityName}") }
     CacheImpl getCacheOneBf() { return ecfi.getCacheFacade().getCacheImpl("entity.${tenantId}.one_bf") }
@@ -772,7 +779,126 @@ class EntityFacadeImpl implements EntityFacade {
 
     EntityDbMeta getEntityDbMeta() { return dbMeta ? dbMeta : (dbMeta = new EntityDbMeta(this)) }
 
-    // ========== Interface Implementations ==========
+
+    /* ================ */
+    /* DataFeed Methods */
+    /* ================ */
+    /*
+
+    - doing update on entity have entityNames updated, for each fieldNames updated, field values (query as needed based
+        on actual conditions if any conditions on fields not present in EntityValue
+    - do this based on a committed transaction of changes, not just on a single record... if possible
+    - if can't do on transaction commit, keep data for documents to include until transaction committed
+    - either way only do this on a successful commit, not just on the create/update calls
+
+    to quickly lookup DataDocuments updated with a corresponding real time (DTFDTP_RT_PUSH) DataFeed need:
+    - don't have to constrain by real time DataFeed, will be done in advance for index
+    - Map with entityName as key
+    - value is List of Map with:
+      - dataFeedId
+      - List of dataDocumentInfo Maps with
+        - dataDocumentId
+        - Set of fields for DataDocument and the current entity
+        - primaryEntityName
+        - relationship path from primary to current entity
+        - Map of field conditions for current entity - and for entire document? TODO
+    - find with query on DataFeed and DataFeedDocument where DataFeed.dataFeedTypeEnumId=DTFDTP_RT_PUSH
+      - iterate through dataDocumentId and call getDataDocumentEntityInfo() for each
+
+    to produce the document with zero or minimal query
+    - during transaction save all created or updated records in EntityList updatedList (in EntityFacadeImpl?)
+    - EntityValues added to the list only if they are in the
+
+    - once we have dataDocumentIdSet use to lookup all DTFDTP_RT_PUSH DataFeed with a matching DataFeedDocument record
+    - look up primary entity value for the current updated value and use its PK fields as a condition to call
+        getDataDocuments() so that we get a document for just the updated record(s)
+
+     */
+
+    void dataFeedCheckAndRegister(EntityValue ev) {
+        List<Map> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
+        // TODO
+    }
+
+    List<Map> getDataFeedEntityInfoList(String fullEntityName) {
+        List<Map> entityInfoList = (List<Map>) dataFeedEntityInfo.get(fullEntityName)
+        if (entityInfoList == null) {
+            // TODO: rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
+            //     DataDocuments because we can't query it by entityName
+
+        }
+        return entityInfoList
+    }
+
+    Map<String, Map> getDataDocumentEntityInfo(String dataDocumentId) {
+        EntityValue dataDocument = makeFind("moqui.entity.document.DataDocument")
+                .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+        if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
+        EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+        EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
+
+        String primaryEntityName = dataDocument.primaryEntityName
+        EntityDefinition primaryEd = getEntityDefinition(primaryEntityName)
+
+        Map<String, Map> entityInfoMap = [:]
+
+        // start with the primary entity
+        entityInfoMap.put(primaryEntityName, [primaryEntityName:primaryEntityName, relationshipPath:""])
+
+        // have to go through entire fieldTree instead of entity names directly from fieldPath because may not have hash (#) separator
+        Map<String, Object> fieldTree = [:]
+        for (EntityValue dataDocumentField in dataDocumentFieldList) {
+            String fieldPath = dataDocumentField.fieldPath
+            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
+            Map currentTree = fieldTree
+            Map currentEntityInfo = entityInfoMap.get(primaryEntityName)
+            StringBuilder currentRelationshipPath = new StringBuilder()
+            EntityDefinition currentEd = primaryEd
+            while (fieldPathElementIter.hasNext()) {
+                String fieldPathElement = fieldPathElementIter.next()
+                if (fieldPathElementIter.hasNext()) {
+                    if (currentRelationshipPath.length() > 0) currentRelationshipPath.append(":")
+                    currentRelationshipPath.append(fieldPathElement)
+
+                    Map subTree = (Map) currentTree.get(fieldPathElement)
+                    if (subTree == null) { subTree = [:]; currentTree.put(fieldPathElement, subTree) }
+                    currentTree = subTree
+
+                    // make sure we have an entityInfo Map
+                    Node relNode = currentEd.getRelationshipNode(fieldPathElement)
+                    if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
+                    String relEntityName = relNode."@related-entity-name"
+                    if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName,
+                            [primaryEntityName:primaryEntityName, relationshipPath:currentRelationshipPath.toString()])
+                    currentEntityInfo = entityInfoMap.get(relEntityName)
+                    currentEd = getEntityDefinition(relEntityName)
+                } else {
+                    currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
+                    // save the current field name (not the alias)
+                    StupidUtilities.addToSetInMap("fields", fieldPathElement, currentEntityInfo)
+                    // see if there are any conditions for this alias, if so add the fieldName/value to the entity conditions Map
+                    for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
+                        if (dataDocumentCondition.fieldNameAlias == dataDocumentField.fieldNameAlias) {
+                            Map conditions = (Map) currentEntityInfo.get("conditions")
+                            if (conditions == null) {
+                                conditions = [:]
+                                currentEntityInfo.put("conditions", conditions)
+                            }
+                            conditions.put(fieldPathElement, dataDocumentCondition.fieldValue)
+                        }
+                    }
+                }
+            }
+        }
+        logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
+
+        return entityInfoMap
+    }
+
+
+    /* ========================= */
+    /* Interface Implementations */
+    /* ========================= */
 
     @Override
     EntityConditionFactory getConditionFactory() { return this.entityConditionFactory }
@@ -819,65 +945,6 @@ class EntityFacadeImpl implements EntityFacade {
         } catch (SQLException e) {
             throw new EntityException("SQL Exception with statement:" + sql + "; " + e.toString(), e)
         }
-    }
-
-    Map<String, Map> getDataDocumentEntityInfo(String dataDocumentId) {
-        EntityValue dataDocument = makeFind("moqui.entity.document.DataDocument")
-                .condition("dataDocumentId", dataDocumentId).useCache(true).one()
-        if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
-        EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
-        EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
-
-        String primaryEntityName = dataDocument.primaryEntityName
-        EntityDefinition primaryEd = getEntityDefinition(primaryEntityName)
-
-        Map<String, Map> entityInfoMap = [:]
-
-        // start with the primary entity
-        entityInfoMap.put(primaryEntityName, [:])
-
-        // have to go through entire fieldTree instead of entity names directly from fieldPath because may not have hash (#) separator
-        Map<String, Object> fieldTree = [:]
-        for (EntityValue dataDocumentField in dataDocumentFieldList) {
-            String fieldPath = dataDocumentField.fieldPath
-            Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
-            Map currentTree = fieldTree
-            Map currentEntityInfo = entityInfoMap.get(primaryEntityName)
-            EntityDefinition currentEd = primaryEd
-            while (fieldPathElementIter.hasNext()) {
-                String fieldPathElement = fieldPathElementIter.next()
-                if (fieldPathElementIter.hasNext()) {
-                    Map subTree = (Map) currentTree.get(fieldPathElement)
-                    if (subTree == null) { subTree = [:]; currentTree.put(fieldPathElement, subTree) }
-                    currentTree = subTree
-                    // make sure we have an entityInfo Map
-                    Node relNode = currentEd.getRelationshipNode(fieldPathElement)
-                    if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
-                    String relEntityName = relNode."@related-entity-name"
-                    if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName, [:])
-                    currentEntityInfo = entityInfoMap.get(relEntityName)
-                    currentEd = getEntityDefinition(relEntityName)
-                } else {
-                    currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
-                    // save the current field name (not the alias)
-                    StupidUtilities.addToSetInMap("fields", fieldPathElement, currentEntityInfo)
-                    // see if there are any conditions for this alias, if so add the fieldName/value to the entity conditions Map
-                    for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
-                        if (dataDocumentCondition.fieldNameAlias == dataDocumentField.fieldNameAlias) {
-                            Map conditions = (Map) currentEntityInfo.get("conditions")
-                            if (conditions == null) {
-                                conditions = [:]
-                                currentEntityInfo.put("conditions", conditions)
-                            }
-                            conditions.put(fieldPathElement, dataDocumentCondition.fieldValue)
-                        }
-                    }
-                }
-            }
-        }
-        logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
-
-        return entityInfoMap
     }
 
     @Override
@@ -1105,23 +1172,6 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
     }
-
-    /* Find and assemble data documents represented by a Map that can be easily turned into a JSON document. This is
-     * used for searching by the Data Search feature and for data feeds to other systems with the Data Feed feature.
-     *
-     * @param dataDocumentId Used to look up the DataDocument and related records (DataDocument* entities).
-     * @param condition An optional condition to AND with from/thru updated timestamps and any DataDocumentCondition
-     *                  records associated with the DataDocument.
-     * @param fromUpdateStamp The lastUpdatedStamp on at least one entity selected must be after (>=) this Timestamp.
-     * @param thruUpdatedStamp The lastUpdatedStamp on at least one entity selected must be before (<) this Timestamp.
-     * @return List of Maps with these entries:
-     *      - _index = DataDocument.indexName
-     *      - _type = dataDocumentId
-     *      - _id = pk field values from primary entity, underscore separated
-     *      - Map for primary entity (with primaryEntityName as key)
-     *      - nested List of Maps for each related entity from DataDocumentField records with aliased fields
-     *          (with relationship name as key)
-     */
 
     @Override
     String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
