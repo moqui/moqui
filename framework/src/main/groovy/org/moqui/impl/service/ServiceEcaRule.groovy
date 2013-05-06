@@ -192,7 +192,7 @@ class ServiceEcaRule {
                 public void run() {
                     boolean beganTransaction = ecfi.transactionFacade.begin(null)
                     try {
-                        sec.standaloneRun(parameters, ecfi.executionContext)
+                        sec.standaloneRun(parameters, null, ecfi.executionContext)
                     } catch (Throwable t) {
                         logger.error("Error running Service TX ECA rule", t)
                         ecfi.transactionFacade.rollback(beganTransaction, "Error running Service TX ECA rule", t)

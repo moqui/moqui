@@ -104,6 +104,8 @@ Bug Fixes:
 - Fixed issue with view-entity automatic trimming based on used fields
   where a member-entity with no used fields but that is needed to joing to
   another member-entity with used fields was not included
+- Fixed issue with tx-commit and tx-rollback parameter missing in method
+  call to run service
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
