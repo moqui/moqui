@@ -12,6 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
   -->
 <entity-facade-xml type="seed">
     <!-- For currency code reference see: http://www.iso.org/iso/support/faqs/faqs_widely_used_standards/widely_used_standards_other/currency_codes/currency_codes_list-1.htm -->
+    <moqui.basic.Uom abbreviation="BTC" description="Bitcoin" uomId="BTC" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="CRC" description="Costa Rica Colon" uomId="CRC" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="COP" description="Colombian Peso" uomId="COP" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
     <moqui.basic.Uom abbreviation="CNY" description="Chinese Yuan Renminbi" uomId="CNY" uomTypeEnumId="UT_CURRENCY_MEASURE"/>
