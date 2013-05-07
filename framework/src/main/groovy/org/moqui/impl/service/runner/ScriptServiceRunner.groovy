@@ -13,12 +13,9 @@ package org.moqui.impl.service.runner
 
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.impl.service.ServiceRunner
-import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ExecutionContext
-import org.moqui.impl.context.ExecutionContextImpl
-import org.moqui.impl.context.ContextStack
+import org.moqui.context.ContextStack
 
 public class ScriptServiceRunner implements ServiceRunner {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScriptServiceRunner.class)

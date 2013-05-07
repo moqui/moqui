@@ -27,7 +27,7 @@ import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
-import org.moqui.impl.context.ContextStack
+import org.moqui.context.ContextStack
 import org.moqui.impl.screen.ScreenDefinition.ResponseItem
 import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.StupidWebUtilities

@@ -18,7 +18,7 @@ import org.moqui.impl.FtlNodeWrapper
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.actions.XmlAction
-import org.moqui.impl.context.ContextStack
+import org.moqui.context.ContextStack
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.owasp.esapi.ValidationErrorList

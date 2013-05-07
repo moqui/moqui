@@ -13,7 +13,7 @@ package org.moqui.impl.screen
 
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.impl.context.ContextStack
+import org.moqui.context.ContextStack
 
 class ScreenSection {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenSection.class)

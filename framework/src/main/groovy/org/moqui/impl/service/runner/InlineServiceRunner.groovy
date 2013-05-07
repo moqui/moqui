@@ -15,7 +15,7 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
 import org.moqui.context.ExecutionContext
-import org.moqui.impl.context.ContextStack
+import org.moqui.context.ContextStack
 import org.moqui.impl.actions.XmlAction
 
 public class InlineServiceRunner implements ServiceRunner {

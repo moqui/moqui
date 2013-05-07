@@ -12,7 +12,6 @@
 package org.moqui.impl.context;
 
 import groovy.lang.Binding;
-import groovy.lang.MissingPropertyException;
 
 import java.util.Map;
 

@@ -21,7 +21,7 @@ import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.service.ServiceException
 import org.moqui.impl.service.ServiceRunner
-import org.moqui.impl.context.ContextStack
+import org.moqui.context.ContextStack
 
 public class JavaServiceRunner implements ServiceRunner {
     protected ServiceFacadeImpl sfi

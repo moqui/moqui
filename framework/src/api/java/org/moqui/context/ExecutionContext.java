@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface ExecutionContext {
     /** Returns a Map that represents the current local variable space (context) in whatever is being run. */
-    Map<String, Object> getContext();
+    ContextStack getContext();
 
     /** Returns a Map that represents the global/root variable space (context), ie the bottom of the context stack. */
     Map<String, Object> getContextRoot();

@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import org.moqui.context.ContextStack
 import org.moqui.context.ExecutionContext
 import org.moqui.context.UserFacade
 import org.moqui.context.MessageFacade
@@ -52,7 +53,7 @@ class ExecutionContextImpl implements ExecutionContext {
     ExecutionContextFactoryImpl getEcfi() { ecfi }
 
     /** @see org.moqui.context.ExecutionContext#getContext() */
-    Map<String, Object> getContext() { (Map<String, Object>) this.context }
+    ContextStack getContext() { this.context }
 
     /** @see org.moqui.context.ExecutionContext#getContextRoot() */
     Map<String, Object> getContextRoot() { this.context.getRootMap() }
