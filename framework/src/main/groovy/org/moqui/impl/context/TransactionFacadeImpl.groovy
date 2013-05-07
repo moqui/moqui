@@ -327,7 +327,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
-            getActiveXaResourceStack().set(0, null)
+            if (getActiveXaResourceStack()) getActiveXaResourceStack().set(0, null)
         }
     }
 
@@ -363,7 +363,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
-            getActiveXaResourceStack().set(0, null)
+            if (getActiveXaResourceStack()) getActiveXaResourceStack().set(0, null)
         }
     }
 
