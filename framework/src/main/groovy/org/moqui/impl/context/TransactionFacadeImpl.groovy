@@ -196,7 +196,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
 
 
-    /** @see org.moqui.context.TransactionFacade#getStatus() */
+    @Override
     int getStatus() {
         try {
             return ut.getStatus()
@@ -205,7 +205,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#getStatusString() */
+    @Override
     String getStatusString() {
         int statusInt = getStatus()
         /*
@@ -247,10 +247,10 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#isTransactionInPlace() */
+    @Override
     boolean isTransactionInPlace() { return getStatus() != Status.STATUS_NO_TRANSACTION }
 
-    /** @see org.moqui.context.TransactionFacade#begin(Integer) */
+    @Override
     boolean begin(Integer timeout) {
         try {
             int currentStatus = ut.getStatus()
@@ -290,10 +290,10 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#commit(boolean) */
+    @Override
     void commit(boolean beganTransaction) { if (beganTransaction) this.commit() }
 
-    /** @see org.moqui.context.TransactionFacade#commit() */
+    @Override
     void commit() {
         try {
             int status = ut.getStatus();
@@ -331,7 +331,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#rollback(boolean, String, Throwable) */
+    @Override
     void rollback(boolean beganTransaction, String causeMessage, Throwable causeThrowable) {
         if (beganTransaction) {
             this.rollback(causeMessage, causeThrowable)
@@ -340,7 +340,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#rollback(String, Throwable) */
+    @Override
     void rollback(String causeMessage, Throwable causeThrowable) {
         try {
             if (getStatus() == Status.STATUS_NO_TRANSACTION) {
@@ -367,7 +367,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#setRollbackOnly(String, Throwable) */
+    @Override
     void setRollbackOnly(String causeMessage, Throwable causeThrowable) {
         try {
             int status = getStatus()
@@ -387,7 +387,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#suspend() */
+    @Override
     boolean suspend() {
         try {
             if (getStatus() == Status.STATUS_NO_TRANSACTION) {
@@ -409,7 +409,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#resume() */
+    @Override
     void resume() {
         try {
             ArrayList<Transaction> sts = getSuspendedTxStack()
@@ -434,7 +434,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#enlistConnection(XAConnection) */
+    @Override
     Connection enlistConnection(XAConnection con) {
         if (con == null) return null
         try {
@@ -446,7 +446,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#enlistResource(XAResource) */
+    @Override
     void enlistResource(XAResource resource) {
         if (resource == null) return
         if (getStatus() != Status.STATUS_ACTIVE) {
@@ -467,7 +467,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
-    /** @see org.moqui.context.TransactionFacade#registerSynchronization(Synchronization) */
+    @Override
     void registerSynchronization(Synchronization sync) {
         if (sync == null) return
         if (getStatus() != Status.STATUS_ACTIVE) {
