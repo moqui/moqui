@@ -49,6 +49,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     private ThreadLocal<ArrayList<RollbackInfo>> rollbackOnlyInfoStackList = new ThreadLocal<ArrayList<RollbackInfo>>()
     private ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
     private ThreadLocal<List<Exception>> suspendedTxLocationStack = new ThreadLocal<List<Exception>>()
+    private ThreadLocal<ArrayList<Map<String, XAResource>>> activeXaResourceStackList = new ThreadLocal<ArrayList<Map<String, XAResource>>>()
 
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -82,6 +83,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         rollbackOnlyInfoStackList.remove()
         suspendedTxStackList.remove()
         suspendedTxLocationStack.remove()
+        activeXaResourceStackList.remove()
     }
 
     /** This is called to make sure all transactions, etc are closed for the thread.
@@ -110,6 +112,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         rollbackOnlyInfoStackList.remove()
         suspendedTxStackList.remove()
         suspendedTxLocationStack.remove()
+        activeXaResourceStackList.remove()
     }
 
     TransactionManager getTransactionManager() { return tm }
@@ -122,7 +125,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     protected ArrayList<Exception> getTransactionBeginStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) transactionBeginStackList.get()
-        if (!list) {
+        if (list == null) {
             list = new ArrayList<Exception>(10)
             list.add(null)
             transactionBeginStackList.set(list)
@@ -131,7 +134,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
     protected ArrayList<Long> getTransactionBeginStartTimeList() {
         ArrayList<Long> list = (ArrayList<Long>) transactionBeginStartTimeList.get()
-        if (!list) {
+        if (list == null) {
             list = new ArrayList<Long>(10)
             list.add(null)
             transactionBeginStartTimeList.set(list)
@@ -140,7 +143,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
     protected ArrayList<RollbackInfo> getRollbackOnlyInfoStack() {
         ArrayList<RollbackInfo> list = (ArrayList<RollbackInfo>) rollbackOnlyInfoStackList.get()
-        if (!list) {
+        if (list == null) {
             list = new ArrayList<RollbackInfo>(10)
             list.add(null)
             rollbackOnlyInfoStackList.set(list)
@@ -149,7 +152,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
     protected ArrayList<Transaction> getSuspendedTxStack() {
         ArrayList<Transaction> list = (ArrayList<Transaction>) suspendedTxStackList.get()
-        if (!list) {
+        if (list == null) {
             list = new ArrayList<Transaction>(10)
             list.add(null)
             suspendedTxStackList.set(list)
@@ -158,10 +161,36 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
     protected ArrayList<Exception> getSuspendedTxLocationStack() {
         ArrayList<Exception> list = (ArrayList<Exception>) suspendedTxLocationStack.get()
-        if (!list) {
+        if (list == null) {
             list = new ArrayList<Exception>(10)
             list.add(null)
             suspendedTxLocationStack.set(list)
+        }
+        return list
+    }
+
+    XAResource getActiveXaResource(String resourceName) {
+        ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
+        if (activeXaResourceStack.size() == 0) return null
+        Map<String, XAResource> activeXaResourceMap = activeXaResourceStack.get(0)
+        if (activeXaResourceMap != null) return activeXaResourceMap.get(resourceName)
+        return null
+    }
+    void putAndEnlistActiveXaResource(String resourceName, XAResource xar) {
+        ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
+        Map<String, XAResource> activeXaResourceMap = activeXaResourceStack.get(0)
+        if (activeXaResourceMap == null) {
+            activeXaResourceMap = [:]
+            activeXaResourceStack.set(0, activeXaResourceMap)
+        }
+        enlistResource(xar)
+        activeXaResourceMap.put(resourceName, xar)
+    }
+    ArrayList<Map<String, XAResource>> getActiveXaResourceStack() {
+        ArrayList<Map<String, XAResource>> list = (ArrayList<Map<String, XAResource>>) activeXaResourceStackList.get()
+        if (list == null) {
+            list = new ArrayList<Map<String, XAResource>>(10)
+            activeXaResourceStackList.set(list)
         }
         return list
     }
@@ -298,6 +327,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
+            getActiveXaResourceStack().set(0, null)
         }
     }
 
@@ -333,6 +363,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
+            getActiveXaResourceStack().set(0, null)
         }
     }
 
@@ -370,6 +401,8 @@ class TransactionFacadeImpl implements TransactionFacade {
             getTransactionBeginStartTimeList().add(0, null)
             getSuspendedTxStack().add(0, tx)
             getSuspendedTxLocationStack().add(0, new Exception("Transaction Suspend Location"))
+            getActiveXaResourceStack().add(0, null)
+
             return true
         } catch (SystemException e) {
             throw new TransactionException("Could not suspend transaction", e)
@@ -390,6 +423,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
                 sts.remove(0)
                 getSuspendedTxLocationStack().remove(0)
+                getActiveXaResourceStack().remove(0)
             } else {
                 logger.warn("No transaction suspended, so not resuming.")
             }
@@ -435,7 +469,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     /** @see org.moqui.context.TransactionFacade#registerSynchronization(Synchronization) */
     void registerSynchronization(Synchronization sync) {
-        if (sync== null) return
+        if (sync == null) return
         if (getStatus() != Status.STATUS_ACTIVE) {
             logger.warn("Not registering Synchronization: transaction not ACTIVE", new Exception("Warning Location"))
             return
