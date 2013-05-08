@@ -169,6 +169,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dataFeedId" type="id" is-pk="true"/>
         <field name="dataDocumentId" type="id" is-pk="true"/>
     </entity>
+    <view-entity entity-name="DataFeedAndDocument" package-name="moqui.entity.feed">
+        <member-entity entity-alias="DTFD" entity-name="DataFeed"/>
+        <member-entity entity-alias="DFD" entity-name="DataFeedDocument" join-from-alias="DTFD">
+            <key-map field-name="dataFeedId"/>
+        </member-entity>
+        <alias-all entity-alias="DTFD"/>
+        <alias entity-alias="DFD" name="dataDocumentId"/>
+    </view-entity>
 
     <!-- ========================================================= -->
     <!-- ========================================================= -->

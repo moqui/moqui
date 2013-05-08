@@ -67,19 +67,49 @@ class EntityDataFeed {
      */
 
     void dataFeedCheckAndRegister(EntityValue ev) {
+        // see if this should be added to the feed
         List<Map> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
-        // TODO see if this should be added to the feed
+        if (entityInfoList) {
+            // populate and pass the dataDocumentIdSet, and/or other things needed?
+            Set<String> dataDocumentIdSet = new HashSet<String>()
+            for (Map entityInfo in entityInfoList) dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
+            getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
+        }
+    }
 
+    DataFeedXaResource getDataFeedXaResource() {
         DataFeedXaResource dfxr = (DataFeedXaResource) efi.getEcfi().getTransactionFacade().getActiveXaResource("DataFeedXaResource")
-        dfxr.addValueToFeed(ev, null) // TODO: populate and pass the dataDocumentIdSet, and/or other things needed
+        if (dfxr == null) {
+            dfxr = new DataFeedXaResource(this)
+            dfxr.enlist()
+        }
+        return dfxr
     }
 
     List<Map> getDataFeedEntityInfoList(String fullEntityName) {
-        List<Map> entityInfoList = (List<Map>) dataFeedEntityInfo.get(fullEntityName)
+        List<Map> entityInfoList = (List<Map>) efi.dataFeedEntityInfo.get(fullEntityName)
         if (entityInfoList == null) {
-            // TODO: rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
+            // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
             //     DataDocuments because we can't query it by entityName
+            EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                    .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH").useCache(true).list()
+            Set<String> fullDataDocumentIdSet = new HashSet<String>()
+            for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList)
+                fullDataDocumentIdSet.add((String) dataFeedAndDocument.dataDocumentId)
 
+            for (String dataDocumentId in fullDataDocumentIdSet) {
+                Map<String, Map> entityInfoMap = getDataDocumentEntityInfo(dataDocumentId)
+                // got a Map for all entities in the document, now split them by entity and add to master list for the entity
+                for (Map.Entry<String, Map> entityInfoMapEntry in entityInfoMap.entrySet()) {
+                    List<Map> newEntityInfoList = (List<Map>) efi.dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
+                    newEntityInfoList.add(entityInfoMapEntry.getValue())
+                }
+            }
+
+            // now we should have all document entityInfos for all entities
+            logger.warn("============ efi.dataFeedEntityInfo: ${efi.dataFeedEntityInfo}")
+
+            entityInfoList = (List<Map>) efi.dataFeedEntityInfo.get(fullEntityName)
         }
         return entityInfoList
     }
@@ -97,7 +127,8 @@ class EntityDataFeed {
         Map<String, Map> entityInfoMap = [:]
 
         // start with the primary entity
-        entityInfoMap.put(primaryEntityName, [primaryEntityName:primaryEntityName, relationshipPath:""])
+        entityInfoMap.put(primaryEntityName, [dataDocumentId:dataDocumentId, primaryEntityName:primaryEntityName,
+                relationshipPath:""])
 
         // have to go through entire fieldTree instead of entity names directly from fieldPath because may not have hash (#) separator
         Map<String, Object> fieldTree = [:]
@@ -122,9 +153,10 @@ class EntityDataFeed {
                     Node relNode = currentEd.getRelationshipNode(fieldPathElement)
                     if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
                     String relEntityName = relNode."@related-entity-name"
-                    if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName,
-                            [primaryEntityName:primaryEntityName, relationshipPath:currentRelationshipPath.toString()])
-                    currentEntityInfo = entityInfoMap.get(relEntityName)
+                    if (!currentEntityInfo.containsKey(relEntityName)) currentEntityInfo.put(relEntityName,
+                            [dataDocumentId:dataDocumentId, primaryEntityName:primaryEntityName,
+                             relationshipPath:currentRelationshipPath.toString()])
+                    currentEntityInfo = (Map) entityInfoMap.get(relEntityName)
                     currentEd = efi.getEntityDefinition(relEntityName)
                 } else {
                     currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
@@ -168,8 +200,6 @@ class EntityDataFeed {
             ecfi = edf.getEfi().getEcfi()
             feedValues = new EntityListImpl(edf.getEfi())
         }
-
-        Xid getXid() { return xid }
 
         void enlist() {
             TransactionManager tm = ecfi.getTransactionFacade().getTransactionManager()
