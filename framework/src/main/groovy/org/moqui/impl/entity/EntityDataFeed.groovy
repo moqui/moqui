@@ -14,7 +14,6 @@ package org.moqui.impl.entity
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
-import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 import javax.transaction.Status
@@ -68,12 +67,22 @@ class EntityDataFeed {
 
     void dataFeedCheckAndRegister(EntityValue ev) {
         // see if this should be added to the feed
-        List<Map> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
+        List<DocumentEntityInfo> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
         if (entityInfoList) {
             // populate and pass the dataDocumentIdSet, and/or other things needed?
             Set<String> dataDocumentIdSet = new HashSet<String>()
-            for (Map entityInfo in entityInfoList) dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
-            getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
+            for (DocumentEntityInfo entityInfo in entityInfoList) {
+                // only add dataDocumentId if there are no conditions or if this record matches all conditions (not necessary, but this is an optimization to avoid false positives)
+                boolean matchedConditions = true
+                if (entityInfo.conditions) for (Map.Entry<String, String> conditionEntry in entityInfo.conditions.entrySet()) {
+                    Object evValue = ev.get(conditionEntry.getKey())
+                    // if ev doesn't have field populated, ignore the condition; we'll pick it up later in the big document query
+                    if (evValue == null) continue
+                    if (evValue != conditionEntry.getValue()) { matchedConditions = false; break }
+                }
+                if (matchedConditions) dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
+            }
+            if (dataDocumentIdSet) getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
         }
     }
 
@@ -86,8 +95,8 @@ class EntityDataFeed {
         return dfxr
     }
 
-    List<Map> getDataFeedEntityInfoList(String fullEntityName) {
-        List<Map> entityInfoList = (List<Map>) efi.dataFeedEntityInfo.get(fullEntityName)
+    List<DocumentEntityInfo> getDataFeedEntityInfoList(String fullEntityName) {
+        List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
         if (entityInfoList == null) {
             // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
             //     DataDocuments because we can't query it by entityName
@@ -98,10 +107,10 @@ class EntityDataFeed {
                 fullDataDocumentIdSet.add((String) dataFeedAndDocument.dataDocumentId)
 
             for (String dataDocumentId in fullDataDocumentIdSet) {
-                Map<String, Map> entityInfoMap = getDataDocumentEntityInfo(dataDocumentId)
+                Map<String, DocumentEntityInfo> entityInfoMap = getDataDocumentEntityInfo(dataDocumentId)
                 // got a Map for all entities in the document, now split them by entity and add to master list for the entity
-                for (Map.Entry<String, Map> entityInfoMapEntry in entityInfoMap.entrySet()) {
-                    List<Map> newEntityInfoList = (List<Map>) efi.dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
+                for (Map.Entry<String, DocumentEntityInfo> entityInfoMapEntry in entityInfoMap.entrySet()) {
+                    List<DocumentEntityInfo> newEntityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
                     newEntityInfoList.add(entityInfoMapEntry.getValue())
                 }
             }
@@ -109,12 +118,12 @@ class EntityDataFeed {
             // now we should have all document entityInfos for all entities
             logger.warn("============ efi.dataFeedEntityInfo: ${efi.dataFeedEntityInfo}")
 
-            entityInfoList = (List<Map>) efi.dataFeedEntityInfo.get(fullEntityName)
+            entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
         }
         return entityInfoList
     }
 
-    Map<String, Map> getDataDocumentEntityInfo(String dataDocumentId) {
+    Map<String, DocumentEntityInfo> getDataDocumentEntityInfo(String dataDocumentId) {
         EntityValue dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
                 .condition("dataDocumentId", dataDocumentId).useCache(true).one()
         if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
@@ -124,11 +133,10 @@ class EntityDataFeed {
         String primaryEntityName = dataDocument.primaryEntityName
         EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
 
-        Map<String, Map> entityInfoMap = [:]
+        Map<String, DocumentEntityInfo> entityInfoMap = [:]
 
         // start with the primary entity
-        entityInfoMap.put(primaryEntityName, [dataDocumentId:dataDocumentId, primaryEntityName:primaryEntityName,
-                relationshipPath:""])
+        entityInfoMap.put(primaryEntityName, new DocumentEntityInfo(primaryEntityName, dataDocumentId, primaryEntityName, ""))
 
         // have to go through entire fieldTree instead of entity names directly from fieldPath because may not have hash (#) separator
         Map<String, Object> fieldTree = [:]
@@ -136,7 +144,7 @@ class EntityDataFeed {
             String fieldPath = dataDocumentField.fieldPath
             Iterator<String> fieldPathElementIter = fieldPath.split(":").iterator()
             Map currentTree = fieldTree
-            Map currentEntityInfo = entityInfoMap.get(primaryEntityName)
+            DocumentEntityInfo currentEntityInfo = entityInfoMap.get(primaryEntityName)
             StringBuilder currentRelationshipPath = new StringBuilder()
             EntityDefinition currentEd = primaryEd
             while (fieldPathElementIter.hasNext()) {
@@ -153,25 +161,19 @@ class EntityDataFeed {
                     Node relNode = currentEd.getRelationshipNode(fieldPathElement)
                     if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
                     String relEntityName = relNode."@related-entity-name"
-                    if (!currentEntityInfo.containsKey(relEntityName)) currentEntityInfo.put(relEntityName,
-                            [dataDocumentId:dataDocumentId, primaryEntityName:primaryEntityName,
-                             relationshipPath:currentRelationshipPath.toString()])
-                    currentEntityInfo = (Map) entityInfoMap.get(relEntityName)
+                    if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName,
+                            new DocumentEntityInfo(relEntityName, dataDocumentId, primaryEntityName,
+                                    currentRelationshipPath.toString()))
+                    currentEntityInfo = entityInfoMap.get(relEntityName)
                     currentEd = efi.getEntityDefinition(relEntityName)
                 } else {
                     currentTree.put(fieldPathElement, dataDocumentField.fieldNameAlias ?: fieldPathElement)
                     // save the current field name (not the alias)
-                    StupidUtilities.addToSetInMap("fields", fieldPathElement, currentEntityInfo)
+                    currentEntityInfo.fields.add(fieldPathElement)
                     // see if there are any conditions for this alias, if so add the fieldName/value to the entity conditions Map
                     for (EntityValue dataDocumentCondition in dataDocumentConditionList) {
-                        if (dataDocumentCondition.fieldNameAlias == dataDocumentField.fieldNameAlias) {
-                            Map conditions = (Map) currentEntityInfo.get("conditions")
-                            if (conditions == null) {
-                                conditions = [:]
-                                currentEntityInfo.put("conditions", conditions)
-                            }
-                            conditions.put(fieldPathElement, dataDocumentCondition.fieldValue)
-                        }
+                        if (dataDocumentCondition.fieldNameAlias == dataDocumentField.fieldNameAlias)
+                            currentEntityInfo.conditions.put(fieldPathElement, (String) dataDocumentCondition.fieldValue)
                     }
                 }
             }
@@ -179,6 +181,37 @@ class EntityDataFeed {
         logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
 
         return entityInfoMap
+    }
+
+    static class DocumentEntityInfo implements Serializable {
+        String fullEntityName
+        String dataDocumentId
+        String primaryEntityName
+        String relationshipPath
+        Set<String> fields = new HashSet<String>()
+        Map<String, String> conditions = [:]
+        // will we need this? Map<String, DocumentEntityInfo> subEntities
+
+        DocumentEntityInfo(String fullEntityName, String dataDocumentId, String primaryEntityName, String relationshipPath) {
+            this.fullEntityName = fullEntityName
+            this.dataDocumentId = dataDocumentId
+            this.primaryEntityName = primaryEntityName
+            this.relationshipPath = relationshipPath
+        }
+
+        @Override
+        String toString() {
+            StringBuilder sb = new StringBuilder()
+            sb.append("DocumentEntityInfo [")
+            sb.append("fullEntityName:").append(fullEntityName).append(",")
+            sb.append("dataDocumentId:").append(dataDocumentId).append(",")
+            sb.append("primaryEntityName:").append(primaryEntityName).append(",")
+            sb.append("relationshipPath:").append(relationshipPath).append(",")
+            sb.append("fields:").append(fields).append(",")
+            sb.append("conditions:").append(conditions).append(",")
+            sb.append("]")
+            return sb.toString()
+        }
     }
 
     static class DataFeedXaResource implements XAResource {
