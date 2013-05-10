@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
@@ -326,6 +327,61 @@ class EntityDataFeed {
                     boolean beganTransaction = ecfi.transactionFacade.begin(null)
                     try {
                         // TODO assemble data and call DataFeed services
+
+                        // iterate through dataDocumentIdSet
+                        for (String dataDocumentId in allDataDocumentIds) {
+                            // for each DataDocument go through feedValues and get the primary entity's PK field(s) for each
+                            EntityValue dataDocument = edf.getEfi().makeFind("moqui.entity.document.DataDocument")
+                                    .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+
+                            String primaryEntityName = dataDocument.primaryEntityName
+                            EntityDefinition primaryEd = edf.getEfi().getEntityDefinition(primaryEntityName)
+                            List<String> primaryPkFieldNames = primaryEd.getPkFieldNames()
+                            Set<Map> primaryPkFieldValues = new HashSet<Map>()
+
+                            for (EntityValue currentEv in feedValues) {
+                                String currentEntityName = currentEv.getEntityName()
+                                List<DocumentEntityInfo> currentEntityInfoList = edf.getDataFeedEntityInfoList(currentEntityName)
+                                for (DocumentEntityInfo currentEntityInfo in currentEntityInfoList) {
+                                    if (currentEntityInfo.dataDocumentId == dataDocumentId) {
+                                        if (currentEntityName == primaryEntityName) {
+                                            // this is the easy one, primary entity updated just use it's values
+                                            Map pkFieldValue = [:]
+                                            for (String pkFieldName in primaryPkFieldNames)
+                                                pkFieldValue.put(pkFieldName, currentEv.get(pkFieldName))
+                                            primaryPkFieldValues.add(pkFieldValue)
+                                        } else {
+                                            // TODO more complex, need to follow relationships backwards (reverse
+                                            //     relationships) to get the primary entity's value
+                                            List<String> relationshipList = currentEntityInfo.relationshipPath.split(":")
+
+                                        }
+                                    }
+                                }
+                            }
+
+                            // this shouldn't happen, but just in case there aren't really any values for the document
+                            //    then skip it, don't want to query with no constraints and get a huge document
+                            if (!primaryPkFieldValues) continue
+
+                            // TODO for primary entity with 1 PK field do an IN condition, for >1 PK field do an and cond for
+                            //     each PK and an or list cond to combine them
+                            EntityCondition condition
+                            if (primaryPkFieldNames.size() == 1) {
+                                String pkFieldName = primaryPkFieldNames.get(0)
+                                Set<Object> pkValues = new HashSet<Object>()
+                                for (Map pkFieldValueMap in primaryPkFieldValues)
+                                    pkValues.add(pkFieldValueMap.get(pkFieldName))
+                                //condition = TODO
+                            } else {
+
+                            }
+
+
+                            // TODO now generate the document with the extra condition and send it to all DataFeeds
+                            //     associated with the DataDocument
+
+                        }
                     } catch (Throwable t) {
                         logger.error("Error running Real-time DataFeed", t)
                         ecfi.transactionFacade.rollback(beganTransaction, "Error running Real-time DataFeed", t)
