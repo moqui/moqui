@@ -23,6 +23,7 @@ import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
 import javax.transaction.xa.XAResource
 import javax.transaction.xa.Xid
+import java.sql.Timestamp
 
 class EntityDataFeed {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDataFeed.class)
@@ -326,18 +327,35 @@ class EntityDataFeed {
                 public void run() {
                     boolean beganTransaction = ecfi.transactionFacade.begin(null)
                     try {
-                        // TODO assemble data and call DataFeed services
+                        EntityFacadeImpl efi = edf.getEfi()
+                        Timestamp feedStamp = new Timestamp(System.currentTimeMillis())
+                        // assemble data and call DataFeed services
 
                         // iterate through dataDocumentIdSet
                         for (String dataDocumentId in allDataDocumentIds) {
                             // for each DataDocument go through feedValues and get the primary entity's PK field(s) for each
-                            EntityValue dataDocument = edf.getEfi().makeFind("moqui.entity.document.DataDocument")
+                            EntityValue dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
                                     .condition("dataDocumentId", dataDocumentId).useCache(true).one()
 
                             String primaryEntityName = dataDocument.primaryEntityName
-                            EntityDefinition primaryEd = edf.getEfi().getEntityDefinition(primaryEntityName)
+                            EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
                             List<String> primaryPkFieldNames = primaryEd.getPkFieldNames()
                             Set<Map> primaryPkFieldValues = new HashSet<Map>()
+
+                            EntityList dataDocumentFieldList =
+                                dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+                            Map<String, String> pkFieldAliasMap = [:]
+                            for (String pkFieldName in primaryPkFieldNames) {
+                                boolean aliasSet = false
+                                for (EntityValue dataDocumentField in dataDocumentFieldList) {
+                                    if (dataDocumentField.fieldPath == pkFieldName) {
+                                        pkFieldAliasMap.put(pkFieldName, (String) dataDocumentField.fieldNameAlias ?: pkFieldName)
+                                        aliasSet = true
+                                    }
+                                }
+                                if (aliasSet) pkFieldAliasMap.put(pkFieldName, pkFieldName)
+                            }
+
 
                             for (EntityValue currentEv in feedValues) {
                                 String currentEntityName = currentEv.getEntityName()
@@ -364,7 +382,7 @@ class EntityDataFeed {
                             //    then skip it, don't want to query with no constraints and get a huge document
                             if (!primaryPkFieldValues) continue
 
-                            // TODO for primary entity with 1 PK field do an IN condition, for >1 PK field do an and cond for
+                            // for primary entity with 1 PK field do an IN condition, for >1 PK field do an and cond for
                             //     each PK and an or list cond to combine them
                             EntityCondition condition
                             if (primaryPkFieldNames.size() == 1) {
@@ -372,15 +390,33 @@ class EntityDataFeed {
                                 Set<Object> pkValues = new HashSet<Object>()
                                 for (Map pkFieldValueMap in primaryPkFieldValues)
                                     pkValues.add(pkFieldValueMap.get(pkFieldName))
-                                //condition = TODO
+                                // if pk field is aliased used the alias name
+                                condition = efi.getConditionFactory().makeCondition(pkFieldAliasMap.get(pkFieldName),
+                                        EntityCondition.IN, pkValues)
                             } else {
-
+                                List<EntityCondition> condList = []
+                                for (Map pkFieldValueMap in primaryPkFieldValues) {
+                                    Map condAndMap = [:]
+                                    // if pk field is aliased used the alias name
+                                    for (String pkFieldName in primaryPkFieldNames)
+                                        condAndMap.put(pkFieldAliasMap.get(pkFieldName), pkFieldValueMap.get(pkFieldName))
+                                    condList.add(efi.getConditionFactory().makeCondition(condAndMap))
+                                }
+                                condition = efi.getConditionFactory().makeCondition(condList, EntityCondition.OR)
                             }
 
-
-                            // TODO now generate the document with the extra condition and send it to all DataFeeds
+                            // generate the document with the extra condition and send it to all DataFeeds
                             //     associated with the DataDocument
+                            List<Map> documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
 
+                            EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                                    .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
+                                    .condition("dataDocumentId", dataDocumentId).useCache(true).list()
+                            for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList) {
+                                ecfi.getServiceFacade().async().name((String) dataFeedAndDocument.feedReceiveServiceName)
+                                        .parameters([dataFeedId:dataFeedAndDocument.dataFeedId, feedStamp:feedStamp,
+                                            documentList:documents]).call()
+                            }
                         }
                     } catch (Throwable t) {
                         logger.error("Error running Real-time DataFeed", t)
