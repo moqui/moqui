@@ -75,16 +75,19 @@ abstract class EntityValueBase implements EntityValue {
 
     void setSyncedWithDb() { dbValueMap = null; modified = false }
 
-    /** @see org.moqui.entity.EntityValue#getEntityName() */
+    @Override
     String getEntityName() { return entityName }
 
-    /** @see org.moqui.entity.EntityValue#isModified() */
+    @Override
     boolean isModified() { return modified }
 
-    /** @see org.moqui.entity.EntityValue#isMutable() */
+    @Override
+    boolean isFieldModified(String name) { return dbValueMap.containsKey(name) && dbValueMap.get(name) != valueMap.get(name) }
+
+    @Override
     boolean isMutable() { return mutable }
 
-    /** @see org.moqui.entity.EntityValue#get(String) */
+    @Override
     Object get(String name) {
         EntityDefinition ed = getEntityDefinition()
         Node fieldNode = ed.getFieldNode(name)
@@ -154,10 +157,10 @@ abstract class EntityValueBase implements EntityValue {
         return valueMap.get(name)
     }
 
-    /** @see org.moqui.entity.EntityValue#containsPrimaryKey() */
+    @Override
     boolean containsPrimaryKey() { return this.getEntityDefinition().containsPrimaryKey(valueMap) }
 
-    /** @see org.moqui.entity.EntityValue#getPrimaryKeys() */
+    @Override
     Map<String, Object> getPrimaryKeys() {
         Map<String, Object> pks = new HashMap()
         for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
@@ -168,7 +171,7 @@ abstract class EntityValueBase implements EntityValue {
         return pks
     }
 
-    /** @see org.moqui.entity.EntityValue#set(String, Object) */
+    @Override
     EntityValue set(String name, Object value) {
         if (!mutable) throw new EntityException("Cannot set field [${name}], this entity value is not mutable (it is read-only)")
         if (!getEntityDefinition().isField(name)) {
@@ -184,40 +187,40 @@ abstract class EntityValueBase implements EntityValue {
         return this
     }
 
-    /** @see org.moqui.entity.EntityValue#setAll(Map<String, ?>) */
+    @Override
     EntityValue setAll(Map<String, ?> fields) {
         entityDefinition.setFields(fields, this, true, null, null)
         return this
     }
 
-    /** @see org.moqui.entity.EntityValue#setString(String, String) */
+    @Override
     EntityValue setString(String name, String value) { entityDefinition.setString(name, value, this); return this }
 
-    /** @see org.moqui.entity.EntityValue#getBoolean(String) */
+    @Override
     Boolean getBoolean(String name) { return this.get(name) as Boolean }
 
-    /** @see org.moqui.entity.EntityValue#getString(String) */
+    @Override
     String getString(String name) {
         Object valueObj = this.get(name)
         return valueObj ? valueObj.toString() : null
     }
 
-    /** @see org.moqui.entity.EntityValue#getTimestamp(String) */
+    @Override
     Timestamp getTimestamp(String name) { return (Timestamp) this.get(name).asType(Timestamp.class) }
 
-    /** @see org.moqui.entity.EntityValue#getTime(String) */
+    @Override
     Time getTime(String name) { return this.get(name) as Time }
 
-    /** @see org.moqui.entity.EntityValue#getDate(String) */
+    @Override
     Date getDate(String name) { return this.get(name) as Date }
 
-    /** @see org.moqui.entity.EntityValue#getLong(String) */
+    @Override
     Long getLong(String name) { return this.get(name) as Long }
 
-    /** @see org.moqui.entity.EntityValue#getDouble(String) */
+    @Override
     Double getDouble(String name) { return this.get(name) as Double }
 
-    /** @see org.moqui.entity.EntityValue#getBigDecimal(String) */
+    @Override
     BigDecimal getBigDecimal(String name) { return this.get(name) as BigDecimal }
 
     byte[] getBytes(String name) {
@@ -240,13 +243,13 @@ abstract class EntityValueBase implements EntityValue {
         return o as SerialBlob
     }
 
-    /** @see org.moqui.entity.EntityValue#setFields(Map, boolean, java.lang.String, boolean) */
+    @Override
     EntityValue setFields(Map<String, ?> fields, boolean setIfEmpty, String namePrefix, Boolean pks) {
         entityDefinition.setFields(fields, this, setIfEmpty, namePrefix, pks)
         return this
     }
 
-    /** @see org.moqui.entity.EntityValue#setSequencedIdPrimary() */
+    @Override
     EntityValue setSequencedIdPrimary() {
         List<String> pkFields = getEntityDefinition().getPkFieldNames()
         Node entityNode = getEntityDefinition().getEntityNode()
@@ -256,7 +259,7 @@ abstract class EntityValueBase implements EntityValue {
         return this
     }
 
-    /** @see org.moqui.entity.EntityValue#setSequencedIdSecondary() */
+    @Override
     EntityValue setSequencedIdSecondary() {
         List<String> pkFields = getEntityDefinition().getPkFieldNames()
         if (pkFields.size() < 2) throw new EntityException("Cannot call setSequencedIdSecondary() on entity [${getEntityName()}], there are not at least 2 primary key fields.")
@@ -270,7 +273,7 @@ abstract class EntityValueBase implements EntityValue {
 
         // temporarily disable authz for this, just doing lookup to get next value and to allow for a
         //     authorize-skip="create" with authorize-skip of view too this is necessary
-        List<EntityValue> allValues
+        List<EntityValue> allValues = null
         this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
             // NOTE: DEJ 2012-10-11 Added the call to getPrimaryKeys() even though the setFields() call above is only
@@ -305,7 +308,7 @@ abstract class EntityValueBase implements EntityValue {
         return this
     }
 
-    /** @see org.moqui.entity.EntityValue#compareTo(EntityValue) */
+    @Override
     int compareTo(EntityValue that) {
         // nulls go earlier
         if (that == null) return -1
@@ -340,7 +343,7 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
 
-    /** @see org.moqui.entity.EntityValue#createOrUpdate() */
+    @Override
     EntityValue createOrUpdate() {
         EntityValue dbValue = (EntityValue) this.clone()
         if (dbValue.refresh()) {
@@ -411,12 +414,12 @@ abstract class EntityValueBase implements EntityValue {
         if (pkText) parms.pkRestCombinedValue = pkText
     }
 
-    /** @see org.moqui.entity.EntityValue#getOriginalDbValue(String) */
+    @Override
     Object getOriginalDbValue(String name) {
         return (dbValueMap && dbValueMap.get(name)) ? dbValueMap.get(name) : valueMap.get(name)
     }
 
-    /** @see org.moqui.entity.EntityValue#findRelated(String, Map, java.util.List<java.lang.String>, Boolean, Boolean) */
+    @Override
     EntityList findRelated(String relationshipName, Map<String, ?> byAndFields, List<String> orderBy, Boolean useCache, Boolean forUpdate) {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
         if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
@@ -429,11 +432,11 @@ abstract class EntityValueBase implements EntityValue {
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
         if (byAndFields) condMap.putAll(byAndFields)
 
-        EntityFind find = getEntityFacadeImpl().makeFind(relationship."@related-entity-name")
+        EntityFind find = getEntityFacadeImpl().makeFind((String) relationship."@related-entity-name")
         return find.condition(condMap).orderBy(orderBy).useCache(useCache).forUpdate(forUpdate as boolean).list()
     }
 
-    /** @see org.moqui.entity.EntityValue#findRelatedOne(String, Boolean, Boolean) */
+    @Override
     EntityValue findRelatedOne(String relationshipName, Boolean useCache, Boolean forUpdate) {
         Node relationship = getEntityDefinition().getRelationshipNode(relationshipName)
         if (!relationship) throw new EntityException("Relationship [${relationshipName}] not found in entity [${entityName}]")
@@ -448,20 +451,20 @@ abstract class EntityValueBase implements EntityValue {
         Map condMap = new HashMap()
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
 
-        EntityFind find = getEntityFacadeImpl().makeFind(relationship."@related-entity-name")
+        EntityFind find = getEntityFacadeImpl().makeFind((String) relationship."@related-entity-name")
         return find.condition(condMap).useCache(useCache).forUpdate(forUpdate as boolean).one()
     }
 
-    /** @see org.moqui.entity.EntityValue#deleteRelated(String) */
+    @Override
     void deleteRelated(String relationshipName) {
         // NOTE: this does a select for update, may consider not doing that by default
         EntityList relatedList = findRelated(relationshipName, null, null, false, true)
         for (EntityValue relatedValue in relatedList) relatedValue.delete()
     }
 
-    /** @see org.moqui.entity.EntityValue#checkFks(boolean) */
+    @Override
     boolean checkFks(boolean insertDummy) {
-        for (Node oneRel in getEntityDefinition().entityNode."relationship".find({ it."@type" == "one" })) {
+        for (Node oneRel in (Collection<Node>) getEntityDefinition().entityNode."relationship".find({ it."@type" == "one" })) {
             EntityValue value = findRelatedOne(oneRel, true, false)
             if (!value) {
                 if (insertDummy) {
@@ -485,7 +488,7 @@ abstract class EntityValueBase implements EntityValue {
         return true
     }
 
-    /** @see org.moqui.entity.EntityValue#checkAgainstDatabase(List) */
+    @Override
     void checkAgainstDatabase(List messages) {
         try {
             EntityValue dbValue = this.cloneValue()
@@ -514,7 +517,7 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
 
-    /** @see org.moqui.entity.EntityValue#makeXmlElement(Document, String) */
+    @Override
     Element makeXmlElement(Document document, String prefix) {
         Element element = null
         if (document != null) element = document.createElement((prefix ? prefix : "") + entityName)
@@ -536,7 +539,7 @@ abstract class EntityValueBase implements EntityValue {
         return element
     }
 
-    /** @see org.moqui.entity.EntityValue#writeXmlText(PrintWriter, String, boolean) */
+    @Override
     int writeXmlText(Writer pw, String prefix, boolean dependents) {
         if (dependents) {
             // to avoid loops (shouldn't happen but could)
@@ -661,14 +664,15 @@ abstract class EntityValueBase implements EntityValue {
             EntityDefinition.EntityDependents relEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
             if (relEdp == null) continue
             if (relInfo.type == "many") {
-                EntityListImpl el = (EntityListImpl) findRelated((relInfo.title?:"") + relInfo.relatedEntityName, null, null, false, false)
-                for (EntityValueImpl ev in el) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
+                EntityList el = findRelated((relInfo.title?:"") + relInfo.relatedEntityName, null, null, false, false)
+                for (EntityValue ev in el)
+                    valuesWritten += ((EntityValueBase) ev).writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
             } else {
                 EntityValueImpl ev = (EntityValueImpl) findRelatedOne((String) relInfo.title+relInfo.relatedEntityName, false, false)
                 if (ev != null) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
             }
 
-            finishedRelationshipNames.add(relInfo.title+relInfo.relatedEntityName)
+            finishedRelationshipNames.add((String) relInfo.title + (String) relInfo.relatedEntityName)
         }
 
         return valuesWritten
@@ -676,15 +680,19 @@ abstract class EntityValueBase implements EntityValue {
 
     // ========== Map Interface Methods ==========
 
-    /** @see java.util.Map#size() */
+    @Override
     int size() { return valueMap.size() }
 
+    @Override
     boolean isEmpty() { return valueMap.isEmpty() }
 
+    @Override
     boolean containsKey(Object o) { return o instanceof String ? getEntityDefinition().isField((String) o) : false }
 
+    @Override
     boolean containsValue(Object o) { return values().contains(o) }
 
+    @Override
     Object get(Object o) {
         if (o instanceof String) {
             // This may throw an exception, and let it; the Map interface doesn't provide for EntityException
@@ -695,31 +703,37 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
 
+    @Override
     Object put(String k, Object v) {
         Object original = this.get(k)
         this.set(k, v)
         return original
     }
 
+    @Override
     Object remove(Object o) {
         if (valueMap.containsKey(o)) modified = true
         return valueMap.remove(o)
     }
 
+    @Override
     void putAll(Map<? extends String, ? extends Object> map) {
         for (Map.Entry entry in map.entrySet()) {
             this.set((String) entry.key, entry.value)
         }
     }
 
+    @Override
     void clear() { valueMap.clear() }
 
+    @Override
     Set<String> keySet() {
         // Was this way through 1.1.0, only showing currently populated fields (not good for User Fields or other
         //     convenient things): return Collections.unmodifiableSet(valueMap.keySet())
         return new HashSet<String>(getEntityDefinition().getAllFieldNames())
     }
 
+    @Override
     Collection<Object> values() {
         // everything needs to go through the get method, so iterate through the fields and get the values
         List<String> allFieldNames = getEntityDefinition().getAllFieldNames()
@@ -728,6 +742,7 @@ abstract class EntityValueBase implements EntityValue {
         return values
     }
 
+    @Override
     Set<Map.Entry<String, Object>> entrySet() {
         // everything needs to go through the get method, so iterate through the fields and get the values
         List<String> allFieldNames = getEntityDefinition().getAllFieldNames()
@@ -775,7 +790,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     // =========== The abstract methods ===========
-    /** @see org.moqui.entity.EntityValue#create() */
+    @Override
     EntityValue create() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
@@ -834,7 +849,7 @@ abstract class EntityValueBase implements EntityValue {
     /** This method should create a corresponding record in the datasource. */
     abstract void createExtended(ListOrderedSet fieldList)
 
-    /** @see org.moqui.entity.EntityValue#update() */
+    @Override
     EntityValue update() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
@@ -950,7 +965,7 @@ abstract class EntityValueBase implements EntityValue {
     }
     abstract void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList)
 
-    /** @see org.moqui.entity.EntityValue#delete() */
+    @Override
     EntityValue delete() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
@@ -996,7 +1011,7 @@ abstract class EntityValueBase implements EntityValue {
     }
     abstract void deleteExtended()
 
-    /** @see org.moqui.entity.EntityValue#refresh() */
+    @Override
     boolean refresh() {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = getEntityDefinition()
