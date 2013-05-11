@@ -67,13 +67,23 @@ class EntityDataFeed {
      */
 
     void dataFeedCheckAndRegister(EntityValue ev) {
+        // if the value isn't modified don't register for DataFeed at all
+        if (!ev.isModified()) return
+
         // see if this should be added to the feed
         List<DocumentEntityInfo> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
         if (entityInfoList) {
             // populate and pass the dataDocumentIdSet, and/or other things needed?
             Set<String> dataDocumentIdSet = new HashSet<String>()
             for (DocumentEntityInfo entityInfo in entityInfoList) {
-                // only add dataDocumentId if there are no conditions or if this record matches all conditions (not necessary, but this is an optimization to avoid false positives)
+                // only add value if a field in the document was changed
+                boolean fieldModified = false
+                for (String fieldName in entityInfo.fields)
+                    if (ev.isFieldModified(fieldName)) { fieldModified = true; break }
+                if (!fieldModified) continue
+
+                // only add value and dataDocumentId if there are no conditions or if this record matches all conditions
+                //     (not necessary, but this is an optimization to avoid false positives)
                 boolean matchedConditions = true
                 if (entityInfo.conditions) for (Map.Entry<String, String> conditionEntry in entityInfo.conditions.entrySet()) {
                     Object evValue = ev.get(conditionEntry.getKey())
@@ -81,7 +91,11 @@ class EntityDataFeed {
                     if (evValue == null) continue
                     if (evValue != conditionEntry.getValue()) { matchedConditions = false; break }
                 }
-                if (matchedConditions) dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
+
+                if (!matchedConditions) continue
+
+                // if we get here field(s) were modified and condition(s) passed
+                dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
             }
 
             // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
