@@ -822,6 +822,7 @@ abstract class EntityValueBase implements EntityValue {
         handleAuditLog(false, null)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(), startTime,
                 System.currentTimeMillis(), 1)
@@ -938,6 +939,7 @@ abstract class EntityValueBase implements EntityValue {
         handleAuditLog(true, oldValues)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
@@ -982,6 +984,8 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
+        // NOTE: consider not doing this on delete, DataDocuments are not great for representing absense of records
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)

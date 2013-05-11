@@ -39,21 +39,20 @@ class EntityDataFeed {
     /* Notes:
     - doing update on entity have entityNames updated, for each fieldNames updated, field values (query as needed based
         on actual conditions if any conditions on fields not present in EntityValue
-    - do this based on a committed transaction of changes, not just on a single record... if possible
-    - if can't do on transaction commit, keep data for documents to include until transaction committed
-    - either way only do this on a successful commit, not just on the create/update calls
+    - do this based on a committed transaction of changes, not just on a single record...
+    - keep data for documents to include until transaction committed
 
     to quickly lookup DataDocuments updated with a corresponding real time (DTFDTP_RT_PUSH) DataFeed need:
     - don't have to constrain by real time DataFeed, will be done in advance for index
     - Map with entityName as key
     - value is List of Map with:
       - dataFeedId
-      - List of dataDocumentInfo Maps with
+      - List of DocumentEntityInfo objects with
         - dataDocumentId
         - Set of fields for DataDocument and the current entity
         - primaryEntityName
         - relationship path from primary to current entity
-        - Map of field conditions for current entity - and for entire document? TODO
+        - Map of field conditions for current entity - and for entire document? no, false positives filtered out when doc data queried
     - find with query on DataFeed and DataFeedDocument where DataFeed.dataFeedTypeEnumId=DTFDTP_RT_PUSH
       - iterate through dataDocumentId and call getDataDocumentEntityInfo() for each
 
@@ -84,7 +83,9 @@ class EntityDataFeed {
                 }
                 if (matchedConditions) dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
             }
-            if (dataDocumentIdSet) getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
+
+            // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
+            // if (dataDocumentIdSet) getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
         }
     }
 
@@ -369,10 +370,61 @@ class EntityDataFeed {
                                                 pkFieldValue.put(pkFieldName, currentEv.get(pkFieldName))
                                             primaryPkFieldValues.add(pkFieldValue)
                                         } else {
-                                            // TODO more complex, need to follow relationships backwards (reverse
+                                            // more complex, need to follow relationships backwards (reverse
                                             //     relationships) to get the primary entity's value
                                             List<String> relationshipList = currentEntityInfo.relationshipPath.split(":")
+                                            List<String> backwardRelList = []
+                                            // add the relationships backwards
+                                            for (String relElement in relationshipList) backwardRelList.add(0, relElement)
+                                            // add the primary entity name to the end as that is the targer
+                                            backwardRelList.add(primaryEntityName)
 
+                                            String prevRelName = backwardRelList.get(0)
+                                            List<EntityValueBase> prevRelValueList = [(EntityValueBase) currentEv]
+                                            // skip the first one, it is the current entity
+                                            for (int i = 1; i < backwardRelList.size(); i++) {
+                                                // try to find the relationship be the title of the previous
+                                                //     relationship name + the current entity name, then by the current
+                                                //     entity name alone
+                                                String currentRelName = backwardRelList.get(i)
+                                                String currentRelEntityName = currentRelName.contains("#") ?
+                                                    currentRelName.substring(0, currentRelName.indexOf("#")) :
+                                                    currentRelName
+                                                // all values should be for the same entity, so just use the first
+                                                EntityDefinition prevRelValueEd = prevRelValueList[0].getEntityDefinition()
+                                                Node backwardRelNode = null
+                                                if (prevRelName.contains("#")) {
+                                                    String title = prevRelName.substring(0, prevRelName.indexOf("#"))
+                                                    backwardRelNode = prevRelValueEd.getRelationshipNode(title + "#" + currentRelEntityName)
+                                                }
+                                                if (backwardRelNode == null)
+                                                    backwardRelNode = prevRelValueEd.getRelationshipNode(currentRelEntityName)
+
+                                                if (backwardRelNode == null) throw new EntityException("For DataFeed could not find backward relationship for DataDocument [${dataDocumentId}] from entity [${prevRelValue.getEntityName()}] to entity [${currentRelEntityName}], previous relationship is [${prevRelName}], current relationship is [${currentRelName}]")
+
+                                                String backwardRelName = backwardRelNode."@title" ?
+                                                    backwardRelNode."@title" + "#" + backwardRelNode."@related-entity-name" :
+                                                    backwardRelNode."@related-entity-name"
+
+                                                List<EntityValueBase> currentRelValueList = []
+                                                for (EntityValueBase prevRelValue in prevRelValueList) {
+                                                    EntityList backwardRelValueList = prevRelValue.findRelated(backwardRelName, null, null, false, false)
+                                                    for (EntityValue backwardRelValue in backwardRelValueList)
+                                                        currentRelValueList.add((EntityValueBase) backwardRelValue)
+                                                }
+
+                                                prevRelName = currentRelName
+                                                prevRelValueList = currentRelValueList
+                                            }
+
+                                            // go through final prevRelValueList (which should be for the primary
+                                            //     entity) and get the PK for each
+                                            for (EntityValue primaryEv in prevRelValueList) {
+                                                Map pkFieldValue = [:]
+                                                for (String pkFieldName in primaryPkFieldNames)
+                                                    pkFieldValue.put(pkFieldName, primaryEv.get(pkFieldName))
+                                                primaryPkFieldValues.add(pkFieldValue)
+                                            }
                                         }
                                     }
                                 }
