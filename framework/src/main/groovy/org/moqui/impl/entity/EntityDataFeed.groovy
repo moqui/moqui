@@ -159,6 +159,11 @@ class EntityDataFeed {
             entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
             //logger.warn("============ got DocumentEntityInfo entityInfoList for [${fullEntityName}]: ${entityInfoList}")
         }
+        if (entityInfoList == null && efi.dataFeedEntityInfo.size() > 0) {
+            // if not entityInfoList but cache size is greater than 0 (after clearing expired above) add an empty list
+            //     to avoid constantly clearing expired from the cache
+            efi.dataFeedEntityInfo.put(fullEntityName, [])
+        }
         return entityInfoList
     }
 
