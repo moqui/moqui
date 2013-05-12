@@ -123,7 +123,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="fieldPath" type="text-medium" is-pk="true"><description>String formatted like
             "RelationshipName:RelationshipName:fieldName" with zero or more relationship names. If there is no
             relationship name the field is on the primary entity. More than one relationship names means follow that
-            path of relationships to get to the field.</description></field>
+            path of relationships to get to the field. For DataFeed to work properly all relationship names should
+            include a hash (#) between the title and related entity name, and a fully qualified related entity name (ie
+            with entity package).</description></field>
         <field name="fieldNameAlias" type="text-medium"><description>Alias to put in document output for field name
             (ie final part of fieldPath only). Defaults to final part of fieldPath. Must be unique within the document
             and can be used in EntityCondition passed into the EntityFacade.findDataDocuments() method.</description></field>
@@ -168,6 +170,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <entity entity-name="DataFeedDocument" package-name="moqui.entity.feed">
         <field name="dataFeedId" type="id" is-pk="true"/>
         <field name="dataDocumentId" type="id" is-pk="true"/>
+        <relationship type="one" related-entity-name="moqui.entity.feed.DataFeed"/>
+        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
     <view-entity entity-name="DataFeedAndDocument" package-name="moqui.entity.feed">
         <member-entity entity-alias="DTFD" entity-name="DataFeed"/>

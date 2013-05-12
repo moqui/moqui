@@ -851,8 +851,8 @@ class EntityFacadeImpl implements EntityFacade {
         Map<String, Object> fieldTree = [:]
         Map<String, String> fieldAliasPathMap = [:]
         populateFieldTreeAndAliasPathMap(dataDocumentFieldList, primaryPkFieldNames, fieldTree, fieldAliasPathMap)
-        logger.warn("=========== ${dataDocumentId} fieldTree=${fieldTree}")
-        logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${fieldAliasPathMap}")
+        // logger.warn("=========== ${dataDocumentId} fieldTree=${fieldTree}")
+        // logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${fieldAliasPathMap}")
 
         // build the query condition for the primary entity and all related entities
         EntityFind mainFind = makeFind(primaryEntityName)
@@ -894,7 +894,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
             mainFind.condition(getConditionFactory().makeCondition(dateRangeOrCondList, EntityCondition.OR))
         }
-        logger.warn("=========== ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
+        // logger.warn("=========== DataDocument query condition for ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
 
         // do the one big query
         EntityListIterator mainEli = mainFind.iterator()

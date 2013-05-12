@@ -178,10 +178,14 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
     void putAndEnlistActiveXaResource(String resourceName, XAResource xar) {
         ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
-        Map<String, XAResource> activeXaResourceMap = activeXaResourceStack.get(0)
+        Map<String, XAResource> activeXaResourceMap = activeXaResourceStack.size() > 0 ? activeXaResourceStack.get(0) : null
         if (activeXaResourceMap == null) {
             activeXaResourceMap = [:]
-            activeXaResourceStack.set(0, activeXaResourceMap)
+            if (activeXaResourceStack.size() == 0) {
+                activeXaResourceStack.add(0, activeXaResourceMap)
+            } else {
+                activeXaResourceStack.set(0, activeXaResourceMap)
+            }
         }
         enlistResource(xar)
         activeXaResourceMap.put(resourceName, xar)

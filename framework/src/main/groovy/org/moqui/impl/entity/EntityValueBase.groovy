@@ -53,7 +53,7 @@ abstract class EntityValueBase implements EntityValue {
 
     EntityValueBase(EntityDefinition ed, EntityFacadeImpl efip) {
         efi = efip
-        entityName = ed.getEntityName()
+        entityName = ed.getFullEntityName()
         entityDefinition = ed
     }
 
@@ -807,6 +807,9 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
+        // this needs to be called before the actual update so we know which fields are modified
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
+
         ListOrderedSet fieldList = new ListOrderedSet()
         for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
@@ -837,7 +840,6 @@ abstract class EntityValueBase implements EntityValue {
         handleAuditLog(false, null)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(), startTime,
                 System.currentTimeMillis(), 1)
@@ -907,6 +909,9 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
+        // this needs to be called before the actual update so we know which fields are modified
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
+
         // call the abstract method
         this.updateExtended(pkFieldList, nonPkFieldList)
 
@@ -954,7 +959,6 @@ abstract class EntityValueBase implements EntityValue {
         handleAuditLog(true, oldValues)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
@@ -977,6 +981,9 @@ abstract class EntityValueBase implements EntityValue {
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
+        // this needs to be called before the actual update so we know which fields are modified
+        // NOTE: consider not doing this on delete, DataDocuments are not great for representing absense of records
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
 
         // call the abstract method
         this.deleteExtended()
@@ -999,8 +1006,6 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
-        // NOTE: consider not doing this on delete, DataDocuments are not great for representing absense of records
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
         // count the artifact hit
         ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)

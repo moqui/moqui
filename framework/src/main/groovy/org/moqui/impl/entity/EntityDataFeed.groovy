@@ -67,12 +67,15 @@ class EntityDataFeed {
      */
 
     void dataFeedCheckAndRegister(EntityValue ev) {
+        //logger.warn("============== checking entity isModified=${ev.isModified()} [${ev.getEntityName()}] value: ${ev}")
         // if the value isn't modified don't register for DataFeed at all
         if (!ev.isModified()) return
 
         // see if this should be added to the feed
         List<DocumentEntityInfo> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
         if (entityInfoList) {
+            // logger.warn("============== found registered entity [${ev.getEntityName()}] value: ${ev}")
+
             // populate and pass the dataDocumentIdSet, and/or other things needed?
             Set<String> dataDocumentIdSet = new HashSet<String>()
             for (DocumentEntityInfo entityInfo in entityInfoList) {
@@ -98,8 +101,11 @@ class EntityDataFeed {
                 dataDocumentIdSet.add((String) entityInfo.dataDocumentId)
             }
 
-            // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
-            // if (dataDocumentIdSet) getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
+            if (dataDocumentIdSet) {
+                logger.warn("============== DataFeed registering entity [${ev.getEntityName()}] value: ${ev}")
+                // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
+                getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
+            }
         }
     }
 
@@ -114,11 +120,19 @@ class EntityDataFeed {
 
     List<DocumentEntityInfo> getDataFeedEntityInfoList(String fullEntityName) {
         List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
+        //logger.warn("=============== getting DocumentEntityInfo for [${fullEntityName}], from cache: ${entityInfoList}")
         if (entityInfoList == null) {
             // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
             //     DataDocuments because we can't query it by entityName
-            EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
-                    .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH").useCache(true).list()
+            EntityList dataFeedAndDocumentList = null
+            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
+                dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                        .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH").useCache(true).list()
+                //logger.warn("============= got dataFeedAndDocumentList: ${dataFeedAndDocumentList}")
+            } finally {
+                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+            }
             Set<String> fullDataDocumentIdSet = new HashSet<String>()
             for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList)
                 fullDataDocumentIdSet.add((String) dataFeedAndDocument.dataDocumentId)
@@ -128,24 +142,35 @@ class EntityDataFeed {
                 // got a Map for all entities in the document, now split them by entity and add to master list for the entity
                 for (Map.Entry<String, DocumentEntityInfo> entityInfoMapEntry in entityInfoMap.entrySet()) {
                     List<DocumentEntityInfo> newEntityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
+                    if (newEntityInfoList == null) {
+                        newEntityInfoList = []
+                        efi.dataFeedEntityInfo.put(entityInfoMapEntry.getKey(), newEntityInfoList)
+                    }
                     newEntityInfoList.add(entityInfoMapEntry.getValue())
                 }
             }
 
             // now we should have all document entityInfos for all entities
-            logger.warn("============ efi.dataFeedEntityInfo: ${efi.dataFeedEntityInfo}")
-
             entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
+            //logger.warn("============ got DocumentEntityInfo entityInfoList for [${fullEntityName}]: ${entityInfoList}")
         }
         return entityInfoList
     }
 
     Map<String, DocumentEntityInfo> getDataDocumentEntityInfo(String dataDocumentId) {
-        EntityValue dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
-                .condition("dataDocumentId", dataDocumentId).useCache(true).one()
-        if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
-        EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
-        EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
+        EntityValue dataDocument = null
+        EntityList dataDocumentFieldList = null
+        EntityList dataDocumentConditionList = null
+        boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+        try {
+            dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
+                    .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+            if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
+            dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+            dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
+        } finally {
+            if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
 
         String primaryEntityName = dataDocument.primaryEntityName
         EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
@@ -178,9 +203,20 @@ class EntityDataFeed {
                     Node relNode = currentEd.getRelationshipNode(fieldPathElement)
                     if (relNode == null) throw new EntityException("Could not find relationship [${fieldPathElement}] from entity [${currentEd.getFullEntityName()}] as part of DataDocumentField.fieldPath [${fieldPath}]")
                     String relEntityName = relNode."@related-entity-name"
+
+                    // add entry for the related entity
                     if (!entityInfoMap.containsKey(relEntityName)) entityInfoMap.put(relEntityName,
                             new DocumentEntityInfo(relEntityName, dataDocumentId, primaryEntityName,
                                     currentRelationshipPath.toString()))
+
+                    // add PK fields of the related entity as fields for the current entity so changes on them will also trigger a data feed
+                    Map relKeyMap = currentEd.getRelationshipExpandedKeyMap(relNode)
+                    for (String fkFieldName in relKeyMap.keySet()) {
+                        currentTree.put(fkFieldName, fkFieldName)
+                        // save the current field name (not the alias)
+                        currentEntityInfo.fields.add(fkFieldName)
+                    }
+
                     currentEntityInfo = entityInfoMap.get(relEntityName)
                     currentEd = efi.getEntityDefinition(relEntityName)
                 } else {
@@ -195,7 +231,9 @@ class EntityDataFeed {
                 }
             }
         }
-        logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
+
+        // TODO: turn this back on and see why it is called so much, needs optimization
+        // logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
 
         return entityInfoMap
     }
@@ -348,17 +386,24 @@ class EntityDataFeed {
 
                         // iterate through dataDocumentIdSet
                         for (String dataDocumentId in allDataDocumentIds) {
-                            // for each DataDocument go through feedValues and get the primary entity's PK field(s) for each
-                            EntityValue dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
-                                    .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+                            EntityValue dataDocument = null
+                            EntityList dataDocumentFieldList = null
+                            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+                            try {
+                                // for each DataDocument go through feedValues and get the primary entity's PK field(s) for each
+                                dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
+                                        .condition("dataDocumentId", dataDocumentId).useCache(true).one()
+                                dataDocumentFieldList =
+                                    dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+                            } finally {
+                                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+                            }
 
                             String primaryEntityName = dataDocument.primaryEntityName
                             EntityDefinition primaryEd = efi.getEntityDefinition(primaryEntityName)
                             List<String> primaryPkFieldNames = primaryEd.getPkFieldNames()
                             Set<Map> primaryPkFieldValues = new HashSet<Map>()
 
-                            EntityList dataDocumentFieldList =
-                                dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
                             Map<String, String> pkFieldAliasMap = [:]
                             for (String pkFieldName in primaryPkFieldNames) {
                                 boolean aliasSet = false
@@ -471,17 +516,34 @@ class EntityDataFeed {
                                 condition = efi.getConditionFactory().makeCondition(condList, EntityCondition.OR)
                             }
 
-                            // generate the document with the extra condition and send it to all DataFeeds
-                            //     associated with the DataDocument
-                            List<Map> documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
+                            List<Map> documents = null
+                            EntityList dataFeedAndDocumentList = null
+                            alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+                            try {
+                                // generate the document with the extra condition and send it to all DataFeeds
+                                //     associated with the DataDocument
+                                documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
 
-                            EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
-                                    .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
-                                    .condition("dataDocumentId", dataDocumentId).useCache(true).list()
-                            for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList) {
-                                ecfi.getServiceFacade().async().name((String) dataFeedAndDocument.feedReceiveServiceName)
-                                        .parameters([dataFeedId:dataFeedAndDocument.dataFeedId, feedStamp:feedStamp,
+                                if (!documents) {
+                                    logger.warn("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
+                                    continue
+                                }
+
+                                dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                                        .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
+                                        .condition("dataDocumentId", dataDocumentId).useCache(true).list()
+
+                                // do the actual feed receive service calls (authz is disabled to allow the service
+                                //     call, but also allows anything in the services...)
+                                for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList) {
+                                    // NOTE: this is a sync call so authz disabled is preserved; it is in its own thread
+                                    //     so user/etc are not inherited here
+                                    ecfi.getServiceFacade().sync().name((String) dataFeedAndDocument.feedReceiveServiceName)
+                                            .parameters([dataFeedId:dataFeedAndDocument.dataFeedId, feedStamp:feedStamp,
                                             documentList:documents]).call()
+                                }
+                            } finally {
+                                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
                             }
                         }
                     } catch (Throwable t) {
