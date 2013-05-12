@@ -164,7 +164,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.EnumerationType description="Data Feed Type" enumTypeId="DataFeedType"/>
             <moqui.basic.Enumeration description="Real-time Service Push" enumId="DTFDTP_RT_PUSH" enumTypeId="DataFeedType"/>
             <!-- <moqui.basic.Enumeration description="Periodic Service Push" enumId="DTFDTP_PER_PUSH" enumTypeId="DataFeedType"/> -->
-            <moqui.basic.Enumeration description="Periodic Pull" enumId="DTFDTP_PER_PULL" enumTypeId="DataFeedType"/>
+            <!-- <moqui.basic.Enumeration description="Manual Pull" enumId="DTFDTP_MAN_PULL" enumTypeId="DataFeedType"/> -->
         </seed-data>
     </entity>
     <entity entity-name="DataFeedDocument" package-name="moqui.entity.feed">

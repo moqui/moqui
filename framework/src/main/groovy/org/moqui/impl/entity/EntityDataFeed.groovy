@@ -120,8 +120,12 @@ class EntityDataFeed {
 
     List<DocumentEntityInfo> getDataFeedEntityInfoList(String fullEntityName) {
         List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
-        //logger.warn("=============== getting DocumentEntityInfo for [${fullEntityName}], from cache: ${entityInfoList}")
-        if (entityInfoList == null) {
+        // logger.warn("=============== getting DocumentEntityInfo for [${fullEntityName}], from cache: ${entityInfoList}")
+        // only rebuild if the cache is empty, most entities won't have any entry in it and don't want a rebuild for each one
+        if (entityInfoList == null) efi.dataFeedEntityInfo.clearExpired()
+        if (efi.dataFeedEntityInfo.size() == 0) {
+            logger.warn("=============== rebuilding DocumentEntityInfo for [${fullEntityName}], cache size: ${efi.dataFeedEntityInfo.size()}")
+
             // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
             //     DataDocuments because we can't query it by entityName
             EntityList dataFeedAndDocumentList = null
@@ -145,6 +149,7 @@ class EntityDataFeed {
                     if (newEntityInfoList == null) {
                         newEntityInfoList = []
                         efi.dataFeedEntityInfo.put(entityInfoMapEntry.getKey(), newEntityInfoList)
+                        logger.warn("============= added efi.dataFeedEntityInfo entry for entity [${entityInfoMapEntry.getKey()}]")
                     }
                     newEntityInfoList.add(entityInfoMapEntry.getValue())
                 }
@@ -232,8 +237,7 @@ class EntityDataFeed {
             }
         }
 
-        // TODO: turn this back on and see why it is called so much, needs optimization
-        // logger.warn("============ got entityInfoMap: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
+        // logger.warn("============ got entityInfoMap for doc [${dataDocumentId}]: ${entityInfoMap}\n============ for fieldTree: ${fieldTree}")
 
         return entityInfoMap
     }
