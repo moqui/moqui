@@ -14,6 +14,7 @@ package org.moqui.context;
 import java.util.Map;
 
 import org.apache.camel.CamelContext;
+import org.elasticsearch.client.Client;
 import org.moqui.entity.EntityFacade;
 import org.moqui.service.ServiceFacade;
 
@@ -77,6 +78,9 @@ public interface ExecutionContext {
 
     /** Apache Camel is used for integration message routing. To interact directly with Camel get the context here. */
     CamelContext getCamelContext();
+
+    /** ElasticSearch Client is used for indexing and searching documents */
+    Client getElasticSearchClient();
 
     /** This should be called by a filter or servlet at the beginning of an HTTP request to initialize a web facade
      * for the current thread.

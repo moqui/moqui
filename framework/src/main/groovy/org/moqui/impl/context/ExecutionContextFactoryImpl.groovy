@@ -448,22 +448,24 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return efi
     }
 
-    LoggerFacadeImpl getLoggerFacade() { return this.loggerFacade }
+    LoggerFacadeImpl getLoggerFacade() { return loggerFacade }
 
-    ResourceFacadeImpl getResourceFacade() { return this.resourceFacade }
+    ResourceFacadeImpl getResourceFacade() { return resourceFacade }
 
-    ScreenFacadeImpl getScreenFacade() { return this.screenFacade }
+    ScreenFacadeImpl getScreenFacade() { return screenFacade }
 
-    ServiceFacadeImpl getServiceFacade() { return this.serviceFacade }
+    ServiceFacadeImpl getServiceFacade() { return serviceFacade }
 
-    TransactionFacadeImpl getTransactionFacade() { return this.transactionFacade }
+    TransactionFacadeImpl getTransactionFacade() { return transactionFacade }
 
-    L10nFacade getL10nFacade() { return this.l10nFacade }
+    L10nFacade getL10nFacade() { return l10nFacade }
 
-    CamelContext getCamelContext() { return this.camelContext }
-    MoquiServiceComponent getMoquiServiceComponent() { return this.moquiServiceComponent }
+    CamelContext getCamelContext() { return camelContext }
+    MoquiServiceComponent getMoquiServiceComponent() { return moquiServiceComponent }
     void registerCamelConsumer(String uri, MoquiServiceConsumer consumer) { camelConsumerByUriMap.put(uri, consumer) }
     MoquiServiceConsumer getCamelConsumer(String uri) { return camelConsumerByUriMap.get(uri) }
+
+    Client getElasticSearchClient() { return elasticSearchClient }
 
     // ========== Interface Implementations ==========
 
