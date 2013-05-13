@@ -9,7 +9,7 @@
  * This Work includes contributions authored by David E. Jones, not as a
  * "work for hire", who hereby disclaims any copyright to the same.
  */
-package org.moqui.impl.context;
+package org.moqui.impl.context
 
 import java.sql.Timestamp
 import java.util.jar.JarFile
@@ -27,17 +27,20 @@ import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenFacadeImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.StupidClassLoader
+import org.moqui.impl.StupidUtilities
 
 import org.apache.shiro.authc.credential.CredentialsMatcher
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.crypto.hash.SimpleHash
-import org.moqui.impl.StupidUtilities
 import org.apache.commons.collections.map.ListOrderedMap
+
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
-import org.apache.camel.impl.SimpleRegistry
 import org.moqui.impl.service.camel.MoquiServiceComponent
 import org.moqui.impl.service.camel.MoquiServiceConsumer
+
+import org.elasticsearch.node.NodeBuilder
+import org.elasticsearch.client.Client
 
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
@@ -68,6 +71,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected final CamelContext camelContext
     protected MoquiServiceComponent moquiServiceComponent
     protected Map<String, MoquiServiceConsumer> camelConsumerByUriMap = new HashMap<String, MoquiServiceConsumer>()
+
+    /* ElasticSearch fields */
+    org.elasticsearch.node.Node elasticSearchNode
+    Client elasticSearchClient
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -163,6 +170,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
 
+        // init ElasticSearch after facades, before Camel
+        initElasticSearch()
+
         // everything else ready to go, init Camel
         this.initCamel()
 
@@ -221,6 +231,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui ScreenFacadeImpl Initialized")
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
+
+        // init ElasticSearch after facades, before Camel
+        initElasticSearch()
 
         // everything else ready to go, init Camel
         this.initCamel()
@@ -329,6 +342,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
+    protected void initElasticSearch() {
+        // set the ElasticSearch home directory
+        System.setProperty("es.path.home", runtimePath + "/elasticsearch")
+        elasticSearchNode = NodeBuilder.nodeBuilder().node()
+        elasticSearchClient = elasticSearchNode.client()
+    }
+
     protected void initCamel() {
         moquiServiceComponent = new MoquiServiceComponent(this)
         camelContext.addComponent("moquiservice", moquiServiceComponent)
@@ -339,6 +359,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (!this.destroyed) {
             // first stop Camel to prevent more calls coming in
             camelContext.stop()
+
+            // stop ElasticSearch
+            elasticSearchNode.close()
 
             // persist any remaining bins in artifactHitBinByType
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())

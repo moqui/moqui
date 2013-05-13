@@ -8,6 +8,9 @@ runtime/component/example/build/
 runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
 runtime/db/derby/derby.log
+runtime/elasticsearch/data/
+runtime/elasticsearch/log/
+runtime/elasticsearch/work/
 runtime/log/
 runtime/mantle/
 runtime/tmp/
