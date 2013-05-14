@@ -398,6 +398,8 @@ public class MoquiStart extends ClassLoader {
         Class<?> c = null;
         String classFileName = className.replace('.', '/') + ".class";
         for (JarFile jarFile: jarFileList) {
+            // System.out.println("Finding Class [" + className + "] in jarFile [" + jarFile.getName() + "]");
+
             JarEntry jarEntry = jarFile.getJarEntry(classFileName);
             // to better support war format, look for the resourceName in the WEB-INF/classes directory
             if (loadWebInf && jarEntry == null) jarEntry = jarFile.getJarEntry("WEB-INF/classes/" + classFileName);
@@ -425,6 +427,7 @@ public class MoquiStart extends ClassLoader {
             // use default manifest
             mf = new Manifest();
         }
+        if (mf == null) mf = new Manifest();
         int dotIndex = className.lastIndexOf('.');
         String packageName = dotIndex > 0 ? className.substring(0, dotIndex) : "";
         if (getPackage(packageName) == null) {

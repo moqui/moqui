@@ -120,6 +120,8 @@ Bug Fixes:
   another member-entity with used fields was not included
 - Fixed issue with tx-commit and tx-rollback parameter missing in method
   call to run service
+- Fixed bug in MoquiStart where Manifest was sometimes null causing a class
+  not found exception
 
 ===========================================================================
 Release 1.2.0 - 30 Dec 2012
