@@ -47,10 +47,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <implements service="org.moqui.EntityServices.receive#DataFeed"/>
         <actions>
             <script>
+                // org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("index_DataDocument")
                 for (Map document in documentList) {
                     ec.elasticSearchClient
                             .prepareIndex((String) document._index, (String) document._type, (String) document._id)
-                            .setSource(document).execute()
+                            .setSource(document).execute().actionGet()
+                    // logger.warn("============ indexed [${document._index}, ${document._type}, ${document._id}]")
                 }
             </script>
         </actions>
