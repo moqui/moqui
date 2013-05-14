@@ -193,7 +193,13 @@ public class EntityDefinition {
 
         String entityName = relationshipName.contains("#") ? relationshipName.substring(relationshipName.indexOf("#") + 1) : relationshipName
         String title = relationshipName.contains("#") ? relationshipName.substring(0, relationshipName.indexOf("#")) : null
-        EntityDefinition relatedEd = efi.getEntityDefinition(entityName)
+        EntityDefinition relatedEd = null
+        try {
+            relatedEd = efi.getEntityDefinition(entityName)
+        } catch (EntityException e) {
+            // ignore if entity doesn't exist
+            return null
+        }
 
         relNode = (Node) this.internalEntityNode."relationship"
                 .find({ ((it."@title" ?: "") + it."@related-entity-name") == relationshipName ||
