@@ -59,7 +59,7 @@ The actual build is done with Gradle.
         <java jar="moqui-${version}.war" fork="true">
             <jvmarg value="-server"/>
             <jvmarg value="-Xmx256M"/>
-            <jvmarg value="-XX:MaxPermSize=64m"/>
+            <jvmarg value="-XX:MaxPermSize=128m"/>
             <jvmarg value="-Dmoqui.conf=${moqui.conf.dev}"/>
             <jvmarg value="-Dmoqui.runtime=${moqui.runtime}"/>
         </java>
