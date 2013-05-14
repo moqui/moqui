@@ -41,4 +41,18 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="document" type="Map"><description>For details see document parameter in receive#DataFeed.</description></parameter>
         </out-parameters>
     </service>
+
+    <service verb="index" noun="DataDocument" authenticate="false">
+        <description>Indexes documents passed using ElasticSearch. The DataDocument must have an indexName.</description>
+        <implements service="org.moqui.EntityServices.receive#DataFeed"/>
+        <actions>
+            <script>
+                for (Map document in documentList) {
+                    ec.elasticSearchClient
+                            .prepareIndex((String) document._index, (String) document._type, (String) document._id)
+                            .setSource(document).execute()
+                }
+            </script>
+        </actions>
+    </service>
 </services>
