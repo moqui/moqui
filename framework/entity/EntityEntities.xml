@@ -111,9 +111,13 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <entity entity-name="DataDocument" package-name="moqui.entity.document">
         <field name="dataDocumentId" type="id" is-pk="true"/>
-        <field name="documentName" type="text-medium"/>
-        <field name="indexName" type="text-medium">This should be specified for documents that will be indexed by
-            ElasticSearch and must be lower-case (ElasticSearch requires all lower-case).</field>
+        <field name="documentName" type="text-medium"><description>The name of the document for display in search
+            results and such.</description></field>
+        <field name="documentTitle" type="text-medium"><description>A title for each document instance for display in
+            search results or other places. Meant to be string expanded using a "flattened" version of the document
+            (see the StupidUtilities.flattenNestedMap() method).</description></field>
+        <field name="indexName" type="text-medium"><description>This should be specified for documents that will be indexed by
+            ElasticSearch and must be lower-case (ElasticSearch requires all lower-case).</description></field>
         <field name="primaryEntityName" type="text-medium"/>
         <field name="manualDataServiceName" type="text-medium"><description>Name of a service to call to get additional
             data to include in the document. This service should implement the
