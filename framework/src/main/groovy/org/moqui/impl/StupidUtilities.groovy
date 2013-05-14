@@ -267,6 +267,27 @@ class StupidUtilities {
         innerMap.put(keyInner, value)
     }
 
+    /** Find a field value in a nested Map containing fields, Maps, and Collections of Maps (Lists, etc) */
+    static Object findFieldNestedMap(String key, Map theMap) {
+        if (theMap.containsKey(key)) return theMap.get(key)
+        for(Object value in theMap.values()) {
+            if (value instanceof Map) {
+                Map valueMap = (Map) value
+                Object fieldValue = findFieldNestedMap(key, valueMap)
+                if (fieldValue != null) return fieldValue
+            } else if (value instanceof Collection) {
+                // only look in Collections of Maps
+                for (Object colValue in value) {
+                    if (colValue instanceof Map) {
+                        Map valueMap = (Map) colValue
+                        Object fieldValue = findFieldNestedMap(key, valueMap)
+                        if (fieldValue != null) return fieldValue
+                    }
+                }
+            }
+        }
+    }
+
     static Node deepCopyNode(Node original) {
         // always pass in a null parent and expect this to be appended to the parent node by the caller if desired
         Node newNode = new Node(null, original.name(), original.attributes())
