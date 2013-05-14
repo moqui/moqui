@@ -36,6 +36,7 @@ allprojects {
 task clean(type: Delete) { delete file(warName); delete file(execTempDir) }
 task cleanTempDir(type: Delete) { delete file(execTempDir) }
 task cleanDb(type: Delete) { delete files(file(moquiRuntime+'/db/derby').listFiles()) - files(moquiRuntime+'/db/derby/derby.properties') }
+task cleanElasticSearch(type: Delete) { delete file(moquiRuntime+'/elasticsearch/data') }
 task cleanLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/log', include: '*') }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
@@ -43,6 +44,7 @@ task cleanAll {
     dependsOn clean
     dependsOn allCleanTasks
     dependsOn cleanDb
+    dependsOn cleanElasticSearch
     dependsOn cleanLog
     dependsOn cleanOther
 }
