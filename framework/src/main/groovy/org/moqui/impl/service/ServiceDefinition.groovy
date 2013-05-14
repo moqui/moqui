@@ -218,7 +218,7 @@ class ServiceDefinition {
 
     void convertValidateCleanParameters(Map<String, Object> parameters, ExecutionContextImpl eci) {
         if (this.serviceNode."@validate" != "false") {
-            checkParameterMap("", parameters, parameters, serviceNode."in-parameters"[0], eci)
+            checkParameterMap("", parameters, parameters, (Node) serviceNode."in-parameters"[0], eci)
         }
     }
 
@@ -262,6 +262,12 @@ class ServiceDefinition {
                 // no type conversion? error time...
                 eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
                 continue
+            }
+            if (converted == null && !parameterValue && parameterValue != null && !StupidUtilities.isInstanceOf(parameterValue, type)) {
+                // we have an empty value of a different type, just set it to null
+                parameterValue = null
+                // put the final parameterValue back into the parameters Map
+                parameters.put(parameterName, parameterValue)
             }
 
             checkSubtype(parameterName, parameterNode, parameterValue, eci)
