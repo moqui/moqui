@@ -97,6 +97,7 @@ class ServiceEcaRule {
         protected Integer timeout = null
 
         protected boolean active = false
+        protected boolean suspended = false
 
         SecaXaResource(ServiceEcaRule sec, Map<String, Object> parameters, ExecutionContextFactoryImpl ecfi) {
             this.ecfi = ecfi
@@ -127,13 +128,21 @@ class ServiceEcaRule {
             if (this.xid != null && !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
             this.active = true
+            this.suspended = false
             this.xid = xid
         }
 
         /** @see javax.transaction.xa.XAResource#end(javax.transaction.xa.Xid xid, int flag) */
         void end(Xid xid, int flag) throws XAException {
-            if (!this.active) throw new XAException(XAException.XAER_PROTO)
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
+            if (flag == TMSUSPEND) {
+                if (!this.active) throw new XAException(XAException.XAER_PROTO)
+                this.suspended = true
+            }
+            if (flag == TMSUCCESS || flag == TMFAIL) {
+                // allow a success/fail end if TX is suspended without a resume flagged start first
+                if (!this.active && !this.suspended) throw new XAException(XAException.XAER_PROTO)
+            }
             this.active = false
         }
 

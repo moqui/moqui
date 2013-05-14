@@ -283,17 +283,20 @@ class EntityDataFeed {
         protected Xid xid = null
         protected Integer timeout = null
         protected boolean active = false
+        protected boolean suspended = false
 
         protected EntityList feedValues
         protected Set<String> allDataDocumentIds = new HashSet<String>()
 
         DataFeedXaResource(EntityDataFeed edf) {
+            // logger.warn("========= Creating new DataFeedXaResource")
             this.edf = edf
             ecfi = edf.getEfi().getEcfi()
             feedValues = new EntityListImpl(edf.getEfi())
         }
 
         void enlist() {
+            // logger.warn("========= Enlisting new DataFeedXaResource")
             TransactionManager tm = ecfi.getTransactionFacade().getTransactionManager()
             if (tm == null && tm.getStatus() != Status.STATUS_ACTIVE) throw new XAException("Cannot enlist: no transaction manager or transaction not active")
             Transaction tx = tm.getTransaction()
@@ -304,12 +307,14 @@ class EntityDataFeed {
         }
 
         void addValueToFeed(EntityValue ev, Set<String> dataDocumentIdSet) {
+            if (!this.active) logger.warn("Adding value to inactive DataFeedXaResource! \nThis shouldn't happen and may mean the same DataFeedXaResource is being used after a TX suspend")
             feedValues.add(ev)
             allDataDocumentIds.addAll(dataDocumentIdSet)
         }
 
         @Override
         void start(Xid xid, int flag) throws XAException {
+            // logger.warn("========== DataFeedXaResource.start(${xid}, ${flag})")
             if (this.active) {
                 if (this.xid != null && this.xid.equals(xid)) {
                     throw new XAException(XAException.XAER_DUPID);
@@ -320,18 +325,28 @@ class EntityDataFeed {
             if (this.xid != null && !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
             this.active = true
+            this.suspended = false
             this.xid = xid
         }
 
         @Override
         void end(Xid xid, int flag) throws XAException {
-            if (!this.active) throw new XAException(XAException.XAER_PROTO)
+            // logger.warn("========== DataFeedXaResource.end(${xid}, ${flag})")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
+            if (flag == TMSUSPEND) {
+                if (!this.active) throw new XAException(XAException.XAER_PROTO)
+                this.suspended = true
+            }
+            if (flag == TMSUCCESS || flag == TMFAIL) {
+                // allow a success/fail end if TX is suspended without a resume flagged start first
+                if (!this.active && !this.suspended) throw new XAException(XAException.XAER_PROTO)
+            }
             this.active = false
         }
 
         @Override
         void forget(Xid xid) throws XAException {
+            // logger.warn("========== DataFeedXaResource.forget(${xid})")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             this.xid = null
             if (active) logger.warn("forget() called without end()")
@@ -339,12 +354,16 @@ class EntityDataFeed {
 
         @Override
         int prepare(Xid xid) throws XAException {
+            // logger.warn("========== DataFeedXaResource.prepare(${xid}); this.xid=${this.xid}")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             return XA_OK
         }
 
         @Override
-        Xid[] recover(int flag) throws XAException { return this.xid != null ? [this.xid] : [] }
+        Xid[] recover(int flag) throws XAException {
+            // logger.warn("========== DataFeedXaResource.recover(${flag}); this.xid=${this.xid}")
+            return this.xid != null ? [this.xid] : []
+        }
         @Override
         boolean isSameRM(XAResource xaResource) throws XAException { return xaResource == this }
         @Override
@@ -357,6 +376,7 @@ class EntityDataFeed {
 
         @Override
         void commit(Xid xid, boolean onePhase) throws XAException {
+            // logger.warn("========== DataFeedXaResource.commit(${xid}, ${onePhase}); this.xid=${this.xid}; this.active=${this.active}")
             if (this.active) logger.warn("commit() called without end()")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
@@ -369,6 +389,7 @@ class EntityDataFeed {
 
         @Override
         void rollback(Xid xid) throws XAException {
+            // logger.warn("========== DataFeedXaResource.rollback(${xid}); this.xid=${this.xid}; this.active=${this.active}")
             if (this.active) logger.warn("rollback() called without end()")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
@@ -470,10 +491,15 @@ class EntityDataFeed {
                                                     backwardRelNode."@related-entity-name"
 
                                                 List<EntityValueBase> currentRelValueList = []
-                                                for (EntityValueBase prevRelValue in prevRelValueList) {
-                                                    EntityList backwardRelValueList = prevRelValue.findRelated(backwardRelName, null, null, false, false)
-                                                    for (EntityValue backwardRelValue in backwardRelValueList)
-                                                        currentRelValueList.add((EntityValueBase) backwardRelValue)
+                                                alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+                                                try {
+                                                    for (EntityValueBase prevRelValue in prevRelValueList) {
+                                                        EntityList backwardRelValueList = prevRelValue.findRelated(backwardRelName, null, null, false, false)
+                                                        for (EntityValue backwardRelValue in backwardRelValueList)
+                                                            currentRelValueList.add((EntityValueBase) backwardRelValue)
+                                                    }
+                                                } finally {
+                                                    if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
                                                 }
 
                                                 prevRelName = currentRelName
@@ -559,7 +585,7 @@ class EntityDataFeed {
                     }
                 }
             };
-            thread.start();
+            thread.start()
         }
     }
 }
