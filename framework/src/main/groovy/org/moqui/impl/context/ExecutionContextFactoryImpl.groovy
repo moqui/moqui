@@ -14,9 +14,6 @@ package org.moqui.impl.context
 import java.sql.Timestamp
 import java.util.jar.JarFile
 
-import org.apache.shiro.config.IniSecurityManagerFactory
-import org.apache.shiro.SecurityUtils
-
 import org.moqui.BaseException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
@@ -32,6 +29,8 @@ import org.moqui.impl.StupidUtilities
 import org.apache.shiro.authc.credential.CredentialsMatcher
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher
 import org.apache.shiro.crypto.hash.SimpleHash
+import org.apache.shiro.config.IniSecurityManagerFactory
+import org.apache.shiro.SecurityUtils
 import org.apache.commons.collections.map.ListOrderedMap
 
 import org.apache.camel.CamelContext
@@ -272,7 +271,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // init components referred to in component-list.component elements in the conf file
         if (confXmlRoot."component-list"?.getAt(0)?."component") {
             for (Node componentNode in confXmlRoot."component-list"[0]."component") {
-                this.initComponent(componentNode."@name", componentNode."@location")
+                this.initComponent((String) componentNode."@name", (String) componentNode."@location")
             }
         }
     }
@@ -365,7 +364,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
             // persist any remaining bins in artifactHitBinByType
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
-            List<Map<String, Object>> ahbList = new ArrayList(artifactHitBinByType.values())
+            List<Map<String, Object>> ahbList = new ArrayList<Map<String, Object>>(artifactHitBinByType.values())
             artifactHitBinByType.clear()
             for (Map<String, Object> ahb in ahbList) {
                 ahb.binEndDateTime = currentTimestamp
@@ -469,7 +468,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     // ========== Interface Implementations ==========
 
-    /** @see org.moqui.context.ExecutionContextFactory#getExecutionContext() */
+    @Override
     ExecutionContext getExecutionContext() {
         ExecutionContextImpl ec = this.activeContext.get()
         if (ec) {
@@ -494,7 +493,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    /** @see org.moqui.context.ExecutionContextFactory#initComponent(String, String) */
+    @Override
     void initComponent(String componentName, String baseLocation) throws BaseException {
         // NOTE: how to get component name? for now use last directory name
         if (baseLocation.endsWith('/')) baseLocation = baseLocation.substring(0, baseLocation.length()-1)
@@ -512,14 +511,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
-    /** @see org.moqui.context.ExecutionContextFactory#destroyComponent(String) */
-    void destroyComponent(String componentName) throws BaseException {
-        this.componentLocationMap.remove(componentName)
-    }
+    @Override
+    void destroyComponent(String componentName) throws BaseException { componentLocationMap.remove(componentName) }
 
-    /** @see org.moqui.context.ExecutionContextFactory#getComponentBaseLocations() */
+    @Override
     Map<String, String> getComponentBaseLocations() {
-        return Collections.unmodifiableMap(this.componentLocationMap)
+        return Collections.unmodifiableMap(componentLocationMap)
     }
 
     // ========== Server Stat Tracking ==========
@@ -573,7 +570,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
             if (parameters) {
                 StringBuilder ps = new StringBuilder()
-                for (Map.Entry<String, String> pme in parameters) {
+                for (Map.Entry pme in parameters) {
                     if (!pme.value) continue
                     if (ps.length() > 0) ps.append(",")
                     ps.append(pme.key).append("=").append(pme.value)
@@ -667,7 +664,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected void mergeConfigNodes(Node baseNode, Node overrideNode) {
         if (overrideNode."cache-list") {
-            mergeNodeWithChildKey(baseNode."cache-list"[0], overrideNode."cache-list"[0], "cache", "name")
+            mergeNodeWithChildKey((Node) baseNode."cache-list"[0], (Node) overrideNode."cache-list"[0], "cache", "name")
         }
         
         if (overrideNode."server-stats") {
@@ -692,12 +689,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."webapp-list") {
-            mergeNodeWithChildKey(baseNode."webapp-list"[0], overrideNode."webapp-list"[0], "webapp", "name")
+            mergeNodeWithChildKey((Node) baseNode."webapp-list"[0], (Node) overrideNode."webapp-list"[0], "webapp", "name")
         }
 
         if (overrideNode."artifact-execution-facade") {
-            mergeNodeWithChildKey(baseNode."artifact-execution-facade"[0], overrideNode."artifact-execution-facade"[0],
-                    "artifact-execution", "type")
+            mergeNodeWithChildKey((Node) baseNode."artifact-execution-facade"[0],
+                    (Node) overrideNode."artifact-execution-facade"[0], "artifact-execution", "type")
         }
 
         if (overrideNode."user-facade") {
@@ -715,13 +712,17 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."resource-facade") {
-            mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "resource-reference", "scheme")
-            mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "template-renderer", "extension")
-            mergeNodeWithChildKey(baseNode."resource-facade"[0], overrideNode."resource-facade"[0], "script-runner", "extension")
+            mergeNodeWithChildKey((Node) baseNode."resource-facade"[0], (Node) overrideNode."resource-facade"[0],
+                    "resource-reference", "scheme")
+            mergeNodeWithChildKey((Node) baseNode."resource-facade"[0], (Node) overrideNode."resource-facade"[0],
+                    "template-renderer", "extension")
+            mergeNodeWithChildKey((Node) baseNode."resource-facade"[0], (Node) overrideNode."resource-facade"[0],
+                    "script-runner", "extension")
         }
 
         if (overrideNode."screen-facade") {
-            mergeNodeWithChildKey(baseNode."screen-facade"[0], overrideNode."screen-facade"[0], "screen-text-output", "type")
+            mergeNodeWithChildKey((Node) baseNode."screen-facade"[0], (Node) overrideNode."screen-facade"[0],
+                    "screen-text-output", "type")
         }
 
         if (overrideNode."service-facade") {
@@ -759,17 +760,17 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
 
         if (overrideNode."database-list") {
-            mergeNodeWithChildKey(baseNode."database-list"[0], overrideNode."database-list"[0], "dictionary-type", "type")
-            mergeNodeWithChildKey(baseNode."database-list"[0], overrideNode."database-list"[0], "database", "name")
+            mergeNodeWithChildKey((Node) baseNode."database-list"[0], (Node) overrideNode."database-list"[0], "dictionary-type", "type")
+            mergeNodeWithChildKey((Node) baseNode."database-list"[0], (Node) overrideNode."database-list"[0], "database", "name")
         }
 
         if (overrideNode."repository-list") {
-            mergeNodeWithChildKey(baseNode."repository-list"[0], overrideNode."repository-list"[0], "repository", "name")
+            mergeNodeWithChildKey((Node) baseNode."repository-list"[0], (Node) overrideNode."repository-list"[0], "repository", "name")
         }
 
         if (overrideNode."component-list") {
             if (!baseNode."component-list") baseNode.appendNode("component-list")
-            mergeNodeWithChildKey(baseNode."component-list"[0], overrideNode."component-list"[0], "component", "name")
+            mergeNodeWithChildKey((Node) baseNode."component-list"[0], (Node) overrideNode."component-list"[0], "component", "name")
         }
     }
 
@@ -806,13 +807,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 } else if ("datasource" == childNodesName) {
                     // handle the jndi-jdbc and inline-jdbc nodes: if either exist in override have it totally remove both from base, then copy over
                     if (childOverrideNode."jndi-jdbc" || childOverrideNode."inline-jdbc") {
-                        if (childBaseNode."jndi-jdbc") childBaseNode.remove(childBaseNode."jndi-jdbc"[0])
-                        if (childBaseNode."inline-jdbc") childBaseNode.remove(childBaseNode."inline-jdbc"[0])
+                        if (childBaseNode."jndi-jdbc") childBaseNode.remove((Node) childBaseNode."jndi-jdbc"[0])
+                        if (childBaseNode."inline-jdbc") childBaseNode.remove((Node) childBaseNode."inline-jdbc"[0])
 
                         if (childOverrideNode."inline-jdbc") {
-                            childBaseNode.append(childOverrideNode."inline-jdbc"[0])
+                            childBaseNode.append((Node) childOverrideNode."inline-jdbc"[0])
                         } else if (childOverrideNode."jndi-jdbc") {
-                            childBaseNode.append(childOverrideNode."jndi-jdbc"[0])
+                            childBaseNode.append((Node) childOverrideNode."jndi-jdbc"[0])
                         }
                     }
                 }
@@ -836,7 +837,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {
-        List overrideActionNodes = overrideWebappNode[childNodeName]?.getAt(0)?.actions?.getAt(0)?.children()
+        List<Node> overrideActionNodes = overrideWebappNode[childNodeName]?.getAt(0)?.actions?.getAt(0)?.children()
         if (overrideActionNodes) {
             Node childNode = (Node) baseWebappNode[childNodeName][0]
             if (!childNode) {

@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.entity
 
-import javax.sql.rowset.serial.SerialBlob
 import javax.xml.parsers.SAXParserFactory
 
 import org.apache.commons.codec.binary.Base64
@@ -103,7 +102,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
             // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
             for (Node loadData in efi.ecfi.getConfXmlRoot()."entity-facade"[0]."load-data") {
-                locationList.add(loadData."@location")
+                locationList.add((String) loadData."@location")
             }
 
             for (String location in efi.ecfi.getComponentBaseLocations().values()) {
@@ -180,6 +179,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 logger.info("Loaded ${(exh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
+                logger.trace("Skipping file [${location}], is a type to skip (${e.toString()})")
             } finally {
                 if (inputStream) inputStream.close()
             }
@@ -210,7 +210,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 try {
                     value.create()
                 } catch (EntityException e) {
-                    // if this fails we have a real error so let the exception fall through
+                    logger.trace("Insert failed, trying update (${e.toString()})")
+                    // retry, then if this fails we have a real error so let the exception fall through
                     value.update()
                 }
             } else {
@@ -356,7 +357,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
         }
 
-        public void setDocumentLocator(org.xml.sax.Locator locator) {
+        public void setDocumentLocator(Locator locator) {
             this.locator = locator;
         }
     }
