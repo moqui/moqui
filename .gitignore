@@ -1,10 +1,12 @@
 .idea/
 .gradle/
 moqui.iml
+framework.iml
 framework/build/
 framework/.gradle/
 moqui-*.war
 runtime/component/example/build/
+runtime/component/example.iml
 runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
 runtime/db/derby/derby.log
