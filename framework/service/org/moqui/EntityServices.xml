@@ -42,7 +42,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </out-parameters>
     </service>
 
-    <service verb="index" noun="DataDocument" authenticate="false">
+    <service verb="index" noun="DataDocuments" authenticate="false">
         <description>Indexes documents passed using ElasticSearch. The DataDocument must have an indexName.</description>
         <implements service="org.moqui.EntityServices.receive#DataFeed"/>
         <actions>
@@ -55,6 +55,20 @@ This Work includes contributions authored by David E. Jones, not as a
                     // logger.warn("============ indexed [${document._index}, ${document._type}, ${document._id}]")
                 }
             </script>
+        </actions>
+    </service>
+
+    <service verb="index" noun="DataFeedDocuments" authenticate="false">
+        <in-parameters>
+            <parameter name="dataFeedId" required="true"/>
+            <parameter name="fromUpdateStamp" type="Timestamp"/>
+            <parameter name="thruUpdateStamp" type="Timestamp"/>
+        </in-parameters>
+        <actions>
+            <log level="warn" message="============= indexDataFeedDocuments fromUpdateStamp=[${fromUpdateStamp}]"/>
+            <script>documentList = ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)</script>
+            <set field="feedStamp" from="thruUpdateStamp ?: ec.user.nowTimestamp"/>
+            <service-call name="org.moqui.EntityServices.index#DataDocuments" in-map="context"/>
         </actions>
     </service>
 </services>

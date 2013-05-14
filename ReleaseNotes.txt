@@ -1121,10 +1121,10 @@ Features considered, but probably not to be included in 1.0 series
   - search includes dataDocumentId as a search term, key search term to constrain to results to dataDocumentId; limit search to specific indexName
   x _index = indexName, _type = dataDocumentId, _id = (pk field values, underscore separated), use version?
 - Data Feed
-  - API get outstanding data changes
-  - API push outstanding data changes (registration/connection, time trigger)
+  x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
+  - API (or service?) push outstanding data changes (registration/connection, time trigger)
   x API push matching data change
-  - API receive/persist data change messages
+  - API (or service?) receive/persist data change messages
   - Consumer System Registry
     x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
     x per DataDocument alreadySentDateTime

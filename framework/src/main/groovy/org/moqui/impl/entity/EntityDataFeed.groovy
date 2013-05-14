@@ -36,7 +36,34 @@ class EntityDataFeed {
 
     EntityFacadeImpl getEfi() { return efi }
 
-    /* Notes:
+    /** This method gets the latest documents for a DataFeed based on DataFeed.lastFeedStamp, and updates lastFeedStamp
+     * to the current time. This method should be called in a service or something to manage the transaction. */
+    List<Map> getFeedLatestDocuments(String dataFeedId) {
+        EntityValue dataFeed = efi.makeFind("moqui.entity.feed.DataFeedDocument").condition("dataFeedId", dataFeedId)
+                .useCache(false).forUpdate(true).one()
+        Timestamp fromUpdateStamp = dataFeed.getTimestamp("lastFeedStamp")
+        Timestamp thruUpdateStamp = new Timestamp(System.currentTimeMillis())
+        // get the List first, if no errors update lastFeedStamp
+        List<Map> documentList = getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdateStamp)
+        dataFeed.lastFeedStamp = thruUpdateStamp
+        dataFeed.update()
+        return documentList
+    }
+
+    List<Map> getFeedDocuments(String dataFeedId, Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp) {
+        EntityList dataFeedDocumentList = efi.makeFind("moqui.entity.feed.DataFeedDocument")
+                .condition("dataFeedId", dataFeedId).useCache(true).list()
+
+        List<Map> fullDocumentList = []
+        for (EntityValue dataFeedDocument in dataFeedDocumentList) {
+            String dataDocumentId = dataFeedDocument.dataDocumentId
+            List<Map> curDocList = efi.getDataDocuments(dataDocumentId, null, fromUpdateStamp, thruUpdatedStamp)
+            fullDocumentList.addAll(curDocList)
+        }
+        return fullDocumentList
+    }
+
+    /* Notes for real-time push DataFeed:
     - doing update on entity have entityNames updated, for each fieldNames updated, field values (query as needed based
         on actual conditions if any conditions on fields not present in EntityValue
     - do this based on a committed transaction of changes, not just on a single record...
@@ -109,7 +136,7 @@ class EntityDataFeed {
         }
     }
 
-    DataFeedXaResource getDataFeedXaResource() {
+    protected DataFeedXaResource getDataFeedXaResource() {
         DataFeedXaResource dfxr = (DataFeedXaResource) efi.getEcfi().getTransactionFacade().getActiveXaResource("DataFeedXaResource")
         if (dfxr == null) {
             dfxr = new DataFeedXaResource(this)
