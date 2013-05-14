@@ -938,7 +938,7 @@ class EntityFacadeImpl implements EntityFacade {
                 }
 
                 // recursively add List of Maps for each related entity
-                populateDataDocRelatedMap(ev, docMap, fieldTree, false)
+                populateDataDocRelatedMap(ev, docMap, primaryEd, fieldTree, false)
             }
         } finally {
             mainEli.close()
@@ -984,52 +984,70 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    protected void populateDataDocRelatedMap(EntityValue ev, Map<String, Object> parentDocMap, Map fieldTreeCurrent,
-                                             boolean setFields) {
+    protected void populateDataDocRelatedMap(EntityValue ev, Map<String, Object> parentDocMap, EntityDefinition parentEd,
+                                             Map fieldTreeCurrent, boolean setFields) {
         for (Map.Entry fieldTreeEntry in fieldTreeCurrent.entrySet()) {
             if (fieldTreeEntry.getKey() instanceof String && fieldTreeEntry.getKey() == "_ALIAS") continue
             if (fieldTreeEntry.getValue() instanceof Map) {
                 String relationshipName = fieldTreeEntry.getKey()
                 Map fieldTreeChild = (Map) fieldTreeEntry.getValue()
 
-                // see if there is a Map in the List in the matching entry
-                List<Map> relatedEntityDocList = (List<Map>) parentDocMap.get(relationshipName)
+                Node relationshipNode = parentEd.getRelationshipNode(relationshipName)
+                EntityDefinition relatedEd = getEntityDefinition(relationshipNode."@related-entity-name")
+                boolean isOneRelationship = ((String) relationshipNode."@type").startsWith("one")
+
                 Map relatedEntityDocMap = null
-                if (relatedEntityDocList != null) {
-                    for (Map candidateMap in relatedEntityDocList) {
-                        boolean allMatch = true
-                        for (Map.Entry fieldTreeChildEntry in fieldTreeChild.entrySet()) {
-                            if (fieldTreeEntry.getValue() instanceof String) {
-                                if (fieldTreeEntry.getKey() == "_ALIAS") continue
-                                String fieldName = fieldTreeEntry.getValue()
-                                if (candidateMap.get(fieldName) != ev.get(fieldName)) {
-                                    allMatch = false
-                                    break
+                boolean recurseSetFields = true
+                if (isOneRelationship) {
+                    // we only need a single Map
+                    relatedEntityDocMap = (Map) parentDocMap.get(relationshipName)
+                    if (relatedEntityDocMap == null) {
+                        relatedEntityDocMap = [:]
+                        parentDocMap.put(relationshipName, relatedEntityDocMap)
+                    } else {
+                        recurseSetFields = false
+                    }
+                } else {
+                    // we need a List of Maps
+
+                    // see if there is a Map in the List in the matching entry
+                    List<Map> relatedEntityDocList = (List<Map>) parentDocMap.get(relationshipName)
+                    if (relatedEntityDocList != null) {
+                        for (Map candidateMap in relatedEntityDocList) {
+                            boolean allMatch = true
+                            for (Map.Entry fieldTreeChildEntry in fieldTreeChild.entrySet()) {
+                                if (fieldTreeEntry.getValue() instanceof String) {
+                                    if (fieldTreeEntry.getKey() == "_ALIAS") continue
+                                    String fieldName = fieldTreeEntry.getValue()
+                                    if (candidateMap.get(fieldName) != ev.get(fieldName)) {
+                                        allMatch = false
+                                        break
+                                    }
                                 }
                             }
+                            if (allMatch) {
+                                relatedEntityDocMap = candidateMap
+                                break
+                            }
                         }
-                        if (allMatch) {
-                            relatedEntityDocMap = candidateMap
-                            break
-                        }
-                    }
-                }
-                boolean recurseSetFields = true
-                if (relatedEntityDocMap == null) {
-                    // no matching Map? create a new one... and it will get populated in the recursive call
-                    if (relatedEntityDocList == null) {
-                        relatedEntityDocList = []
-                        parentDocMap.put(relationshipName, relatedEntityDocList)
                     }
 
-                    relatedEntityDocMap = [:]
-                    relatedEntityDocList.add(relatedEntityDocMap)
-                } else {
-                    recurseSetFields = false
+                    if (relatedEntityDocMap == null) {
+                        // no matching Map? create a new one... and it will get populated in the recursive call
+                        if (relatedEntityDocList == null) {
+                            relatedEntityDocList = []
+                            parentDocMap.put(relationshipName, relatedEntityDocList)
+                        }
+
+                        relatedEntityDocMap = [:]
+                        relatedEntityDocList.add(relatedEntityDocMap)
+                    } else {
+                        recurseSetFields = false
+                    }
                 }
 
                 // now time to recurse
-                populateDataDocRelatedMap(ev, relatedEntityDocMap, fieldTreeChild, recurseSetFields)
+                populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, recurseSetFields)
             } else {
                 if (setFields) {
                     // set the field
