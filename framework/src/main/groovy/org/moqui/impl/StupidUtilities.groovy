@@ -286,6 +286,28 @@ class StupidUtilities {
                 }
             }
         }
+
+        return null
+    }
+
+    /** Creates a single Map with fields from the passed in Map and all nested Maps (for Map and Collection of Map entry values) */
+    static Map flattenNestedMap(Map theMap) {
+        Map outMap = [:]
+        for (Map.Entry entry in theMap.entrySet()) {
+            Object value = entry.getValue()
+            if (value instanceof Map) {
+                outMap.putAll(flattenNestedMap(value))
+            } else if (value instanceof Collection) {
+                for (Object colValue in value) {
+                    if (colValue instanceof Map) {
+                        outMap.putAll(flattenNestedMap(colValue))
+                    }
+                }
+            } else {
+                outMap.put(entry.getKey(), entry.getValue())
+            }
+        }
+        return outMap
     }
 
     static Node deepCopyNode(Node original) {
