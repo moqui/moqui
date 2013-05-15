@@ -19,6 +19,7 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 // maybe in the future: repositories { mavenCentral() }
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
+    flatDir name: 'localLibSearch', dirs: projectDir.absolutePath + '/lib/search'
     flatDir name: 'moquiLib', dirs: frameworkDir.absolutePath + '/build/libs'
 }
 
@@ -27,6 +28,7 @@ dependencies {
     groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.0.5' // Apache 2.0
 
     compile fileTree(dir: frameworkDir.absolutePath + '/lib', includes: ['*.jar'])
+    compile fileTree(dir: frameworkDir.absolutePath + '/lib/search', includes: ['*.jar'])
     compile name: 'moqui-framework', version: version // Public Domain
 }
 
