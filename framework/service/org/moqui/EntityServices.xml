@@ -64,11 +64,16 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="fromUpdateStamp" type="Timestamp"/>
             <parameter name="thruUpdateStamp" type="Timestamp"/>
         </in-parameters>
+        <out-parameters>
+            <parameter name="documentsIndexed" type="Integer"/>
+        </out-parameters>
         <actions>
             <log level="warn" message="============= indexDataFeedDocuments fromUpdateStamp=[${fromUpdateStamp}]"/>
             <script>documentList = ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)</script>
             <set field="feedStamp" from="thruUpdateStamp ?: ec.user.nowTimestamp"/>
             <service-call name="org.moqui.EntityServices.index#DataDocuments" in-map="context"/>
+            <set field="documentsIndexed" from="documentList.size()"/>
+            <message>Indexed ${documentsIndexed} documents</message>
         </actions>
     </service>
 
