@@ -54,7 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <set field="linkUrl" from="ec.resource.evaluateStringExpand(dataDocumentLink?.linkUrl, '')"/>
                 <set field="documentTitle" from="ec.resource.evaluateStringExpand(dataDocument?.documentTitle, '')"/>
             </row-actions>
-            <field name="type"><default-field><display text="${dataDocument.documentName}"/></default-field></field>
+            <field name="type"><default-field><display text="${dataDocument.documentName} [${_type}]"/></default-field></field>
             <field name="id"><default-field><display text="${_id}"/></default-field></field>
             <field name="documentTitle"><default-field title="Title"><display/></default-field></field>
             <field name="link"><default-field>
