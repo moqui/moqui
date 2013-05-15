@@ -56,6 +56,11 @@ New Features:
   real-time push triggered by entity changes for entities that are part of
   associated DataDocuments and the document(s) produced and sent to the
   feed receive service when a transaction is successfully committed
+- Added index#DataFeedDocuments service to easily index all documents
+  associated with a DataFeed within a date range
+- Added search#DataDocuments service which uses ElasticSearch; supports
+  pagination and so on
+- Added Tool app screens for indexing and search DataDocuments
 
 Bug Fixes:
 
