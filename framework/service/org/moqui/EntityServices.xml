@@ -73,27 +73,50 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
 
     <service verb="search" noun="DataDocuments">
+        <description>
+            The queryString format is the ElasticSearch supported one, based on the Lucene query strings which are
+            partly documented here:
+
+            http://lucene.apache.org/core/4_2_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html
+        </description>
         <in-parameters>
-            <parameter name="indexName"/>
+            <parameter name="indexName" required="true"/>
             <parameter name="queryString" required="true"/>
-            <parameter name="limit" type="Integer" default-value="50"/>
+            <parameter name="pageIndex" type="Integer" default-value="0"/>
+            <parameter name="pageSize" type="Integer" default-value="20"/>
             <parameter name="flattenDocument" type="Boolean" default-value="true"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="documentList" type="List"/>
+            <parameter name="documentList" type="List"><description>List of documents, each document is a Map with
+                nested Maps and Lists of Maps.</description></parameter>
+            <parameter name="documentListCount" type="Integer"><description>The total count of hits, not just the
+                limited number returned.</description></parameter>
+            <parameter name="documentListPageIndex" type="Integer"/>
+            <parameter name="documentListPageSize" type="Integer"/>
+            <parameter name="documentListPageMaxIndex" type="Integer"/>
+            <parameter name="documentListPageRangeLow" type="Integer"/>
+            <parameter name="documentListPageRangeHigh" type="Integer"/>
         </out-parameters>
         <actions>
+            <set field="fromOffset" from="pageIndex * pageSize"/>
+            <set field="sizeLimit" from="pageSize"/>
             <script>
+                /* useful docs for query API:
+                       http://www.elasticsearch.org/guide/reference/api/search/uri-request/
+                 */
+
                 import org.elasticsearch.action.get.MultiGetItemResponse
                 import org.elasticsearch.action.get.MultiGetRequestBuilder
                 import org.elasticsearch.index.query.QueryBuilders
                 import org.elasticsearch.search.SearchHit
                 import org.elasticsearch.search.SearchHits
+                org.moqui.context.ExecutionContext ec = context.ec
 
                 documentList = []
 
+                // get the search hits
                 SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName)
-                        .setQuery(QueryBuilders.queryString(queryString)).setSize(limit).execute().actionGet().getHits()
+                        .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit).execute().actionGet().getHits()
                 if (hits.getTotalHits() > 0) {
                     MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
                     for (SearchHit hit in hits) mgrb.add(hit.getIndex(), hit.getType(), hit.getId())
@@ -104,6 +127,17 @@ This Work includes contributions authored by David E. Jones, not as a
                         documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
                     }
                 }
+
+                // get the total search count
+                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
+
+                // calculate the pagination values
+                documentListPageIndex = pageIndex
+                documentListPageSize = pageSize
+                documentListPageMaxIndex = (int)(documentListCount / documentListPageSize)
+                documentListPageRangeLow = documentListPageIndex * documentListPageSize + 1
+                documentListPageRangeHigh = (documentListPageIndex * documentListPageSize) + documentListPageSize
+                if (documentListPageRangeHigh > documentListCount) documentListPageRangeHigh = documentListCount
             </script>
         </actions>
     </service>
