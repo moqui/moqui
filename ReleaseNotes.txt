@@ -1120,15 +1120,15 @@ Features considered, but probably not to be included in 1.0 series
     - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
 
 - Data Search
-  - use elasticsearch.org
-  - get data from Data Feed, Data Search index is a feed receive service
-  - receive#DataFeed interface service implementation
-  - search includes dataDocumentId as a search term, key search term to constrain to results to dataDocumentId; limit search to specific indexName
+  x use elasticsearch.org
+  x get data from Data Feed, Data Search index is a feed receive service
+  x receive#DataFeed interface service implementation
+  x search includes dataDocumentId as a search term, key search term to constrain to results to dataDocumentId; limit search to specific indexName
   x _index = indexName, _type = dataDocumentId, _id = (pk field values, underscore separated), use version?
 - Data Feed
   x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
-  - API (or service?) push outstanding data changes (registration/connection, time trigger)
   x API push matching data change
+  - API (or service?) push outstanding data changes (registration/connection, time trigger)
   - API (or service?) receive/persist data change messages
   - Consumer System Registry
     x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
