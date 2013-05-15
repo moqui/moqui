@@ -117,7 +117,7 @@ class EntityFacadeImpl implements EntityFacade {
     Set<String> getDatasourceGroupNames() {
         Set<String> groupNames = new TreeSet<String>()
         for (Node datasourceNode in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource")
-            groupNames.add(datasourceNode."@group-name")
+            groupNames.add((String) datasourceNode."@group-name")
         return groupNames
     }
 
@@ -143,7 +143,7 @@ class EntityFacadeImpl implements EntityFacade {
 
         // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
         for (Node loadEntity in this.ecfi.getConfXmlRoot()."entity-facade"[0]."load-entity") {
-            entityRrList.add(this.ecfi.resourceFacade.getLocationReference(loadEntity."@location"))
+            entityRrList.add(this.ecfi.resourceFacade.getLocationReference((String) loadEntity."@location"))
         }
 
         // loop through components look for XML files in the entity directory, check each for "<entities>" root element
@@ -381,7 +381,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 EntityDefinition reverseEd
                 try {
-                    reverseEd = getEntityDefinition(relNode."@related-entity-name")
+                    reverseEd = getEntityDefinition((String) relNode."@related-entity-name")
                 } catch (EntityException e) {
                     logger.warn("Error getting definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]: ${e.toString()}")
                     continue
@@ -576,7 +576,7 @@ class EntityFacadeImpl implements EntityFacade {
             //[type:relNode."@type", title:(relNode."@title"?:""), relatedEntityName:relNode."@related-entity-name",
             //        keyMap:keyMap, targetParameterMap:targetParameterMap, prettyName:prettyName]
             EntityDefinition red = null
-            try { red = getEntityDefinition(relInfo.relatedEntityName) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
+            try { red = getEntityDefinition((String) relInfo.relatedEntityName) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (red == null) continue
 
             EntityValue dbViewEntityMember = null
@@ -689,12 +689,12 @@ class EntityFacadeImpl implements EntityFacade {
             }
         } catch (EntityException e) {
             // do nothing, just means seqName is not an entity name
+            logger.trace("Ignoring exception for entity not found: ${e.toString()}")
         }
         // fall through to default to the db sequenced ID
         return dbSequencedIdPrimary(seqName, staggerMax, bankSize)
     }
 
-    @Override
     protected synchronized String dbSequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         // TODO: find some way to get this running non-synchronized for performance reasons (right now if not
         // TODO:     synchronized the forUpdate won't help if the record doesn't exist yet, causing errors in high
@@ -746,7 +746,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
         }
 
-        Long seqNum = bank[0]
+        Long seqNum = (Long) bank[0]
         if (staggerMax) {
             long stagger = Math.round(Math.random() * staggerMax)
             if (stagger == 0) stagger = 1

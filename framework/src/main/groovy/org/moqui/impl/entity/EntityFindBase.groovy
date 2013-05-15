@@ -11,21 +11,24 @@
  */
 package org.moqui.impl.entity
 
-import org.moqui.entity.EntityFind
-import org.moqui.impl.entity.condition.EntityConditionImplBase
-import org.apache.commons.collections.set.ListOrderedSet
 import java.sql.ResultSet
+import java.sql.Timestamp
+
+import org.apache.commons.collections.set.ListOrderedSet
+
+import org.moqui.context.ExecutionContext
+import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityDynamicView
 import org.moqui.entity.EntityCondition
-import org.moqui.impl.entity.condition.ListCondition
-import org.moqui.context.ExecutionContext
-import java.sql.Timestamp
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.CacheImpl
+import org.moqui.impl.entity.condition.EntityConditionImplBase
+import org.moqui.impl.entity.condition.ListCondition
+
 import net.sf.ehcache.Element
 
 abstract class EntityFindBase implements EntityFind {
@@ -117,7 +120,7 @@ abstract class EntityFindBase implements EntityFind {
     }
 
     @Override
-    EntityFind conditionDate(String fromFieldName, String thruFieldName, java.sql.Timestamp compareStamp) {
+    EntityFind conditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp) {
         condition(efi.conditionFactory.makeConditionDate(fromFieldName, thruFieldName, compareStamp))
         return this
     }

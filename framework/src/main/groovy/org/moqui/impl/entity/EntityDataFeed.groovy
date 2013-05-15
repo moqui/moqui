@@ -577,20 +577,18 @@ class EntityDataFeed {
                                 condition = efi.getConditionFactory().makeCondition(condList, EntityCondition.OR)
                             }
 
-                            List<Map> documents = null
-                            EntityList dataFeedAndDocumentList = null
                             alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
                             try {
                                 // generate the document with the extra condition and send it to all DataFeeds
                                 //     associated with the DataDocument
-                                documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
+                                List<Map> documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
 
                                 if (!documents) {
                                     logger.warn("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
                                     continue
                                 }
 
-                                dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                                EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
                                         .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
                                         .condition("dataDocumentId", dataDocumentId).useCache(true).list()
 
