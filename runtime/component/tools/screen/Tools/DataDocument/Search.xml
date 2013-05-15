@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.2.xsd"
+        default-menu-title="Search" default-menu-index="1">
+
+    <transition name="submitSearch"><default-response url="."/></transition>
+    <transition name="viewDocument"><default-response url="../ViewDocument"/></transition>
+
+    <actions>
+        <if condition="queryString">
+            <service-call name="org.moqui.EntityServices.search#DataDocuments" out-map="context" in-map="context"/>
+        </if>
+    </actions>
+    <widgets>
+        <form-single name="SearchOptions" transition="submitSearch">
+            <field name="indexName"><default-field title="">
+                <drop-down>
+                    <entity-options key="${indexName}" text="${indexName}">
+                        <entity-find entity-name="moqui.entity.document.DataDocument" distinct="true">
+                            <select-field field-name="indexName"/>
+                            <order-by field-name="indexName"/>
+                        </entity-find>
+                    </entity-options>
+                </drop-down>
+            </default-field></field>
+            <field name="queryString"><default-field title="">
+                <text-line size="40"/>
+                <!-- TODO: at some point impl this, once we figure out how to get suggest results from ElasticSearch:
+                    <text-line ac-transition="searchSuggest" ac-min-length="3" size="40"/> -->
+            </default-field></field>
+            <field name="submitButton"><default-field title="Search"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="indexName"/><field-ref name="queryString"/><field-ref name="submitButton"/></field-row></field-layout>
+        </form-single>
+
+        <form-list name="SearchResults" list="documentList" paginate="true" paginate-always-show="true">
+            <row-actions>
+                <entity-find-one entity-name="DataDocument" value-field="dataDocument" cache="true">
+                    <field-map field-name="dataDocumentId" from="_type"/>
+                </entity-find-one>
+                <!-- this is a type=many relationship, but we just want one here: -->
+                <entity-find-related-one value-field="dataDocument" cache="true"
+                        relationship-name="moqui.entity.document.DataDocumentLink" to-value-field="dataDocumentLink"/>
+                <set field="linkUrl" from="ec.resource.evaluateStringExpand(dataDocumentLink?.linkUrl, '')"/>
+                <set field="documentTitle" from="ec.resource.evaluateStringExpand(dataDocument?.documentTitle, '')"/>
+            </row-actions>
+            <field name="type"><default-field><display text="${dataDocument.documentName}"/></default-field></field>
+            <field name="id"><default-field><display text="${_id}"/></default-field></field>
+            <field name="documentTitle"><default-field title="Title"><display/></default-field></field>
+            <field name="link"><default-field>
+                <link url="${linkUrl}" text="${dataDocumentLink.label}" link-type="anchor" url-type="plain"/>
+            </default-field></field>
+            <field name="viewDocument"><default-field>
+                <dynamic-dialog id="ViewDocument" button-text="View Document" transition="viewDocument">
+                    <parameter name="_index"/><parameter name="_type"/><parameter name="_id"/>
+                </dynamic-dialog>
+            </default-field></field>
+        </form-list>
+    </widgets>
+</screen>

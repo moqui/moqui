@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.2.xsd"
+        default-menu-include="false" standalone="true">
+
+    <parameter name="_index"/>
+    <parameter name="_type"/>
+    <parameter name="_id"/>
+    
+    <actions>
+        <script>
+            import groovy.json.JsonOutput
+            import org.elasticsearch.action.get.GetResponse
+
+            org.moqui.context.ExecutionContext ec = context.ec
+            GetResponse docGr = ec.elasticSearchClient.prepareGet(_index, _type, _id).execute().actionGet()
+            documentString = JsonOutput.prettyPrint(docGr.getSourceAsString())
+            flattenedDocumentMap = StupidUtilities.flattenNestedMap(docGr.getSourceAsMap())
+        </script>
+    </actions>
+    <widgets>
+        <label text="Flattened Map" type="h2"/>
+        <label text="${flattenedDocumentMap}" encode="true"/>
+        <label text="Document JSON" type="h2"/>
+        <label text="${documentString}" encode="true" type="pre"/>
+    </widgets>
+</screen>
