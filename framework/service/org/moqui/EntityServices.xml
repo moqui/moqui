@@ -71,4 +71,38 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="org.moqui.EntityServices.index#DataDocuments" in-map="context"/>
         </actions>
     </service>
+
+    <service verb="search" noun="DataDocuments">
+        <in-parameters>
+            <parameter name="indexName"/>
+            <parameter name="queryString" required="true"/>
+            <parameter name="limit" type="Integer" default-value="50"/>
+            <parameter name="flattenDocument" type="Boolean" default-value="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="documentList" type="List"/>
+        </out-parameters>
+        <actions>
+            <script>
+                import org.elasticsearch.action.get.MultiGetItemResponse
+                import org.elasticsearch.action.get.MultiGetRequestBuilder
+                import org.elasticsearch.index.query.QueryBuilders
+                import org.elasticsearch.search.SearchHit
+                import org.elasticsearch.search.SearchHits
+
+                documentList = []
+
+                SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName)
+                        .setQuery(QueryBuilders.queryString(queryString)).setSize(limit).execute().actionGet().getHits()
+                MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
+                for (SearchHit hit in hits) mgrb.add(hit.getIndex(), hit.getType(), hit.getId())
+                Iterator mgirIt = mgrb.execute().actionGet().iterator()
+                while(mgirIt.hasNext()) {
+                    MultiGetItemResponse mgir = mgirIt.next()
+                    Map document = mgir.getResponse().getSourceAsMap()
+                    documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
+                }
+            </script>
+        </actions>
+    </service>
 </services>
