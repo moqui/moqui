@@ -413,11 +413,11 @@ class UserFacadeImpl implements UserFacade {
 
     static boolean hasPermission(String username, String userPermissionId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
         if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
-        EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
-        if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
-        if (ua == null) return false
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
+            EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
+            if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
+            if (ua == null) return false
             return (eci.getEntity().makeFind("moqui.security.UserPermissionCheck")
                     .condition([userId:ua.userId, userPermissionId:userPermissionId]).useCache(true).list()
                     .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
