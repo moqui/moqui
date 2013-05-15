@@ -51,7 +51,7 @@ public class InlineServiceRunner implements ServiceRunner {
             } else {
                 // if there are fields in ec.context that match out-parameters but that aren't in the result, set them
                 for (String outParameterName in sd.getOutParameterNames()) {
-                    if (!autoResult.containsKey(outParameterName) && ec.context.get(outParameterName))
+                    if (!autoResult.containsKey(outParameterName) && ec.context.get(outParameterName) != null)
                         autoResult.put(outParameterName, ec.context.get(outParameterName))
                 }
                 return autoResult
