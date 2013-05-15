@@ -27,7 +27,7 @@ class EntityCache {
         this.efi = efi
     }
 
-    EntityFacadeImpl getEfi() { return efi }
+    // EntityFacadeImpl getEfi() { return efi }
 
     CacheImpl getCacheOne(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.one.${entityName}") }
     CacheImpl getCacheOneRa(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.one_ra.${entityName}") }
@@ -54,7 +54,7 @@ class EntityCache {
                 // see if there are any one RA entries
                 Cache oneRaCache = getCacheOneRa(entityName)
                 if (oneRaCache.containsKey(pkCondition)) {
-                    List raKeyList = (List) oneRaCache.get(pkCondition)
+                    List<EntityCondition> raKeyList = (List<EntityCondition>) oneRaCache.get(pkCondition)
                     for (EntityCondition ec in raKeyList) {
                         eocEhc.remove(ec)
                     }
@@ -63,9 +63,9 @@ class EntityCache {
                 }
                 // see if there are any cached entries with no result using the bf (brute-force) matching
                 Cache oneBfCache = getCacheOneBf()
-                Set bfKeySet = (Set) oneBfCache.get(entityName)
+                Set<EntityCondition> bfKeySet = (Set<EntityCondition>) oneBfCache.get(entityName)
                 if (bfKeySet) {
-                    Set keysToRemove = new HashSet()
+                    Set<EntityCondition> keysToRemove = new HashSet<EntityCondition>()
                     for (EntityCondition bfKey in bfKeySet) {
                         if (bfKey.mapMatches(evb)) {
                             eocEhc.remove(bfKey)
@@ -82,7 +82,8 @@ class EntityCache {
                 if (isCreate) {
                     CacheImpl entityListCache = getCacheList(entityName)
                     Ehcache elEhc = entityListCache.getInternalCache()
-                    for (EntityCondition ec in elEhc.getKeys()) {
+                    List<EntityCondition> elEhcKeys = (List<EntityCondition>) elEhc.getKeys()
+                    for (EntityCondition ec in elEhcKeys) {
                         // any way to efficiently clear out the RA cache for these? for now just leave and they are handled eventually
                         if (ec.mapMatches(evb)) elEhc.remove(ec)
                     }
@@ -100,7 +101,7 @@ class EntityCache {
                                 elcEhc.remove(ec)
                             } else {
                                 Map viewEcMap = (Map) raKey
-                                CacheImpl viewEntityListCache = getCacheList(viewEcMap.ven)
+                                CacheImpl viewEntityListCache = getCacheList((String) viewEcMap.ven)
                                 Ehcache velcEhc = viewEntityListCache.getInternalCache()
                                 // this may have already been cleared, but it is a waste of time to check for that explicitly
                                 velcEhc.remove(viewEcMap.ec)
@@ -115,9 +116,10 @@ class EntityCache {
             // clear count cache (no RA because we only have a count to work with, just match by condition)
             if (efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.count.${entityName}")) {
                 CacheImpl entityCountCache = getCacheCount(entityName)
-                Ehcache elEhc = entityCountCache.getInternalCache()
-                for (EntityCondition ec in elEhc.getKeys()) {
-                    if (ec.mapMatches(evb)) elEhc.remove(ec)
+                Ehcache ecEhc = entityCountCache.getInternalCache()
+                List<EntityCondition> ecEhcKeys = (List<EntityCondition>) ecEhc.getKeys()
+                for (EntityCondition ec in ecEhcKeys) {
+                    if (ec.mapMatches(evb)) ecEhc.remove(ec)
                 }
             }
         } catch (Throwable t) {
@@ -153,7 +155,7 @@ class EntityCache {
         if (ed.isViewEntity()) {
             // go through each member-entity
             for (Node memberEntityNode in ed.getEntityNode()."member-entity") {
-                Map mePkFieldToAliasNameMap = ed.getMePkFieldToAliasNameMap(memberEntityNode."@entity-alias")
+                Map mePkFieldToAliasNameMap = ed.getMePkFieldToAliasNameMap((String) memberEntityNode."@entity-alias")
 
                 // logger.warn("TOREMOVE for view-entity ${entityName}, member-entity ${memberEntityNode.'@entity-name'}, got PK field to alias map: ${mePkFieldToAliasNameMap}")
 
