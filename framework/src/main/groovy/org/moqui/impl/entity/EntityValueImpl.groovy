@@ -75,7 +75,7 @@ class EntityValueImpl extends EntityValueBase {
         setSyncedWithDb()
         // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
         // might have a null value for a previous query attempt
-        getEntityFacadeImpl().clearCacheForValue(this, true)
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, true)
     }
 
     @Override
@@ -124,7 +124,7 @@ class EntityValueImpl extends EntityValueBase {
         if (eqb.executeUpdate() == 0)
             throw new EntityException("Tried to update a value that does not exist [${this.toString()}]. SQL used was [${eqb.sqlTopLevel}], parameters were [${eqb.parameters}]")
         setSyncedWithDb()
-        getEntityFacadeImpl().clearCacheForValue(this, false)
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
     }
 
     @Override
@@ -163,7 +163,7 @@ class EntityValueImpl extends EntityValueBase {
         eqb.makePreparedStatement()
         eqb.setPreparedStatementValues()
         if (eqb.executeUpdate() == 0) logger.info("Tried to delete a value that does not exist [${this.toString()}]")
-        getEntityFacadeImpl().clearCacheForValue(this, false)
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
     }
 
     @Override

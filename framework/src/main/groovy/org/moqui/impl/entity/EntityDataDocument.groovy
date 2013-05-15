@@ -28,7 +28,7 @@ import java.sql.Timestamp
 class EntityDataDocument {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDataDocument.class)
 
-    protected EntityFacadeImpl efi
+    protected final EntityFacadeImpl efi
 
     EntityDataDocument(EntityFacadeImpl efi) {
         this.efi = efi

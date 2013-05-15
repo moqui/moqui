@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
@@ -28,10 +29,13 @@ import java.sql.Timestamp
 class EntityDataFeed {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDataFeed.class)
 
-    protected EntityFacadeImpl efi
+    protected final EntityFacadeImpl efi
+
+    protected final Cache dataFeedEntityInfo
 
     EntityDataFeed(EntityFacadeImpl efi) {
         this.efi = efi
+        dataFeedEntityInfo = efi.ecfi.getCacheFacade().getCache("entity.data.feed.info")
     }
 
     EntityFacadeImpl getEfi() { return efi }
@@ -146,12 +150,12 @@ class EntityDataFeed {
     }
 
     List<DocumentEntityInfo> getDataFeedEntityInfoList(String fullEntityName) {
-        List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
+        List<DocumentEntityInfo> entityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(fullEntityName)
         // logger.warn("=============== getting DocumentEntityInfo for [${fullEntityName}], from cache: ${entityInfoList}")
         // only rebuild if the cache is empty, most entities won't have any entry in it and don't want a rebuild for each one
-        if (entityInfoList == null) efi.dataFeedEntityInfo.clearExpired()
-        if (efi.dataFeedEntityInfo.size() == 0) {
-            // logger.warn("=============== rebuilding DocumentEntityInfo for [${fullEntityName}], cache size: ${efi.dataFeedEntityInfo.size()}")
+        if (entityInfoList == null) dataFeedEntityInfo.clearExpired()
+        if (dataFeedEntityInfo.size() == 0) {
+            // logger.warn("=============== rebuilding DocumentEntityInfo for [${fullEntityName}], cache size: ${dataFeedEntityInfo.size()}")
 
             // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
             //     DataDocuments because we can't query it by entityName
@@ -172,18 +176,18 @@ class EntityDataFeed {
                 Map<String, DocumentEntityInfo> entityInfoMap = getDataDocumentEntityInfo(dataDocumentId)
                 // got a Map for all entities in the document, now split them by entity and add to master list for the entity
                 for (Map.Entry<String, DocumentEntityInfo> entityInfoMapEntry in entityInfoMap.entrySet()) {
-                    List<DocumentEntityInfo> newEntityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
+                    List<DocumentEntityInfo> newEntityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
                     if (newEntityInfoList == null) {
                         newEntityInfoList = []
-                        efi.dataFeedEntityInfo.put(entityInfoMapEntry.getKey(), newEntityInfoList)
-                        // logger.warn("============= added efi.dataFeedEntityInfo entry for entity [${entityInfoMapEntry.getKey()}]")
+                        dataFeedEntityInfo.put(entityInfoMapEntry.getKey(), newEntityInfoList)
+                        // logger.warn("============= added dataFeedEntityInfo entry for entity [${entityInfoMapEntry.getKey()}]")
                     }
                     newEntityInfoList.add(entityInfoMapEntry.getValue())
                 }
             }
 
             // now we should have all document entityInfos for all entities
-            entityInfoList = (List<DocumentEntityInfo>) efi.dataFeedEntityInfo.get(fullEntityName)
+            entityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(fullEntityName)
             //logger.warn("============ got DocumentEntityInfo entityInfoList for [${fullEntityName}]: ${entityInfoList}")
         }
         return entityInfoList

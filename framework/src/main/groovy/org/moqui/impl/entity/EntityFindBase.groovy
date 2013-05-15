@@ -64,32 +64,34 @@ abstract class EntityFindBase implements EntityFind {
 
     EntityFacadeImpl getEfi() { return efi }
 
-    /** @see org.moqui.entity.EntityFind#entity(String) */
+    @Override
     EntityFind entity(String entityName) { this.entityName = entityName; return this }
 
-    /** @see org.moqui.entity.EntityFind#getEntity() */
+    @Override
     String getEntity() { return this.entityName }
 
     // ======================== Conditions (Where and Having) =================
 
-    /** @see org.moqui.entity.EntityFind#condition(String, Object) */
+    @Override
     EntityFind condition(String fieldName, Object value) {
         if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
         this.simpleAndMap.put(fieldName, value)
         return this
     }
 
+    @Override
     EntityFind condition(String fieldName, EntityCondition.ComparisonOperator operator, Object value) {
         condition(efi.conditionFactory.makeCondition(fieldName, operator, value))
         return this
     }
 
+    @Override
     EntityFind conditionToField(String fieldName, EntityCondition.ComparisonOperator operator, String toFieldName) {
         condition(efi.conditionFactory.makeCondition(fieldName, operator, toFieldName))
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#condition(Map<String,?>) */
+    @Override
     EntityFind condition(Map<String, ?> fields) {
         if (!fields) return this
         if (!this.simpleAndMap) this.simpleAndMap = new HashMap()
@@ -97,7 +99,7 @@ abstract class EntityFindBase implements EntityFind {
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#condition(EntityCondition) */
+    @Override
     EntityFind condition(EntityCondition condition) {
         if (!condition) return this
         if (whereEntityCondition) {
@@ -114,12 +116,13 @@ abstract class EntityFindBase implements EntityFind {
         return this
     }
 
+    @Override
     EntityFind conditionDate(String fromFieldName, String thruFieldName, java.sql.Timestamp compareStamp) {
         condition(efi.conditionFactory.makeConditionDate(fromFieldName, thruFieldName, compareStamp))
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#havingCondition(EntityCondition) */
+    @Override
     EntityFind havingCondition(EntityCondition condition) {
         if (!condition) return this
         if (havingEntityCondition) {
@@ -136,7 +139,7 @@ abstract class EntityFindBase implements EntityFind {
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#getWhereEntityCondition() */
+    @Override
     EntityCondition getWhereEntityCondition() {
         if (this.simpleAndMap) {
             EntityCondition simpleAndMapCond = this.efi.conditionFactory.makeCondition(this.simpleAndMap)
@@ -150,12 +153,12 @@ abstract class EntityFindBase implements EntityFind {
         }
     }
 
-    /** @see org.moqui.entity.EntityFind#getHavingEntityCondition() */
+    @Override
     EntityCondition getHavingEntityCondition() {
         return this.havingEntityCondition
     }
 
-    /** @see org.moqui.entity.EntityFind#searchFormInputs(String,String,boolean) */
+    @Override
     EntityFind searchFormInputs(String inputFieldsMapName, String defaultOrderBy, boolean alwaysPaginate) {
         Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] :
             (efi.ecfi.executionContext.web ? efi.ecfi.executionContext.web.parameters : efi.ecfi.executionContext.context)
@@ -279,24 +282,24 @@ abstract class EntityFindBase implements EntityFind {
 
     // ======================== General/Common Options ========================
 
-    /** @see org.moqui.entity.EntityFind#selectField(String) */
+    @Override
     EntityFind selectField(String fieldToSelect) {
         if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
         if (fieldToSelect) this.fieldsToSelect.add(fieldToSelect)
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#selectFields(Collection<String>) */
+    @Override
     EntityFind selectFields(Collection<String> fieldsToSelect) {
         if (!this.fieldsToSelect) this.fieldsToSelect = new ListOrderedSet()
         if (fieldsToSelect) this.fieldsToSelect.addAll(fieldsToSelect)
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#getSelectFields() */
+    @Override
     List<String> getSelectFields() { return this.fieldsToSelect ? this.fieldsToSelect.asList() : null }
 
-    /** @see org.moqui.entity.EntityFind#orderBy(String) */
+    @Override
     EntityFind orderBy(String orderByFieldName) {
         if (!this.orderByFields) this.orderByFields = new ArrayList()
         if (orderByFieldName) {
@@ -309,69 +312,69 @@ abstract class EntityFindBase implements EntityFind {
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#orderBy(List<String>) */
+    @Override
     EntityFind orderBy(List<String> orderByFieldNames) {
         if (!this.orderByFields) this.orderByFields = new ArrayList()
         if (orderByFieldNames) this.orderByFields.addAll(orderByFieldNames)
         return this
     }
 
-    /** @see org.moqui.entity.EntityFind#getOrderBy() */
+    @Override
     List<String> getOrderBy() { return this.orderByFields ? Collections.unmodifiableList(this.orderByFields) : null }
 
-    /** @see org.moqui.entity.EntityFind#useCache(boolean) */
+    @Override
     EntityFind useCache(Boolean useCache) { this.useCache = useCache; return this }
 
-    /** @see org.moqui.entity.EntityFind#getUseCache() */
+    @Override
     boolean getUseCache() { return this.useCache }
 
     // ======================== Advanced Options ==============================
 
-    /** @see org.moqui.entity.EntityFind#distinct(boolean) */
+    @Override
     EntityFind distinct(boolean distinct) { this.distinct = distinct; return this }
-    /** @see org.moqui.entity.EntityFind#getDistinct() */
+    @Override
     boolean getDistinct() { return this.distinct }
 
-    /** @see org.moqui.entity.EntityFind#offset(int) */
+    @Override
     EntityFind offset(Integer offset) { this.offset = offset; return this }
-    /** @see org.moqui.entity.EntityFind#offset(int, int) */
+    @Override
     EntityFind offset(int pageIndex, int pageSize) { offset(pageIndex * pageSize) }
-    /** @see org.moqui.entity.EntityFind#getOffset() */
+    @Override
     Integer getOffset() { return this.offset }
 
-    /** @see org.moqui.entity.EntityFind#limit(int) */
+    @Override
     EntityFind limit(Integer limit) { this.limit = limit; return this }
-    /** @see org.moqui.entity.EntityFind#getLimit() */
+    @Override
     Integer getLimit() { return this.limit }
 
-    /** @see org.moqui.entity.EntityFind#forUpdate(boolean) */
+    @Override
     EntityFind forUpdate(boolean forUpdate) { this.forUpdate = forUpdate; return this }
-    /** @see org.moqui.entity.EntityFind#getForUpdate() */
+    @Override
     boolean getForUpdate() { return this.forUpdate }
 
     // ======================== JDBC Options ==============================
 
-    /** @see org.moqui.entity.EntityFind#resultSetType(int) */
+    @Override
     EntityFind resultSetType(int resultSetType) { this.resultSetType = resultSetType; return this }
-    /** @see org.moqui.entity.EntityFind#getResultSetType() */
+    @Override
     int getResultSetType() { return this.resultSetType }
 
-    /** @see org.moqui.entity.EntityFind#resultSetConcurrency(int) */
+    @Override
     EntityFind resultSetConcurrency(int resultSetConcurrency) {
         this.resultSetConcurrency = resultSetConcurrency
         return this
     }
-    /** @see org.moqui.entity.EntityFind#getResultSetConcurrency() */
+    @Override
     int getResultSetConcurrency() { return this.resultSetConcurrency }
 
-    /** @see org.moqui.entity.EntityFind#fetchSize(int) */
+    @Override
     EntityFind fetchSize(Integer fetchSize) { this.fetchSize = fetchSize; return this }
-    /** @see org.moqui.entity.EntityFind#getFetchSize() */
+    @Override
     Integer getFetchSize() { return this.fetchSize }
 
-    /** @see org.moqui.entity.EntityFind#fetchSize(int) */
+    @Override
     EntityFind maxRows(Integer maxRows) { this.maxRows = maxRows; return this }
-    /** @see org.moqui.entity.EntityFind#getFetchSize() */
+    @Override
     Integer getMaxRows() { return this.maxRows }
 
     // ======================== Misc Methods ========================
@@ -401,7 +404,7 @@ abstract class EntityFindBase implements EntityFind {
     // ======================== Abstract Methods ========================
     abstract EntityDynamicView makeEntityDynamicView()
 
-    /** @see org.moqui.entity.EntityFind#one() */
+    @Override
     EntityValue one() throws EntityException {
         if (this.dynamicView) {
             throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
@@ -439,7 +442,7 @@ abstract class EntityFindBase implements EntityFind {
         CacheImpl entityOneCache = null
         boolean doCache = this.shouldCache()
         if (doCache) {
-            entityOneCache = this.efi.getCacheOne(this.entityName)
+            entityOneCache = this.efi.getEntityCache().getCacheOne(this.entityName)
             Element cacheElement = entityOneCache.getElement(whereCondition)
             if (cacheElement != null) {
                 if (cacheElement.expired) {
@@ -486,7 +489,7 @@ abstract class EntityFindBase implements EntityFind {
         if (doCache) {
             entityOneCache.put(whereCondition, newEntityValue)
             // need to register an RA just in case the condition was not actually a primary key
-            efi.registerCacheOneRa(this.entityName, whereCondition, (EntityValueBase) newEntityValue)
+            efi.getEntityCache().registerCacheOneRa(this.entityName, whereCondition, (EntityValueBase) newEntityValue)
         }
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
@@ -502,7 +505,7 @@ abstract class EntityFindBase implements EntityFind {
     }
     abstract EntityValue oneExtended(EntityConditionImplBase whereCondition) throws EntityException
 
-    /** @see org.moqui.entity.EntityFind#list() */
+    @Override
     EntityList list() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
@@ -524,7 +527,7 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
-            entityListCache = this.efi.getCacheList(this.entityName)
+            entityListCache = this.efi.getEntityCache().getCacheList(this.entityName)
             Element cacheElement = entityListCache.getElement(whereCondition)
             if (cacheElement != null) {
                 if (cacheElement.expired) {
@@ -582,7 +585,7 @@ abstract class EntityFindBase implements EntityFind {
             EntityListImpl elToCache = el ?: EntityListImpl.EMPTY
             elToCache.setFromCache(true)
             entityListCache.put(whereCondition, elToCache)
-            efi.registerCacheListRa(this.entityName, whereCondition, elToCache)
+            efi.getEntityCache().registerCacheListRa(this.entityName, whereCondition, elToCache)
         }
         // run the final rules
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
@@ -595,7 +598,7 @@ abstract class EntityFindBase implements EntityFind {
         return el
     }
 
-    /** @see org.moqui.entity.EntityFind#iterator() */
+    @Override
     EntityListIterator iterator() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
@@ -665,7 +668,7 @@ abstract class EntityFindBase implements EntityFind {
     abstract EntityListIterator iteratorExtended(EntityConditionImplBase whereCondition,
                                                  EntityConditionImplBase havingCondition, List<String> orderByExpanded)
 
-    /** @see org.moqui.entity.EntityFind#count() */
+    @Override
     long count() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
