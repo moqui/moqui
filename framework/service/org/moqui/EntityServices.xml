@@ -94,13 +94,15 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName)
                         .setQuery(QueryBuilders.queryString(queryString)).setSize(limit).execute().actionGet().getHits()
-                MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
-                for (SearchHit hit in hits) mgrb.add(hit.getIndex(), hit.getType(), hit.getId())
-                Iterator mgirIt = mgrb.execute().actionGet().iterator()
-                while(mgirIt.hasNext()) {
-                    MultiGetItemResponse mgir = mgirIt.next()
-                    Map document = mgir.getResponse().getSourceAsMap()
-                    documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
+                if (hits.getTotalHits() > 0) {
+                    MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
+                    for (SearchHit hit in hits) mgrb.add(hit.getIndex(), hit.getType(), hit.getId())
+                    Iterator mgirIt = mgrb.execute().actionGet().iterator()
+                    while(mgirIt.hasNext()) {
+                        MultiGetItemResponse mgir = mgirIt.next()
+                        Map document = mgir.getResponse().getSourceAsMap()
+                        documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
+                    }
                 }
             </script>
         </actions>
