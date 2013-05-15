@@ -77,7 +77,7 @@ class ResourceFacadeTests extends Specification {
         expression | result
         "true" | true
         "false" | false
-        "ec.context instanceof org.moqui.impl.context.ContextStack" | true
+        "ec.context instanceof org.moqui.context.ContextStack" | true
     }
 
     @Unroll
