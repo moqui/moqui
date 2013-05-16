@@ -12,6 +12,8 @@
 package org.moqui.impl.service
 
 import org.moqui.service.ServiceCallSchedule
+// NOTE: IDEs may say this import isn't necessary since it is from an implemented interface, but compiler blows up without it
+import org.moqui.service.ServiceCall.TimeUnit
 
 import org.quartz.Trigger
 import org.quartz.SimpleScheduleBuilder
