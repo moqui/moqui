@@ -676,10 +676,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node overrideSsNode = overrideNode."server-stats"[0]
             // override attributes for this node
             ssNode.attributes().putAll(overrideSsNode.attributes())
-            for (Node childOverrideNode in overrideSsNode["artifact-stats"]) {
+            for (Node childOverrideNode in (Collection<Node>) overrideSsNode."artifact-stats") {
                 String type = childOverrideNode.attribute("type")
                 String subType = childOverrideNode.attribute("sub-type")
-                Node childBaseNode = (Node) ssNode["artifact-stats"]?.find({ it."@type" == type &&
+                Node childBaseNode = (Node) ssNode."artifact-stats"?.find({ it."@type" == type &&
                         (it."@sub-type" == subType || (!it."@sub-type" && !subType)) })
                 if (childBaseNode) {
                     // merge the node attributes
@@ -793,7 +793,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // override attributes for this node
         baseNode.attributes().putAll(overrideNode.attributes())
 
-        for (Node childOverrideNode in overrideNode[childNodesName]) {
+        for (Node childOverrideNode in (Collection<Node>) overrideNode[childNodesName]) {
             String keyValue = childOverrideNode.attribute(keyAttributeName)
             Node childBaseNode = (Node) baseNode[childNodesName]?.find({ it.attribute(keyAttributeName) == keyValue })
 

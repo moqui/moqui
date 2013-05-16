@@ -470,7 +470,7 @@ public class EntityDefinition {
     ListOrderedSet getFieldNames(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
         ListOrderedSet nameSet = new ListOrderedSet()
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        for (Node node in this.internalEntityNode[nodeName]) {
+        for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
             if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
                 nameSet.add(node."@name")
             }
@@ -532,7 +532,7 @@ public class EntityDefinition {
         // NOTE: this is not necessarily the fastest way to do this, if it becomes a performance problem replace it with a local List of field Nodes
         List<Node> nodeList = new ArrayList<Node>()
         String nodeName = this.isViewEntity() ? "alias" : "field"
-        for (Node node in this.internalEntityNode[nodeName]) {
+        for (Node node in (Collection<Node>) this.internalEntityNode[nodeName]) {
             if ((includePk && node."@is-pk" == "true") || (includeNonPk && node."@is-pk" != "true")) {
                 nodeList.add(node)
             }

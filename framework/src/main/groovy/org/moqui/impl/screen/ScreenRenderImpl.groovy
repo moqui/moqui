@@ -638,7 +638,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     Node getWebappNode() {
         if (!webappName) return null
-        return (Node) sfi.ecfi.confXmlRoot["webapp-list"][0]["webapp"].find({ it.@name == webappName })
+        return (Node) sfi.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
     }
 
     boolean doBoundaryComments() {
@@ -994,7 +994,7 @@ class ScreenRenderImpl implements ScreenRender {
         String value = ""
         if (widgetNode."@text") {
             // push onto the context and then expand the text
-            ec.context.push((Map<Object, Object>) ev)
+            ec.context.push(ev)
             value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
             ec.context.pop()
         } else {
