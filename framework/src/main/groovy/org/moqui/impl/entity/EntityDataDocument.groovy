@@ -141,7 +141,7 @@ class EntityDataDocument {
                             primaryEntityMap.put(fieldName, ev.get(fieldName))
                         }
                     }
-                    docMap.put(primaryEntityName, primaryEntityMap)
+                    docMap.put(relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName, primaryEntityMap)
 
                     documentMapMap.put(docId, docMap)
                 }
