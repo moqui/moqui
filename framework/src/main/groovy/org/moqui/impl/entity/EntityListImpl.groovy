@@ -19,8 +19,11 @@ import org.moqui.entity.EntityCondition
 import org.moqui.impl.StupidUtilities.MapOrderByComparator
 import org.moqui.entity.EntityException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityListImpl implements EntityList {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
     public static final EntityList EMPTY = new EmptyEntityList()
 
     protected EntityFacadeImpl efi

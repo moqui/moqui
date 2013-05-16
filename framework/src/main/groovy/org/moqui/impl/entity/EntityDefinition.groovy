@@ -30,8 +30,11 @@ import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 import org.moqui.BaseException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class EntityDefinition {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDefinition.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDefinition.class)
 
     protected EntityFacadeImpl efi
     protected String internalEntityName
@@ -198,6 +201,7 @@ public class EntityDefinition {
             relatedEd = efi.getEntityDefinition(entityName)
         } catch (EntityException e) {
             // ignore if entity doesn't exist
+            logger.trace("Ignoring entity not found exception: ${e.toString()}")
             return null
         }
 
@@ -216,6 +220,7 @@ public class EntityDefinition {
                 ed = efi.getEntityDefinition(relationshipName)
             } catch (EntityException e) {
                 // probably means not a valid entity name, which may happen a lot since we're checking here to see, so just ignore
+                logger.trace("Ignoring entity not found exception: ${e.toString()}")
             }
             if (ed != null) {
                 // don't call ed.getRelationshipNode(), may result in infinite recursion

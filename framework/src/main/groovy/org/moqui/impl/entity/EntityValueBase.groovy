@@ -15,6 +15,8 @@ import org.apache.commons.codec.binary.Base64
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.Moqui
+import org.moqui.context.ExecutionContext
+import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityList
@@ -29,12 +31,13 @@ import org.w3c.dom.Element
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
-import org.moqui.entity.EntityCondition
-import org.moqui.context.ExecutionContext
 import javax.sql.rowset.serial.SerialBlob
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 abstract class EntityValueBase implements EntityValue {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityValueBase.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityValueBase.class)
 
     /** This is a reference to where the entity value came from.
      * It is volatile so not stored when this is serialized, and will get a reference to the active EntityFacade after.

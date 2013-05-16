@@ -21,8 +21,11 @@ import org.moqui.entity.EntityList
 import org.moqui.entity.EntityException
 import org.apache.commons.collections.set.ListOrderedSet
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityListIteratorImpl implements EntityListIterator {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityListIteratorImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityListIteratorImpl.class)
 
     protected EntityFacadeImpl efi
     protected Connection con
@@ -254,7 +257,7 @@ class EntityListIteratorImpl implements EntityListIterator {
             list.add(this.currentEntityValue())
 
             int numberSoFar = 1
-            EntityValue nextValue
+            EntityValue nextValue = null
             while (limit > numberSoFar && (nextValue = this.next()) != null) {
                 list.add(nextValue)
                 numberSoFar++

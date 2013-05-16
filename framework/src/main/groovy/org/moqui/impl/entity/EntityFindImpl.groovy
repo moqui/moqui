@@ -16,17 +16,16 @@ import java.sql.Connection
 import java.sql.SQLException
 
 import org.moqui.entity.EntityDynamicView
-
-import org.moqui.entity.EntityCondition.JoinOperator
 import org.moqui.entity.EntityValue
-
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityException
-
 import org.moqui.impl.entity.condition.EntityConditionImplBase
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityFindImpl extends EntityFindBase {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityFindImpl.class)
 
     EntityFindImpl(EntityFacadeImpl efi, String entityName) {
         super(efi, entityName)
@@ -191,7 +190,7 @@ class EntityFindImpl extends EntityFindBase {
         return count
     }
 
-    protected long internalCount(EntityFindBuilder efb) {
+    protected static long internalCount(EntityFindBuilder efb) {
         long count = 0
         efb.makeConnection()
         efb.makePreparedStatement()
