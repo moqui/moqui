@@ -13,10 +13,12 @@ package org.moqui.impl.context.reference
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
-import org.moqui.impl.StupidUtilities
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 abstract class BaseResourceReference implements ResourceReference {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(BaseResourceReference.class)
+    protected final static Logger logger = LoggerFactory.getLogger(BaseResourceReference.class)
 
     ExecutionContext ec = null
     protected Map<String, ResourceReference> subContentRefByPath = null
@@ -305,8 +307,8 @@ abstract class BaseResourceReference implements ResourceReference {
         }
 
         if (this.isDirectory()) {
-            for (BaseResourceReference childRef in this.getDirectoryEntries()) {
-                childRef.walkChildFileTree(this, "", allChildFileFlatList, childResourceList)
+            for (ResourceReference childRef in this.getDirectoryEntries()) {
+                ((BaseResourceReference) childRef).walkChildFileTree(this, "", allChildFileFlatList, childResourceList)
             }
         }
     }
@@ -332,8 +334,8 @@ abstract class BaseResourceReference implements ResourceReference {
 
             ResourceReference matchingDirReference = this.findMatchingDirectory()
             String childPath = childPathBase + matchingDirReference.fileName
-            for (BaseResourceReference childRef in matchingDirReference.getDirectoryEntries()) {
-                childRef.walkChildFileTree(rootResource, childPath, allChildFileFlatList, curChildResourceList)
+            for (ResourceReference childRef in matchingDirReference.getDirectoryEntries()) {
+                ((BaseResourceReference) childRef).walkChildFileTree(rootResource, childPath, allChildFileFlatList, curChildResourceList)
             }
         }
 

@@ -97,7 +97,7 @@ class ScreenForm {
             mergeFormNodes(newFormNode, esf.formNode, true, true)
         }
 
-        for (Node formSubNode in baseFormNode.children()) {
+        for (Node formSubNode in (Collection<Node>) baseFormNode.children()) {
             if (formSubNode.name() == "field") {
                 Node nodeCopy = StupidUtilities.deepCopyNode(formSubNode)
                 expandFieldNode(newFormNode, nodeCopy)
@@ -363,7 +363,7 @@ class ScreenForm {
 
         // if there is a "file" element, then it's an upload form
         boolean internalFormHeaderFormVal = false
-        for (Node hfNode in internalFormNode.depthFirst().findAll({ it.name() == "header-field" })) {
+        for (Node hfNode in (Collection<Node>) internalFormNode.depthFirst().findAll({ it.name() == "header-field" })) {
             if (hfNode.children()) {
                 internalFormHeaderFormVal = true
                 break
@@ -376,7 +376,7 @@ class ScreenForm {
             if (isDynamic || hasDbExtensions) {
                 boolean extFormHeaderFormVal = false
                 Node testNode = cachedFormNode ?: getFormNode()
-                for (Node hfNode in testNode.depthFirst().findAll({ it.name() == "header-field" })) {
+                for (Node hfNode in (Collection<Node>) testNode.depthFirst().findAll({ it.name() == "header-field" })) {
                     if (hfNode.children()) {
                         extFormHeaderFormVal = true
                         break
@@ -495,8 +495,8 @@ class ScreenForm {
         }
 
         List<Node> parameterNodes = []
-        if (include == "in" || include == "all") parameterNodes.addAll(sd.serviceNode."in-parameters"[0]."parameter")
-        if (include == "out" || include == "all") parameterNodes.addAll(sd.serviceNode."out-parameters"[0]."parameter")
+        if (include == "in" || include == "all") parameterNodes.addAll((Collection<Node>) sd.serviceNode."in-parameters"[0]."parameter")
+        if (include == "out" || include == "all") parameterNodes.addAll((Collection<Node>) sd.serviceNode."out-parameters"[0]."parameter")
 
         for (Node parameterNode in parameterNodes) {
             Node newFieldNode = new Node(null, "field", [name:parameterNode."@name",
@@ -683,7 +683,7 @@ class ScreenForm {
 
             Node widgetTemplatesNode = ecfi.getScreenFacade().getWidgetTemplatesNodeByLocation(fileLocation)
             Node widgetTemplateNode = (Node) widgetTemplatesNode.find({ it."@name" == widgetTemplateName })
-            for (Node widgetChildNode in widgetTemplateNode.children()) {
+            for (Node widgetChildNode in (Collection<Node>) widgetTemplateNode.children()) {
                 fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
             }
 
@@ -807,7 +807,7 @@ class ScreenForm {
             Node newFieldLayoutNode = formNode.appendNode("field-layout", fieldLayoutNode.attributes())
             int index = 0
             boolean addedNode = false
-            for (Node child in fieldLayoutNode.children()) {
+            for (Node child in (Collection<Node>) fieldLayoutNode.children()) {
                 if (index == layoutSequenceNum) {
                     newFieldLayoutNode.appendNode("field-ref", [name:fieldNode."@name"])
                     addedNode = true
@@ -825,7 +825,7 @@ class ScreenForm {
         // NOTE: this runs in a pushed-/sub-context, so just drop it in and it'll get cleaned up automatically
         Node localFormNode = getFormNode()
         if (localFormNode."@list-entry") {
-            sri.ec.context.put(localFormNode."@list-entry", listEntry)
+            sri.ec.context.put((String) localFormNode."@list-entry", listEntry)
         } else {
             if (listEntry instanceof Map) {
                 sri.ec.context.putAll((Map) listEntry)
@@ -839,7 +839,7 @@ class ScreenForm {
     static ListOrderedMap getFieldOptions(Node widgetNode, ExecutionContext ec) {
         Node fieldNode = widgetNode.parent().parent()
         ListOrderedMap options = new ListOrderedMap()
-        for (Node childNode in widgetNode.children()) {
+        for (Node childNode in (Collection<Node>) widgetNode.children()) {
             if (childNode.name() == "entity-options") {
                 Node entityFindNode = childNode."entity-find"[0]
                 EntityFindImpl ef = (EntityFindImpl) ec.entity.makeFind((String) entityFindNode."@entity-name")
@@ -849,7 +849,7 @@ class ScreenForm {
 
                 if (ef.getUseCache()) {
                     // do the date filtering after the query
-                    for (Node df in entityFindNode["date-filter"]) {
+                    for (Node df in (Collection<Node>) entityFindNode["date-filter"]) {
                         EntityCondition dateEc = ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
                                 (String) df["@thru-field-name"] ?: "thruDate",
                                 (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp))
@@ -859,7 +859,7 @@ class ScreenForm {
                 }
 
                 for (EntityValue ev in eli) {
-                    ec.context.push((Map<Object, Object>) ev)
+                    ec.context.push(ev)
                     addFieldOption(options, fieldNode, childNode, ev, ec)
                     ec.context.pop()
                 }

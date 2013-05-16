@@ -69,6 +69,6 @@ public class BaseException extends RuntimeException {
             newList.add(ste);
         }
         //System.out.println("Called getFilteredStackTrace, orig.length=" + orig.length + ", newList.size()=" + newList.size());
-        return newList.toArray(new StackTraceElement[0]);
+        return newList.toArray(new StackTraceElement[50]);
     }
 }

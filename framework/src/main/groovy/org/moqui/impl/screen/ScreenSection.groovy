@@ -15,8 +15,11 @@ import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ContextStack
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ScreenSection {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenSection.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenSection.class)
 
     protected Node sectionNode
     protected String location
@@ -38,10 +41,10 @@ class ScreenSection {
         // prep actions
         if (sectionNode.actions) actions = new XmlAction(ecfi, (Node) sectionNode."actions"[0], location + ".actions")
         // prep widgets
-        if (sectionNode.widgets) widgets = new ScreenWidgets(ecfi, (Node) sectionNode."widgets"[0], location + ".widgets")
+        if (sectionNode.widgets) widgets = new ScreenWidgets((Node) sectionNode."widgets"[0], location + ".widgets")
         // prep fail-widgets
         if (sectionNode."fail-widgets") {
-            failWidgets = new ScreenWidgets(ecfi, (Node) sectionNode."fail-widgets"[0], location + ".fail-widgets")
+            failWidgets = new ScreenWidgets((Node) sectionNode."fail-widgets"[0], location + ".fail-widgets")
         }
     }
 
@@ -59,9 +62,9 @@ class ScreenSection {
                 try {
                     cs.push()
 
-                    cs.put(sectionNode["@entry"], entry)
+                    cs.put((String) sectionNode["@entry"], entry)
                     if (sectionNode["@key"] && entry instanceof Map.Entry)
-                        cs.put(sectionNode["@key"], entry.getKey())
+                        cs.put((String) sectionNode["@key"], entry.getKey())
 
                     renderSingle(sri)
                 } finally {

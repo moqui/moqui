@@ -840,7 +840,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected static void mergeWebappActions(Node baseWebappNode, Node overrideWebappNode, String childNodeName) {
-        List<Node> overrideActionNodes = overrideWebappNode[childNodeName]?.getAt(0)?.actions?.getAt(0)?.children()
+        List<Node> overrideActionNodes = overrideWebappNode.get(childNodeName)?.getAt(0)?."actions"?.getAt(0)?.children()
         if (overrideActionNodes) {
             Node childNode = (Node) baseWebappNode[childNodeName][0]
             if (!childNode) {

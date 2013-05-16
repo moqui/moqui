@@ -24,8 +24,11 @@ import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition
 import org.moqui.impl.context.ContextBinding
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ScreenDefinition {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenDefinition.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenDefinition.class)
 
     protected final ScreenFacadeImpl sfi
     protected final Node screenNode
@@ -75,13 +78,13 @@ class ScreenDefinition {
 
         if (rootSection && rootSection.widgets) {
             // get all of the other sections by name
-            for (Node sectionNode in rootSection.widgets.widgetsNode.depthFirst()
+            for (Node sectionNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
                 sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"].replace('-','_')}"))
             }
 
             // get all forms by name
-            for (Node formNode in rootSection.widgets.widgetsNode.depthFirst()
+            for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
                 formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"].replace('-','_')}"))
             }
@@ -312,10 +315,10 @@ class ScreenDefinition {
             for (Node condResponseNode in transitionNode."conditional-response")
                 conditionalResponseList.add(new ResponseItem(condResponseNode, this, parentScreen))
             // default-response
-            defaultResponse = new ResponseItem(transitionNode."default-response"[0], this, parentScreen)
+            defaultResponse = new ResponseItem((Node) transitionNode."default-response"[0], this, parentScreen)
             // error-response
             if (transitionNode."error-response")
-                errorResponse = new ResponseItem(transitionNode."error-response"[0], this, parentScreen)
+                errorResponse = new ResponseItem((Node) transitionNode."error-response"[0], this, parentScreen)
         }
 
         String getName() { return name }
@@ -416,7 +419,7 @@ class ScreenDefinition {
             saveParameters = responseNode."@save-parameters" == "true"
 
             for (Node parameterNode in responseNode."parameter")
-                parameterMap.put(parameterNode."@name", new ParameterItem(parameterNode, location))
+                parameterMap.put((String) parameterNode."@name", new ParameterItem(parameterNode, location))
         }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
@@ -487,7 +490,7 @@ class ScreenDefinition {
     }
 
     static class SubscreensItemComparator implements Comparator<SubscreensItem> {
-        public MapOrderByComparator() { }
+        public SubscreensItemComparator() { }
         @Override
         public int compare(SubscreensItem ssi1, SubscreensItem ssi2) {
             // order by index

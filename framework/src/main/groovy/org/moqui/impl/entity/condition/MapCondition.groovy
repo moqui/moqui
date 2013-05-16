@@ -6,7 +6,7 @@ import org.moqui.entity.EntityCondition
 
 class MapCondition extends EntityConditionImplBase {
     protected Class internalClass = null
-    protected Map<String, ?> fieldMap
+    protected Map<String, Object> fieldMap
     protected EntityCondition.ComparisonOperator comparisonOperator
     protected EntityCondition.JoinOperator joinOperator
     protected boolean ignoreCase = false
@@ -16,8 +16,8 @@ class MapCondition extends EntityConditionImplBase {
             EntityCondition.JoinOperator joinOperator) {
         super(ecFactoryImpl)
         this.fieldMap = fieldMap ? fieldMap : new HashMap()
-        this.comparisonOperator = comparisonOperator ? comparisonOperator : EntityCondition.EQUALS
-        this.joinOperator = joinOperator ? joinOperator : EntityCondition.JoinOperator.AND
+        this.comparisonOperator = comparisonOperator ? comparisonOperator : EQUALS
+        this.joinOperator = joinOperator ? joinOperator : AND
     }
 
     Class getLocalClass() { if (this.internalClass == null) this.internalClass = this.getClass(); return this.internalClass }

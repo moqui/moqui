@@ -150,9 +150,9 @@ class ServiceDefinition {
         Node baseParameterNode = mergeParameter(parametersNode, (String) overrideParameterNode."@name",
                 overrideParameterNode.attributes())
         // merge description, subtype, ParameterValidations
-        for (Node childNode in overrideParameterNode.children()) {
+        for (Node childNode in (Collection<Node>) overrideParameterNode.children()) {
             if (childNode.name() == "description" || childNode.name() == "subtype") {
-                if (baseParameterNode[childNode.name()]) baseParameterNode.remove((Node) baseParameterNode[childNode.name()][0])
+                if (baseParameterNode[(String) childNode.name()]) baseParameterNode.remove((Node) baseParameterNode[(String) childNode.name()].getAt(0))
             }
             // is a validation, just add it in, or the original has been removed so add the new one
             baseParameterNode.append(childNode)
@@ -322,7 +322,7 @@ class ServiceDefinition {
         // - Node parameter, checkParameterNode
         // - otherwise, check type/etc
         // TODO - parameter with type Map, convert to Map? ...checkParameterMap; converting to Map would kill multiple values, or they could be put in a List, though that pattern is a bit annoying...
-        for (Node childNode in nodeValue.children()) {
+        for (Node childNode in (Collection<Node>) nodeValue.children()) {
             String parameterName = childNode.name()
             Node parameterNode = (Node) parametersParentNode."parameter".find({ it."@name" == parameterName })
             if (parameterNode == null) {
@@ -375,7 +375,7 @@ class ServiceDefinition {
                 if (nodeValue.attribute(parameterName)) {
                     valueFound = true
                 } else {
-                    for (Node childNode in nodeValue.children()) {
+                    for (Node childNode in (Collection<Node>) nodeValue.children()) {
                         if (childNode.text()) {
                             valueFound = true
                             break
@@ -488,7 +488,7 @@ class ServiceDefinition {
         if (!pv && !(pv instanceof Boolean)) return true
 
         boolean allPass = true
-        for (Node child in vpNode.children()) {
+        for (Node child in (Collection<Node>) vpNode.children()) {
             if (child.name() == "description" || child.name() == "subtype") continue
             // NOTE don't break on fail, we want to get a list of all failures for the user to see
             try {
@@ -505,16 +505,16 @@ class ServiceDefinition {
         switch (valNode.name()) {
         case "val-or":
             boolean anyPass = false
-            for (Node child in valNode.children()) if (validateParameterSingle(child, parameterName, pv, eci)) anyPass = true
+            for (Node child in (Collection<Node>) valNode.children()) if (validateParameterSingle(child, parameterName, pv, eci)) anyPass = true
             return anyPass
         case "val-and":
             boolean allPass = true
-            for (Node child in valNode.children()) if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
+            for (Node child in (Collection<Node>) valNode.children()) if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
             return allPass
         case "val-not":
             // just in case there are multiple children treat like and, then not it
             boolean allPass = true
-            for (Node child in valNode.children()) if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
+            for (Node child in (Collection<Node>) valNode.children()) if (!validateParameterSingle(child, parameterName, pv, eci)) allPass = false
             return !allPass
         case "matches":
             if (!(pv instanceof String)) {
@@ -635,7 +635,7 @@ class ServiceDefinition {
                 // try letting groovy convert it
                 cal = Calendar.getInstance()
                 // TODO: not sure if this will work: ((pv as java.util.Date).getTime())
-                cal.setTimeInMillis((pv as java.util.Date).getTime())
+                cal.setTimeInMillis((pv as Date).getTime())
             }
             if (valNode."@after") {
                 // handle after date/time/date-time depending on type of parameter, support "now" too
@@ -722,7 +722,7 @@ class ServiceDefinition {
                         eci.message.addError("Parameter [${parameterName}] passed to service [${getServiceName()}] had a subtype [${subValue.class.name}], expecting subtype [${subType}]")
                     } else {
                         // try the next level down
-                        checkSubtype(parameterName, typeParentNode."subtype"[0], subValue, eci)
+                        checkSubtype(parameterName, (Node) typeParentNode."subtype"[0], subValue, eci)
                     }
                 }
             } else if (value instanceof Map) {
@@ -760,16 +760,16 @@ class ServiceDefinition {
     }
     static class CreditCardMastercard implements CreditCardValidator.CreditCardType {
         boolean matches(String cc) {
-            int firstdig = Integer.parseInt(cc.substring(0, 1))
-            int seconddig = Integer.parseInt(cc.substring(1, 2))
-            return ((cc.length() == 16) && (firstdig == 5) && ((seconddig >= 1) && (seconddig <= 5)))
+            int firstDigit = Integer.parseInt(cc.substring(0, 1))
+            int secondDigit = Integer.parseInt(cc.substring(1, 2))
+            return ((cc.length() == 16) && (firstDigit == 5) && ((secondDigit >= 1) && (secondDigit <= 5)))
         }
     }
     static class CreditCardAmex implements CreditCardValidator.CreditCardType {
         boolean matches(String cc) {
-            int firstdig = Integer.parseInt(cc.substring(0, 1))
-            int seconddig = Integer.parseInt(cc.substring(1, 2))
-            return ((cc.length() == 15) && (firstdig == 3) && ((seconddig == 4) || (seconddig == 7)))
+            int firstDigit = Integer.parseInt(cc.substring(0, 1))
+            int secondDigit = Integer.parseInt(cc.substring(1, 2))
+            return ((cc.length() == 15) && (firstDigit == 3) && ((secondDigit == 4) || (secondDigit == 7)))
         }
     }
     static class CreditCardDiscover implements CreditCardValidator.CreditCardType {
@@ -812,9 +812,9 @@ class ServiceDefinition {
     }
     static class CreditCardDinersClub implements CreditCardValidator.CreditCardType {
         boolean matches(String cc) {
-            int firstdig = Integer.parseInt(cc.substring(0, 1))
-            int seconddig = Integer.parseInt(cc.substring(1, 2))
-            return ((cc.length() == 14) && (firstdig == 3) && ((seconddig == 0) || (seconddig == 6) || (seconddig == 8)))
+            int firstDigit = Integer.parseInt(cc.substring(0, 1))
+            int secondDigit = Integer.parseInt(cc.substring(1, 2))
+            return ((cc.length() == 14) && (firstDigit == 3) && ((secondDigit == 0) || (secondDigit == 6) || (secondDigit == 8)))
         }
     }
     static class CreditCardVisaElectron implements CreditCardValidator.CreditCardType {

@@ -255,29 +255,29 @@ abstract class EntityFindBase implements EntityFind {
         if (node["@distinct"]) this.distinct(node["@distinct"] == "true")
         if (node["@offset"]) this.offset(node["@offset"] as Integer)
         if (node["@limit"]) this.limit(node["@limit"] as Integer)
-        for (Node sf in node["select-field"]) this.selectField((String) sf["@field-name"])
-        for (Node ob in node["order-by"]) this.orderBy((String) ob["@field-name"])
+        for (Node sf in (Collection<Node>) node["select-field"]) this.selectField((String) sf["@field-name"])
+        for (Node ob in (Collection<Node>) node["order-by"]) this.orderBy((String) ob["@field-name"])
 
         if (!this.getUseCache()) {
-            for (Node df in node["date-filter"])
+            for (Node df in (Collection<Node>) node["date-filter"])
                 this.condition(ec.entity.conditionFactory.makeConditionDate((String) df["@from-field-name"] ?: "fromDate",
                         (String) df["@thru-field-name"] ?: "thruDate",
                         (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
         }
 
-        for (Node ecn in node["econdition"])
+        for (Node ecn in (Collection<Node>) node["econdition"])
             this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(ecn))
-        for (Node ecs in node["econditions"])
+        for (Node ecs in (Collection<Node>) node["econditions"])
             this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionConditions(ecs))
-        for (Node eco in node["econdition-object"])
+        for (Node eco in (Collection<Node>) node["econdition-object"])
             this.condition((EntityCondition) ec.resource.evaluateContextField((String) eco["@field"], null))
 
         if (node["search-form-inputs"]) {
-            Node sfiNode = (Node) node["search-form-inputs"][0]
+            Node sfiNode = (Node) node["search-form-inputs"].getAt(0)
             searchFormInputs((String) sfiNode["@input-fields-map"], (String) sfiNode["@default-order-by"], (sfiNode["@paginate"] ?: "true") as boolean)
         }
         if (node["having-econditions"]) {
-            for (Node havingCond in node["having-econditions"])
+            for (Node havingCond in (Collection<Node>) node["having-econditions"])
                 this.havingCondition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(havingCond))
         }
 

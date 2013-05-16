@@ -19,8 +19,11 @@ import org.moqui.context.Cache
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class ScreenFacadeImpl implements ScreenFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 

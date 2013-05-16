@@ -16,8 +16,11 @@ import java.sql.SQLException
 import org.moqui.impl.entity.condition.EntityConditionImplBase
 import org.moqui.entity.EntityException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityFindBuilder extends EntityQueryBuilder {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBuilder.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityFindBuilder.class)
 
     protected EntityFindBase entityFindBase
 
@@ -69,14 +72,14 @@ class EntityFindBuilder extends EntityQueryBuilder {
              * a count (function="count-distinct", distinct=true in find options)
              */
             if (this.entityFindBase.fieldsToSelect) {
-                Node aliasNode = this.mainEntityDefinition.getFieldNode(this.entityFindBase.fieldsToSelect[0])
+                Node aliasNode = this.mainEntityDefinition.getFieldNode((String) this.entityFindBase.fieldsToSelect.get(0))
                 if (aliasNode && aliasNode."@function") {
                     // if the field has a function already we don't want to count just it, would be meaningless
                     this.sqlTopLevel.append("COUNT(DISTINCT *) ")
                 } else {
                     this.sqlTopLevel.append("COUNT(DISTINCT ")
                     // TODO: possible to do all fieldsToSelect, or only one in SQL? if do all col names here it will blow up...
-                    this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(this.entityFindBase.fieldsToSelect[0], false))
+                    this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName((String) this.entityFindBase.fieldsToSelect.get(0), false))
                     this.sqlTopLevel.append(")")
                 }
             } else {
@@ -157,7 +160,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
             if (entityFindBase.orderByFields) fieldUsedSet.addAll(entityFindBase.orderByFields)
             for (String fieldName in fieldUsedSet) {
                 Node aliasNode = localEntityDefinition.getFieldNode(fieldName)
-                if (aliasNode?."@entity-alias") entityAliasUsedSet.add(aliasNode."@entity-alias")
+                if (aliasNode?."@entity-alias") entityAliasUsedSet.add((String) aliasNode."@entity-alias")
             }
 
             // make sure each entityAlias in the entityAliasUsedSet links back to the main
@@ -231,7 +234,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 }
 
                 boolean isFirstKeyMap = true
-                Collection keyMaps = relatedMemberEntity."key-map".findAll()
+                Collection<Node> keyMaps = (Collection<Node>) relatedMemberEntity."key-map".findAll()
                 for (Node keyMap in keyMaps) {
                     if (isFirstKeyMap) isFirstKeyMap = false else localBuilder.append(" AND ")
 
@@ -282,9 +285,9 @@ class EntityFindBuilder extends EntityQueryBuilder {
         }
     }
 
-    void makeSqlViewTableName(StringBuilder localBuilder) {
+    /* void makeSqlViewTableName(StringBuilder localBuilder) {
         makeSqlViewTableName(this.mainEntityDefinition, localBuilder)
-    }
+    } */
     void makeSqlViewTableName(EntityDefinition localEntityDefinition, StringBuilder localBuilder) {
         if (localEntityDefinition.isViewEntity()) {
             localBuilder.append("(SELECT ")

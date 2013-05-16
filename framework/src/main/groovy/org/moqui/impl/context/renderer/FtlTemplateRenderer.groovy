@@ -23,8 +23,11 @@ import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.TemplateRenderer
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class FtlTemplateRenderer implements TemplateRenderer {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FtlTemplateRenderer.class)
+    protected final static Logger logger = LoggerFactory.getLogger(FtlTemplateRenderer.class)
 
     protected ExecutionContextFactoryImpl ecfi
 
@@ -51,23 +54,23 @@ class FtlTemplateRenderer implements TemplateRenderer {
 
     void destroy() { }
 
-    Cache getTemplateFtlLocationCache() { return templateFtlLocationCache }
+    // Cache getTemplateFtlLocationCache() { return templateFtlLocationCache }
 
-    freemarker.template.Template getFtlTemplateByLocation(String location) {
-        freemarker.template.Template theTemplate = (freemarker.template.Template) templateFtlLocationCache.get(location)
+    Template getFtlTemplateByLocation(String location) {
+        Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (!theTemplate) theTemplate = makeTemplate(location)
         if (!theTemplate) throw new IllegalArgumentException("Could not find template at [${location}]")
         return theTemplate
     }
-    protected freemarker.template.Template makeTemplate(String location) {
-        freemarker.template.Template theTemplate = (freemarker.template.Template) templateFtlLocationCache.get(location)
+    protected Template makeTemplate(String location) {
+        Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (theTemplate) return theTemplate
 
-        freemarker.template.Template newTemplate = null
+        Template newTemplate = null
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(location))
-            newTemplate = new freemarker.template.Template(location, templateReader, getFtlConfiguration())
+            newTemplate = new Template(location, templateReader, getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
         } finally {
@@ -103,15 +106,15 @@ class FtlTemplateRenderer implements TemplateRenderer {
             this.ecfi = ecfi
         }
         @Override
-        freemarker.template.Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
+        Template getTemplate(String name, Locale locale, String encoding, boolean parse) {
             //return super.getTemplate(name, locale, encoding, parse)
             // NOTE: doing this because template loading behavior with cache/etc not desired and was having issues
-            freemarker.template.Template theTemplate
+            Template theTemplate
             if (parse) {
                 theTemplate = ecfi.resourceFacade.ftlTemplateRenderer.getFtlTemplateByLocation(name)
             } else {
                 String text = ecfi.resourceFacade.getLocationText(name, true)
-                theTemplate = freemarker.template.Template.getPlainTextTemplate(name, text, this)
+                theTemplate = Template.getPlainTextTemplate(name, text, this)
             }
             // NOTE: this is the same exception the standard FreeMarker code returns
             if (theTemplate == null) throw new FileNotFoundException("Template [${name}] not found.")
@@ -153,17 +156,17 @@ class FtlTemplateRenderer implements TemplateRenderer {
     */
 
     static class MoquiTemplateExceptionHandler implements TemplateExceptionHandler {
-        public void handleTemplateException(TemplateException te, Environment env, java.io.Writer out)
+        public void handleTemplateException(TemplateException te, Environment env, Writer out)
                 throws TemplateException {
             try {
                 // TODO: encode error, something like: StringUtil.SimpleEncoder simpleEncoder = FreeMarkerWorker.getWrappedObject("simpleEncoder", env);
                 // stackTrace = simpleEncoder.encode(stackTrace);
                 if (te.cause) {
                     logger.error("Error in FTL render", te.cause)
-                    out.write("[Error: ${te.cause.message}]")
+                    out.write((String) "[Error: ${te.cause.message}]")
                 } else {
                     logger.error("Error in FTL render", te)
-                    out.write("[Template Error: ${te.message}]")
+                    out.write((String) "[Template Error: ${te.message}]")
                 }
             } catch (IOException e) {
                 throw new TemplateException("Failed to print error message. Cause: " + e, env)
