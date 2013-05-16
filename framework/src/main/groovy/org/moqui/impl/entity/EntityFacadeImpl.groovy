@@ -254,14 +254,22 @@ class EntityFacadeImpl implements EntityFacade {
         if (ed) return ed
 
         List entityLocationList = (List) entityLocationCache.get(entityName)
-        if (!entityLocationList) {
+        if (entityLocationList == null) {
             if (logger.warnEnabled) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
             this.loadAllEntityLocations()
             entityLocationList = (List) entityLocationCache.get(entityName)
             // no locations found for this entity, entity probably doesn't exist
             if (!entityLocationList) {
-                throw new EntityException("No definition found for entity-name [${entityName}]")
+                entityLocationCache.put(entityName, [])
+                EntityException ee = new EntityException("No definition found for entity-name [${entityName}]")
+                if (logger.warnEnabled) logger.warn("No definition found for entity-name [${entityName}]", ee)
+                throw ee
             }
+        }
+
+        if (entityLocationList.size() == 0) {
+            if (logger.isTraceEnabled()) logger.trace("Entity name [${entityName}] is a known non-entity, returning null for EntityDefinition.")
+            return null
         }
 
         String packageName = null
