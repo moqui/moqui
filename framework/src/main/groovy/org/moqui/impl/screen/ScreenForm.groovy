@@ -31,7 +31,6 @@ import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.entity.EntityCondition
 import java.sql.Timestamp
 import org.moqui.impl.entity.EntityListImpl
-import org.moqui.BaseException
 import org.moqui.impl.entity.EntityValueBase
 
 class ScreenForm {
@@ -136,7 +135,7 @@ class ScreenForm {
 
         // populate validate-service and validate-parameter attributes if the target transition calls a single service
         if (newFormNode."@transition") {
-            TransitionItem ti = this.sd.getTransitionItem(newFormNode."@transition", null)
+            TransitionItem ti = this.sd.getTransitionItem((String) newFormNode."@transition", null)
             if (ti != null && ti.getSingleServiceName()) {
                 String singleServiceName = ti.getSingleServiceName()
                 ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(singleServiceName)
@@ -395,7 +394,7 @@ class ScreenForm {
         Node fieldNode = (Node) formNodeToUse."field".find({ it.@name == fieldName })
         if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
         if (fieldNode."@validate-service") {
-            ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(fieldNode."@validate-service")
+            ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition((String) fieldNode."@validate-service")
             if (sd == null) throw new IllegalArgumentException("Bad validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
             Node parameterNode = sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
             return parameterNode
@@ -407,7 +406,7 @@ class ScreenForm {
                              String serviceVerb, Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         // if the parameter corresponds to an entity field, we can do better with that
         EntityDefinition fieldEd = nounEd
-        if (parameterNode."@entity-name") fieldEd = ecfi.entityFacade.getEntityDefinition(parameterNode."@entity-name")
+        if (parameterNode."@entity-name") fieldEd = ecfi.entityFacade.getEntityDefinition((String) parameterNode."@entity-name")
         String fieldName = parameterNode."@field-name" ?: parameterNode."@name"
         if (fieldEd != null && fieldEd.getFieldNode(fieldName) != null) {
             addAutoEntityField(fieldEd, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
@@ -416,7 +415,7 @@ class ScreenForm {
 
         // otherwise use the old approach and do what we can with the service def
         String spType = parameterNode."@type" ?: "String"
-        String efType = fieldEd != null ? fieldEd.getFieldNode(parameterNode."@name")?."@type" : null
+        String efType = fieldEd != null ? fieldEd.getFieldNode((String) parameterNode."@name")?."@type" : null
 
         switch (fieldType) {
             case "edit":
@@ -491,7 +490,9 @@ class ScreenForm {
         EntityDefinition nounEd = null
         try {
             nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
-        } catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
+        } catch (EntityException e) {
+            logger.trace("Ignoring entity exception, may not be real entity name: ${e.toString()}")
+        }
 
         List<Node> parameterNodes = []
         if (include == "in" || include == "all") parameterNodes.addAll(sd.serviceNode."in-parameters"[0]."parameter")
@@ -712,8 +713,12 @@ class ScreenForm {
     void addAutoServiceField(ServiceDefinition sd, String parameterName, String fieldType,
                              Node newFieldNode, Node subFieldNode, Node baseFormNode) {
         EntityDefinition nounEd = null
-        try { nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun) }
-        catch (EntityException e) { /* ignore, anticipating there may be no entity def */ }
+        try {
+            nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
+        } catch (EntityException e) {
+            // ignore, anticipating there may be no entity def
+            logger.trace("Ignoring entity exception, not necessarily an entity name: ${e.toString()}")
+        }
         Node parameterNode = sd.serviceNode."in-parameters"[0].find({ it."@name" == parameterName })
 
         if (parameterNode == null) throw new IllegalArgumentException("Cound not find parameter [${parameterName}] in service [${sd.serviceName}] referred to in auto-widget-service of form [${baseFormNode."@name"}] of screen [${sd.location}]")
@@ -724,15 +729,19 @@ class ScreenForm {
         String entityName = widgetNode."@entity-name"
         if (isDynamic) entityName = ecfi.resourceFacade.evaluateStringExpand(entityName, "")
         EntityDefinition ed = null
-        try { ed = ecfi.entityFacade.getEntityDefinition(entityName) }
-        catch (EntityException e) { /* ignore so we can throw better exception below */ }
+        try {
+            ed = ecfi.entityFacade.getEntityDefinition(entityName)
+        } catch (EntityException e) {
+            // ignore, anticipating there may be no entity def
+            logger.trace("Ignoring entity exception, not necessarily an entity name: ${e.toString()}")
+        }
         if (ed == null) throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-widget-entity of form [${baseFormNode."@name"}] of screen [${sd.location}]")
         addAutoEntityField(ed, (String) widgetNode."@field-name"?:fieldNode."@name", widgetNode."@field-type"?:"find-display",
                 null, fieldNode, fieldSubNode, baseFormNode)
 
     }
 
-    protected void mergeFormNodes(Node baseFormNode, Node overrideFormNode, boolean deepCopy, boolean copyFields) {
+    protected static void mergeFormNodes(Node baseFormNode, Node overrideFormNode, boolean deepCopy, boolean copyFields) {
         if (overrideFormNode.attributes()) baseFormNode.attributes().putAll(overrideFormNode.attributes())
 
         // if overrideFormNode has any row-actions add them all to the ones of the baseFormNode, ie both will run
@@ -750,8 +759,8 @@ class ScreenForm {
 
         if (overrideFormNode."field-layout") {
             // just use entire override field-layout, don't try to merge
-            if (baseFormNode."field-layout") baseFormNode.remove(baseFormNode."field-layout"[0])
-            baseFormNode.append(StupidUtilities.deepCopyNode(overrideFormNode."field-layout"[0]))
+            if (baseFormNode."field-layout") baseFormNode.remove((Node) baseFormNode."field-layout"[0])
+            baseFormNode.append(StupidUtilities.deepCopyNode((Node) overrideFormNode."field-layout"[0]))
         }
         if (overrideFormNode."form-list-column") {
             // if there are any form-list-column remove all from base and copy all from override
@@ -762,13 +771,13 @@ class ScreenForm {
         }
     }
 
-    protected void mergeFieldNode(Node baseFormNode, Node overrideFieldNode, boolean deepCopy) {
+    protected static void mergeFieldNode(Node baseFormNode, Node overrideFieldNode, boolean deepCopy) {
         Node baseFieldNode = (Node) baseFormNode."field".find({ it."@name" == overrideFieldNode."@name" })
         if (baseFieldNode != null) {
             baseFieldNode.attributes().putAll(overrideFieldNode.attributes())
 
             if (overrideFieldNode."header-field") {
-                if (baseFieldNode."header-field") baseFieldNode.remove(baseFieldNode."header-field"[0])
+                if (baseFieldNode."header-field") baseFieldNode.remove((Node) baseFieldNode."header-field"[0])
                 baseFieldNode.append((Node) overrideFieldNode."header-field"[0])
             }
             for (Node overrideConditionalFieldNode in overrideFieldNode."conditional-field") {
@@ -778,7 +787,7 @@ class ScreenForm {
                 baseFieldNode.append(overrideConditionalFieldNode)
             }
             if (overrideFieldNode."default-field") {
-                if (baseFieldNode."default-field") baseFieldNode.remove(baseFieldNode."default-field"[0])
+                if (baseFieldNode."default-field") baseFieldNode.remove((Node) baseFieldNode."default-field"[0])
                 baseFieldNode.append((Node) overrideFieldNode."default-field"[0])
             }
         } else {
@@ -788,9 +797,9 @@ class ScreenForm {
         }
     }
 
-    void addFieldToFieldLayout(Node formNode, Node fieldNode) {
+    static void addFieldToFieldLayout(Node formNode, Node fieldNode) {
         Node fieldLayoutNode = formNode."field-layout"[0]
-        Long layoutSequenceNum = fieldNode.attribute("layoutSequenceNum")
+        Long layoutSequenceNum = fieldNode.attribute("layoutSequenceNum") as Long
         if (layoutSequenceNum == null) {
             fieldLayoutNode.appendNode("field-ref", [name:fieldNode."@name"])
         } else {
@@ -850,12 +859,12 @@ class ScreenForm {
                 }
 
                 for (EntityValue ev in eli) {
-                    ec.context.push(ev)
+                    ec.context.push((Map<Object, Object>) ev)
                     addFieldOption(options, fieldNode, childNode, ev, ec)
                     ec.context.pop()
                 }
             } else if (childNode.name() == "list-options") {
-                Object listObject = ec.resource.evaluateContextField(childNode."@list", null)
+                Object listObject = ec.resource.evaluateContextField((String) childNode."@list", null)
                 if (listObject instanceof EntityListIterator) {
                     EntityListIterator eli
                     try {
@@ -878,8 +887,8 @@ class ScreenForm {
                     }
                 }
             } else if (childNode.name() == "option") {
-                String key = ec.resource.evaluateStringExpand(childNode."@key", null)
-                String text = ec.resource.evaluateStringExpand(childNode."@text", null)
+                String key = ec.resource.evaluateStringExpand((String) childNode."@key", null)
+                String text = ec.resource.evaluateStringExpand((String) childNode."@text", null)
                 options.put(key, text ?: key)
             }
         }
@@ -892,7 +901,7 @@ class ScreenForm {
         try {
             String key = null
             if (childNode."@key") {
-                key = ec.resource.evaluateStringExpand(childNode."@key", null)
+                key = ec.resource.evaluateStringExpand((String) childNode."@key", null)
                 // we just did a string expand, if it evaluates to a literal "null" then there was no value
                 if (key == "null") key = null
             } else if (listOption instanceof EntityValueImpl) {

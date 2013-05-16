@@ -21,10 +21,13 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl.WebappInfo
 import org.moqui.Moqui
 
-class MoquiContextListener implements ServletContextListener {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiContextListener.class)
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-    protected String getId(ServletContext sc) {
+class MoquiContextListener implements ServletContextListener {
+    protected final static Logger logger = LoggerFactory.getLogger(MoquiContextListener.class)
+
+    protected static String getId(ServletContext sc) {
         String contextPath = sc.getContextPath()
         return contextPath.length() > 1 ? contextPath.substring(1) : "ROOT"
     }

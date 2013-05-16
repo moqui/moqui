@@ -19,8 +19,11 @@ import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ResourceFacadeImpl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ContentResourceReference extends BaseResourceReference {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContentResourceReference.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ContentResourceReference.class)
     public final static String locationPrefix = "content://"
 
     String location
@@ -167,7 +170,7 @@ class ContentResourceReference extends BaseResourceReference {
         }
     }
 
-    javax.jcr.Node findDirectoryNode(Session session, List<String> pathList, boolean create) {
+    static javax.jcr.Node findDirectoryNode(Session session, List<String> pathList, boolean create) {
         javax.jcr.Node rootNode = session.getRootNode()
         javax.jcr.Node folderNode = rootNode
         if (pathList) {

@@ -38,8 +38,11 @@ import org.moqui.impl.context.UserFacadeImpl
 import org.moqui.impl.context.ArtifactExecutionFacadeImpl
 import org.moqui.Moqui
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class MoquiShiroRealm implements Realm {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiShiroRealm.class)
+    protected final static Logger logger = LoggerFactory.getLogger(MoquiShiroRealm.class)
 
     protected ExecutionContextFactoryImpl ecfi
     protected String realmName = "moquiRealm"
@@ -56,21 +59,25 @@ class MoquiShiroRealm implements Realm {
     }
 
     void setName(String n) { realmName = n }
+
+    @Override
     String getName() { return realmName }
 
     //Class getAuthenticationTokenClass() { return authenticationTokenClass }
     //void setAuthenticationTokenClass(Class<? extends AuthenticationToken> atc) { authenticationTokenClass = atc }
 
+    @Override
     boolean supports(AuthenticationToken token) {
         return token != null && authenticationTokenClass.isAssignableFrom(token.getClass())
     }
 
+    @Override
     AuthenticationInfo getAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
         String username = token.principal
         String userId = null
         boolean successful = false
 
-        EntityValue newUserAccount
+        EntityValue newUserAccount = null
         SaltedAuthenticationInfo info = null
         try {
             boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()

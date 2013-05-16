@@ -166,7 +166,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 return newSession
             } else {
                 sessionMap.remove(name)
-                newSession = null
+                // newSession = null
             }
         }
 

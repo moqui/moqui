@@ -12,16 +12,20 @@
 package org.moqui.impl
 
 import java.nio.charset.Charset
+import java.sql.Time
 import java.sql.Timestamp
 import java.util.regex.Pattern
 
 import org.w3c.dom.Element
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 /** These are utilities that should exist elsewhere, but I can't find a good simple library for them, and they are
  * stupid but necessary for certain things. 
  */
 class StupidUtilities {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StupidUtilities.class)
+    protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
     static boolean isInstanceOf(Object theObjectInQuestion, String javaType) {
         Class theClass = StupidClassLoader.commonJavaClassesMap.get(javaType)
@@ -37,7 +41,7 @@ class StupidUtilities {
         // only support the classes we have pre-configured
         if (theClass == null) return value
         try {
-            if (theClass == java.lang.Boolean.class && value instanceof String && value) {
+            if (theClass == Boolean.class && value instanceof String && value) {
                 // for non-empty String to Boolean don't use normal not-empty rules, look for "true", "false", etc
                 return Boolean.valueOf((String) value)
             } else {
@@ -69,7 +73,7 @@ class StupidUtilities {
             // change the SQL wildcards to regex wildcards
             String regex = sb.toString().replace("_", ".").replace("%", ".*?")
             // run it...
-            Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.DOTALL)
+            Pattern pattern = Pattern.compile(regex, (int) (Pattern.CASE_INSENSITIVE | Pattern.DOTALL))
             return pattern.matcher(value1).matches()
         } else {
             return false
@@ -91,14 +95,14 @@ class StupidUtilities {
             case "Long": field = field as Long; toField = toField as Long; break;
             case "Integer": field = field as Long; toField = toField as Long; break;
             case "Date": field = field as java.sql.Date; toField = toField as java.sql.Date; break;
-            case "Time": field = field as java.sql.Time; toField = toField as java.sql.Time; break;
-            case "Timestamp": field = field as java.sql.Timestamp; toField = toField as java.sql.Timestamp; break;
+            case "Time": field = field as Time; toField = toField as Time; break;
+            case "Timestamp": field = field as Timestamp; toField = toField as Timestamp; break;
             case "Boolean": field = field as Boolean; toField = toField as Boolean; break;
             case "Object":
             default: break; // do nothing for Object or by default
         }
 
-        boolean result
+        boolean result = (field == toField)
         switch (operator) {
             case "less": result = (field < toField); break;
             case "greater": result = (field > toField); break;

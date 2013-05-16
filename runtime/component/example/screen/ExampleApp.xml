@@ -79,9 +79,9 @@ This Work includes contributions authored by David E. Jones, not as a
             // load all the data
             EntityDataLoader edl = ec.getEntity().makeDataLoader()
 
-            long startTime = System.currentTimeMillis()
-            long records = edl.load()
-            long totalSeconds = (System.currentTimeMillis() - startTime) / 1000
+            startTime = System.currentTimeMillis()
+            records = edl.load()
+            totalSeconds = (System.currentTimeMillis() - startTime) / 1000
 
             ec.artifactExecution.enableAuthz()
             ]]></script>

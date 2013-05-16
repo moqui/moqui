@@ -23,8 +23,11 @@ import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ScreenUrlInfo {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenUrlInfo.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenUrlInfo.class)
 
     ScreenRenderImpl sri
 
@@ -374,7 +377,7 @@ class ScreenUrlInfo {
             // if any conditional-default.@condition eval to true, use that conditional-default.@item instead
             for (Node conditionalDefaultNode in lastSd.screenNode."subscreens"."conditional-default") {
                 if (!conditionalDefaultNode."@condition") continue
-                if (ec.resource.evaluateCondition(conditionalDefaultNode."@condition", null)) {
+                if (ec.resource.evaluateCondition((String) conditionalDefaultNode."@condition", null)) {
                     subscreenName = conditionalDefaultNode."@item"
                     break
                 }

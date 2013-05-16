@@ -41,8 +41,11 @@ import org.moqui.impl.StupidUtilities
 
 import java.sql.Timestamp
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ScreenRenderImpl implements ScreenRender {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScreenRenderImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScreenRenderImpl.class)
     protected final static URLCodec urlCodec = new URLCodec()
 
     protected final ScreenFacadeImpl sfi
@@ -100,7 +103,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenRender rootScreenFromHost(String host) {
         for (Node rootScreenNode in getWebappNode()."root-screen") {
-            if (host.matches((String) rootScreenNode."@host")) return this.rootScreen(rootScreenNode."@location")
+            if (host.matches((String) rootScreenNode."@host")) return this.rootScreen((String) rootScreenNode."@location")
         }
         throw new BaseException("Could not find root screen for host [${host}]")
     }
@@ -187,7 +190,7 @@ class ScreenRenderImpl implements ScreenRender {
 
         if (sd.alwaysActions != null) sd.alwaysActions.run(ec)
 
-        ResponseItem ri = null
+        ResponseItem ri
         if (sdIterator.hasNext()) {
             ri = recursiveRunTransition(sdIterator)
         } else {
@@ -343,7 +346,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                 if (urlType == "plain") {
                     StringBuilder ps = new StringBuilder()
-                    Map<String, String> pm = ri.expandParameters(ec)
+                    Map<String, String> pm = (Map<String, String>) ri.expandParameters(ec)
                     if (pm) {
                         for (Map.Entry<String, String> pme in pm) {
                             if (!pme.value) continue
@@ -880,7 +883,7 @@ class ScreenRenderImpl implements ScreenRender {
                 if (ctxParameterMap) sui.addParameters((Map) ctxParameterMap)
             }
             for (Node parameterNode in parameterParentNode."parameter")
-                sui.addParameter(parameterNode."@name", makeValue(parameterNode."@from" ?: parameterNode."@name", parameterNode."@value"))
+                sui.addParameter(parameterNode."@name", makeValue((String) parameterNode."@from" ?: (String) parameterNode."@name", (String) parameterNode."@value"))
         }
 
         return sui
@@ -934,7 +937,10 @@ class ScreenRenderImpl implements ScreenRender {
                 } else {
                     value = valueMap.get(fieldName)
                 }
-            } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
+            } catch (EntityException e) {
+                // do nothing, not necessarily an entity field
+                logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
+            }
         }
         if (!value) value = ec.getContext().get(fieldName)
         // this isn't needed since the parameters are copied to the context: if (!isError && isWebAndSameForm && !value) value = ec.web.parameters.get(fieldName)
@@ -960,7 +966,10 @@ class ScreenRenderImpl implements ScreenRender {
                     } else {
                         fieldValue = valueMap.get(fieldName)
                     }
-                } catch (EntityException e) { /* do nothing, not necessarily an entity field */ }
+                } catch (EntityException e) {
+                    // do nothing, not necessarily an entity field
+                    logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
+                }
             }
             if (!fieldValue) fieldValue = ec.getContext().get(fieldName)
         }
@@ -985,7 +994,7 @@ class ScreenRenderImpl implements ScreenRender {
         String value = ""
         if (widgetNode."@text") {
             // push onto the context and then expand the text
-            ec.context.push(ev)
+            ec.context.push((Map<Object, Object>) ev)
             value = ec.resource.evaluateStringExpand((String) widgetNode."@text", null)
             ec.context.pop()
         } else {

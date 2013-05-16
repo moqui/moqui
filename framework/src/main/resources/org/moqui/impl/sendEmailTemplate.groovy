@@ -14,7 +14,10 @@ import org.apache.commons.mail.ByteArrayDataSource
 import javax.activation.DataSource
 import org.moqui.BaseException
 
-org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.moqui.impl.sendEmailTemplate")
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+Logger logger = LoggerFactory.getLogger("org.moqui.impl.sendEmailTemplate")
 
 try {
 // NOTE: uncomment for autocomplete, comment to avoid causing runtime problems
@@ -40,9 +43,9 @@ if (emailTemplate && !emailTemplate.fromAddress)
 if (ec.message.errors) return
 
 HtmlEmail email = new HtmlEmail()
-email.setHostName(emailServer.smtpHost)
+email.setHostName((String) emailServer.smtpHost)
 if (emailServer.smtpPort) email.setSmtpPort((emailServer.smtpPort ?: "25") as int)
-if (emailServer.mailUsername) email.setAuthentication(emailServer.mailUsername, emailServer.mailPassword)
+if (emailServer.mailUsername) email.setAuthentication((String) emailServer.mailUsername, (String) emailServer.mailPassword)
 if (emailServer.smtpStartTls) email.setTLS(emailServer.smtpStartTls == "Y")
 if (emailServer.smtpSsl) email.setSSL(emailServer.smtpSsl == "Y")
 
@@ -50,14 +53,14 @@ email.setFrom((String) emailTemplate.fromAddress, (String) emailTemplate.fromNam
 String subject = ec.resource.evaluateStringExpand((String) emailTemplate.subject, "")
 email.setSubject(subject)
 
-def toList = toAddresses.split(",")
+def toList = ((String) toAddresses).split(",")
 for (def toAddress in toList) email.addTo(toAddress.trim())
 if (emailTemplate.ccAddresses) {
-    def ccList = emailTemplate.ccAddresses.split(",")
+    def ccList = ((String) emailTemplate.ccAddresses).split(",")
     for (def ccAddress in ccList) email.addCc(ccAddress.trim())
 }
 if (emailTemplate.bccAddresses) {
-    def bccList = emailTemplate.bccAddresses.split(",")
+    def bccList = ((String) emailTemplate.bccAddresses).split(",")
     for (def bccAddress in bccList) email.addBcc(bccAddress.trim())
 }
 

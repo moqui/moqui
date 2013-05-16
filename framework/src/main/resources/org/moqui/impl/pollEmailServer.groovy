@@ -14,16 +14,19 @@ import javax.mail.FetchProfile;
 import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Store;
-import javax.mail.URLName;
 import javax.mail.internet.MimeMessage;
 import javax.mail.search.FlagTerm;
 
-final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("org.moqui.impl.pollEmailServer")
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
-org.moqui.impl.context.ExecutionContextImpl ec
+import org.moqui.impl.context.ExecutionContextImpl
+
+final static Logger logger = LoggerFactory.getLogger("org.moqui.impl.pollEmailServer")
+
+ExecutionContextImpl ec = context.ec
 
 def emailServer = ec.entity.makeFind("moqui.basic.email.EmailTemplate").condition("emailServerId", emailServerId).one()
 

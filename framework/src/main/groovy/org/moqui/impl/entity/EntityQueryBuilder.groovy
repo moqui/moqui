@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import java.nio.ByteBuffer
 import java.sql.Blob
 import java.sql.Clob
 import java.sql.Connection
@@ -18,6 +19,8 @@ import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.ResultSetMetaData
 import java.sql.SQLException
+import java.sql.Time
+import java.sql.Timestamp
 import java.sql.Types
 import javax.sql.rowset.serial.SerialClob
 import javax.sql.rowset.serial.SerialBlob
@@ -31,8 +34,11 @@ import javax.crypto.spec.PBEParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import org.apache.commons.codec.binary.Hex
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityQueryBuilder {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityQueryBuilder.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityQueryBuilder.class)
 
     protected EntityFacadeImpl efi
     protected EntityDefinition mainEntityDefinition
@@ -65,7 +71,7 @@ class EntityQueryBuilder {
         return this.connection
     }
 
-    protected void handleSqlException(Exception e, String sql) {
+    protected static void handleSqlException(Exception e, String sql) {
         throw new EntityException("SQL Exception with statement:" + sql + "; " + e.toString(), e)
     }
 
@@ -129,7 +135,7 @@ class EntityQueryBuilder {
         this.connection = null
     }
 
-    String sanitizeColumnName(String colName) {
+    static String sanitizeColumnName(String colName) {
         return colName.replace('.', '_').replace('(','_').replace(')','_')
     }
 
@@ -151,7 +157,7 @@ class EntityQueryBuilder {
     }
 
     static class EntityConditionParameter {
-        protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionParameter.class)
+        protected final static Logger logger = LoggerFactory.getLogger(EntityConditionParameter.class)
 
         protected Node fieldNode
         protected Object value
@@ -190,7 +196,7 @@ class EntityQueryBuilder {
 
             switch (typeValue) {
             case 1:
-                if (java.sql.Types.CLOB == colType) {
+                if (Types.CLOB == colType) {
                     // if the String is empty, try to get a text input stream, this is required for some databases
                     // for larger fields, like CLOBs
                     Clob valueClob = rs.getClob(index)
@@ -218,7 +224,13 @@ class EntityQueryBuilder {
                     value = rs.getString(index)
                 }
                 break
-            case 2: try { value = rs.getTimestamp(index, cal) } catch (SQLException e) { /* leave value null; found this in MySQL with a date/time value of "0000-00-00 00:00:00" */ }; break
+            case 2:
+                try {
+                    value = rs.getTimestamp(index, cal)
+                } catch (SQLException e) {
+                    logger.trace("Ignoring SQLException for getTimestamp(), leaving null (found this in MySQL with a date/time value of [0000-00-00 00:00:00]): ${e.toString()}")
+                }
+                break
             case 3: value = rs.getTime(index, cal); break
             case 4: value = rs.getDate(index, cal); break
             case 5: int intValue = rs.getInt(index); if (!rs.wasNull()) value = intValue; break
@@ -263,12 +275,13 @@ class EntityQueryBuilder {
                 }
                 break
             case 12:
-                SerialBlob sblob = null
+                SerialBlob sblob
                 try {
                     Blob theBlob = rs.getBlob(index)
                     // fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
                     sblob = new SerialBlob(theBlob)
                 } catch (SQLException e) {
+                    logger.trace("Ignoring exception trying getBlob(), trying getBytes(): ${e.toString()}")
                     // if getBlob didn't work try getBytes
                     byte[] fieldBytes = rs.getBytes(index)
                     sblob = new SerialBlob(fieldBytes)
@@ -319,7 +332,12 @@ class EntityQueryBuilder {
         Cipher pbeCipher = Cipher.getInstance(algo)
         pbeCipher.init(encrypt ? Cipher.ENCRYPT_MODE : Cipher.DECRYPT_MODE, pbeKey, pbeParamSpec)
 
-        byte[] inBytes = encrypt ? value.getBytes() : Hex.decodeHex(value.toCharArray())
+        byte[] inBytes
+        if (encrypt) {
+            inBytes = value.getBytes()
+        } else {
+            inBytes = Hex.decodeHex(value.toCharArray())
+        }
         byte[] outBytes = pbeCipher.doFinal(inBytes)
         return encrypt ? Hex.encodeHexString(outBytes) : new String(outBytes)
     }
@@ -346,6 +364,7 @@ class EntityQueryBuilder {
                         "in an SQL-Java data conversion error. Will use the real field type: " +
                         fieldClassName + ", not the definition.")
                 javaType = fieldClassName
+                typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
             }
 
             // if field is to be encrypted, do it now
@@ -384,9 +403,9 @@ class EntityQueryBuilder {
             } else {
                 switch (typeValue) {
                 case 1: if (value != null) { ps.setString(index, value as String) } else { ps.setNull(index, Types.VARCHAR) }; break
-                case 2: if (value != null) { ps.setTimestamp(index, value as java.sql.Timestamp, cal) } else { ps.setNull(index, Types.TIMESTAMP) }; break
+                case 2: if (value != null) { ps.setTimestamp(index, value as Timestamp, cal) } else { ps.setNull(index, Types.TIMESTAMP) }; break
                 case 3:
-                    java.sql.Time tm = value as java.sql.Time
+                    Time tm = value as Time
                     // logger.warn("=================== setting time tm=${tm} tm long=${tm.getTime()}, cal=${cal}")
                     if (value != null) { ps.setTime(index, tm, cal) } else { ps.setNull(index, Types.TIME) }
                     break
@@ -395,12 +414,12 @@ class EntityQueryBuilder {
                     // logger.warn("=================== setting date dt=${dt} dt long=${dt.getTime()}, cal=${cal}")
                     if (value != null) { ps.setDate(index, dt, cal) } else { ps.setNull(index, Types.DATE) }
                     break
-                case 5: if (value != null) { ps.setInt(index, (java.lang.Integer) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 6: if (value != null) { ps.setLong(index, (java.lang.Long) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 7: if (value != null) { ps.setFloat(index, (java.lang.Float) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 8: if (value != null) { ps.setDouble(index, (java.lang.Double) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 9: if (value != null) { ps.setBigDecimal(index, (java.math.BigDecimal) value) } else { ps.setNull(index, Types.NUMERIC) }; break
-                case 10: if (value != null) { ps.setBoolean(index, (java.lang.Boolean) value) } else { ps.setNull(index, Types.BOOLEAN) }; break
+                case 5: if (value != null) { ps.setInt(index, (Integer) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 6: if (value != null) { ps.setLong(index, (Long) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 7: if (value != null) { ps.setFloat(index, (Float) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 8: if (value != null) { ps.setDouble(index, (Double) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 9: if (value != null) { ps.setBigDecimal(index, (BigDecimal) value) } else { ps.setNull(index, Types.NUMERIC) }; break
+                case 10: if (value != null) { ps.setBoolean(index, (Boolean) value) } else { ps.setNull(index, Types.BOOLEAN) }; break
                 case 11:
                     if (value != null) {
                         try {
@@ -428,20 +447,20 @@ class EntityQueryBuilder {
                         byte[] theBytes = new byte[((ArrayList) value).size()]
                         ((ArrayList) value).toArray(theBytes)
                         ps.setBytes(index, theBytes)
-                    } else if (value instanceof java.nio.ByteBuffer) {
-                        ps.setBytes(index, ((java.nio.ByteBuffer) value).array())
+                    } else if (value instanceof ByteBuffer) {
+                        ps.setBytes(index, ((ByteBuffer) value).array())
                     } else if (value instanceof String) {
                         ps.setBytes(index, ((String) value).getBytes())
                     } else {
                         if (value != null) {
-                            ps.setBlob(index, (java.sql.Blob) value)
+                            ps.setBlob(index, (Blob) value)
                         } else {
                             if (useBinaryTypeForBlob) { ps.setNull(index, Types.BINARY) } else { ps.setNull(index, Types.BLOB) }
                         }
                     }
                     break
-                case 13: if (value != null) { ps.setClob(index, (java.sql.Clob) value) } else { ps.setNull(index, Types.CLOB) }; break
-                case 14: if (value != null) { ps.setTimestamp(index, value as java.sql.Timestamp) } else { ps.setNull(index, Types.TIMESTAMP) }; break
+                case 13: if (value != null) { ps.setClob(index, (Clob) value) } else { ps.setNull(index, Types.CLOB) }; break
+                case 14: if (value != null) { ps.setTimestamp(index, value as Timestamp) } else { ps.setNull(index, Types.TIMESTAMP) }; break
                 // TODO: is this the best way to do collections and such?
                 case 15: if (value != null) { ps.setObject(index, value, Types.JAVA_OBJECT) } else { ps.setNull(index, Types.JAVA_OBJECT) }; break
                 }

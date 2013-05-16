@@ -16,8 +16,11 @@ import org.moqui.context.ExecutionContext
 import org.moqui.impl.StupidUtilities
 import org.moqui.BaseException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class UrlResourceReference extends BaseResourceReference {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UrlResourceReference.class)
+    protected final static Logger logger = LoggerFactory.getLogger(UrlResourceReference.class)
 
     URL locationUrl = null
     Boolean exists = null
@@ -39,6 +42,7 @@ class UrlResourceReference extends BaseResourceReference {
             try {
                 locationUrl = new URL(location)
             } catch (MalformedURLException e) {
+                logger.trace("Ignoring MalformedURLException for location, trying a local file: ${e.toString()}")
                 // special case for Windows, try going through a file:
                 locationUrl = new URL("file:/" + location)
             }

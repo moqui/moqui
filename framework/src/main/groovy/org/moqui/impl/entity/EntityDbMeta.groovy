@@ -22,8 +22,11 @@ import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.context.Cache
 import org.moqui.entity.EntityException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityDbMeta {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDbMeta.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDbMeta.class)
 
     protected Map entityTablesChecked = new HashMap()
 
@@ -40,7 +43,7 @@ class EntityDbMeta {
 
         if (ed.isViewEntity()) {
             for (Node memberEntityNode in ed.entityNode."member-entity") {
-                EntityDefinition med = efi.getEntityDefinition(memberEntityNode."@entity-name")
+                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
                 checkTableRuntime(med)
             }
         } else {
@@ -252,7 +255,7 @@ class EntityDbMeta {
             boolean isFirst = true
             for (Node indexFieldNode in indexNode."index-field") {
                 if (isFirst) isFirst = false else sql.append(", ")
-                sql.append(ed.getColumnName(indexFieldNode."@name", false))
+                sql.append(ed.getColumnName((String) indexFieldNode."@name", false))
             }
             sql.append(")")
 
@@ -371,7 +374,7 @@ class EntityDbMeta {
         for (Node relNode in ed.entityNode."relationship") {
             if (relNode."@type" != "one") continue
 
-            EntityDefinition relEd = efi.getEntityDefinition(relNode."@related-entity-name")
+            EntityDefinition relEd = efi.getEntityDefinition((String) relNode."@related-entity-name")
             if (relEd == null) throw new IllegalArgumentException("Entity [${relNode."@related-entity-name"}] does not exist, was in relationship.@related-entity-name of entity [${ed.entityName}]")
             if (!tableExists(relEd)) {
                 logger.warn("Not creating foreign key from entity [${ed.entityName}] to related entity [${relEd.entityName}] because related entity does not yet have a table for it")
@@ -445,7 +448,7 @@ class EntityDbMeta {
         }
     }
 
-    void shrinkName(StringBuilder name, int maxLength) {
+    static void shrinkName(StringBuilder name, int maxLength) {
         if (name.length() > maxLength) {
             // remove vowels from end toward beginning
             for (int i = name.length()-1; i >= 0 && name.length() > maxLength; i--) {

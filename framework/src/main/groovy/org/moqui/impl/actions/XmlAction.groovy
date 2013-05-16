@@ -22,8 +22,11 @@ import org.moqui.impl.FtlNodeWrapper
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ContextBinding
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class XmlAction {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(XmlAction.class)
+    protected final static Logger logger = LoggerFactory.getLogger(XmlAction.class)
 
     /** The Groovy class compiled from the script transformed from the XML actions text using the FTL template. */
     protected final Class groovyClass
@@ -61,7 +64,7 @@ class XmlAction {
         }
     }
 
-    protected String makeGroovyString(ExecutionContextFactoryImpl ecfi, FtlNodeWrapper ftlNode, String location) {
+    protected static String makeGroovyString(ExecutionContextFactoryImpl ecfi, FtlNodeWrapper ftlNode, String location) {
         // transform XML to groovy
         String groovyText = null
         InputStream xmlStream = null

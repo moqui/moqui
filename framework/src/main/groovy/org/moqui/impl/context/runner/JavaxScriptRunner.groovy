@@ -24,8 +24,11 @@ import javax.script.SimpleBindings
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class JavaxScriptRunner implements ScriptRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(JavaxScriptRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(JavaxScriptRunner.class)
 
     protected ScriptEngineManager mgr = new ScriptEngineManager();
 
@@ -56,7 +59,7 @@ class JavaxScriptRunner implements ScriptRunner {
         Bindings bindings = new SimpleBindings()
         for (Map.Entry ce in ec.getContext()) bindings.put((String) ce.getKey(), ce.getValue())
 
-        Object result = null
+        Object result
         if (engine instanceof Compilable) {
             // cache the CompiledScript
             CompiledScript script = (CompiledScript) scriptLocationCache.get(location)

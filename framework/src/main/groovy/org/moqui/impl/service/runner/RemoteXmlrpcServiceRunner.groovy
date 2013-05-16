@@ -15,7 +15,6 @@ import org.apache.xmlrpc.client.XmlRpcClientConfigImpl
 import org.apache.xmlrpc.client.XmlRpcClient
 import org.apache.xmlrpc.client.XmlRpcCommonsTransportFactory
 
-import org.moqui.context.ExecutionContext
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
@@ -28,8 +27,6 @@ public class RemoteXmlrpcServiceRunner implements ServiceRunner {
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
-        ExecutionContext ec = sfi.ecfi.getExecutionContext()
-
         String location = sd.serviceNode."@location"
         String method = sd.serviceNode."@method"
         if (!location) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no location specified.")

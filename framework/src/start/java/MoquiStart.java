@@ -277,8 +277,7 @@ public class MoquiStart extends ClassLoader {
 
         String tempName = je.getName().replace('/', '_') + ".";
         File tempDir = new File("execwartmp");
-        tempDir.mkdir();
-        tempDir.deleteOnExit();
+        if (tempDir.mkdir()) tempDir.deleteOnExit();
         File file = File.createTempFile("moqui_temp", tempName, tempDir);
         file.deleteOnExit();
         BufferedOutputStream os = null;

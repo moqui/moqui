@@ -17,8 +17,11 @@ import org.moqui.impl.service.ServiceRunner
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ContextStack
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class ScriptServiceRunner implements ServiceRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ScriptServiceRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ScriptServiceRunner.class)
 
     protected ServiceFacadeImpl sfi = null
 
@@ -42,7 +45,7 @@ public class ScriptServiceRunner implements ServiceRunner {
             Map<String, Object> autoResult = new HashMap()
             ec.context.put("result", autoResult)
 
-            Object result = ec.resource.runScriptInCurrentContext(sd.serviceNode."@location", sd.serviceNode."@method")
+            Object result = ec.resource.runScriptInCurrentContext((String) sd.serviceNode."@location", (String) sd.serviceNode."@method")
 
             if (result instanceof Map) {
                 return (Map<String, Object>) result

@@ -20,15 +20,12 @@ public class ContextBinding extends Binding {
 
     @Override
     public Object getVariable(String name) {
-        Object result = getVariables().get(name);
-
         // NOTE: this code is part of the original Groovy groovy.lang.Binding.getVariable() method and leaving it out
         //     is the reason to override this method:
         //if (result == null && !variables.containsKey(name)) {
         //    throw new MissingPropertyException(name, this.getClass());
         //}
-
-        return result;
+        return getVariables().get(name);
     }
 
     @Override

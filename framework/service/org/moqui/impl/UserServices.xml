@@ -87,7 +87,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </if>
 
                 <script>
-                    def token = new org.apache.shiro.authc.UsernamePasswordToken(userAccount.username, oldPassword)
+                    def token = new org.apache.shiro.authc.UsernamePasswordToken((String) userAccount.username, (String) oldPassword)
                     def info = new org.apache.shiro.authc.SimpleAuthenticationInfo(username, userAccount.currentPassword,
                             userAccount.passwordSalt ? new org.apache.shiro.util.SimpleByteSource((String) userAccount.passwordSalt) : null,
                             "moquiRealm")

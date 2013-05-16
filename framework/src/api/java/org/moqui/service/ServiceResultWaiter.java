@@ -59,17 +59,13 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * Returns the status of the service.
      * @return int Status code
      */
-    public synchronized int status() {
-        return this.status;
-    }
+    public synchronized int status() { return this.status; }
 
     /**
      * If the service has completed return true
      * @return boolean
      */
-    public synchronized boolean isCompleted() {
-        return completed;
-    }
+    public synchronized boolean isCompleted() { return completed; }
 
     /**
      * Returns the exception which was thrown or null if none
@@ -97,13 +93,11 @@ public class ServiceResultWaiter implements ServiceResultReceiver {
      * Waits for the service to complete
      * @return Map
      */
-    public synchronized Map<String, Object> waitForResult() {
-        return this.waitForResult(10);
-    }
+    public synchronized Map<String, Object> waitForResult() { return this.waitForResult(10); }
 
     /**
      * Waits for the service to complete, check the status every n milliseconds
-     * @param milliseconds
+     * @param milliseconds Time in milliseconds to wait
      * @return Map
      */
     public synchronized Map<String, Object> waitForResult(long milliseconds) {

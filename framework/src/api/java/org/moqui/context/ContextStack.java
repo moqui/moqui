@@ -16,7 +16,7 @@ import java.util.*;
 public class ContextStack implements Map<Object, Object> {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ContextStack.class);
 
-    protected Deque<Deque<Map<Object,Object>>> contextStack = new LinkedList<Deque<Map<Object,Object>>>();
+    protected final Deque<Deque<Map<Object,Object>>> contextStack = new LinkedList<Deque<Map<Object,Object>>>();
     protected Deque<Map<Object,Object>> stackList = new LinkedList<Map<Object,Object>>();
     protected Map<Object,Object> firstMap = null;
 

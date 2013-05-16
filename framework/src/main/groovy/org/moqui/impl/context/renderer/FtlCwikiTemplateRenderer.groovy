@@ -48,7 +48,7 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
         Template theTemplate = (Template) templateFtlLocationCache.get(location)
         if (theTemplate) return theTemplate
 
-        Template newTemplate = null
+        Template newTemplate
         try {
             StringWriter cwikiWriter = new StringWriter()
             HtmlDocumentBuilder builder = new HtmlDocumentBuilder(cwikiWriter)

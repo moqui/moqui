@@ -98,9 +98,9 @@ class ServiceDefinition {
                 mergeParameter(outParameters, parameterNode)
 
         // replace the in-parameters and out-parameters Nodes for the service
-        if (serviceNode."in-parameters") serviceNode.remove(serviceNode."in-parameters"[0])
+        if (serviceNode."in-parameters") serviceNode.remove((Node) serviceNode."in-parameters"[0])
         serviceNode.append(inParameters)
-        if (serviceNode."out-parameters") serviceNode.remove(serviceNode."out-parameters"[0])
+        if (serviceNode."out-parameters") serviceNode.remove((Node) serviceNode."out-parameters"[0])
         serviceNode.append(outParameters)
 
         if (logger.traceEnabled) logger.trace("After merge for service [${getServiceName()}] node is:\n${FtlNodeWrapper.prettyPrintNode(serviceNode)}")
@@ -146,7 +146,7 @@ class ServiceDefinition {
         }
     }
 
-    void mergeParameter(Node parametersNode, Node overrideParameterNode) {
+    static void mergeParameter(Node parametersNode, Node overrideParameterNode) {
         Node baseParameterNode = mergeParameter(parametersNode, (String) overrideParameterNode."@name",
                 overrideParameterNode.attributes())
         // merge description, subtype, ParameterValidations
@@ -159,7 +159,7 @@ class ServiceDefinition {
         }
     }
 
-    Node mergeParameter(Node parametersNode, String parameterName, Map attributeMap) {
+    static Node mergeParameter(Node parametersNode, String parameterName, Map attributeMap) {
         Node baseParameterNode = (Node) parametersNode."parameter".find({ it."@name" == parameterName })
         if (baseParameterNode == null) baseParameterNode = parametersNode.appendNode("parameter", [name:parameterName])
         baseParameterNode.attributes().putAll(attributeMap)
@@ -563,6 +563,7 @@ class ServiceDefinition {
             try {
                 new BigInteger(pv as String)
             } catch (NumberFormatException e) {
+                logger.trace("Adding error message for NumberFormatException for BigInteger parse: ${e.toString()}")
                 eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is not a whole (integer) number.", null)
                 return false
             }
@@ -571,6 +572,7 @@ class ServiceDefinition {
             try {
                 new BigDecimal(pv as String)
             } catch (NumberFormatException e) {
+                logger.trace("Adding error message for NumberFormatException for BigDecimal parse: ${e.toString()}")
                 eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is not a decimal number.", null)
                 return false
             }

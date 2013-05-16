@@ -53,7 +53,7 @@ class ScreenDefinition {
 
         // parameter
         for (Node parameterNode in screenNode."parameter")
-            parameterByName.put(parameterNode."@name", new ParameterItem(parameterNode, location))
+            parameterByName.put((String) parameterNode."@name", new ParameterItem(parameterNode, location))
         // prep always-actions
         if (screenNode."always-actions") {
             alwaysActions = new XmlAction(sfi.ecfi, (Node) screenNode."always-actions"[0], location + ".always_actions")

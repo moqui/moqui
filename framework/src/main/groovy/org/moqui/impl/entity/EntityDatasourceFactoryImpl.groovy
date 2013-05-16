@@ -19,12 +19,14 @@ import javax.naming.Context
 import javax.naming.InitialContext
 import javax.naming.NamingException
 import javax.sql.DataSource
-import javax.sql.XADataSource
 
 import org.moqui.entity.*
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDatasourceFactoryImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDatasourceFactoryImpl.class)
 
     protected EntityFacadeImpl efi
     protected Node datasourceNode
@@ -86,7 +88,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
         } else if (datasourceNode."inline-jdbc") {
             Node inlineJdbc = datasourceNode."inline-jdbc"[0]
             Node xaProperties = inlineJdbc."xa-properties"[0]
-            Node database = efi.getDatabaseNode(datasourceNode."@group-name")
+            Node database = efi.getDatabaseNode((String) datasourceNode."@group-name")
 
             // special thing for embedded derby, just set an system property; for derby.log, etc
             if (datasourceNode."@database-conf-name" == "derby") {
@@ -123,12 +125,12 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 ads = ds
             } else {
                 AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
-                ds.setUniqueResourceName(datasourceNode."@group-name")
+                ds.setUniqueResourceName((String) datasourceNode."@group-name")
                 String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
                 ds.setDriverClassName(driver)
-                ds.setUrl(tenantDataSource ? tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
-                ds.setUser(tenantDataSource ? tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
-                ds.setPassword(tenantDataSource ? tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
+                ds.setUrl(tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
+                ds.setUser(tenantDataSource ? (String) tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
+                ds.setPassword(tenantDataSource ? (String) tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
 
                 ads = ds
             }
@@ -148,9 +150,9 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
             if (inlineJdbc."@pool-time-wait") ads.setBorrowConnectionTimeout(inlineJdbc."@pool-time-wait" as int)
 
             if (inlineJdbc."@pool-test-query") {
-                ads.setTestQuery(inlineJdbc."@pool-test-query")
+                ads.setTestQuery((String) inlineJdbc."@pool-test-query")
             } else if (database."@default-test-query") {
-                ads.setTestQuery(database."@default-test-query")
+                ads.setTestQuery((String) database."@default-test-query")
             }
 
             this.dataSource = ads
