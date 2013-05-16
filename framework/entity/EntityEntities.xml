@@ -136,6 +136,14 @@ This Work includes contributions authored by David E. Jones, not as a
             and can be used in EntityCondition passed into the EntityFacade.findDataDocuments() method.</description></field>
         <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
+    <entity entity-name="DataDocumentRelAlias" package-name="moqui.entity.document">
+        <field name="dataDocumentId" type="id" is-pk="true"/>
+        <field name="relationshipName" type="text-medium" is-pk="true"><description>The name of a relationship used in
+            any fieldPath to be aliased in the output document.</description></field>
+        <field name="documentAlias" type="text-medium"><description>Alias to put in document output instead of the full
+            relationship name.</description></field>
+        <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
+    </entity>
     <entity entity-name="DataDocumentCondition" package-name="moqui.entity.document">
         <description>This is a very simple sort of condition to constrain data document output.</description>
         <field name="dataDocumentId" type="id" is-pk="true"/>

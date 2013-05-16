@@ -44,6 +44,7 @@ class EntityDataDocument {
                 .condition("dataDocumentId", dataDocumentId).useCache(true).one()
         if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
         EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
+        EntityList dataDocumentRelAliasList = dataDocument.findRelated("moqui.entity.document.DataDocumentRelAlias", null, null, true, false)
         EntityList dataDocumentConditionList = dataDocument.findRelated("moqui.entity.document.DataDocumentCondition", null, null, true, false)
 
         String primaryEntityName = dataDocument.primaryEntityName
@@ -56,6 +57,11 @@ class EntityDataDocument {
         populateFieldTreeAndAliasPathMap(dataDocumentFieldList, primaryPkFieldNames, fieldTree, fieldAliasPathMap)
         // logger.warn("=========== ${dataDocumentId} fieldTree=${fieldTree}")
         // logger.warn("=========== ${dataDocumentId} fieldAliasPathMap=${fieldAliasPathMap}")
+
+        // make the relationship alias Map
+        Map relationshipAliasMap = [:]
+        for (EntityValue dataDocumentRelAlias in dataDocumentRelAliasList)
+            relationshipAliasMap.put(dataDocumentRelAlias.relationshipName, dataDocumentRelAlias.documentAlias)
 
         // build the query condition for the primary entity and all related entities
         EntityFind mainFind = efi.makeFind(primaryEntityName)
@@ -141,7 +147,7 @@ class EntityDataDocument {
                 }
 
                 // recursively add List of Maps for each related entity
-                populateDataDocRelatedMap(ev, docMap, primaryEd, fieldTree, false)
+                populateDataDocRelatedMap(ev, docMap, primaryEd, fieldTree, relationshipAliasMap, false)
             }
         } finally {
             mainEli.close()
@@ -188,11 +194,12 @@ class EntityDataDocument {
     }
 
     protected void populateDataDocRelatedMap(EntityValue ev, Map<String, Object> parentDocMap, EntityDefinition parentEd,
-                                             Map fieldTreeCurrent, boolean setFields) {
+                                             Map fieldTreeCurrent, Map relationshipAliasMap, boolean setFields) {
         for (Map.Entry fieldTreeEntry in fieldTreeCurrent.entrySet()) {
             if (fieldTreeEntry.getKey() instanceof String && fieldTreeEntry.getKey() == "_ALIAS") continue
             if (fieldTreeEntry.getValue() instanceof Map) {
                 String relationshipName = fieldTreeEntry.getKey()
+                String relDocumentAlias = relationshipAliasMap.get(relationshipName) ?: relationshipName
                 Map fieldTreeChild = (Map) fieldTreeEntry.getValue()
 
                 Node relationshipNode = parentEd.getRelationshipNode(relationshipName)
@@ -203,10 +210,10 @@ class EntityDataDocument {
                 boolean recurseSetFields = true
                 if (isOneRelationship) {
                     // we only need a single Map
-                    relatedEntityDocMap = (Map) parentDocMap.get(relationshipName)
+                    relatedEntityDocMap = (Map) parentDocMap.get(relDocumentAlias)
                     if (relatedEntityDocMap == null) {
                         relatedEntityDocMap = [:]
-                        parentDocMap.put(relationshipName, relatedEntityDocMap)
+                        parentDocMap.put(relDocumentAlias, relatedEntityDocMap)
                     } else {
                         recurseSetFields = false
                     }
@@ -214,7 +221,7 @@ class EntityDataDocument {
                     // we need a List of Maps
 
                     // see if there is a Map in the List in the matching entry
-                    List<Map> relatedEntityDocList = (List<Map>) parentDocMap.get(relationshipName)
+                    List<Map> relatedEntityDocList = (List<Map>) parentDocMap.get(relDocumentAlias)
                     if (relatedEntityDocList != null) {
                         for (Map candidateMap in relatedEntityDocList) {
                             boolean allMatch = true
@@ -239,7 +246,7 @@ class EntityDataDocument {
                         // no matching Map? create a new one... and it will get populated in the recursive call
                         if (relatedEntityDocList == null) {
                             relatedEntityDocList = []
-                            parentDocMap.put(relationshipName, relatedEntityDocList)
+                            parentDocMap.put(relDocumentAlias, relatedEntityDocList)
                         }
 
                         relatedEntityDocMap = [:]
@@ -250,7 +257,7 @@ class EntityDataDocument {
                 }
 
                 // now time to recurse
-                populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, recurseSetFields)
+                populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
             } else {
                 if (setFields) {
                     // set the field
