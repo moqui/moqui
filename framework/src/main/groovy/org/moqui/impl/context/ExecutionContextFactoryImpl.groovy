@@ -41,8 +41,11 @@ import org.moqui.impl.service.camel.MoquiServiceConsumer
 import org.elasticsearch.node.NodeBuilder
 import org.elasticsearch.client.Client
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ExecutionContextFactoryImpl implements ExecutionContextFactory {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ExecutionContextFactoryImpl.class)
     
     protected boolean destroyed = false
     
@@ -420,7 +423,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
         return hcm
     }
-    String getRandomSalt() { return StupidUtilities.getRandomString(8) }
+    static String getRandomSalt() { return StupidUtilities.getRandomString(8) }
     String getPasswordHashType() {
         Node passwordNode = confXmlRoot."user-facade"[0]."password"[0]
         return passwordNode."@encrypt-hash-type" ?: "SHA-256"
@@ -774,7 +777,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    protected void mergeSingleChild(Node baseNode, Node overrideNode, String childNodeName) {
+    protected static void mergeSingleChild(Node baseNode, Node overrideNode, String childNodeName) {
         Node childOverrideNode = (Node) overrideNode[childNodeName][0]
         if (childOverrideNode) {
             Node childBaseNode = (Node) baseNode[childNodeName][0]

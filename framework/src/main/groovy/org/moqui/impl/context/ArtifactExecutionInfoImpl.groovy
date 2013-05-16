@@ -13,7 +13,6 @@ package org.moqui.impl.context
 
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityValue
-import org.moqui.BaseException
 
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
@@ -33,24 +32,24 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         //createdLocation = new Exception("Create AEII location for ${name}, type ${typeEnumId}, action ${actionEnumId}")
     }
 
-    /** @see org.moqui.context.ArtifactExecutionInfo#getName() */
+    @Override
     String getName() { return this.name }
-    /** @see org.moqui.context.ArtifactExecutionInfo#getTypeEnumId() */
+    @Override
     String getTypeEnumId() { return this.typeEnumId }
-    /** @see org.moqui.context.ArtifactExecutionInfo#getActionEnumId() */
+    @Override
     String getActionEnumId() { return this.actionEnumId }
 
-    /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedUserId() */
+    @Override
     String getAuthorizedUserId() { return this.authorizedUserId }
     void setAuthorizedUserId(String authorizedUserId) { this.authorizedUserId = authorizedUserId }
-    /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedAuthzTypeId() */
+    @Override
     String getAuthorizedAuthzTypeId() { return this.authorizedAuthzTypeId }
     void setAuthorizedAuthzTypeId(String authorizedAuthzTypeId) { this.authorizedAuthzTypeId = authorizedAuthzTypeId }
-    /** @see org.moqui.context.ArtifactExecutionInfo#getAuthorizedActionEnumId() */
+    @Override
     String getAuthorizedActionEnumId() { return this.authorizedActionEnumId }
     void setAuthorizedActionEnumId(String authorizedActionEnumId) { this.authorizedActionEnumId = authorizedActionEnumId }
 
-    /** @see org.moqui.context.ArtifactExecutionInfo#isAuthorizationInheritable() */
+    @Override
     boolean isAuthorizationInheritable() { return this.authorizationInheritable }
     void setAuthorizationInheritable(boolean isAuthorizationInheritable) { this.authorizationInheritable = isAuthorizationInheritable}
 

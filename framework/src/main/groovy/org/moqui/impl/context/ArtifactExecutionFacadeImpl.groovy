@@ -27,8 +27,11 @@ import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityCondition
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
 
     // NOTE: these need to be in a Map instead of the DB because Enumeration records may not yet be loaded
     protected final static Map<String, String> artifactTypeDescriptionMap = [AT_XML_SCREEN:"XML Screen",
@@ -76,10 +79,10 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         return en
     }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#peek() */
+    @Override
     ArtifactExecutionInfo peek() { return this.artifactExecutionInfoStack.peekFirst() }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#pop() */
+    @Override
     ArtifactExecutionInfo pop() {
         if (this.artifactExecutionInfoStack.size() > 0) {
             return this.artifactExecutionInfoStack.removeFirst()
@@ -89,7 +92,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         }
     }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#push(ArtifactExecutionInfo, boolean) */
+    @Override
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access
@@ -111,10 +114,10 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         this.artifactExecutionInfoStack.addFirst(aeii)
     }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#getStack() */
+    @Override
     Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
 
-    /** @see org.moqui.context.ArtifactExecutionFacade#getHistory() */
+    @Override
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
 
     void setAnonymousAuthorizedAll() {
@@ -158,7 +161,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         String name = resourceAccess.substring(secondColon+1)
 
         return eci.artifactExecutionFacade.isPermitted(username,
-                new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), null, true, true, eci.user.nowTimestamp)
+                new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), null, true, true, nowTimestamp)
     }
 
     boolean isPermitted(String userId, ArtifactExecutionInfoImpl aeii, ArtifactExecutionInfoImpl lastAeii,
@@ -310,7 +313,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         }
                         if (artifactAuthzRecord.filterByDate == "Y") {
                             ef.conditionDate((String) artifactAuthzRecord.filterByDateFromField,
-                                    (String) artifactAuthzRecord.filterByDateThruField, eci.user.nowTimestamp)
+                                    (String) artifactAuthzRecord.filterByDateThruField, nowTimestamp)
                         }
                         EntityList condList = efi.makeFind("moqui.security.ArtifactAuthzRecordCond")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
@@ -432,6 +435,6 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         }
 
         // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact isPermitted got to end for user ${userId} - ${aeii}")
-        return true
+        // return true
     }
 }

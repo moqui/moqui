@@ -15,24 +15,29 @@ import org.moqui.context.L10nFacade
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityFind
 import java.text.NumberFormat
+import java.sql.Date
+import java.sql.Time
 import java.sql.Timestamp
 import org.apache.commons.validator.routines.BigDecimalValidator
 import org.apache.commons.validator.routines.CalendarValidator
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class L10nFacadeImpl implements L10nFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(L10nFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(L10nFacadeImpl.class)
 
     final static BigDecimalValidator bigDecimalValidator = new BigDecimalValidator(false)
     final static CalendarValidator calendarValidator = new CalendarValidator()
 
-    protected ExecutionContextFactoryImpl ecfi
+    protected final ExecutionContextFactoryImpl ecfi
 
     L10nFacadeImpl(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }
 
     protected Locale getLocale() { return ecfi.getExecutionContext().getUser().getLocale() }
     protected TimeZone getTimeZone() { return ecfi.getExecutionContext().getUser().getTimeZone() }
 
-    /** @see org.moqui.context.L10nFacade#getLocalizedMessage(String) */
+    @Override
     public String getLocalizedMessage(String original) {
         if (!original) return ""
         if (original.length() > 255) {
@@ -50,7 +55,7 @@ public class L10nFacadeImpl implements L10nFacade {
         return localizedMessage ? localizedMessage.localized : original
     }
 
-    /** @see org.moqui.context.L10nFacade#formatCurrency(Object, String, int) */
+    @Override
     String formatCurrency(Object amount, String uomId, Integer fractionDigits) {
         if (amount == null) return ""
         if (amount instanceof String) {
@@ -70,44 +75,44 @@ public class L10nFacadeImpl implements L10nFacade {
         return formattedAmount
     }
 
-    /** @see org.moqui.context.L10nFacade#parseTime(String, String) */
-    java.sql.Time parseTime(String input, String format) {
+    @Override
+    Time parseTime(String input, String format) {
         if (!format) format = "HH:mm:ss.SSS"
         Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
         if (cal == null) cal = calendarValidator.validate(input, "HH:mm:ss", getLocale(), getTimeZone())
         if (cal == null) cal = calendarValidator.validate(input, "HH:mm", getLocale(), getTimeZone())
         if (cal == null) cal = calendarValidator.validate(input, "h:mm a", getLocale(), getTimeZone())
         if (cal == null) return null
-        java.sql.Time time = new java.sql.Time(cal.getTimeInMillis())
+        Time time = new Time(cal.getTimeInMillis())
         // logger.warn("============== parseTime input=${input} cal=${cal} long=${cal.getTimeInMillis()} time=${time} time long=${time.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
         return time
     }
-    String formatTime(java.sql.Time input, String format) {
+    String formatTime(Time input, String format) {
         if (!format) format = "HH:mm:ss"
         String timeStr = calendarValidator.format(input, format, getLocale(), getTimeZone())
         // logger.warn("============= formatTime input=${input} timeStr=${timeStr} long=${input.getTime()}")
         return timeStr
     }
 
-    /** @see org.moqui.context.L10nFacade#parseDate(String, String) */
-    java.sql.Date parseDate(String input, String format) {
+    @Override
+    Date parseDate(String input, String format) {
         if (!format) format = "yyyy-MM-dd"
         Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
         if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", getLocale(), getTimeZone())
         if (cal == null) return null
-        java.sql.Date date = new java.sql.Date(cal.getTimeInMillis())
+        Date date = new Date(cal.getTimeInMillis())
         // logger.warn("============== parseDate input=${input} cal=${cal} long=${cal.getTimeInMillis()} date=${date} date long=${date.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
         return date
     }
-    String formatDate(java.sql.Date input, String format) {
+    String formatDate(Date input, String format) {
         if (!format) format = "yyyy-MM-dd"
         String dateStr = calendarValidator.format(input, format, getLocale(), getTimeZone())
         // logger.warn("============= formatDate input=${input} dateStr=${dateStr} long=${input.getTime()}")
         return dateStr
     }
 
-    /** @see org.moqui.context.L10nFacade#parseTimestamp(String, String) */
-    java.sql.Timestamp parseTimestamp(String input, String format) {
+    @Override
+    Timestamp parseTimestamp(String input, String format) {
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS z"
         Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
         // try a couple of other format strings
@@ -124,15 +129,13 @@ public class L10nFacadeImpl implements L10nFacade {
         } catch (NumberFormatException e) {
             return null
         }
-
-        return null
     }
     String formatTimestamp(java.sql.Timestamp input, String format) {
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
 
-    /** @see org.moqui.context.L10nFacade#parseDateTime(String, String) */
+    @Override
     Calendar parseDateTime(String input, String format) {
         return calendarValidator.validate(input, format, getLocale(), getTimeZone())
     }
@@ -140,7 +143,7 @@ public class L10nFacadeImpl implements L10nFacade {
         return calendarValidator.format(input, format, getLocale(), getTimeZone())
     }
 
-    /** @see org.moqui.context.L10nFacade#parseNumber(String, String)  */
+    @Override
     BigDecimal parseNumber(String input, String format) {
         return bigDecimalValidator.validate(input, format, getLocale())
     }
@@ -148,14 +151,14 @@ public class L10nFacadeImpl implements L10nFacade {
         return bigDecimalValidator.format(input, format, getLocale())
     }
 
-    /** @see org.moqui.context.L10nFacade#formatValue(Object, String) */
+    @Override
     String formatValue(Object value, String format) {
         if (!value) return ""
         if (value instanceof String) return value
         if (value instanceof Number) return formatNumber(value, format)
         if (value instanceof Timestamp) return formatTimestamp(value, format)
-        if (value instanceof java.sql.Date) return formatDate(value, format)
-        if (value instanceof java.sql.Time) return formatTime(value, format)
+        if (value instanceof Date) return formatDate(value, format)
+        if (value instanceof Time) return formatTime(value, format)
         if (value instanceof Calendar) return formatDateTime(value, format)
         return value as String
     }

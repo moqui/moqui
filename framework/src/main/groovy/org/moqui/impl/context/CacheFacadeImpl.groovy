@@ -43,10 +43,10 @@ public class CacheFacadeImpl implements CacheFacade {
 
     void destroy() { cacheManager.shutdown() }
 
-    /** @see org.moqui.context.CacheFacade#clearAllCaches() */
+    @Override
     void clearAllCaches() { cacheManager.clearAll() }
 
-    /** @see org.moqui.context.CacheFacade#clearExpiredFromAllCaches() */
+    @Override
     void clearExpiredFromAllCaches() {
         List<String> cacheNames = Arrays.asList(cacheManager.getCacheNames())
         for (String cacheName in cacheNames) {
@@ -55,10 +55,10 @@ public class CacheFacadeImpl implements CacheFacade {
         }
     }
 
-    /** @see org.moqui.context.CacheFacade#clearCachesByPrefix(String) */
+    @Override
     void clearCachesByPrefix(String prefix) { cacheManager.clearAllStartingWith(prefix) }
 
-    /** @see org.moqui.context.CacheFacade#getCache(String) */
+    @Override
     Cache getCache(String cacheName) { return getCacheImpl(cacheName) }
 
     CacheImpl getCacheImpl(String cacheName) {
@@ -91,7 +91,7 @@ public class CacheFacadeImpl implements CacheFacade {
         return ci
     }
 
-    String getEvictionStrategyString(EvictionStrategy es) {
+    static String getEvictionStrategyString(EvictionStrategy es) {
         switch (es) {
             case LEAST_RECENTLY_USED: return "LRU"
             case LEAST_RECENTLY_ADDED: return "LRA"
@@ -125,7 +125,7 @@ public class CacheFacadeImpl implements CacheFacade {
         newCacheConf.setEternal(eternal)
 
         if (cacheElement?."@max-elements") {
-            newCacheConf.setMaxElementsInMemory(Integer.valueOf((String) cacheElement."@max-elements"))
+            newCacheConf.setMaxEntriesLocalHeap(Integer.valueOf((String) cacheElement."@max-elements"))
         }
         String evictionStrategy = cacheElement?."@eviction-strategy"
         if (evictionStrategy) {

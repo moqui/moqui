@@ -11,8 +11,6 @@
  */
 package org.moqui.impl.context
 
-import static org.moqui.context.Cache.EvictionStrategy.*
-
 import java.sql.Timestamp
 
 import org.moqui.context.Cache
@@ -30,29 +28,29 @@ class CacheImpl implements Cache {
 
     Ehcache getInternalCache() { return this.ehcache }
 
-    /** @see org.moqui.context.Cache#getName() */
+    @Override
     String getName() { return this.ehcache.getName() }
 
-    /** @see org.moqui.context.Cache#getExpireTimeIdle() */
+    @Override
     long getExpireTimeIdle() { return this.ehcache.getCacheConfiguration().getTimeToIdleSeconds() }
 
-    /** @see org.moqui.context.Cache#setExpireTimeIdle(long) */
+    @Override
     void setExpireTimeIdle(long expireTime) {
         this.ehcache.getCacheConfiguration().setTimeToIdleSeconds(expireTime)
     }
 
-    /** @see org.moqui.context.Cache#getExpireTimeLive() */
+    @Override
     long getExpireTimeLive() { return this.ehcache.getCacheConfiguration().getTimeToLiveSeconds() }
 
-    /** @see org.moqui.context.Cache#setExpireTimeLive(long) */
+    @Override
     void setExpireTimeLive(long expireTime) {
         this.ehcache.getCacheConfiguration().setTimeToLiveSeconds(expireTime)
     }
 
-    /** @see org.moqui.context.Cache#getMaxElements() */
+    @Override
     int getMaxElements() { return this.ehcache.getCacheConfiguration().getMaxElementsInMemory() }
 
-    /** @see org.moqui.context.Cache#getEvictionStrategy() */
+    @Override
     Cache.EvictionStrategy getEvictionStrategy() {
         MemoryStoreEvictionPolicy policy = this.ehcache.getCacheConfiguration().getMemoryStoreEvictionPolicy()
         if (MemoryStoreEvictionPolicy.LRU.equals(policy)) {
@@ -66,7 +64,7 @@ class CacheImpl implements Cache {
         }
     }
 
-    /** @see org.moqui.context.Cache#setMaxElements(int, EvictionStrategy) */
+    @Override
     void setMaxElements(int maxSize, Cache.EvictionStrategy strategy) {
         this.ehcache.getCacheConfiguration().setMaxElementsInMemory(maxSize)
         
@@ -85,7 +83,7 @@ class CacheImpl implements Cache {
         }
     }
 
-    /** @see org.moqui.context.Cache#get(Serializable) */
+    @Override
     Object get(Serializable key) {
         if (key == null) return null
         Element element = this.ehcache.get(key)
@@ -103,7 +101,7 @@ class CacheImpl implements Cache {
         return this.ehcache.get(key)
     }
 
-    /** @see org.moqui.context.Cache#put(Serializable, Object) */
+    @Override
     Object put(Serializable key, Object value) {
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
@@ -115,7 +113,7 @@ class CacheImpl implements Cache {
         }
     }
 
-    /** @see org.moqui.context.Cache#remove(Serializable) */
+    @Override
     Object remove(Serializable key) {
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
@@ -129,7 +127,7 @@ class CacheImpl implements Cache {
 
     void removeElement(Element el) { this.ehcache.removeElement(el) }
 
-    /** @see org.moqui.context.Cache#keySet() */
+    @Override
     Set<Serializable> keySet() {
         List keyList = this.ehcache.getKeysWithExpiryCheck()
         Set newKeySet = new HashSet()
@@ -152,7 +150,7 @@ class CacheImpl implements Cache {
         return elementInfoList
     }
 
-    /** @see org.moqui.context.Cache#hasExpired(String) */
+    @Override
     boolean hasExpired(Serializable key) {
         // use quiet get to not update stats as this isn't an explicit user get
         Element originalElement = this.ehcache.getQuiet(key)
@@ -170,7 +168,7 @@ class CacheImpl implements Cache {
         }
     }
 
-    /** @see org.moqui.context.Cache#containsKey(String) */
+    @Override
     boolean containsKey(Serializable key) {
         if (this.ehcache.isKeyInCache(key)) {
             Element element = this.ehcache.get(key)
@@ -187,33 +185,33 @@ class CacheImpl implements Cache {
         }
     }
 
-    /** @see org.moqui.context.Cache#isEmpty() */
+    @Override
     boolean isEmpty() { return (this.ehcache.getSize() > 0) }
 
-    /** @see org.moqui.context.Cache#size() */
+    @Override
     int size() { return this.ehcache.getSize() }
 
-    /** @see org.moqui.context.Cache#clear() */
+    @Override
     void clear() { this.ehcache.removeAll() }
 
-    /** @see org.moqui.context.Cache#clearExpired() */
+    @Override
     void clearExpired() { this.ehcache.evictExpiredElements() }
 
-    /** @see org.moqui.context.Cache#getHitCount() */
+    @Override
     long getHitCount() { return this.ehcache.getStatistics().getCacheHits() }
 
-    /** @see org.moqui.context.Cache#getMissCountNotFound() */
+    @Override
     long getMissCountNotFound() { return this.ehcache.getSampledCacheStatistics().getCacheMissNotFoundMostRecentSample() }
 
-    /** @see org.moqui.context.Cache#getMissCountExpired() */
+    @Override
     long getMissCountExpired() { return this.ehcache.getSampledCacheStatistics().getCacheMissExpiredMostRecentSample() }
 
-    /** @see org.moqui.context.Cache#getMissCountTotal() */
+    @Override
     long getMissCountTotal() { return this.ehcache.getStatistics().getCacheMisses() }
 
-    /** @see org.moqui.context.Cache#getRemoveCount() */
+    @Override
     long getRemoveCount() { return this.ehcache.getSampledCacheStatistics().getCacheElementRemovedMostRecentSample() }
 
-    /** @see org.moqui.context.Cache#clearCounters() */
+    @Override
     void clearCounters() { this.ehcache.clearStatistics() }
 }

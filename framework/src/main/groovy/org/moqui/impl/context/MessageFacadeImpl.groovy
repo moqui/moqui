@@ -14,8 +14,11 @@ package org.moqui.impl.context
 import org.moqui.context.MessageFacade
 import org.moqui.context.ValidationError
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class MessageFacadeImpl implements MessageFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MessageFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(MessageFacadeImpl.class)
 
     protected List<String> messageList = new LinkedList<String>()
     protected List<String> errorList = new LinkedList<String>()
@@ -23,7 +26,7 @@ public class MessageFacadeImpl implements MessageFacade {
 
     MessageFacadeImpl() { }
 
-    /** @see org.moqui.context.MessageFacade#getMessages() */
+    @Override
     List<String> getMessages() { return this.messageList }
     String getMessagesString() {
         StringBuilder messageBuilder = new StringBuilder()
@@ -32,11 +35,11 @@ public class MessageFacadeImpl implements MessageFacade {
     }
     void addMessage(String message) { if (message) this.messageList.add(message) }
 
-    /** @see org.moqui.context.MessageFacade#getErrors() */
+    @Override
     List<String> getErrors() { return this.errorList }
     void addError(String error) { if (error) this.errorList.add(error) }
 
-    /** @see org.moqui.context.MessageFacade#getValidationErrors() */
+    @Override
     List<ValidationError> getValidationErrors() { return this.validationErrorList }
     void addValidationError(String form, String field, String serviceName, String message, Throwable nested) {
         this.validationErrorList.add(new ValidationError(form, field, serviceName, message, nested))

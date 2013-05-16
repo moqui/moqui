@@ -30,9 +30,12 @@ import org.moqui.impl.service.ServiceJsonRpcDispatcher
 import org.moqui.impl.service.ServiceXmlRpcDispatcher
 import org.moqui.impl.StupidWebUtilities
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 /** This class is a facade to easily get information from and about the web context. */
 class WebFacadeImpl implements WebFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(WebFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(WebFacadeImpl.class)
 
     protected ExecutionContextImpl eci
     protected String webappMoquiName
@@ -89,7 +92,7 @@ class WebFacadeImpl implements WebFacade {
             FileItemFactory factory = makeDiskFileItemFactory(request.session.getServletContext())
             ServletFileUpload upload = new ServletFileUpload(factory)
 
-            List<FileItem> items = upload.parseRequest(request)
+            List<FileItem> items = (List<FileItem>) upload.parseRequest(request)
             for (FileItem item in items) {
                 if (item.isFormField()) {
                     multiPartParameters.put(item.getFieldName(), item.getString())
@@ -128,14 +131,15 @@ class WebFacadeImpl implements WebFacade {
                     (String) request.getCharacterEncoding() ?: "UTF-8")))
             if (jsonObj instanceof Map) {
                 jsonParameters = new HashMap()
-                for (Map.Entry<String, Object> entry in (Map) jsonObj) {
+                Map<String, Object> jsonMap = (Map<String, Object>) jsonObj
+                for (Map.Entry<String, Object> entry in jsonMap) {
                     jsonParameters.put(entry.getKey(), entry.getValue())
                 }
             }
         }
     }
 
-    ExecutionContextImpl getEci() { eci }
+    // ExecutionContextImpl getEci() { eci }
     void runFirstHitInVisitActions() {
         WebappInfo wi = eci.ecfi.getWebappInfo(webappMoquiName)
         if (wi.firstHitInVisitActions) wi.firstHitInVisitActions.run(eci)
@@ -172,7 +176,7 @@ class WebFacadeImpl implements WebFacade {
         declaredPathParameters.put(name, value)
     }
 
-    /** @see org.moqui.context.WebFacade#getParameters() */
+    @Override
     Map<String, Object> getParameters() {
         // NOTE: no blocking in these methods because the WebFacadeImpl is created for each thread
 
@@ -191,17 +195,17 @@ class WebFacadeImpl implements WebFacade {
         return parameters
     }
 
-    /** @see org.moqui.context.WebFacade#getRequest() */
+    @Override
     HttpServletRequest getRequest() { return request }
 
-    /** @see org.moqui.context.WebFacade#getRequestAttributes() */
+    @Override
     Map<String, Object> getRequestAttributes() {
         if (requestAttributes != null) return requestAttributes
         requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
         return requestAttributes
     }
 
-    /** @see org.moqui.context.WebFacade#getRequestParameters() */
+    @Override
     Map<String, Object> getRequestParameters() {
         if (requestParameters != null) return requestParameters
 
@@ -218,33 +222,33 @@ class WebFacadeImpl implements WebFacade {
         return requestParameters
     }
 
-    /** @see org.moqui.context.WebFacade#getResponse() */
+    @Override
     HttpServletResponse getResponse() { return response }
 
-    /** @see org.moqui.context.WebFacade#getSession() */
+    @Override
     HttpSession getSession() { return request.getSession() }
 
-    /** @see org.moqui.context.WebFacade#getSessionAttributes() */
+    @Override
     Map<String, Object> getSessionAttributes() {
         if (sessionAttributes) return sessionAttributes
         sessionAttributes = new StupidWebUtilities.SessionAttributeMap(request.getSession())
         return sessionAttributes
     }
 
-    /** @see org.moqui.context.WebFacade#getServletContext() */
+    @Override
     ServletContext getServletContext() { return request.session.getServletContext() }
 
-    /** @see org.moqui.context.WebFacade#getApplicationAttributes() */
+    @Override
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
         applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.session.getServletContext())
         return applicationAttributes
     }
 
-    /** @see org.moqui.context.WebFacade#getErrorParameters() */
+    @Override
     Map<String, Object> getErrorParameters() { return errorParameters }
 
-    /** @see org.moqui.context.WebFacade#sendJsonResponse(Object) */
+    @Override
     void sendJsonResponse(Object responseObj) {
         JsonBuilder jb = new JsonBuilder()
         if (eci.getMessage().hasError()) {

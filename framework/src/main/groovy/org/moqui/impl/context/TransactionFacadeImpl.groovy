@@ -36,8 +36,11 @@ import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
 import org.moqui.BaseException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class TransactionFacadeImpl implements TransactionFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(TransactionFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 

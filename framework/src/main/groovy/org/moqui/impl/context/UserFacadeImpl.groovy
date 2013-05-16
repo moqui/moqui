@@ -32,8 +32,11 @@ import org.moqui.entity.EntityList
 import org.moqui.impl.entity.EntityListImpl
 import org.apache.shiro.subject.support.DefaultSubjectContext
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class UserFacadeImpl implements UserFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(UserFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(UserFacadeImpl.class)
     protected final static Set<String> allUserGroupIdOnly = new HashSet(["ALL_USERS"])
 
     protected ExecutionContextImpl eci
@@ -211,7 +214,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /** @see org.moqui.context.UserFacade#getLocale() */
+    @Override
     Locale getLocale() {
         Locale locale = null
         if (this.username) {
@@ -225,7 +228,7 @@ class UserFacadeImpl implements UserFacade {
         return (locale ?: (request ? request.getLocale() : Locale.getDefault()))
     }
 
-    /** @see org.moqui.context.UserFacade#setLocale(Locale) */
+    @Override
     void setLocale(Locale locale) {
         if (this.username) {
             boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
@@ -244,7 +247,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /** @see org.moqui.context.UserFacade#getTimeZone() */
+    @Override
     TimeZone getTimeZone() {
         TimeZone tz = null
         if (this.username) {
@@ -265,7 +268,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /** @see org.moqui.context.UserFacade#setTimeZone(TimeZone) */
+    @Override
     void setTimeZone(TimeZone tz) {
         if (this.username) {
             boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
@@ -284,10 +287,10 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /** @see org.moqui.context.UserFacade#getCurrencyUomId() */
+    @Override
     String getCurrencyUomId() { return this.username ? this.userAccount.currencyUomId : internalCurrencyUomId }
 
-    /** @see org.moqui.context.UserFacade#setCurrencyUomId(String) */
+    @Override
     void setCurrencyUomId(String uomId) {
         if (this.username) {
             boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
@@ -331,13 +334,13 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /** @see org.moqui.context.UserFacade#getNowTimestamp() */
+    @Override
     Timestamp getNowTimestamp() {
         // NOTE: review Timestamp and nowTimestamp use, have things use this by default (except audit/etc where actual date/time is needed
         return this.effectiveTime ? this.effectiveTime : new Timestamp(System.currentTimeMillis())
     }
 
-    /** @see org.moqui.context.UserFacade#setEffectiveTime(Timestamp) */
+    @Override
     void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
     boolean loginUser(String username, String password, String tenantId) {
@@ -512,17 +515,17 @@ class UserFacadeImpl implements UserFacade {
         return internalUserAccount
     }
 
-    /** @see org.moqui.context.UserFacade#getVisitUserId() */
+    @Override
     String getVisitUserId() { return visitId ? getVisit().userId : null }
 
-    /** @see org.moqui.context.UserFacade#getVisitId() */
+    @Override
     String getVisitId() { return visitId }
 
-    /** @see org.moqui.context.UserFacade#getVisit() */
+    @Override
     EntityValue getVisit() {
         if (!visitId) return null
 
-        EntityValue vst
+        EntityValue vst = null
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
             vst = eci.getEntity().makeFind("moqui.server.Visit").condition("visitId", visitId).useCache(true).one()

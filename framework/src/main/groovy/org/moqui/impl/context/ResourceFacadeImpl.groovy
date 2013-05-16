@@ -33,8 +33,11 @@ import javax.script.ScriptEngineManager
 
 import org.moqui.context.*
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class ResourceFacadeImpl implements ResourceFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ResourceFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ResourceFacadeImpl.class)
 
     protected final MimetypesFileTypeMap mimetypesFileTypeMap = new MimetypesFileTypeMap()
 
@@ -72,10 +75,10 @@ public class ResourceFacadeImpl implements ResourceFacade {
         // Setup resource reference classes
         for (Node rrNode in ecfi.confXmlRoot."resource-facade"[0]."resource-reference") {
             try {
-                Class rrClass = Thread.currentThread().getContextClassLoader().loadClass(rrNode."@class")
-                resourceReferenceClasses.put(rrNode."@scheme", rrClass)
+                Class rrClass = Thread.currentThread().getContextClassLoader().loadClass((String) rrNode."@class")
+                resourceReferenceClasses.put((String) rrNode."@scheme", rrClass)
             } catch (ClassNotFoundException e) {
-                logger.info("Class [${rrNode.'@class'}] not found outside of components, will retry after.")
+                logger.info("Class [${rrNode.'@class'}] not found outside of components, will retry after. (${e.toString()})")
             }
         }
         
@@ -87,27 +90,29 @@ public class ResourceFacadeImpl implements ResourceFacade {
             if (resourceReferenceClasses.containsKey(rrNode."@scheme")) continue
 
             try {
-                Class rrClass = Thread.currentThread().getContextClassLoader().loadClass(rrNode."@class")
-                resourceReferenceClasses.put(rrNode."@scheme", rrClass)
+                Class rrClass = Thread.currentThread().getContextClassLoader().loadClass((String) rrNode."@class")
+                resourceReferenceClasses.put((String) rrNode."@scheme", rrClass)
             } catch (ClassNotFoundException e) {
-                logger.warn("Class [${rrNode.'@class'}] not found even with components, skipping.")
+                logger.warn("Class [${rrNode.'@class'}] not found even with components, skipping. (${e.toString()})")
             }
         }
 
         // Setup template renderers
         for (Node templateRendererNode in ecfi.confXmlRoot."resource-facade"[0]."template-renderer") {
-            TemplateRenderer tr = (TemplateRenderer) Thread.currentThread().getContextClassLoader().loadClass(templateRendererNode."@class").newInstance()
-            templateRenderers.put(templateRendererNode."@extension", tr.init(ecfi))
+            TemplateRenderer tr = (TemplateRenderer) Thread.currentThread().getContextClassLoader()
+                    .loadClass((String) templateRendererNode."@class").newInstance()
+            templateRenderers.put((String) templateRendererNode."@extension", tr.init(ecfi))
         }
 
         // Setup script runners
         for (Node scriptRunnerNode in ecfi.confXmlRoot."resource-facade"[0]."script-runner") {
             if (scriptRunnerNode."@class") {
-                ScriptRunner sr = (ScriptRunner) Thread.currentThread().getContextClassLoader().loadClass(scriptRunnerNode."@class").newInstance()
-                scriptRunners.put(scriptRunnerNode."@extension", sr.init(ecfi))
+                ScriptRunner sr = (ScriptRunner) Thread.currentThread().getContextClassLoader()
+                        .loadClass((String) scriptRunnerNode."@class").newInstance()
+                scriptRunners.put((String) scriptRunnerNode."@extension", sr.init(ecfi))
             } else if (scriptRunnerNode."@engine") {
-                ScriptRunner sr = new JavaxScriptRunner(scriptRunnerNode."@engine").init(ecfi)
-                scriptRunners.put(scriptRunnerNode."@extension", sr)
+                ScriptRunner sr = new JavaxScriptRunner((String) scriptRunnerNode."@engine").init(ecfi)
+                scriptRunners.put((String) scriptRunnerNode."@extension", sr)
             } else {
                 logger.error("Configured script-runner for extension [${scriptRunnerNode."@extension"}] must have either a class or engine attribute and has neither.")
             }
@@ -119,14 +124,14 @@ public class ResourceFacadeImpl implements ResourceFacade {
                 if (repositoryNode."@type" == "davex") {
                     Jcr2davRepositoryFactory j2drf = new Jcr2davRepositoryFactory()
                     Repository repository = j2drf.getRepository(["org.apache.jackrabbit.spi2davex.uri":(String) repositoryNode."@location"])
-                    contentRepositories.put(repositoryNode."@name", repository)
+                    contentRepositories.put((String) repositoryNode."@name", repository)
                 } else if (repositoryNode."@type" == "rmi") {
                     Repository repository = new URLRemoteRepository((String) repositoryNode."@location")
-                    contentRepositories.put(repositoryNode."@name", repository)
+                    contentRepositories.put((String) repositoryNode."@name", repository)
                 } else if (repositoryNode."@type" == "jndi") {
                     InitialContext ic = new InitialContext()
                     Repository repository = (Repository) ic.lookup((String) repositoryNode."@location")
-                    contentRepositories.put(repositoryNode."@name", repository)
+                    contentRepositories.put((String) repositoryNode."@name", repository)
                 } else if (repositoryNode."@type" == "local") {
                     throw new IllegalArgumentException("The local type content repository is not yet supported, pending research into API support for the concept")
                 }
@@ -171,7 +176,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         SimpleCredentials credentials = new SimpleCredentials(repositoryNode."@username" ?: "anonymous",
                 (repositoryNode."@password" ?: "").toCharArray())
         if (repositoryNode."@workspace") {
-            newSession = rep.login(credentials, repositoryNode."@workspace")
+            newSession = rep.login(credentials, (String) repositoryNode."@workspace")
         } else {
             newSession = rep.login(credentials)
         }
@@ -180,7 +185,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return newSession
     }
 
-    /** @see org.moqui.context.ResourceFacade#getLocationReference(String) */
+    @Override
     ResourceReference getLocationReference(String location) {
         if (location == null) return null
 
@@ -205,7 +210,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return rr
     }
 
-    /** @see org.moqui.context.ResourceFacade#getLocationStream(String) */
+    @Override
     InputStream getLocationStream(String location) {
         ResourceReference rr = getLocationReference(location)
         if (rr == null) return null
@@ -248,7 +253,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
-    /** @see org.moqui.context.ResourceFacade#renderTemplateInCurrentContext(String, Writer) */
+    @Override
     void renderTemplateInCurrentContext(String location, Writer writer) {
         TemplateRenderer tr = getTemplateRendererByLocation(location)
         if (tr != null) {
@@ -277,7 +282,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return tr
     }
 
-    /** @see org.moqui.context.ResourceFacade#runScriptInCurrentContext(String, String) */
+    @Override
     Object runScriptInCurrentContext(String location, String method) {
         ExecutionContext ec = ecfi.executionContext
         String extension = location.substring(location.lastIndexOf("."))
@@ -287,7 +292,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
             return sr.run(location, method, ec)
         } else {
             // see if the extension is known
-            ScriptEngine engine = scriptEngineManager.getEngineByExtension()
+            ScriptEngine engine = scriptEngineManager.getEngineByExtension(extension)
             if (engine == null) throw new IllegalArgumentException("Cannot run script [${location}], unknown extension (not in Moqui Conf file, and unkown to Java ScriptEngineManager).")
 
             return JavaxScriptRunner.bindAndRun(location, ec, engine,
@@ -295,7 +300,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
-    /** @see org.moqui.context.ResourceFacade#evaluateCondition(String, String) */
+    @Override
     boolean evaluateCondition(String expression, String debugLocation) {
         if (!expression) return false
         try {
@@ -307,7 +312,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
-    /** @see org.moqui.context.ResourceFacade#evaluateContextField(String, String) */
+    @Override
     Object evaluateContextField(String expression, String debugLocation) {
         if (!expression) return null
         try {
@@ -319,7 +324,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         }
     }
 
-    /** @see org.moqui.context.ResourceFacade#evaluateStringExpand(String, String) */
+    @Override
     String evaluateStringExpand(String inputString, String debugLocation) {
         if (!inputString) return ""
 
@@ -374,7 +379,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return type
     }
 
-    boolean isBinaryContentType(String contentType) {
+    static boolean isBinaryContentType(String contentType) {
         if (!contentType) return false
         if (contentType.startsWith("text/")) return false
         // aside from text/*, a few notable exceptions:

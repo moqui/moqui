@@ -39,7 +39,7 @@ public class LoggerFacadeImpl implements LoggerFacade {
         log(level, message, thrown)
     }
 
-    /** @see org.moqui.context.LoggerFacade#log(int, String, Throwable) */
+    @Override
     public void log(int level, String message, Throwable thrown) {
         switch (level) {
             case TRACE_INT:
@@ -82,7 +82,7 @@ public class LoggerFacadeImpl implements LoggerFacade {
     void warn(String message) { log(WARN_INT, message, null) }
     void error(String message) { log(ERROR_INT, message, null) }
 
-    /** @see org.moqui.context.LoggerFacade#logEnabled(int) */
+    @Override
     public boolean logEnabled(int level) {
         switch (level) {
             case TRACE_INT:

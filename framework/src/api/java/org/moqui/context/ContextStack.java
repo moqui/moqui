@@ -96,14 +96,14 @@ public class ContextStack implements Map<Object, Object> {
         return newStack;
     }
 
-    /** @see java.util.Map#size() */
+    @Override
     public int size() {
         // use the keySet since this gets a set of all unique keys for all Maps in the stack
         Set keys = keySet();
         return keys.size();
     }
 
-    /** @see java.util.Map#isEmpty() */
+    @Override
     public boolean isEmpty() {
         for (Map curMap: stackList) {
             if (!curMap.isEmpty()) return false;
@@ -111,7 +111,7 @@ public class ContextStack implements Map<Object, Object> {
         return true;
     }
 
-    /** @see java.util.Map#containsKey(java.lang.Object) */
+    @Override
     public boolean containsKey(Object key) {
         for (Map curMap: stackList) {
             if (key == null && curMap instanceof Hashtable) continue;
@@ -120,7 +120,7 @@ public class ContextStack implements Map<Object, Object> {
         return false;
     }
 
-    /** @see java.util.Map#containsValue(java.lang.Object) */
+    @Override
     public boolean containsValue(Object value) {
         // this keeps track of keys looked at for values at each level of the stack so that the same key is not
         // considered more than once (the earlier Maps overriding later ones)
@@ -140,7 +140,7 @@ public class ContextStack implements Map<Object, Object> {
         return false;
     }
 
-    /** @see java.util.Map#get(java.lang.Object) */
+    @Override
     public Object get(Object key) {
         // the "context" key always gets a self-reference, effectively the top of the stack
         if ("context".equals(key)) return this;
@@ -164,23 +164,23 @@ public class ContextStack implements Map<Object, Object> {
         }
     }
 
-    /** @see java.util.Map#  */
+    @Override
     public Object put(Object key, Object value) {
         return firstMap.put(key, value);
     }
 
-    /** @see java.util.Map#remove(java.lang.Object) */
+    @Override
     public Object remove(Object key) {
         return firstMap.remove(key);
     }
 
-    /** @see java.util.Map#putAll(java.util.Map) */
+    @Override
     public void putAll(Map<? extends Object, ? extends Object> arg0) { firstMap.putAll(arg0); }
 
-    /** @see java.util.Map#clear() */
+    @Override
     public void clear() { firstMap.clear(); }
 
-    /** @see java.util.Map#keySet() */
+    @Override
     public Set<Object> keySet() {
         Set<Object> resultSet = new HashSet<Object>();
         resultSet.add("context");
@@ -190,7 +190,7 @@ public class ContextStack implements Map<Object, Object> {
         return Collections.unmodifiableSet(resultSet);
     }
 
-    /** @see java.util.Map#values() */
+    @Override
     public Collection<Object> values() {
         Set<Object> keysObserved = new HashSet<Object>();
         List<Object> resultValues = new LinkedList<Object>();
