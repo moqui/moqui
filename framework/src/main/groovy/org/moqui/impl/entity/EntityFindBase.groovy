@@ -31,8 +31,11 @@ import org.moqui.impl.entity.condition.ListCondition
 
 import net.sf.ehcache.Element
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 abstract class EntityFindBase implements EntityFind {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFindBase.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityFindBase.class)
 
     protected final EntityFacadeImpl efi
 
@@ -275,7 +278,7 @@ abstract class EntityFindBase implements EntityFind {
         }
         if (node["having-econditions"]) {
             for (Node havingCond in node["having-econditions"])
-                this.havingCondition(efi.conditionFactory.makeActionCondition(havingCond))
+                this.havingCondition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(havingCond))
         }
 
         // logger.info("TOREMOVE Added findNode\n${node}\n${this.toString()}")

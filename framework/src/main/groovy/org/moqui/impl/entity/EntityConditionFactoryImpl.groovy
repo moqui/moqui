@@ -28,8 +28,11 @@ import org.moqui.impl.entity.condition.ListCondition
 import org.moqui.impl.entity.condition.MapCondition
 import org.moqui.impl.StupidUtilities
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityConditionFactoryImpl implements EntityConditionFactory {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityConditionFactoryImpl.class)
 
     protected final EntityFacadeImpl efi
 
@@ -37,52 +40,52 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         this.efi = efi
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeCondition(EntityCondition, JoinOperator, EntityCondition) */
+    @Override
     EntityCondition makeCondition(EntityCondition lhs, JoinOperator operator, EntityCondition rhs) {
         return new BasicJoinCondition(this, (EntityConditionImplBase) lhs, operator, (EntityConditionImplBase) rhs)
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeCondition(String, ComparisonOperator, Object) */
+    @Override
     EntityCondition makeCondition(String fieldName, ComparisonOperator operator, Object value) {
         return new FieldValueCondition(this, new ConditionField(fieldName), operator, value)
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeConditionToField(String, ComparisonOperator, String) */
+    @Override
     EntityCondition makeConditionToField(String fieldName, ComparisonOperator operator, String toFieldName) {
         return new FieldToFieldCondition(this, new ConditionField(fieldName), operator, new ConditionField(toFieldName))
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeCondition(List<EntityCondition>, JoinOperator) */
+    @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
         if (!conditionList) return null
         return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, operator)
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeCondition(List<EntityCondition>) */
+    @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList) {
         if (!conditionList) return null
         return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, JoinOperator.AND)
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeCondition(Map<String,?>, ComparisonOperator, JoinOperator) */
+    @Override
     EntityCondition makeCondition(Map<String, ?> fieldMap, ComparisonOperator comparisonOperator, JoinOperator joinOperator) {
         if (!fieldMap) return null
         return new MapCondition(this, fieldMap, comparisonOperator, joinOperator)
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeCondition(Map<String,?>) */
+    @Override
     EntityCondition makeCondition(Map<String, ?> fieldMap) {
         if (!fieldMap) return null
         return new MapCondition(this, fieldMap, ComparisonOperator.EQUALS, JoinOperator.AND)
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeConditionDate(String, String, Timestamp) */
+    @Override
     EntityCondition makeConditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp) {
         return new DateCondition(this, fromFieldName, thruFieldName,
                 compareStamp ?: efi.getEcfi().getExecutionContext().getUser().getNowTimestamp())
     }
 
-    /** @see org.moqui.entity.EntityConditionFactory#makeConditionWhere(String) */
+    @Override
     EntityCondition makeConditionWhere(String sqlWhereClause) {
         if (!sqlWhereClause) return null
         return new WhereCondition(this, sqlWhereClause)
@@ -139,8 +142,9 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
 
     EntityCondition makeActionConditions(Node node) {
         List<EntityCondition> condList = new ArrayList()
-        for (Node subCond in node.children()) condList.add(makeActionCondition(subCond))
-        return makeCondition(condList, EntityConditionFactoryImpl.getJoinOperator((String) node["@combine"]))
+        List<Node> nodeChildren = (List<Node>) node.children()
+        for (Node subCond in nodeChildren) condList.add(makeActionCondition(subCond))
+        return makeCondition(condList, getJoinOperator((String) node["@combine"]))
     }
 
     protected static final Map<ComparisonOperator, String> comparisonOperatorStringMap = new HashMap()
@@ -210,6 +214,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             case "AND":
             default: return JoinOperator.AND
         }
+        return JoinOperator.AND
     }
     static String getComparisonOperatorString(ComparisonOperator op) {
         return comparisonOperatorStringMap.get(op)
