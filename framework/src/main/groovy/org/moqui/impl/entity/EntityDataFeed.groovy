@@ -26,8 +26,11 @@ import javax.transaction.xa.XAResource
 import javax.transaction.xa.Xid
 import java.sql.Timestamp
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EntityDataFeed {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDataFeed.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDataFeed.class)
 
     protected final EntityFacadeImpl efi
 
@@ -305,7 +308,7 @@ class EntityDataFeed {
     }
 
     static class DataFeedXaResource implements XAResource {
-        protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DataFeedXaResource.class)
+        protected final static Logger logger = LoggerFactory.getLogger(DataFeedXaResource.class)
 
         protected ExecutionContextFactoryImpl ecfi
         protected EntityDataFeed edf

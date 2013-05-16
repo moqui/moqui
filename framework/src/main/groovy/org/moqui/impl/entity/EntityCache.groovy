@@ -16,10 +16,11 @@ import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.CacheImpl
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class EntityCache {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityCache.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityCache.class)
 
     protected final EntityFacadeImpl efi
 

@@ -15,11 +15,13 @@ import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.entity.EntityException
 import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.sql.ResultSet
 
 class EntityValueImpl extends EntityValueBase {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityValueImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityValueImpl.class)
 
     EntityValueImpl(EntityDefinition ed, EntityFacadeImpl efip) {
         super(ed, efip)

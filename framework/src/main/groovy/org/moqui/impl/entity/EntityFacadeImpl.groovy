@@ -26,16 +26,18 @@ import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.sql.Timestamp
 import javax.sql.DataSource
 import javax.sql.XADataSource
 
 import org.moqui.entity.*
 import org.moqui.BaseException
 
-import java.sql.Timestamp
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class EntityFacadeImpl implements EntityFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
     protected final String tenantId
@@ -89,7 +91,7 @@ class EntityFacadeImpl implements EntityFacade {
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
     EntityCache getEntityCache() {return entityCache }
     EntityDataFeed getEntityDataFeed() {return entityDataFeed }
-    EntityDataDocument getEntityDataDocument() {return entityDataDocument }
+    // EntityDataDocument getEntityDataDocument() {return entityDataDocument }
 
     void checkInitDatasourceTables() {
         // if startup-add-missing=true check tables now
@@ -220,7 +222,8 @@ class EntityFacadeImpl implements EntityFacade {
         if (entityRoot.name() == "entities") {
             // loop through all entity, view-entity, and extend-entity and add file location to List for any entity named
             int numEntities = 0
-            for (Node entity in entityRoot.children()) {
+            List<Node> entityRootChildren = (List<Node>) entityRoot.children()
+            for (Node entity in entityRootChildren) {
                 String entityName = (String) entity."@entity-name"
                 String packageName = (String) entity."@package-name"
                 if (packageName) {
@@ -325,7 +328,9 @@ class EntityFacadeImpl implements EntityFacade {
                 if (tempEntityFileNodeMap != null) tempEntityFileNodeMap.put(location, entityRoot)
             }
             // filter by package-name if specified, otherwise grab whatever
-            for (Node childNode in entityRoot.children().findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })) {
+            List<Node> packageChildren = (List<Node>) entityRoot.children()
+                    .findAll({ it."@entity-name" == entityName && (packageName ? it."@package-name" == packageName : true) })
+            for (Node childNode in packageChildren) {
                 if (childNode.name() == "extend-entity") {
                     extendEntityNodes.add(childNode)
                 } else {

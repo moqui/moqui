@@ -21,12 +21,14 @@ import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.entity.condition.ConditionField
 import org.moqui.impl.entity.condition.FieldValueCondition
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.sql.Timestamp
 
 
 class EntityDataDocument {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityDataDocument.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDataDocument.class)
 
     protected final EntityFacadeImpl efi
 
@@ -34,7 +36,7 @@ class EntityDataDocument {
         this.efi = efi
     }
 
-    EntityFacadeImpl getEfi() { return efi }
+    // EntityFacadeImpl getEfi() { return efi }
 
     List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                Timestamp thruUpdatedStamp) {
