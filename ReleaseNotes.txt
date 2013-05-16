@@ -1119,6 +1119,9 @@ Features considered, but probably not to be included in 1.0 series
     - Entity: NotificationMessage - notificationMessageId*, notificationName, userGroupId, messageJson (from message Map)
     - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
 
+- Data Document
+  - export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
+  - DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
 - Data Search
   x use elasticsearch.org
   x get data from Data Feed, Data Search index is a feed receive service
