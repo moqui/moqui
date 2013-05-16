@@ -45,7 +45,7 @@ public interface LoggerFacade {
      *
      * @param level The logging level. Options should come from org.apache.log4j.Level.  
      * @param message The message text to log. If contains ${} syntax will be expanded from the current context.
-     * @param thrown
+     * @param thrown Throwable with stack trace, etc to be logged along with the message.
      */
     void log(int level, String message, Throwable thrown);
 

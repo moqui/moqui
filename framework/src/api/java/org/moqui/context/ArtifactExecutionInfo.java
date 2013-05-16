@@ -11,9 +11,6 @@
  */
 package org.moqui.context;
 
-import java.net.URL;
-import java.util.Map;
-
 /**
  * Information about execution of an artifact as the system is running
  */

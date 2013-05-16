@@ -11,11 +11,8 @@
  */
 package org.moqui.context;
 
-import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Writer;
-import java.net.URL;
 
 /** For accessing resources by location string (http://, jar://, component://, content://, classpath://, etc). */
 public interface ResourceFacade {

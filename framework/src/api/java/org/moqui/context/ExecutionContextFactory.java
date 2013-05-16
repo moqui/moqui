@@ -12,9 +12,6 @@
 package org.moqui.context;
 
 import org.moqui.BaseException;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 /**

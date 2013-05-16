@@ -12,7 +12,6 @@
 package org.moqui.context;
 
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;

@@ -11,8 +11,6 @@
  */
 package org.moqui.context;
 
-import java.util.Map;
-
 import org.moqui.BaseException;
 
 public interface ScriptRunner {

@@ -11,15 +11,10 @@
  */
 package org.moqui.entity;
 
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /** The main interface for general database operations in Moqui. */

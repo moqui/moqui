@@ -11,8 +11,6 @@
  */
 package org.moqui.context;
 
-import java.nio.charset.Charset;
-
 /** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
 public interface ScreenFacade {
 
