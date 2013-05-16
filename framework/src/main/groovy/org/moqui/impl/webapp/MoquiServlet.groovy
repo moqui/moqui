@@ -20,8 +20,11 @@ import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class MoquiServlet extends HttpServlet {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiServlet.class)
+    protected final static Logger logger = LoggerFactory.getLogger(MoquiServlet.class)
 
     MoquiServlet() { super(); }
 
