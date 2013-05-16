@@ -939,7 +939,7 @@ class ScreenRenderImpl implements ScreenRender {
                 }
             } catch (EntityException e) {
                 // do nothing, not necessarily an entity field
-                logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
+                if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
             }
         }
         if (!value) value = ec.getContext().get(fieldName)
@@ -968,7 +968,7 @@ class ScreenRenderImpl implements ScreenRender {
                     }
                 } catch (EntityException e) {
                     // do nothing, not necessarily an entity field
-                    logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
+                    if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception for non-field: ${e.toString()}")
                 }
             }
             if (!fieldValue) fieldValue = ec.getContext().get(fieldName)

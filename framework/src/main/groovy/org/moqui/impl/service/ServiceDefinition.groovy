@@ -563,7 +563,7 @@ class ServiceDefinition {
             try {
                 new BigInteger(pv as String)
             } catch (NumberFormatException e) {
-                logger.trace("Adding error message for NumberFormatException for BigInteger parse: ${e.toString()}")
+                if (logger.isTraceEnabled()) logger.trace("Adding error message for NumberFormatException for BigInteger parse: ${e.toString()}")
                 eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is not a whole (integer) number.", null)
                 return false
             }
@@ -572,7 +572,7 @@ class ServiceDefinition {
             try {
                 new BigDecimal(pv as String)
             } catch (NumberFormatException e) {
-                logger.trace("Adding error message for NumberFormatException for BigDecimal parse: ${e.toString()}")
+                if (logger.isTraceEnabled()) logger.trace("Adding error message for NumberFormatException for BigDecimal parse: ${e.toString()}")
                 eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${pv}] is not a decimal number.", null)
                 return false
             }

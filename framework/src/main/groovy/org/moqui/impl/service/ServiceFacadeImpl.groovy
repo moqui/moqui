@@ -177,7 +177,7 @@ class ServiceFacadeImpl implements ServiceFacade {
             }
         } catch (IOException e) {
             // probably because there is no resource at that location, so do nothing
-            logger.trace("Error finding service in URL [${serviceComponentRr.location}]", e)
+            if (logger.isTraceEnabled()) logger.trace("Error finding service in URL [${serviceComponentRr.location}]", e)
             return null
         } catch (Exception e) {
             throw new BaseException("Error finding service in [${serviceComponentRr.location}]", e)

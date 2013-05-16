@@ -491,7 +491,7 @@ class ScreenForm {
         try {
             nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
         } catch (EntityException e) {
-            logger.trace("Ignoring entity exception, may not be real entity name: ${e.toString()}")
+            if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception, may not be real entity name: ${e.toString()}")
         }
 
         List<Node> parameterNodes = []
@@ -717,7 +717,7 @@ class ScreenForm {
             nounEd = ecfi.entityFacade.getEntityDefinition(sd.noun)
         } catch (EntityException e) {
             // ignore, anticipating there may be no entity def
-            logger.trace("Ignoring entity exception, not necessarily an entity name: ${e.toString()}")
+            if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception, not necessarily an entity name: ${e.toString()}")
         }
         Node parameterNode = sd.serviceNode."in-parameters"[0].find({ it."@name" == parameterName })
 
@@ -733,7 +733,7 @@ class ScreenForm {
             ed = ecfi.entityFacade.getEntityDefinition(entityName)
         } catch (EntityException e) {
             // ignore, anticipating there may be no entity def
-            logger.trace("Ignoring entity exception, not necessarily an entity name: ${e.toString()}")
+            if (logger.isTraceEnabled()) logger.trace("Ignoring entity exception, not necessarily an entity name: ${e.toString()}")
         }
         if (ed == null) throw new IllegalArgumentException("Cound not find entity [${entityName}] referred to in auto-widget-entity of form [${baseFormNode."@name"}] of screen [${sd.location}]")
         addAutoEntityField(ed, (String) widgetNode."@field-name"?:fieldNode."@name", widgetNode."@field-type"?:"find-display",
