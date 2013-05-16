@@ -201,7 +201,7 @@ public class EntityDefinition {
             relatedEd = efi.getEntityDefinition(entityName)
         } catch (EntityException e) {
             // ignore if entity doesn't exist
-            logger.trace("Ignoring entity not found exception: ${e.toString()}")
+            if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
             return null
         }
 
@@ -220,7 +220,7 @@ public class EntityDefinition {
                 ed = efi.getEntityDefinition(relationshipName)
             } catch (EntityException e) {
                 // probably means not a valid entity name, which may happen a lot since we're checking here to see, so just ignore
-                logger.trace("Ignoring entity not found exception: ${e.toString()}")
+                if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
             }
             if (ed != null) {
                 // don't call ed.getRelationshipNode(), may result in infinite recursion
@@ -356,7 +356,7 @@ public class EntityDefinition {
             if (includeFunctionAndComplex) {
                 // column name for view-entity (prefix with "${entity-alias}.")
                 //colName.append(fieldNode."@entity-alias").append('.')
-                logger.trace("For view-entity include function and complex not yet supported, for entity [${internalEntityName}], may get bad SQL...")
+                if (logger.isTraceEnabled()) logger.trace("For view-entity include function and complex not yet supported, for entity [${internalEntityName}], may get bad SQL...")
             }
             // else {
 
@@ -790,7 +790,7 @@ public class EntityDefinition {
                             memberEntity."@entity-alias" + "(" + aliasedEntityDefinition.internalEntityName + ")." +
                             fieldNode."@name" + "], existing field name is [" + existingAliasNode."@entity-alias" + "." +
                             existingAliasNode."@field" + "]"
-                    if (isInViewLink) {logger.trace(warnMsg)} else {logger.info(warnMsg)}
+                    if (isInViewLink) {if (logger.isTraceEnabled()) logger.trace(warnMsg)} else {logger.info(warnMsg)}
 
                     // ship adding the new alias
                     continue

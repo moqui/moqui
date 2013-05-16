@@ -702,7 +702,7 @@ class EntityFacadeImpl implements EntityFacade {
             }
         } catch (EntityException e) {
             // do nothing, just means seqName is not an entity name
-            logger.trace("Ignoring exception for entity not found: ${e.toString()}")
+            if (logger.isTraceEnabled()) logger.trace("Ignoring exception for entity not found: ${e.toString()}")
         }
         // fall through to default to the db sequenced ID
         return dbSequencedIdPrimary(seqName, staggerMax, bankSize)

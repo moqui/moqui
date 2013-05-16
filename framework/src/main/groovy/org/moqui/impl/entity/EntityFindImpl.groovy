@@ -80,10 +80,10 @@ class EntityFindImpl extends EntityFindBase {
                     j++
                 }
             } else {
-                logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${condSql}]")
+                if (logger.isTraceEnabled()) logger.trace("Result set was empty for find on entity [${this.entityName}] with condition [${condSql}]")
             }
             if (rs.next()) {
-                logger.trace("Found more than one result for condition [${condSql}] on entity [${this.entityDef.getEntityName()}]")
+                if (logger.isTraceEnabled()) logger.trace("Found more than one result for condition [${condSql}] on entity [${this.entityDef.getEntityName()}]")
             }
         } catch (SQLException e) {
             throw new EntityException("Error finding value", e)

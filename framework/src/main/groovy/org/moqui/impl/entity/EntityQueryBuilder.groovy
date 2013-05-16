@@ -228,7 +228,7 @@ class EntityQueryBuilder {
                 try {
                     value = rs.getTimestamp(index, cal)
                 } catch (SQLException e) {
-                    logger.trace("Ignoring SQLException for getTimestamp(), leaving null (found this in MySQL with a date/time value of [0000-00-00 00:00:00]): ${e.toString()}")
+                    if (logger.isTraceEnabled()) logger.trace("Ignoring SQLException for getTimestamp(), leaving null (found this in MySQL with a date/time value of [0000-00-00 00:00:00]): ${e.toString()}")
                 }
                 break
             case 3: value = rs.getTime(index, cal); break
@@ -281,7 +281,7 @@ class EntityQueryBuilder {
                     // fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
                     sblob = new SerialBlob(theBlob)
                 } catch (SQLException e) {
-                    logger.trace("Ignoring exception trying getBlob(), trying getBytes(): ${e.toString()}")
+                    if (logger.isTraceEnabled()) logger.trace("Ignoring exception trying getBlob(), trying getBytes(): ${e.toString()}")
                     // if getBlob didn't work try getBytes
                     byte[] fieldBytes = rs.getBytes(index)
                     sblob = new SerialBlob(fieldBytes)

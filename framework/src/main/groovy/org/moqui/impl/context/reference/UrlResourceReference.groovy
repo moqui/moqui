@@ -42,7 +42,7 @@ class UrlResourceReference extends BaseResourceReference {
             try {
                 locationUrl = new URL(location)
             } catch (MalformedURLException e) {
-                logger.trace("Ignoring MalformedURLException for location, trying a local file: ${e.toString()}")
+                if (logger.isTraceEnabled()) logger.trace("Ignoring MalformedURLException for location, trying a local file: ${e.toString()}")
                 // special case for Windows, try going through a file:
                 locationUrl = new URL("file:/" + location)
             }

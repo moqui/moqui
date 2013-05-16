@@ -127,7 +127,7 @@ public class L10nFacadeImpl implements L10nFacade {
             Long lng = Long.valueOf(input)
             return new Timestamp(lng)
         } catch (NumberFormatException e) {
-            logger.trace("Ignoring NumberFormatException for Timestamp parse, setting to null: ${e.toString()}")
+            if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Timestamp parse, setting to null: ${e.toString()}")
             return null
         }
     }
