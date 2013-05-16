@@ -21,6 +21,9 @@ import javax.transaction.Status
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.service.ServiceCallSpecial
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpecial {
 
     ServiceCallSpecialImpl(ServiceFacadeImpl sfi) {
@@ -55,7 +58,7 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
     }
 
     static class ServiceXaResource extends Thread implements XAResource {
-        protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceXaResource.class)
+        protected final static Logger logger = LoggerFactory.getLogger(ServiceXaResource.class)
 
         protected ExecutionContextFactoryImpl ecfi
         protected String serviceName
@@ -67,6 +70,7 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
         protected Integer timeout = null
 
         protected boolean active = false
+        protected boolean suspended = false
 
         ServiceXaResource(ServiceCallSpecialImpl scsi, ExecutionContextFactoryImpl ecfi, boolean runOnCommit) {
             this.ecfi = ecfi
@@ -86,7 +90,7 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
             tx.enlistResource(this)
         }
 
-        /** @see javax.transaction.xa.XAResource#start(javax.transaction.xa.Xid xid, int flag) */
+        @Override
         void start(Xid xid, int flag) throws XAException {
             if (this.active) {
                 if (this.xid != null && this.xid.equals(xid)) {
@@ -98,6 +102,7 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
             if (this.xid != null && !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
             this.active = true
+            this.suspended = false
             this.xid = xid
 
             // start a thread with this object to do something on timeout
@@ -106,39 +111,46 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
             this.start()
         }
 
-        /** @see javax.transaction.xa.XAResource#end(javax.transaction.xa.Xid xid, int flag) */
+        @Override
         void end(Xid xid, int flag) throws XAException {
-            if (!this.active) throw new XAException(XAException.XAER_PROTO)
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
+            if (flag == TMSUSPEND) {
+                if (!this.active) throw new XAException(XAException.XAER_PROTO)
+                this.suspended = true
+            }
+            if (flag == TMSUCCESS || flag == TMFAIL) {
+                // allow a success/fail end if TX is suspended without a resume flagged start first
+                if (!this.active && !this.suspended) throw new XAException(XAException.XAER_PROTO)
+            }
             this.active = false
         }
 
-        /** @see javax.transaction.xa.XAResource#forget(javax.transaction.xa.Xid xid) */
+        @Override
         void forget(Xid xid) throws XAException {
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             this.xid = null
             if (active) logger.warn("forget() called without end()")
         }
 
-        /** @see javax.transaction.xa.XAResource#prepare(javax.transaction.xa.Xid xid) */
+        @Override
         int prepare(Xid xid) throws XAException {
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             return XA_OK
         }
 
-        /** @see javax.transaction.xa.XAResource#recover(int flag) */
+        @Override
         Xid[] recover(int flag) throws XAException { return this.xid != null ? [this.xid] : [] }
-        /** @see javax.transaction.xa.XAResource#isSameRM(javax.transaction.xa.XAResource xaResource) */
+        @Override
         boolean isSameRM(XAResource xaResource) throws XAException { return xaResource == this }
-        /** @see javax.transaction.xa.XAResource#getTransactionTimeout() */
+        @Override
         int getTransactionTimeout() throws XAException { return this.timeout == null ? 0 : this.timeout }
-        /** @see javax.transaction.xa.XAResource#setTransactionTimeout(int seconds) */
+        @Override
         boolean setTransactionTimeout(int seconds) throws XAException {
             this.timeout = (seconds == 0 ? null : seconds)
             return true
         }
 
-        /** @see javax.transaction.xa.XAResource#commit(javax.transaction.xa.Xid xid, boolean onePhase) */
+        @Override
         void commit(Xid xid, boolean onePhase) throws XAException {
             if (this.active) logger.warn("commit() called without end()")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
@@ -149,7 +161,7 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
             this.active = false
         }
 
-        /** @see javax.transaction.xa.XAResource#rollback(javax.transaction.xa.Xid xid) */
+        @Override
         void rollback(Xid xid) throws XAException {
             if (this.active) logger.warn("rollback() called without end()")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)

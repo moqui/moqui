@@ -11,7 +11,6 @@
  */
 package org.moqui.impl.service
 
-import org.moqui.service.ServiceCall.TimeUnit
 import org.moqui.service.ServiceCallSchedule
 
 import org.quartz.Trigger
@@ -125,7 +124,7 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
 
         // NOTE: this allows combinations of different schedules, which may not be allowed...
         if (interval != null) {
-            IntervalUnit qiu = IntervalUnit.HOUR
+            IntervalUnit qiu
             switch (intervalUnit) {
                 case TimeUnit.SECONDS: qiu = IntervalUnit.SECOND; break;
                 case TimeUnit.MINUTES: qiu = IntervalUnit.MINUTE; break;

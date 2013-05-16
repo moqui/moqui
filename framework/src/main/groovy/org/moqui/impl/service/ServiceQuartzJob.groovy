@@ -17,8 +17,11 @@ import org.quartz.JobDataMap
 import org.moqui.context.ExecutionContext
 import org.moqui.Moqui
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ServiceQuartzJob implements Job {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceQuartzJob.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceQuartzJob.class)
 
     void execute(JobExecutionContext jobExecutionContext) {
         String serviceName = jobExecutionContext.jobDetail.key.group

@@ -14,12 +14,7 @@ package org.moqui.impl.service
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ExecutionContext
-import javax.transaction.xa.XAException
-import javax.transaction.Transaction
-import javax.transaction.Status
-import javax.transaction.TransactionManager
-import javax.transaction.xa.Xid
-import javax.transaction.xa.XAResource
+
 import javax.mail.internet.MimeMessage
 import javax.mail.Address
 import javax.mail.Multipart
@@ -27,8 +22,11 @@ import javax.mail.BodyPart
 import javax.mail.Part
 import javax.mail.Header
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class EmailEcaRule {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EmailEcaRule.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EmailEcaRule.class)
 
     protected Node emecaNode
     protected String location
@@ -51,7 +49,7 @@ class EmailEcaRule {
         }
     }
 
-    Node getEmecaNode() { return emecaNode }
+    // Node getEmecaNode() { return emecaNode }
 
     void runIfMatches(MimeMessage message, ExecutionContext ec) {
 
@@ -73,7 +71,7 @@ class EmailEcaRule {
             for (Address addr in message.getRecipients(MimeMessage.RecipientType.BCC)) toList.add(addr.toString())
             fields.put("bccList", bccList)
 
-            fields.put("from", message.getFrom()[0]?.toString())
+            fields.put("from", message.getFrom()?.getAt(0)?.toString())
             fields.put("subject", message.getSubject())
             fields.put("sentDate", message.getSentDate())
             fields.put("receivedDate", message.getReceivedDate())

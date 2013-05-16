@@ -25,8 +25,11 @@ import org.moqui.service.ServiceException
 
 import java.sql.Timestamp
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallSyncImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceCallSyncImpl.class)
 
     protected boolean requireNewTransaction = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */

@@ -21,8 +21,11 @@ import javax.transaction.TransactionManager
 import javax.transaction.xa.Xid
 import javax.transaction.xa.XAResource
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ServiceEcaRule {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceEcaRule.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceEcaRule.class)
 
     protected Node secaNode
     protected String location
@@ -47,7 +50,7 @@ class ServiceEcaRule {
 
     String getServiceName() { return secaNode."@service" }
     String getWhen() { return secaNode."@when" }
-    Node getSecaNode() { return secaNode }
+    // Node getSecaNode() { return secaNode }
 
     void runIfMatches(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when, ExecutionContext ec) {
         // see if we match this event and should run
@@ -86,7 +89,7 @@ class ServiceEcaRule {
     }
 
     static class SecaXaResource implements XAResource {
-        protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(SecaXaResource.class)
+        protected final static Logger logger = LoggerFactory.getLogger(SecaXaResource.class)
 
         protected ExecutionContextFactoryImpl ecfi
         protected ServiceEcaRule sec
@@ -116,7 +119,7 @@ class ServiceEcaRule {
             tx.enlistResource(this)
         }
 
-        /** @see javax.transaction.xa.XAResource#start(javax.transaction.xa.Xid xid, int flag) */
+        @Override
         void start(Xid xid, int flag) throws XAException {
             if (this.active) {
                 if (this.xid != null && this.xid.equals(xid)) {
@@ -132,7 +135,7 @@ class ServiceEcaRule {
             this.xid = xid
         }
 
-        /** @see javax.transaction.xa.XAResource#end(javax.transaction.xa.Xid xid, int flag) */
+        @Override
         void end(Xid xid, int flag) throws XAException {
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             if (flag == TMSUSPEND) {
@@ -146,32 +149,32 @@ class ServiceEcaRule {
             this.active = false
         }
 
-        /** @see javax.transaction.xa.XAResource#forget(javax.transaction.xa.Xid xid) */
+        @Override
         void forget(Xid xid) throws XAException {
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             this.xid = null
             if (active) logger.warn("forget() called without end()")
         }
 
-        /** @see javax.transaction.xa.XAResource#prepare(javax.transaction.xa.Xid xid) */
+        @Override
         int prepare(Xid xid) throws XAException {
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
             return XA_OK
         }
 
-        /** @see javax.transaction.xa.XAResource#recover(int flag) */
+        @Override
         Xid[] recover(int flag) throws XAException { return this.xid != null ? [this.xid] : [] }
-        /** @see javax.transaction.xa.XAResource#isSameRM(javax.transaction.xa.XAResource xaResource) */
+        @Override
         boolean isSameRM(XAResource xaResource) throws XAException { return xaResource == this }
-        /** @see javax.transaction.xa.XAResource#getTransactionTimeout() */
+        @Override
         int getTransactionTimeout() throws XAException { return this.timeout == null ? 0 : this.timeout }
-        /** @see javax.transaction.xa.XAResource#setTransactionTimeout(int seconds) */
+        @Override
         boolean setTransactionTimeout(int seconds) throws XAException {
             this.timeout = (seconds == 0 ? null : seconds)
             return true
         }
 
-        /** @see javax.transaction.xa.XAResource#commit(javax.transaction.xa.Xid xid, boolean onePhase) */
+        @Override
         void commit(Xid xid, boolean onePhase) throws XAException {
             if (this.active) logger.warn("commit() called without end()")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
@@ -183,7 +186,7 @@ class ServiceEcaRule {
             this.active = false
         }
 
-        /** @see javax.transaction.xa.XAResource#rollback(javax.transaction.xa.Xid xid) */
+        @Override
         void rollback(Xid xid) throws XAException {
             if (this.active) logger.warn("rollback() called without end()")
             if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)

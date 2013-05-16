@@ -28,8 +28,11 @@ import org.moqui.impl.context.ExecutionContextImpl
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class ServiceXmlRpcDispatcher extends XmlRpcHttpServer {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceXmlRpcDispatcher.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceXmlRpcDispatcher.class)
 
     protected ExecutionContextImpl eci
 
@@ -139,7 +142,7 @@ public class ServiceXmlRpcDispatcher extends XmlRpcHttpServer {
                 if (paramZero instanceof Map) {
                     parameters = paramZero
                 } else {
-                    parameters.put(sd.getInParameterNames().getAt(0), paramZero)
+                    parameters.put(sd.getInParameterNames().iterator().next(), paramZero)
                 }
             }
 

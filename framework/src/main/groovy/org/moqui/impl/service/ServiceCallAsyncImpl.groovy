@@ -14,16 +14,19 @@ package org.moqui.impl.service
 import org.moqui.service.ServiceCallAsync
 import org.moqui.service.ServiceResultReceiver
 import org.moqui.service.ServiceResultWaiter
+import org.moqui.impl.context.ExecutionContextImpl
 import org.quartz.impl.matchers.NameMatcher
 import org.quartz.TriggerBuilder
 import org.quartz.Trigger
 import org.quartz.JobDetail
 import org.quartz.JobDataMap
 import org.quartz.JobBuilder
-import org.moqui.impl.context.ExecutionContextImpl
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceCallAsyncImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceCallAsyncImpl.class)
 
     protected boolean persist = false
     /* not supported by Atomikos/etc right now, consider for later: protected int transactionIsolation = -1 */
@@ -102,7 +105,7 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
         if (resultReceiver) {
             ServiceRequesterListener sqjl = new ServiceRequesterListener(resultReceiver)
             // NOTE: is this the best way to get this to run for ONLY this job?
-            sfi.scheduler.getListenerManager().addJobListener(sqjl, NameMatcher.matchNameEquals(uniqueJobName))
+            sfi.scheduler.getListenerManager().addJobListener(sqjl, NameMatcher.nameEquals(uniqueJobName))
         }
 
         sfi.scheduler.scheduleJob(job, nowTrigger)

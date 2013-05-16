@@ -20,8 +20,11 @@ import javax.servlet.http.HttpServletResponse
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.service.ServiceException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class ServiceJsonRpcDispatcher {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceJsonRpcDispatcher.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceJsonRpcDispatcher.class)
 
     protected ExecutionContextImpl eci
 
@@ -77,7 +80,7 @@ public class ServiceJsonRpcDispatcher {
             response.writer.write(jsonStr)
             response.writer.flush()
         } catch (IOException e) {
-            logger.error("Error sending JSON-RPC string response")
+            logger.error("Error sending JSON-RPC string response", e)
         }
     }
 }

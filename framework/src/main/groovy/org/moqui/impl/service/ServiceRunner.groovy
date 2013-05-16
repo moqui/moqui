@@ -11,8 +11,6 @@
  */
 package org.moqui.impl.service
 
-import org.moqui.impl.service.ServiceDefinition
-import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.service.ServiceException
 
 interface ServiceRunner {

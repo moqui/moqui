@@ -25,8 +25,11 @@ import org.owasp.esapi.ValidationErrorList
 import org.owasp.esapi.errors.IntrusionException
 import org.owasp.esapi.errors.ValidationException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ServiceDefinition {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceDefinition.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceDefinition.class)
 
     protected final static EmailValidator emailValidator = EmailValidator.getInstance()
     protected final static UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_ALL_SCHEMES)

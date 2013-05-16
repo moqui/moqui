@@ -29,8 +29,11 @@ import javax.mail.internet.MimeMessage
 import org.moqui.context.ExecutionContext
 import org.moqui.BaseException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class ServiceFacadeImpl implements ServiceFacade {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(ServiceFacadeImpl.class)
+    protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
 
     protected final ExecutionContextFactoryImpl ecfi
 
@@ -57,8 +60,9 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         // load service runners from configuration
         for (Node serviceType in ecfi.confXmlRoot."service-facade"[0]."service-type") {
-            ServiceRunner sr = (ServiceRunner) Thread.currentThread().getContextClassLoader().loadClass(serviceType."@runner-class").newInstance()
-            serviceRunners.put(serviceType."@name", sr.init(this))
+            ServiceRunner sr = (ServiceRunner) Thread.currentThread().getContextClassLoader()
+                    .loadClass((String) serviceType."@runner-class").newInstance()
+            serviceRunners.put((String) serviceType."@name", sr.init(this))
         }
 
         // init quartz scheduler (do last just in case it gets any jobs going right away)
@@ -152,7 +156,7 @@ class ServiceFacadeImpl implements ServiceFacade {
         return serviceNode
     }
 
-    protected Node findServiceNode(ResourceReference serviceComponentRr, String verb, String noun) {
+    protected static Node findServiceNode(ResourceReference serviceComponentRr, String verb, String noun) {
         if (!serviceComponentRr) return null
 
         Node serviceNode = null
@@ -347,7 +351,6 @@ class ServiceFacadeImpl implements ServiceFacade {
     @Override
     ServiceCallSpecial special() { return new ServiceCallSpecialImpl(this) }
 
-    /** @see org.moqui.service.ServiceFacade#registerCallback(String, ServiceCallback) */
     @Override
     synchronized void registerCallback(String serviceName, ServiceCallback serviceCallback) {
         List<ServiceCallback> callbackList = callbackRegistry.get(serviceName)
