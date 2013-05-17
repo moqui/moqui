@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import groovy.json.JsonOutput
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityDynamicView
 import org.moqui.entity.EntityException
@@ -37,6 +38,80 @@ class EntityDataDocument {
     }
 
     // EntityFacadeImpl getEfi() { return efi }
+
+    int writeDocumentsToFile(String filename, List<String> dataDocumentIds, EntityCondition condition,
+                             Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp, boolean prettyPrint) {
+        File outFile = new File(filename)
+        if (!outFile.createNewFile()) {
+            efi.ecfi.executionContext.message.addError("File ${filename} already exists.")
+            return 0
+        }
+
+        PrintWriter pw = new PrintWriter(outFile)
+
+        pw.write("[\n")
+
+        int valuesWritten = writeDocumentsToWriter(pw, dataDocumentIds, condition, fromUpdateStamp, thruUpdatedStamp, prettyPrint)
+
+        pw.write("{}\n]\n")
+        pw.close()
+        efi.ecfi.executionContext.message.addMessage("Wrote ${valuesWritten} documents to file ${filename}")
+        return valuesWritten
+    }
+
+    int writeDocumentsToDirectory(String dirname, List<String> dataDocumentIds, EntityCondition condition,
+                                  Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp, boolean prettyPrint) {
+        File outDir = new File(dirname)
+        if (!outDir.exists()) outDir.mkdir()
+        if (!outDir.isDirectory()) {
+            efi.ecfi.executionContext.message.addError("Path ${path} is not a directory.")
+            return 0
+        }
+
+        int valuesWritten = 0
+
+        for (String dataDocumentId in dataDocumentIds) {
+            String filename = "${dirname}/${dataDocumentId}.json"
+            File outFile = new File(filename)
+            if (outFile.exists()) {
+                efi.ecfi.executionContext.message.addError("File ${filename} already exists, skipping document ${dataDocumentId}.")
+                continue
+            }
+            outFile.createNewFile()
+
+            PrintWriter pw = new PrintWriter(outFile)
+            pw.write("[\n")
+
+            valuesWritten += writeDocumentsToWriter(pw, [dataDocumentId], condition, fromUpdateStamp, thruUpdatedStamp, prettyPrint)
+
+            pw.write("{}\n]\n")
+            pw.close()
+            efi.ecfi.executionContext.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
+        }
+
+        return valuesWritten
+    }
+
+    int writeDocumentsToWriter(Writer pw, List<String> dataDocumentIds, EntityCondition condition,
+                               Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp, boolean prettyPrint) {
+        int valuesWritten = 0
+
+        for (String dataDocumentId in dataDocumentIds) {
+            List<Map> documentList = getDataDocuments(dataDocumentId, condition, fromUpdateStamp, thruUpdatedStamp)
+            for (Map document in documentList) {
+                String json = JsonOutput.toJson(document)
+                if (prettyPrint) {
+                    pw.write(JsonOutput.prettyPrint(json))
+                } else {
+                    pw.write(json)
+                }
+                pw.write(",\n")
+                valuesWritten++
+            }
+        }
+
+        return valuesWritten
+    }
 
     List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                Timestamp thruUpdatedStamp) {

@@ -91,7 +91,7 @@ class EntityFacadeImpl implements EntityFacade {
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
     EntityCache getEntityCache() {return entityCache }
     EntityDataFeed getEntityDataFeed() {return entityDataFeed }
-    // EntityDataDocument getEntityDataDocument() {return entityDataDocument }
+    EntityDataDocument getEntityDataDocument() {return entityDataDocument }
 
     void checkInitDatasourceTables() {
         // if startup-add-missing=true check tables now

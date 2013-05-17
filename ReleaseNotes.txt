@@ -37,7 +37,7 @@ New Features:
     associated with a DataFeed within a date range
   - Added search#DataDocuments service which uses ElasticSearch; supports
     pagination and so on
-  - Added Tool app screens for indexing and search DataDocuments
+  - Added Tool app screens for index, search, and export DataDocuments
 - XML Screen and Form
   - Added XML Form fields-not-referenced element to specify where to render
     the fields not explicitly referenced under the field-layout element
@@ -1123,7 +1123,7 @@ Features considered, but probably not to be included in 1.0 series
     - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
 
 - Data Document
-  - export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
+  x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
   x DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
 - Data Search
   x use elasticsearch.org
