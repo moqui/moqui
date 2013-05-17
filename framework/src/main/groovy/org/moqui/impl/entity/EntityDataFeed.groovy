@@ -337,11 +337,15 @@ class EntityDataFeed {
             if (tx == null) throw new XAException(XAException.XAER_NOTA)
             this.tx = tx
 
+            // logger.warn("================= puttng and enlisting new DataFeedXaResource")
             ecfi.getTransactionFacade().putAndEnlistActiveXaResource("DataFeedXaResource", this)
         }
 
         void addValueToFeed(EntityValue ev, Set<String> dataDocumentIdSet) {
-            if (!this.active) logger.warn("Adding value to inactive DataFeedXaResource! \nThis shouldn't happen and may mean the same DataFeedXaResource is being used after a TX suspend")
+            // this log message is for an issue where Atomikos seems to suspend and resume without calling start() on
+            //     this XAResource; everything seems to work fine, but it results in funny state
+            // this can be reproduced by running the data load with DataFeed/DataDocument data already in the DB
+            if (!active && logger.isTraceEnabled()) logger.trace("Adding value to inactive DataFeedXaResource! \nThis shouldn't happen and may mean the same DataFeedXaResource is being used after a TX suspend; suspended=${suspended}")
             feedValues.add(ev)
             allDataDocumentIds.addAll(dataDocumentIdSet)
         }
@@ -358,6 +362,7 @@ class EntityDataFeed {
             }
             if (this.xid != null && !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
+            // logger.warn("================= starting DataFeedXaResource with xid=${xid}; suspended=${suspended}")
             this.active = true
             this.suspended = false
             this.xid = xid
@@ -370,6 +375,7 @@ class EntityDataFeed {
             if (flag == TMSUSPEND) {
                 if (!this.active) throw new XAException(XAException.XAER_PROTO)
                 this.suspended = true
+                // logger.warn("================= suspending DataFeedXaResource with xid=${xid}")
             }
             if (flag == TMSUCCESS || flag == TMFAIL) {
                 // allow a success/fail end if TX is suspended without a resume flagged start first
@@ -416,6 +422,7 @@ class EntityDataFeed {
 
             // send feed in new thread and tx
             feedInThreadAndTx()
+            // logger.warn("================================================================\n================ feeding DataFeed with documents ${allDataDocumentIds}")
 
             this.xid = null
             this.active = false

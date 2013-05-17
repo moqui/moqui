@@ -48,14 +48,14 @@ class EntityDbMeta {
             }
         } else {
             // if it's in this table we've already checked it
-            if (entityTablesChecked.containsKey(ed.entityName)) return
+            if (entityTablesChecked.containsKey(ed.getFullEntityName())) return
             // otherwise do the real check, in a synchronized method
             internalCheckTable(ed)
         }
     }
     synchronized void internalCheckTable(EntityDefinition ed) {
         // if it's in this table we've already checked it
-        if (entityTablesChecked.containsKey(ed.entityName)) return
+        if (entityTablesChecked.containsKey(ed.getFullEntityName())) return
 
         Node datasourceNode = efi.getDatasourceNode(efi.getEntityGroupName(ed))
         // if there is no @database-conf-name skip this, it's probably not a SQL/JDBC datasource
@@ -83,12 +83,12 @@ class EntityDbMeta {
                 // create foreign keys after checking each to see if it already exists
                 if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
             }
-            entityTablesChecked.put(ed.entityName, new Timestamp(System.currentTimeMillis()))
+            entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
         } finally {
             if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
         }
 
-        if (logger.infoEnabled) logger.info("Checked table for entity [${ed.entityName}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
+        if (logger.isTraceEnabled()) logger.trace("Checked table for entity [${ed.getFullEntityName()}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
     }
 
     boolean tableExists(EntityDefinition ed) {
@@ -104,7 +104,7 @@ class EntityDbMeta {
             if (tableSet.next()) {
                 return true
             } else {
-                logger.info("Table for entity [${ed.entityName}] does NOT exist")
+                logger.info("Table for entity [${ed.getFullEntityName()}] does NOT exist")
                 return false
             }
         } catch (Exception e) {
@@ -167,7 +167,7 @@ class EntityDbMeta {
         if (logger.traceEnabled) logger.trace("Create Table with SQL: " + sql.toString())
 
         runSqlUpdate(sql, groupName)
-        if (logger.infoEnabled) logger.info("Created table [${ed.tableName}] for entity [${ed.entityName}]")
+        if (logger.infoEnabled) logger.info("Created table [${ed.tableName}] for entity [${ed.getFullEntityName()}]")
     }
 
     ListOrderedSet getMissingColumns(EntityDefinition ed) {
@@ -189,7 +189,7 @@ class EntityDbMeta {
             }
 
             if (fnSet.size() == fieldCount) {
-                logger.warn("Could not find any columns to match fields for entity [${ed.entityName}]")
+                logger.warn("Could not find any columns to match fields for entity [${ed.getFullEntityName()}]")
                 return null
             }
             return fnSet
@@ -226,7 +226,7 @@ class EntityDbMeta {
         }
 
         runSqlUpdate(sql, groupName)
-        if (logger.infoEnabled) logger.info("Added column [${ed.getColumnName(fieldName, false)}] to table [${ed.tableName}] for field [${fieldName}] of entity [${ed.entityName}]")
+        if (logger.infoEnabled) logger.info("Added column [${ed.getColumnName(fieldName, false)}] to table [${ed.tableName}] for field [${fieldName}] of entity [${ed.getFullEntityName()}]")
     }
 
     void createIndexes(EntityDefinition ed) {
@@ -284,7 +284,7 @@ class EntityDbMeta {
                 } else {
                     indexName.append(ed.entityName).append(title).append(relatedEntityName)
                 }
-                // logger.warn("ed.entityName=${ed.entityName}, title=${title}, commonChars=${commonChars}, indexName=${indexName}")
+                // logger.warn("ed.getFullEntityName()=${ed.getFullEntityName()}, title=${title}, commonChars=${commonChars}, indexName=${indexName}")
             }
             shrinkName(indexName, constraintNameClipLength-3)
             indexName.insert(0, "IDX")
@@ -333,7 +333,7 @@ class EntityDbMeta {
             ikSet = dbData.getImportedKeys(null, ed.getSchemaName(), ed.getTableName())
             while (ikSet.next()) {
                 String pkTable = ikSet.getString("PKTABLE_NAME")
-                // logger.info("FK exists [${ed.entityName}] - [${relNode."@title"}${relEd.entityName}] PKTABLE_NAME [${ikSet.getString("PKTABLE_NAME")}] PKCOLUMN_NAME [${ikSet.getString("PKCOLUMN_NAME")}] FKCOLUMN_NAME [${ikSet.getString("FKCOLUMN_NAME")}]")
+                // logger.info("FK exists [${ed.getFullEntityName()}] - [${relNode."@title"}${relEd.getFullEntityName()}] PKTABLE_NAME [${ikSet.getString("PKTABLE_NAME")}] PKCOLUMN_NAME [${ikSet.getString("PKCOLUMN_NAME")}] FKCOLUMN_NAME [${ikSet.getString("FKCOLUMN_NAME")}]")
                 if (pkTable != relEd.tableName) continue
                 String fkCol = ikSet.getString("FKCOLUMN_NAME")
                 fkColsFound.add(fkCol)
@@ -342,7 +342,7 @@ class EntityDbMeta {
                 if (foundField) fieldNames.remove(foundField)
             }
 
-            // logger.info("Checking FK exists for entity [${ed.entityName}] relationship [${relNode."@title"}${relEd.entityName}] fields to match are [${keyMap.keySet()}] FK columns found [${fkColsFound}] final fieldNames (empty for match) [${fieldNames}]")
+            // logger.info("Checking FK exists for entity [${ed.getFullEntityName()}] relationship [${relNode."@title"}${relEd.getFullEntityName()}] fields to match are [${keyMap.keySet()}] FK columns found [${fkColsFound}] final fieldNames (empty for match) [${fieldNames}]")
 
             // if we found all of the key-map field-names then fieldNames will be empty, and we have a full fk
             return (fieldNames.size() == 0)
@@ -377,13 +377,13 @@ class EntityDbMeta {
             EntityDefinition relEd = efi.getEntityDefinition((String) relNode."@related-entity-name")
             if (relEd == null) throw new IllegalArgumentException("Entity [${relNode."@related-entity-name"}] does not exist, was in relationship.@related-entity-name of entity [${ed.entityName}]")
             if (!tableExists(relEd)) {
-                logger.warn("Not creating foreign key from entity [${ed.entityName}] to related entity [${relEd.entityName}] because related entity does not yet have a table for it")
+                logger.warn("Not creating foreign key from entity [${ed.getFullEntityName()}] to related entity [${relEd.getFullEntityName()}] because related entity does not yet have a table for it")
                 continue
             }
             if (checkFkExists) {
                 Boolean fkExists = foreignKeyExists(ed, relEd, relNode)
                 if (fkExists != null && fkExists) {
-                    if (logger.traceEnabled) logger.trace("Not creating foreign key from entity [${ed.entityName}] to related entity [${relEd.entityName}] with title [${relNode."@title"}] because it already exists (matched by key mappings)")
+                    if (logger.traceEnabled) logger.trace("Not creating foreign key from entity [${ed.getFullEntityName()}] to related entity [${relEd.getFullEntityName()}] with title [${relNode."@title"}] because it already exists (matched by key mappings)")
                     continue
                 }
                 // if we get a null back there was an error, and we'll try to create the FK, which may result in another error
@@ -407,7 +407,7 @@ class EntityDbMeta {
                 } else {
                     constraintName.append(ed.entityName).append(title).append(relatedEntityName)
                 }
-                // logger.warn("ed.entityName=${ed.entityName}, title=${title}, commonChars=${commonChars}, constraintName=${constraintName}")
+                // logger.warn("ed.getFullEntityName()=${ed.entityName}, title=${title}, commonChars=${commonChars}, constraintName=${constraintName}")
             }
             shrinkName(constraintName, constraintNameClipLength)
 

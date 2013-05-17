@@ -97,7 +97,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         if (!this.xmlText && !this.locationList) {
             // if we're loading seed type data, add entity def files to the list of locations to load
             if (!dataTypes || dataTypes.contains("seed")) {
-                for (ResourceReference entityRr in efi.getAllEntityFileLocations()) locationList.add(entityRr.location)
+                for (ResourceReference entityRr in efi.getAllEntityFileLocations())
+                    if (!entityRr.location.endsWith(".eecas.xml")) locationList.add(entityRr.location)
             }
 
             // loop through all of the entity-facade.load-entity nodes, check each for "<entities>" root element
@@ -179,7 +180,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 logger.info("Loaded ${(exh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
-                logger.trace("Skipping file [${location}], is a type to skip (${e.toString()})")
+                if (logger.isTraceEnabled()) logger.trace("Skipping file [${location}], is a type to skip (${e.toString()})")
             } finally {
                 if (inputStream) inputStream.close()
             }
@@ -210,7 +211,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 try {
                     value.create()
                 } catch (EntityException e) {
-                    logger.trace("Insert failed, trying update (${e.toString()})")
+                    if (logger.isTraceEnabled()) logger.trace("Insert failed, trying update (${e.toString()})")
                     // retry, then if this fails we have a real error so let the exception fall through
                     value.update()
                 }

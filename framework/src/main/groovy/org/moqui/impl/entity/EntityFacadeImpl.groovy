@@ -250,6 +250,12 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     protected EntityDefinition loadEntityDefinition(String entityName) {
+        if (entityName.contains("#")) {
+            // this is a relationship name, definitely not an entity name so just return null; this happens because we
+            //    check if a name is an entity name or not in various places including where relationships are checked
+            return null
+        }
+
         EntityDefinition ed = (EntityDefinition) entityDefinitionCache.get(entityName)
         if (ed) return ed
 

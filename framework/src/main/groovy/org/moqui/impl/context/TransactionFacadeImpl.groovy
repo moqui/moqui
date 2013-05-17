@@ -261,6 +261,8 @@ class TransactionFacadeImpl implements TransactionFacade {
     boolean begin(Integer timeout) {
         try {
             int currentStatus = ut.getStatus()
+            // logger.warn("================ begin TX, currentStatus=${currentStatus}")
+
             if (currentStatus == Status.STATUS_ACTIVE) {
                 // don't begin, and return false so caller knows we didn't
                 return false
@@ -285,6 +287,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
             getTransactionBeginStack().set(0, new Exception("Tx Begin Placeholder"))
             getTransactionBeginStartTimeList().set(0, System.currentTimeMillis())
+            // logger.warn("================ begin TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
 
             return true
         } catch (NotSupportedException e) {
@@ -304,6 +307,8 @@ class TransactionFacadeImpl implements TransactionFacade {
     void commit() {
         try {
             int status = ut.getStatus();
+            // logger.warn("================ commit TX, currentStatus=${status}")
+
             if (status == Status.STATUS_MARKED_ROLLBACK) {
                 ut.rollback()
             } else if (status != Status.STATUS_NO_TRANSACTION && status != Status.STATUS_COMMITTING &&
@@ -335,6 +340,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
             if (getActiveXaResourceStack()) getActiveXaResourceStack().set(0, null)
+            // logger.warn("================ commit TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
         }
     }
 
@@ -350,6 +356,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     @Override
     void rollback(String causeMessage, Throwable causeThrowable) {
         try {
+            // logger.warn("================ rollback TX, currentStatus=${getStatus()}")
             if (getStatus() == Status.STATUS_NO_TRANSACTION) {
                 logger.info("Transaction not rolled back, status is STATUS_NO_TRANSACTION")
                 return
@@ -371,6 +378,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
             if (getActiveXaResourceStack()) getActiveXaResourceStack().set(0, null)
+            // logger.warn("================ rollback TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
         }
     }
 
@@ -409,6 +417,7 @@ class TransactionFacadeImpl implements TransactionFacade {
             getSuspendedTxStack().add(0, tx)
             getSuspendedTxLocationStack().add(0, new Exception("Transaction Suspend Location"))
             getActiveXaResourceStack().add(0, null)
+            // logger.warn("================ suspending TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
 
             return true
         } catch (SystemException e) {
@@ -431,6 +440,7 @@ class TransactionFacadeImpl implements TransactionFacade {
                 sts.remove(0)
                 getSuspendedTxLocationStack().remove(0)
                 getActiveXaResourceStack().remove(0)
+                // logger.warn("================ resuming TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
             } else {
                 logger.warn("No transaction suspended, so not resuming.")
             }

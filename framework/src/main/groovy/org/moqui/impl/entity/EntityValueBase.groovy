@@ -897,7 +897,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
         if (!nonPkFieldList) {
-            if (logger.infoEnabled) logger.info("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
+            if (logger.isTraceEnabled()) logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
             return
         }
 

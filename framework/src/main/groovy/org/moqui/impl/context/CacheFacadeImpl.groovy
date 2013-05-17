@@ -138,7 +138,7 @@ public class CacheFacadeImpl implements CacheFacade {
             }
         }
 
-        logger.info("Initialized new cache [${cacheName}]")
+        if (logger.isTraceEnabled()) logger.trace("Initialized new cache [${cacheName}]")
         return newCache
     }
 }
