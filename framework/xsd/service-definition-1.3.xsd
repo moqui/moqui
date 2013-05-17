@@ -11,8 +11,8 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-    <xs:include schemaLocation="common-types-1.2.xsd"/>
-    <xs:include schemaLocation="xml-actions-1.2.xsd"/>
+    <xs:include schemaLocation="common-types-1.3.xsd"/>
+    <xs:include schemaLocation="xml-actions-1.3.xsd"/>
 
     <!-- root element -->
     <xs:element name="services">

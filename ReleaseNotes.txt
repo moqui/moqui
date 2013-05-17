@@ -2,12 +2,12 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.2.1 - TBD 2013
+Release 1.3.0 - TBD 2013
 ===========================================================================
 
-Moqui Framework 1.2.1 is a new feature and bug fix release. The major new
-features include the EntityFacade Data Document, Data Feed, and Data Search
-features, the MessageFacade User Notification feature, and various
+Moqui Framework 1.3.0 is a major new feature and bug fix release. The major
+new features include the EntityFacade Data Document, Data Feed, and Data
+Search features, the MessageFacade User Notification feature, and various
 improvements to XML Screens and Forms. This release is backward compatible
 with Moqui Framework release 1.2.0. ... TODO
 
@@ -16,52 +16,54 @@ New Features:
 - Updated gradle build files to work with Gradle 1.3
 - Updated Commons Validator to 1.4.0
 - Updated Groovy to 2.1.3
-- Added ElasticSearch 0.90.0 and Lucene 4.2.1 (these add ~16MB, moving
-  Moqui from ~24MB to ~40MB); ElasticSearch files are under
-  runtime/elasticsearch and it is initialized and destroyed with the rest
-  of the framework
-- Added XML Form fields-not-referenced element to specify where to render
-  the fields not explicitly referenced under the field-layout element
-- Small adjustment to transition parameter so that if explicitly defined as
-  empty that will be used instead of defaulting to value from context or
-  web parameters
+- Entity Facade
+  - Added ElasticSearch 0.90.0 and Lucene 4.2.1 (these add ~16MB, moving
+    Moqui from ~24MB to ~40MB); ElasticSearch files are under
+    runtime/elasticsearch and it is initialized and destroyed with the rest
+    of the framework
+  - Added EntityDynamicView.addRelationshipMember() method to easily add
+    member-entity based on relationship definition
+  - Added Entity Data Document feature configured by DataDocument* entities
+    which produce a sort of view entity (built on the fly with
+    EntityDynamicView); the actual data documents are nested Maps and Lists
+    produced by the EntityFacade.getDataDocuments() method
+  - Added Entity Data Feed feature configured by DataFeed* entities; a feed
+    is associated with one or more DataDocuments that are pushed to a
+    service or pulled through a method call; the first part implemented is
+    a real-time push triggered by entity changes for entities that are part
+    of associated DataDocuments and the document(s) produced and sent to
+    the feed receive service when a transaction is successfully committed
+  - Added index#DataFeedDocuments service to easily index all documents
+    associated with a DataFeed within a date range
+  - Added search#DataDocuments service which uses ElasticSearch; supports
+    pagination and so on
+  - Added Tool app screens for indexing and search DataDocuments
+- XML Screen and Form
+  - Added XML Form fields-not-referenced element to specify where to render
+    the fields not explicitly referenced under the field-layout element
+  - Small adjustment to transition parameter so that if explicitly defined
+    as empty that will be used instead of defaulting to value from context
+    or web parameters
+  - Screen transition response plain URLs now assemble parameters using
+    response parameter sub-elements
+  - Improved form-list with form-list-column so that hidden fields are
+    always rendered along with the form element
+  - Added span with id for form-list cell display fields and classes on it
+    for currency and field value Java classes (BigDecimal, Timestamp, etc)
+    plus CSS to center numbers and right align currency amounts
+  - Added XML Form field widget element auto-widget-service and
+    auto-widget-entity to do the same thing as auto-fields-* except that
+    they are applied to a single field for more granular control without a
+    bunch of ignores
+  - Added dynamic-dialog element to XML Screens; like the container-dialog
+    element but loads the dialog contents from the server when opened
+  - Added form-list.@paginate-always-show attribute, defaults to true; set
+    to false to hide pagination control and row count when there is only
+    one page of rows to display; SourceForge feature request #8
+  - Added widget-templates file and widget-template-include element under
+    XML Form fields to include widget-templates for widget reuse
 - Improved date/time and number parsing for String values passed to an
   entity, partly so that implicit entity-auto services are more usable
-- Screen transition response plain URLs now assemble parameters using
-  response parameter sub-elements
-- Improved form-list with form-list-column so that hidden fields are always
-  rendered along with the form element
-- Added span with id for form-list cell display fields and classes on it
-  for currency and field value Java classes (BigDecimal, Timestamp, etc)
-  plus CSS to center numbers and right align currency amounts
-- Added XML Form field widget element auto-widget-service and
-  auto-widget-entity to do the same thing as auto-fields-* except that
-  they are applied to a single field for more granular control without a
-  bunch of ignores
-- Added dynamic-dialog element to XML Screens; like the container-dialog
-  element but loads the dialog contents from the server when opened
-- Added form-list.@paginate-always-show attribute, defaults to true; set
-  to false to hide pagination control and row count when there is only
-  one page of rows to display; SourceForge feature request #8
-- Added widget-templates file and widget-template-include element under
-  XML Form fields to include widget-templates for widget reuse
-- Added EntityDynamicView.addRelationshipMember() method to easily add
-  member-entity based on relationship definition
-- Added Entity Data Document feature configured by DataDocument* entities
-  which produce a sort of view entity (built on the fly with
-  EntityDynamicView); the actual data documents are nested Maps and Lists
-  produced by the EntityFacade.getDataDocuments() method
-- Added Entity Data Feed feature configured by DataFeed* entities; a feed
-  is associated with one or more DataDocuments that are pushed to a service
-  or pulled through a method call; the first part implemented is a
-  real-time push triggered by entity changes for entities that are part of
-  associated DataDocuments and the document(s) produced and sent to the
-  feed receive service when a transaction is successfully committed
-- Added index#DataFeedDocuments service to easily index all documents
-  associated with a DataFeed within a date range
-- Added search#DataDocuments service which uses ElasticSearch; supports
-  pagination and so on
-- Added Tool app screens for indexing and search DataDocuments
 
 Bug Fixes:
 
@@ -1122,7 +1124,7 @@ Features considered, but probably not to be included in 1.0 series
 
 - Data Document
   - export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
-  - DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
+  x DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
 - Data Search
   x use elasticsearch.org
   x get data from Data Feed, Data Search index is a feed receive service
