@@ -241,7 +241,7 @@ class ScreenForm {
             EntityValue dbForm = ecfi.getEntityFacade().makeFind("DbForm").condition("formId", formId).useCache(true).one()
             dbFormNode = new Node(null, (dbForm.isListForm == "Y" ? "form-list" : "form-single"),null)
 
-            EntityList dbFormFieldList = ecfi.getEntityFacade().makeFind("DbFormField").condition("formId", formId)
+            EntityList dbFormFieldList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormField").condition("formId", formId)
                     .useCache(true).list()
             for (EntityValue dbFormField in dbFormFieldList) {
                 String fieldName = dbFormField.fieldName
@@ -270,9 +270,9 @@ class ScreenForm {
                 }
 
                 // add option settings when applicable
-                EntityList dbFormFieldOptionList = ecfi.getEntityFacade().makeFind("DbFormFieldOption")
+                EntityList dbFormFieldOptionList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldOption")
                         .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
-                EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().makeFind("DbFormFieldEntOpts")
+                EntityList dbFormFieldEntOptsList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldEntOpts")
                         .condition([formId:formId, fieldName:fieldName]).useCache(true).list()
                 EntityList combinedOptionList = new EntityListImpl(ecfi.getEntityFacade())
                 combinedOptionList.addAll(dbFormFieldOptionList)
@@ -280,20 +280,20 @@ class ScreenForm {
                 combinedOptionList.orderByFields(["sequenceNum"])
 
                 for (EntityValue optionValue in combinedOptionList) {
-                    if (optionValue.getEntityName() == "DbFormFieldOption") {
+                    if (optionValue.getEntityName() == "moqui.screen.form.DbFormFieldOption") {
                         widgetNode.appendNode("option", [key:optionValue.keyValue, text:optionValue.text])
                     } else {
                         Node entityOptionsNode = widgetNode.appendNode("entity-options", [text:(optionValue.text ?: "\${description}")])
                         Node entityFindNode = entityOptionsNode.appendNode("entity-find", ["entity-name":optionValue.entityName])
 
-                        EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().makeFind("DbFormFieldEntOptsCond")
+                        EntityList dbFormFieldEntOptsCondList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldEntOptsCond")
                                 .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
                                 .useCache(true).list()
                         for (EntityValue dbFormFieldEntOptsCond in dbFormFieldEntOptsCondList) {
                             entityFindNode.appendNode("econdition", ["field-name":dbFormFieldEntOptsCond.entityFieldName, value:dbFormFieldEntOptsCond.value])
                         }
 
-                        EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().makeFind("DbFormFieldEntOptsOrder")
+                        EntityList dbFormFieldEntOptsOrderList = ecfi.getEntityFacade().makeFind("moqui.screen.form.DbFormFieldEntOptsOrder")
                                 .condition([formId:formId, fieldName:fieldName, sequenceNum:optionValue.sequenceNum])
                                 .orderBy("orderSequenceNum").useCache(true).list()
                         for (EntityValue dbFormFieldEntOptsOrder in dbFormFieldEntOptsOrderList) {
