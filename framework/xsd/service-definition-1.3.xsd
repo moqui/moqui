@@ -345,11 +345,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="types" type="xs:string">
                 <xs:annotation><xs:documentation>
-                    A comma-separate list of the types of credit card to allow. The available options include:
-                        visa,mastercard,amex,discover,enroute,jcb,solo,switch,dinersclub,visaelectron
+                    A comma-separated list of the types of credit card to allow. The available options include:
+                        visa,mastercard,amex,discover,dinersclub
 
                     If empty defaults to allow any type of card (ie doesn't check the card type, just checks the number
                     using the Luhn MOD-10 checksum).
+
+                    NOTE: removed with updated for Validator 1.4.0: enroute, jcb, solo, switch, visaelectron
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>

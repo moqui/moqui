@@ -11,9 +11,9 @@
  */
 package org.moqui.impl.service
 
-import org.apache.commons.validator.CreditCardValidator
-import org.apache.commons.validator.EmailValidator
-import org.apache.commons.validator.UrlValidator
+import org.apache.commons.validator.routines.CreditCardValidator
+import org.apache.commons.validator.routines.EmailValidator
+import org.apache.commons.validator.routines.UrlValidator
 import org.moqui.impl.FtlNodeWrapper
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.StupidWebUtilities
@@ -669,13 +669,14 @@ class ServiceDefinition {
             }
             return true
         case "credit-card":
-            CreditCardValidator ccv = new CreditCardValidator()
+            long creditCardTypes = 0
             if (valNode."@types") {
                 for (String cts in ((String) valNode."@types").split(","))
-                    ccv.addAllowedCardType(creditCardTypeMap.get(cts.trim()))
+                    creditCardTypes += creditCardTypeMap.get(cts.trim())
             } else {
-                for (def cct in creditCardTypeMap.values()) ccv.addAllowedCardType(cct)
+                creditCardTypes = allCreditCards
             }
+            CreditCardValidator ccv = new CreditCardValidator(creditCardTypes)
             String str = pv as String
             if (!ccv.isValid(str)) {
                 eci.message.addValidationError(null, parameterName, getServiceName(), "Value [${str}] is not a valid credit card number.", null)
@@ -746,13 +747,15 @@ class ServiceDefinition {
         }
     }
 
-    static final Map<String, CreditCardValidator.CreditCardType> creditCardTypeMap =
-            (Map<String, CreditCardValidator.CreditCardType>) [visa:new CreditCardVisa(),
-            mastercard:new CreditCardMastercard(), amex:new CreditCardAmex(),
-            discover:new CreditCardDiscover(), enroute:new CreditCardEnroute(),
-            jcb:new CreditCardJcb(), solo:new CreditCardSolo(),
-            "switch":new CreditCardSwitch(), dinersclub:new CreditCardDinersClub(),
-            visaelectron:new CreditCardVisaElectron()]
+    static final Map<String, Long> creditCardTypeMap =
+            (Map<String, Long>) [visa:CreditCardValidator.VISA, mastercard:CreditCardValidator.MASTERCARD,
+                    amex:CreditCardValidator.AMEX, discover:CreditCardValidator.DISCOVER,
+                    dinersclub:CreditCardValidator.DINERS]
+    static final long allCreditCards = CreditCardValidator.VISA + CreditCardValidator.MASTERCARD +
+            CreditCardValidator.AMEX + CreditCardValidator.DISCOVER + CreditCardValidator.DINERS
+    // NOTE: removed with updated for Validator 1.4.0: enroute, jcb, solo, switch, visaelectron
+
+    /* These are no longer needed, but keeping for reference:
     static class CreditCardVisa implements CreditCardValidator.CreditCardType {
         boolean matches(String cc) {
             return (((cc.length() == 16) || (cc.length() == 13)) && (cc.substring(0, 1).equals("4")))
@@ -826,4 +829,5 @@ class ServiceDefinition {
                     first4digs.equals("4508") || first4digs.equals("4844") || first4digs.equals("4027")))
         }
     }
+    */
 }
