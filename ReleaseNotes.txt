@@ -1140,6 +1140,9 @@ Features considered, but probably not to be included in 1.0 series
     x Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, receivedDate
   - Add Moqui Conf XML elements to configure NotificationMessageListener classes
   - Listener for Email with XML Screen to layout (and try out using JSON documents as nested Maps from a screen)
+    - where to configure the email and screen to use? use EmailTemplate/emailTemplateId, but where to specify?
+      - for notifications from DataFeeds can add DataFeed.emailTemplateId
+      - maybe have a more general way to configure details of topics, including emailTemplateId and screenLocation...
 
 - Data Document
   x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
@@ -1163,8 +1166,11 @@ Features considered, but probably not to be included in 1.0 series
       - WebSocket (use Notification system, based on notificationName (and userAccountId?))
       - Moqui Service with receive#DataFeed service interface
   - Service to send email from DataFeed (ie receive#DataFeed implementation), use XML Screen for email content
+    - don't do this directly, do through NotificationMessage, ie the next item:
   - Service (receive#DataFeed impl) to send documents as User NotificationMessages (one message per DataDocument); this
     is probably the best way to tie a feed to WebSocket notifications for data updates
+    - Use the dataFeedId as the NotificationMessage topic
+    - Use this in HiveMind to send notifications of project, task, and wiki changes
 
 - System-System Message
   - System-System Message Sending
