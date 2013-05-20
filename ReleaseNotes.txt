@@ -1089,7 +1089,6 @@ Features considered, but probably not to be included in 1.0 series
   - Dynamic Forms (database-driven: DynForm* entities) like the OFBiz
     Survey and related entities (DbForm already in place to extend
     XML Screen Forms)
-  - Form field widget library (pre-defined drop-down, etc)
 - Entity Facade
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
@@ -1117,6 +1116,12 @@ Features considered, but probably not to be included in 1.0 series
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
 
+- Workflow that manages activity flow with screens and service attached to
+  activities and tasks based on them taking users to defined or automatic
+  screen; see BonitaSoft.com Open Source BPM for similar concept; generally
+  workflow without requiring implementation of an entire app once the
+  workflow itself is defined
+
 - User Notification (part of MessageFacade?)
   - WebSocket clients: track userAccountId, notificationName, connectionKey
     - Entity (no, keep in memory): VisitClient - visitId*, userAccountId*, notificationName*, connectionKey*
@@ -1134,6 +1139,7 @@ Features considered, but probably not to be included in 1.0 series
     x Entity: NotificationMessage - notificationMessageId*, topic, userGroupId, messageJson (from message Map)
     x Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, receivedDate
   - Add Moqui Conf XML elements to configure NotificationMessageListener classes
+  - Listener for Email with XML Screen to layout (and try out using JSON documents as nested Maps from a screen)
 
 - Data Document
   x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
@@ -1156,15 +1162,18 @@ Features considered, but probably not to be included in 1.0 series
     - feed transport (for each: supports confirmation?)
       - WebSocket (use Notification system, based on notificationName (and userAccountId?))
       - Moqui Service with receive#DataFeed service interface
+  - Service to send email from DataFeed (ie receive#DataFeed implementation), use XML Screen for email content
 
-- System-System Message Sending
-  - persist outgoing message
-  - status dates (sent, received/confirmed)
-  - retry on fail (sync or async from confirmation message)
-  - keep status in separate transaction
-- System-System Message Receiving
-  - persist incoming message, identify/link duplicate/retry messages
-  - trigger processing
-  - retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
-  - send async success/fail confirmation
-  - keep status in separate transaction
+- System-System Message
+  - System-System Message Sending
+    - persist outgoing message
+    - status dates (sent, received/confirmed)
+    - retry on fail (sync or async from confirmation message)
+    - keep status in separate transaction
+  - System-System Message Receiving
+    - persist incoming message, identify/link duplicate/retry messages
+    - trigger processing manually based on persisted message
+    - retry processing on fail (manual or automatic - number of retries and/or time delay before sending fail confirmation)
+    - send async success/fail confirmation
+    - keep status in separate transaction
+  - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
