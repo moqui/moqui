@@ -1141,9 +1141,10 @@ Features considered, but probably not to be included in 1.0 series
   x _index = indexName, _type = dataDocumentId, _id = (pk field values, underscore separated), use version?
 - Data Feed
   x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
+  - need external API for EntityDataFeed.getFeedLatestDocuments()?
   x API push matching data change
   - API (or service?) push outstanding data changes (registration/connection, time trigger)
-  - API (or service?) receive/persist data change messages
+  - API (or service?) receive/persist data change messages - going reverse of generation for DataDocuments... should be interesting
   - Consumer System Registry
     x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
     x per DataDocument alreadySentDateTime
