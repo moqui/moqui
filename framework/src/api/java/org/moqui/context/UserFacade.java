@@ -14,6 +14,7 @@ package org.moqui.context;
 import org.moqui.entity.EntityValue;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
@@ -44,7 +45,15 @@ public interface UserFacade {
      */
     void setCurrencyUomId(String uomId);
 
+    /** Get the value of a user preference.
+     * @param preferenceKey The key for the preference, looked up on UserPreference.preferenceKey
+     * @return The value of the preference from the UserPreference.preferenceValue field
+     */
     String getPreference(String preferenceKey);
+    /** Set the value of a user preference.
+     * @param preferenceKey The key for the preference, used to create or update a record with UserPreference.preferenceKey
+     * @param preferenceValue The value to set on the preference, set in UserPreference.preferenceValue
+     */
     void setPreference(String preferenceKey, String preferenceValue);
 
     /** Get the current date and time in a Timestamp object. This is either the current system time, or the Effective
@@ -111,4 +120,6 @@ public interface UserFacade {
 
     /** @return The current visit (aka session; from the Visit entity). Depending on the artifact being executed this may be null. */
     EntityValue getVisit();
+
+    List<NotificationMessage> getNotificationMessages(String topic);
 }

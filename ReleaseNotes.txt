@@ -7,7 +7,7 @@ Release 1.3.0 - TBD 2013
 
 Moqui Framework 1.3.0 is a major new feature and bug fix release. The major
 new features include the EntityFacade Data Document, Data Feed, and Data
-Search features, the MessageFacade User Notification feature, and various
+Search features, the User Notification Message feature, and various
 improvements to XML Screens and Forms. This release is backward compatible
 with Moqui Framework release 1.2.0. ... TODO
 
@@ -64,6 +64,13 @@ New Features:
     XML Form fields to include widget-templates for widget reuse
 - Improved date/time and number parsing for String values passed to an
   entity, partly so that implicit entity-auto services are more usable
+- Added User NotificationMessage feature to send messages to users through
+  active listeners or persist them to track receipt and handle delivery
+  when the user is next available. The message is a JSON String
+  (representing a Map). Custom listeners can be added as implementations
+  of the NotificationMessageListener interface. Message pulling is also
+  supported for things like message screens. Listeners may be created
+  for delivery means such as WebSocket, email, etc.
 
 Bug Fixes:
 
@@ -1116,11 +1123,12 @@ Features considered, but probably not to be included in 1.0 series
     - when sending out WebSocket messages lookup all active Visits for userAccountId and send to each connectionKey
     - API (with at least an example transition) for WebSocket client registry; set connectionKey on current Visit
     - use Camel WebSocket? jWebSocket? (how to send message to client connection key)
-  - Manual notification:
-    - API pass in notificationName, Map message, userGroupId, boolean queue (true: queue if not connected, false: only send if connected)
-    - API to get all outstanding notifications
-    - Entity: NotificationMessage - notificationMessageId*, notificationName, userGroupId, messageJson (from message Map)
-    - Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, (receivedDate)
+  x Manual notification:
+    x API pass in notificationName, Map message, userGroupId, boolean queue (true: queue if not connected, false: only send if connected)
+    x API to get all outstanding notifications
+    x Entity: NotificationMessage - notificationMessageId*, topic, userGroupId, messageJson (from message Map)
+    x Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, receivedDate
+  - Add Moqui Conf XML elements to configure NotificationMessageListener classes
 
 - Data Document
   x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output

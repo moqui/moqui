@@ -11,6 +11,7 @@
  */
 package org.moqui.context;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.CamelContext;
@@ -75,6 +76,10 @@ public interface ExecutionContext {
 
     /** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
     ScreenFacade getScreen();
+
+    NotificationMessage makeNotificationMessage();
+    List<NotificationMessage> getNotificationMessages(String userId, String topic);
+    void registerNotificationMessageListener(NotificationMessageListener nml);
 
     /** Apache Camel is used for integration message routing. To interact directly with Camel get the context here. */
     CamelContext getCamelContext();

@@ -14,6 +14,8 @@ package org.moqui.impl.context
 import org.elasticsearch.client.Client
 import org.moqui.context.ContextStack
 import org.moqui.context.ExecutionContext
+import org.moqui.context.NotificationMessage
+import org.moqui.context.NotificationMessageListener
 import org.moqui.context.UserFacade
 import org.moqui.context.MessageFacade
 import org.moqui.context.L10nFacade
@@ -22,6 +24,7 @@ import org.moqui.context.LoggerFacade
 import org.moqui.context.CacheFacade
 import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityFacade
+import org.moqui.entity.EntityList
 import org.moqui.service.ServiceFacade
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ArtifactExecutionFacade
@@ -102,6 +105,35 @@ class ExecutionContextImpl implements ExecutionContext {
 
     @Override
     ScreenFacade getScreen() { ecfi.getScreenFacade() }
+
+    @Override
+    NotificationMessage makeNotificationMessage() { return new NotificationMessageImpl(this) }
+    @Override
+    List<NotificationMessage> getNotificationMessages(String userId, String topic) {
+        if (!userId && !topic) return []
+
+        List<NotificationMessage> nmList = []
+        boolean alreadyDisabled = getArtifactExecution().disableAuthz()
+        try {
+            Map parameters = [receivedDate:null]
+            if (userId) parameters.userId = userId
+            if (topic) parameters.topic = topic
+            EntityList nmbuList = entity.makeFind("moqui.security.user.NotificationMessageByUser").condition(parameters).list()
+            for (EntityValue nmbu in nmbuList) {
+                NotificationMessageImpl nmi = new NotificationMessageImpl(eci)
+                nmi.populateFromValue(nmbu)
+                nmList.add(nmi)
+            }
+        } finally {
+            if (!alreadyDisabled) getArtifactExecution().enableAuthz()
+        }
+        return nmList
+    }
+    @Override
+    void registerNotificationMessageListener(NotificationMessageListener nml) {
+        getEcfi().registerNotificationMessageListener(nml)
+    }
+
 
     @Override
     CamelContext getCamelContext() { ecfi.getCamelContext() }

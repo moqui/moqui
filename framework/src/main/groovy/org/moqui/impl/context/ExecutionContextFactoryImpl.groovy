@@ -19,6 +19,7 @@ import org.moqui.context.ExecutionContext
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.L10nFacade
 import org.moqui.context.ResourceReference
+import org.moqui.context.NotificationMessageListener
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.screen.ScreenFacadeImpl
@@ -65,6 +66,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected Map<String, Map<String, Object>> artifactHitBinByType = new HashMap()
 
     protected Map<String, WebappInfo> webappInfoMap = new HashMap()
+
+    protected List<NotificationMessageListener> registeredNotificationMessageListeners = []
 
     /** The SecurityManager for Apache Shiro */
     protected org.apache.shiro.mgt.SecurityManager internalSecurityManager
@@ -359,8 +362,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     synchronized void destroy() {
         if (!this.destroyed) {
-            // first stop Camel to prevent more calls coming in
+            // stop Camel to prevent more calls coming in
             camelContext.stop()
+
+            // stop NotificationMessageListeners
+            for (NotificationMessageListener nml in registeredNotificationMessageListeners) nml.destroy()
 
             // stop ElasticSearch
             elasticSearchNode.close()
@@ -401,6 +407,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     String getRuntimePath() { return runtimePath }
     Node getConfXmlRoot() { return confXmlRoot }
+
+    void registerNotificationMessageListener(NotificationMessageListener nml) {
+        nml.init(this)
+        registeredNotificationMessageListeners.add(nml)
+    }
+    List<NotificationMessageListener> getNotificationMessageListeners() { return registeredNotificationMessageListeners }
 
     org.apache.shiro.mgt.SecurityManager getSecurityManager() {
         if (internalSecurityManager != null) return internalSecurityManager

@@ -12,6 +12,7 @@
 package org.moqui.impl.context
 
 import org.moqui.BaseException
+import org.moqui.context.NotificationMessage
 
 import java.sql.Timestamp
 import javax.servlet.http.Cookie
@@ -309,6 +310,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
+    @Override
     String getPreference(String preferenceKey) {
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
@@ -320,6 +322,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
+    @Override
     void setPreference(String preferenceKey, String preferenceValue) {
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         boolean beganTransaction = eci.transaction.begin(null)
@@ -343,6 +346,7 @@ class UserFacadeImpl implements UserFacade {
     @Override
     void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
+    @Override
     boolean loginUser(String username, String password, String tenantId) {
         if (tenantId) {
             eci.changeTenant(tenantId)
@@ -411,7 +415,7 @@ class UserFacadeImpl implements UserFacade {
     void logoutAnonymousOnly() { loggedInAnonymous = false }
     boolean getLoggedInAnonymous() { return loggedInAnonymous }
 
-    /* @see org.moqui.context.UserFacade#hasPermission(String) */
+    @Override
     boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, getNowTimestamp(), eci) }
 
     static boolean hasPermission(String username, String userPermissionId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
@@ -430,7 +434,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /* @see org.moqui.context.UserFacade#isInGroup(String) */
+    @Override
     boolean isInGroup(String userGroupId) { return isInGroup(getUserId(), userGroupId, getNowTimestamp(), eci) }
 
     static boolean isInGroup(String username, String userGroupId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
@@ -448,7 +452,7 @@ class UserFacadeImpl implements UserFacade {
         }
     }
 
-    /* @see org.moqui.context.UserFacade#getUserGroupIdSet() */
+    @Override
     Set<String> getUserGroupIdSet() {
         // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
         if (usernameStack.size() == 0) return allUserGroupIdOnly
@@ -493,13 +497,13 @@ class UserFacadeImpl implements UserFacade {
         return internalArtifactAuthzCheckList
     }
 
-    /* @see org.moqui.context.UserFacade#getUsername() */
+    @Override
     String getUserId() { return getUserAccount()?.userId }
 
-    /* @see org.moqui.context.UserFacade#getUsername() */
+    @Override
     String getUsername() { return this.usernameStack.size() > 0 ? this.usernameStack.peekFirst() : null }
 
-    /* @see org.moqui.context.UserFacade#getUserAccount() */
+    @Override
     EntityValue getUserAccount() {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
@@ -533,5 +537,11 @@ class UserFacadeImpl implements UserFacade {
             if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
         }
         return vst
+    }
+
+    @Override
+    List<NotificationMessage> getNotificationMessages(String topic) {
+        if (!getUserId()) return []
+        return eci.getEcfi().getNotificationMessages(getUserId(), topic)
     }
 }
