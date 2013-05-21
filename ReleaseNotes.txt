@@ -1122,7 +1122,7 @@ Features considered, but probably not to be included in 1.0 series
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
 
-- User Notification (part of MessageFacade?)
+- User Notification
   - WebSocket clients: track userAccountId, notificationName, connectionKey
     - Entity (no, keep in memory): VisitClient - visitId*, userAccountId*, notificationName*, connectionKey*
     - when sending out WebSocket messages lookup all active Visits for userAccountId and send to each connectionKey
