@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ScreenRender
+import org.moqui.context.ArtifactAuthorizationException
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 import javax.xml.transform.stream.StreamSource
@@ -66,25 +67,33 @@ class MoquiFopServlet extends HttpServlet {
             ScreenRender sr = ec.screen.makeRender().webappName(moquiWebappName).renderMode("xsl-fo")
                     .rootScreenFromHost(request.getServerName()).screenPath(pathInfo.split("/") as List)
             xslFoText = sr.render()
+
+            // logger.info("XSL-FO content:\n${xslFoText}")
+
+            String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
+            response.setContentType(contentType)
+
+            xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
+                    response.getOutputStream(), contentType)
+        } catch (ArtifactAuthorizationException e) {
+            logger.warn("Web Access Unauthorized: " + e.message)
+            response.sendError(401, e.message)
         } catch (ScreenResourceNotFoundException e) {
             logger.warn("Resource Not Found: ${e.message}")
             response.sendError(404, e.message)
-        }
-
-        // logger.info("XSL-FO content:\n${xslFoText}")
-
-        String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
-        response.setContentType(contentType)
-
-        try {
-            xslFoTransform(new StreamSource(new StringReader(xslFoText)), null,
-                    response.getOutputStream(), contentType)
-        } catch (Exception e) {
+        } catch (Throwable t) {
             logger.error("Error transforming XSL-FO content:\n${xslFoText}", e)
+            if (ec.message.hasError()) {
+                String errorsString = ec.message.errorsString
+                logger.error(errorsString, t)
+                response.sendError(500, errorsString)
+            } else {
+                throw t
+            }
+        } finally {
+            // make sure everything is cleaned up
+            ec.destroy()
         }
-
-        // make sure everything is cleaned up
-        ec.destroy()
 
         if (logger.infoEnabled) logger.info("Finished FOP request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
     }

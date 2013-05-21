@@ -77,10 +77,10 @@ class MoquiServlet extends HttpServlet {
             } else {
                 throw t
             }
+        } finally {
+            // make sure everything is cleaned up
+            ec.destroy()
         }
-
-        // make sure everything is cleaned up
-        ec.destroy()
 
         if (logger.infoEnabled) logger.info("Finished request to [${pathInfo}] of content type [${response.getContentType()}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds in session [${request.session.id}] thread [${Thread.currentThread().id}:${Thread.currentThread().name}]")
 
