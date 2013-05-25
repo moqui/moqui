@@ -45,15 +45,41 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="index" noun="DataDocuments" authenticate="false">
         <description>Indexes documents passed using ElasticSearch. The DataDocument must have an indexName.</description>
         <implements service="org.moqui.EntityServices.receive#DataFeed"/>
+        <in-parameters><parameter name="getOriginalDocuments" type="Boolean" default-value="false"/></in-parameters>
+        <out-parameters>
+            <parameter name="documentVersionList" type="List" required="true"/>
+            <parameter name="originalDocumentList" type="List" required="false"/>
+        </out-parameters>
         <actions>
             <script>
-                // org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger("index_DataDocument")
-                for (Map document in documentList) {
-                    ec.elasticSearchClient
-                            .prepareIndex((String) document._index, (String) document._type, (String) document._id)
-                            .setSource(document).execute().actionGet()
-                    // logger.warn("============ indexed [${document._index}, ${document._type}, ${document._id}]")
+            import org.elasticsearch.action.index.IndexResponse
+            import org.slf4j.Logger
+            import org.slf4j.LoggerFactory
+            import org.moqui.context.ExecutionContext
+            ExecutionContext ec = context.ec
+            Logger logger = LoggerFactory.getLogger("index_DataDocuments")
+
+            documentVersionList = []
+            originalDocumentList = getOriginalDocuments ? [] : null
+            for (Map document in documentList) {
+                if (getOriginalDocuments) {
+                    // this may fail for a number of reasons, like index doesn't exist yet, so catch the exception
+                    try {
+                        Map originalDocument = ec.elasticSearchClient
+                                .prepareGet((String) document._index, (String) document._type, (String) document._id)
+                                .execute().actionGet().getSourceAsMap()
+                        originalDocumentList.add(originalDocument ?: [:])
+                    } catch (Exception e) {
+                        logger.info("Could not get original document for [${document._index}, ${document._type}, ${document._id}]: ${e.toString()}")
+                        originalDocumentList.add([:])
+                    }
                 }
+                IndexResponse response = ec.elasticSearchClient
+                        .prepareIndex((String) document._index, (String) document._type, (String) document._id)
+                        .setSource(document).execute().actionGet()
+                documentVersionList.add(response.getVersion())
+                // logger.warn("============ indexed [${document._index}, ${document._type}, ${document._id}] version [${response.getVersion()}]")
+            }
             </script>
         </actions>
     </service>
@@ -114,7 +140,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 import org.elasticsearch.index.query.QueryBuilders
                 import org.elasticsearch.search.SearchHit
                 import org.elasticsearch.search.SearchHits
-                org.moqui.context.ExecutionContext ec = context.ec
+                import org.moqui.context.ExecutionContext
+                ExecutionContext ec = context.ec
 
                 documentList = []
 
