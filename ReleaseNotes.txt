@@ -1141,7 +1141,7 @@ Features considered, but probably not to be included in 1.0 series
   - Add Moqui Conf XML elements to configure NotificationMessageListener classes
   - Listener for Email with XML Screen to layout (and try out using JSON documents as nested Maps from a screen)
     - where to configure the email and screen to use? use EmailTemplate/emailTemplateId, but where to specify?
-      - for notifications from DataFeeds can add DataFeed.emailTemplateId
+      - for notifications from DataFeeds can add DataFeed.emailTemplateId (or not, what about toAddresses, etc?)
       - maybe have a more general way to configure details of topics, including emailTemplateId and screenLocation...
 
 - Data Document
@@ -1155,7 +1155,7 @@ Features considered, but probably not to be included in 1.0 series
   x _index = indexName, _type = dataDocumentId, _id = (pk field values, underscore separated), use version?
 - Data Feed
   x API get outstanding data changes (EntityDataFeed.getFeedLatestDocuments())
-  - need external API for EntityDataFeed.getFeedLatestDocuments()?
+  X need external API for EntityDataFeed.getFeedLatestDocuments()? - done as service
   x API push matching data change
   - API (or service?) push outstanding data changes (registration/connection, time trigger)
   - API (or service?) receive/persist data change messages - going reverse of generation for DataDocuments... should be interesting
@@ -1166,7 +1166,8 @@ Features considered, but probably not to be included in 1.0 series
       - WebSocket (use Notification system, based on notificationName (and userAccountId?))
       - Moqui Service with receive#DataFeed service interface
   - Service to send email from DataFeed (ie receive#DataFeed implementation), use XML Screen for email content
-    - don't do this directly, do through NotificationMessage, ie the next item:
+    - don't do this directly, do through NotificationMessage, ie the next item... or maybe not, too many parameters for
+      email from too many places related to a DataDocument, may not be flexible enough and may be quite messy
   - Service (receive#DataFeed impl) to send documents as User NotificationMessages (one message per DataDocument); this
     is probably the best way to tie a feed to WebSocket notifications for data updates
     - Use the dataFeedId as the NotificationMessage topic

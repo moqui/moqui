@@ -94,11 +94,31 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="documentsIndexed" type="Integer"/>
         </out-parameters>
         <actions>
-            <script>documentList = ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)</script>
+            <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)"/>
             <set field="feedStamp" from="thruUpdateStamp ?: ec.user.nowTimestamp"/>
             <service-call name="org.moqui.EntityServices.index#DataDocuments" in-map="context"/>
             <set field="documentsIndexed" from="documentList.size()"/>
             <message>Indexed ${documentsIndexed} documents</message>
+        </actions>
+    </service>
+    <service verb="get" noun="DataFeedDocuments">
+        <in-parameters>
+            <parameter name="dataFeedId" required="true"/>
+            <parameter name="fromUpdateStamp" type="Timestamp"/>
+            <parameter name="thruUpdateStamp" type="Timestamp"/>
+        </in-parameters>
+        <out-parameters><parameter name="documentList" type="List"/></out-parameters>
+        <actions>
+            <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)"/>
+        </actions>
+    </service>
+    <service verb="get" noun="DataFeedLatestDocuments">
+        <description>This service gets the latest documents for a DataFeed based on DataFeed.lastFeedStamp, and updates
+            lastFeedStamp to the current time.</description>
+        <in-parameters><parameter name="dataFeedId" required="true"/></in-parameters>
+        <out-parameters><parameter name="documentList" type="List"/></out-parameters>
+        <actions>
+            <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedLatestDocuments(dataFeedId)"/>
         </actions>
     </service>
 
