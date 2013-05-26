@@ -45,7 +45,7 @@ class EntityDataFeed {
 
     /** This method gets the latest documents for a DataFeed based on DataFeed.lastFeedStamp, and updates lastFeedStamp
      * to the current time. This method should be called in a service or something to manage the transaction.
-     * See the org.moqui.EntityServices.get#DataFeedLatestDocuments service.*/
+     * See the org.moqui.impl.EntityServices.get#DataFeedLatestDocuments service.*/
     List<Map> getFeedLatestDocuments(String dataFeedId) {
         EntityValue dataFeed = efi.makeFind("moqui.entity.feed.DataFeed").condition("dataFeedId", dataFeedId)
                 .useCache(false).forUpdate(true).one()

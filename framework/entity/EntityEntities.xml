@@ -121,7 +121,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="primaryEntityName" type="text-medium"/>
         <field name="manualDataServiceName" type="text-medium"><description>Name of a service to call to get additional
             data to include in the document. This service should implement the
-            org.moqui.EntityServices.add#ManualDocumentData interface.</description></field>
+            org.moqui.impl.EntityServices.add#ManualDocumentData interface.</description></field>
     </entity>
     <entity entity-name="DataDocumentField" package-name="moqui.entity.document">
         <field name="dataDocumentId" type="id" is-pk="true"/>

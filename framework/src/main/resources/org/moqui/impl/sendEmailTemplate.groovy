@@ -13,6 +13,7 @@ import org.apache.commons.mail.HtmlEmail
 import org.apache.commons.mail.ByteArrayDataSource
 import javax.activation.DataSource
 import org.moqui.BaseException
+import org.moqui.impl.context.ExecutionContextImpl
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -20,8 +21,8 @@ import org.slf4j.LoggerFactory
 Logger logger = LoggerFactory.getLogger("org.moqui.impl.sendEmailTemplate")
 
 try {
-// NOTE: uncomment for autocomplete, comment to avoid causing runtime problems
-// org.moqui.impl.context.ExecutionContextImpl ec
+
+ExecutionContextImpl ec = context.ec
 
 // logger.info("sendEmailTemplate with emailTemplateId [${emailTemplateId}], bodyParameters [${bodyParameters}]")
 

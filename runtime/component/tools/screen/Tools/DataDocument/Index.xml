@@ -15,7 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         default-menu-title="Index" default-menu-index="2">
 
     <transition name="indexFeedDocuments">
-        <service-call name="org.moqui.EntityServices.index#DataFeedDocuments" in-map="context"/>
+        <service-call name="org.moqui.impl.EntityServices.index#DataFeedDocuments" in-map="context"/>
         <default-response url="."/>
     </transition>
 

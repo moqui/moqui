@@ -12,11 +12,11 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.3.xsd">
 
-    <service verb="send" noun="EmailTemplate" authenticate="false" type="script"
+    <service verb="send" noun="EmailTemplate" authenticate="anonymous-view" type="script"
              location="classpath://org/moqui/impl/sendEmailTemplate.groovy">
         <description>NOTE: this service is meant for internal use and authentication is not required. Do not export or
             allow this service to be called remotely.</description>
-        <implements service="org.moqui.BasicServices.sendEmailTemplate"/>
+        <implements service="org.moqui.BasicServices.send#EmailTemplate"/>
     </service>
 
     <service verb="poll" noun="EmailServer" authenticate="false" type="script" transaction-timeout="600"
