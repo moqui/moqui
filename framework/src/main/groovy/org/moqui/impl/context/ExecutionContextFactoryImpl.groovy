@@ -599,7 +599,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
                 StringBuilder errorMessage = new StringBuilder()
                 for (String curErr in eci.message.errors) errorMessage.append(curErr).append(";")
                 if (errorMessage.length() > 255) errorMessage.delete(255, errorMessage.length())
-                ahp.errorMessage = errorMessage
+                ahp.errorMessage = errorMessage.toString()
             } else {
                 ahp.wasError = "N"
             }
