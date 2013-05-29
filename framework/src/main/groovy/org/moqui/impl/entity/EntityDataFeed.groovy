@@ -502,7 +502,7 @@ class EntityDataFeed {
                                             List<String> backwardRelList = []
                                             // add the relationships backwards
                                             for (String relElement in relationshipList) backwardRelList.add(0, relElement)
-                                            // add the primary entity name to the end as that is the targer
+                                            // add the primary entity name to the end as that is the target
                                             backwardRelList.add(primaryEntityName)
 
                                             String prevRelName = backwardRelList.get(0)
@@ -546,11 +546,16 @@ class EntityDataFeed {
 
                                                 prevRelName = currentRelName
                                                 prevRelValueList = currentRelValueList
+
+                                                if (!prevRelValueList) {
+                                                    if (logger.isTraceEnabled()) logger.trace("Creating DataFeed for DataDocument [${dataDocumentId}], no backward rel values found for [${backwardRelName}] on updated values: ${prevRelValueList}")
+                                                    break
+                                                }
                                             }
 
                                             // go through final prevRelValueList (which should be for the primary
                                             //     entity) and get the PK for each
-                                            for (EntityValue primaryEv in prevRelValueList) {
+                                            if (prevRelValueList) for (EntityValue primaryEv in prevRelValueList) {
                                                 Map pkFieldValue = [:]
                                                 for (String pkFieldName in primaryPkFieldNames)
                                                     pkFieldValue.put(pkFieldName, primaryEv.get(pkFieldName))
@@ -561,8 +566,8 @@ class EntityDataFeed {
                                 }
                             }
 
-                            // this shouldn't happen, but just in case there aren't really any values for the document
-                            //    then skip it, don't want to query with no constraints and get a huge document
+                            // if there aren't really any values for the document (a value updated that isn't really in
+                            //    a document) then skip it, don't want to query with no constraints and get a huge document
                             if (!primaryPkFieldValues) continue
 
                             // for primary entity with 1 PK field do an IN condition, for >1 PK field do an and cond for

@@ -653,6 +653,7 @@ class ScreenRenderImpl implements ScreenRender {
     List<String> getActiveScreenPath() {
         // handle case where root screen is first/zero in list versus a standalone screen
         int fullPathIndex = screenUrlInfo.renderPathDifference + screenPathIndex
+        if (fullPathIndex == 0) return []
         return screenUrlInfo.fullPathNameList[0..fullPathIndex-1]
     }
 
