@@ -178,13 +178,15 @@ class EntityDataDocument {
             }
             mainFind.condition(efi.getConditionFactory().makeCondition(dateRangeOrCondList, EntityCondition.OR))
         }
-        // logger.warn("=========== DataDocument query condition for ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
+        logger.warn("=========== DataDocument query condition for ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
 
         // do the one big query
         EntityListIterator mainEli = mainFind.iterator()
         Map<String, Map> documentMapMap = [:]
         try {
             for (EntityValue ev in mainEli) {
+                logger.warn("=========== DataDocument query result for ${dataDocumentId}: ${ev}")
+
                 StringBuffer pkCombinedSb = new StringBuffer()
                 for (String pkFieldName in primaryPkFieldNames) {
                     if (pkCombinedSb.length() > 0) pkCombinedSb.append("::")
@@ -221,7 +223,7 @@ class EntityDataDocument {
                     documentMapMap.put(docId, docMap)
                 }
 
-                // recursively add List of Maps for each related entity
+                // recursively add Map or List of Maps for each related entity
                 populateDataDocRelatedMap(ev, docMap, primaryEd, fieldTree, relationshipAliasMap, false)
             }
         } finally {
@@ -301,9 +303,9 @@ class EntityDataDocument {
                         for (Map candidateMap in relatedEntityDocList) {
                             boolean allMatch = true
                             for (Map.Entry fieldTreeChildEntry in fieldTreeChild.entrySet()) {
-                                if (fieldTreeEntry.getValue() instanceof String) {
-                                    if (fieldTreeEntry.getKey() == "_ALIAS") continue
-                                    String fieldName = fieldTreeEntry.getValue()
+                                if (fieldTreeChildEntry.getValue() instanceof String) {
+                                    if (fieldTreeChildEntry.getKey() == "_ALIAS") continue
+                                    String fieldName = fieldTreeChildEntry.getValue()
                                     if (candidateMap.get(fieldName) != ev.get(fieldName)) {
                                         allMatch = false
                                         break
