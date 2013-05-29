@@ -62,6 +62,8 @@ New Features:
     one page of rows to display; SourceForge feature request #8
   - Added widget-templates file and widget-template-include element under
     XML Form fields to include widget-templates for widget reuse
+  - Added form-list.@skip-form element for use with plain tables that will
+    have nothing to submit; in HTML leaves out form elements
 - Improved date/time and number parsing for String values passed to an
   entity, partly so that implicit entity-auto services are more usable
 - Added User NotificationMessage feature to send messages to users through

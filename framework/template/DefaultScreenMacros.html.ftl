@@ -501,6 +501,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign isMultiFinalRow = false>
     <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
     <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
+    <#assign skipForm = (formNode["@skip-form"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
     <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
@@ -535,7 +536,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <div class="form-list-outer" id="${formNode["@name"]}-table">
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-                <#if needHeaderForm>
+                <#if needHeaderForm && !skipForm>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
                 <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
@@ -562,13 +563,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                         </#list>
                         </div>
                     </#list>
-                <#if needHeaderForm>
+                <#if needHeaderForm && !skipForm>
                 </form>
                 <#else>
                 </div>
                 </#if>
             </div>
-            <#if isMulti>
+            <#if isMulti && !skipForm>
                 <form name="${formNode["@name"]}" id="${formNode["@name"]}" class="form-body" method="post" action="${urlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <input type="hidden" name="_isMulti" value="true">
@@ -580,7 +581,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
             ${sri.startFormListRow(formNode["@name"], listEntry)}
-            <#if isMulti>
+            <#if isMulti || skipForm>
             <div class="form-row">
             <#else>
             <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
@@ -602,7 +603,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </#list>
                 </div>
             </#list>
-            <#if isMulti>
+            <#if isMulti || skipForm>
             </div>
             <#else>
                 <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
@@ -612,7 +613,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </#list>
         ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         <#if !skipEnd>
-            <#if isMulti>
+            <#if isMulti && !skipForm>
                 <div class="form-bottom-row">
                     <#assign isMultiFinalRow = true>
                     <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
@@ -623,7 +624,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </#if>
             </div><!-- close table -->
         </#if>
-        <#if isMulti && !skipStart>
+        <#if isMulti && !skipStart && !skipForm>
         <script>
             $("#${formNode["@name"]}").validate();
             $(document).tooltip();
@@ -635,7 +636,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <div class="form-list-outer" id="${formNode["@name"]}-table">
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-                <#if needHeaderForm>
+                <#if needHeaderForm && !skipStart && !skipForm>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
                     <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
                 <#else>
@@ -653,13 +654,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                             <#recurse fieldNode["header-field"][0]/>
                         </#if>
                     </#list>
-                <#if needHeaderForm && !skipStart>
+                <#if needHeaderForm && !skipStart && !skipForm>
                     </form>
                 <#else>
                     </div>
                 </#if>
             </div>
-            <#if isMulti>
+            <#if isMulti && !skipForm>
                 <form name="${formNode["@name"]}" id="${formNode["@name"]}" class="form-body" method="post" action="${urlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <input type="hidden" name="_isMulti" value="true">
@@ -671,13 +672,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
             ${sri.startFormListRow(formNode["@name"], listEntry)}
-            <#if isMulti>
+            <#if isMulti || skipForm>
                 <div class="form-row">
             <#else>
                 <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
             </#if>
                 <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
-            <#if isMulti>
+            <#if isMulti || skipForm>
                 </div>
             <#else>
                     <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
@@ -687,7 +688,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </#list>
         ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         <#if !skipEnd>
-            <#if isMulti>
+            <#if isMulti && !skipForm>
                 <div class="form-bottom-row">
                     <#assign isMultiFinalRow = true>
                     <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
@@ -698,7 +699,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </#if>
             </div>
         </#if>
-        <#if isMulti && !skipStart>
+        <#if isMulti && !skipStart && !skipForm>
             <script>
                 $("#${formNode["@name"]}").validate();
                 $(document).tooltip();
