@@ -197,14 +197,12 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     HttpServletRequest getRequest() { return request }
-
     @Override
     Map<String, Object> getRequestAttributes() {
         if (requestAttributes != null) return requestAttributes
         requestAttributes = new StupidWebUtilities.RequestAttributeMap(request)
         return requestAttributes
     }
-
     @Override
     Map<String, Object> getRequestParameters() {
         if (requestParameters != null) return requestParameters
@@ -227,7 +225,6 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     HttpSession getSession() { return request.getSession() }
-
     @Override
     Map<String, Object> getSessionAttributes() {
         if (sessionAttributes) return sessionAttributes
@@ -237,13 +234,82 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     ServletContext getServletContext() { return request.session.getServletContext() }
-
     @Override
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
         applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.session.getServletContext())
         return applicationAttributes
     }
+    @Override
+    String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption) {
+        String webappName = getServletContext().getInitParameter("moqui-name")
+        return getWebappRootUrl(webappName, null, requireFullUrl, useEncryption, eci)
+    }
+
+    static String getWebappRootUrl(String webappName, String servletContextPath, boolean requireFullUrl, Boolean useEncryption, ExecutionContextImpl eci) {
+        Node webappNode = (Node) eci.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
+        WebFacade webFacade = eci.getWeb()
+
+        boolean requireEncryption = useEncryption == null && webFacade ? webFacade.getRequest().isSecure() : useEncryption
+        boolean needFullUrl = requireFullUrl ||
+                (requireEncryption && webFacade != null && !webFacade.getRequest().isSecure()) ||
+                (!requireEncryption && webFacade != null && webFacade.getRequest().isSecure())
+        StringBuilder urlBuilder = new StringBuilder()
+        // build base from conf
+        if (needFullUrl && webappNode) {
+            if (requireEncryption && webappNode."@https-enabled" != "false") {
+                urlBuilder.append("https://")
+                if (webappNode."@https-host") {
+                    urlBuilder.append(webappNode."@https-host")
+                } else {
+                    if (webFacade) {
+                        urlBuilder.append(webFacade.getRequest().getServerName())
+                    } else {
+                        // uh-oh, no web context, default to localhost
+                        urlBuilder.append("localhost")
+                    }
+                }
+                String httpsPort = webappNode."@https-port"
+                // try the local port; this won't work when switching from http to https, conf required for that
+                if (!httpsPort && webFacade && webFacade.request.isSecure()) httpsPort = webFacade.request.getLocalPort() as String
+                if (httpsPort != "443") urlBuilder.append(":").append(httpsPort)
+            } else {
+                urlBuilder.append("http://")
+                if (webappNode."@http-host") {
+                    urlBuilder.append(webappNode."@http-host")
+                } else {
+                    if (webFacade) {
+                        urlBuilder.append(webFacade.getRequest().getServerName())
+                    } else {
+                        // uh-oh, no web context, default to localhost
+                        urlBuilder.append("localhost")
+                    }
+                }
+                String httpPort = webappNode."@http-port"
+                // try the local port; this won't work when switching from https to http, conf required for that
+                if (!httpPort && webFacade && !webFacade.getRequest().isSecure()) httpPort = webFacade.getRequest().getLocalPort() as String
+                if (httpPort != "80") urlBuilder.append(":").append(httpPort)
+            }
+            urlBuilder.append("/")
+        } else {
+            // can't get these settings, hopefully a URL from the root will do
+            urlBuilder.append("/")
+        }
+
+        // add servletContext.contextPath
+        if (!servletContextPath && webFacade)
+            servletContextPath = webFacade.getServletContext().getContextPath()
+        if (servletContextPath) {
+            if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
+            urlBuilder.append(servletContextPath)
+        }
+
+        // make sure we don't have a trailing slash
+        if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
+
+        return urlBuilder.toString()
+    }
+
 
     @Override
     Map<String, Object> getErrorParameters() { return errorParameters }

@@ -13,6 +13,8 @@ package org.moqui.impl.screen
 
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
+import org.moqui.impl.context.ExecutionContextImpl
+import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
 import org.moqui.impl.screen.ScreenDefinition.TransitionItem
 import org.moqui.impl.webapp.ScreenResourceNotFoundException
@@ -426,65 +428,13 @@ class ScreenUrlInfo {
 
         this.targetScreen = lastSd
 
-        StringBuilder urlBuilder = new StringBuilder()
-        if (sri.baseLinkUrl != null) {
-            urlBuilder.append(sri.baseLinkUrl)
+        if (sri.baseLinkUrl) {
+            baseUrl = sri.baseLinkUrl
         } else {
-            // build base from conf
-            Node webappNode = sri.getWebappNode()
-            if (webappNode) {
-                if (this.requireEncryption && webappNode."@https-enabled" != "false") {
-                    urlBuilder.append("https://")
-                    if (webappNode."@https-host") {
-                        urlBuilder.append(webappNode."@https-host")
-                    } else {
-                        if (ec.web) {
-                            urlBuilder.append(ec.web.request.serverName)
-                        } else {
-                            // uh-oh, no web context, default to localhost
-                            urlBuilder.append("localhost")
-                        }
-                    }
-                    String httpsPort = webappNode."@https-port"
-                    // try the local port; this won't work when switching from http to https, conf required for that
-                    if (!httpsPort && ec.web && ec.web.request.isSecure()) httpsPort = ec.web.request.getLocalPort() as String
-                    if (httpsPort != "443") urlBuilder.append(":").append(httpsPort)
-                } else {
-                    urlBuilder.append("http://")
-                    if (webappNode."@http-host") {
-                        urlBuilder.append(webappNode."@http-host")
-                    } else {
-                        if (ec.web) {
-                            urlBuilder.append(ec.web.request.serverName)
-                        } else {
-                            // uh-oh, no web context, default to localhost
-                            urlBuilder.append("localhost")
-                        }
-                    }
-                    String httpPort = webappNode."@http-port"
-                    // try the local port; this won't work when switching from https to http, conf required for that
-                    if (!httpPort && ec.web && !ec.web.request.isSecure()) httpPort = ec.web.request.getLocalPort() as String
-                    if (httpPort != "80") urlBuilder.append(":").append(httpPort)
-                }
-                urlBuilder.append("/")
-            } else {
-                // can't get these settings, hopefully a URL from the root will do
-                urlBuilder.append("/")
-            }
-
-            // add servletContext.contextPath
-            String servletContextPath = sri.servletContextPath
-            if (!servletContextPath && ec.web)
-                servletContextPath = ec.web.servletContext.contextPath
-            if (servletContextPath) {
-                if (servletContextPath.startsWith("/")) servletContextPath = servletContextPath.substring(1)
-                urlBuilder.append(servletContextPath)
-            }
+            baseUrl = WebFacadeImpl.getWebappRootUrl(sri.webappName, sri.servletContextPath, true,
+                    this.requireEncryption, (ExecutionContextImpl) ec)
         }
-
-        if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
-
-        baseUrl = urlBuilder.toString()
+        if (baseUrl.charAt(baseUrl.length()-1) == '/') baseUrl.substring(0, baseUrl.length()-1)
     }
 
     @Override

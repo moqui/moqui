@@ -109,7 +109,7 @@ class EntityDataFeed {
         // see if this should be added to the feed
         List<DocumentEntityInfo> entityInfoList = getDataFeedEntityInfoList(ev.getEntityName())
         if (entityInfoList) {
-            // logger.warn("============== found registered entity [${ev.getEntityName()}] value: ${ev}")
+            logger.warn("============== found registered entity [${ev.getEntityName()}] value: ${ev}")
 
             // populate and pass the dataDocumentIdSet, and/or other things needed?
             Set<String> dataDocumentIdSet = new HashSet<String>()
@@ -118,6 +118,9 @@ class EntityDataFeed {
                 boolean fieldModified = false
                 for (String fieldName in entityInfo.fields)
                     if (ev.isFieldModified(fieldName)) { fieldModified = true; break }
+                // TODO: change isFieldModified to be sensitive to update and get original DB values from DB if we're
+                // TODO: doing an update (this method needs to know if create or update, do something similar to audit
+                // TODO: log in update or even refactor to use same code for both audit log and data feed
                 if (!fieldModified) continue
 
                 // only add value and dataDocumentId if there are no conditions or if this record matches all conditions
@@ -137,7 +140,7 @@ class EntityDataFeed {
             }
 
             if (dataDocumentIdSet) {
-                // logger.warn("============== DataFeed registering entity [${ev.getEntityName()}] value: ${ev}")
+                logger.warn("============== DataFeed registering entity value [${ev.getEntityName()}] value: ${ev}")
                 // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
                 getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
             }

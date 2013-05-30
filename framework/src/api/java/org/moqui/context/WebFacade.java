@@ -33,6 +33,7 @@ public interface WebFacade {
 
     ServletContext getServletContext();
     Map<String, Object> getApplicationAttributes();
+    String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption);
 
     Map<String, Object> getErrorParameters();
 
