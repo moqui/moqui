@@ -47,9 +47,9 @@ abstract class EntityValueBase implements EntityValue {
     protected final String entityName
     protected volatile EntityDefinition entityDefinition
 
-    protected final Map<String, Object> valueMap = new HashMap()
+    private final Map<String, Object> valueMap = [:]
     /* Original DB Value Map: not used unless the value has been modified from its original state from the DB */
-    protected Map<String, Object> dbValueMap = null
+    private Map<String, Object> dbValueMap = null
 
     protected boolean modified = false
     protected boolean mutable = true
@@ -85,7 +85,9 @@ abstract class EntityValueBase implements EntityValue {
     boolean isModified() { return modified }
 
     @Override
-    boolean isFieldModified(String name) { return dbValueMap.containsKey(name) && dbValueMap.get(name) != valueMap.get(name) }
+    boolean isFieldModified(String name) {
+        return dbValueMap && dbValueMap.containsKey(name) && dbValueMap.get(name) != valueMap.get(name)
+    }
 
     @Override
     boolean isMutable() { return mutable }
@@ -180,11 +182,12 @@ abstract class EntityValueBase implements EntityValue {
         if (!getEntityDefinition().isField(name)) {
             throw new EntityException("The name [${name}] is not a valid field name for entity [${entityName}]")
         }
-        Object oldValue = valueMap.get(name)
-        if (oldValue != value) {
+        if (valueMap.get(name) != value) {
             modified = true
-            if (dbValueMap == null) dbValueMap = new HashMap()
-            dbValueMap.put(name, oldValue)
+            if (valueMap.containsKey(name)) {
+                if (dbValueMap == null) dbValueMap = [:]
+                dbValueMap.put(name, valueMap.get(name))
+            }
         }
         valueMap.put(name, value)
         return this
@@ -379,6 +382,8 @@ abstract class EntityValueBase implements EntityValue {
 
                 // if isUpdate but old value == new value, then it hasn't been updated, so skip it
                 if (isUpdate && value == oldValue) continue
+                // if it's a create and there is no value don't log a change
+                if (!isUpdate && value == null) continue
 
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
@@ -419,7 +424,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     Object getOriginalDbValue(String name) {
-        return (dbValueMap && dbValueMap.get(name)) ? dbValueMap.get(name) : valueMap.get(name)
+        return (dbValueMap && dbValueMap.containsKey(name)) ? dbValueMap.get(name) : valueMap.get(name)
     }
 
     @Override
@@ -869,7 +874,7 @@ abstract class EntityValueBase implements EntityValue {
 
         boolean dbValueMapFromDb = false
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
-        if (dbValueMap != null) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
+        if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
         Map oldValues = dbValueMap
         if (ed.needsAuditLog()) {

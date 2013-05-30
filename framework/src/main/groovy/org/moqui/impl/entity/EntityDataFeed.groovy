@@ -447,6 +447,8 @@ class EntityDataFeed {
                 public void run() {
                     boolean beganTransaction = ecfi.transactionFacade.begin(null)
                     try {
+                        if (logger.isTraceEnabled()) logger.trace("Doing DataFeed with allDataDocumentIds: ${allDataDocumentIds}, feedValues: ${feedValues}")
+
                         EntityFacadeImpl efi = edf.getEfi()
                         Timestamp feedStamp = new Timestamp(System.currentTimeMillis())
                         // assemble data and call DataFeed services

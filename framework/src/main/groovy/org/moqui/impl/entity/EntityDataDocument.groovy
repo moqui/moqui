@@ -178,14 +178,14 @@ class EntityDataDocument {
             }
             mainFind.condition(efi.getConditionFactory().makeCondition(dateRangeOrCondList, EntityCondition.OR))
         }
-        logger.warn("=========== DataDocument query condition for ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
+        // logger.warn("=========== DataDocument query condition for ${dataDocumentId} mainFind.condition=${((EntityFindImpl) mainFind).getWhereEntityCondition()}")
 
         // do the one big query
         EntityListIterator mainEli = mainFind.iterator()
         Map<String, Map> documentMapMap = [:]
         try {
             for (EntityValue ev in mainEli) {
-                logger.warn("=========== DataDocument query result for ${dataDocumentId}: ${ev}")
+                // logger.warn("=========== DataDocument query result for ${dataDocumentId}: ${ev}")
 
                 StringBuffer pkCombinedSb = new StringBuffer()
                 for (String pkFieldName in primaryPkFieldNames) {
