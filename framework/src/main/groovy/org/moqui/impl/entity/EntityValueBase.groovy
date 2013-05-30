@@ -815,8 +815,8 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
-        // this needs to be called before the actual update so we know which fields are modified
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
+        // do this before the db change so modified flag isn't cleared
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
 
         ListOrderedSet fieldList = new ListOrderedSet()
         for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
@@ -917,8 +917,8 @@ abstract class EntityValueBase implements EntityValue {
         if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
-        // this needs to be called before the actual update so we know which fields are modified
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
+        // do this before the db change so modified flag isn't cleared
+        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, oldValues)
 
         // call the abstract method
         this.updateExtended(pkFieldList, nonPkFieldList)
