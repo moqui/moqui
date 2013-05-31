@@ -90,7 +90,7 @@ class ScreenDefinition {
             }
         }
 
-        if (logger.infoEnabled) logger.info("Loaded screen at [${location}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds")
+        if (logger.isTraceEnabled()) logger.trace("Loaded screen at [${location}] in [${(System.currentTimeMillis()-startTime)/1000}] seconds")
     }
 
     void populateSubscreens() {
