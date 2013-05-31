@@ -845,6 +845,10 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
+        // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
+        // might have a null value for a previous query attempt
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, true)
+
         handleAuditLog(false, null)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
@@ -876,21 +880,14 @@ abstract class EntityValueBase implements EntityValue {
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
         if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
-        Map oldValues = dbValueMap
         List entityInfoList = getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName())
-        if (ed.needsAuditLog() || entityInfoList) {
-            boolean needsDbValue = true
-            if (oldValues != null) {
-                needsDbValue = !dbValueMapFromDb
-            } else {
-                oldValues = new HashMap()
-            }
-            if (needsDbValue) {
-                EntityValue dbValue = (EntityValue) this.clone()
-                dbValue.refresh()
-                oldValues.putAll(dbValue)
-            }
+        EntityValueImpl refreshedValue = null
+        if (ed.needsAuditLog() || entityInfoList || ed.getEntityNode()."@optimistic-lock" == "true") {
+            refreshedValue = (EntityValueImpl) this.clone()
+            refreshedValue.refresh()
         }
+
+        Map oldValues = refreshedValue ? refreshedValue.getValueMap() : (dbValueMapFromDb ? dbValueMap : [:])
 
         List<String> pkFieldList = ed.getPkFieldNames()
 
@@ -908,10 +905,8 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         if (ed.getEntityNode()."@optimistic-lock" == "true") {
-            EntityValue dbValue = (EntityValue) this.clone()
-            dbValue.refresh()
-            if (getTimestamp("lastUpdatedStamp") != dbValue.getTimestamp("lastUpdatedStamp"))
-                throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${dbValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
+            if (getTimestamp("lastUpdatedStamp") != refreshedValue.getTimestamp("lastUpdatedStamp"))
+                throw new EntityException("This record was updated by someone else at [${getTimestamp("lastUpdatedStamp")}] which was after the version you loaded at [${refreshedValue.getTimestamp("lastUpdatedStamp")}]. Not updating to avoid overwriting data.")
         }
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
@@ -965,6 +960,9 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
+        // clear the entity cache
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
+
         handleAuditLog(true, oldValues)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
@@ -1014,6 +1012,9 @@ abstract class EntityValueBase implements EntityValue {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
             }
         }
+
+        // clear the entity cache
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
         // count the artifact hit

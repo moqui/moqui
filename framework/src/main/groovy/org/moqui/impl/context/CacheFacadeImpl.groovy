@@ -75,6 +75,7 @@ public class CacheFacadeImpl implements CacheFacade {
     }
 
     boolean cacheExists(String cacheName) { return cacheManager.cacheExists(cacheName) }
+    String[] getCacheNames() { return cacheManager.getCacheNames() }
 
     List<Map<String, Object>> getAllCachesInfo(String orderByField) {
         List<Map<String, Object>> ci = new LinkedList()

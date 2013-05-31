@@ -448,7 +448,7 @@ abstract class EntityFindBase implements EntityFind {
         CacheImpl entityOneCache = null
         boolean doCache = this.shouldCache()
         if (doCache) {
-            entityOneCache = this.efi.getEntityCache().getCacheOne(this.entityName)
+            entityOneCache = this.efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName())
             Element cacheElement = entityOneCache.getElement(whereCondition)
             if (cacheElement != null) {
                 if (cacheElement.expired) {
@@ -495,7 +495,7 @@ abstract class EntityFindBase implements EntityFind {
         if (doCache) {
             entityOneCache.put(whereCondition, newEntityValue)
             // need to register an RA just in case the condition was not actually a primary key
-            efi.getEntityCache().registerCacheOneRa(this.entityName, whereCondition, (EntityValueBase) newEntityValue)
+            efi.getEntityCache().registerCacheOneRa(getEntityDef().getFullEntityName(), whereCondition, (EntityValueBase) newEntityValue)
         }
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.fullEntityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
@@ -533,7 +533,7 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
         if (doCache) {
-            entityListCache = this.efi.getEntityCache().getCacheList(this.entityName)
+            entityListCache = this.efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName())
             Element cacheElement = entityListCache.getElement(whereCondition)
             if (cacheElement != null) {
                 if (cacheElement.expired) {
@@ -591,7 +591,7 @@ abstract class EntityFindBase implements EntityFind {
             EntityListImpl elToCache = el ?: EntityListImpl.EMPTY
             elToCache.setFromCache(true)
             entityListCache.put(whereCondition, elToCache)
-            efi.getEntityCache().registerCacheListRa(this.entityName, whereCondition, elToCache)
+            efi.getEntityCache().registerCacheListRa(getEntityDef().getFullEntityName(), whereCondition, elToCache)
         }
         // run the final rules
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
