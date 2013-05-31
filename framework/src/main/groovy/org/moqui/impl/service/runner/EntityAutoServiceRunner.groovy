@@ -61,7 +61,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 storeEntity(sfi, ed, parameters, result, sd.getOutParameterNames())
             }
         } catch (BaseException e) {
-            throw new ServiceException("Error doing entity-auto operation for entity [${ed.entityName}] in service [${sd.serviceName}]", e)
+            throw new ServiceException("Error doing entity-auto operation for entity [${ed.fullEntityName}] in service [${sd.serviceName}]", e)
         }
 
         return result
@@ -70,7 +70,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     public static void createEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                     Map<String, Object> result, Set<String> outParamNames) {
         ExecutionContextFactoryImpl ecfi = sfi.getEcfi()
-        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getEntityName())
+        EntityValue newEntityValue = ecfi.getEntityFacade().makeValue(ed.getFullEntityName())
 
         List<String> pkFieldNames = ed.getPkFieldNames()
 
@@ -117,7 +117,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             /* **** plain specified primary key **** */
             newEntityValue.setFields(parameters, true, null, true)
         } else {
-            throw new ServiceException("In entity-auto create service for entity [${ed.entityName}]: " +
+            throw new ServiceException("In entity-auto create service for entity [${ed.fullEntityName}]: " +
                     "could not find a valid combination of primary key settings to do a create operation; options include: " +
                     "1. a single entity primary-key field for primary auto-sequencing with or without matching in-parameter, and with or without matching out-parameter for the possibly sequenced value, " +
                     "2. a 2-part entity primary-key with one part passed in as an in-parameter (existing primary pk value) and with or without the other part defined as an out-parameter (the secodnary pk to sub-sequence), " +
@@ -134,10 +134,10 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     public static void updateEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters,
                                     Map<String, Object> result, Set<String> outParamNames, EntityValue preLookedUpValue) {
         EntityValue lookedUpValue = preLookedUpValue ?:
-                sfi.getEcfi().getEntityFacade().makeValue(ed.getEntityName()).setFields(parameters, true, null, true)
+                sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
         // this is much slower, and we don't need to do the query: sfi.getEcfi().getEntityFacade().makeFind(ed.entityName).condition(parameters).useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
-            throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] value not found, cannot update; using parameters [${parameters}]")
+            throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
         }
 
         // populate the oldStatusId out if there is a service parameter for it, and before we do the set non-pk fields
@@ -157,7 +157,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                         .useCache(true).one()
                 if (!statusValidChange) {
                     // uh-oh, no valid change...
-                    throw new ServiceException("In entity-auto update service for entity [${ed.entityName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
+                    throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
                 }
             }
         }
@@ -170,13 +170,13 @@ public class EntityAutoServiceRunner implements ServiceRunner {
     }
 
     public static void deleteEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters) {
-        EntityValue ev = sfi.getEcfi().getEntityFacade().makeValue(ed.getEntityName()).setFields(parameters, true, null, true)
+        EntityValue ev = sfi.getEcfi().getEntityFacade().makeValue(ed.getFullEntityName()).setFields(parameters, true, null, true)
         ev.delete()
     }
 
     /** Does a create if record does not exist, or update if it does. */
     public static void storeEntity(ServiceFacadeImpl sfi, EntityDefinition ed, Map<String, Object> parameters, Map<String, Object> result, Set<String> outParamNames) {
-        EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().makeFind(ed.entityName).condition(parameters)
+        EntityValue lookedUpValue = sfi.getEcfi().getEntityFacade().makeFind(ed.fullEntityName).condition(parameters)
                 .useCache(false).forUpdate(true).one()
         if (lookedUpValue == null) {
             createEntity(sfi, ed, parameters, result, outParamNames)

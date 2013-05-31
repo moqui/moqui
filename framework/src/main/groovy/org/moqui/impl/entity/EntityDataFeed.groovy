@@ -541,7 +541,7 @@ class EntityDataFeed {
                                                 if (backwardRelNode == null)
                                                     backwardRelNode = prevRelValueEd.getRelationshipNode(currentRelEntityName)
 
-                                                if (backwardRelNode == null) throw new EntityException("For DataFeed could not find backward relationship for DataDocument [${dataDocumentId}] from entity [${prevRelValue.getEntityName()}] to entity [${currentRelEntityName}], previous relationship is [${prevRelName}], current relationship is [${currentRelName}]")
+                                                if (backwardRelNode == null) throw new EntityException("For DataFeed could not find backward relationship for DataDocument [${dataDocumentId}] from entity [${prevRelValueEd.getFullEntityName()}] to entity [${currentRelEntityName}], previous relationship is [${prevRelName}], current relationship is [${currentRelName}]")
 
                                                 String backwardRelName = backwardRelNode."@title" ?
                                                     backwardRelNode."@title" + "#" + backwardRelNode."@related-entity-name" :

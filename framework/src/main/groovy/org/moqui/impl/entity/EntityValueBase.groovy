@@ -849,7 +849,7 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "create", ed.getEntityName(), this.getPrimaryKeys(), startTime,
+        ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
                 System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
@@ -968,7 +968,7 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "update", ed.getEntityName(), this.getPrimaryKeys(),
+        ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
@@ -1015,7 +1015,7 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "delete", ed.getEntityName(), this.getPrimaryKeys(),
+        ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), 1)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()
@@ -1046,7 +1046,7 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", false)
         // count the artifact hit
-        ecfi.countArtifactHit("entity", "refresh", ed.getEntityName(), this.getPrimaryKeys(),
+        ecfi.countArtifactHit("entity", "refresh", ed.getFullEntityName(), this.getPrimaryKeys(),
                 startTime, System.currentTimeMillis(), retVal ? 1 : 0)
         // pop the ArtifactExecutionInfo to clean it up
         ec.getArtifactExecution().pop()

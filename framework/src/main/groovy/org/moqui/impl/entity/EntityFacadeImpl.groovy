@@ -410,7 +410,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 // does a many relationship coming back already exist?
                 Node reverseRelNode = (Node) reverseEd.entityNode."relationship".find(
-                        { it."@related-entity-name" == ed.entityName && it."@type" == relType })
+                        { (it."@related-entity-name" == ed.entityName || it."@related-entity-name" == ed.fullEntityName) && it."@type" == relType })
                 if (reverseRelNode != null) {
                     // make sure has is-one-reverse="true"
                     reverseRelNode.attributes().put("is-one-reverse", "true")
@@ -424,7 +424,7 @@ class EntityFacadeImpl implements EntityFacade {
                 Map keyMap = ed.getRelationshipExpandedKeyMap(relNode)
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
-                        ["related-entity-name":ed.entityName, "type":relType, "is-one-reverse":"true"])
+                        ["related-entity-name":ed.fullEntityName, "type":relType, "is-one-reverse":"true"])
                 if (relNode."@title") newRelNode.attributes().title = relNode."@title"
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields

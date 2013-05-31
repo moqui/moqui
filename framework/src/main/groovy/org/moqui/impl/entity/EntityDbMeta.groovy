@@ -375,7 +375,7 @@ class EntityDbMeta {
             if (relNode."@type" != "one") continue
 
             EntityDefinition relEd = efi.getEntityDefinition((String) relNode."@related-entity-name")
-            if (relEd == null) throw new IllegalArgumentException("Entity [${relNode."@related-entity-name"}] does not exist, was in relationship.@related-entity-name of entity [${ed.entityName}]")
+            if (relEd == null) throw new IllegalArgumentException("Entity [${relNode."@related-entity-name"}] does not exist, was in relationship.@related-entity-name of entity [${ed.fullEntityName}]")
             if (!tableExists(relEd)) {
                 logger.warn("Not creating foreign key from entity [${ed.getFullEntityName()}] to related entity [${relEd.getFullEntityName()}] because related entity does not yet have a table for it")
                 continue

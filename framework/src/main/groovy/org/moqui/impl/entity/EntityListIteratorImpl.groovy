@@ -50,7 +50,7 @@ class EntityListIteratorImpl implements EntityListIterator {
     @Override
     void close() {
         if (this.closed) {
-            logger.warn("EntityListIterator for entity [${this.entityDefinition.getEntityName()}] is already closed, not closing again")
+            logger.warn("EntityListIterator for entity [${this.entityDefinition.getFullEntityName()}] is already closed, not closing again")
         } else {
             if (rs) {
                 try {
@@ -323,7 +323,7 @@ class EntityListIteratorImpl implements EntityListIterator {
         try {
             if (!closed) {
                 this.close()
-                logger.error("EntityListIterator not closed for entity [${entityDefinition.getEntityName()}], caught in finalize()")
+                logger.error("EntityListIterator not closed for entity [${entityDefinition.getFullEntityName()}], caught in finalize()")
             }
         } catch (Exception e) {
             logger.error("Error closing the ResultSet or Connection in finalize EntityListIterator", e);

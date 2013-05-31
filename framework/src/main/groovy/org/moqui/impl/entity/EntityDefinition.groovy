@@ -347,7 +347,7 @@ public class EntityDefinition {
 
         Node fieldNode = this.getFieldNode(fieldName)
         if (!fieldNode) {
-            throw new EntityException("Invalid field-name [${fieldName}] for the [${this.getEntityName()}] entity")
+            throw new EntityException("Invalid field-name [${fieldName}] for the [${this.getFullEntityName()}] entity")
         }
 
         if (isViewEntity()) {
@@ -631,7 +631,7 @@ public class EntityDefinition {
         }
 
         if (pkFieldNames.size() != mePkFieldToAliasNameMap.size()) {
-            logger.warn("Not all primary-key fields in view-entity [${entityName}] for member-entity [${memberEntityNode.'@entity-name'}], skipping cache reverse-association, and note that if this record is updated the cache won't automatically clear; pkFieldNames=${pkFieldNames}; partial mePkFieldToAliasNameMap=${mePkFieldToAliasNameMap}")
+            logger.warn("Not all primary-key fields in view-entity [${fullEntityName}] for member-entity [${memberEntityNode.'@entity-name'}], skipping cache reverse-association, and note that if this record is updated the cache won't automatically clear; pkFieldNames=${pkFieldNames}; partial mePkFieldToAliasNameMap=${mePkFieldToAliasNameMap}")
         }
 
         return mePkFieldToAliasNameMap

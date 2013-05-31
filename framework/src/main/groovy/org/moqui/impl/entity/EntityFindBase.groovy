@@ -498,12 +498,12 @@ abstract class EntityFindBase implements EntityFind {
             efi.getEntityCache().registerCacheOneRa(this.entityName, whereCondition, (EntityValueBase) newEntityValue)
         }
 
-        if (logger.traceEnabled) logger.trace("Find one on entity [${ed.entityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
+        if (logger.traceEnabled) logger.trace("Find one on entity [${ed.fullEntityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
 
         // final ECA trigger
         efi.runEecaRules(ed.getFullEntityName(), newEntityValue, "find-one", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "one", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
+        efi.ecfi.countArtifactHit("entity", "one", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), newEntityValue ? 1 : 0)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -596,7 +596,7 @@ abstract class EntityFindBase implements EntityFind {
         // run the final rules
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "list", ed.getEntityName(), simpleAndMap, startTime,
+        efi.ecfi.countArtifactHit("entity", "list", ed.getFullEntityName(), simpleAndMap, startTime,
                 System.currentTimeMillis(), el ? el.size() : 0)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
@@ -664,7 +664,7 @@ abstract class EntityFindBase implements EntityFind {
 
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-iterator", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "iterator", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
+        efi.ecfi.countArtifactHit("entity", "iterator", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), null)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
@@ -737,7 +737,7 @@ abstract class EntityFindBase implements EntityFind {
 
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
-        efi.ecfi.countArtifactHit("entity", "count", ed.getEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
+        efi.ecfi.countArtifactHit("entity", "count", ed.getFullEntityName(), simpleAndMap, startTime, System.currentTimeMillis(), count)
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 

@@ -26,7 +26,7 @@ class ConditionField {
         this.fieldName = fieldName.intern()
         this.aliasEntityDef = aliasEntityDef
         // NOTE: this is already intern()'ed
-        if (aliasEntityDef != null) aliasEntityName = aliasEntityDef.getEntityName()
+        if (aliasEntityDef != null) aliasEntityName = aliasEntityDef.getFullEntityName()
     }
 
     String getColumnName(EntityDefinition ed) {

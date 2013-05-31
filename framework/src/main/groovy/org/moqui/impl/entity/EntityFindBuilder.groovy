@@ -207,10 +207,10 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 } else {
                     // make sure the left entity alias is already in the join...
                     if (!joinedAliasSet.contains(relatedMemberEntity."@join-from-alias")) {
-                        logger.error("For view-entity [${localEntityDefinition.getEntityName()}] found member-entity with @join-from-alias [${relatedMemberEntity."@join-from-alias"}] that isn't in the joinedAliasSet: ${joinedAliasSet}; view-entity Node: ${entityNode}")
+                        logger.error("For view-entity [${localEntityDefinition.getFullEntityName()}] found member-entity with @join-from-alias [${relatedMemberEntity."@join-from-alias"}] that isn't in the joinedAliasSet: ${joinedAliasSet}; view-entity Node: ${entityNode}")
                         throw new IllegalArgumentException("Tried to link the " + relatedMemberEntity."@entity-alias" +
                                 " alias to the " + relatedMemberEntity."@join-from-alias" + " alias of the " +
-                                localEntityDefinition.getEntityName() + " view-entity, but it is not the first member-entity and has not been joined to a previous member-entity. In other words, the left/main alias isn't connected to the rest of the member-entities yet.")
+                                localEntityDefinition.getFullEntityName() + " view-entity, but it is not the first member-entity and has not been joined to a previous member-entity. In other words, the left/main alias isn't connected to the rest of the member-entities yet.")
                     }
                 }
                 // now put the rel (right) entity alias into the set that is in the join
@@ -230,7 +230,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 if (!relatedMemberEntity."key-map") {
                     throw new IllegalArgumentException("No view-link/join key-maps found for the " +
                             relatedMemberEntity."@join-from-alias" + " and the " + relatedMemberEntity."@entity-alias" +
-                            " member-entities of the " + localEntityDefinition.getEntityName() + " view-entity.")
+                            " member-entities of the " + localEntityDefinition.getFullEntityName() + " view-entity.")
                 }
 
                 boolean isFirstKeyMap = true
@@ -416,7 +416,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 String javaType = efi.getFieldJavaType((String) fieldNode."@type", getMainEd())
                 typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
             } else {
-                logger.warn("Making ORDER BY clause, could not find field [${fieldName}] in entity [${getMainEd().getEntityName()}]")
+                logger.warn("Making ORDER BY clause, could not find field [${fieldName}] in entity [${getMainEd().getFullEntityName()}]")
             }
 
             // not that it's all torn down, build it back up using the column name
