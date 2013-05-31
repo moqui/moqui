@@ -16,7 +16,7 @@ import org.moqui.impl.entity.EntityQueryBuilder
 import org.moqui.entity.EntityCondition
 
 class ListCondition extends EntityConditionImplBase {
-    protected Class localClass = null
+    protected volatile Class localClass = null
     protected List<EntityConditionImplBase> conditionList
     protected EntityCondition.JoinOperator operator
 

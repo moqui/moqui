@@ -5,7 +5,7 @@ import org.moqui.impl.entity.EntityQueryBuilder
 import org.moqui.entity.EntityCondition
 
 class MapCondition extends EntityConditionImplBase {
-    protected Class internalClass = null
+    protected volatile Class internalClass = null
     protected Map<String, Object> fieldMap
     protected EntityCondition.ComparisonOperator comparisonOperator
     protected EntityCondition.JoinOperator joinOperator

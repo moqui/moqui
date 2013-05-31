@@ -21,7 +21,7 @@ import static org.moqui.entity.EntityCondition.ComparisonOperator.*
 class FieldValueCondition extends EntityConditionImplBase {
     protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FieldValueCondition.class)
 
-    protected Class localClass = null
+    protected volatile Class localClass = null
     protected ConditionField field
     protected EntityCondition.ComparisonOperator operator
     protected Object value

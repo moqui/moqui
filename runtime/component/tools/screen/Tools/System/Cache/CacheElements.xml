@@ -17,8 +17,15 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <transition name="clearCacheElement">
         <actions>
-            <script>ec.cache.getCache(cacheName).remove(key)</script>
-            <message>Cleared [${key}] from cache [${cacheName}]</message>
+            <script>
+                org.moqui.context.Cache theCache = ec.cache.getCache(cacheName)
+                if (theCache.containsKey(key)) {
+                    Object cacheValue = theCache.remove(key)
+                    ec.message.addMessage("Cleared [${key}] from cache [${cacheName}] had value [${cacheValue}]")
+                } else {
+                    ec.message.addError("No entry with key [${key}] in cache [${cacheName}]")
+                }
+            </script>
         </actions>
         <default-response url="."/>
     </transition>
@@ -30,15 +37,14 @@ This Work includes contributions authored by David E. Jones, not as a
         <container>
             <label text="Elements for Cache [${cacheName}]" type="h3"/>
         </container>
-        <form-list name="CacheElements" list="cacheElementList">
+        <form-list name="CacheElements" list="cacheElementList" skip-form="true">
             <field name="key">
                 <header-field show-order-by="true"/>
                 <default-field><display also-hidden="false"/></default-field>
             </field>
-            <!-- should we display this? in some cases it will be quite large -->
-            <!-- <field name="value">
-                <default-field><display also-hidden="false"/></default-field>
-            </field> -->
+            <field name="value">
+                <default-field><display text="${value.length() > 200 ? value.substring(0, 200) : value}" also-hidden="false"/></default-field>
+            </field>
             <field name="hitCount">
                 <header-field title="Hits" show-order-by="true"/>
                 <default-field><display also-hidden="false"/></default-field>

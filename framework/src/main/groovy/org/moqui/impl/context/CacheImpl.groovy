@@ -145,6 +145,7 @@ class CacheImpl implements Cache {
             if (e.getLastUpdateTime()) im.lastUpdateTime = new Timestamp(e.getLastUpdateTime())
             if (e.getLastAccessTime()) im.lastAccessTime = new Timestamp(e.getLastAccessTime())
             elementInfoList.add(im)
+            if (elementInfoList.size() > 200) break
         }
         if (orderByField) StupidUtilities.orderMapList(elementInfoList, [orderByField])
         return elementInfoList

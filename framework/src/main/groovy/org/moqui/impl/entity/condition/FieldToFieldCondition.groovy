@@ -16,7 +16,7 @@ import org.moqui.impl.entity.EntityQueryBuilder
 import org.moqui.impl.entity.EntityConditionFactoryImpl
 
 class FieldToFieldCondition extends EntityConditionImplBase {
-    protected Class localClass = null
+    protected volatile Class localClass = null
     protected ConditionField field
     protected EntityCondition.ComparisonOperator operator
     protected ConditionField toField
