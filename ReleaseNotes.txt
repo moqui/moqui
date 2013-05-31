@@ -1173,7 +1173,7 @@ Features considered, but probably not to be included in 1.0 series
   - Service (receive#DataFeed impl) to send documents as User NotificationMessages (one message per DataDocument); this
     is probably the best way to tie a feed to WebSocket notifications for data updates
     - Use the dataFeedId as the NotificationMessage topic
-    - Use this in HiveMind to send notifications of project, task, and wiki changes
+    - Use this in HiveMind to send notifications of project, task, and wiki changes (maybe?)
 
 - System-System Message
   - System-System Message Sending
@@ -1188,3 +1188,9 @@ Features considered, but probably not to be included in 1.0 series
     - send async success/fail confirmation
     - keep status in separate transaction
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
+  - SystemMessage: systemMessageId*, systemMessageTypeId, processingStatusId, isOutgoing (i), sentDate, receivedDate, messageText (vl)
+  - SystemMessageType: systemMessageTypeId*, description, handleReceiveServiceName
+  - SystemMessageError: systemMessageId*, errorSeqId*, reasonCode, errorText (vl)
+  - SystemMessageOagis: systemMessageId*, logicalId, component, task, referenceId, authId, bsrVerb, bsrNoun, bsrRevision
+  - updateSystemMessageStatus (require new transaction)
+  - addSystemMessageError (require new transaction, set status too?)
