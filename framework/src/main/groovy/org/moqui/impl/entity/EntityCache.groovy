@@ -41,7 +41,7 @@ class EntityCache {
         try {
             EntityDefinition ed = evb.getEntityDefinition()
             if (ed.getEntityNode()."@use-cache" == "never") return
-            String entityName = ed.getEntityName()
+            String entityName = ed.getFullEntityName()
             EntityCondition pkCondition = efi.getConditionFactory().makeCondition(evb.getPrimaryKeys())
 
             // clear one cache
@@ -78,7 +78,7 @@ class EntityCache {
             }
 
             // clear list cache, use reverse-associative Map (also a Cache)
-            if (efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.list_ra.${entityName}")) {
+            if (efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.list.${entityName}")) {
                 // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
                 if (isCreate) {
                     CacheImpl entityListCache = getCacheList(entityName)
