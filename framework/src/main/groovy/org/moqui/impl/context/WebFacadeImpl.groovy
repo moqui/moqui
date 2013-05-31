@@ -272,7 +272,7 @@ class WebFacadeImpl implements WebFacade {
                 String httpsPort = webappNode."@https-port"
                 // try the local port; this won't work when switching from http to https, conf required for that
                 if (!httpsPort && webFacade && webFacade.request.isSecure()) httpsPort = webFacade.request.getLocalPort() as String
-                if (httpsPort != "443") urlBuilder.append(":").append(httpsPort)
+                if (httpsPort && httpsPort != "443") urlBuilder.append(":").append(httpsPort)
             } else {
                 urlBuilder.append("http://")
                 if (webappNode."@http-host") {
@@ -288,7 +288,7 @@ class WebFacadeImpl implements WebFacade {
                 String httpPort = webappNode."@http-port"
                 // try the local port; this won't work when switching from https to http, conf required for that
                 if (!httpPort && webFacade && !webFacade.getRequest().isSecure()) httpPort = webFacade.getRequest().getLocalPort() as String
-                if (httpPort != "80") urlBuilder.append(":").append(httpPort)
+                if (httpPort && httpPort != "80") urlBuilder.append(":").append(httpPort)
             }
             urlBuilder.append("/")
         } else {

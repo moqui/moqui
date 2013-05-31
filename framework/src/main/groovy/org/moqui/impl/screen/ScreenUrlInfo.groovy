@@ -430,11 +430,11 @@ class ScreenUrlInfo {
 
         if (sri.baseLinkUrl) {
             baseUrl = sri.baseLinkUrl
+            if (baseUrl && baseUrl.charAt(baseUrl.length()-1) == '/') baseUrl.substring(0, baseUrl.length()-1)
         } else {
             baseUrl = WebFacadeImpl.getWebappRootUrl(sri.webappName, sri.servletContextPath, true,
                     this.requireEncryption, (ExecutionContextImpl) ec)
         }
-        if (baseUrl.charAt(baseUrl.length()-1) == '/') baseUrl.substring(0, baseUrl.length()-1)
     }
 
     @Override
