@@ -877,7 +877,8 @@ abstract class EntityValueBase implements EntityValue {
         if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
 
         Map oldValues = dbValueMap
-        if (ed.needsAuditLog()) {
+        List entityInfoList = getEntityFacadeImpl().getEntityDataFeed().getDataFeedEntityInfoList(ed.getFullEntityName())
+        if (ed.needsAuditLog() || entityInfoList) {
             boolean needsDbValue = true
             if (oldValues != null) {
                 needsDbValue = !dbValueMapFromDb
@@ -990,8 +991,9 @@ abstract class EntityValueBase implements EntityValue {
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", true)
         // this needs to be called before the actual update so we know which fields are modified
-        // NOTE: consider not doing this on delete, DataDocuments are not great for representing absense of records
-        getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this)
+        // NOTE: consider not doing this on delete, DataDocuments are not great for representing absence of records
+        // NOTE2: this might be useful, but is a bit of a pain and utility is dubious, leave out for now
+        // getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, null)
 
         // call the abstract method
         this.deleteExtended()
