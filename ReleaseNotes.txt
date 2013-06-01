@@ -17,8 +17,8 @@ New Features:
 - Updated Apache Camel to 2.11.0, Apache Commons Validator to 1.4.0,
   ehcache to 2.6.6, Groovy to 2.1.3
 - Entity Facade
-  - Added ElasticSearch 0.90.0 and Lucene 4.2.1 (these add ~16MB, moving
-    Moqui from ~24MB to ~40MB); ElasticSearch files are under
+  - Added ElasticSearch 0.90.0 and Lucene 4.2.1 (these add ~15MB, moving
+    Moqui from ~24MB to ~39MB); ElasticSearch files are under
     runtime/elasticsearch and it is initialized and destroyed with the rest
     of the framework
   - Added EntityDynamicView.addRelationshipMember() method to easily add
@@ -1095,7 +1095,7 @@ Features considered, but probably not to be included in 1.0 series
   - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
-  - Added view log like current change audit log (AuditLogView?)
+  - Add view log like current change audit log (AuditLogView?)
 - Artifact Execution Facade
   - Call ArtifactExecutionFacade.push() (to track, check authz, etc) for
     other types of artifacts (if/as determined to be helpful), including:
@@ -1125,9 +1125,9 @@ Features considered, but probably not to be included in 1.0 series
   workflow itself is defined
 
 - User Notification
-  - WebSocket clients: track userAccountId, notificationName, connectionKey
-    - Entity (no, keep in memory): VisitClient - visitId*, userAccountId*, notificationName*, connectionKey*
-    - when sending out WebSocket messages lookup all active Visits for userAccountId and send to each connectionKey
+  - WebSocket clients: track userId, notificationName, connectionKey
+    - Entity (no, keep in memory): VisitClient - visitId*, userId*, topic*, connectionKey*
+    - when sending out WebSocket messages lookup all active Visits for userId and send to each connectionKey
     - API (with at least an example transition) for WebSocket client registry; set connectionKey on current Visit
     - use Camel WebSocket? jWebSocket? (how to send message to client connection key)
     - after more research candidates are (no jWebSocket because it is huge and messy):
@@ -1139,7 +1139,7 @@ Features considered, but probably not to be included in 1.0 series
     x API pass in notificationName, Map message, userGroupId, boolean queue (true: queue if not connected, false: only send if connected)
     x API to get all outstanding notifications
     x Entity: NotificationMessage - notificationMessageId*, topic, userGroupId, messageJson (from message Map)
-    x Entity: NotificationMessageUser - notificationMessageId*, userAccountId*, sentDate, receivedDate
+    x Entity: NotificationMessageUser - notificationMessageId*, userId*, sentDate, receivedDate
   - Add Moqui Conf XML elements to configure NotificationMessageListener classes
   - Listener for Email with XML Screen to layout (and try out using JSON documents as nested Maps from a screen)
     - where to configure the email and screen to use? use EmailTemplate/emailTemplateId, but where to specify?
@@ -1165,8 +1165,8 @@ Features considered, but probably not to be included in 1.0 series
     x register service for push (service to call, ID), another for pull (ID) (in DataFeed entity)
     x per DataDocument alreadySentDateTime
     - feed transport (for each: supports confirmation?)
-      - WebSocket (use Notification system, based on notificationName (and userAccountId?))
-      - Moqui Service with receive#DataFeed service interface
+      - WebSocket (use Notification system, based on notificationName (and userId?))
+      x Moqui Service with receive#DataFeed service interface
   - Service to send email from DataFeed (ie receive#DataFeed implementation), use XML Screen for email content
     - don't do this directly, do through NotificationMessage, ie the next item... or maybe not, too many parameters for
       email from too many places related to a DataDocument, may not be flexible enough and may be quite messy
@@ -1188,11 +1188,12 @@ Features considered, but probably not to be included in 1.0 series
     - send async success/fail confirmation
     - keep status in separate transaction
   - Useful for OAGIS and many other system-to-system messages; idea similar to OAGIS services and entities in OFBiz
-  - SystemMessage: systemMessageId*, systemMessageTypeId, messageStatusId, isOutgoing (i), sentDate, receivedDate,
-    messageText (vl), remoteMessageId (text-medium), remoteSystemId (remote system entity? yes, with sendUrl, auth info, etc)
+  - SystemMessage: systemMessageId*, systemMessageTypeId, statusId, isOutgoing (i), sentDate, receivedDate,
+    messageText (vl), remoteMessageId (text-medium), systemMessageRemoteId
     - Message statuses: Triggered, Produced, Sent, Received, Consumed, Confirmed, Error
   - SystemMessageType: systemMessageTypeId*, description, produceServiceName, consumeServiceName, sendServiceName, receiveServiceName
-  - SystemMessageError: systemMessageId*, errorSeqId*, reasonCode, errorText (vl)
+  - SystemMessageRemote: systemMessageRemoteId*, sendUrl, authorizedIpAddresses, username, password (encrypted, not hashed)
+  - SystemMessageError: systemMessageId*, errorSeqId*, attemptedStatusId (same status set as SystemMessage.statusId), reasonCode, errorText (vl)
   - SystemMessageOagis: systemMessageId*, logicalId, component, task, referenceId, authId, bsrVerb, bsrNoun, bsrRevision
   - updateSystemMessageStatus (require new transaction)
   - addSystemMessageError (require new transaction, set status too?)
