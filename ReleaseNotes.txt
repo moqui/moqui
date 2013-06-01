@@ -13,7 +13,8 @@ with Moqui Framework release 1.2.0. ... TODO
 
 New Features:
 
-- Updated gradle build files to work with Gradle 1.3
+- Updated Gradle build files to work with Gradle 1.6 (may not work with
+  earlier versions)
 - Updated Apache Camel to 2.11.0, Apache Commons Validator to 1.4.0,
   ehcache to 2.6.6, Groovy to 2.1.3
 - Entity Facade
