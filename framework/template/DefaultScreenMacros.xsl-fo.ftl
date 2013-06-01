@@ -268,7 +268,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign isMultiFinalRow = false>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")>
+    <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
 
     <#if !(formNode["@paginate"]?if_exists == "false") && context[listName + "Count"]?exists && (context[listName + "Count"]?if_exists > 0)>

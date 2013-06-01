@@ -102,7 +102,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")>
+    <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
     <${formNode["@name"]}>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>

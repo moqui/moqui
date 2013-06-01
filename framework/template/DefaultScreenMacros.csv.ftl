@@ -105,7 +105,7 @@ on the same screen to increase reusability of those screens -->
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign listName = formNode["@list"]>
-    <#assign listObject = ec.resource.evaluateContextField(listName, "")>
+    <#assign listObject = ec.resource.evaluateContextField(listName, "")?if_exists>
     <#assign formListColumnList = formNode["form-list-column"]?if_exists>
     <#if formListColumnList?exists && (formListColumnList?size > 0)>
         <#assign hasPrevColumn = false>
