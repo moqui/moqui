@@ -98,6 +98,8 @@
         <resource-reference scheme="file" class="org.moqui.impl.context.reference.UrlResourceReference"/>
         <resource-reference scheme="ftp" class="org.moqui.impl.context.reference.UrlResourceReference"/>
         <resource-reference scheme="jar" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="bundleresource" class="org.moqui.impl.context.reference.UrlResourceReference"/>
+        <resource-reference scheme="wsjar" class="org.moqui.impl.context.reference.UrlResourceReference"/>
         <resource-reference scheme="classpath" class="org.moqui.impl.context.reference.ClasspathResourceReference"/>
         <resource-reference scheme="component" class="org.moqui.impl.context.reference.ComponentResourceReference"/>
         <resource-reference scheme="content" class="org.moqui.impl.context.reference.ContentResourceReference"/>
