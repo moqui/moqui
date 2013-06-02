@@ -2,14 +2,14 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.0 - TBD 2013
+Release 1.3.0 - Planned for 31 July 2013
 ===========================================================================
 
 Moqui Framework 1.3.0 is a major new feature and bug fix release. The major
 new features include the EntityFacade Data Document, Data Feed, and Data
-Search features, the User Notification Message feature, and various
-improvements to XML Screens and Forms. This release is backward compatible
-with Moqui Framework release 1.2.0. ... TODO
+Search (based on ElasticSearch) features, the User Notification Message
+feature, and various improvements to XML Screens and Forms. This release is
+backward compatible with Moqui Framework release 1.2.0.
 
 New Features:
 
@@ -17,11 +17,11 @@ New Features:
   earlier versions)
 - Updated Apache Camel to 2.11.0, Apache Commons Validator to 1.4.0,
   ehcache to 2.6.6, Groovy to 2.1.3
+- Added ElasticSearch 0.90.0 and Lucene 4.2.1 (these add ~15MB, moving
+  Moqui from ~24MB to ~39MB); ElasticSearch files are under
+  runtime/elasticsearch and it is initialized and destroyed with the rest
+  of the framework
 - Entity Facade
-  - Added ElasticSearch 0.90.0 and Lucene 4.2.1 (these add ~15MB, moving
-    Moqui from ~24MB to ~39MB); ElasticSearch files are under
-    runtime/elasticsearch and it is initialized and destroyed with the rest
-    of the framework
   - Added EntityDynamicView.addRelationshipMember() method to easily add
     member-entity based on relationship definition
   - Added Entity Data Document feature configured by DataDocument* entities
@@ -39,6 +39,10 @@ New Features:
   - Added search#DataDocuments service which uses ElasticSearch; supports
     pagination and so on
   - Added Tool app screens for index, search, and export DataDocuments
+  - Improved date/time and number parsing for String values passed to an
+    entity, partly so that implicit entity-auto services are more usable
+  - Changed to use full entity name (with package) in more places including
+    the entity cache
 - XML Screen and Form
   - Added XML Form fields-not-referenced element to specify where to render
     the fields not explicitly referenced under the field-layout element
@@ -65,8 +69,6 @@ New Features:
     XML Form fields to include widget-templates for widget reuse
   - Added form-list.@skip-form element for use with plain tables that will
     have nothing to submit; in HTML leaves out form elements
-- Improved date/time and number parsing for String values passed to an
-  entity, partly so that implicit entity-auto services are more usable
 - Added User NotificationMessage feature to send messages to users through
   active listeners or persist them to track receipt and handle delivery
   when the user is next available. The message is a JSON String
