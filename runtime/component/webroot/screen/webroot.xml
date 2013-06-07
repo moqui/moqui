@@ -15,7 +15,7 @@ This Work includes contributions authored by David E. Jones, not as a
         require-authentication="false">
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide, and because the Login screen is below this. -->
     <always-actions>
-        <set field="html_scripts" from="['/js/jquery-1.10.1.min.js', '/js/jquery-ui-1.10.3.min.js',
+        <set field="html_scripts" from="['/js/jquery-1.9.1.min.js', '/js/jquery-ui-1.10.3.min.js',
             '/js/jquery-ui-timepicker-addon-1.0.0.js', '/js/jquery-ui-combobox.js', '/js/jquery-validate-1.9.0.min.js']"/>
     </always-actions>
     <subscreens default-item="apps">
