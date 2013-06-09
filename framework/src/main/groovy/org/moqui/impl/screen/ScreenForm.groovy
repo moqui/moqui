@@ -345,14 +345,14 @@ class ScreenForm {
         if (isUploadForm != null) return isUploadForm
 
         // if there is a "file" element, then it's an upload form
-        boolean internalFileNode = internalFormNode.depthFirst().find({ it.name() == "file" }) as boolean
+        boolean internalFileNode = internalFormNode.depthFirst().find({ it instanceof Node && it.name() == "file" }) as boolean
         if (internalFileNode) {
             isUploadForm = true
             return true
         } else {
             if (isDynamic || hasDbExtensions) {
                 Node testNode = cachedFormNode ?: getFormNode()
-                return testNode.depthFirst().find({ it.name() == "file" }) as boolean
+                return testNode.depthFirst().find({ it instanceof Node && it.name() == "file" }) as boolean
             } else {
                 return false
             }
@@ -363,7 +363,7 @@ class ScreenForm {
 
         // if there is a "header-field" element, then it needs a header form
         boolean internalFormHeaderFormVal = false
-        for (Node hfNode in (Collection<Node>) internalFormNode.depthFirst().findAll({ it.name() == "header-field" })) {
+        for (Node hfNode in (Collection<Node>) internalFormNode.depthFirst().findAll({ it instanceof Node && it.name() == "header-field" })) {
             if (hfNode.children()) {
                 internalFormHeaderFormVal = true
                 break
@@ -376,7 +376,7 @@ class ScreenForm {
             if (isDynamic || hasDbExtensions) {
                 boolean extFormHeaderFormVal = false
                 Node testNode = cachedFormNode ?: getFormNode()
-                for (Node hfNode in (Collection<Node>) testNode.depthFirst().findAll({ it.name() == "header-field" })) {
+                for (Node hfNode in (Collection<Node>) testNode.depthFirst().findAll({ it instanceof Node && it.name() == "header-field" })) {
                     if (hfNode.children()) {
                         extFormHeaderFormVal = true
                         break
