@@ -361,7 +361,7 @@ class ScreenForm {
     boolean isFormHeaderForm(Node cachedFormNode) {
         if (isFormHeaderFormVal != null) return isFormHeaderFormVal
 
-        // if there is a "file" element, then it's an upload form
+        // if there is a "header-field" element, then it needs a header form
         boolean internalFormHeaderFormVal = false
         for (Node hfNode in (Collection<Node>) internalFormNode.depthFirst().findAll({ it.name() == "header-field" })) {
             if (hfNode.children()) {
