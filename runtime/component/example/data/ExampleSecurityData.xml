@@ -67,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.security.ArtifactGroup artifactGroupId="ALL_SCREENS" description="All Screens"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="ALL_SCREENS" artifactName=".*" nameIsPattern="Y"
             artifactTypeEnumId="AT_XML_SCREEN"/>
-    <!-- if more than 15 screens in 60 seconds, deny access for 60 seconds -->
+    <!-- if more than 30 screens in 60 seconds, deny access for 60 seconds -->
     <moqui.security.ArtifactTarpit userGroupId="ALL_USERS" artifactGroupId="ALL_SCREENS"
-            maxHitsCount="15" maxHitsDuration="60" tarpitDuration="60"/>
+            maxHitsCount="30" maxHitsDuration="60" tarpitDuration="60"/>
 </entity-facade-xml>
