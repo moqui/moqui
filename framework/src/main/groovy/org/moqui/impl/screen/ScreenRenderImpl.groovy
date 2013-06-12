@@ -917,7 +917,10 @@ class ScreenRenderImpl implements ScreenRender {
         if (obj instanceof Timestamp) return ((Timestamp) obj).getTime().toString()
         // here's another alternative to consider, but sticking to the more reliable approach above for now:
         //if (obj instanceof Timestamp) return ec.l10n.formatValue(obj, "yyyy-MM-dd hh:mm:ss.SSS z")
-        return  obj ? obj.toString() : (defaultValue ?: "")
+
+        return obj ? obj.toString() : (defaultValue ?: "")
+        // NOTE: this approach causes problems with currency fields, but kills the string expand for default-value... a better approach?
+        //return obj ? obj.toString() : (defaultValue ? ec.getResource().evaluateStringExpand(defaultValue, null) : "")
     }
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
