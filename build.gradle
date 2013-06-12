@@ -78,13 +78,13 @@ task runProduction(type: JavaExec) {
 
 task load(type: JavaExec) {
     dependsOn allBuildTasks
-    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m']; maxHeapSize = '256M'
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfDev, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName, '-load']
 }
 task loadProduction(type: JavaExec) {
     dependsOn allBuildTasks
-    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m']; maxHeapSize = '256M'
+    workingDir = '.'; jvmArgs = ['-server', '-XX:MaxPermSize=128m']; maxHeapSize = '512M'
     systemProperties = ['moqui.conf':moquiConfProduction, 'moqui.runtime':moquiRuntime]
     main = '-jar'; args = [warName, '-load']
 }
