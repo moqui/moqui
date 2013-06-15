@@ -184,17 +184,17 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "container-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <button id="${.node["@id"]}-button" iconcls="ui-icon-newwin">${buttonText}</button>
-    <script>
-	$(function() {
-		$("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:true });
-        <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
-        <#--, close: function() { } -->
-        $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
-	});
-	</script>
-    <div id="${.node["@id"]}" title="${buttonText}">
+    <div id="${.node["@id"]}" title="${buttonText}" style="display: none;">
     <#recurse>
     </div>
+    <script>
+        $(function() {
+            $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:true });
+        <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
+        <#--, close: function() { } -->
+            $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
+        });
+    </script>
 </#macro>
 
 <#macro "dynamic-dialog">
