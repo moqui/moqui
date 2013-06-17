@@ -746,7 +746,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" ref="depends-on">
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="depends-on">
                     <xs:annotation><xs:documentation>When getting data from the server the value of this field will be
                         passed in the request. When the field named here changes these options will be updated.</xs:documentation></xs:annotation>
                 </xs:element>
