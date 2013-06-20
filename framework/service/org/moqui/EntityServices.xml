@@ -14,12 +14,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="receive" noun="DataFeed" type="interface">
         <description>Services named in the DataFeed.feedReceiveServiceName field should implement this interface.</description>
         <in-parameters>
-            <parameter name="dataFeedId" type="String" required="true"/>
+            <parameter name="dataFeedId" required="true"/>
             <parameter name="feedStamp" type="Timestamp" required="true"/>
             <parameter name="documentList" type="List" required="true">
                 <parameter name="document" type="Map">
                     <parameter name="_id" required="true"><description>The combined PK field values of the primary
-                        entity in the DataDocument. If tehre is more than one PK field the values are separated with a
+                        entity in the DataDocument. If there is more than one PK field the values are separated with a
                         double-colon ("::").</description></parameter>
                     <parameter name="_type" required="true"><description>The DataDocument.dataDocumentId that defines
                         the document structure, etc.</description></parameter>
