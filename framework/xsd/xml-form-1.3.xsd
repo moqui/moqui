@@ -233,6 +233,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="anchor"/>
                         <xs:enumeration value="anchor-button"/>
                         <xs:enumeration value="hidden-form"/>
+                        <xs:enumeration value="hidden-form-link"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>

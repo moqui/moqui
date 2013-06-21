@@ -282,7 +282,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
-            <button type="submit" form="${linkFormId}"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
+            <button type="submit" form="${linkFormId}"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "hidden-form-link"> class="button-plain"</#if>>
                 <#if linkNode["image"]?has_content>
                     <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
@@ -313,7 +313,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
                         <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                     <#else>
-                        <button type="submit"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
+                        <button type="submit"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "hidden-form-link"> class="button-plain"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
                     </#if>
                 </#if>
             </form>
