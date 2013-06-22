@@ -69,7 +69,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="default-menu-title" type="xs:string"/>
-            <xs:attribute name="default-menu-index" type="xs:positiveInteger"/>
+            <xs:attribute name="default-menu-index" type="xs:nonNegativeInteger"/>
             <xs:attribute name="default-menu-include" type="boolean" default="true">
                 <xs:annotation><xs:documentation>
                     Set this to false to not automatically appear in the parent's subscreens menu based on the directory 
