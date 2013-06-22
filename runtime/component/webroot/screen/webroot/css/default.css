@@ -30,7 +30,7 @@ body { background: #DDDDDF; margin: 0px; }
 background: white;
 margin: 0px auto 0px auto; border: 10px solid #DDDDDF; padding: 10px;
 -moz-border-radius: 15px; -webkit-border-radius: 15px; border-radius: 15px;
-width: 980px; overflow: auto;
+width: 960px; overflow: auto;
 }
 
 #header-logo { float: left; width: 300px; height: 30px; }
@@ -102,12 +102,23 @@ tr:hover { background-color: #DDD; }
 /* ======================= XML Screen Styles ======================= */
 
 /* based on width of #apps-container above */
+div.panel-outer { display: table; table-layout: auto; width: 100%; }
+div.panel-left { display: table-cell; width: 180px; padding-right: 10px; }
+div.panel-center-only { display: table-cell; width: 960px; }
+div.panel-center-left { display: table-cell; width: 770px; }
+div.panel-center-both { display: table-cell; width: 580px; }
+div.panel-center-right { display: table-cell; width: 770px; }
+div.panel-right { display: table-cell; width: 180px; padding-left: 10px; }
+
+/* an alternate approach using floats for columns:
+div.panel-outer { }
 div.panel-left { float: left; width: 180px; margin-right: 10px; }
 div.panel-center-only { }
-div.panel-center-left { float: left; width: 790px; }
-div.panel-center-both { float: left; width: 600px; }
-div.panel-center-right { float: left; width: 790px; }
+div.panel-center-left { float: left; width: 770px; }
+div.panel-center-both { float: left; width: 580px; }
+div.panel-center-right { float: left; width: 770px; }
 div.panel-right { float: right; width: 180px; margin-left: 10px; }
+*/
 
 /* ======================= XML Form Styles ======================= */
 
@@ -166,7 +177,7 @@ a.active { color: red; }
 
 /* ======================= Screen-specific ======================= */
 
-#login-box { width: 280px; margin: 0px auto 0px auto; padding: 10px; }
+#login-box { width: 280px; margin: 0 auto 0 auto; padding: 10px; }
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: .8em; }
