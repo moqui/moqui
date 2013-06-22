@@ -228,7 +228,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 localBuilder.append(" ON ")
 
                 if (!relatedMemberEntity."key-map") {
-                    throw new IllegalArgumentException("No view-link/join key-maps found for the " +
+                    throw new IllegalArgumentException("No member-entity/join key-maps found for the " +
                             relatedMemberEntity."@join-from-alias" + " and the " + relatedMemberEntity."@entity-alias" +
                             " member-entities of the " + localEntityDefinition.getFullEntityName() + " view-entity.")
                 }
@@ -256,7 +256,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 }
 
                 if (relatedMemberEntity."entity-condition") {
-                    // add any additional manual conditions for the view-link here
+                    // add any additional manual conditions for the member-entity view link here
                     Node entityCondition = relatedMemberEntity."entity-condition"[0]
                     EntityConditionImplBase linkEcib = localEntityDefinition.makeViewListCondition(entityCondition)
                     localBuilder.append(" AND ")
@@ -267,7 +267,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
             }
             if (!fromEmpty && useParenthesis) localBuilder.append(')')
 
-            // handle member-entities not referenced in any view-link element
+            // handle member-entities not referenced in any member-entity.@join-from-alias attribute
             for (Node memberEntity in entityNode."member-entity") {
                 // if entity alias not used don't join it in
                 if (!entityAliasUsedSet.contains(memberEntity."@entity-alias")) continue

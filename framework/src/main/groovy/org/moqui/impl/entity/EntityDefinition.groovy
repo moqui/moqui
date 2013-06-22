@@ -762,21 +762,21 @@ public class EntityDefinition {
 
                 Node existingAliasNode = (Node) this.internalEntityNode.alias.find({ it."@name" == aliasName })
                 if (existingAliasNode) {
-                    //log differently if this is part of a view-link key-map because that is a common case when a field will be auto-expanded multiple times
+                    //log differently if this is part of a member-entity view link key-map because that is a common case when a field will be auto-expanded multiple times
                     boolean isInViewLink = false
-                    for (Node viewLink in this.internalEntityNode."view-link") {
+                    for (Node viewMeNode in this.internalEntityNode."member-entity") {
                         boolean isRel = false
-                        if (viewLink."@related-entity-alias" == aliasAll."@entity-alias") {
+                        if (viewMeNode."@entity-alias" == aliasAll."@entity-alias") {
                             isRel = true
-                        } else if (!viewLink."@entity-alias" == aliasAll."@entity-alias") {
+                        } else if (!viewMeNode."@join-from-alias" == aliasAll."@entity-alias") {
                             // not the rel-entity-alias or the entity-alias, so move along
                             continue;
                         }
-                        for (Node keyMap in viewLink."key-map") {
+                        for (Node keyMap in viewMeNode."key-map") {
                             if (!isRel && keyMap."@field-name" == fieldNode."@name") {
                                 isInViewLink = true
                                 break
-                            } else if (isRel && keyMap."@related-field-name" == fieldNode."@name") {
+                            } else if (isRel && (keyMap."@related-field-name" ?: keyMap."@field-name") == fieldNode."@name") {
                                 isInViewLink = true
                                 break
                             }
@@ -784,10 +784,10 @@ public class EntityDefinition {
                         if (isInViewLink) break
                     }
 
-                    //already exists, oh well... probably an override, but log just in case
-                    String warnMsg = "Throwing out field alias in view entity " + this.internalEntityName +
+                    // already exists... probably an override, but log just in case
+                    String warnMsg = "Throwing out field alias in view entity " + this.getFullEntityName() +
                             " because one already exists with the alias name [" + aliasName + "] and field name [" +
-                            memberEntity."@entity-alias" + "(" + aliasedEntityDefinition.internalEntityName + ")." +
+                            memberEntity."@entity-alias" + "(" + aliasedEntityDefinition.getFullEntityName() + ")." +
                             fieldNode."@name" + "], existing field name is [" + existingAliasNode."@entity-alias" + "." +
                             existingAliasNode."@field" + "]"
                     if (isInViewLink) {if (logger.isTraceEnabled()) logger.trace(warnMsg)} else {logger.info(warnMsg)}
