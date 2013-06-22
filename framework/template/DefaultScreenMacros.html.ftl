@@ -837,7 +837,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </span>
 </#macro>
 
-<#macro "display">
+<#macro display>
     <#assign fieldValue = ""/>
     <#if .node["@text"]?has_content>
         <#assign fieldValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
@@ -916,15 +916,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
 </#macro>
 
-<#macro "file"><input type="file" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
+<#macro file><input type="file" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
-<#macro "hidden">
+<#macro hidden>
     <#-- use getFieldValuePlainString() and not getFieldValueString() so we don't do timezone conversions, etc -->
     <#assign id><@fieldId .node/></#assign>
     <input type="hidden" name="<@fieldName .node/>" value="${sri.getFieldValuePlainString(.node?parent?parent, .node["@default-value"]!"")?html}" id="${id}">
 </#macro>
 
-<#macro "ignored"><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
+<#macro ignored><#-- shouldn't ever be called as it is checked in the form-* macros --></#macro>
 
 <#-- TABLED, not to be part of 1.0:
 <#macro "lookup">
@@ -943,9 +943,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 -->
 
-<#macro "password"><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
+<#macro password><input type="password" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
-<#macro "radio">
+<#macro radio>
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)/>
     <#assign currentValue = sri.getFieldValueString(.node?parent?parent, "", null)/>
     <#if !currentValue?has_content><#assign currentValue = ec.resource.evaluateStringExpand(.node["@no-current-selected-key"]?if_exists, "")/></#if>
@@ -965,9 +965,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </span>
 </#macro>
 
-<#macro "reset"><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
+<#macro reset><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
-<#macro "submit">
+<#macro submit>
     <#assign confirmationMessage = ec.resource.evaluateStringExpand(.node["@confirmation"]?if_exists, "")/>
     <button type="submit" name="<@fieldName .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
