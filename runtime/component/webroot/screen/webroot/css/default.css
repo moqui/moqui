@@ -52,6 +52,8 @@ h4 { font-size: 1em; font-weight: bold; }
 h5 { font-size: .9em; font-weight: bold; }
 h6 { font-size: .8em; }
 
+strong { font-weight: bold; }
+
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 
 a { font-size: 1em; font-weight: bold; color: #052f57; }
