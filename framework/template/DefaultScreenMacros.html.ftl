@@ -159,7 +159,7 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "container-panel">
-    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>
+    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="panel-outer">
         <#if .node["panel-header"]?has_content>
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header ui-helper-clearfix"><#recurse .node["panel-header"][0]>
         </div></#if>
