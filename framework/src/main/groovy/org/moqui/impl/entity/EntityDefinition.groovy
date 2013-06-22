@@ -302,7 +302,7 @@ public class EntityDefinition {
         List<Map> relInfoList = getRelationshipsInfo(null, true)
         for (Map relInfo in relInfoList) {
             edp.allDescendants.add((String) relInfo.relatedEntityName)
-            edp.relationshipInfos.put((String) relInfo.title + (String) relInfo.relatedEntityName, relInfo)
+            edp.relationshipInfos.put((relInfo.title ? (String) relInfo.title + "#" : "") + (String) relInfo.relatedEntityName, relInfo)
             EntityDefinition relEd = efi.getEntityDefinition((String) relInfo.relatedEntityName)
             if (!edp.dependentEntities.containsKey(relEd.internalEntityName) && !ancestorEntities.contains(relEd.internalEntityName)) {
                 EntityDependents relEpd = relEd.getDependentsTree(ancestorEntities)

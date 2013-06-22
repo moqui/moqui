@@ -656,7 +656,7 @@ abstract class EntityValueBase implements EntityValue {
         if (doDefer) {
             for (String checkEn in edp.dependentEntities.keySet()) {
                 for (Map relInfo in edp.relationshipInfos.values()) {
-                    if (finishedRelationshipNames.contains(relInfo.title+relInfo.relatedEntityName)) continue
+                    if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
                     if (checkEn == relInfo.relatedEntityName) continue
                     EntityDefinition.EntityDependents checkEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
                     if (checkEdp && checkEdp.allDescendants.contains(checkEn)) { deferredEntityNames.add(checkEn); break }
@@ -672,7 +672,7 @@ abstract class EntityValueBase implements EntityValue {
             EntityDefinition.EntityDependents relEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
             if (relEdp == null) continue
             if (relInfo.type == "many") {
-                EntityList el = findRelated((relInfo.title?:"") + relInfo.relatedEntityName, null, null, false, false)
+                EntityList el = findRelated((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName, null, null, false, false)
                 for (EntityValue ev in el)
                     valuesWritten += ((EntityValueBase) ev).writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
             } else {
