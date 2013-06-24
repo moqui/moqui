@@ -75,6 +75,17 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>If true then this form will be considered dynamic and the internal
                     definition will be built up each time it is used instead of only when first referred to.</xs:documentation></xs:annotation>
             </xs:attribute>
+
+            <xs:attribute name="background-submit" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Submit the form in the background without reloading the screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="background-reload-id" type="xs:string">
+                <xs:annotation><xs:documentation>After the form is submitted in the background reload the
+                    dynamic-container with this id.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="background-message" type="xs:string">
+                <xs:annotation><xs:documentation>After the form is submitted in the background show this message.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

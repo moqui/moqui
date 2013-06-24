@@ -16,7 +16,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide, and because the Login screen is below this. -->
     <always-actions>
         <set field="html_scripts" from="['/js/jquery-1.8.3.min.js', '/js/jquery-ui-1.9.2.min.js',
-            '/js/jquery-ui-timepicker-addon-1.0.0.js', '/js/jquery-ui-combobox.js', '/js/jquery-validate-1.9.0.min.js']"/>
+            '/js/jquery-ui-timepicker-addon-1.0.0.js', '/js/jquery-ui-combobox.js', '/js/jquery-validate-1.9.0.min.js',
+            '/js/jquery-form-20130616.min.js']"/>
     </always-actions>
     <subscreens default-item="apps">
         <!-- if the client is an iPad, default to the ipad subscreens item instead of apps, but allow either to be used explicitly -->

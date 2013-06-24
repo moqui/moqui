@@ -199,15 +199,26 @@ This Work includes contributions authored by David E. Jones, not as a
     </script>
 </#macro>
 
+<#macro "dynamic-container">
+    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
+    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
+<div id="${divId}"></div>
+<script>
+    function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}') }
+    $(function() { load${divId}() });
+</script>
+</#macro>
+
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-<button id="${.node["@id"]}-button<#if listEntryIndex?has_content>-${listEntryIndex}</#if>" iconcls="ui-icon-newwin">${buttonText}</button>
+    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
+<button id="${divId}" iconcls="ui-icon-newwin">${buttonText}</button>
 <script>
     $(function() {
-        $("#${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
+        $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
             modal:true, open: function() { $(this).load('${urlInfo.urlWithParams}') } });
-        $("#${.node["@id"]}-button<#if listEntryIndex?has_content>-${listEntryIndex}</#if>").click(function() { $("#${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>").dialog("open"); return false; });
+        $("#${divId}").click(function() { $("#${divId}").dialog("open"); return false; });
     });
 </script>
 <div id="${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>" title="${buttonText}"></div>
@@ -343,9 +354,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign skipStart = (formNode["@skip-start"]?if_exists == "true")>
     <#assign skipEnd = (formNode["@skip-end"]?if_exists == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
+    <#assign formId = formNode["@name"]>
     <#assign listEntryIndex = "">
     <#if !skipStart>
-    <form name="${formNode["@name"]}" id="${formNode["@name"]}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
+    <form name="${formNode["@name"]}" id="${formId}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
     </#if>
     <#if formNode["field-layout"]?has_content>
@@ -454,8 +466,28 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if !skipEnd></form></#if>
     <#if !skipStart>
-            <script>$("#${formNode["@name"]}").validate();</script>
-            <script>$(document).tooltip();</script>
+        <script>
+            <#-- init form validation -->
+            $("#${formNode["@name"]}").validate();
+            <#-- init tooltips -->
+            $(document).tooltip();
+
+            <#-- if background-submit=true init ajaxForm; for examples see http://www.malsup.com/jquery/form/#ajaxForm -->
+            <#if formNode["@background-submit"]?if_exists == "true">
+            function backgroundSuccess${formId}(responseText, statusText, xhr, $form) {
+                <#if formNode["@background-reload-id"]?has_content>
+                    load${formNode["@background-reload-id"]}();
+                </#if>
+                <#if formNode["@background-message"]?has_content>
+                    <#-- TODO: do something much fancier than a dumb alert box -->
+                    alert('${formNode["@background-message"]}');
+                </#if>
+            }
+            $(document).ready(function() {
+                $('#${formId}').ajaxForm({ success: backgroundSuccess${formId}, dataType: 'json', resetForm: true });
+            });
+            </#if>
+        </script>
     </#if>
     <#if formNode["@focus-field"]?has_content><script>$("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();</script></#if>
     ${sri.getAfterFormWriterText()}

@@ -77,6 +77,11 @@ New Features:
     XML Form fields to include widget-templates for widget reuse
   - Added form-list.@skip-form element for use with plain tables that will
     have nothing to submit; in HTML leaves out form elements
+  - Added dynamic-container element to easily setup a section of the screen
+    that is loaded separately from the server for easy update
+  - Added background-* attributes to form-single to submit the form in the
+    background and optionally show a message on success and reload a
+    dynamic-container by id
 - Added User NotificationMessage feature to send messages to users through
   active listeners or persist them to track receipt and handle delivery
   when the user is next available. The message is a JSON String

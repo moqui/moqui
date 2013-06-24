@@ -643,6 +643,17 @@ This Work includes contributions authored by David E. Jones, not as a
                 names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
+    <xs:element name="dynamic-container" substitutionGroup="StandaloneFields">
+        <xs:annotation><xs:documentation>Container contents are immediately loaded from the server at the given
+            transition. Contents may be reloaded based on other actions such as background form submissions.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/></xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="transition" type="xs:string" use="required"/>
+            <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter
+                names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
 
 
     <!-- ================ Includes ================ -->
