@@ -325,7 +325,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </fo:table-body>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         </fo:table>
-        ${sri.getAfterFormWriterText()}
     <#else>
         <fo:table>
             <fo:table-header>
@@ -352,7 +351,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </fo:table-body>
             ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         </fo:table>
-        ${sri.getAfterFormWriterText()}
     </#if>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
@@ -399,7 +397,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#assign urlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                 <#assign linkFormId><@fieldId linkNode/></#assign>
                 <#assign afterFormText><@linkFormForm linkNode linkFormId urlInfo/></#assign>
-                <#t>${sri.appendToAfterFormWriter(afterFormText)}
+                <#t>${sri.appendToAfterScreenWriter(afterFormText)}
                 <#t><@linkFormLink linkNode linkFormId urlInfo/>
             <#else>
                 <#t><#visit widgetNode>

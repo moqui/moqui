@@ -20,23 +20,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <service-call name="org.moqui.example.ExampleServices.create#ExampleItem"/>
         <default-response url="."/>
     </transition>
-    <transition name="updateExampleItem">
-        <service-call name="update#ExampleItem"/>
-        <default-response url=".">
-            <parameter name="exampleId" from="exampleId_0"/>
-        </default-response>
-    </transition>
-    <transition name="deleteExampleItem">
-        <service-call name="delete#ExampleItem"/>
-        <default-response url="."/>
-    </transition>
+    <transition name="editExampleItemList"><default-response url="../EditExampleItemList"/></transition>
 
     <actions>
-        <entity-find entity-name="ExampleItem" list="exampleItemList">
-            <search-form-inputs default-order-by="exampleItemSeqId"/>
-            <econdition field-name="exampleId" from="exampleId"/>
-        </entity-find>
-
         <entity-find entity-name="moqui.basic.UomAndType" list="allUomAndTypeList">
             <econdition field-name="uomTypeEnumId" operator="not-equals" value="UT_CURRENCY_MEASURE"/>
             <order-by field-name="typeDescription"/>
@@ -44,8 +30,9 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <container-dialog id="AddItemDialog" button-text="Add Item">
-            <form-single name="AddExampleItem" transition="createExampleItem">
+        <!-- <container-dialog id="AddItemDialog" button-text="Add Item"> -->
+            <form-single name="AddExampleItem" transition="createExampleItem" background-submit="true"
+                    background-reload-id="EditExampleItemListContainer" background-message="Example item added">
                 <auto-fields-service service-name="create#ExampleItem"/>
                 <field name="exampleId"><default-field><hidden/></default-field></field>
                 <field name="exampleItemSeqId"><default-field><ignored/><!-- this will be auto-sequenced --></default-field></field>
@@ -56,49 +43,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 </field>
                 <field name="submitButton"><default-field title="Add"><submit confirmation="Really Add?"/></default-field></field>
             </form-single>
-        </container-dialog>
-        <form-list name="ListExampleItems" transition="updateExampleItem" list="exampleItemList" multi="true">
-            <auto-fields-service service-name="update#ExampleItem"/>
-            <field name="exampleId">
-                <header-field><hidden/></header-field>
-                <default-field><hidden/></default-field>
-            </field>
-            <field name="exampleItemSeqId"><default-field title="Item"><display/></default-field></field>
-            <field name="description">
-                <header-field show-order-by="true"><text-find hide-options="true" size="15"/></header-field>
-                <default-field><text-line size="15"/></default-field>
-            </field>
-            <field name="amount">
-                <header-field show-order-by="true"/>
-                <default-field><text-line size="5"/></default-field>
-            </field>
-            <field name="amountUomId">
-                <header-field>
-                    <drop-down allow-empty="true" combo-box="true">
-                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
-                    </drop-down>
-                </header-field>
-                <default-field title="UOM">
-                    <drop-down allow-empty="true">
-                        <list-options list="allUomAndTypeList" key="${uomId}" text="${typeDescription}: ${description} (${abbreviation})"/>
-                    </drop-down>
-                </default-field>
-            </field>
-            <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
-            <field name="deleteLink">
-                <header-field title="Find"><submit/></header-field>
-                <default-field title="">
-                    <!-- the parameters for this will be auto-mapped: exampleId, exampleItemSeqId -->
-                    <link url="deleteExampleItem" text="Delete" confirmation="Really Delete?"/>
-                </default-field>
-            </field>
+        <!-- </container-dialog> -->
 
-            <!-- NOTE: these are here to test the form-list-column rendering, especially combined with multi=true -->
-            <form-list-column><field-ref name="exampleItemSeqId"/></form-list-column>
-            <form-list-column><field-ref name="description"/></form-list-column>
-            <form-list-column><field-ref name="amount"/></form-list-column>
-            <form-list-column><field-ref name="amountUomId"/></form-list-column>
-            <form-list-column><field-ref name="deleteLink"/></form-list-column>
-        </form-list>
+        <dynamic-container id="EditExampleItemListContainer" transition="editExampleItemList"/>
     </widgets>
 </screen>

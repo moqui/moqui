@@ -44,6 +44,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </ul>
             </li>
         </ul>
+        <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
         <script>$("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});</script>
     <#elseif .node["@type"]?if_exists == "popup-tree">
     <#else>
@@ -130,13 +131,14 @@ This Work includes contributions authored by David E. Jones, not as a
         </#if>
         </div>
         <#if dynamic>
-            <script>
-            $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
-                spinner: '<span class="ui-loading">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
-                ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Error loading screen..."); } },
-                load: function(event, ui) { activateAllButtons(); }
-            });
-            </script>
+            <#assign afterScreenScript>
+                $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
+                    spinner: '<span class="ui-loading">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
+                    ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Error loading screen..."); } },
+                    load: function(event, ui) { activateAllButtons(); }
+                });
+            </#assign>
+            <#t>${sri.appendToScriptWriter(afterScreenScript)}
         </#if>
     </#if>
 </#macro>
@@ -189,39 +191,38 @@ This Work includes contributions authored by David E. Jones, not as a
     <div id="${.node["@id"]}" title="${buttonText}" style="display: none;">
     <#recurse>
     </div>
-    <script>
-        $(function() {
-            $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:true });
+    <#assign afterScreenScript>
+        $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:false });
         <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
         <#--, close: function() { } -->
-            $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
-        });
-    </script>
+        $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
+    </#assign>
+    <#t>${sri.appendToScriptWriter(afterScreenScript)}
 </#macro>
 
 <#macro "dynamic-container">
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
-<div id="${divId}"></div>
-<script>
-    function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) }
-    $(function() { load${divId}() });
-</script>
+    <div id="${divId}"></div>
+    <#assign afterScreenScript>
+        function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) }
+        load${divId}();
+    </#assign>
+    <#t>${sri.appendToScriptWriter(afterScreenScript)}
 </#macro>
 
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
-<button id="${divId}" iconcls="ui-icon-newwin">${buttonText}</button>
-<script>
-    $(function() {
+    <button id="${divId}" iconcls="ui-icon-newwin">${buttonText}</button>
+    <#assign afterScreenScript>
         $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
-            modal:true, open: function() { $(this).load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) } });
+            modal:false, open: function() { $(this).load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) } });
         $("#${divId}").click(function() { $("#${divId}").dialog("open"); return false; });
-    });
-</script>
-<div id="${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if>" title="${buttonText}"></div>
+    </#assign>
+    <#t>${sri.appendToScriptWriter(afterScreenScript)}
+    <div id="${divId}" title="${buttonText}"></div>
 </#macro>
 
 <#-- ==================== Includes ==================== -->
@@ -372,7 +373,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                   <#if collapsibleOpened>
                     <#assign collapsibleOpened = false>
                     </div>
-                    <script>$("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });</script>
+                    <#assign afterFormScript>
+                        $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
+                    </#assign>
+                    <#t>${sri.appendToScriptWriter(afterFormScript)}
                     <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
                   </#if>
                     <#assign fieldRef = layoutNode["@name"]>
@@ -390,7 +394,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                   <#if collapsibleOpened>
                     <#assign collapsibleOpened = false>
                     </div>
-                    <script>$("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });</script>
+                    <#assign afterFormScript>
+                        $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
+                    </#assign>
+                    <#t>${sri.appendToScriptWriter(afterFormScript)}
                     <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
                   </#if>
                     <div class="field-row ui-helper-clearfix">
@@ -466,7 +473,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if !skipEnd></form></#if>
     <#if !skipStart>
-        <script>
+        <#assign afterFormScript>
             <#-- init form validation -->
             $("#${formNode["@name"]}").validate();
             <#-- init tooltips -->
@@ -479,7 +486,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     load${formNode["@background-reload-id"]}();
                 </#if>
                 <#if formNode["@background-message"]?has_content>
-                    <#-- TODO: do something much fancier than a dumb alert box -->
+                <#-- TODO: do something much fancier than a dumb alert box -->
                     alert('${formNode["@background-message"]}');
                 </#if>
             }
@@ -487,10 +494,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 $('#${formId}').ajaxForm({ success: backgroundSuccess${formId}, dataType: 'json', resetForm: true });
             });
             </#if>
-        </script>
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
-    <#if formNode["@focus-field"]?has_content><script>$("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();</script></#if>
-    ${sri.getAfterFormWriterText()}
+    <#if formNode["@focus-field"]?has_content>
+        <#assign afterFormScript>
+            $("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();</script>
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
+    </#if>
     <#if sri.doBoundaryComments()><!-- END   form-single[@name=${.node["@name"]}] --></#if>
 </#macro>
 <#macro formSingleSubField fieldNode>
@@ -518,7 +530,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                 <#assign linkFormId><@fieldId linkNode/></#assign>
                 <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
-                <#t>${sri.appendToAfterFormWriter(afterFormText)}
+                <#t>${sri.appendToAfterScreenWriter(afterFormText)}
                 <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
             <#else>
                 <#t><#visit widgetNode>
@@ -640,7 +652,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#if isMulti || skipForm>
             </div>
             <#else>
-                <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
+                <#assign afterFormScript>
+                    $("#${formNode["@name"]}_${listEntryIndex}").validate();
+                </#assign>
+                <#t>${sri.appendToScriptWriter(afterFormScript)}
             </form>
             </#if>
             ${sri.endFormListRow()}
@@ -659,12 +674,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </div><!-- close table -->
         </#if>
         <#if isMulti && !skipStart && !skipForm>
-        <script>
-            $("#${formNode["@name"]}").validate();
-            $(document).tooltip();
-        </script>
+            <#assign afterFormScript>
+                $("#${formNode["@name"]}").validate(); $(document).tooltip();</script>
+            </#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
-        ${sri.getAfterFormWriterText()}
     <#else>
         <#if !skipStart>
         <div class="form-list-outer" id="${formNode["@name"]}-table">
@@ -715,7 +729,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#if isMulti || skipForm>
                 </div>
             <#else>
-                    <script>$("#${formNode["@name"]}_${listEntryIndex}").validate();</script>
+                <#assign afterFormScript>
+                    $("#${formNode["@name"]}_${listEntryIndex}").validate();
+                </#assign>
+                <#t>${sri.appendToScriptWriter(afterFormScript)}
                 </form>
             </#if>
             ${sri.endFormListRow()}
@@ -734,12 +751,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </div>
         </#if>
         <#if isMulti && !skipStart && !skipForm>
-            <script>
-                $("#${formNode["@name"]}").validate();
-                $(document).tooltip();
-            </script>
+            <#assign afterFormScript>$("#${formNode["@name"]}").validate(); $(document).tooltip();</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
-        ${sri.getAfterFormWriterText()}
     </#if>
 <#if sri.doBoundaryComments()><!-- END   form-list[@name=${.node["@name"]}] --></#if>
 </#macro>
@@ -803,7 +817,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
                 <#assign linkFormId><@fieldId linkNode/></#assign>
                 <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
-                <#t>${sri.appendToAfterFormWriter(afterFormText)}
+                <#t>${sri.appendToAfterScreenWriter(afterFormText)}
                 <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
             <#else>
                 <#t><#visit widgetNode>
@@ -843,13 +857,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")?if_exists?default(.node["@default-value-from"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_from"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span><input type="text" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")?if_exists?default(.node["@default-value-thru"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@type"]?if_exists != "time">
-        <script>
+        <#assign afterFormScript>
             <#if .node["@type"]?if_exists == "date">
-                $("#${id}_from,#${id}_thru").datepicker({
+            $("#${id}_from,#${id}_thru").datepicker({
             <#else>
-                $("#${id}_from,#${id}_thru").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 5,
+            $("#${id}_from,#${id}_thru").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 5,
             </#if>showOn: 'button', buttonImage: '', buttonText: '...', buttonImageOnly: false, dateFormat: 'yy-mm-dd'});
-        </script>
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 </span>
 </#macro>
@@ -860,13 +875,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign id><@fieldId .node/></#assign>
     <input type="text" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@type"]?if_exists != "time">
-        <script>
-            <#if .node["@type"]?if_exists == "date">
+        <#assign afterFormScript>
+                <#if .node["@type"]?if_exists == "date">
                 $("#${id}").datepicker({
-            <#else>
+                <#else>
                 $("#${id}").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 1, stepSecond: 1,
-            </#if>showOn: 'button', buttonImage: '/images/icon-calendar.png', buttonText: 'Calendar', buttonImageOnly: true, dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true, showButtonPanel: true});
-        </script>
+                </#if>showOn: 'button', buttonImage: '/images/icon-calendar.png', buttonText: 'Calendar', buttonImageOnly: true, dateFormat: 'yy-mm-dd', changeMonth: true, changeYear: true, showButtonPanel: true});
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 </span>
 </#macro>
@@ -924,29 +940,33 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign doNode = .node["dynamic-options"][0]>
         <#assign depNodeList = doNode["depends-on"]>
         <#assign formName = formNode["@name"]>
-        <script>
+        <#assign afterFormScript>
             function populate_${id}() {
                 $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
-                    function(list) {
-                        if (list) {
-                            $('#${id}').html(""); /* clear out the drop-down */
-                            $.each(list, function(key, value) {
-                                $('#${id}').append("<option value = '" + value["${doNode["@value-field"]!"value"}"] + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
-                            })
-                        };
-                    }
+                        function(list) {
+                            if (list) {
+                                $('#${id}').html(""); /* clear out the drop-down */
+                                $.each(list, function(key, value) {
+                                    $('#${id}').append("<option value = '" + value["${doNode["@value-field"]!"value"}"] + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
+                                })
+                            };
+                        }
                 );
             };
             $(document).ready(function() {
-            <#list depNodeList as depNode>
-                $("#${formName}_${depNode["@field"]}").change(function() { populate_${id}(); });
-            </#list>
+                <#list depNodeList as depNode>
+                    $("#${formName}_${depNode["@field"]}").change(function() { populate_${id}(); });
+                </#list>
                 populate_${id}();
             });
-        </script>
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
     <#if .node["@combo-box"]?if_exists == "true">
-        <script language="JavaScript" type="text/javascript">$("#${id}").combobox();</script>
+        <#assign afterFormScript>
+            $("#${id}").combobox();
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 </#macro>
 
@@ -1023,19 +1043,20 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}"<#if validationClasses?has_content> class="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@ac-transition"]?has_content>
         <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
-        <script>
+        <#assign afterFormScript>
             $("#${id}").autocomplete({
                 source: function(request, response) { $.ajax({
-					url: "${sri.screenUrlInfo.url}/${.node["@ac-transition"]}", type: "POST", dataType: "json", data: { term: request.term },
-					success: function(data) { response($.map(data, function(item) { return { label: item.label, value: item.value } })); }
-				});	},
+                    url: "${sri.screenUrlInfo.url}/${.node["@ac-transition"]}", type: "POST", dataType: "json", data: { term: request.term },
+                    success: function(data) { response($.map(data, function(item) { return { label: item.label, value: item.value } })); }
+                });	},
                 <#t><#if .node["@ac-delay"]?has_content>delay: ${.node["@ac-delay"]},</#if>
                 <#t><#if .node["@ac-min-length"]?has_content>minLength: ${.node["@ac-min-length"]},</#if>
                 select: function( event, ui ) {
                     if (ui.item) { this.value = ui.item.value; if (ui.item.label) { $("#${id}_value").html(ui.item.label); } }
                 }
             });
-	    </script>
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 </#macro>
 

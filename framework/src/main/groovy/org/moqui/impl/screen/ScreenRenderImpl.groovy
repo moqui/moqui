@@ -75,7 +75,8 @@ class ScreenRenderImpl implements ScreenRender {
     protected HttpServletRequest request = null
     protected HttpServletResponse response = null
     protected Writer internalWriter = null
-    protected Writer afterFormWriter = null
+    protected Writer afterScreenWriter = null
+    protected Writer scriptWriter= null
 
     protected boolean dontDoRender = false
 
@@ -557,6 +558,14 @@ class ScreenRenderImpl implements ScreenRender {
             // if screenRenderDefList.size == 1 then it is the target screen, otherwise it's not
             renderStartDef.render(this, screenUrlInfo.screenRenderDefList.size() == 1)
 
+            // if these aren't already cleared it out means they haven't been included in the output, so add them here
+            if (afterScreenWriter) internalWriter.write(afterScreenWriter.toString())
+            if (scriptWriter) {
+                internalWriter.write("\n<script>\n")
+                internalWriter.write(scriptWriter.toString())
+                internalWriter.write("\n</script>\n")
+            }
+
             for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
         } catch (Throwable t) {
             String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
@@ -841,13 +850,28 @@ class ScreenRenderImpl implements ScreenRender {
         }
     }
 
-    String appendToAfterFormWriter(String text) {
-        if (afterFormWriter == null) afterFormWriter = new StringWriter()
-        afterFormWriter.append(text)
+    String appendToAfterScreenWriter(String text) {
+        if (afterScreenWriter == null) afterScreenWriter = new StringWriter()
+        afterScreenWriter.append(text)
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
-    String getAfterFormWriterText() { return afterFormWriter == null ? "" : afterFormWriter.toString() }
+    String getAfterScreenWriterText() {
+        String outText = afterScreenWriter == null ? "" : afterScreenWriter.toString()
+        afterScreenWriter = null
+        return outText
+    }
+    String appendToScriptWriter(String text) {
+        if (scriptWriter == null) scriptWriter = new StringWriter()
+        scriptWriter.append(text)
+        // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
+        return ""
+    }
+    String getScriptWriterText() {
+        String outText = scriptWriter == null ? "" : scriptWriter.toString()
+        scriptWriter = null
+        return outText
+    }
 
     ScreenUrlInfo buildUrl(String subscreenPath) {
         if (subscreenUrlInfos.containsKey(subscreenPath)) return subscreenUrlInfos.get(subscreenPath)

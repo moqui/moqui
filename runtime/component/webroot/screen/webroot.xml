@@ -34,8 +34,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <subscreens-active id="root-active"/>
 
         <render-mode>
-            <text type="html"><![CDATA[</body></html>]]></text>
-            <text type="xsl-fo"><![CDATA[</fo:flow></fo:page-sequence></fo:root>]]></text>
+            <text type="html" location="component://webroot/screen/includes/Footer.html.ftl"/>
+            <text type="xsl-fo">${sri.getAfterScreenWriterText()}<![CDATA[</fo:flow></fo:page-sequence></fo:root>]]></text>
         </render-mode>
     </widgets>
 </screen>
