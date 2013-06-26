@@ -204,7 +204,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
 <div id="${divId}"></div>
 <script>
-    function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}') }
+    function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) }
     $(function() { load${divId}() });
 </script>
 </#macro>
@@ -217,7 +217,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <script>
     $(function() {
         $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
-            modal:true, open: function() { $(this).load('${urlInfo.urlWithParams}') } });
+            modal:true, open: function() { $(this).load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) } });
         $("#${divId}").click(function() { $("#${divId}").dialog("open"); return false; });
     });
 </script>
