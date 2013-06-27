@@ -205,7 +205,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
-        function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) }
+        function load${divId}() { $("#${divId}").load("${urlInfo.urlWithParams}", function() { activateAllButtons() }) }
         load${divId}();
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
@@ -463,7 +463,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </#list>
             <#if collapsibleOpened>
                 </div>
-                <script>$("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });</script>
+                <#assign afterFormScript>
+                    $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
+                </#assign>
+                <#t>${sri.appendToScriptWriter(afterFormScript)}
             </#if>
         </fieldset>
     <#else>
@@ -487,12 +490,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 </#if>
                 <#if formNode["@background-message"]?has_content>
                 <#-- TODO: do something much fancier than a dumb alert box -->
-                    alert('${formNode["@background-message"]}');
+                    alert("${formNode["@background-message"]}");
                 </#if>
             }
-            $(document).ready(function() {
-                $('#${formId}').ajaxForm({ success: backgroundSuccess${formId}, dataType: 'json', resetForm: true });
-            });
+            $("#${formId}").ajaxForm({ success: backgroundSuccess${formId}, dataType: 'json', resetForm: true });
             </#if>
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
