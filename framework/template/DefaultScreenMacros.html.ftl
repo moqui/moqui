@@ -203,7 +203,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "dynamic-container">
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
-    <div id="${divId}"></div>
+    <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
         function load${divId}() { $("#${divId}").load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) }
         load${divId}();
