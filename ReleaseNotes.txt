@@ -82,6 +82,8 @@ New Features:
   - Added background-* attributes to form-single to submit the form in the
     background and optionally show a message on success and reload a
     dynamic-container by id
+  - In HTML generation script tags spread throughout HTML are now
+    consolidated into a single script tag at the end of the screen output
 - Added User NotificationMessage feature to send messages to users through
   active listeners or persist them to track receipt and handle delivery
   when the user is next available. The message is a JSON String
