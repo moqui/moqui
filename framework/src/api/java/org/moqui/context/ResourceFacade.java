@@ -13,6 +13,7 @@ package org.moqui.context;
 
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.Map;
 
 /** For accessing resources by location string (http://, jar://, component://, content://, classpath://, etc). */
 public interface ResourceFacade {
@@ -49,12 +50,14 @@ public interface ResourceFacade {
      * @return boolean representing the result of evaluating the expression
      */
     boolean evaluateCondition(String expression, String debugLocation);
+
     /** Evaluate a Groovy expression as a context field, or more generally as an expression that evaluates to an Object
      * reference.
      *
      * @return Object reference representing result of evaluating the expression
      */
     Object evaluateContextField(String expression, String debugLocation);
+
     /** Evaluate a Groovy expression as a GString to be expanded/interpolated into a simple String.
      *
      * NOTE: the inputString is always run through the L10nFacade.getLocalizedMessage() method before evaluating the
@@ -63,4 +66,5 @@ public interface ResourceFacade {
      * @return String representing localized and expanded inputString
      */
     String evaluateStringExpand(String inputString, String debugLocation);
+    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext);
 }

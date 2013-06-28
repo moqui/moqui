@@ -341,6 +341,20 @@ public class ResourceFacadeImpl implements ResourceFacade {
             throw new IllegalArgumentException("Error in string expression [${expression}] from [${debugLocation}]", e)
         }
     }
+    @Override
+    String evaluateStringExpand(String inputString, String debugLocation, Map additionalContext) {
+        ExecutionContext ec = ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
+        try {
+            // push the entire context to isolate the context for the string expand
+            cs.pushContext()
+            cs.push(additionalContext)
+            return evaluateStringExpand(inputString, debugLocation)
+        } finally {
+            // pop the entire context to get back to where we were before isolating the context with pushContext
+            cs.popContext()
+        }
+    }
 
     Script getGroovyScript(String expression) {
         Class groovyClass = (Class) this.scriptGroovyExpressionCache.get(expression)
