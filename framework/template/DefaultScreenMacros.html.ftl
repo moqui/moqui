@@ -202,7 +202,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro "dynamic-container">
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
+    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
         function load${divId}() { $("#${divId}").load("${urlInfo.urlWithParams}", function() { activateAllButtons() }) }
@@ -214,7 +214,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>-${listEntryIndex}</#if></#assign>
+    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
     <button id="${divId}" iconcls="ui-icon-newwin">${buttonText}</button>
     <#assign afterScreenScript>
         $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
@@ -661,6 +661,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </#if>
             ${sri.endFormListRow()}
         </#list>
+        <#assign listEntryIndex = "">
         ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         <#if !skipEnd>
             <#if isMulti && !skipForm>
@@ -738,6 +739,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             </#if>
             ${sri.endFormListRow()}
         </#list>
+        <#assign listEntryIndex = "">
         ${sri.safeCloseList(listObject)}<#-- if listObject is an EntityListIterator, close it -->
         <#if !skipEnd>
             <#if isMulti && !skipForm>
