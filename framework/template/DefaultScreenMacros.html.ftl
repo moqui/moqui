@@ -215,14 +215,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
-    <button id="${divId}" iconcls="ui-icon-newwin">${buttonText}</button>
+    <button id="${divId}Button" iconcls="ui-icon-newwin">${buttonText}</button>
+    <div id="${divId}" title="${buttonText}"></div>
     <#assign afterScreenScript>
         $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
             modal:false, open: function() { $(this).load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) } });
-        $("#${divId}").click(function() { $("#${divId}").dialog("open"); return false; });
+        $("#${divId}Button").click(function() { $("#${divId}").dialog("open"); return false; });
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
-    <div id="${divId}" title="${buttonText}"></div>
 </#macro>
 
 <#-- ==================== Includes ==================== -->
