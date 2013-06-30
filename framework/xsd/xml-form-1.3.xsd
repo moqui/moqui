@@ -283,23 +283,21 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="text" type="xs:string"/>
             <xs:attribute name="type" default="span">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="p"/>
-                        <xs:enumeration value="pre"/>
-                        <xs:enumeration value="span"/>
-                        <xs:enumeration value="strong"/>
-                        <xs:enumeration value="h1"/>
-                        <xs:enumeration value="h2"/>
-                        <xs:enumeration value="h3"/>
-                        <xs:enumeration value="h4"/>
-                        <xs:enumeration value="h5"/>
-                        <xs:enumeration value="h6"/>
-                    </xs:restriction>
-                </xs:simpleType>
+                <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="p"/>
+                    <xs:enumeration value="pre"/>
+                    <xs:enumeration value="span"/>
+                    <xs:enumeration value="strong"/>
+                    <xs:enumeration value="h1"/>
+                    <xs:enumeration value="h2"/>
+                    <xs:enumeration value="h3"/>
+                    <xs:enumeration value="h4"/>
+                    <xs:enumeration value="h5"/>
+                    <xs:enumeration value="h6"/>
+                </xs:restriction></xs:simpleType>
             </xs:attribute>
             <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="encode" default="true" type="boolean">
+            <xs:attribute name="encode" type="boolean" default="true">
                 <xs:annotation><xs:documentation>
                     If true text will be encoded so that it does not interfere with markup of the target output.
 
@@ -311,6 +309,45 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Generate text container even if text value is empty (or just whitespace)?
                     Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="editable" substitutionGroup="StandaloneFields">
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/></xs:sequence>
+            <xs:attribute name="id" type="xs:string" use="required"/>
+            <xs:attribute name="text" type="xs:string" use="required"/>
+            <xs:attribute name="type" default="span">
+                <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="p"/>
+                    <xs:enumeration value="pre"/>
+                    <xs:enumeration value="span"/>
+                    <xs:enumeration value="strong"/>
+                </xs:restriction></xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="widget-type" default="textarea">
+                <xs:simpleType><xs:restriction base="xs:token">
+                    <xs:enumeration value="textarea"/>
+                    <xs:enumeration value="select"/>
+                </xs:restriction></xs:simpleType>
+            </xs:attribute>
+            <xs:attribute name="encode" type="boolean" default="false">
+                <xs:annotation><xs:documentation>
+                    If true text will be encoded so that it does not interfere with markup of the target output.
+
+                    For example, if output is HTML then data presented will be HTML encoded so that all
+                    HTML-specific characters are escaped.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="display-if-empty" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Generate text container even if text value is empty (or just whitespace)?
+                    Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="transition" type="xs:string" use="required"/>
+            <xs:attribute name="source-transition" type="xs:string"/>
+            <xs:attribute name="parameter-name" type="xs:string" default="value"><xs:annotation><xs:documentation>The name of the
+                parameter to pass the edited value in.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter
+                names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="parameter">

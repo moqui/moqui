@@ -344,6 +344,30 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
     </#if>
 </#macro>
+<#macro editable>
+    <#-- for docs on JS usage see: http://www.appelsiini.net/projects/jeditable -->
+    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
+    <#assign urlParms = urlInfo.getParameterMap()>
+    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign labelType = .node["@type"]?default("span")/>
+    <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+    <#if labelValue?trim?has_content>
+        <${labelType} id="${divId}"><#if .node["@encode"]?if_exists == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
+        <#assign afterScreenScript>
+        $("#${divId}").editable("${urlInfo.url}", { indicator:"${ec.l10n.getLocalizedMessage("Saving")}",
+            tooltip:"${ec.l10n.getLocalizedMessage("Click to edit")}", cancel:"${ec.l10n.getLocalizedMessage("Cancel")}",
+            submit:"${ec.l10n.getLocalizedMessage("Save")}", name:"${.node["@parameter-name"]!"value"}",
+            type:"${.node["@widget-type"]!"textarea"}", cssclass:"editable-form",
+            submitdata:{<#list urlParms.keySet() as parameterKey>${parameterKey}:"${urlParms[parameterKey]}"</#list>}
+            <#if .node["@source-transition"]?has_content>
+                <#assign loadUrlInfo = sri.makeUrlByType(.node["@source-transition"], "transition", .node, "true")>
+                <#assign loadUrlParms = loadUrlInfo.getParameterMap()>
+            , loadurl:"${loadUrlInfo.url}", loaddata:{<#list loadUrlParms.keySet() as parameterKey>${parameterKey}:"${loadUrlParms[parameterKey]}"</#list>}
+            </#if>});
+        </#assign>
+        <#t>${sri.appendToScriptWriter(afterScreenScript)}
+    </#if>
+</#macro>
 <#macro parameter><#-- do nothing, used directly in other elements --></#macro>
 
 <#-- ====================================================== -->

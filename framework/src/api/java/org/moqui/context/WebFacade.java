@@ -38,6 +38,7 @@ public interface WebFacade {
     Map<String, Object> getErrorParameters();
 
     void sendJsonResponse(Object responseObj);
+    void sendTextResponse(String text);
     void handleXmlRpcServiceCall();
     void handleJsonRpcServiceCall();
 }

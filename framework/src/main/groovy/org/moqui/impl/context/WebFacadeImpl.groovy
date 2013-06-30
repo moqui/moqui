@@ -328,7 +328,6 @@ class WebFacadeImpl implements WebFacade {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
         } else {
             jb.call(responseObj)
-
             response.setStatus(HttpServletResponse.SC_OK)
         }
 
@@ -348,6 +347,31 @@ class WebFacadeImpl implements WebFacade {
             response.writer.flush()
         } catch (IOException e) {
             logger.error("Error sending JSON string response", e)
+        }
+    }
+
+    @Override
+    void sendTextResponse(String text) {
+        String responseText
+        if (eci.getMessage().hasError()) {
+            responseText = eci.message.errorsString
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+        } else {
+            responseText = text
+            response.setStatus(HttpServletResponse.SC_OK)
+        }
+
+        response.setContentType("text/plain")
+        // NOTE: String.length not correct for byte length
+        String charset = response.getCharacterEncoding() ?: "UTF-8"
+        int length = responseText.getBytes(charset).length
+        response.setContentLength(length)
+
+        try {
+            response.writer.write(responseText)
+            response.writer.flush()
+        } catch (IOException e) {
+            logger.error("Error sending text response", e)
         }
     }
 

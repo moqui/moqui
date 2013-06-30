@@ -55,6 +55,7 @@ h6 { font-size: .8em; }
 strong { font-weight: bold; }
 
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
+pre { white-space: pre-wrap; word-wrap: break-word; }
 
 a { font-size: 1em; font-weight: bold; color: #052f57; }
 a:hover { text-decoration: underline; }
@@ -62,6 +63,8 @@ a span { font-size: 1em; font-weight: bold; }
 p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
 li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 form { display: inline; }
+
+form.editable-form button { background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px; outline: 0px; }
 
 button.button-plain { border: 0px; padding: 0px; background: transparent; margin: 0px; color: #052f57; }
 button.button-plain:hover { text-decoration: underline; }

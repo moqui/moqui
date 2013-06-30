@@ -189,6 +189,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias name="userGroupId" entity-alias="DBFUG"/>
     </view-entity>
 
+    <!-- ========================================================= -->
+    <!-- moqui.screen.form -->
+    <!-- ========================================================= -->
+
     <!-- Tabled for now, not to be part of 1.0:
     <entity entity-name="DynamicForm" package-name="moqui.screen.dynform">
         <field name="dynamicFormId" type="id" is-pk="true"/>
