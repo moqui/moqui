@@ -85,7 +85,8 @@ New Features:
   - In HTML generation script tags spread throughout HTML are now
     consolidated into a single script tag at the end of the screen output
   - Added editable element like a label but when you click on it an edit
-    box appears to allow editing of the single field
+    box appears to allow editing of the single field (this uses the
+    jeditable jquery plugin)
 - Added WebFacade.sendTextResponse() method to send plain text response
 - Added User NotificationMessage feature to send messages to users through
   active listeners or persist them to track receipt and handle delivery
