@@ -1146,6 +1146,12 @@ Features considered, but may not to be included in 1.x series
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
 
+- Interesting JS plugins
+  - http://arshaw.com/fullcalendar/
+  - http://www.rajeeshcv.com/page/details/6/layoutmanager-jquery-plugin
+  - http://www.datatables.net
+  - http://code.drewwilson.com/entry/autosuggest-jquery-plugin
+
 - User Notification
   - WebSocket clients: track userId, notificationName, connectionKey
     - Entity (no, keep in memory): VisitClient - visitId*, userId*, topic*, connectionKey*
