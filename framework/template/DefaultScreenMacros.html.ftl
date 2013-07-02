@@ -349,16 +349,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign urlParms = urlInfo.getParameterMap()>
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
-    <#assign labelType = .node["@type"]?default("span")/>
-    <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+    <#assign labelType = .node["@type"]?default("span")>
+    <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
+    <#assign parameterName = .node["@parameter-name"]!"value">
     <#if labelValue?trim?has_content>
         <${labelType} id="${divId}"><#if .node["@encode"]?if_exists == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
         <#assign afterScreenScript>
         $("#${divId}").editable("${urlInfo.url}", { indicator:"${ec.l10n.getLocalizedMessage("Saving")}",
             tooltip:"${ec.l10n.getLocalizedMessage("Click to edit")}", cancel:"${ec.l10n.getLocalizedMessage("Cancel")}",
-            submit:"${ec.l10n.getLocalizedMessage("Save")}", name:"${.node["@parameter-name"]!"value"}",
+            submit:"${ec.l10n.getLocalizedMessage("Save")}", name:"${parameterName}",
             type:"${.node["@widget-type"]!"textarea"}", cssclass:"editable-form",
-            submitdata:{<#list urlParms.keySet() as parameterKey>${parameterKey}:"${urlParms[parameterKey]}"</#list>}
+            submitdata:{<#list urlParms.keySet() as parameterKey>${parameterKey}:"${urlParms[parameterKey]}", parameterName:"${parameterName}"</#list>}
             <#if .node["@source-transition"]?has_content>
                 <#assign loadUrlInfo = sri.makeUrlByType(.node["@source-transition"], "transition", .node, "true")>
                 <#assign loadUrlParms = loadUrlInfo.getParameterMap()>

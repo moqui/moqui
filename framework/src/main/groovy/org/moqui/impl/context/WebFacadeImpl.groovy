@@ -364,11 +364,11 @@ class WebFacadeImpl implements WebFacade {
         response.setContentType("text/plain")
         // NOTE: String.length not correct for byte length
         String charset = response.getCharacterEncoding() ?: "UTF-8"
-        int length = responseText.getBytes(charset).length
+        int length = responseText ? responseText.getBytes(charset).length : 0
         response.setContentLength(length)
 
         try {
-            response.writer.write(responseText)
+            if (responseText) response.writer.write(responseText)
             response.writer.flush()
         } catch (IOException e) {
             logger.error("Error sending text response", e)
