@@ -373,13 +373,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     synchronized void destroy() {
         if (!this.destroyed) {
             // stop Camel to prevent more calls coming in
-            camelContext.stop()
+            if (camelContext != null) camelContext.stop()
 
             // stop NotificationMessageListeners
             for (NotificationMessageListener nml in registeredNotificationMessageListeners) nml.destroy()
 
             // stop ElasticSearch
-            elasticSearchNode.close()
+            if (elasticSearchNode != null) elasticSearchNode.close()
 
             // persist any remaining bins in artifactHitBinByType
             Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis())
@@ -391,10 +391,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             }
 
             // this destroy order is important as some use others so must be destroyed first
-            if (this.serviceFacade) { this.serviceFacade.destroy() }
-            if (this.entityFacade) { this.entityFacade.destroy() }
-            if (this.transactionFacade) { this.transactionFacade.destroy() }
-            if (this.cacheFacade) { this.cacheFacade.destroy() }
+            if (this.serviceFacade != null) { this.serviceFacade.destroy() }
+            if (this.entityFacade != null) { this.entityFacade.destroy() }
+            if (this.transactionFacade != null) { this.transactionFacade.destroy() }
+            if (this.cacheFacade != null) { this.cacheFacade.destroy() }
 
             activeContext.remove()
 
