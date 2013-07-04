@@ -17,6 +17,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="moqui-conf">
         <xs:complexType>
             <xs:sequence>
+                <xs:element minOccurs="0" ref="tools"/>
                 <xs:element minOccurs="0" ref="cache-list"/>
                 <xs:element minOccurs="0" ref="server-stats"/>
                 <xs:element minOccurs="0" ref="webapp-list"/>
@@ -31,6 +32,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="repository-list"/>
                 <xs:element minOccurs="0" ref="component-list"/>
             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="tools">
+        <xs:complexType>
+            <xs:attribute name="enable-elasticsearch" type="boolean" default="true"/>
+            <xs:attribute name="enable-camel" type="boolean" default="true"/>
         </xs:complexType>
     </xs:element>
 

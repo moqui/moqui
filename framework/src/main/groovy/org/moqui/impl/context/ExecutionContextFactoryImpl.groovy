@@ -179,7 +179,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         initElasticSearch()
 
         // everything else ready to go, init Camel
-        this.initCamel()
+        initCamel()
 
         // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
@@ -241,7 +241,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         initElasticSearch()
 
         // everything else ready to go, init Camel
-        this.initCamel()
+        initCamel()
 
         // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
@@ -350,14 +350,24 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     protected void initElasticSearch() {
         // set the ElasticSearch home directory
         System.setProperty("es.path.home", runtimePath + "/elasticsearch")
-        elasticSearchNode = NodeBuilder.nodeBuilder().node()
-        elasticSearchClient = elasticSearchNode.client()
+        if (confXmlRoot."tools"[0]."@enable-elasticsearch" != "false") {
+            logger.info("Starting ElasticSearch")
+            elasticSearchNode = NodeBuilder.nodeBuilder().node()
+            elasticSearchClient = elasticSearchNode.client()
+        } else {
+            logger.info("ElasticSearch disabled, not starting")
+        }
     }
 
     protected void initCamel() {
-        moquiServiceComponent = new MoquiServiceComponent(this)
-        camelContext.addComponent("moquiservice", moquiServiceComponent)
-        camelContext.start()
+        if (confXmlRoot."tools"[0]."@enable-camel" != "false") {
+            logger.info("Starting Camel")
+            moquiServiceComponent = new MoquiServiceComponent(this)
+            camelContext.addComponent("moquiservice", moquiServiceComponent)
+            camelContext.start()
+        } else {
+            logger.info("Camel disabled, not starting")
+        }
     }
 
     synchronized void destroy() {
@@ -678,6 +688,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     // ========== Configuration File Merging Methods ==========
 
     protected void mergeConfigNodes(Node baseNode, Node overrideNode) {
+        mergeSingleChild(baseNode, overrideNode, "tools")
+
         if (overrideNode."cache-list") {
             mergeNodeWithChildKey((Node) baseNode."cache-list"[0], (Node) overrideNode."cache-list"[0], "cache", "name")
         }
