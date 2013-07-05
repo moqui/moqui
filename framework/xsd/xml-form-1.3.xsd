@@ -313,7 +313,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="editable" substitutionGroup="StandaloneFields">
         <xs:complexType>
-            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/></xs:sequence>
+            <xs:sequence>
+                <xs:element minOccurs="0" ref="editable-load"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+            </xs:sequence>
             <xs:attribute name="id" type="xs:string" use="required"/>
             <xs:attribute name="text" type="xs:string" use="required"/>
             <xs:attribute name="type" default="span">
@@ -343,9 +346,16 @@ This Work includes contributions authored by David E. Jones, not as a
                     Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="transition" type="xs:string" use="required"/>
-            <xs:attribute name="source-transition" type="xs:string"/>
             <xs:attribute name="parameter-name" type="xs:string" default="value"><xs:annotation><xs:documentation>The name of the
                 parameter to pass the edited value in.</xs:documentation></xs:annotation></xs:attribute>
+            <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter
+                names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="editable-load">
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/></xs:sequence>
+            <xs:attribute name="transition" type="xs:string" use="required"/>
             <xs:attribute name="parameter-map" type="xs:string"><xs:annotation><xs:documentation>A Map to get parameter
                 names and values from in addition to the parameter sub-elements.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
