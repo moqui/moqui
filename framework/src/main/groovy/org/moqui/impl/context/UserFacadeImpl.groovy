@@ -157,17 +157,19 @@ class UserFacadeImpl implements UserFacade {
                     boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
                     try {
                         Map cvResult = eci.service.sync().name("create", "moqui.server.Visitor").parameter("createdDate", getNowTimestamp()).call()
-                        cookieVisitorId = cvResult.visitorId
+                        cookieVisitorId = cvResult?.visitorId
                         logger.info("Created new Visitor with ID [${cookieVisitorId}] in session [${session.id}]")
                     } finally {
                         if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
                     }
                 }
-                // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
-                Cookie visitorCookie = new Cookie("moqui.visitor", cookieVisitorId)
-                visitorCookie.setMaxAge(60 * 60 * 24 * 365)
-                visitorCookie.setPath("/")
-                response.addCookie(visitorCookie)
+                if (cookieVisitorId) {
+                    // whether it existed or not, add it again to keep it fresh; stale cookies get thrown away
+                    Cookie visitorCookie = new Cookie("moqui.visitor", cookieVisitorId)
+                    visitorCookie.setMaxAge(60 * 60 * 24 * 365)
+                    visitorCookie.setPath("/")
+                    response.addCookie(visitorCookie)
+                }
             }
 
             if (serverStatsNode."@visit-enabled" != "false") {
@@ -203,11 +205,13 @@ class UserFacadeImpl implements UserFacade {
                 // NOTE: disable authz for this call, don't normally want to allow create of Visit, but this is special case
                 boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
                 try {
-                    Map result = eci.service.sync().name("create", "moqui.server.Visit").parameters(parameters).call()
+                    Map visitResult = eci.service.sync().name("create", "moqui.server.Visit").parameters(parameters).call()
                     // put visitId in session as "moqui.visitId"
-                    session.setAttribute("moqui.visitId", result.visitId)
-                    this.visitId = result.visitId
-                    logger.info("Created new Visit with ID [${this.visitId}] in session [${session.id}]")
+                    if (visitResult) {
+                        session.setAttribute("moqui.visitId", visitResult.visitId)
+                        this.visitId = visitResult.visitId
+                        logger.info("Created new Visit with ID [${this.visitId}] in session [${session.id}]")
+                    }
                 } finally {
                     if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
                 }
