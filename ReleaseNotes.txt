@@ -29,6 +29,7 @@ New Features:
   Moqui from ~24MB to ~39MB); ElasticSearch files are under
   runtime/elasticsearch and it is initialized and destroyed with the rest
   of the framework
+- Both ElasticSearch and Camel can be disabled to not init automatically
 - Entity Facade
   - Added EntityDynamicView.addRelationshipMember() method to easily add
     member-entity based on relationship definition
