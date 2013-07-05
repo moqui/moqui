@@ -616,18 +616,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="select-field"/>
             </xs:sequence>
             <xs:attribute name="entity-name" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of entity to search in.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>Name of entity to search in.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="count-field" type="xs:string" use="required">
-                <xs:annotation>
-                    <xs:documentation>
-                        Name of the field (variable) to put result of the count in.
-                    </xs:documentation>
-                </xs:annotation>
+                <xs:annotation><xs:documentation>Name of the field (variable) to put result of the count in.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="cache" type="boolean">
                 <xs:annotation><xs:documentation>Look in the cache before finding in the datasource. The default for
