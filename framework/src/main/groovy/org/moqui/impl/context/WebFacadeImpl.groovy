@@ -224,20 +224,20 @@ class WebFacadeImpl implements WebFacade {
     HttpServletResponse getResponse() { return response }
 
     @Override
-    HttpSession getSession() { return request.getSession() }
+    HttpSession getSession() { return request.getSession(true) }
     @Override
     Map<String, Object> getSessionAttributes() {
         if (sessionAttributes) return sessionAttributes
-        sessionAttributes = new StupidWebUtilities.SessionAttributeMap(request.getSession())
+        sessionAttributes = new StupidWebUtilities.SessionAttributeMap(getSession())
         return sessionAttributes
     }
 
     @Override
-    ServletContext getServletContext() { return request.session.getServletContext() }
+    ServletContext getServletContext() { return getSession().getServletContext() }
     @Override
     Map<String, Object> getApplicationAttributes() {
         if (applicationAttributes) return applicationAttributes
-        applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(request.session.getServletContext())
+        applicationAttributes = new StupidWebUtilities.ServletContextAttributeMap(getSession().getServletContext())
         return applicationAttributes
     }
     @Override
