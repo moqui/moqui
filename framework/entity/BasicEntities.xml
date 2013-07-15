@@ -170,6 +170,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <entity entity-name="StatusValidChange" package-name="moqui.basic" cache="true">
+        <description>DEPRECATED by StatusFlowTransition</description>
         <field name="statusId" type="id" is-pk="true"/>
         <field name="toStatusId" type="id" is-pk="true"/>
         <field name="conditionExpression" type="text-medium"/>
@@ -180,6 +181,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
     </entity>
     <view-entity entity-name="StatusValidChangeToDetail" package-name="moqui.basic">
+        <description>DEPRECATED by StatusFlowTransitionToDetail</description>
         <member-entity entity-alias="SVC" entity-name="moqui.basic.StatusValidChange"/>
         <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem" join-from-alias="SVC">
             <key-map field-name="toStatusId" related-field-name="statusId"/>
@@ -188,9 +190,42 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="SI"><exclude field="statusId"/></alias-all>
         <relationship type="one" related-entity-name="moqui.basic.StatusValidChange"/>
         <relationship type="one" related-entity-name="moqui.basic.StatusItem"/>
-        <entity-condition>
-            <order-by field-name="sequenceNum"/>
-        </entity-condition>
+        <entity-condition><order-by field-name="sequenceNum"/></entity-condition>
+    </view-entity>
+    <entity entity-name="StatusFlow" package-name="moqui.basic">
+        <field name="statusFlowId" type="id-long" is-pk="true"/>
+        <field name="statusTypeId" type="id-long"><description>Optional. If specified uses status items with this type.</description></field>
+        <field name="description" type="text-medium"/>
+        <seed-data>
+            <moqui.basic.StatusFlow statusFlowId="Default" description="Default status flow across entire system."/>
+        </seed-data>
+    </entity>
+    <entity entity-name="StatusFlowItem" package-name="moqui.basic">
+        <field name="statusFlowId" type="id-long" is-pk="true"/>
+        <field name="statusId" type="id" is-pk="true"/>
+        <field name="isInitial" type="text-indicator"><description>If true can be an initial status in this flow.</description></field>
+    </entity>
+    <entity entity-name="StatusFlowTransition" package-name="moqui.basic" cache="true">
+        <field name="statusFlowId" type="id-long" is-pk="true"/>
+        <field name="statusId" type="id" is-pk="true"/>
+        <field name="toStatusId" type="id" is-pk="true"/>
+        <field name="sequenceNum" type="number-integer"/>
+        <field name="transitionName" type="text-medium"/>
+        <field name="conditionExpression" type="text-medium"/>
+        <relationship type="one" related-entity-name="moqui.basic.StatusFlow"/>
+        <relationship type="one" related-entity-name="moqui.basic.StatusItem"/>
+        <relationship type="one" title="To" related-entity-name="moqui.basic.StatusItem">
+            <key-map field-name="toStatusId" related-field-name="statusId"/>
+        </relationship>
+    </entity>
+    <view-entity entity-name="StatusFlowTransitionToDetail" package-name="moqui.basic">
+        <member-entity entity-alias="SFT" entity-name="moqui.basic.StatusFlowTransition"/>
+        <member-entity entity-alias="SI" entity-name="moqui.basic.StatusItem" join-from-alias="SFT">
+            <key-map field-name="toStatusId" related-field-name="statusId"/>
+        </member-entity>
+        <alias-all entity-alias="SFT"/>
+        <alias-all entity-alias="SI"><exclude field="statusId"/><exclude field="sequenceNum"/></alias-all>
+        <entity-condition><order-by field-name="sequenceNum"/></entity-condition>
     </view-entity>
 
     <!-- ========== Uom ========== -->
