@@ -156,7 +156,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <default-field title="Status" tooltip="This is the status of the example">
                             <drop-down allow-empty="false" current-description="${currentStatus?.description}">
                                 <entity-options key="${toStatusId}" text="${transitionName} (${description})">
-                                    <entity-find entity-name="StatusValidChangeToDetail">
+                                    <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
                                         <econdition field-name="statusId" from="fieldValues.statusId"/>
                                     </entity-find>
                                 </entity-options>

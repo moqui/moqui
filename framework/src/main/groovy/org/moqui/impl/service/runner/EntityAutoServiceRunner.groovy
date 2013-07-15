@@ -12,6 +12,7 @@
 package org.moqui.impl.service.runner
 
 import org.moqui.BaseException
+import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
@@ -20,10 +21,13 @@ import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
 import org.moqui.service.ServiceException
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import java.sql.Timestamp
 
 public class EntityAutoServiceRunner implements ServiceRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityAutoServiceRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
     protected ServiceFacadeImpl sfi = null
 
     EntityAutoServiceRunner() {}
@@ -151,11 +155,12 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         if (parameterStatusId && statusIdField) {
             String lookedUpStatusId = (String) lookedUpValue.get("statusId")
             if (lookedUpStatusId && !parameterStatusId.equals(lookedUpStatusId)) {
-                // there was an old status, and in this call we are trying to change it, so do the StatusValidChange check
-                EntityValue statusValidChange = sfi.ecfi.entityFacade.makeFind("moqui.basic.StatusValidChange")
+                // there was an old status, and in this call we are trying to change it, so do the StatusFlowTransition check
+                // NOTE that we are using a cached list from a common pattern so it should generally be there instead of a count that wouldn't
+                EntityList statusFlowTransitionList = sfi.ecfi.entityFacade.makeFind("moqui.basic.StatusFlowTransition")
                         .condition(["statusId":lookedUpStatusId, "toStatusId":parameterStatusId])
-                        .useCache(true).one()
-                if (!statusValidChange) {
+                        .useCache(true).list()
+                if (!statusFlowTransitionList) {
                     // uh-oh, no valid change...
                     throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] no status change was found going from status [${lookedUpStatusId}] to status [${parameterStatusId}]")
                 }

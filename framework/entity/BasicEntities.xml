@@ -209,7 +209,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="statusFlowId" type="id-long" is-pk="true"/>
         <field name="statusId" type="id" is-pk="true"/>
         <field name="toStatusId" type="id" is-pk="true"/>
-        <field name="sequenceNum" type="number-integer"/>
+        <field name="transitionSequence" type="number-integer"/>
         <field name="transitionName" type="text-medium"/>
         <field name="conditionExpression" type="text-medium"/>
         <relationship type="one" related-entity-name="moqui.basic.StatusFlow"/>
@@ -224,7 +224,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="toStatusId" related-field-name="statusId"/>
         </member-entity>
         <alias-all entity-alias="SFT"/>
-        <alias-all entity-alias="SI"><exclude field="statusId"/><exclude field="sequenceNum"/></alias-all>
+        <alias-all entity-alias="SI"><exclude field="statusId"/></alias-all>
         <entity-condition><order-by field-name="sequenceNum"/></entity-condition>
     </view-entity>
 
@@ -344,11 +344,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusItem description="Received" sequenceNum="4" statusId="ES_RECEIVED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Bounced" sequenceNum="8" statusId="ES_BOUNCED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Cancelled" sequenceNum="9" statusId="ES_CANCELLED" statusTypeId="EmailMessage"/>
-            <moqui.basic.StatusValidChange statusId="ES_DRAFT" toStatusId="ES_READY" transitionName="Ready"/>
-            <moqui.basic.StatusValidChange statusId="ES_READY" toStatusId="ES_SENT" transitionName="Send"/>
-            <moqui.basic.StatusValidChange statusId="ES_READY" toStatusId="ES_CANCELLED" transitionName="Cancel"/>
-            <moqui.basic.StatusValidChange statusId="ES_SENT" toStatusId="ES_RECEIVED" transitionName="Received"/>
-            <moqui.basic.StatusValidChange statusId="ES_SENT" toStatusId="ES_BOUNCED" transitionName="Bounced"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_DRAFT" toStatusId="ES_READY" transitionName="Ready"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_READY" toStatusId="ES_SENT" transitionName="Send"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_READY" toStatusId="ES_CANCELLED" transitionName="Cancel"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_SENT" toStatusId="ES_RECEIVED" transitionName="Received"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_SENT" toStatusId="ES_BOUNCED" transitionName="Bounced"/>
 
             <!-- Email Type -->
             <moqui.basic.EnumerationType description="Email Type" enumTypeId="EmailType"/>
