@@ -314,8 +314,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="editable" substitutionGroup="StandaloneFields">
         <xs:complexType>
             <xs:sequence>
-                <xs:element minOccurs="0" ref="editable-load"/>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+                <xs:element minOccurs="0" ref="editable-load"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string" use="required"/>
             <xs:attribute name="text" type="xs:string" use="required"/>
