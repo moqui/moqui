@@ -583,6 +583,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             (context[listName + "Count"]?if_exists > 0) &&
             (!formNode["@paginate-always-show"]?has_content || formNode["@paginate-always-show"]?if_exists == "true" || (context[listName + "PageMaxIndex"] > 0))>
         <div class="form-list-paginate">
+            <!-- page ${context[listName + "PageIndex"]} of ${context[listName + "PageMaxIndex"]} -->
             <#if (context[listName + "PageIndex"] > 0)>
                 <#assign firstUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", 0)>
                 <#assign previousUrlInfo = sri.getCurrentScreenUrl().cloneUrlInfo().addParameter("pageIndex", (context[listName + "PageIndex"] - 1))>
