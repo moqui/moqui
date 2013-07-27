@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.0 - Planned for 31 July 2013
+Release 1.3.0 - Planned for 27 July 2013
 ===========================================================================
 
 Moqui Framework 1.3.0 is a major new feature and bug fix release. The major
