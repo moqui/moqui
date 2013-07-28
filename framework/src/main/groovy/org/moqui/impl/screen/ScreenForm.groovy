@@ -821,17 +821,21 @@ class ScreenForm {
         }
     }
 
-    void runFormListRowActions(ScreenRenderImpl sri, Object listEntry) {
+    void runFormListRowActions(ScreenRenderImpl sri, Object listEntry, int index, boolean hasNext) {
         // NOTE: this runs in a pushed-/sub-context, so just drop it in and it'll get cleaned up automatically
         Node localFormNode = getFormNode()
         if (localFormNode."@list-entry") {
             sri.ec.context.put((String) localFormNode."@list-entry", listEntry)
+            sri.ec.context.put(((String) localFormNode."@list-entry") + "_index", index)
+            sri.ec.context.put(((String) localFormNode."@list-entry") + "_has_next", hasNext)
         } else {
             if (listEntry instanceof Map) {
                 sri.ec.context.putAll((Map) listEntry)
             } else {
                 sri.ec.context.put("listEntry", listEntry)
             }
+            sri.ec.context.put(((String) localFormNode."@list") + "_index", index)
+            sri.ec.context.put(((String) localFormNode."@list") + "_has_next", hasNext)
         }
         if (rowActions) rowActions.run(sri.ec)
     }

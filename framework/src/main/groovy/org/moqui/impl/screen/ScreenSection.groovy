@@ -57,19 +57,30 @@ class ScreenSection {
                 if (logger.traceEnabled) logger.trace("Target list [${list}] is empty, not rendering section-iterate at [${location}]")
                 return
             }
+            Iterator listIterator = null
+            if (list instanceof Iterator) listIterator = list
+            else if (list instanceof List) listIterator = list.iterator()
+            else if (list instanceof Map) listIterator = list.entrySet().iterator()
+
             // TODO: handle paginate, paginate-size (lower priority...)
-            for (Object entry in list) {
+            int index = 0
+            while (listIterator != null && listIterator.hasNext()) {
+                Object entry = listIterator.next()
                 try {
                     cs.push()
 
-                    cs.put((String) sectionNode["@entry"], entry)
+                    cs.put((String) sectionNode["@entry"], (entry instanceof Map.Entry ? entry.getValue() : entry))
                     if (sectionNode["@key"] && entry instanceof Map.Entry)
                         cs.put((String) sectionNode["@key"], entry.getKey())
+
+                    cs.put(((String) sectionNode["@entry"]) + "_index", index)
+                    cs.put(((String) sectionNode["@entry"]) + "_has_next", listIterator.hasNext())
 
                     renderSingle(sri)
                 } finally {
                     cs.pop()
                 }
+                index++
             }
         } else {
             // NOTE: don't push/pop context for normal sections, for root section want to be able to share-scope when it

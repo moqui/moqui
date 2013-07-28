@@ -654,7 +654,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#list listObject?if_exists as listEntry>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-            ${sri.startFormListRow(formNode["@name"], listEntry)}
+            ${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
             <#if isMulti || skipForm>
             <div class="form-row">
             <#else>
@@ -748,7 +748,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#list listObject?if_exists as listEntry>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-            ${sri.startFormListRow(formNode["@name"], listEntry)}
+            ${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
             <#if isMulti || skipForm>
                 <div class="form-row">
             <#else>
