@@ -48,7 +48,7 @@ class CacheImpl implements Cache {
     }
 
     @Override
-    int getMaxElements() { return this.ehcache.getCacheConfiguration().getMaxElementsInMemory() }
+    long getMaxElements() { return this.ehcache.getCacheConfiguration().getMaxEntriesLocalHeap() }
 
     @Override
     Cache.EvictionStrategy getEvictionStrategy() {
@@ -65,8 +65,8 @@ class CacheImpl implements Cache {
     }
 
     @Override
-    void setMaxElements(int maxSize, Cache.EvictionStrategy strategy) {
-        this.ehcache.getCacheConfiguration().setMaxElementsInMemory(maxSize)
+    void setMaxElements(long maxSize, Cache.EvictionStrategy strategy) {
+        this.ehcache.getCacheConfiguration().setMaxEntriesLocalHeap(maxSize)
         
         switch (strategy) {
         case LEAST_RECENTLY_USED:
@@ -199,20 +199,20 @@ class CacheImpl implements Cache {
     void clearExpired() { this.ehcache.evictExpiredElements() }
 
     @Override
-    long getHitCount() { return this.ehcache.getStatistics().getCacheHits() }
+    long getHitCount() { return this.ehcache.getStatistics().cacheHitCount() }
 
     @Override
-    long getMissCountNotFound() { return this.ehcache.getSampledCacheStatistics().getCacheMissNotFoundMostRecentSample() }
+    long getMissCountNotFound() { return this.ehcache.getStatistics().cacheMissNotFoundCount() }
 
     @Override
-    long getMissCountExpired() { return this.ehcache.getSampledCacheStatistics().getCacheMissExpiredMostRecentSample() }
+    long getMissCountExpired() { return this.ehcache.getStatistics().cacheMissExpiredCount() }
 
     @Override
-    long getMissCountTotal() { return this.ehcache.getStatistics().getCacheMisses() }
+    long getMissCountTotal() { return this.ehcache.getStatistics().cacheMissCount() }
 
     @Override
-    long getRemoveCount() { return this.ehcache.getSampledCacheStatistics().getCacheElementRemovedMostRecentSample() }
+    long getRemoveCount() { return this.ehcache.getStatistics().cacheRemoveCount() }
 
     @Override
-    void clearCounters() { this.ehcache.clearStatistics() }
+    void clearCounters() { /* this is no longer supported by ehcache as of version 2.7 */ }
 }

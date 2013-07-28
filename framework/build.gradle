@@ -34,7 +34,7 @@ repositories {
 
 dependencies {
     // groovy dependencies (just the library to compile with)
-    // appears this is no longer needed with Gradle 1.6: groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.3' // Apache 2.0
+    // appears this is no longer needed with Gradle 1.6: groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6' // Apache 2.0
 
     compile name: 'antisamy', version: '1.4' // New BSD
 
@@ -45,8 +45,8 @@ dependencies {
     // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.7.0' // Apache 2.0
     compile name: 'atomikos-transactions-jta', version: '3.8.0' // Apache 2.0
 
-    apiCompile name: 'camel-core', version: '2.11.0' // Apache 2.0
-    compile name: 'camel-core', version: '2.11.0' // Apache 2.0
+    apiCompile name: 'camel-core', version: '2.11.1' // Apache 2.0
+    compile name: 'camel-core', version: '2.11.1' // Apache 2.0
 
     compile name: 'commons-codec', version: '1.4' // Apache 2.0
     compile name: 'commons-collections', version: '3.2.1' // Apache 2.0
@@ -57,7 +57,7 @@ dependencies {
     compile name: 'commons-io', version: '2.0.1' // Apache 2.0
     compile name: 'commons-validator', version: '1.4.0' // Apache 2.0
 
-    compile name: 'ehcache-core', version: '2.6.6' // Apache 2.0
+    compile name: 'ehcache', version: '2.7.2' // Apache 2.0
     compile name: 'esapi', version: '2.0.1' // New BSD
     compile name: 'freemarker', version: '2.3.19' // BSD
 
@@ -66,8 +66,8 @@ dependencies {
     apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
     compile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
 
-    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.3' // Apache 2.0
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.3' // Apache 2.0
+    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6' // Apache 2.0
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6' // Apache 2.0
 
     compile name: 'jackrabbit-api', version: '2.5.2' // Apache 2.0
     compile name: 'jackrabbit-jcr-commons', version: '2.5.2' // Apache 2.0
@@ -89,7 +89,7 @@ dependencies {
     compile name: 'org.eclipse.mylyn.wikitext.tracwiki.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.twiki.core_1.8.0.I20121130-0624', version: '' // EPL
 
-    compile name: 'quartz-all', version: '2.1.6' // Apache 2.0
+    compile name: 'quartz-all', version: '2.1.7' // Apache 2.0
 
     compile name: 'ws-commons-util', version: '1.0.2' // Apache 2.0
     compile name: 'xmlrpc-client', version: '3.1.3' // Apache 2.0
@@ -114,35 +114,35 @@ dependencies {
     }
 
     // ElasticSearch Libraries, including Lucene
-    apiCompile name: 'elasticsearch', version: '0.90.0' // Apache 2.0
-    compile name: 'elasticsearch', version: '0.90.0' // Apache 2.0
-    compile name: 'lucene-analyzers-common', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-codecs', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-core', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-grouping', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-highlighter', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-join', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-memory', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-queries', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-queryparser', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-sandbox', version: '4.2.1' // Apache 2.0
-    compile name: 'lucene-suggest', version: '4.2.1' // Apache 2.0
+    apiCompile name: 'elasticsearch', version: '0.90.2' // Apache 2.0
+    compile name: 'elasticsearch', version: '0.90.2' // Apache 2.0
+    compile name: 'lucene-analyzers-common', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-codecs', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-core', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-grouping', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-highlighter', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-join', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-memory', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-queries', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-queryparser', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-sandbox', version: '4.3.1' // Apache 2.0
+    compile name: 'lucene-suggest', version: '4.3.1' // Apache 2.0
     // runtime name: 'jts', version: '1.12' // LGPL (runtime only, needed by spatial4j)
     runtime name: 'spatial4j', version: '0.3' // Apache 2.0
-    runtime name: 'lucene-spatial', version: '4.2.1' // Apache 2.0
+    runtime name: 'lucene-spatial', version: '4.3.1' // Apache 2.0
 
     // ========== runtime-only dependencies ==========
-    runtime name: 'camel-elasticsearch', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-freemarker', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-groovy', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-http4', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-jms', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-lucene', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-mail', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-quartz', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-shiro', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-websocket', version: '2.11.0' // Apache 2.0
-    runtime name: 'camel-xmlrpc', version: '2.11.0' // Apache 2.0
+    runtime name: 'camel-elasticsearch', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-freemarker', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-groovy', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-http4', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-jms', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-lucene', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-mail', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-quartz', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-shiro', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-websocket', version: '2.11.1' // Apache 2.0
+    runtime name: 'camel-xmlrpc', version: '2.11.1' // Apache 2.0
 
     /* For extended WebDAV connection to Jackrabbit these are needed:
     runtime name: 'jackrabbit-spi', version: '2.5.2' // Apache 2.0

@@ -37,14 +37,14 @@ class CacheFacadeTests extends Specification {
     def "add cache element"() {
         when:
         testCache.put("key1", "value1")
+        int hitCountBefore = testCache.getHitCount()
 
         then:
         testCache.get("key1") == "value1"
-        testCache.getHitCount() == 1
+        testCache.getHitCount() == hitCountBefore + 1
 
         cleanup:
         testCache.clear()
-        testCache.clearCounters()
     }
 
     def "overflow cache size limit"() {
@@ -54,21 +54,23 @@ class CacheFacadeTests extends Specification {
         testCache.put("key2", "value2")
         testCache.put("key3", "value3")
         testCache.put("key4", "value4")
+        int hitCountBefore = testCache.getHitCount()
+        int removeCountBefore = testCache.getRemoveCount()
+        int missCountBefore = testCache.getMissCountTotal()
 
         then:
         testCache.getEvictionStrategy() == Cache.LEAST_RECENTLY_ADDED
         testCache.getMaxElements() == 3
         testCache.size() == 3
-        testCache.getRemoveCount() == 0
+        testCache.getRemoveCount() == removeCountBefore
         testCache.get("key1") == null
         !testCache.containsKey("key1")
-        testCache.getMissCountTotal() == 1
+        testCache.getMissCountTotal() == missCountBefore + 1
         testCache.get("key2") == "value2"
-        testCache.getHitCount() == 1
+        testCache.getHitCount() == hitCountBefore + 1
 
         cleanup:
         testCache.clear()
-        testCache.clearCounters()
         // go back to size limit defaults
         testCache.setMaxElements(10000, Cache.LEAST_RECENTLY_USED)
     }

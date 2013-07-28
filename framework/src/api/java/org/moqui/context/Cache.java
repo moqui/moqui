@@ -30,9 +30,9 @@ public interface Cache {
     long getExpireTimeLive();
     void setExpireTimeLive(long expireTime);
 
-    int getMaxElements();
+    long getMaxElements();
     EvictionStrategy getEvictionStrategy();
-    void setMaxElements(int maxSize, EvictionStrategy strategy);
+    void setMaxElements(long maxSize, EvictionStrategy strategy);
 
     Object get(Serializable key);
     Object put(Serializable key, Object value);

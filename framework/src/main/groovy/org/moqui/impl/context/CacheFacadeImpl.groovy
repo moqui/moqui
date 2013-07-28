@@ -107,7 +107,7 @@ public class CacheFacadeImpl implements CacheFacade {
         // make a cache with the default seetings from ehcache.xml
         cacheManager.addCacheIfAbsent(cacheName)
         net.sf.ehcache.Cache newCache = cacheManager.getCache(cacheName)
-        newCache.setSampledStatisticsEnabled(true)
+        // not supported in 2.7.2: newCache.setSampledStatisticsEnabled(true)
 
         // set any applicable settings from the moqui conf xml file
         CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
