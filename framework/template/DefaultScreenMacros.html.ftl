@@ -526,7 +526,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </#if>
     <#if formNode["@focus-field"]?has_content>
         <#assign afterFormScript>
-            $("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();</script>
+            $("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
@@ -704,7 +704,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </#if>
         <#if isMulti && !skipStart && !skipForm>
             <#assign afterFormScript>
-                $("#${formNode["@name"]}").validate(); $(document).tooltip();</script>
+                $("#${formNode["@name"]}").validate(); $(document).tooltip();
             </#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
