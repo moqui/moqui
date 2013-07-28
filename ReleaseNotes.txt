@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.0 - Planned for 27 July 2013
+Release 1.3.0 - 27 July 2013
 ===========================================================================
 
 Moqui Framework 1.3.0 is a major new feature and bug fix release. The major
@@ -26,8 +26,8 @@ New Features:
 - Updated Gradle build files to work with Gradle 1.6 (may not work with
   earlier versions)
 - Updated Apache Camel to 2.11.1, Apache Commons Validator to 1.4.0,
-  Apache Derby to 10.10.1.1, ehcache to 2.7.2, Groovy to 2.1.6,
-  Quartz Scheduler to 2.1.7
+  Apache Derby to 10.10.1.1, ehcache to 2.7.2, Freemarker to 2.3.20,
+  Groovy to 2.1.6, Quartz Scheduler to 2.1.7
 - Added ElasticSearch 0.90.2 and Lucene 4.3.1 ElasticSearch files are under
   runtime/elasticsearch and it is initialized and destroyed with the rest
   of the framework
