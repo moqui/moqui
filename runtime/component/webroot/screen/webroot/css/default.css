@@ -24,14 +24,13 @@ div, form { vertical-align: top; }
 
 /* ========================== body, etc ========================== */
 
-body { background: #DDDDDF; margin: 0px; }
+html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
+html { overflow: hidden; }
+body { overflow: auto; background: #DDDDDF; }
 
-#apps-container {
-background: white;
-margin: 0px auto 0px auto; border: 10px solid #DDDDDF; padding: 10px;
--moz-border-radius: 15px; -webkit-border-radius: 15px; border-radius: 15px;
-width: 960px; overflow: auto;
-}
+/* The overflow: auto is needed for non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
+#body-decorator { position: absolute; top: 10px; left: 10px; bottom: 10px; right: 10px;
+    background: white; padding: 10px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; overflow: auto; }
 
 #header-logo { float: left; width: 300px; height: 30px; }
 #header-logo h1, #header-logo a { font-size: 1.6em; font-family: Courier, "Courier New", monospace; font-weight: bold; border: 0px; padding: 0px; margin: 0px; }
@@ -41,7 +40,7 @@ div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
-#apps-container-footer { margin: 0px auto 0px auto; border-top: 1px solid #DDDDDF; padding: 2px; width: 200px; text-align: center; }
+#apps-footer-content { margin: 5px auto 0px auto; border-top: 1px solid #DDDDDF; padding: 2px; width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
 
@@ -104,16 +103,25 @@ tr:hover { background-color: #DDD; }
 
 /* ======================= XML Screen Styles ======================= */
 
-/* based on width of #apps-container above */
-div.panel-outer { display: table; table-layout: auto; width: 100%; }
-div.panel-left { display: table-cell; width: 180px; padding-right: 10px; }
-div.panel-center-only { display: table-cell; width: 960px; }
-div.panel-center-left { display: table-cell; width: 770px; }
-div.panel-center-both { display: table-cell; width: 580px; }
-div.panel-center-right { display: table-cell; width: 770px; }
-div.panel-right { display: table-cell; width: 180px; padding-left: 10px; }
+/* styles based on convention in jquery-layout */
+div.ui-layout-north { display: none; }
+div.ui-layout-west { display: none; }
+div.ui-layout-center { display: none; }
+div.ui-layout-east { display: none; }
+div.ui-layout-south { display: none; }
+div.ui-layout-container { height: 100%; }
 
-/* an alternate approach using floats for columns:
+/* styles for non-dynamic table layout, not using jquery-layout */
+div.panel-outer { display: table; table-layout: auto; width: 100%; }
+div.panel-middle { display: table-row; }
+div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 10px; }
+div.panel-center-only { display: table-cell; /*width: 960px;*/ }
+div.panel-center-left { display: table-cell; /*width: 770px;*/ }
+div.panel-center-both { display: table-cell; /*width: 580px;*/ }
+div.panel-center-right { display: table-cell; /*width: 770px;*/ }
+div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 10px; }
+
+/* old alternate approach using floats for columns (may now need style or HTML changes to work again):
 div.panel-outer { }
 div.panel-left { float: left; width: 180px; margin-right: 10px; }
 div.panel-center-only { }
@@ -128,10 +136,8 @@ div.panel-right { float: right; width: 180px; margin-left: 10px; }
 .form-list-paginate a, .form-list-paginate span { padding-right: 4px;
     font-family: "Courier New", monospace; font-weight: bold; font-size: .8em; vertical-align: top; }
 
-fieldset.form-single-outer {
-margin: 4px;
+fieldset.form-single-outer { padding: 4px;
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #DDDDDF;
-padding: 4px; width: 95%;
 }
 
 .single-form-field { padding-right: 10px; }
@@ -143,9 +149,9 @@ label.form-title { vertical-align: middle; display: inline-block; width: 120px; 
 .field-row-item { float: left; display: inline-block; }
 
 .form-list-outer {
-margin: 4px;
+margin: 0;
 border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
-padding: 4px; width: 95%;
+padding: 4px; width: 100%;
 display: table; table-layout: auto; border-collapse: separate; empty-cells: show;
 }
 .form-header-group { display: table-header-group; }
@@ -225,3 +231,65 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
 .ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+/* ================ jQuery Layout Styles =============== */
+/* see http://layout.jquery-dev.net/lib/css/layout-default-latest.css */
+
+/* layout panes */
+.ui-layout-pane { background: #FFF; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
+.ui-layout-west { padding-right: 5px; }
+.ui-layout-center { padding-left: 5px; padding-right: 5px; }
+.ui-layout-east { padding-left: 5px; }
+.ui-layout-content { padding: 10px; position: relative; /* contain floated or positioned elements */ overflow: auto; /* add scrolling to content-div */ }
+
+/* Must come AFTER pane-class above so will override */
+.layout-child-container, .layout-content-container { padding: 0; overflow: auto; }
+.layout-child-container { border: 0; /* remove border because inner-layout-panes probably have borders */ }
+.layout-scroll { overflow: auto; }
+.layout-hide { display: none; }
+
+/* resizer bars - all */
+.ui-layout-resizer { background: #EEE; /*border: 1px solid #BBB;*/ }
+/* resizer bars - while resize in progress */
+.ui-layout-resizer-drag { }
+/* affects both open and closed states */
+.ui-layout-resizer-hover { }
+/* NOTE: It looks best when 'hover' and 'dragging' are set to the same color,
+    otherwise color shifts while dragging when bar can't keep up with mouse */
+/* hover-color to 'resize' and 'dragging' */
+.ui-layout-resizer-open-hover, .ui-layout-resizer-dragging { background: #096ac8; }
+.ui-layout-resizer-dragging { /*border: 1px solid #BBB;*/ }
+.ui-layout-resizer-north-dragging, .ui-layout-resizer-south-dragging { border-width: 1px 0; }
+.ui-layout-resizer-west-dragging, .ui-layout-resizer-east-dragging { border-width: 0 1px; }
+/* resizer at min or max size-limit */
+.ui-layout-resizer-dragging-limit { background: #E1A4A4; }
+/* hover-color to 'slide open' */
+.ui-layout-resizer-closed-hover { background: #EBD5AA; }
+/* resizer when pane is 'slid open' */
+.ui-layout-resizer-sliding { opacity: .10; filter: alpha(opacity=10); }
+/* sliding resizer - hover */
+.ui-layout-resizer-sliding-hover { opacity: 1.00; filter: alpha(opacity=100); }
+/* sliding resizer - add 'outside-border' to resizer on-hover
+ * this sample illustrates how to target specific panes and states */
+.ui-layout-resizer-north-sliding-hover { border-bottom-width: 1px; }
+.ui-layout-resizer-south-sliding-hover { border-top-width:  1px; }
+.ui-layout-resizer-west-sliding-hover { border-right-width: 1px; }
+.ui-layout-resizer-east-sliding-hover { border-left-width: 1px; }
+
+/* layout toggler buttons */
+.ui-layout-toggler { border: 1px solid #BBB; background-color: #BBB; }
+.ui-layout-resizer-hover .ui-layout-toggler { opacity: .60; filter: alpha(opacity=60); }
+.ui-layout-toggler-hover, .ui-layout-resizer-hover .ui-layout-toggler-hover { background-color: #00498F; opacity: 1.00; filter: alpha(opacity=100); }
+.ui-layout-toggler-north, .ui-layout-toggler-south { border-width: 0 1px; }
+.ui-layout-toggler-west, .ui-layout-toggler-east { border-width: 1px 0; }
+/* hide the toggler-button when the pane is 'slid open' */
+.ui-layout-resizer-sliding .ui-layout-toggler { display: none; }
+/* style the text we put INSIDE the togglers */
+.ui-layout-toggler .content { color: #666; font-size: 12px; font-weight: bold; width: 100%; padding-bottom: 0.35ex; }
+
+/* layout pane masks - these styles are hard-coded on mask elems, but are also included here as !important to ensure will overrides any generic styles */
+.ui-layout-mask { border: none !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important;
+    position: absolute !important; opacity: 0 !important; filter: Alpha(Opacity="0") !important; }
+.ui-layout-mask-inside-pane { top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; }
+div.ui-layout-mask {}
+iframe.ui-layout-mask {} /* standard mask for iframes */

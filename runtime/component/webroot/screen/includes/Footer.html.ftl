@@ -1,3 +1,4 @@
+    </div>
 ${sri.getAfterScreenWriterText()}
 <script>
     function activateAllButtons() {

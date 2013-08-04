@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </subscreens>
 
     <widgets>
-        <container-panel id="apps-container">
+        <container-panel id="apps-container" dynamic="true">
             <panel-header>
                 <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
                 <section name="headerUser">
@@ -53,8 +53,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 <subscreens-active/>
             </panel-center>
             <panel-footer>
-                <render-mode><text type="html"><![CDATA[<h6>Built on <a href="http://www.moqui.org/">Moqui</a></h6>]]></text></render-mode>
-                <render-mode><text type="html"><![CDATA[<div><a href="http://sourceforge.net/projects/moqui/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=302949&type=10" alt="SourceForge.net" width="80" height="15"></a></div>]]></text></render-mode>
+                <render-mode><text type="html"><![CDATA[
+                    <div id="apps-footer-content">
+                        <h6><a href="http://www.moqui.org/">Built on Moqui</a></h6>
+                    </div>
+                ]]></text></render-mode>
             </panel-footer>
         </container-panel>
     </widgets>

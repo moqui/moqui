@@ -28,3 +28,4 @@
 </head>
 
 <body>
+    <div id="body-decorator">

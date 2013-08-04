@@ -580,27 +580,35 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="panel-footer" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string"/>
-            <!-- not for 1.0, should use CSS styles, may add later if determined to be a good thing:
-            <xs:attribute name="area-size-unit" default="px">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="px"/>
-                        <xs:enumeration value="em"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            -->
+            <xs:attribute name="dynamic" default="false" type="boolean"/>
         </xs:complexType>
     </xs:element>
+    <xs:attributeGroup name="attlist.panel.header-footer">
+        <xs:attribute name="closable" default="true" type="boolean"/>
+        <xs:attribute name="resizable" default="false" type="boolean"/>
+        <xs:attribute name="spacing" type="xs:string" default="5"/>
+        <xs:attribute name="size" type="xs:string" default="auto"/>
+        <xs:attribute name="size-min" type="xs:float"/>
+        <xs:attribute name="size-max" type="xs:float"/>
+    </xs:attributeGroup>
+    <xs:attributeGroup name="attlist.panel.left-right">
+        <xs:attribute name="closable" default="true" type="boolean"/>
+        <xs:attribute name="resizable" default="true" type="boolean"/>
+        <xs:attribute name="spacing" type="xs:string" default="5"/>
+        <xs:attribute name="size" type="xs:string" default="180"/>
+        <xs:attribute name="size-min" type="xs:float"/>
+        <xs:attribute name="size-max" type="xs:float"/>
+    </xs:attributeGroup>
     <xs:element name="panel-header">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:attributeGroup ref="attlist.panel.header-footer"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-left">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
-            <!-- TABLED, not to be part of 1.0: <xs:attribute name="draggable" default="false" type="boolean"/> -->
+            <xs:attributeGroup ref="attlist.panel.left-right"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-center">
@@ -611,11 +619,13 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="panel-right">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:attributeGroup ref="attlist.panel.left-right"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="panel-footer">
         <xs:complexType>
             <xs:group ref="widget-elements" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:attributeGroup ref="attlist.panel.header-footer"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="container-dialog" substitutionGroup="AllWidgets">

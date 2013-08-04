@@ -11,6 +11,10 @@ New Features:
 
 - form-list and section-iterate now automatically add *_index and
   *_has_next context fields following the pattern used in Freemarker
+- dynamic and static layouts
+  - static layout uses entire browser width and is CSS based
+  - dynamic layout uses jQuery Layout plugin and supports closing,
+    resizing, fixed header/footer, separate scrolling left/right, etc
 
 Bug Fixes:
 
@@ -1171,7 +1175,6 @@ Features considered, but may not to be included in 1.x series
 
 - Interesting JS plugins
   - http://arshaw.com/fullcalendar/
-  - http://www.rajeeshcv.com/page/details/6/layoutmanager-jquery-plugin
   - http://www.datatables.net
   - http://code.drewwilson.com/entry/autosuggest-jquery-plugin
 
