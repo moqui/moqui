@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </subscreens>
 
     <widgets>
-        <container-panel id="apps-container" dynamic="true">
+        <container-panel id="apps-container" dynamic="false">
             <panel-header>
                 <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
                 <section name="headerUser">
