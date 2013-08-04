@@ -32,8 +32,9 @@ body { overflow: auto; background: #DDDDDF; }
 #body-decorator { position: absolute; top: 10px; left: 10px; bottom: 10px; right: 10px;
     background: white; padding: 10px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; overflow: auto; }
 
-#header-logo { float: left; width: 300px; height: 30px; }
+#header-logo { float: left; width: 260px; height: 30px; }
 #header-logo h1, #header-logo a { font-size: 1.6em; font-family: Courier, "Courier New", monospace; font-weight: bold; border: 0px; padding: 0px; margin: 0px; }
+#header-menus { float: left; }
 #header-user { float: right; }
 
 div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }
@@ -237,9 +238,9 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* layout panes */
 .ui-layout-pane { background: transparent; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
-.ui-layout-west { padding-right: 5px; }
-.ui-layout-center { padding-left: 5px; padding-right: 5px; }
-.ui-layout-east { padding-left: 5px; }
+.ui-layout-west { padding: 5px 5px 5px 0; }
+.ui-layout-center { padding: 5px; }
+.ui-layout-east { padding: 5px 0 5px 5px; }
 .ui-layout-content { padding: 10px; position: relative; /* contain floated or positioned elements */ overflow: auto; /* add scrolling to content-div */ }
 
 /* Must come AFTER pane-class above so will override */

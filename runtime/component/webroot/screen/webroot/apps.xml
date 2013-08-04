@@ -24,9 +24,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </subscreens>
 
     <widgets>
-        <container-panel id="apps-container" dynamic="false">
+        <container-panel id="apps-container" dynamic="true">
             <panel-header>
                 <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
+                <container id="header-menus">
+                    <subscreens-menu type="popup" id="header-menu" title="Application"/>
+                </container>
                 <section name="headerUser">
                     <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
                     <widgets>
@@ -49,7 +52,6 @@ This Work includes contributions authored by David E. Jones, not as a
                     <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
                 </section-iterate>
 
-                <subscreens-menu type="popup" id="header-menu" title="Application"/>
                 <subscreens-active/>
             </panel-center>
             <panel-footer>

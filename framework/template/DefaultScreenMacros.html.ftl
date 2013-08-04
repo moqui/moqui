@@ -33,7 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo?exists && urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list>
-            <li><a href="#">${menuTitle}<#if currentItemName?has_content> (${currentItemName})</#if></a>
+            <li><a href="#">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> --></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
@@ -45,7 +45,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </li>
         </ul>
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
-        <script>$("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});</script>
+        <script>
+            <#-- move the menu to the header-menus container -->
+            $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
+            $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});
+        </script>
     <#elseif .node["@type"]?if_exists == "popup-tree">
     <#else>
         <#-- default to type=tab -->
@@ -88,7 +92,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list>
-            <li><a href="#">${menuTitle}<#if currentItemName?has_content> (${currentItemName})</#if></a>
+            <li><a href="#">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> --></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
@@ -100,7 +104,11 @@ This Work includes contributions authored by David E. Jones, not as a
             </li>
         </ul>
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
-        <script>$("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});</script>
+        <script>
+            <#-- move the menu to the header menus section -->
+            $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
+            $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});
+        </script>
 
         ${sri.renderSubscreen()}
     <#elseif .node["@type"]?if_exists == "stack">
@@ -167,12 +175,12 @@ This Work includes contributions authored by David E. Jones, not as a
     <#if .node["@dynamic"]?if_exists == "true">
         <#assign afterScreenScript>
         $("#${.node["@id"]}").layout({
-        defaults: { closable: true, resizable: true, slidable: true, livePaneResizing: true, spacing_open: 5 },
-        <#if .node["panel-header"]?has_content><#assign panelNode = .node["panel-header"][0]>north: { closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"false"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"auto"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
-        <#if .node["panel-footer"]?has_content><#assign panelNode = .node["panel-footer"][0]>south: { closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"false"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"auto"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
+        defaults: { closable: true, resizable: true, slidable: false, livePaneResizing: true, spacing_open: 5 },
+        <#if .node["panel-header"]?has_content><#assign panelNode = .node["panel-header"][0]>north: { showOverflowOnHover: true, closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"false"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"auto"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
+        <#if .node["panel-footer"]?has_content><#assign panelNode = .node["panel-footer"][0]>south: { showOverflowOnHover: true, closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"false"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"auto"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
         <#if .node["panel-left"]?has_content><#assign panelNode = .node["panel-left"][0]>west: { closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"true"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"180"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
         <#if .node["panel-right"]?has_content><#assign panelNode = .node["panel-right"][0]>west: { closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"true"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"180"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
-        center: { minWidth: 200, height: "auto" }
+        center: { minWidth: 200 }
         });
         </#assign>
         <#t>${sri.appendToScriptWriter(afterScreenScript)}

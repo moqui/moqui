@@ -15,6 +15,7 @@ New Features:
   - static layout uses entire browser width and is CSS based
   - dynamic layout uses jQuery Layout plugin and supports closing,
     resizing, fixed header/footer, separate scrolling left/right, etc
+- popup menus are in the header to save space and for easier layout
 
 Bug Fixes:
 
