@@ -40,7 +40,7 @@ div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
-#apps-footer-content { margin: 5px auto 0px auto; border-top: 1px solid #DDDDDF; padding: 2px; width: 200px; text-align: center; }
+#apps-footer-content { margin: 5px auto 0px auto; /*border-top: 1px solid #DDDDDF;*/ padding: 2px; width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
 
@@ -236,7 +236,7 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 /* see http://layout.jquery-dev.net/lib/css/layout-default-latest.css */
 
 /* layout panes */
-.ui-layout-pane { background: #FFF; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
+.ui-layout-pane { background: transparent; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
 .ui-layout-west { padding-right: 5px; }
 .ui-layout-center { padding-left: 5px; padding-right: 5px; }
 .ui-layout-east { padding-left: 5px; }
@@ -248,8 +248,10 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .layout-scroll { overflow: auto; }
 .layout-hide { display: none; }
 
-/* resizer bars - all */
-.ui-layout-resizer { background: #EEE; /*border: 1px solid #BBB;*/ }
+/* resizer bars */
+.ui-layout-resizer { background: transparent; }
+.ui-layout-resizer-north { background: transparent; border-top: 1px solid #BBB; }
+.ui-layout-resizer-south { background: transparent; border-bottom: 1px solid #BBB; }
 /* resizer bars - while resize in progress */
 .ui-layout-resizer-drag { }
 /* affects both open and closed states */
