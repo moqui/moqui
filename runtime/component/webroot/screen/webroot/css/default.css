@@ -28,9 +28,9 @@ html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
 html { overflow: hidden; }
 body { overflow: auto; background: #DDDDDF; }
 
-/* The overflow: auto is needed for non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
-#body-decorator { position: absolute; top: 10px; left: 10px; bottom: 10px; right: 10px;
-    background: white; padding: 10px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; overflow: auto; }
+/* The overflow: auto is needed for scroll in non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
+#body-decorator { position: absolute; top: 8px; left: 8px; bottom: 8px; right: 8px;
+    background: white; padding: 8px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; overflow: auto; }
 
 #header-logo { float: left; width: 260px; height: 30px; }
 #header-logo h1, #header-logo a { font-size: 1.6em; font-family: Courier, "Courier New", monospace; font-weight: bold; border: 0px; padding: 0px; margin: 0px; }
@@ -41,7 +41,7 @@ div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
-#apps-footer-content { margin: 5px auto 0px auto; /*border-top: 1px solid #DDDDDF;*/ padding: 2px; width: 200px; text-align: center; }
+#apps-footer-content { margin: 5px auto 0px auto; /*border-top: 1px solid #DDDDDF;*/ width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
 
@@ -239,7 +239,7 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 /* layout panes */
 .ui-layout-pane { background: transparent; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
 .ui-layout-west { padding: 0 5px 0 0; }
-.ui-layout-center { padding: 0 5px 0 5px; }
+.ui-layout-center { }
 .ui-layout-east { padding: 0 0 0 5px; }
 /* doesn't seem to be used: .ui-layout-content { padding: 10px; position: relative; overflow: auto; } */
 
