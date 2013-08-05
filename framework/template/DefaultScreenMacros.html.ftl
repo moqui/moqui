@@ -25,9 +25,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
+    <#assign menuId = .node["@id"]!"subscreensMenu">
     <#if .node["@type"]?if_exists == "popup">
         <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
-        <#assign menuId = .node["@id"]!"subscreensMenu">
         <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>>
             <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
@@ -141,7 +141,7 @@ This Work includes contributions authored by David E. Jones, not as a
         ${sri.renderSubscreen()}
         <#-- </div> -->
         </#if>
-        <#if dynamic>
+        <#if dynamic && displayMenu?if_exists>
             <#assign afterScreenScript>
                 $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
                     spinner: '<span class="ui-loading">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',

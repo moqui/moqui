@@ -238,10 +238,10 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* layout panes */
 .ui-layout-pane { background: transparent; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
-.ui-layout-west { padding: 5px 5px 5px 0; }
-.ui-layout-center { padding: 5px; }
-.ui-layout-east { padding: 5px 0 5px 5px; }
-.ui-layout-content { padding: 10px; position: relative; /* contain floated or positioned elements */ overflow: auto; /* add scrolling to content-div */ }
+.ui-layout-west { padding: 0 5px 0 0; }
+.ui-layout-center { padding: 0 5px 0 5px; }
+.ui-layout-east { padding: 0 0 0 5px; }
+/* doesn't seem to be used: .ui-layout-content { padding: 10px; position: relative; overflow: auto; } */
 
 /* Must come AFTER pane-class above so will override */
 .layout-child-container, .layout-content-container { padding: 0; overflow: auto; }
