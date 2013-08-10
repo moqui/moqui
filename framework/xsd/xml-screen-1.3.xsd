@@ -582,7 +582,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element ref="panel-footer" minOccurs="0"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string"/>
-            <xs:attribute name="dynamic" default="false" type="boolean"/>
+            <xs:attribute name="dynamic" default="false" type="boolean"><xs:annotation><xs:documentation>
+                When true uses a dynamic layout, by default with jQuery Layout (see http://layout.jquery-dev.net/).
+                When false (default) uses a static HTML/CSS layout.
+            </xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:attributeGroup name="attlist.panel.header-footer">
