@@ -343,38 +343,43 @@ class StupidUtilities {
         return value.toString()
     }
 
-    static String encodeForXmlAttribute(String original) {
+    static String encodeForXmlAttribute(String original) { return encodeForXmlAttribute(original, false) }
+
+    static String encodeForXmlAttribute(String original, boolean addZeroWidthSpaces) {
         StringBuilder newValue = new StringBuilder(original)
         for (int i = 0; i < newValue.length(); i++) {
             char curChar = newValue.charAt(i)
 
             switch (curChar) {
-            case '\'': newValue.replace(i, i+1, "&apos;"); break;
-            case '"' : newValue.replace(i, i+1, "&quot;"); break;
-            case '&' : newValue.replace(i, i+1, "&amp;"); break;
-            case '<' : newValue.replace(i, i+1, "&lt;"); break;
-            case '>' : newValue.replace(i, i+1, "&gt;"); break;
-            case 0x5 : newValue.replace(i, i+1, "..."); break;
-            case 0x12: newValue.replace(i, i+1, "&apos;"); break;
-            case 0x13: newValue.replace(i, i+1, "&quot;"); break; // left
-            case 0x14: newValue.replace(i, i+1, "&quot;"); break; // right
-            case 0x16: newValue.replace(i, i+1, "-"); break; // big dash
-            case 0x17: newValue.replace(i, i+1, "-"); break;
-            case 0x19: newValue.replace(i, i+1, "tm"); break;
-            default:
-                if (curChar < 0x20 && curChar != 0x9 && curChar != 0xA && curChar != 0xD) {
-                    // the only valid values < 0x20 are 0x9 (tab), 0xA (newline), 0xD (carriage return)
-                    newValue.deleteCharAt(i)
-                } else if (curChar > 0x7F) {
-                    // Replace each char which is out of the ASCII range with a XML entity
-                    newValue.replace(i, i+1, "&#" + (int) curChar + ";")
-                }
+                case '\'': newValue.replace(i, i+1, "&apos;"); break;
+                case '"' : newValue.replace(i, i+1, "&quot;"); break;
+                case '&' : newValue.replace(i, i+1, "&amp;"); break;
+                case '<' : newValue.replace(i, i+1, "&lt;"); break;
+                case '>' : newValue.replace(i, i+1, "&gt;"); break;
+                case 0x5 : newValue.replace(i, i+1, "..."); break;
+                case 0x12: newValue.replace(i, i+1, "&apos;"); break;
+                case 0x13: newValue.replace(i, i+1, "&quot;"); break; // left
+                case 0x14: newValue.replace(i, i+1, "&quot;"); break; // right
+                case 0x16: newValue.replace(i, i+1, "-"); break; // big dash
+                case 0x17: newValue.replace(i, i+1, "-"); break;
+                case 0x19: newValue.replace(i, i+1, "tm"); break;
+                default:
+                    if (curChar < 0x20 && curChar != 0x9 && curChar != 0xA && curChar != 0xD) {
+                        // the only valid values < 0x20 are 0x9 (tab), 0xA (newline), 0xD (carriage return)
+                        newValue.deleteCharAt(i)
+                    } else if (curChar > 0x7F) {
+                        // Replace each char which is out of the ASCII range with a XML entity
+                        newValue.replace(i, i+1, "&#" + (int) curChar + ";")
+                    } else if (addZeroWidthSpaces) {
+                        newValue.insert(i, "&#8203;")
+                        i += 7
+                    }
             }
         }
         return newValue.toString()
     }
 
-    public static String cleanStringForJavaName(String original) {
+    static String cleanStringForJavaName(String original) {
         String badChars = "\\*&?![]^+-.\$:<>()#"
         StringBuilder newValue = new StringBuilder(original)
         for (int i = 0; i < newValue.length(); i++) {
@@ -384,14 +389,14 @@ class StupidUtilities {
         return newValue.toString()
     }
 
-    public static String paddedNumber(long number, Integer desiredLength) {
+    static String paddedNumber(long number, Integer desiredLength) {
         StringBuilder outStrBfr = new StringBuilder(Long.toString(number))
         if (!desiredLength) return outStrBfr.toString()
         while (desiredLength > outStrBfr.length()) outStrBfr.insert(0, '0')
         return outStrBfr.toString()
     }
 
-    public static String getRandomString(int length) {
+    static String getRandomString(int length) {
         StringBuilder sb = new StringBuilder()
         while (sb.length() <= length) {
             int r = (int) Math.round(Math.random() * 93)

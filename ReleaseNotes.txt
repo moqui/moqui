@@ -1177,6 +1177,8 @@ Features considered, but may not to be included in 1.x series
 - Interesting JS plugins
   - http://arshaw.com/fullcalendar/
   - http://www.datatables.net
+  - http://www.datatables.net/examples/data_sources/server_side.html
+  - http://code.google.com/p/jquery-datatables-editable/
   - http://code.drewwilson.com/entry/autosuggest-jquery-plugin
 
 - User Notification
