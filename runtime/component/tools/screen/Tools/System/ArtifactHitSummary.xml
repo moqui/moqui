@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="ArtifactHitSummaryStats.xml" text="Get as XML" target-window="_blank" expand-transition-url="false"/>
             <link url="ArtifactHitSummaryStats.pdf" text="Get as PDF" target-window="_blank"/>
         </container>
-        <form-list name="ArtifactHitSummary" list="artifactHitReportList">
+        <form-list name="ArtifactHitSummaryList" list="artifactHitReportList">
             <row-actions>
                 <set field="averageTime" from="(totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP)"/>
             </row-actions>
@@ -56,8 +56,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="artifactName">
                 <header-field show-order-by="true"><text-find hide-options="true" size="20"/></header-field>
-                <!-- NOTE: these replace() calls are to add spaces so that longer artifactNames can wrap instead of making the table super-wide -->
-                <default-field><display text="${artifactName.replace('/',' / ').replace(' /  / ', '//').replace('.',' . ')}" also-hidden="false"/></default-field>
+                <!-- NOTE: these replace() calls are to add spaces so that longer artifactNames can wrap instead of making the table super-wide: .replace('/',' / ').replace(' /  / ', '//').replace('.',' . ') -->
+                <default-field><display text="${artifactName}" also-hidden="false"/></default-field>
             </field>
             <field name="lastHitDateTime">
                 <header-field title="Last Hit" show-order-by="true"/>
