@@ -59,7 +59,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="exampleFeatureApplEnumId"/>
         </member-entity>
         <alias-all entity-alias="EXFTAP"/>
-        <alias-all entity-alias="ENUM"/>
+        <alias-all entity-alias="ENUM"><exclude field="sequenceNum"/></alias-all>
     </view-entity>
     <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="moqui.example">
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
@@ -107,6 +107,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM">
             <exclude field="description"/>
+            <exclude field="sequenceNum"/>
         </alias-all>
         <alias name="testComplexAlias">
             <complex-alias operator="+">
