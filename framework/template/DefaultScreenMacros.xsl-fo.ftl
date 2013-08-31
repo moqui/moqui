@@ -303,7 +303,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#list listObject as listEntry>
                     <#assign listEntryIndex = listEntry_index>
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-                    ${sri.startFormListRow(formNode["@name"], listEntry)}
+                    ${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
                     <fo:table-row>
                         <#list formNode["form-list-column"] as fieldListColumn>
                             <fo:table-cell>
@@ -342,7 +342,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#list listObject as listEntry>
                     <#assign listEntryIndex = listEntry_index>
                     <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-                    ${sri.startFormListRow(formNode["@name"], listEntry)}
+                    ${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
                     <fo:table-row>
                         <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
                     </fo:table-row>

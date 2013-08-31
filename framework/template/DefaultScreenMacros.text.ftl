@@ -182,7 +182,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <#list listObject as listEntry>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-            <#t>${sri.startFormListRow(formNode["@name"], listEntry)}
+            <#t>${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
             <#list formNode["form-list-column"] as fieldListColumn>
                 <#list fieldListColumn["field-ref"] as fieldRef>
                     <#assign fieldRef = fieldRef["@name"]>
@@ -207,7 +207,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <#list listObject as listEntry>
             <#assign listEntryIndex = listEntry_index>
             <#-- NOTE: the form-list.@list-entry attribute is handled in the ScreenForm class through this call: -->
-            <#t>${sri.startFormListRow(formNode["@name"], listEntry)}
+            <#t>${sri.startFormListRow(formNode["@name"], listEntry, listEntry_index, listEntry_has_next)}
             <#list formNode["field"] as fieldNode>
                 <#t><@formListSubField fieldNode/>${"\t"}
             </#list>
