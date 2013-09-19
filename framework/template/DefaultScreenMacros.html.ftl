@@ -256,7 +256,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign divId>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
     <button id="${divId}Button" iconcls="ui-icon-newwin">${buttonText}</button>
     <div id="${divId}" title="${buttonText}"></div>
     <#assign afterScreenScript>
