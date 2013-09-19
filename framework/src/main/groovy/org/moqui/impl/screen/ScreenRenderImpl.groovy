@@ -53,6 +53,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     protected String rootScreenLocation = null
     protected ScreenDefinition rootScreenDef = null
+    protected ScreenDefinition overrideActiveScreenDef = null
 
     protected List<String> originalScreenPathNameList = new ArrayList<String>()
     protected ScreenUrlInfo screenUrlInfo = null
@@ -657,7 +658,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenDefinition getRootScreenDef() { return rootScreenDef }
-    ScreenDefinition getActiveScreenDef() { return screenUrlInfo.screenRenderDefList[screenPathIndex] }
+    ScreenDefinition getActiveScreenDef() { return overrideActiveScreenDef ?: screenUrlInfo.screenRenderDefList[screenPathIndex] }
 
     List<String> getActiveScreenPath() {
         // handle case where root screen is first/zero in list versus a standalone screen
@@ -716,11 +717,16 @@ class ScreenRenderImpl implements ScreenRender {
 
     String renderSection(String sectionName) {
         ScreenDefinition sd = getActiveScreenDef()
-        ScreenSection section = sd.getSection(sectionName)
-        if (!section) throw new IllegalArgumentException("No section with name [${sectionName}] in screen [${sd.location}]")
-        writer.flush()
-        section.render(this)
-        writer.flush()
+        try {
+            ScreenSection section = sd.getSection(sectionName)
+            if (!section) throw new IllegalArgumentException("No section with name [${sectionName}] in screen [${sd.location}]")
+            writer.flush()
+            section.render(this)
+            writer.flush()
+        } catch (Throwable t) {
+            logger.error("Error rendering section [${sectionName}] in screen [${sd.location}]: " + t.toString(), t)
+            return "Error rendering section [${sectionName}] in screen [${sd.location}]: ${t.toString()}"
+        }
         // NOTE: this returns a String so that it can be used in an FTL interpolation, but it always writes to the writer
         return ""
     }
@@ -813,13 +819,26 @@ class ScreenRenderImpl implements ScreenRender {
         boolean shareScope = shareScopeStr == "true"
 
         ContextStack cs = (ContextStack) ec.context
+        ScreenDefinition oldOverrideActiveScreenDef = overrideActiveScreenDef
         try {
             if (!shareScope) cs.push()
             writer.flush()
-            sfi.makeRender().rootScreen(location).renderMode(renderMode).encoding(characterEncoding)
-                    .macroTemplate(macroTemplateLocation).render(writer)
+
+            ScreenDefinition screenDef = sfi.getScreenDefinition(location)
+            if (!screenDef) throw new BaseException("Could not find screen at location [${location}]")
+            overrideActiveScreenDef = screenDef
+            screenDef.render(this, false)
+
+            // this way is more literal, but has issues with relative paths and such:
+            // sfi.makeRender().rootScreen(location).renderMode(renderMode).encoding(characterEncoding)
+            //         .macroTemplate(macroTemplateLocation).render(writer)
+
             writer.flush()
+        } catch (Throwable t) {
+            logger.error("Error rendering screen [${location}]", t)
+            return "Error rendering screen [${location}]: ${t.toString()}"
         } finally {
+            overrideActiveScreenDef = oldOverrideActiveScreenDef
             if (!shareScope) cs.pop()
         }
 
