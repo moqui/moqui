@@ -54,7 +54,7 @@ class ServiceEcaRule {
 
     void runIfMatches(String serviceName, Map<String, Object> parameters, Map<String, Object> results, String when, ExecutionContext ec) {
         // see if we match this event and should run
-        if (serviceName != secaNode."@service") return
+        if (serviceName != (secaNode."@service"?.replace("#", ""))) return
         if (when != secaNode."@when") return
         if (ec.getMessage().hasError() && secaNode."@run-on-error" != "true") return
 
