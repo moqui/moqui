@@ -216,6 +216,13 @@ button.ui-button-icons-only { width: 1.5em; }
 
 .ui-accordion-header { line-height: .7; }
 
+.ui-widget-header { background-image: none; }
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default { background-image: none; }
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { background-image: none; }
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active { background-image: none; }
+.ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  { background-image: none; }
+.ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error { background-image: none; }
+
 /* ================ Extensions for jquery-ui theme =============== */
 
 /* this applies to combo-box and autocomplete */
