@@ -149,6 +149,9 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         if ((outParamNames == null || outParamNames.contains("oldStatusId")) && statusIdField) {
             result.put("oldStatusId", lookedUpValue.get("statusId"))
         }
+        if ((outParamNames == null || outParamNames.contains("statusChanged")) && statusIdField) {
+            result.put("statusChanged", !(lookedUpValue.get("statusId") == parameters.get("statusId")))
+        }
 
         // do the StatusValidChange check
         String parameterStatusId = (String) parameters.get("statusId")
