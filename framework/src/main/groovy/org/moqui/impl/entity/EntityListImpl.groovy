@@ -41,18 +41,29 @@ class EntityListImpl implements EntityList {
         if (fromCache) return this.cloneList().filterByDate(fromDateName, thruDateName, moment)
 
         // default to now
-        if (!moment) moment = new Timestamp(System.currentTimeMillis())
+        Long momentLong = moment ? moment.getTime() : System.currentTimeMillis()
         if (!fromDateName) fromDateName = "fromDate"
         if (!thruDateName) thruDateName = "thruDate"
 
         Iterator<EntityValue> valueIterator = this.valueList.iterator()
         while (valueIterator.hasNext()) {
             EntityValue value = valueIterator.next()
-            Timestamp fromDate = value.getTimestamp(fromDateName)
-            Timestamp thruDate = value.getTimestamp(thruDateName)
+            Object fromDateObj = value.get(fromDateName)
+            Object thruDateObj = value.get(thruDateName)
 
-            if (!((thruDate == null || thruDate.after(moment)) &&
-                    (fromDate == null || fromDate.before(moment) || fromDate.equals(moment)))) {
+            Long fromDateLong
+            Long thruDateLong
+
+            if (fromDateObj instanceof Date) fromDateLong = fromDateObj.getTime()
+            else if (fromDateObj instanceof Long) fromDateLong = fromDateObj
+            else fromDateLong = null
+
+            if (thruDateObj instanceof Date) thruDateLong = thruDateObj.getTime()
+            else if (thruDateObj instanceof Long) thruDateLong = thruDateObj
+            else thruDateLong = null
+
+            if (!((thruDateLong == null || thruDateLong > momentLong) &&
+                    (fromDateLong == null || fromDateLong <= momentLong))) {
                 valueIterator.remove()
             }
         }
