@@ -243,8 +243,8 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "dynamic-container">
-    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
         function load${divId}() { $("#${divId}").load("${urlInfo.urlWithParams}", function() { activateAllButtons() }) }
@@ -654,7 +654,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipForm>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-                <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
+                    <#assign headerFormId>${formNode["@name"]}-header</#assign>
+                <form name="${headerFormId}" id="${headerFormId}" class="form-header-row" method="post" action="${curUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
                     <#list nonReferencedFieldList as nonReferencedField><#if nonReferencedField["header-field"]?has_content><#recurse nonReferencedField["header-field"][0]/></#if></#list>
@@ -681,6 +682,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     </#list>
                 <#if needHeaderForm && !skipForm>
                 </form>
+                    <#if _dynamic_container_id?has_content>
+                        <#-- if we have an _dynamic_container_id this was loaded in a dynamic-container so init ajaxForm; for examples see http://www.malsup.com/jquery/form/#ajaxForm -->
+                        <#assign afterFormScript>
+                            $("#${headerFormId}").ajaxForm({ target: '#${_dynamic_container_id}', success: activateAllButtons, resetForm: false });
+                        </#assign>
+                        <#t>${sri.appendToScriptWriter(afterFormScript)}
+                    </#if>
                 <#else>
                 </div>
                 </#if>
