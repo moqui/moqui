@@ -25,6 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#-- ================ Subscreens ================ -->
 <#macro "subscreens-menu">
+    <#assign displayMenu = sri.activeInCurrentMenu?if_exists>
     <#assign menuId = .node["@id"]!"subscreensMenu">
     <#if .node["@type"]?if_exists == "popup">
         <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
@@ -53,6 +54,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#elseif .node["@type"]?if_exists == "popup-tree">
     <#else>
         <#-- default to type=tab -->
+        <#if displayMenu?if_exists>
         <div class="ui-tabs ui-tabs-collapsible">
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
                 <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
@@ -63,6 +65,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </#if></#list>
             </ul>
         </div>
+        </#if>
     </#if>
 </#macro>
 
