@@ -105,6 +105,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>
+            <parameter name="documentType"><description>The ElasticSearch document type. For DataDocument based docs
+                this is the dataDocumentId.</description></parameter>
             <parameter name="queryString" required="true"/>
             <parameter name="pageIndex" type="Integer" default-value="0"/>
             <parameter name="pageSize" type="Integer" default-value="20"/>
@@ -140,7 +142,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 documentList = []
 
                 // get the search hits
-                SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName)
+                SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)
                         .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit).execute().actionGet().getHits()
                 if (hits.getTotalHits() > 0) {
                     MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
