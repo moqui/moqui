@@ -407,10 +407,12 @@ class EntityFacadeImpl implements EntityFacade {
                 }
                 List<String> reversePkSet = reverseEd.getPkFieldNames()
                 String relType = reversePkSet.equals(pkSet) ? "one-nofk" : "many"
+                String title = relNode."@title"
 
                 // does a many relationship coming back already exist?
                 Node reverseRelNode = (Node) reverseEd.entityNode."relationship".find(
-                        { (it."@related-entity-name" == ed.entityName || it."@related-entity-name" == ed.fullEntityName) && it."@type" == relType })
+                        { (it."@related-entity-name" == ed.entityName || it."@related-entity-name" == ed.fullEntityName) &&
+                                it."@type" == relType && ((!title && !it."@title") || it."@title" == title) })
                 if (reverseRelNode != null) {
                     // make sure has is-one-reverse="true"
                     reverseRelNode.attributes().put("is-one-reverse", "true")

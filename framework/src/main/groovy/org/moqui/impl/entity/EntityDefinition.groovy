@@ -217,7 +217,7 @@ public class EntityDefinition {
             // see if there is an entity matching the relationship name that has a relationship coming this way
             EntityDefinition ed = null
             try {
-                ed = efi.getEntityDefinition(relationshipName)
+                ed = efi.getEntityDefinition(entityName)
             } catch (EntityException e) {
                 // probably means not a valid entity name, which may happen a lot since we're checking here to see, so just ignore
                 if (logger.isTraceEnabled()) logger.trace("Ignoring entity not found exception: ${e.toString()}")
@@ -226,12 +226,13 @@ public class EntityDefinition {
                 // don't call ed.getRelationshipNode(), may result in infinite recursion
                 Node reverseRelNode = (Node) ed.internalEntityNode."relationship".find(
                         { ((it."@related-entity-name" == this.internalEntityName || it."@related-entity-name" == this.fullEntityName)
-                            && (it."@type" == "one" || it."@type" == "one-nofk")) })
+                            && (it."@type" == "one" || it."@type" == "one-nofk") && ((!title && !it."@title") || it."@title" == title)) })
                 if (reverseRelNode != null) {
                     Map keyMap = ed.getRelationshipExpandedKeyMap(reverseRelNode)
                     String relType = (this.getPkFieldNames() == ed.getPkFieldNames()) ? "one-nofk" : "many"
                     Node newRelNode = this.internalEntityNode.appendNode("relationship",
                             ["related-entity-name":relationshipName, "type":relType])
+                    if (title) newRelNode.attributes().put("title", title)
                     for (Map.Entry keyEntry in keyMap) {
                         // add a key-map with the reverse fields
                         newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])

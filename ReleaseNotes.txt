@@ -22,6 +22,7 @@ New Features:
 Bug Fixes:
 
 - Fixed extraneous close script tags in screen/form HTML output
+- Auto reverse relationships better support titles
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
