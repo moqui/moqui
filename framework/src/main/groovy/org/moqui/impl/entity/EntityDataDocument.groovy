@@ -290,9 +290,13 @@ class EntityDataDocument {
                     relatedEntityDocMap = (Map) parentDocMap.get(relDocumentAlias)
                     if (relatedEntityDocMap == null) {
                         relatedEntityDocMap = [:]
-                        parentDocMap.put(relDocumentAlias, relatedEntityDocMap)
+                        // now time to recurse
+                        populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
+                        if (relatedEntityDocMap) parentDocMap.put(relDocumentAlias, relatedEntityDocMap)
                     } else {
                         recurseSetFields = false
+                        // now time to recurse
+                        populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
                     }
                 } else {
                     // we need a List of Maps
@@ -321,25 +325,27 @@ class EntityDataDocument {
 
                     if (relatedEntityDocMap == null) {
                         // no matching Map? create a new one... and it will get populated in the recursive call
-                        if (relatedEntityDocList == null) {
-                            relatedEntityDocList = []
-                            parentDocMap.put(relDocumentAlias, relatedEntityDocList)
-                        }
-
                         relatedEntityDocMap = [:]
-                        relatedEntityDocList.add(relatedEntityDocMap)
+                        // now time to recurse
+                        populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
+                        if (relatedEntityDocMap) {
+                            if (relatedEntityDocList == null) {
+                                relatedEntityDocList = []
+                                parentDocMap.put(relDocumentAlias, relatedEntityDocList)
+                            }
+                            relatedEntityDocList.add(relatedEntityDocMap)
+                        }
                     } else {
                         recurseSetFields = false
+                        // now time to recurse
+                        populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
                     }
                 }
-
-                // now time to recurse
-                populateDataDocRelatedMap(ev, relatedEntityDocMap, relatedEd, fieldTreeChild, relationshipAliasMap, recurseSetFields)
             } else {
                 if (setFields) {
                     // set the field
                     String fieldName = fieldTreeEntry.getValue()
-                    parentDocMap.put(fieldName, ev.get(fieldName))
+                    if (ev.get(fieldName)) parentDocMap.put(fieldName, ev.get(fieldName))
                 }
             }
         }

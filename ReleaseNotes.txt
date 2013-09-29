@@ -23,6 +23,7 @@ Bug Fixes:
 
 - Fixed extraneous close script tags in screen/form HTML output
 - Auto reverse relationships better support titles
+- DataDocument no longer includes null fields, empty Maps and Lists
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
