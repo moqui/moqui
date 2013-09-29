@@ -427,7 +427,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 Node newRelNode = reverseEd.entityNode.appendNode("relationship",
                         ["related-entity-name":ed.fullEntityName, "type":relType, "is-one-reverse":"true"])
-                if (relNode."@title") newRelNode.attributes().title = relNode."@title"
+                if (relNode."@title") newRelNode.attributes().title = title
                 for (Map.Entry keyEntry in keyMap) {
                     // add a key-map with the reverse fields
                     newRelNode.appendNode("key-map", ["field-name":keyEntry.value, "related-field-name":keyEntry.key])
