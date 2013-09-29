@@ -9,8 +9,10 @@ Moqui Framework 1.3.1 is a minor new feature and bug fix release. TODO
 
 New Features:
 
-- form-list and section-iterate now automatically add *_index and
+- form-list and section-iterate automatically add *_index and
   *_has_next context fields following the pattern used in Freemarker
+- formDisplayOnly parameter (or context value) to make the form render as
+  display-only (read-only)
 - dynamic and static layouts
   - static layout uses entire browser width and is CSS based
   - dynamic layout uses jQuery Layout plugin and supports closing,

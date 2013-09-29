@@ -368,6 +368,7 @@ class ScreenRenderImpl implements ScreenRender {
                     fullUrl.addParameters(ri.expandParameters(ec))
                     // if this was a screen-last and the screen has declared parameters include them in the URL
                     Map savedParameters = ((WebFacadeImpl) ec.web)?.getSavedParameters()
+                    ScreenUrlInfo.copySpecialParameters(savedParameters, fullUrl.getPathParameterMap())
                     if (ri.type == "screen-last" && savedParameters && fullUrl.getTargetScreen()?.getParameterMap()) {
                         for (String parmName in fullUrl.getTargetScreen().getParameterMap().keySet()) {
                             if (savedParameters.get(parmName))
@@ -737,17 +738,17 @@ class ScreenRenderImpl implements ScreenRender {
         if (form == null) throw new IllegalArgumentException("No form with name [${formName}] in screen [${sd.location}]")
         ((ContextStack) ec.context).push()
         form.runFormListRowActions(this, listEntry, index, hasNext)
-        // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
+        // NOTE: this returns an empty String so that it can be used in an FTL interpolation, but nothing is written
         return ""
     }
     String endFormListRow() {
         ((ContextStack) ec.context).pop()
-        // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
+        // NOTE: this returns an empty String so that it can be used in an FTL interpolation, but nothing is written
         return ""
     }
     String safeCloseList(Object listObject) {
         if (listObject instanceof EntityListIterator) ((EntityListIterator) listObject).close()
-        // NOTE: this returns a String so that it can be used in an FTL interpolation, but nothing it written
+        // NOTE: this returns an empty String so that it can be used in an FTL interpolation, but nothing is written
         return ""
     }
     Node getFormNode(String formName) {

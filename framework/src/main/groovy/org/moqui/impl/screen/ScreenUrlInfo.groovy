@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.screen
 
+import org.moqui.context.ContextStack
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
 import org.moqui.impl.context.ExecutionContextImpl
@@ -212,6 +213,27 @@ class ScreenUrlInfo {
         return pm
     }
 
+    String getParameterString() {
+        StringBuilder ps = new StringBuilder()
+        Map<String, String> pm = this.getParameterMap()
+        for (Map.Entry<String, String> pme in pm) {
+            if (!pme.value) continue
+            if (ps.length() > 0) ps.append("&")
+            ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
+        }
+        return ps.toString()
+    }
+    String getParameterPathString() {
+        StringBuilder ps = new StringBuilder()
+        Map<String, String> pm = this.getParameterMap()
+        for (Map.Entry<String, String> pme in pm) {
+            if (!pme.value) continue
+            ps.append("/~")
+            ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
+        }
+        return ps.toString()
+    }
+
     ScreenUrlInfo addParameter(Object name, Object value) {
         if (!name || value == null) return this
         pathParameterMap.put(name as String, value as String)
@@ -224,27 +246,19 @@ class ScreenUrlInfo {
         }
         return this
     }
+    Map getPathParameterMap() { return pathParameterMap }
 
-    String getParameterString() {
-        StringBuilder ps = new StringBuilder()
-        Map<String, String> pm = this.getParameterMap()
-        for (Map.Entry<String, String> pme in pm) {
-            if (!pme.value) continue
-            if (ps.length() > 0) ps.append("&")
-            ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
-        }
-        return ps.toString()
+    ScreenUrlInfo passThroughSpecialParameters() {
+        copySpecialParameters(sri.ec.context, pathParameterMap)
+        return this
     }
-
-    String getParameterPathString() {
-        StringBuilder ps = new StringBuilder()
-        Map<String, String> pm = this.getParameterMap()
-        for (Map.Entry<String, String> pme in pm) {
-            if (!pme.value) continue
-            ps.append("/~")
-            ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
+    static void copySpecialParameters(Map fromMap, Map toMap) {
+        for (String fieldName in fromMap.keySet()) {
+            if (fieldName.startsWith("formDisplayOnly")) toMap.put(fieldName, (String) fromMap.get(fieldName))
         }
-        return ps.toString()
+        if (fromMap.containsKey("pageNoLimit")) toMap.put("pageNoLimit", (String) fromMap.get("pageNoLimit"))
+        if (fromMap.containsKey("lastStandalone")) toMap.put("lastStandalone", (String) fromMap.get("lastStandalone"))
+        if (fromMap.containsKey("renderMode")) toMap.put("renderMode", (String) fromMap.get("renderMode"))
     }
 
     void initUrl() {

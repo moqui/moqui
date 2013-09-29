@@ -325,6 +325,7 @@ class ScreenDefinition {
         String getMethod() { return method }
         String getSingleServiceName() { return singleServiceName }
         List<String> getPathParameterList() { return pathParameterList }
+        boolean hasActionsOrSingleService() { return actions || singleServiceName }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 

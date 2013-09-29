@@ -250,7 +250,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
-        function load${divId}() { $("#${divId}").load("${urlInfo.urlWithParams}", function() { activateAllButtons() }) }
+        function load${divId}() { $("#${divId}").load("${urlInfo.passThroughSpecialParameters().urlWithParams}", function() { activateAllButtons() }) }
         load${divId}();
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}

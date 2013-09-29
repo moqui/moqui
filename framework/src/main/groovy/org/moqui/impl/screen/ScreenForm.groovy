@@ -43,6 +43,8 @@ class ScreenForm {
     protected ScreenDefinition sd
     protected Node internalFormNode
     protected String location
+    protected String formName
+    protected String fullFormName
     protected Boolean isUploadForm = null
     protected Boolean isFormHeaderFormVal = null
     protected boolean hasDbExtensions = false
@@ -57,6 +59,8 @@ class ScreenForm {
         this.ecfi = ecfi
         this.sd = sd
         this.location = location
+        this.formName = baseFormNode."@name"
+        this.fullFormName = sd.getLocation() + "#" + formName
 
         // is this a dynamic form?
         isDynamic = (baseFormNode."@dynamic" == "true")
@@ -64,7 +68,6 @@ class ScreenForm {
         // does this form have DbForm extensions?
         boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
-            String fullFormName = sd.getLocation() + "#" + baseFormNode."@name"
             EntityList dbFormLookupList = this.ecfi.getEntityFacade().makeFind("DbFormLookup")
                     .condition("modifyXmlScreenForm", fullFormName).useCache(true).list()
             if (dbFormLookupList) hasDbExtensions = true
@@ -315,9 +318,13 @@ class ScreenForm {
         return dbFormNode
     }
 
+    /** This is the main method for using an XML Form, the rendering is done based on the Node returned. */
     Node getFormNode() {
         // NOTE: this is cached in the ScreenRenderImpl as it may be called multiple times for a single form render
         List<Node> dbFormNodeList = getDbFormNodeList()
+        ExecutionContext ec = ecfi.getExecutionContext()
+        boolean isDisplayOnly = ec.getContext().get("formDisplayOnly") == "true" || ec.getContext().get("formDisplayOnly_${formName}") == "true"
+
         if (isDynamic) {
             Node newFormNode = new Node(null, internalFormNode.name())
             initForm(internalFormNode, newFormNode)
@@ -325,18 +332,51 @@ class ScreenForm {
                 for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false, true)
             }
             return newFormNode
-        } else {
-            if (dbFormNodeList) {
-                Node newFormNode = new Node(null, internalFormNode.name(), [:])
-                // deep copy true to avoid bleed over of new fields and such
-                mergeFormNodes(newFormNode, internalFormNode, true, true)
-                // logger.warn("TOREMOVE: merging in dbFormNodeList: ${dbFormNodeList}", new BaseException("getFormNode call location"))
-                for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false, true)
-                return newFormNode
-            } else {
-                return internalFormNode
+        } else if (dbFormNodeList || isDisplayOnly) {
+            Node newFormNode = new Node(null, internalFormNode.name(), [:])
+            // deep copy true to avoid bleed over of new fields and such
+            mergeFormNodes(newFormNode, internalFormNode, true, true)
+            // logger.warn("========== merging in dbFormNodeList: ${dbFormNodeList}", new BaseException("getFormNode call location"))
+            for (Node dbFormNode in dbFormNodeList) mergeFormNodes(newFormNode, dbFormNode, false, true)
+
+            if (isDisplayOnly) {
+                // change all non-display fields to simple display elements
+                for (Node fieldNode in newFormNode."field") {
+                    // don't replace header form, should be just for searching: if (fieldNode."header-field") fieldSubNodeToDisplay(newFormNode, fieldNode, (Node) fieldNode."header-field"[0])
+                    for (Node conditionalFieldNode in fieldNode."conditional-field") fieldSubNodeToDisplay(newFormNode, fieldNode, conditionalFieldNode)
+                    if (fieldNode."default-field") fieldSubNodeToDisplay(newFormNode, fieldNode, (Node) fieldNode."default-field"[0])
+                }
             }
+
+            return newFormNode
+        } else {
+            return internalFormNode
         }
+    }
+
+    static Set displayOnlyIgnoreNodeNames = ["hidden", "ignored", "label", "image"] as Set
+    protected void fieldSubNodeToDisplay(Node baseFormNode, Node fieldNode, Node fieldSubNode) {
+        Node widgetNode = fieldSubNode.children() ? (Node) fieldSubNode.children().first() : null
+        if (widgetNode == null) return
+        if (widgetNode.name().toString().contains("display") || displayOnlyIgnoreNodeNames.contains(widgetNode.name())) return
+
+        if (widgetNode.name() == "reset" || widgetNode.name() == "submit") {
+            fieldSubNode.remove(widgetNode)
+            return
+        }
+
+        if (widgetNode.name() == "link") {
+            // if it goes to a transition with service-call or actions then remove it, otherwise leave it
+            if ((!widgetNode."@url-type" || widgetNode."@url-type" == "transition") &&
+                    sd.getTransitionItem((String) widgetNode."@url", null).hasActionsOrSingleService()) {
+                fieldSubNode.remove(widgetNode)
+            }
+            return
+        }
+
+        // otherwise change it to a display Node
+        widgetNode.replaceNode { node -> new Node(fieldSubNode, "display") }
+        // not as good, puts it after other child Nodes: fieldSubNode.remove(widgetNode); fieldSubNode.appendNode("display")
     }
 
     FtlNodeWrapper getFtlFormNode() { return FtlNodeWrapper.wrapNode(getFormNode()) }
