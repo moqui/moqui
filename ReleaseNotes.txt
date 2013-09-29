@@ -22,6 +22,12 @@ New Features:
 Bug Fixes:
 
 - Fixed extraneous close script tags in screen/form HTML output
+- Fixed right/east container-panel field name so size, etc settings apply
+- Fixed calls to startFormListRow that were missing new parameters added
+  to the method; resolves SourceForce Bug #39
+- Fixed issue with a form-list with header form in a dynamic-container; now
+  updates within the containing div using the results of the form submit
+- Fixed issue with service name comparison when running SECA rules
 - Auto reverse relationships better support titles
 - DataDocument no longer includes null fields, empty Maps and Lists
 
