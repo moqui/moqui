@@ -65,15 +65,15 @@ class MoquiServlet extends HttpServlet {
             ec.screen.makeRender().render(request, response)
         } catch (ArtifactAuthorizationException e) {
             logger.warn("Web Access Unauthorized: " + e.message)
-            response.sendError(401, e.message)
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
         } catch (ScreenResourceNotFoundException e) {
             logger.warn("Web Resource Not Found: " + e.message)
-            response.sendError(404, e.message)
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
         } catch (Throwable t) {
             if (ec.message.hasError()) {
                 String errorsString = ec.message.errorsString
                 logger.error(errorsString, t)
-                response.sendError(500, errorsString)
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorsString)
             } else {
                 throw t
             }
