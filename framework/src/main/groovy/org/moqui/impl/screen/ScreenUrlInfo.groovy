@@ -253,6 +253,7 @@ class ScreenUrlInfo {
         return this
     }
     static void copySpecialParameters(Map fromMap, Map toMap) {
+        if (!fromMap || !toMap) return
         for (String fieldName in fromMap.keySet()) {
             if (fieldName.startsWith("formDisplayOnly")) toMap.put(fieldName, (String) fromMap.get(fieldName))
         }
