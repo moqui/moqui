@@ -34,8 +34,11 @@ import org.apache.fop.apps.FOUserAgent
 import org.apache.fop.apps.Fop
 import org.apache.fop.apps.FopFactory
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class MoquiFopServlet extends HttpServlet {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MoquiFopServlet.class)
+    protected final static Logger logger = LoggerFactory.getLogger(MoquiFopServlet.class)
 
     protected FopFactory internalFopFactory = null
 
@@ -68,7 +71,8 @@ class MoquiFopServlet extends HttpServlet {
                     .rootScreenFromHost(request.getServerName()).screenPath(pathInfo.split("/") as List)
             xslFoText = sr.render()
 
-            // logger.info("XSL-FO content:\n${xslFoText}")
+            // logger.warn("======== XSL-FO content:\n${xslFoText}")
+            if (logger.traceEnabled) logger.trace("FOP XSL-FO content:\n${xslFoText}")
 
             String contentType = ec.web.requestParameters."contentType" ?: "application/pdf"
             response.setContentType(contentType)
@@ -77,16 +81,16 @@ class MoquiFopServlet extends HttpServlet {
                     response.getOutputStream(), contentType)
         } catch (ArtifactAuthorizationException e) {
             logger.warn("Web Access Unauthorized: " + e.message)
-            response.sendError(401, e.message)
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
         } catch (ScreenResourceNotFoundException e) {
             logger.warn("Resource Not Found: ${e.message}")
-            response.sendError(404, e.message)
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, e.message)
         } catch (Throwable t) {
-            logger.error("Error transforming XSL-FO content:\n${xslFoText}", e)
+            logger.error("Error transforming XSL-FO content:\n${xslFoText}", t)
             if (ec.message.hasError()) {
                 String errorsString = ec.message.errorsString
                 logger.error(errorsString, t)
-                response.sendError(500, errorsString)
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, errorsString)
             } else {
                 throw t
             }
