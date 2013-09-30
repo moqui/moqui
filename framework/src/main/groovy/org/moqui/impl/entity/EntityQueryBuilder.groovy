@@ -136,7 +136,11 @@ class EntityQueryBuilder {
     }
 
     static String sanitizeColumnName(String colName) {
-        return colName.replace('.', '_').replace('(','_').replace(')','_')
+        String interim = colName.replace('.', '_').replace('(','_').replace(')','_').replace('+','_').replace(' ','')
+        while (interim.charAt(0) == '_') interim = interim.substring(1)
+        while (interim.charAt(interim.length()-1) == '_') interim = interim.substring(0, interim.length()-1)
+        while (interim.contains('__')) interim = interim.replace('__', '_')
+        return interim
     }
 
     void getResultSetValue(int index, Node fieldNode, EntityValueImpl entityValueImpl) throws EntityException {

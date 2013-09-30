@@ -19,7 +19,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="entityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+package', false)"/>
+        <set field="entityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+package', false, false)"/>
     </actions>
     <widgets>
         <form-list name="EntityList" list="entityList">

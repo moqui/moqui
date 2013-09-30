@@ -19,8 +19,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="allEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', false)"/>
-        <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+package', true)"/>
+        <set field="allEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+entityName', false, false)"/>
+        <set field="masterEntityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+package', true, true)"/>
     </actions>
     <widgets>
         <form-single name="SelectEntity" transition="find">

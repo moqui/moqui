@@ -354,7 +354,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </entity>
     <view-entity entity-name="NotificationMessageByUser" package-name="moqui.security.user">
         <member-entity entity-alias="NMSG" entity-name="NotificationMessage"/>
-        <member-entity entity-alias="NMU" entity-name="NotificationMessageUser" join-from-alias="NMSG"/>
+        <member-entity entity-alias="NMU" entity-name="NotificationMessageUser" join-from-alias="NMSG">
+            <key-map field-name="notificationMessageId"/>
+        </member-entity>
         <alias-all entity-alias="NMSG"/>
         <alias entity-alias="NMU" name="userId"/>
         <alias entity-alias="NMU" name="receivedDate"/>

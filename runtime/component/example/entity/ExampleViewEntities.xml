@@ -61,6 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM"><exclude field="sequenceNum"/></alias-all>
     </view-entity>
+    <!-- these still needs some work to support:
     <view-entity entity-name="ExampleFeatureAndApplAndEnum" package-name="moqui.example">
         <member-entity entity-alias="EXFT" entity-name="ExampleFeature"/>
         <member-entity entity-alias="EFAAE" entity-name="ExampleFeatureApplAndEnum" join-from-alias="EXFT">
@@ -94,12 +95,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <order-by field-name="exampleName"/>
         </entity-condition>
     </view-entity>
+    -->
 
     <!-- example for nested view-entity with conditions on nested views -->
+    <!-- this still needs some work to support:
     <view-entity entity-name="ExampleFeatureApplAndTypeDesired" package-name="moqui.example">
         <member-entity entity-alias="EXFTAP" entity-name="ExampleFeatureAppl"/>
         <member-entity entity-alias="ENUM" entity-name="moqui.basic.Enumeration" join-from-alias="EXFTAP">
-            <key-map field-name="exampleFeatureApplEnumId"/>
+            <key-map field-name="exampleFeatureApplEnumId" related-field-name="enumId"/>
             <entity-condition>
                 <econdition field-name="exampleFeatureApplEnumId" value="DESIRED"/>
             </entity-condition>
@@ -107,8 +110,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <alias-all entity-alias="EXFTAP"/>
         <alias-all entity-alias="ENUM">
             <exclude field="description"/>
-            <exclude field="sequenceNum"/>
         </alias-all>
+        <alias name="enumSequenceNum" entity-alias="ENUM" field="sequenceNum"/>
         <alias name="testComplexAlias">
             <complex-alias operator="+">
                 <complex-alias-field entity-alias="ENUM" field="sequenceNum"/>
@@ -136,4 +139,5 @@ This Work includes contributions authored by David E. Jones, not as a
             <order-by field-name="exampleName"/>
         </entity-condition>
     </view-entity>
+    -->
 </entities>

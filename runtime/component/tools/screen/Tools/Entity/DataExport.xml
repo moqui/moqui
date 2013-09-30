@@ -17,7 +17,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="EntityExport.xml">
         <actions>
             <script><![CDATA[
-                org.moqui.entity.EntityDataWriter edw = ec.entity.makeDataWriter()
+                import org.moqui.entity.EntityDataWriter
+                import org.moqui.context.ExecutionContext
+                ExecutionContext ec = context.ec
+                EntityDataWriter edw = ec.entity.makeDataWriter()
 
                 // handle entityNames
                 if (!context.entityNames) {
@@ -26,9 +29,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 }
                 edw.entityNames(entityNames)
 
-                if (context.dependents) edw.dependentRecords(true)
-                if (context.fromDate) edw.fromDate(context.fromDate as Timestamp)
-                if (context.thruDate) edw.fromDate(context.thruDate as Timestamp)
+                if (dependents) edw.dependentRecords(true)
+                if (fromDate) edw.fromDate(ec.l10n.parseTimestamp(fromDate, null))
+                if (thruDate) edw.thruDate(ec.l10n.parseTimestamp(thruDate, null))
 
                 noResponse = false
                 if (context.output == "file") {
@@ -54,7 +57,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-single name="ExportData" transition="EntityExport.xml">
             <field name="entityNames">
                 <default-field><drop-down allow-multiple="true" size="20">
-                    <list-options list="ec.entity.getAllEntitiesInfo('entityName', false)" key="${entityName}"/>
+                    <list-options list="ec.entity.getAllEntitiesInfo('fullEntityName', false, true)" key="${fullEntityName}"/>
                 </drop-down></default-field>
             </field>
 

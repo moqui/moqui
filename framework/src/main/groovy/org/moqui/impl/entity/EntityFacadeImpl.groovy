@@ -537,7 +537,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly) {
+    List<Map<String, Object>> getAllEntitiesInfo(String orderByField, boolean masterEntitiesOnly, boolean excludeViewEntities) {
         if (masterEntitiesOnly) createAllAutoReverseManyRelationships()
 
         tempEntityFileNodeMap = new HashMap()
@@ -547,6 +547,7 @@ class EntityFacadeImpl implements EntityFacade {
             EntityDefinition ed = null
             try { ed = getEntityDefinition(en) } catch (EntityException e) { logger.warn("Problem finding entity definition", e) }
             if (ed == null) continue
+            if (excludeViewEntities && ed.isViewEntity()) continue
 
             if (masterEntitiesOnly) {
                 if (!(ed.entityNode."@has-dependents" == "true") || en.endsWith("Type") ||
