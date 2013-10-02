@@ -30,6 +30,8 @@ Bug Fixes:
 - Fixed issue with service name comparison when running SECA rules
 - Auto reverse relationships better support titles
 - DataDocument no longer includes null fields, empty Maps and Lists
+- Fixed issue with null oldStatusId and setting new statusChanged automatic
+  fields in entity-auto service implementation
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
