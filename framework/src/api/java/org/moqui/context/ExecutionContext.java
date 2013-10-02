@@ -17,6 +17,7 @@ import java.util.Map;
 import org.apache.camel.CamelContext;
 import org.elasticsearch.client.Client;
 import org.moqui.entity.EntityFacade;
+import org.moqui.entity.EntityValue;
 import org.moqui.service.ServiceFacade;
 
 import javax.servlet.http.HttpServletRequest;
@@ -38,6 +39,7 @@ public interface ExecutionContext {
      * each will have its own set of databases (except for the tenant database which is shared among all Tenants).
      */
     String getTenantId();
+    EntityValue getTenant();
 
     /** If running through a web (HTTP servlet) request offers access to the various web objects/information.
      * If not running in a web context will return null.

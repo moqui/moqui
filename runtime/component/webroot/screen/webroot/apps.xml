@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container-panel id="apps-container" dynamic="true">
             <panel-header>
-                <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
+                <container id="header-logo"><label text="${ec.tenant?.tenantName ?: 'Welcome to Moqui'}" type="h1"/></container>
                 <container id="header-menus">
                     <subscreens-menu type="popup" id="header-menu" title="Application"/>
                 </container>
