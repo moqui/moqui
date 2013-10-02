@@ -172,42 +172,49 @@ class EntityDataFeed {
         // only rebuild if the cache is empty, most entities won't have any entry in it and don't want a rebuild for each one
         if (entityInfoList == null) dataFeedEntityInfo.clearExpired()
         if (dataFeedEntityInfo.size() == 0) {
-            // logger.warn("=============== rebuilding DocumentEntityInfo for [${fullEntityName}], cache size: ${dataFeedEntityInfo.size()}")
-
-            // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
-            //     DataDocuments because we can't query it by entityName
-            EntityList dataFeedAndDocumentList = null
-            boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
-            try {
-                dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
-                        .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH").useCache(true).list()
-                //logger.warn("============= got dataFeedAndDocumentList: ${dataFeedAndDocumentList}")
-            } finally {
-                if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
-            }
-            Set<String> fullDataDocumentIdSet = new HashSet<String>()
-            for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList)
-                fullDataDocumentIdSet.add((String) dataFeedAndDocument.dataDocumentId)
-
-            for (String dataDocumentId in fullDataDocumentIdSet) {
-                Map<String, DocumentEntityInfo> entityInfoMap = getDataDocumentEntityInfo(dataDocumentId)
-                // got a Map for all entities in the document, now split them by entity and add to master list for the entity
-                for (Map.Entry<String, DocumentEntityInfo> entityInfoMapEntry in entityInfoMap.entrySet()) {
-                    List<DocumentEntityInfo> newEntityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
-                    if (newEntityInfoList == null) {
-                        newEntityInfoList = []
-                        dataFeedEntityInfo.put(entityInfoMapEntry.getKey(), newEntityInfoList)
-                        // logger.warn("============= added dataFeedEntityInfo entry for entity [${entityInfoMapEntry.getKey()}]")
-                    }
-                    newEntityInfoList.add(entityInfoMapEntry.getValue())
-                }
-            }
+            rebuildDataFeedEntityInfo()
 
             // now we should have all document entityInfos for all entities
             entityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(fullEntityName)
             //logger.warn("============ got DocumentEntityInfo entityInfoList for [${fullEntityName}]: ${entityInfoList}")
         }
         return entityInfoList
+    }
+
+    synchronized void rebuildDataFeedEntityInfo() {
+        dataFeedEntityInfo.clearExpired()
+        if (dataFeedEntityInfo.size() > 0) return
+
+        // logger.warn("=============== rebuilding DocumentEntityInfo for [${fullEntityName}], cache size: ${dataFeedEntityInfo.size()}")
+
+        // rebuild from the DB for this and other entities, ie have to do it for all DataFeeds and
+        //     DataDocuments because we can't query it by entityName
+        EntityList dataFeedAndDocumentList = null
+        boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
+        try {
+            dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                    .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH").useCache(true).list()
+            //logger.warn("============= got dataFeedAndDocumentList: ${dataFeedAndDocumentList}")
+        } finally {
+            if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+        Set<String> fullDataDocumentIdSet = new HashSet<String>()
+        for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList)
+            fullDataDocumentIdSet.add((String) dataFeedAndDocument.dataDocumentId)
+
+        for (String dataDocumentId in fullDataDocumentIdSet) {
+            Map<String, DocumentEntityInfo> entityInfoMap = getDataDocumentEntityInfo(dataDocumentId)
+            // got a Map for all entities in the document, now split them by entity and add to master list for the entity
+            for (Map.Entry<String, DocumentEntityInfo> entityInfoMapEntry in entityInfoMap.entrySet()) {
+                List<DocumentEntityInfo> newEntityInfoList = (List<DocumentEntityInfo>) dataFeedEntityInfo.get(entityInfoMapEntry.getKey())
+                if (newEntityInfoList == null) {
+                    newEntityInfoList = []
+                    dataFeedEntityInfo.put(entityInfoMapEntry.getKey(), newEntityInfoList)
+                    // logger.warn("============= added dataFeedEntityInfo entry for entity [${entityInfoMapEntry.getKey()}]")
+                }
+                newEntityInfoList.add(entityInfoMapEntry.getValue())
+            }
+        }
     }
 
     Map<String, DocumentEntityInfo> getDataDocumentEntityInfo(String dataDocumentId) {
