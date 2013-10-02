@@ -32,6 +32,8 @@ Bug Fixes:
 - DataDocument no longer includes null fields, empty Maps and Lists
 - Fixed issue with null oldStatusId and setting new statusChanged automatic
   fields in entity-auto service implementation
+- Fixed entity-find.search-form-inputs.@input-fields-map attribute, groovy
+  generated left out quotes
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
