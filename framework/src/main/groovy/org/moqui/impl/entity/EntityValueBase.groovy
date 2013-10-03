@@ -935,7 +935,7 @@ abstract class EntityValueBase implements EntityValue {
                 for (String userFieldName in userFieldNameList) {
                     // if the field hasn't been updated, skip it
                     if (!(valueMap.containsKey(userFieldName) &&
-                            (!dbValueMapFromDb || valueMap.get(userFieldName) != dbValueMap.get(userFieldName)))) {
+                            (!dbValueMapFromDb || valueMap.get(userFieldName) != dbValueMap?.get(userFieldName)))) {
                         continue
                     }
 
