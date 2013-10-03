@@ -42,21 +42,17 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <entity-find-one entity-name="Example" value-field="fieldValues"/>
-        <log message="EditExample exampleId [${exampleId}] fieldValues [${fieldValues}]"/>
-
-        <entity-find-one entity-name="moqui.basic.StatusItem" value-field="currentStatus">
-            <field-map field-name="statusId" from="fieldValues?.statusId"/>
-        </entity-find-one>
+        <entity-find-one entity-name="Example" value-field="example"/>
+        <log message="EditExample exampleId [${exampleId}] example [${example}]"/>
     </actions>
     <widgets>
         <section name="ExampleMenu">
-            <condition><expression>fieldValues</expression></condition>
+            <condition><expression>example</expression></condition>
             <widgets><link url="newExample" text="New Example" link-type="hidden-form" icon="plusthick"/></widgets>
         </section>
 
         <section name="create">
-            <condition><compare field="fieldValues" operator="empty"/></condition>
+            <condition><compare field="example" operator="empty"/></condition>
             <actions>
                 <!-- this is not constrained and sorted here because it is a view entity with those done internally -->
                 <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
@@ -129,9 +125,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </widgets>
         </section>
         <section name="update">
-            <condition><compare field="fieldValues" operator="not-empty"/></condition>
+            <condition><compare field="example" operator="not-empty"/></condition>
             <widgets>
-                <form-single name="UpdateExample" extends="CreateExample" transition="updateExample">
+                <form-single name="UpdateExample" extends="CreateExample" transition="updateExample" map="example">
                     <field name="exampleId">
                         <!-- this is in a conditional-field instead of default-field so that it can override the one in CreateExample -->
                         <conditional-field condition="exampleId">
@@ -154,10 +150,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     </field>
                     <field name="statusId">
                         <default-field title="Status" tooltip="This is the status of the example">
-                            <drop-down allow-empty="false" current-description="${currentStatus?.description}">
+                            <drop-down allow-empty="false" current-description="${example?.'Example#moqui.basic.StatusItem'?.description}">
                                 <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                                     <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
-                                        <econdition field-name="statusId" from="fieldValues.statusId"/>
+                                        <econdition field-name="statusId" from="example.statusId"/>
                                     </entity-find>
                                 </entity-options>
                             </drop-down>
