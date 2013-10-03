@@ -19,7 +19,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <transition name="editExample"><default-response url="../EditExample"/></transition>
 
     <pre-actions>
-        <set field="html_title" value="Moqui: Find Example"/>
+        <set field="html_title" value="${ec.tenant?.tenantName ?: 'Moqui'} - Find Example"/>
         <set field="html_description" value="A page for finding Examples"/>
         <set field="html_keywords" value="moqui,find,example,status,edit,new"/>
     </pre-actions>
