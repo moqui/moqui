@@ -33,7 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <container-panel id="apps-container">
             <panel-header>
-                <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
+                <container id="header-logo"><label text="${ec.tenant?.tenantName ?: 'Welcome to Moqui'}" type="h1"/></container>
                 <section name="headerUser">
                     <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
                     <widgets>

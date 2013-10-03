@@ -38,7 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- NOTE: this screen is not under the apps screen, but uses similar header/footer/etc -->
         <container-panel id="apps-container">
             <panel-header>
-                <container id="header-logo"><label text="Welcome to Moqui" type="h1"/></container>
+                <container id="header-logo"><label text="${ec.tenant?.tenantName ?: 'Welcome to Moqui'}" type="h1"/></container>
             </panel-header>
             <panel-center>
                 <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
