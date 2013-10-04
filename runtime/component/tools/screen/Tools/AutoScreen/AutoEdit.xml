@@ -14,6 +14,8 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
         default-menu-title="Edit" default-menu-index="3">
 
+    <parameter name="aen"/>
+
     <actions>
         <set field="masterPrimaryKeyMap" from="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
         <set field="relationshipInfoList" from="ec.entity.getEntityDefinition(aen).getRelationshipsInfo(context, true)"/>

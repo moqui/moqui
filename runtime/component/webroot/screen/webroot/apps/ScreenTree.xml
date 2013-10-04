@@ -13,16 +13,14 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
         require-authentication="false" default-menu-include="false">
-    <!-- NOTE: require-authentication=false is required to allow transitions to decide. -->
 
-    <transition name="xml">
-        <actions><script>ec.web.handleXmlRpcServiceCall()</script></actions>
-        <default-response type="none"/>
-    </transition>
-    <transition name="json">
-        <actions><script>ec.web.handleJsonRpcServiceCall()</script></actions>
-        <default-response type="none"/>
-    </transition>
-
-    <widgets><!-- this should never be viewed... --></widgets>
+    <actions>
+        <set field="currentScreenDef" from="sri.getRootScreenDef()"/>
+        <set field="currentScreenPath" value=""/>
+    </actions>
+    <widgets>
+        <label text="Site Map" type="h2"/>
+        <include-screen location="component://webroot/screen/webroot/apps/ScreenTree/ScreenTreeNested.xml"
+                share-scope="false"/>
+    </widgets>
 </screen>

@@ -194,6 +194,8 @@ a.active { color: red; }
 
 #VisitArtifactHitList-table tbody tr td div { font-size: 1em; }
 
+.ScreenTreeNested { margin-left: 16px; }
+
 /* ================ Overrides for jquery-ui theme ================ */
 
 .ui-widget { font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 1em; }
