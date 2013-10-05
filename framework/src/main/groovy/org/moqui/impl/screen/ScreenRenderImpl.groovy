@@ -943,6 +943,12 @@ class ScreenRenderImpl implements ScreenRender {
             return ""
         }
     }
+    String setInContext(FtlNodeWrapper setNodeWrapper) {
+        Node setNode = setNodeWrapper.getGroovyNode()
+        ec.resource.setInContext((String) setNode."@field", (String) setNode."@from", (String) setNode."@value",
+                (String) setNode."@default-value", (String) setNode."@type", (String) setNode."@set-if-empty")
+        return ""
+    }
 
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)

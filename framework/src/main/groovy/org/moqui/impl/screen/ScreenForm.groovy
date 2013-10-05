@@ -174,6 +174,7 @@ class ScreenForm {
         }
 
         if (logger.traceEnabled) logger.trace("Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
+        // if (location.contains("FOO")) logger.warn("======== Form [${location}] resulted in expanded def: " + FtlNodeWrapper.wrapNode(newFormNode).toString())
 
         // prep row-actions
         if (newFormNode."row-actions") {
@@ -713,6 +714,7 @@ class ScreenForm {
             fieldSubNode.remove(widgetNode)
             addAutoWidgetEntityNode(baseFormNode, fieldNode, fieldSubNode, widgetNode)
         } else if (widgetNode.name() == "widget-template-include") {
+            List setNodeList = widgetNode."set"
             fieldSubNode.remove(widgetNode)
 
             String templateLocation = widgetNode."@location"
@@ -727,6 +729,7 @@ class ScreenForm {
                 fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
             }
 
+            for (Node setNode in setNodeList) fieldSubNode.append(StupidUtilities.deepCopyNode(setNode))
         }
     }
 

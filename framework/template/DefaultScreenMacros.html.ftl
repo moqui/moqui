@@ -596,6 +596,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <div class="single-form-field">
         <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
         <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label></#if>
+        <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
                 <#assign linkNode = widgetNode>
@@ -604,8 +605,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
                 <#t>${sri.appendToAfterScreenWriter(afterFormText)}
                 <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
-            <#else>
-                <#t><#visit widgetNode>
+            <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
+            <#else><#t><#visit widgetNode>
             </#if>
         </#list>
     </div>
@@ -894,6 +895,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if !isMultiFinalRow><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
+        <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
                 <#assign linkNode = widgetNode>
@@ -902,9 +904,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                 <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
                 <#t>${sri.appendToAfterScreenWriter(afterFormText)}
                 <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
-            <#else>
-                <#t><#visit widgetNode>
-            </#if>
+            <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
+            <#else><#t><#visit widgetNode></#if>
         </#list>
     <#if !isMultiFinalRow></div></#if>
 </#macro>
@@ -917,6 +918,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#macro "field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
 <#macro "conditional-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
 <#macro "default-field"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
+<#macro "set"><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
 
 <#-- ================== Form Field Widgets ==================== -->
 

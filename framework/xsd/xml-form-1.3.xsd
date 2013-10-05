@@ -411,6 +411,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element minOccurs="0" ref="SubFields"/>
                     <xs:element minOccurs="0" ref="AllWidgets"/>
                 </xs:choice>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
             </xs:sequence>
             <xs:attribute name="title" type="xs:string">
                 <xs:annotation><xs:documentation>The name of this field that will be shown to the user; can use the ${}
@@ -437,6 +438,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element minOccurs="0" ref="AllWidgets"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
             </xs:sequence>
             <xs:attribute name="condition" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>A boolean expression in Groovy.</xs:documentation></xs:annotation>
@@ -452,6 +454,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:element minOccurs="0" ref="AllWidgets"/>
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="StandaloneFields"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
             </xs:sequence>
             <xs:attributeGroup ref="attlist.conditional-field"/>
         </xs:complexType>
@@ -516,6 +519,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="widget-template-include" substitutionGroup="SubFields">
         <xs:complexType>
+            <xs:sequence>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="set"/>
+            </xs:sequence>
             <xs:attribute name="location" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
