@@ -284,7 +284,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
 
     @Override
     Object runScriptInCurrentContext(String location, String method) {
-        ExecutionContext ec = ecfi.executionContext
+        ExecutionContext ec = ecfi.getExecutionContext()
         String extension = location.substring(location.lastIndexOf("."))
         ScriptRunner sr = this.scriptRunners.get(extension)
 
@@ -298,6 +298,35 @@ public class ResourceFacadeImpl implements ResourceFacade {
             return JavaxScriptRunner.bindAndRun(location, ec, engine,
                     ecfi.getCacheFacade().getCache("resource.script${extension}.location"))
         }
+    }
+
+    @Override
+    Object runScriptInCurrentContext(String location, String method, Map additionalContext) {
+        ExecutionContext ec = ecfi.getExecutionContext()
+        ContextStack cs = (ContextStack) ec.context
+        try {
+            // push the entire context to isolate the context for the string expand
+            cs.pushContext()
+            cs.push(additionalContext)
+            return runScriptInCurrentContext(location, method)
+        } finally {
+            // pop the entire context to get back to where we were before isolating the context with pushContext
+            cs.popContext()
+        }
+    }
+
+    Object setInContext(String field, String from, String value, String defaultValue, String type, String setIfEmpty) {
+        def tempValue = getValueFromContext(from, value, defaultValue, type)
+        ecfi.getExecutionContext().getContext().put("_tempValue", tempValue)
+        if (tempValue || setIfEmpty) evaluateContextField("${field} = _tempValue", "")
+
+        return tempValue
+    }
+    Object getValueFromContext(String from, String value, String defaultValue, String type) {
+        def tempValue = from ? evaluateContextField(from, "") : evaluateStringExpand(value, "")
+        if (!tempValue && defaultValue) tempValue = evaluateStringExpand(defaultValue, "")
+        if (type) tempValue = StupidUtilities.basicConvert(tempValue, type)
+        return tempValue
     }
 
     @Override

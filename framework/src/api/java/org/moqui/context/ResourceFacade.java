@@ -44,6 +44,7 @@ public interface ResourceFacade {
      * @return The value returned by the script, if any.
      */
     Object runScriptInCurrentContext(String location, String method);
+    Object runScriptInCurrentContext(String location, String method, Map additionalContext);
 
     /** Evaluate a Groovy expression as a condition.
      *
@@ -52,7 +53,7 @@ public interface ResourceFacade {
     boolean evaluateCondition(String expression, String debugLocation);
 
     /** Evaluate a Groovy expression as a context field, or more generally as an expression that evaluates to an Object
-     * reference.
+     * reference. This can be used to get a value from an expression or to run any general expression or script.
      *
      * @return Object reference representing result of evaluating the expression
      */
