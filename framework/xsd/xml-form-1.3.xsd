@@ -622,7 +622,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </xs:choice>
                 </xs:choice>
             </xs:sequence>
-            <xs:attribute name="allow-empty" type="boolean" default="false"/>
+            <xs:attribute name="allow-empty" type="xs:string" default="false"/>
             <xs:attribute name="allow-multiple" type="boolean" default="false"/>
             <xs:attribute name="size" type="xs:integer" default="1"/>
             <xs:attribute name="current" default="first-in-list">

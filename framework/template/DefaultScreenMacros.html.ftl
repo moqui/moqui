@@ -1008,7 +1008,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <option selected="selected" value="${currentValue}"><#if currentDescription?has_content>${currentDescription}<#else>${currentValue}</#if></option><#rt/>
         <option value="${currentValue}">---</option><#rt/>
     </#if>
-    <#if (.node["@allow-empty"]?if_exists == "true") || !(options?has_content)>
+    <#assign allowEmpty = ec.resource.evaluateStringExpand(.node["@allow-empty"]?if_exists, "")/>
+    <#if (allowEmpty?if_exists == "true") || !(options?has_content)>
         <option value="">&nbsp;</option>
     </#if>
 
