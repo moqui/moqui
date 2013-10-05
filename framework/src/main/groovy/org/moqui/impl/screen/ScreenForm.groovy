@@ -724,7 +724,8 @@ class ScreenForm {
             String widgetTemplateName = templateLocation.substring(templateLocation.indexOf("#") + 1)
 
             Node widgetTemplatesNode = ecfi.getScreenFacade().getWidgetTemplatesNodeByLocation(fileLocation)
-            Node widgetTemplateNode = (Node) widgetTemplatesNode.find({ it."@name" == widgetTemplateName })
+            Node widgetTemplateNode = (Node) widgetTemplatesNode?.find({ it."@name" == widgetTemplateName })
+            if (widgetTemplateNode == null) throw new IllegalArgumentException("Could not find widget-template [${widgetTemplateName}] in [${fileLocation}]")
             for (Node widgetChildNode in (Collection<Node>) widgetTemplateNode.children()) {
                 fieldSubNode.append(StupidUtilities.deepCopyNode(widgetChildNode))
             }
