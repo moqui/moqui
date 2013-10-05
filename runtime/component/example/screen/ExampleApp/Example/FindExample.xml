@@ -29,10 +29,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <search-form-inputs default-order-by="^exampleName"/>
         </entity-find>
 
-        <entity-find entity-name="moqui.basic.Enumeration" list="exampleTypeEnumList">
-            <econdition field-name="enumTypeId" value="EXAMPLE_TYPE"/>
-            <order-by field-name="description"/>
-        </entity-find>
         <entity-find entity-name="ExampleStatusItem" list="exampleStatusItemList"/>
     </actions>
     <widgets>
@@ -42,20 +38,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-single name="FindExamples" transition="findExample">
                     <field name="exampleId"><default-field><text-find/></default-field></field>
                     <field name="exampleName"><default-field><text-find/></default-field></field>
-                    <field name="exampleTypeEnumId">
-                        <default-field title="Type">
-                            <drop-down allow-empty="true">
-                                <list-options list="exampleTypeEnumList" text="${description}"/>
-                            </drop-down>
-                        </default-field>
-                    </field>
-                    <field name="statusId">
-                        <default-field title="Status">
-                            <drop-down allow-empty="true">
-                                <list-options list="exampleStatusItemList" text="${description}"/>
-                            </drop-down>
-                        </default-field>
-                    </field>
+                    <field name="exampleTypeEnumId"><default-field title="Type">
+                        <auto-widget-entity entity-name="moqui.example.Example" field-type="edit"/>
+                    </default-field></field>
+                    <field name="statusId"><default-field title="Status">
+                        <drop-down allow-empty="true"><list-options list="exampleStatusItemList" text="${description}"/></drop-down>
+                    </default-field></field>
                     <field name="description"><default-field><text-find/></default-field></field>
                     <field name="exampleDate"><default-field><date-find/></default-field></field>
                     <field name="searchButton"><default-field title="Find"><submit/></default-field></field>
