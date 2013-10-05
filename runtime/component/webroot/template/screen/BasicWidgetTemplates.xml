@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd">
 
     <widget-template name="enumDropDown">
-        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey}">
+        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
             <entity-options key="${enumId}" text="${description}">
                 <entity-find entity-name="moqui.basic.Enumeration">
                     <econdition field-name="enumTypeId" from="enumTypeId"/>
@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </drop-down>
     </widget-template>
     <widget-template name="statusDropDown">
-        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey}">
+        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
             <entity-options key="${statusId}" text="${description}">
                 <entity-find entity-name="moqui.basic.StatusItem">
                     <econdition field-name="statusTypeId" from="statusTypeId"/>
@@ -34,7 +34,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </drop-down>
     </widget-template>
     <widget-template name="statusTransitionDropDown">
-        <drop-down allow-empty="false" current-description="${currentDescription}">
+        <drop-down allow-empty="false" current-description="${currentDescription?:''}">
             <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                 <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
                     <econdition field-name="statusId" from="statusId"/>
