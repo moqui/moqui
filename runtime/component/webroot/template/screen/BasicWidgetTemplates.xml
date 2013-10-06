@@ -17,17 +17,29 @@ This Work includes contributions authored by David E. Jones, not as a
         <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
             <entity-options key="${enumId}" text="${description}">
                 <entity-find entity-name="moqui.basic.Enumeration">
-                    <econdition field-name="enumTypeId" from="enumTypeId"/>
+                    <econdition field-name="enumTypeId"/>
                     <order-by field-name="description"/>
                 </entity-find>
             </entity-options>
         </drop-down>
     </widget-template>
+    <widget-template name="enumWithParentDropDown">
+        <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
+            <entity-options key="${enumId}" text="${description}">
+                <entity-find entity-name="moqui.basic.Enumeration">
+                    <econdition field-name="enumTypeId"/>
+                    <econdition field-name="parentEnumId"/>
+                    <order-by field-name="description"/>
+                </entity-find>
+            </entity-options>
+        </drop-down>
+    </widget-template>
+
     <widget-template name="statusDropDown">
         <drop-down allow-empty="${allowEmpty ?: 'false'}" no-current-selected-key="${noCurrentSelectedKey?:''}">
             <entity-options key="${statusId}" text="${description}">
                 <entity-find entity-name="moqui.basic.StatusItem">
-                    <econdition field-name="statusTypeId" from="statusTypeId"/>
+                    <econdition field-name="statusTypeId"/>
                     <order-by field-name="sequenceNum"/>
                 </entity-find>
             </entity-options>
@@ -37,7 +49,17 @@ This Work includes contributions authored by David E. Jones, not as a
         <drop-down allow-empty="false" current-description="${currentDescription?:''}">
             <entity-options key="${toStatusId}" text="${transitionName} (${description})">
                 <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
-                    <econdition field-name="statusId" from="statusId"/>
+                    <econdition field-name="statusId"/>
+                </entity-find>
+            </entity-options>
+        </drop-down>
+    </widget-template>
+    <widget-template name="statusTransitionWithFlowDropDown">
+        <drop-down allow-empty="false" current-description="${currentDescription?:''}">
+            <entity-options key="${toStatusId}" text="${transitionName} (${description})">
+                <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail">
+                    <econdition field-name="statusId"/>
+                    <econdition field-name="statusFlowId"/>
                 </entity-find>
             </entity-options>
         </drop-down>
