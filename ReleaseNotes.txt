@@ -37,6 +37,8 @@ Bug Fixes:
 - Fixed entity-find.search-form-inputs.@input-fields-map attribute, groovy
   generated left out quotes
 - Fixed NPE in EntityUserField code
+- Changed searchFormInputs to default to equals instead of contains; more
+  efficient queries and works for numbers, dates, etc
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013

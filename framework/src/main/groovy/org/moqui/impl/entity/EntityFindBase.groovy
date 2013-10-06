@@ -176,7 +176,7 @@ abstract class EntityFindBase implements EntityFind {
             // this will handle text-find
             if (inf.containsKey(fn) || inf.containsKey(fn + "_op")) {
                 Object value = inf.get(fn)
-                String op = inf.get(fn + "_op") ?: "contains"
+                String op = inf.get(fn + "_op") ?: "equals"
                 boolean not = (inf.get(fn + "_not") == "Y")
                 boolean ic = (inf.get(fn + "_ic") == "Y")
 
