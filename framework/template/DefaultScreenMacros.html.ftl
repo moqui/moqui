@@ -596,6 +596,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <div class="single-form-field">
         <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
         <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label></#if>
+        ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
@@ -609,6 +610,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#else><#t><#visit widgetNode>
             </#if>
         </#list>
+        ${sri.popContext()}
     </div>
 </#macro>
 
@@ -895,6 +897,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if !isMultiFinalRow><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
+        ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
             <#if widgetNode?node_name == "link">
@@ -907,6 +910,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
             <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
             <#else><#t><#visit widgetNode></#if>
         </#list>
+        ${sri.popContext()}
     <#if !isMultiFinalRow></div></#if>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>

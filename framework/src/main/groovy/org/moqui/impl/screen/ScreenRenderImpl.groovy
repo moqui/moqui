@@ -949,6 +949,8 @@ class ScreenRenderImpl implements ScreenRender {
                 (String) setNode."@default-value", (String) setNode."@type", (String) setNode."@set-if-empty")
         return ""
     }
+    String pushContext() { ec.getContext().push(); return "" }
+    String popContext() { ec.getContext().pop(); return "" }
 
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
