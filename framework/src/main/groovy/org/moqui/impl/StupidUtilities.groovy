@@ -296,6 +296,7 @@ class StupidUtilities {
 
     /** Creates a single Map with fields from the passed in Map and all nested Maps (for Map and Collection of Map entry values) */
     static Map flattenNestedMap(Map theMap) {
+        if (theMap == null) return null
         Map outMap = [:]
         for (Map.Entry entry in theMap.entrySet()) {
             Object value = entry.getValue()
