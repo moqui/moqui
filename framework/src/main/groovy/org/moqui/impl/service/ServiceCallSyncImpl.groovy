@@ -126,8 +126,13 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     }
 
     Map<String, Object> callSingle(Map<String, Object> currentParameters, ServiceDefinition sd, ExecutionContextImpl eci) {
+        // NOTE: checking this here because service won't generally run after input validation, etc anyway
         if (eci.getMessage().hasError()) {
             logger.warn("Found error(s) before service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}")
+            return null
+        }
+        if (eci.getTransaction().getStatus() == 1) {
+            logger.warn("Transaction marked for rollback, not running service [${getServiceName()}]. Errors: ${eci.getMessage().getErrorsString()}")
             return null
         }
 
