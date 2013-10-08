@@ -37,6 +37,19 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="seqName" type="id-long" is-pk="true"/>
         <field name="seqNum" type="number-integer"/>
     </entity>
+    <entity entity-name="ServiceTrigger" package-name="moqui.entity">
+        <field name="serviceTriggerId" type="id" is-pk="true"/>
+        <field name="serviceName" type="text-medium"/>
+        <field name="mapString" type="text-long"/>
+        <field name="statusId" type="id"/>
+        <relationship type="one" title="ServiceTrigger" related-entity-name="moqui.basic.StatusItem"/>
+        <seed-data>
+            <moqui.basic.StatusType description="Service Trigger" statusTypeId="ServiceTrigger"/>
+            <moqui.basic.StatusItem description="Not Run" sequenceNum="1" statusId="SrtrNotRun" statusTypeId="ServiceTrigger"/>
+            <moqui.basic.StatusItem description="Run Success" sequenceNum="2" statusId="SrtrRunSuccess" statusTypeId="ServiceTrigger"/>
+            <moqui.basic.StatusItem description="Run Error" sequenceNum="3" statusId="SrtrRunError" statusTypeId="ServiceTrigger"/>
+        </seed-data>
+    </entity>
 
     <entity entity-name="UserField" package-name="moqui.entity" cache="true">
         <field name="entityName" type="text-medium" is-pk="true">
