@@ -20,6 +20,7 @@ New Features:
 - popup menus are in the header to save space and for easier layout
 - set action inside form field sub-elements and widget-template-include for
   parameterized widget-template definitions
+- XML Form pass through of matches (regexp) validation from service
 
 Bug Fixes:
 

@@ -816,6 +816,17 @@ class ScreenRenderImpl implements ScreenRender {
         return sb.toString()
     }
 
+    Map getFormFieldValidationRegexpInfo(String formName, String fieldName) {
+        ScreenForm form = getActiveScreenDef().getForm(formName)
+        Node cachedFormNode = getFormNode(formName)
+        Node parameterNode = form.getFieldInParameterNode(fieldName, cachedFormNode)
+        if (parameterNode?."matches") {
+            Node matchesNode = parameterNode."matches"[0]
+            return [regexp:matchesNode."@regexp", message:matchesNode."@message"]
+        }
+        return null
+    }
+
     String renderIncludeScreen(String location, String shareScopeStr) {
         boolean shareScope = shareScopeStr == "true"
 
