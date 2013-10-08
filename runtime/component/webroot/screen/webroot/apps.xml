@@ -55,6 +55,17 @@ This Work includes contributions authored by David E. Jones, not as a
                     <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
                 </section-iterate>
 
+                <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
+                    <widgets><container style="message"><label text="${message}"/></container></widgets>
+                </section-iterate>
+                <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
+                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
+                </section-iterate>
+                <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
+                    <!-- TODO: put these by fields instead of in header -->
+                    <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
+                </section-iterate>
+
                 <subscreens-active/>
             </panel-center>
             <panel-footer>

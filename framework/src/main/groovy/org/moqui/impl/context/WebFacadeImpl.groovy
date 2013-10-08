@@ -14,6 +14,7 @@ package org.moqui.impl.context
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 import org.moqui.context.ContextStack
+import org.moqui.context.ValidationError
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -55,6 +56,10 @@ class WebFacadeImpl implements WebFacade {
 
     protected Map<String, Object> errorParameters = null
 
+    protected List<String> savedMessages = null
+    protected List<String> savedErrors = null
+    protected List<ValidationError> savedValidationErrors = null
+
     WebFacadeImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
                   ExecutionContextImpl eci) {
         this.eci = eci
@@ -74,15 +79,15 @@ class WebFacadeImpl implements WebFacade {
 
         // get any messages saved to the session, and clear them from the session
         if (session.getAttribute("moqui.message.messages")) {
-            eci.message.messages.addAll((Collection) session.getAttribute("moqui.message.messages"))
+            savedMessages = (List<String>) session.getAttribute("moqui.message.messages")
             session.removeAttribute("moqui.message.messages")
         }
         if (session.getAttribute("moqui.message.errors")) {
-            eci.message.errors.addAll((Collection) session.getAttribute("moqui.message.errors"))
+            savedErrors = (List<String>) session.getAttribute("moqui.message.errors")
             session.removeAttribute("moqui.message.errors")
         }
         if (session.getAttribute("moqui.message.validationErrors")) {
-            eci.message.validationErrors.addAll((Collection) session.getAttribute("moqui.message.validationErrors"))
+            savedValidationErrors = (List<ValidationError>) session.getAttribute("moqui.message.validationErrors")
             session.removeAttribute("moqui.message.validationErrors")
         }
 
@@ -175,6 +180,10 @@ class WebFacadeImpl implements WebFacade {
         if (declaredPathParameters == null) declaredPathParameters = new HashMap()
         declaredPathParameters.put(name, value)
     }
+
+    List<String> getSavedMessages() { return savedMessages }
+    List<String> getSavedErrors() { return savedErrors }
+    List<ValidationError> getSavedValidationErrors() { return savedValidationErrors }
 
     @Override
     Map<String, Object> getParameters() {

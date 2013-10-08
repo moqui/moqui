@@ -40,6 +40,9 @@ Bug Fixes:
 - Fixed NPE in EntityUserField code
 - Changed searchFormInputs to default to equals instead of contains; more
   efficient queries and works for numbers, dates, etc
+- Changed saved session messages and errors to be separate from
+  MessageFacade ones so they still display but don't stop other services
+  from running
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
