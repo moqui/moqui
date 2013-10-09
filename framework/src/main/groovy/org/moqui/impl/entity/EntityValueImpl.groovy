@@ -202,7 +202,7 @@ class EntityValueImpl extends EntityValueBase {
                 retVal = true
                 setSyncedWithDb()
             } else {
-                if (logger.traceEnabled) logger.trace("No record found in refresh for entity [${entityName}] with values [${getValueMap()}]")
+                if (logger.traceEnabled) logger.trace("No record found in refresh for entity [${getEntityName()}] with values [${getValueMap()}]")
             }
         } catch (EntityException e) {
             throw new EntityException("Error in refresh of [${this.toString()}]", e)
