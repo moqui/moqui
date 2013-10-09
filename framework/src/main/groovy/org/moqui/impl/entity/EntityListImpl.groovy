@@ -62,7 +62,7 @@ class EntityListImpl implements EntityList {
             else if (thruDateObj instanceof Long) thruDateLong = thruDateObj
             else thruDateLong = null
 
-            if (!((thruDateLong == null || thruDateLong > momentLong) &&
+            if (!((thruDateLong == null || thruDateLong >= momentLong) &&
                     (fromDateLong == null || fromDateLong <= momentLong))) {
                 valueIterator.remove()
             }
