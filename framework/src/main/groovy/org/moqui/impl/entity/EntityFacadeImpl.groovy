@@ -518,7 +518,9 @@ class EntityFacadeImpl implements EntityFacade {
     Set<String> getAllEntityNames() {
         TreeSet<String> allNames = new TreeSet()
         // only add full entity names (with package-name in it, will always have at least one dot)
-        for (String en in entityLocationCache.keySet()) if (en.contains(".")) allNames.add(en)
+        // only include entities that have a non-empty List of locations in the cache (otherwise are invalid entities)
+        for (String en in entityLocationCache.keySet())
+            if (en.contains(".") && entityLocationCache.get(en)) allNames.add(en)
         return allNames
     }
 

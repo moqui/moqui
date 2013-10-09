@@ -43,6 +43,9 @@ Bug Fixes:
 - Changed saved session messages and errors to be separate from
   MessageFacade ones so they still display but don't stop other services
   from running
+- Fixed EntityFacadeImpl.getAllEntityNames() to not return invalid entity
+  names, caused problems with AuthScreen, etc after an attempt to use an
+  entity with an invalid name
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
