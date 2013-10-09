@@ -69,6 +69,6 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
     @Override
     String toString() {
-        return "name:${name},type:${typeEnumId},action:${actionEnumId},user:${authorizedUserId},authz:${authorizedAuthzTypeId},authAction:${authorizedActionEnumId},inheritable:${authorizationInheritable}"
+        return "[name:${name},type:${typeEnumId},action:${actionEnumId},user:${authorizedUserId},authz:${authorizedAuthzTypeId},authAction:${authorizedActionEnumId},inheritable:${authorizationInheritable}]"
     }
 }
