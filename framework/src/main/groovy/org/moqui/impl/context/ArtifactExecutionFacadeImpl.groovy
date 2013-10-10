@@ -93,6 +93,10 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     }
 
     @Override
+    void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz) {
+        push(new ArtifactExecutionInfoImpl(name, typeEnumId, actionEnumId), requiresAuthz)
+    }
+    @Override
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz) {
         ArtifactExecutionInfoImpl aeii = (ArtifactExecutionInfoImpl) aei
         // do permission check for this new aei that current user is trying to access

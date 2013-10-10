@@ -25,6 +25,7 @@ public interface ArtifactExecutionFacade {
 
     ArtifactExecutionInfo pop();
     void push(ArtifactExecutionInfo aei, boolean requiresAuthz);
+    void push(String name, String typeEnumId, String actionEnumId, boolean requiresAuthz);
 
     /** Gets a stack/deque/list of objects representing artifacts that have been executed to get to the current artifact.
      * The bottom artifact in the stack will generally be a screen or a service. If a service is run locally
