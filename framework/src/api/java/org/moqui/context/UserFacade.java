@@ -83,6 +83,9 @@ public interface UserFacade {
     /** Remove (logout) active user. */
     void logoutUser();
 
+    /** If no user is logged in consider an anonymous user logged in. For internal purposes to run things that require authentication. */
+    boolean loginAnonymousIfNoUser();
+
     /** Check to see if current user has the given permission. To have a permission a user must be in a group
      * (UserGroupMember => UserGroup) that has the given permission (UserGroupPermission).
      *
