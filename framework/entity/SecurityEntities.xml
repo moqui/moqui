@@ -49,6 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="Screen Transition" enumId="AT_XML_SCREEN_TRANS" enumTypeId="ArtifactType"/>
             <moqui.basic.Enumeration description="Service" enumId="AT_SERVICE" enumTypeId="ArtifactType"/>
             <moqui.basic.Enumeration description="Entity" enumId="AT_ENTITY" enumTypeId="ArtifactType"/>
+            <moqui.basic.Enumeration description="Other" enumId="AT_OTHER" enumTypeId="ArtifactType"/>
             <!-- not yet pushed/tracked/checked types below here
                 some of these are experimental ideas and may not ever be implemented, or useful
             <moqui.basic.Enumeration description="Component" enumId="AT_COMPONENT" enumTypeId="ArtifactType"/>
