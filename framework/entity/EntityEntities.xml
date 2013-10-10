@@ -38,9 +38,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="seqNum" type="number-integer"/>
     </entity>
     <entity entity-name="ServiceTrigger" package-name="moqui.entity">
+        <description>The service will be called just after the record is created and the status updated with the result.</description>
         <field name="serviceTriggerId" type="id" is-pk="true"/>
         <field name="serviceName" type="text-medium"/>
-        <field name="mapString" type="text-long"/>
+        <field name="mapString" type="text-long"><description>A Groovy expression that evaluates to a Map to pass to the service</description></field>
         <field name="statusId" type="id"/>
         <relationship type="one" title="ServiceTrigger" related-entity-name="moqui.basic.StatusItem"/>
         <seed-data>

@@ -493,6 +493,17 @@ class EntityFacadeImpl implements EntityFacade {
         for (EntityEcaRule eer in lst) {
             eer.runIfMatches(entityName, fieldValues, operation, before, ecfi.executionContext)
         }
+
+        if (entityName == "moqui.entity.ServiceTrigger" && operation == "create" && !before) runServiceTrigger(fieldValues)
+    }
+
+    void runServiceTrigger(Map fieldValues) {
+        ecfi.getServiceFacade().sync().name((String) fieldValues.serviceName)
+                .parameters((Map) ecfi.resourceFacade.evaluateContextField((String) fieldValues.mapString, ""))
+                .call()
+        makeValue("moqui.entity.ServiceTrigger").set("serviceTriggerId", fieldValues.serviceTriggerId)
+                .set("statusId", ecfi.getExecutionContext().getMessage().hasError() ? "SrtrRunError" : "SrtrRunSuccess")
+                .update()
     }
 
     void destroy() {

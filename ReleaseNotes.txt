@@ -21,6 +21,10 @@ New Features:
 - set action inside form field sub-elements and widget-template-include for
   parameterized widget-template definitions
 - XML Form pass through of matches (regexp) validation from service
+- Added ServiceTrigger entity to call a service when the record is created;
+  useful for triggering data setup services on data load and so on
+- The loadData execution uses anonymous user for authc and allows any authz
+  for services triggered on data load
 
 Bug Fixes:
 
