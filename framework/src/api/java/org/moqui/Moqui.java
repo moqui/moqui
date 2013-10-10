@@ -73,6 +73,9 @@ public class Moqui {
 
         ExecutionContext ec = activeExecutionContextFactory.getExecutionContext();
         ec.getArtifactExecution().disableAuthz();
+        ec.getArtifactExecution().push("loadData", "AT_OTHER", "AUTHZA_ALL", false);
+        ec.getArtifactExecution().setAnonymousAuthorizedAll();
+        ec.getUser().loginAnonymousIfNoUser();
 
         String tenantId = argMap.get("tenantId");
         if (tenantId != null && tenantId.length() > 0) ec.changeTenant(tenantId);
