@@ -19,7 +19,7 @@
 
     <screen-facade boundary-comments="true"/>
 
-    <entity-facade crypt-pass="MoquiStagingDefaultPassword:CHANGEME"/>
+    <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME"/>
 
     <repository-list>
         <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="staging"

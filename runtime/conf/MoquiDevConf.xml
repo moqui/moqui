@@ -55,7 +55,7 @@
                             macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
     </screen-facade>
 
-    <entity-facade crypt-pass="MoquiDevDefaultPassword:CHANGEME">
+    <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME">
         <!-- add datasource elements here to configure databases -->
     </entity-facade>
 

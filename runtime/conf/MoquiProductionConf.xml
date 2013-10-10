@@ -22,7 +22,7 @@
 
     <screen-facade boundary-comments="false"/>
 
-    <entity-facade crypt-pass="MoquiProductionDefaultPassword:CHANGEME"/>
+    <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME"/>
 
     <repository-list>
         <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"
