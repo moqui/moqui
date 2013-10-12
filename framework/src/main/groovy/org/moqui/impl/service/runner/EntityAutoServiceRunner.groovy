@@ -175,7 +175,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             }
         }
 
-        // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule
+        // NOTE: nothing here to maintain the status history, that should be done with a custom service called by SECA rule or with audit log on field
 
         lookedUpValue.setFields(parameters, true, null, false)
         // logger.info("In auto updateEntity lookedUpValue final [${lookedUpValue}] for parameters [${parameters}]")

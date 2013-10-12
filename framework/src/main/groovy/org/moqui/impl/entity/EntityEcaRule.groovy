@@ -56,14 +56,15 @@ class EntityEcaRule {
 
         if (before && (operation == "update" || operation == "delete") && eecaNode."@get-entire-entity" == "true") {
             Map saveMap = new HashMap(fieldValues)
-            EntityDefinition ed = ec.entity.getEntityDefinition(entityName)
+            // fill in any missing (unset) values from the DB
+            EntityDefinition ed = ec.getEntity().getEntityDefinition(entityName)
             EntityFind ef = ec.entity.makeFind(entityName)
             for (String pkFieldName in ed.getPkFieldNames()) ef.condition(pkFieldName, saveMap.get(pkFieldName))
             EntityValue ev = ef.one()
-            if (ev) {
-                fieldValues.putAll(ev)
-                // add these second so they override the DB values in case anything was updated as part of this call
-                for (Map.Entry entry in saveMap.entrySet()) if (entry.value) fieldValues.put(entry.key, entry.value)
+            if (ev != null) {
+                // only add fields that fieldValues does not contain
+                for (Map.Entry entry in ev.entrySet())
+                    if (!fieldValues.containsKey(entry.getKey())) fieldValues.put(entry.getKey(), entry.getValue())
             }
         }
 

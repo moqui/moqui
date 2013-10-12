@@ -50,6 +50,8 @@ Bug Fixes:
 - Fixed EntityFacadeImpl.getAllEntityNames() to not return invalid entity
   names, caused problems with AuthScreen, etc after an attempt to use an
   entity with an invalid name
+- Fixed issue with Entity ECA rules where fields set to null were reset
+  back to the value from the DB
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013

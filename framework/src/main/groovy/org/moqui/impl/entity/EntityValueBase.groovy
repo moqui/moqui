@@ -899,6 +899,7 @@ abstract class EntityValueBase implements EntityValue {
                 nonPkFieldList.add(fieldName)
             }
         }
+        // logger.warn("================ evb.update() ${getEntityName()} nonPkFieldList=${nonPkFieldList};\nvalueMap=${valueMap};\ndbValueMap=${dbValueMap}")
         if (!nonPkFieldList) {
             if (logger.isTraceEnabled()) logger.trace("Not doing update on entity with no populated non-PK fields; entity=" + this.toString())
             return
