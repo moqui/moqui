@@ -109,6 +109,10 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     }
 
     EntityCondition makeActionCondition(String fieldName, String operator, String fromExpr, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
+        Object from = fromExpr ? this.efi.ecfi.resourceFacade.evaluateContextField(fromExpr, "") : null
+        return makeActionConditionDirect(fieldName, operator, from, value, toFieldName, ignoreCase, ignoreIfEmpty, ignore)
+    }
+    EntityCondition makeActionConditionDirect(String fieldName, String operator, Object fromObj, String value, String toFieldName, boolean ignoreCase, boolean ignoreIfEmpty, boolean ignore) {
         // logger.info("TOREMOVE makeActionCondition(fieldName ${fieldName}, operator ${operator}, fromExpr ${fromExpr}, value ${value}, toFieldName ${toFieldName}, ignoreCase ${ignoreCase}, ignoreIfEmpty ${ignoreIfEmpty}, ignore ${ignore})")
 
         if (ignore) return null
@@ -122,8 +126,8 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             if (value) {
                 // NOTE: have to convert value (if needed) later on because we don't know which entity/field this is for, or change to pass in entity?
                 condValue = value
-            } else if (fromExpr) {
-                condValue = this.efi.ecfi.resourceFacade.evaluateContextField(fromExpr, "")
+            } else {
+                condValue = fromObj
             }
             if (ignoreIfEmpty && !condValue) return null
 
