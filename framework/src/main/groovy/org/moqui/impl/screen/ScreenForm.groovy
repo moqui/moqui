@@ -550,6 +550,9 @@ class ScreenForm {
 
     void addEntityFields(EntityDefinition ed, String include, String fieldType, String serviceVerb, Node baseFormNode) {
         for (String fieldName in ed.getFieldNames(include == "all" || include == "pk", include == "all" || include == "nonpk", include == "all" || include == "nonpk")) {
+            String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
+            if (baseFormNode.name() == "form-list" && efType in ['text-long', 'text-very-long', 'binary-very-long']) continue
+
             Node newFieldNode = new Node(null, "field", [name:fieldName])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
