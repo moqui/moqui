@@ -20,8 +20,11 @@ import org.owasp.esapi.Encoder
 import org.owasp.esapi.Validator
 import org.owasp.esapi.reference.DefaultValidator
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class StupidWebUtilities {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StupidUtilities.class)
+    protected final static Logger logger = LoggerFactory.getLogger(StupidUtilities.class)
 
     public static Map<String, Object> getPathInfoParameterMap(String pathInfoStr) {
         Map<String, Object> paramMap = new HashMap()
@@ -193,11 +196,10 @@ class StupidWebUtilities {
         boolean containsKey(Object o) { return (o == null && !supportsNull) ? false : mp.containsKey(o) }
         boolean containsValue(Object o) { return mp.containsValue(o) }
         Object get(Object o) {
+            // NOTE: in spite of warnings class reference to StupidWebUtilities.canonicalizeValue is necessary or Groovy blows up
             return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.get(o))
         }
-        Object put(String k, Object v) {
-            return StupidWebUtilities.canonicalizeValue(mp.put(k, v))
-        }
+        Object put(String k, Object v) { return StupidWebUtilities.canonicalizeValue(mp.put(k, v)) }
         Object remove(Object o) {
             return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.remove(o))
         }
@@ -222,9 +224,7 @@ class StupidWebUtilities {
         CanonicalizeEntry(String key, Object value) { this.key = key; this.value = value; }
         CanonicalizeEntry(Map.Entry<String, Object> entry) { this.key = entry.getKey(); this.value = entry.getValue(); }
         String getKey() { return key }
-        Object getValue() {
-            return StupidWebUtilities.canonicalizeValue(value)
-        }
+        Object getValue() { return StupidWebUtilities.canonicalizeValue(value) }
         Object setValue(Object v) { Object orig = value; value = v; return orig; }
     }
 
