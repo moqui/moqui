@@ -436,7 +436,7 @@ class ScreenForm {
         if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
         if (fieldNode."@validate-service") {
             ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition((String) fieldNode."@validate-service")
-            if (sd == null) throw new IllegalArgumentException("Bad validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
+            if (sd == null) throw new IllegalArgumentException("Invalid validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
             Node parameterNode = sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
             return parameterNode
         }
@@ -636,7 +636,7 @@ class ScreenForm {
                         }
 
                         if (relDefaultDescriptionField) {
-                            entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]")
+                            entityOptionsNode.attributes().put("text", "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]")
                             entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
                         }
                     } else {
@@ -659,8 +659,11 @@ class ScreenForm {
         case "display":
             if (baseFormNode.name() == "form-list" && !newFieldNode."header-field")
                 newFieldNode.appendNode("header-field", ["show-order-by":"case-insensitive"])
+            String textStr
+            if (relDefaultDescriptionField) textStr = "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]"
+            else textStr = "[\${" + relKeyField + "}]"
             if (oneRelNode != null) subFieldNode.appendNode("display-entity",
-                    ["entity-name":oneRelNode."@related-entity-name", "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
+                    ["entity-name":oneRelNode."@related-entity-name", "text":textStr])
             else subFieldNode.appendNode("display")
             break
         case "find-display":
@@ -676,8 +679,10 @@ class ScreenForm {
                 headerFieldNode.appendNode("text-find")
             }
             if (oneRelNode != null) {
-                subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name",
-                        "text":"\${" + relDefaultDescriptionField + "} [\${" + relKeyField + "}]"])
+                String textStr
+                if (relDefaultDescriptionField) textStr = "\${" + relDefaultDescriptionField + " ?: ''} [\${" + relKeyField + "}]"
+                else textStr = "[\${" + relKeyField + "}]"
+                subFieldNode.appendNode("display-entity", ["entity-name":oneRelNode."@related-entity-name", "text":textStr])
             } else {
                 subFieldNode.appendNode("display")
             }

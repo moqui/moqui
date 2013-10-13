@@ -113,8 +113,9 @@ public class EntityDefinition {
         // no name? try literal description
         if (isField("description")) return "description"
 
-        // no description? just use the first non-pk field
-        return nonPkFields.get(0)
+        // no description? just use the first non-pk field: nonPkFields.get(0)
+        // not any more, can be confusing... just return empty String
+        return ""
     }
 
     boolean needsAuditLog() {
