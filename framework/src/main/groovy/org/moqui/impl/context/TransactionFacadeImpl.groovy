@@ -122,7 +122,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     UserTransaction getUserTransaction() { return ut }
     Long getCurrentTransactionStartTime() {
         Long time = getTransactionBeginStartTimeList() ? getTransactionBeginStartTimeList().get(0) : null
-        if (time == null) logger.warn("The transactionBeginStackList is empty, transaction in place? [${this.isTransactionInPlace()}]", new BaseException("Empty transactionBeginStackList location"))
+        if (time == null && logger.traceEnabled) logger.trace("The transactionBeginStackList is empty, transaction in place? [${this.isTransactionInPlace()}]", new BaseException("Empty transactionBeginStackList location"))
         return time
     }
 
