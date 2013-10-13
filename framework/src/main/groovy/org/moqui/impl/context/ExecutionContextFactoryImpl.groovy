@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import org.moqui.impl.StupidWebUtilities
+
 import java.sql.Timestamp
 import java.util.jar.JarFile
 
@@ -180,6 +182,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // everything else ready to go, init Camel
         initCamel()
+
+        // ========== load a few things in advance so first page hit is faster in production (in dev mode will reload anyway as caches timeout)
+        // load entity defs
+        this.entityFacade.loadAllEntityLocations()
+        this.entityFacade.getAllEntitiesInfo(null, false, false)
+        // init ESAPI
+        StupidWebUtilities.canonicalizeValue("test")
 
         // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
