@@ -873,7 +873,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
     </div>
     <#if fieldNode["header-field"]?has_content && fieldNode["header-field"][0]?children?has_content>
     <div class="form-header-field">
-        <#recurse fieldNode["header-field"][0]/>
+        <@formListWidget fieldNode["header-field"][0] true/>
+        <#-- <#recurse fieldNode["header-field"][0]/> -->
     </div>
     </#if>
 </#macro>
@@ -885,16 +886,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         </#if>
     </#list>
     <#if fieldNode["default-field"]?has_content>
+        <#assign isHeaderField=false>
         <@formListWidget fieldNode["default-field"][0]/>
         <#return>
     </#if>
 </#macro>
-<#macro formListWidget fieldSubNode>
+<#macro formListWidget fieldSubNode isHeaderField=false>
     <#if fieldSubNode["ignored"]?has_content><#return/></#if>
     <#if fieldSubNode?parent["@hide"]?if_exists == "true"><#return></#if>
     <#-- don't do a column for submit fields, they'll go in their own row at the bottom -->
-    <#t><#if isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
-    <#t><#if isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
+    <#t><#if !isHeaderField && isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
+    <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
     <#if !isMultiFinalRow><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
         ${sri.pushContext()}
