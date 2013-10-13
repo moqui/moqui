@@ -172,7 +172,7 @@ class EntityFacadeImpl implements EntityFacade {
         return entityRrList
     }
 
-    protected synchronized void loadAllEntityLocations() {
+    synchronized void loadAllEntityLocations() {
         // load all entity files based on ResourceReference
         for (ResourceReference entityRr in getAllEntityFileLocations()) this.loadEntityFileLocations(entityRr)
 

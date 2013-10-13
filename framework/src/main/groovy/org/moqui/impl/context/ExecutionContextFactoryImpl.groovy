@@ -149,10 +149,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         skipStatsCond = confXmlRoot."server-stats"[0]."@stats-skip-condition"
         hitBinLengthMillis = (confXmlRoot."server-stats"[0]."@bin-length-seconds" as Integer)*1000 ?: 900000
 
-        // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
-        initComponents()
-        // init ClassLoader early so that classpath:// resources and framework interface impls will work
-        initClassLoader()
+        preFacadeInit()
 
         // setup the CamelContext, but don't init yet
         camelContext = new DefaultCamelContext()
@@ -177,23 +174,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
 
-        // init ElasticSearch after facades, before Camel
-        initElasticSearch()
-
-        // everything else ready to go, init Camel
-        initCamel()
-
-        // ========== load a few things in advance so first page hit is faster in production (in dev mode will reload anyway as caches timeout)
-        // load entity defs
-        this.entityFacade.loadAllEntityLocations()
-        this.entityFacade.getAllEntitiesInfo(null, false, false)
-        // init ESAPI
-        StupidWebUtilities.canonicalizeValue("test")
-
-        // now that everything is started up, if configured check all entity tables
-        this.entityFacade.checkInitDatasourceTables()
-
-        logger.info("Moqui ExecutionContextFactory Initialization Complete")
+        postFacadeInit()
     }
 
     /** This constructor takes the runtime directory path and conf file path directly. */
@@ -218,10 +199,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         this.confXmlRoot = this.initConfig()
 
-        // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
-        initComponents()
-        // init ClassLoader early so that classpath:// resources and framework interface impls will work
-        initClassLoader()
+        preFacadeInit()
 
         // setup the CamelContext, but don't init yet
         camelContext = new DefaultCamelContext()
@@ -246,11 +224,29 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
 
+        postFacadeInit()
+    }
+
+    protected void preFacadeInit() {
+        // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
+        initComponents()
+        // init ClassLoader early so that classpath:// resources and framework interface impls will work
+        initClassLoader()
+    }
+
+    protected void postFacadeInit() {
         // init ElasticSearch after facades, before Camel
         initElasticSearch()
 
         // everything else ready to go, init Camel
         initCamel()
+
+        // ========== load a few things in advance so first page hit is faster in production (in dev mode will reload anyway as caches timeout)
+        // load entity defs
+        this.entityFacade.loadAllEntityLocations()
+        this.entityFacade.getAllEntitiesInfo(null, false, false)
+        // init ESAPI
+        StupidWebUtilities.canonicalizeValue("test")
 
         // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
