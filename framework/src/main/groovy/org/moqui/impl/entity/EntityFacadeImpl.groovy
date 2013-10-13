@@ -524,9 +524,10 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
-    /** This uses the data from the loadAllEntityLocations() method, so that must be called first (it is called in the
-     * constructor, and the cache must not have been cleared since. */
     Set<String> getAllEntityNames() {
+        entityLocationCache.clearExpired()
+        if (entityLocationCache.size() == 0) loadAllEntityLocations()
+
         TreeSet<String> allNames = new TreeSet()
         // only add full entity names (with package-name in it, will always have at least one dot)
         // only include entities that have a non-empty List of locations in the cache (otherwise are invalid entities)
