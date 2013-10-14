@@ -38,6 +38,8 @@ import org.slf4j.LoggerFactory
 class WebFacadeImpl implements WebFacade {
     protected final static Logger logger = LoggerFactory.getLogger(WebFacadeImpl.class)
 
+    protected static final Map<String, String> webappRootUrlByParms = new HashMap()
+
     protected ExecutionContextImpl eci
     protected String webappMoquiName
     protected HttpServletRequest request
@@ -59,11 +61,6 @@ class WebFacadeImpl implements WebFacade {
     protected List<String> savedMessages = null
     protected List<String> savedErrors = null
     protected List<ValidationError> savedValidationErrors = null
-
-    protected String webappRootUrlFullSecure = null
-    protected String webappRootUrlFullPlain = null
-    protected String webappRootUrlSecure = null
-    protected String webappRootUrlPlain = null
 
     WebFacadeImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
                   ExecutionContextImpl eci) {
@@ -256,39 +253,21 @@ class WebFacadeImpl implements WebFacade {
     }
     @Override
     String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption) {
-        // NOTE: this gets called over and over as new ScreenUrls are init'ed, so cache the various possible results;
-        //     could go one step further and cache in the static method by webappName/servletContextPath and the two
-        //     booleans, but would require a Map lookup, is a little more complex, and may not ultimately be faster
-        //     (except for emails where this isn't even used)
-        boolean isSecure = getRequest().isSecure()
-        boolean requireEncryption = useEncryption == null ? isSecure : useEncryption
-        boolean needFullUrl = requireFullUrl || (requireEncryption && !isSecure) || (!requireEncryption && isSecure)
-
-        if (needFullUrl && requireEncryption) {
-            return webappRootUrlFullSecure != null ? webappRootUrlFullSecure :
-                (webappRootUrlFullSecure = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
-        } else if (needFullUrl && !requireEncryption) {
-            return webappRootUrlFullPlain != null ? webappRootUrlFullPlain :
-                (webappRootUrlFullPlain = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
-        } else if (!needFullUrl && requireEncryption) {
-            return webappRootUrlSecure != null ? webappRootUrlSecure :
-                (webappRootUrlSecure = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
-        } else if (!needFullUrl && !requireEncryption) {
-            return webappRootUrlPlain != null ? webappRootUrlPlain :
-                (webappRootUrlPlain = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
-        }
-
         return getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci)
     }
 
     static String getWebappRootUrl(String webappName, String servletContextPath, boolean requireFullUrl, Boolean useEncryption, ExecutionContextImpl eci) {
-        Node webappNode = (Node) eci.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
         WebFacade webFacade = eci.getWeb()
-
-        boolean requireEncryption = useEncryption == null && webFacade ? webFacade.getRequest().isSecure() : useEncryption
+        boolean requireEncryption = useEncryption == null && webFacade != null ? webFacade.getRequest().isSecure() : useEncryption
         boolean needFullUrl = requireFullUrl ||
                 (requireEncryption && webFacade != null && !webFacade.getRequest().isSecure()) ||
                 (!requireEncryption && webFacade != null && webFacade.getRequest().isSecure())
+
+        String cacheKey = webappName + servletContextPath + needFullUrl + requireEncryption
+        String cachedRootUrl = webappRootUrlByParms.get(cacheKey)
+        if (cachedRootUrl != null) return cachedRootUrl
+
+        Node webappNode = (Node) eci.ecfi.confXmlRoot."webapp-list"[0]."webapp".find({ it.@name == webappName })
         StringBuilder urlBuilder = new StringBuilder()
         // build base from conf
         if (needFullUrl && webappNode) {
@@ -342,7 +321,9 @@ class WebFacadeImpl implements WebFacade {
         // make sure we don't have a trailing slash
         if (urlBuilder.charAt(urlBuilder.length()-1) == '/') urlBuilder.deleteCharAt(urlBuilder.length()-1)
 
-        return urlBuilder.toString()
+        String urlValue = urlBuilder.toString()
+        webappRootUrlByParms.put(cacheKey, urlValue)
+        return urlValue
     }
 
 
