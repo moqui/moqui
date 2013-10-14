@@ -9,7 +9,8 @@ Moqui Framework 1.3.1 is a minor new feature and bug fix release. TODO
 
 New Features:
 
-- Performance improvements based on profiling (many screens ~30% faster)
+- Performance improvements based on profiling (tested screens running
+  around 1.5 to 2 times as fast)
 - form-list and section-iterate automatically add *_index and
   *_has_next context fields following the pattern used in Freemarker
 - formDisplayOnly parameter (or context value) to make the form render as
