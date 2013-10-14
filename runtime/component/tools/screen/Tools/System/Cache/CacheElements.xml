@@ -43,7 +43,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="value">
-                <default-field><display text="${value.length() > 200 ? value.substring(0, 200) : value}" also-hidden="false"/></default-field>
+                <default-field><display text="${value != null &amp;&amp; value.length() > 200 ? value.substring(0, 200) : value}" also-hidden="false"/></default-field>
             </field>
             <field name="hitCount">
                 <header-field title="Hits" show-order-by="true"/>
