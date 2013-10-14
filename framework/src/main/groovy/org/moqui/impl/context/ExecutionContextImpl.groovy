@@ -78,14 +78,14 @@ class ExecutionContextImpl implements ExecutionContext {
     WebFacade getWeb() { webFacade }
 
     @Override
-    UserFacade getUser() { if (userFacade) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
+    UserFacade getUser() { if (userFacade != null) return userFacade else return (userFacade = new UserFacadeImpl(this)) }
 
     @Override
-    MessageFacade getMessage() { if (messageFacade) return messageFacade else return (messageFacade = new MessageFacadeImpl()) }
+    MessageFacade getMessage() { if (messageFacade != null) return messageFacade else return (messageFacade = new MessageFacadeImpl()) }
 
     @Override
     ArtifactExecutionFacade getArtifactExecution() {
-        if (artifactExecutionFacade) return artifactExecutionFacade
+        if (artifactExecutionFacade != null) return artifactExecutionFacade
         else return (artifactExecutionFacade = new ArtifactExecutionFacadeImpl(this))
     }
 
