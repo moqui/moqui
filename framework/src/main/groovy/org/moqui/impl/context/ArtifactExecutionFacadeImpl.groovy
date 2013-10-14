@@ -173,7 +173,8 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         boolean requiresAuthz, boolean countTarpit, Timestamp nowTimestamp) {
 
         // never do this for entities when disableAuthz, as we might use any below and would cause infinite recursion
-        if (this.authzDisabled && aeii.getTypeEnumId() == "AT_ENTITY") {
+        // for performance reasons if this is an entity and no authz required don't bother looking at tarpit, checking for deny/etc
+        if ((!requiresAuthz || this.authzDisabled) && aeii.getTypeEnumId() == "AT_ENTITY") {
             if (lastAeii != null && lastAeii.authorizationInheritable) aeii.copyAuthorizedInfo(lastAeii)
             return true
         }
