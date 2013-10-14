@@ -49,13 +49,13 @@ public class L10nFacadeImpl implements L10nFacade {
             throw new IllegalArgumentException("Original String cannot be more than 255 characters long, passed in string was [${original.length()}] characters long")
         }
 
-        String localeString = locale.toString()
+        String localeString = getLocale().toString()
 
         String cacheKey = original + "::" + localeString
         String lmsg = l10nMessage.get(cacheKey)
         if (lmsg != null) return lmsg
 
-        EntityFind find = ecfi.entityFacade.makeFind("moqui.basic.LocalizedMessage")
+        EntityFind find = ecfi.getEntityFacade().makeFind("moqui.basic.LocalizedMessage")
         find.condition(["original":original, "locale":localeString]).useCache(true)
         EntityValue localizedMessage = find.one()
         if (!localizedMessage && localeString.contains('_')) {
