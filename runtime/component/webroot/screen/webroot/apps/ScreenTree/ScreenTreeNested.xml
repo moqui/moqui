@@ -28,21 +28,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 </actions>
                 <widgets>
                     <section name="ScreenItemRender">
-                        <condition><expression>currentScreenDef != null &amp;&amp; currentSubscreensItem.menuInclude &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
+                        <condition><expression>currentScreenDef != null &amp;&amp; currentSubscreensItem.menuInclude &amp;&amp;
+                            !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
                         <widgets>
-                            <!-- <render-mode><text type="html"><![CDATA[<!- - including screen at path ${currentScreenPath} - ->]]></text></render-mode> -->
-                            <section name="ScreenItemLinkCondition">
-                                <condition><expression>currentScreenDef?.getParameterMap()</expression></condition>
-                                <widgets>
-                                    <!-- <label text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}" type="span"/> -->
-                                </widgets>
-                                <fail-widgets>
-                                    <link url="${currentUrlInfo.url}" link-type="anchor" url-type="plain"
-                                            text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}"/>
-                                    <include-screen location="component://webroot/screen/webroot/apps/ScreenTree/ScreenTreeNested.xml"
-                                            share-scope="false"/>
-                                </fail-widgets>
-                            </section>
+                            <link url="${currentUrlInfo.url}" link-type="anchor" url-type="plain"
+                                    text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}"/>
+                            <include-screen location="component://webroot/screen/webroot/apps/ScreenTree/ScreenTreeNested.xml"
+                                    share-scope="false"/>
                         </widgets>
                         <fail-widgets>
                             <render-mode><text type="html"><![CDATA[<!-- excluding screen at path ${currentScreenPath} -->]]></text></render-mode>
