@@ -95,6 +95,10 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     Object get(String name) {
         EntityDefinition ed = getEntityDefinition()
+
+        // if this is a simple field (is field, no l10n, not user field) just get the value right away (vast majority of use)
+        if (ed.isSimpleField(name)) return valueMap.get(name)
+
         Node fieldNode = ed.getFieldNode(name)
 
         if (fieldNode == null) {

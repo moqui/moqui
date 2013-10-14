@@ -40,6 +40,7 @@ public class EntityDefinition {
     protected String internalEntityName
     protected String fullEntityName
     protected Node internalEntityNode
+    protected final Map<String, Boolean> fieldSimpleMap = new HashMap<String, Boolean>()
     protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
     protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
     protected final Map<String, String> columnNameMap = new HashMap<String, String>()
@@ -456,6 +457,15 @@ public class EntityDefinition {
     }
 
     boolean isField(String fieldName) { return getFieldNode(fieldName) != null }
+    boolean isSimpleField(String fieldName) {
+        Boolean isSimpleVal = fieldSimpleMap.get(fieldName)
+        if (isSimpleVal != null) return isSimpleVal
+
+        Node fieldNode = getFieldNode(fieldName)
+        boolean isSimple = fieldNode != null && !(fieldNode."@enable-localization" == "true") && !(fieldNode."@is-user-field" == "true")
+        fieldSimpleMap.put(fieldName, isSimple)
+        return isSimple
+    }
 
     boolean containsPrimaryKey(Map fields) {
         if (!fields) return false
