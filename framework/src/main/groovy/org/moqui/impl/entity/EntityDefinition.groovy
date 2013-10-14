@@ -40,11 +40,12 @@ public class EntityDefinition {
     protected String internalEntityName
     protected String fullEntityName
     protected Node internalEntityNode
-    protected Map<String, Node> fieldNodeMap = new HashMap()
-    protected Map<String, Node> relationshipNodeMap = new HashMap()
-    protected Map<String, String> columnNameMap = new HashMap()
+    protected final Map<String, Node> fieldNodeMap = new HashMap()
+    protected final Map<String, Node> relationshipNodeMap = new HashMap()
+    protected final Map<String, String> columnNameMap = new HashMap()
     protected List<String> pkFieldNameList = null
     protected List<String> allFieldNameList = null
+    protected Boolean hasUserFields = null
     protected Map<String, Map> mePkFieldToAliasNameMapMap = null
 
     protected Boolean isView = null
@@ -503,16 +504,20 @@ public class EntityDefinition {
     }
     List<String> getAllFieldNames() {
         if (allFieldNameList == null) {
-            allFieldNameList = new ArrayList(getFieldNames(true, true, false).asList())
+            allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true, false).asList()))
         }
 
-        List<String> returnList = allFieldNameList
+        if (hasUserFields != null && !hasUserFields) return allFieldNameList
+
+        List<String> returnList = null
 
         // add UserFields to it if needed
         boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
         try {
             EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
             if (userFieldList) {
+                hasUserFields = true
+
                 Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
                 Set<String> userFieldNames = new HashSet<String>()
                 for (EntityValue userField in userFieldList) {
@@ -522,6 +527,8 @@ public class EntityDefinition {
                     returnList = new ArrayList<String>(allFieldNameList)
                     returnList.addAll(userFieldNames)
                 }
+            } else {
+                hasUserFields = false
             }
         } finally {
             if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
