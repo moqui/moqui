@@ -324,7 +324,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
         </seed-data>
     </entity>
-    <entity entity-name="UserScreenTheme" package-name="moqui.security" authorize-skip="view">
+    <entity entity-name="UserScreenTheme" package-name="moqui.security" authorize-skip="view" cache="true">
         <field name="userId" type="id-long" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id" is-pk="true"/>
         <field name="screenThemeId" type="id"/>

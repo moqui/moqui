@@ -49,6 +49,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected final static URLCodec urlCodec = new URLCodec()
 
     protected final ScreenFacadeImpl sfi
+    protected ExecutionContext localEc = null
     protected boolean rendering = false
 
     protected String rootScreenLocation = null
@@ -85,6 +86,7 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenRenderImpl(ScreenFacadeImpl sfi) {
         this.sfi = sfi
+        this.localEc = sfi.ecfi.getExecutionContext()
     }
 
     Writer getWriter() {
@@ -96,7 +98,7 @@ class ScreenRenderImpl implements ScreenRender {
         throw new BaseException("Could not render screen, no writer available")
     }
 
-    ExecutionContext getEc() { return sfi.ecfi.getExecutionContext() }
+    ExecutionContext getEc() { return localEc }
     ScreenFacadeImpl getSfi() { return sfi }
     ScreenUrlInfo getScreenUrlInfo() { return screenUrlInfo }
 
@@ -1115,7 +1117,7 @@ class ScreenRenderImpl implements ScreenRender {
         // see if there is a user setting for the theme
         String themeId = sfi.ecfi.entityFacade.makeFind("moqui.security.UserScreenTheme")
                 .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId])
-                .one()?.screenThemeId
+                .useCache(true).one()?.screenThemeId
         // use the Enumeration.enumCode from the type to find the theme type's default screenThemeId
         if (!themeId) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
