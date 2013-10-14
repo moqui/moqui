@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.context
 
+import org.moqui.context.Cache
 import org.moqui.context.L10nFacade
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityFind
@@ -31,8 +32,12 @@ public class L10nFacadeImpl implements L10nFacade {
     final static CalendarValidator calendarValidator = new CalendarValidator()
 
     protected final ExecutionContextFactoryImpl ecfi
+    protected final Cache l10nMessage
 
-    L10nFacadeImpl(ExecutionContextFactoryImpl ecfi) { this.ecfi = ecfi }
+    L10nFacadeImpl(ExecutionContextFactoryImpl ecfi) {
+        this.ecfi = ecfi
+        l10nMessage = ecfi.getCacheFacade().getCache("l10n.message")
+    }
 
     protected Locale getLocale() { return ecfi.getExecutionContext().getUser().getLocale() }
     protected TimeZone getTimeZone() { return ecfi.getExecutionContext().getUser().getTimeZone() }
@@ -45,6 +50,11 @@ public class L10nFacadeImpl implements L10nFacade {
         }
 
         String localeString = locale.toString()
+
+        String cacheKey = original + "::" + localeString
+        String lmsg = l10nMessage.get(cacheKey)
+        if (lmsg != null) return lmsg
+
         EntityFind find = ecfi.entityFacade.makeFind("moqui.basic.LocalizedMessage")
         find.condition(["original":original, "locale":localeString]).useCache(true)
         EntityValue localizedMessage = find.one()
@@ -52,7 +62,9 @@ public class L10nFacadeImpl implements L10nFacade {
             localizedMessage = find.condition("locale", localeString.substring(0, localeString.indexOf('_'))).one()
         }
 
-        return localizedMessage ? localizedMessage.localized : original
+        String result = localizedMessage ? localizedMessage.localized : original
+        l10nMessage.put(cacheKey, result)
+        return result
     }
 
     @Override
