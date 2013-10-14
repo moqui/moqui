@@ -97,7 +97,7 @@ abstract class EntityValueBase implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
         Node fieldNode = ed.getFieldNode(name)
 
-        if (!fieldNode) {
+        if (fieldNode == null) {
             // if this is not a valid field name but is a valid relationship name, do a getRelated or getRelatedOne to return an EntityList or an EntityValue
             Node relationship = ed.getRelationshipNode(name)
             if (relationship != null) {
