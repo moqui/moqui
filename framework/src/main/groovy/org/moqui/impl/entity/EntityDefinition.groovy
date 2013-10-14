@@ -40,9 +40,9 @@ public class EntityDefinition {
     protected String internalEntityName
     protected String fullEntityName
     protected Node internalEntityNode
-    protected final Map<String, Node> fieldNodeMap = new HashMap()
-    protected final Map<String, Node> relationshipNodeMap = new HashMap()
-    protected final Map<String, String> columnNameMap = new HashMap()
+    protected final Map<String, Node> fieldNodeMap = new HashMap<String, Node>()
+    protected final Map<String, Node> relationshipNodeMap = new HashMap<String, Node>()
+    protected final Map<String, String> columnNameMap = new HashMap<String, String>()
     protected List<String> pkFieldNameList = null
     protected List<String> allFieldNameList = null
     protected Boolean hasUserFields = null

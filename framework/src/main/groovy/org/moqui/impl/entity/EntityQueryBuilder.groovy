@@ -191,7 +191,6 @@ class EntityQueryBuilder {
         String fieldName = fieldNode."@name"
         String javaType = efi.getFieldJavaType((String) fieldNode."@type", entityValueImpl.getEntityDefinition())
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
-        Calendar cal = (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()
 
         Object value = null
         try {
@@ -230,13 +229,13 @@ class EntityQueryBuilder {
                 break
             case 2:
                 try {
-                    value = rs.getTimestamp(index, cal)
+                    value = rs.getTimestamp(index, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe())
                 } catch (SQLException e) {
                     if (logger.isTraceEnabled()) logger.trace("Ignoring SQLException for getTimestamp(), leaving null (found this in MySQL with a date/time value of [0000-00-00 00:00:00]): ${e.toString()}")
                 }
                 break
-            case 3: value = rs.getTime(index, cal); break
-            case 4: value = rs.getDate(index, cal); break
+            case 3: value = rs.getTime(index, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()); break
+            case 4: value = rs.getDate(index, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()); break
             case 5: int intValue = rs.getInt(index); if (!rs.wasNull()) value = intValue; break
             case 6: long longValue = rs.getLong(index); if (!rs.wasNull()) value = longValue; break
             case 7: float floatValue = rs.getFloat(index); if (!rs.wasNull()) value = floatValue; break
@@ -381,7 +380,7 @@ class EntityQueryBuilder {
 
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
         try {
-            setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe())
+            setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
         } catch (EntityException e) {
             throw e
         } catch (Exception e) {
@@ -393,13 +392,13 @@ class EntityQueryBuilder {
                                           EntityFacadeImpl efi) throws EntityException {
         boolean useBinaryTypeForBlob = ("true" == efi.getDatabaseNode(efi.getEntityGroupName(ed))."@use-binary-type-for-blob")
         int typeValue = value ? EntityFacadeImpl.getJavaTypeInt(value.class.name) : 1
-        setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe())
+        setPreparedStatementValue(ps, index, value, typeValue, useBinaryTypeForBlob, efi)
 
     }
 
     /* This is called by the other two setPreparedStatementValue methods */
     static void setPreparedStatementValue(PreparedStatement ps, int index, Object value, int typeValue,
-                                          boolean useBinaryTypeForBlob, Calendar cal) throws EntityException {
+                                          boolean useBinaryTypeForBlob, EntityFacadeImpl efi) throws EntityException {
         try {
             // allow setting, and searching for, String values for all types; JDBC driver should handle this okay
             if (value instanceof String) {
@@ -407,16 +406,19 @@ class EntityQueryBuilder {
             } else {
                 switch (typeValue) {
                 case 1: if (value != null) { ps.setString(index, value as String) } else { ps.setNull(index, Types.VARCHAR) }; break
-                case 2: if (value != null) { ps.setTimestamp(index, value as Timestamp, cal) } else { ps.setNull(index, Types.TIMESTAMP) }; break
+                case 2: if (value != null) { ps.setTimestamp(index, value as Timestamp, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()) }
+                else { ps.setNull(index, Types.TIMESTAMP) }; break
                 case 3:
                     Time tm = value as Time
                     // logger.warn("=================== setting time tm=${tm} tm long=${tm.getTime()}, cal=${cal}")
-                    if (value != null) { ps.setTime(index, tm, cal) } else { ps.setNull(index, Types.TIME) }
+                    if (value != null) { ps.setTime(index, tm, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()) }
+                    else { ps.setNull(index, Types.TIME) }
                     break
                 case 4:
                     java.sql.Date dt = (java.sql.Date) value
                     // logger.warn("=================== setting date dt=${dt} dt long=${dt.getTime()}, cal=${cal}")
-                    if (value != null) { ps.setDate(index, dt, cal) } else { ps.setNull(index, Types.DATE) }
+                    if (value != null) { ps.setDate(index, dt, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarSafe()) }
+                    else { ps.setNull(index, Types.DATE) }
                     break
                 case 5: if (value != null) { ps.setInt(index, (Integer) value) } else { ps.setNull(index, Types.NUMERIC) }; break
                 case 6: if (value != null) { ps.setLong(index, (Long) value) } else { ps.setNull(index, Types.NUMERIC) }; break
