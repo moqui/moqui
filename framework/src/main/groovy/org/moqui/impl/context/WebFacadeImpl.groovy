@@ -60,6 +60,11 @@ class WebFacadeImpl implements WebFacade {
     protected List<String> savedErrors = null
     protected List<ValidationError> savedValidationErrors = null
 
+    protected String webappRootUrlFullSecure = null
+    protected String webappRootUrlFullPlain = null
+    protected String webappRootUrlSecure = null
+    protected String webappRootUrlPlain = null
+
     WebFacadeImpl(String webappMoquiName, HttpServletRequest request, HttpServletResponse response,
                   ExecutionContextImpl eci) {
         this.eci = eci
@@ -251,8 +256,29 @@ class WebFacadeImpl implements WebFacade {
     }
     @Override
     String getWebappRootUrl(boolean requireFullUrl, Boolean useEncryption) {
-        String webappName = getServletContext().getInitParameter("moqui-name")
-        return getWebappRootUrl(webappName, null, requireFullUrl, useEncryption, eci)
+        // NOTE: this gets called over and over as new ScreenUrls are init'ed, so cache the various possible results;
+        //     could go one step further and cache in the static method by webappName/servletContextPath and the two
+        //     booleans, but would require a Map lookup, is a little more complex, and may not ultimately be faster
+        //     (except for emails where this isn't even used)
+        boolean isSecure = getRequest().isSecure()
+        boolean requireEncryption = useEncryption == null ? isSecure : useEncryption
+        boolean needFullUrl = requireFullUrl || (requireEncryption && !isSecure) || (!requireEncryption && isSecure)
+
+        if (needFullUrl && requireEncryption) {
+            return webappRootUrlFullSecure != null ? webappRootUrlFullSecure :
+                (webappRootUrlFullSecure = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
+        } else if (needFullUrl && !requireEncryption) {
+            return webappRootUrlFullPlain != null ? webappRootUrlFullPlain :
+                (webappRootUrlFullPlain = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
+        } else if (!needFullUrl && requireEncryption) {
+            return webappRootUrlSecure != null ? webappRootUrlSecure :
+                (webappRootUrlSecure = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
+        } else if (!needFullUrl && !requireEncryption) {
+            return webappRootUrlPlain != null ? webappRootUrlPlain :
+                (webappRootUrlPlain = getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci))
+        }
+
+        return getWebappRootUrl(this.webappMoquiName, null, requireFullUrl, useEncryption, eci)
     }
 
     static String getWebappRootUrl(String webappName, String servletContextPath, boolean requireFullUrl, Boolean useEncryption, ExecutionContextImpl eci) {
