@@ -263,10 +263,10 @@ class ScreenUrlInfo {
     }
 
     void initUrl() {
-        ExecutionContext ec = sri.ec
+        ExecutionContext ec = sri.getEc()
 
         if (this.fromScreenPath.startsWith("/")) {
-            this.fromSd = sri.rootScreenDef
+            this.fromSd = sri.getRootScreenDef()
             this.fromPathList = []
         }
 
