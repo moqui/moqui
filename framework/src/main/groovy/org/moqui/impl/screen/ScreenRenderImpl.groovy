@@ -1142,7 +1142,7 @@ class ScreenRenderImpl implements ScreenRender {
     List<String> getThemeValues(String resourceTypeEnumId) {
         EntityList strList = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId])
-                .orderBy("sequenceNum").list()
+                .orderBy("sequenceNum").useCache(true).list()
         List<String> values = new LinkedList()
         for (EntityValue str in strList) values.add(str.resourceValue as String)
         return values
