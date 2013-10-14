@@ -534,7 +534,7 @@ public class EntityDefinition {
             if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
         }
 
-        return Collections.unmodifiableList(returnList)
+        return returnList ? Collections.unmodifiableList(returnList) : allFieldNameList
     }
 
     List<Node> getFieldNodes(boolean includePk, boolean includeNonPk, boolean includeUserFields) {
