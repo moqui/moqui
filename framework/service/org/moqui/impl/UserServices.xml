@@ -66,14 +66,17 @@ This Work includes contributions authored by David E. Jones, not as a
             <set field="hasPwAdminPermission" from="false"/>
 
             <if condition="userId">
-                <then>
-                    <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
-                </then>
+                <then><entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/></then>
                 <else-if condition="username">
                     <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
                         <field-map field-name="username"/>
                     </entity-find-one>
                 </else-if>
+                <else>
+                    <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount">
+                        <field-map field-name="userId" from="ec.user.userId"/>
+                    </entity-find-one>
+                </else>
             </if>
             <set field="userId" from="userAccount.userId"/>
 
@@ -88,7 +91,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 <script>
                     def token = new org.apache.shiro.authc.UsernamePasswordToken((String) userAccount.username, (String) oldPassword)
-                    def info = new org.apache.shiro.authc.SimpleAuthenticationInfo(username, userAccount.currentPassword,
+                    def info = new org.apache.shiro.authc.SimpleAuthenticationInfo(userAccount.username, userAccount.currentPassword,
                             userAccount.passwordSalt ? new org.apache.shiro.util.SimpleByteSource((String) userAccount.passwordSalt) : null,
                             "moquiRealm")
                 </script>
@@ -107,7 +110,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="newPassword" required="true"/>
             <parameter name="newPasswordVerify" required="true"/>
         </in-parameters>
-        <!-- TODO refactor update#Password to use this -->
         <actions>
             <!-- check a bunch of stuff about the new password -->
             <set field="passwordNode" from="ec.ecfi.confXmlRoot.'user-facade'[0].'password'[0]"/>
@@ -174,6 +176,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-map field-name="requirePasswordChange" value="N"/>
                 <field-map field-name="disabled" value="N"/>
             </service-call>
+
+            <message>Password updated</message>
         </actions>
     </service>
 
