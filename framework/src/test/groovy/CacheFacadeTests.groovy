@@ -14,8 +14,6 @@ import spock.lang.*
 
 import org.moqui.context.ExecutionContext
 import org.moqui.Moqui
-import org.moqui.entity.EntityValue
-import java.sql.Timestamp
 import org.moqui.context.Cache
 
 class CacheFacadeTests extends Specification {
