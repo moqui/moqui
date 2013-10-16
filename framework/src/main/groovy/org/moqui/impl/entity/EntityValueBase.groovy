@@ -641,7 +641,7 @@ abstract class EntityValueBase implements EntityValue {
             valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, true)
             if (deferredSize == deferredEntityNames.size()) {
                 // uh-oh, made no progress... just do it without defer and we get what we get
-                logger.warn("In EntityValue.writeXmlWithDependents() for entity [${this.getEntityName()}] could not make progress with deferred entities, so writing in raw order instead of dependent-sensitive order. Current deferredEntityNames: ${deferredEntityNames}, finishedRelationshipNames: ${finishedRelationshipNames}, edp.dependentEntities: ${edp.dependentEntities.keySet()}")
+                logger.info("In EntityValue.writeXmlWithDependents() for entity [${this.getEntityName()}] could not make progress with deferred entities, so writing in raw order instead of dependent-sensitive order.\n========== Current deferredEntityNames: ${deferredEntityNames}\n========== finishedRelationshipNames: ${finishedRelationshipNames}\n========== edp.dependentEntities: ${edp.dependentEntities.keySet()}")
                 valuesWritten += writeXmlWithDependentsInternalLoop(pw, prefix, entityPksVisited, edp, deferredEntityNames, finishedRelationshipNames, false)
                 break
             }
