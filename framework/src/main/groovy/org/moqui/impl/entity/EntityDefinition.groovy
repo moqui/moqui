@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import org.apache.commons.codec.binary.Base64
 import org.moqui.impl.StupidUtilities
 
 import javax.sql.rowset.serial.SerialBlob
@@ -697,7 +698,7 @@ public class EntityDefinition {
             return
         }
         Node fieldNode = this.getFieldNode(name)
-        if (!fieldNode) dest.put(name, value) // cause an error on purpose
+        if (fieldNode == null) dest.put(name, value) // cause an error on purpose
         dest.put(name, convertFieldString(name, value))
     }
 
@@ -745,6 +746,62 @@ public class EntityDefinition {
             }
         } catch (IllegalArgumentException e) {
             throw new BaseException("The value [${value}] is not valid for type [${javaType}]", e)
+        }
+
+        return outValue
+    }
+
+    String getFieldString(String name, Object value) {
+        if (value == null) return null
+
+        String outValue
+        Node fieldNode = this.getFieldNode(name)
+        String javaType = this.efi.getFieldJavaType((String) fieldNode."@type", this)
+        try {
+            switch (EntityFacadeImpl.getJavaTypeInt(javaType)) {
+                case 1: outValue = value; break
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                    outValue = efi.getEcfi().getL10nFacade().formatValue(value, null)
+                    break
+                case 10: outValue = value.toString(); break
+                case 11: outValue = value; break
+                case 12:
+                    if (value instanceof byte[]) {
+                        outValue = new String(Base64.encodeBase64((byte[]) value));
+                    } else {
+                        logger.info("Field [${name}] on entity [${entityName}] is not of type 'byte[]', is [${value}] so using plain toString()")
+                        outValue = value.toString()
+                    }
+                    break
+                case 13: outValue = value; break
+                case 14: outValue = value.toString(); break
+            // better way for Collection (15)? maybe parse comma separated, but probably doesn't make sense in the first place
+                case 15: outValue = value; break
+                default: outValue = value; break
+            }
+        } catch (IllegalArgumentException e) {
+            throw new BaseException("The value [${value}] is not valid for type [${javaType}]", e)
+        }
+
+        return outValue
+    }
+
+    String getFieldStringForFile(String name, Object value) {
+        if (value == null) return null
+
+        String outValue
+        if (value instanceof Timestamp) {
+            // use a Long number, no TZ issues
+            outValue = ((Timestamp) value).getTime().toString()
+        } else {
+            outValue = getFieldString(name, value)
         }
 
         return outValue

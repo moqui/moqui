@@ -212,7 +212,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     String getString(String name) {
         Object valueObj = this.get(name)
-        return valueObj ? valueObj.toString() : null
+        return entityDefinition.getFieldString(name, valueObj)
     }
 
     @Override
@@ -523,7 +523,7 @@ abstract class EntityValueBase implements EntityValue {
         } catch (EntityException e) {
             throw e
         } catch (Throwable t) {
-            String errMsg = "Error checking entity [${getEntityName()}] with pk [${getPrimaryKeys()}]"
+            String errMsg = "Error checking entity [${getEntityName()}] with pk [${getPrimaryKeys()}]: ${t.toString()}"
             messages.add(errMsg)
             logger.error(errMsg, t)
         }
@@ -582,7 +582,7 @@ abstract class EntityValueBase implements EntityValue {
                 continue
             }
 
-            String valueStr = getString(fieldName)
+            String valueStr = getEntityDefinition().getFieldStringForFile(fieldName, get(fieldName))
             if (!valueStr) continue
             if (valueStr.contains('\n') || valueStr.contains('\r')) {
                 cdataMap.put(fieldName, valueStr)
