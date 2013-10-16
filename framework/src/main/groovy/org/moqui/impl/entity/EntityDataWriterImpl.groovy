@@ -64,6 +64,8 @@ class EntityDataWriterImpl implements EntityDataWriter {
             return 0
         }
 
+        if (dependents) efi.createAllAutoReverseManyRelationships()
+
         int valuesWritten = 0
 
         for (String en in entityNames) {
@@ -99,6 +101,8 @@ class EntityDataWriterImpl implements EntityDataWriter {
     }
 
     int writer(Writer writer) {
+        if (dependents) efi.createAllAutoReverseManyRelationships()
+
         writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         writer.println("<entity-facade-xml>")
 
