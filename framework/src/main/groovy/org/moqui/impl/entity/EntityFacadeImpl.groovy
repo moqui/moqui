@@ -268,7 +268,7 @@ class EntityFacadeImpl implements EntityFacade {
             if (!entityLocationList) {
                 entityLocationCache.put(entityName, [])
                 EntityException ee = new EntityException("No definition found for entity-name [${entityName}]")
-                if (logger.warnEnabled) logger.warn("No definition found for entity-name [${entityName}]", ee)
+                if (logger.infoEnabled) logger.info("No definition found for entity-name [${entityName}]")
                 throw ee
             }
         }
