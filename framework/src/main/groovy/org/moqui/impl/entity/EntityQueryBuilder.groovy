@@ -240,7 +240,7 @@ class EntityQueryBuilder {
             case 6: long longValue = rs.getLong(index); if (!rs.wasNull()) value = longValue; break
             case 7: float floatValue = rs.getFloat(index); if (!rs.wasNull()) value = floatValue; break
             case 8: double doubleValue = rs.getDouble(index); if (!rs.wasNull()) value = doubleValue; break
-            case 9: BigDecimal bigDecimalValue = rs.getBigDecimal(index); if (!rs.wasNull()) value = bigDecimalValue; break
+            case 9: BigDecimal bigDecimalValue = rs.getBigDecimal(index); if (!rs.wasNull()) value = bigDecimalValue?.stripTrailingZeros(); break
             case 10: boolean booleanValue = rs.getBoolean(index); if (!rs.wasNull()) value = Boolean.valueOf(booleanValue); break
             case 11:
                 Object obj = null

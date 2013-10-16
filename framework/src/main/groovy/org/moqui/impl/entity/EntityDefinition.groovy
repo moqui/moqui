@@ -732,7 +732,7 @@ public class EntityDefinition {
                     if (bdVal == null) {
                         throw new BaseException("The value [${value}] is not valid for type [${javaType}]")
                     } else {
-                        outValue = StupidUtilities.basicConvert(bdVal, javaType)
+                        outValue = StupidUtilities.basicConvert(bdVal.stripTrailingZeros(), javaType)
                     }
                     break
                 case 10: outValue = Boolean.valueOf(value); break
@@ -768,6 +768,7 @@ public class EntityDefinition {
                 case 7:
                 case 8:
                 case 9:
+                    if (value instanceof BigDecimal) value = ((BigDecimal) value).stripTrailingZeros()
                     outValue = efi.getEcfi().getL10nFacade().formatValue(value, null)
                     break
                 case 10: outValue = value.toString(); break
