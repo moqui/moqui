@@ -663,7 +663,7 @@ abstract class EntityValueBase implements EntityValue {
                     if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
                     if (checkEn == relInfo.relatedEntityName) continue
                     EntityDefinition.EntityDependents checkEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
-                    if (checkEdp && checkEdp.allDescendants.contains(checkEn)) { deferredEntityNames.add(checkEn); break }
+                    if (checkEdp != null && checkEdp.allDescendants.contains(checkEn)) { deferredEntityNames.add(checkEn); break }
                 }
             }
         }
@@ -671,7 +671,7 @@ abstract class EntityValueBase implements EntityValue {
         // get only dependent entity relationships
         for (Map relInfo in edp.relationshipInfos.values()) {
             if (deferredEntityNames.contains(relInfo.relatedEntityName)) continue
-            if (finishedRelationshipNames.contains(relInfo.title+relInfo.relatedEntityName)) continue
+            if (finishedRelationshipNames.contains((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)) continue
 
             EntityDefinition.EntityDependents relEdp = edp.dependentEntities.get(relInfo.relatedEntityName)
             if (relEdp == null) continue
@@ -684,7 +684,7 @@ abstract class EntityValueBase implements EntityValue {
                 if (ev != null) valuesWritten += ev.writeXmlWithDependentsInternal(pw, prefix, entityPksVisited, relEdp)
             }
 
-            finishedRelationshipNames.add((String) relInfo.title + (String) relInfo.relatedEntityName)
+            finishedRelationshipNames.add((relInfo.title ? relInfo.title + "#" : "") + relInfo.relatedEntityName)
         }
 
         return valuesWritten
