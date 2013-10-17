@@ -15,14 +15,22 @@ import java.sql.Timestamp
 
 import org.apache.commons.collections.set.ListOrderedSet
 
+import org.moqui.context.TransactionException
+import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityDataWriter
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition.ComparisonOperator
 
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
+
 class EntityDataWriterImpl implements EntityDataWriter {
+    protected final static Logger logger = LoggerFactory.getLogger(EntityDataWriterImpl.class)
+
     protected EntityFacadeImpl efi
 
+    protected int txTimeout = 3600
     protected ListOrderedSet entityNames = new ListOrderedSet()
     protected boolean dependents = false
     protected String prefix = null
@@ -68,60 +76,103 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
         int valuesWritten = 0
 
-        for (String en in entityNames) {
-            String filename = "${path}/${en}.xml"
-            File outFile = new File(filename)
-            if (outFile.exists()) {
-                efi.ecfi.executionContext.message.addError("File ${filename} already exists, skipping entity ${en}.")
-                continue
+        TransactionFacade tf = efi.getEcfi().getTransactionFacade()
+        boolean suspendedTransaction = false
+        try {
+            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+            boolean beganTransaction = tf.begin(txTimeout)
+            try {
+                for (String en in entityNames) {
+                    String filename = "${path}/${en}.xml"
+                    File outFile = new File(filename)
+                    if (outFile.exists()) {
+                        efi.ecfi.executionContext.message.addError("File ${filename} already exists, skipping entity ${en}.")
+                        continue
+                    }
+                    outFile.createNewFile()
+
+                    PrintWriter pw = new PrintWriter(outFile)
+                    pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+                    pw.println("<entity-facade-xml>")
+
+                    EntityFind ef = efi.makeFind(en).condition(filterMap)
+                    EntityDefinition ed = efi.getEntityDefinition(en)
+                    if (ed.isField("lastUpdatedStamp")) {
+                        if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
+                        if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
+                    }
+                    EntityListIterator eli = ef.iterator()
+                    valuesWritten += eli.writeXmlText(pw, prefix, dependents)
+                    eli.close()
+
+                    pw.println("</entity-facade-xml>")
+                    pw.close()
+                    efi.ecfi.executionContext.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
+                }
+
+                return valuesWritten
+            } catch (Throwable t) {
+                tf.rollback(beganTransaction, "Error writing data", t)
+                logger.warn("Error writing data", t)
+                efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
+            } finally {
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
             }
-            outFile.createNewFile()
-
-            PrintWriter pw = new PrintWriter(outFile)
-            pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-            pw.println("<entity-facade-xml>")
-
-
-            EntityFind ef = efi.makeFind(en).condition(filterMap)
-            EntityDefinition ed = efi.getEntityDefinition(en)
-            if (ed.isField("lastUpdatedStamp")) {
-                if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
-                if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            try {
+                if (suspendedTransaction) tf.resume()
+            } catch (Throwable t) {
+                logger.error("Error resuming parent transaction after data write", t)
             }
-            EntityListIterator eli = ef.iterator()
-            valuesWritten += eli.writeXmlText(pw, prefix, dependents)
-            eli.close()
-
-            pw.println("</entity-facade-xml>")
-            pw.close()
-            efi.ecfi.executionContext.message.addMessage("Wrote ${valuesWritten} records to file ${filename}")
         }
-
-        return valuesWritten
     }
 
     int writer(Writer writer) {
         if (dependents) efi.createAllAutoReverseManyRelationships()
 
-        writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-        writer.println("<entity-facade-xml>")
+        TransactionFacade tf = efi.getEcfi().getTransactionFacade()
+        boolean suspendedTransaction = false
+        try {
+            if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
+            boolean beganTransaction = tf.begin(txTimeout)
+            try {
+                writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+                writer.println("<entity-facade-xml>")
 
-        int valuesWritten = 0
-        for (String en in entityNames) {
-            EntityFind ef = efi.makeFind(en).condition(filterMap)
-            EntityDefinition ed = efi.getEntityDefinition(en)
-            if (ed.isField("lastUpdatedStamp")) {
-                if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
-                if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
+                int valuesWritten = 0
+                for (String en in entityNames) {
+                    EntityFind ef = efi.makeFind(en).condition(filterMap)
+                    EntityDefinition ed = efi.getEntityDefinition(en)
+                    if (ed.isField("lastUpdatedStamp")) {
+                        if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
+                        if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
+                    }
+                    EntityListIterator eli = ef.iterator()
+                    valuesWritten += eli.writeXmlText(writer, prefix, dependents)
+                    eli.close()
+                }
+
+                writer.println("</entity-facade-xml>")
+                writer.println("")
+
+                return valuesWritten
+            } catch (Throwable t) {
+                tf.rollback(beganTransaction, "Error writing data", t)
+                logger.warn("Error writing data", t)
+                efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
+            } finally {
+                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
             }
-            EntityListIterator eli = ef.iterator()
-            valuesWritten += eli.writeXmlText(writer, prefix, dependents)
-            eli.close()
+        } catch (TransactionException e) {
+            throw e
+        } finally {
+            try {
+                if (suspendedTransaction) tf.resume()
+            } catch (Throwable t) {
+                logger.error("Error resuming parent transaction after data write", t)
+            }
         }
-
-        writer.println("</entity-facade-xml>")
-        writer.println("")
-
-        return valuesWritten
     }
 }
