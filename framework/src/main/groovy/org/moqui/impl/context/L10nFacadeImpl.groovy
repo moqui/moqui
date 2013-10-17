@@ -89,11 +89,13 @@ public class L10nFacadeImpl implements L10nFacade {
 
     @Override
     Time parseTime(String input, String format) {
+        Locale curLocale = getLocale()
+        TimeZone curTz = getTimeZone()
         if (!format) format = "HH:mm:ss.SSS"
-        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "HH:mm:ss", getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "HH:mm", getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "h:mm a", getLocale(), getTimeZone())
+        Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "HH:mm:ss", curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "HH:mm", curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "h:mm a", curLocale, curTz)
         if (cal == null) return null
         Time time = new Time(cal.getTimeInMillis())
         // logger.warn("============== parseTime input=${input} cal=${cal} long=${cal.getTimeInMillis()} time=${time} time long=${time.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
@@ -108,9 +110,11 @@ public class L10nFacadeImpl implements L10nFacade {
 
     @Override
     Date parseDate(String input, String format) {
+        Locale curLocale = getLocale()
+        TimeZone curTz = getTimeZone()
         if (!format) format = "yyyy-MM-dd"
-        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", getLocale(), getTimeZone())
+        Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", curLocale, curTz)
         if (cal == null) return null
         Date date = new Date(cal.getTimeInMillis())
         // logger.warn("============== parseDate input=${input} cal=${cal} long=${cal.getTimeInMillis()} date=${date} date long=${date.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
@@ -125,14 +129,17 @@ public class L10nFacadeImpl implements L10nFacade {
 
     @Override
     Timestamp parseTimestamp(String input, String format) {
+        Locale curLocale = getLocale()
+        TimeZone curTz = getTimeZone()
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS z"
-        Calendar cal = calendarValidator.validate(input, format, getLocale(), getTimeZone())
+        Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
         // try a couple of other format strings
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss.SSS", getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm", getLocale(), getTimeZone())
-        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ss", getLocale(), getTimeZone())
-        // logger.warn("=========== input=${input}, cal=${cal}, long=${cal?.getTimeInMillis()}, locale=${getLocale()}, timeZone=${getTimeZone()}, System=${System.currentTimeMillis()}")
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss.SSS", curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ss", curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm", curLocale, curTz)
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd", curLocale, curTz)
+        // logger.warn("=========== input=${input}, cal=${cal}, long=${cal?.getTimeInMillis()}, locale=${curLocale}, timeZone=${curTz}, System=${System.currentTimeMillis()}")
         if (cal != null) return new Timestamp(cal.getTimeInMillis())
 
         // try interpreting the String as a long
