@@ -284,7 +284,7 @@ abstract class EntityValueBase implements EntityValue {
         // temporarily disable authz for this, just doing lookup to get next value and to allow for a
         //     authorize-skip="create" with authorize-skip of view too this is necessary
         List<EntityValue> allValues = null
-        this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+        boolean alreadyDisabled = this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
         try {
             // NOTE: DEJ 2012-10-11 Added the call to getPrimaryKeys() even though the setFields() call above is only
             //     supposed to move over PK fields; somehow a bunch of other fields were getting set to null, causing
@@ -297,7 +297,7 @@ abstract class EntityValueBase implements EntityValue {
             // logger.warn("TOREMOVE in setSequencedIdSecondary ef WHERE=${ef.getWhereEntityCondition()}")
             allValues = ef.list()
         } finally {
-            this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
+            if (!alreadyDisabled) this.getEntityFacadeImpl().ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
         }
 
         Integer highestSeqVal = null
