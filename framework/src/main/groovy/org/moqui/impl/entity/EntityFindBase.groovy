@@ -774,7 +774,9 @@ abstract class EntityFindBase implements EntityFind {
         long totalDeleted = 0
         try {
             eli = iterator()
-            while (eli.next() != null) {
+            EntityValue ev
+            while ((ev = eli.next()) != null) {
+                getEfi().getEntityCache().clearCacheForValue((EntityValueBase) ev, false)
                 eli.remove()
                 totalDeleted++
             }

@@ -98,6 +98,7 @@ class EntityCache {
                         CacheImpl entityListCache = getCacheList(fullEntityName)
                         Ehcache elcEhc = entityListCache.getInternalCache()
                         for (Object raKey in raKeyList) {
+                            // logger.warn("============= for entity ${fullEntityName}, removing raKey=${raKey} from ${entityListCache.getName()}")
                             if (raKey instanceof EntityCondition) {
                                 EntityCondition ec = (EntityCondition) raKey
                                 // this may have already been cleared, but it is a waste of time to check for that explicitly
