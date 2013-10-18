@@ -58,6 +58,7 @@ Bug Fixes:
   auto-reverse relationships are in place and properly handing
   relationships with titles when deferring export for fk dependency
 - Fixed issue where secondary sequenced ID did not preserve disableAuthz
+- Fixed issue with DENY record not stopping sub-screens access
 
 ===========================================================================
 Release 1.3.0 - 27 July 2013
