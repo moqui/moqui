@@ -440,8 +440,8 @@ class UserFacadeImpl implements UserFacade {
     @Override
     boolean hasPermission(String userPermissionId) { return hasPermission(getUserId(), userPermissionId, getNowTimestamp(), eci) }
 
-    static boolean hasPermission(String username, String userPermissionId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
-        if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
+    static boolean hasPermission(String username, String userPermissionId, Timestamp whenTimestamp, ExecutionContextImpl eci) {
+        if (whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
             EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
@@ -449,8 +449,8 @@ class UserFacadeImpl implements UserFacade {
             if (ua == null) return false
             return (eci.getEntity().makeFind("moqui.security.UserPermissionCheck")
                     .condition([userId:ua.userId, userPermissionId:userPermissionId]).useCache(true).list()
-                    .filterByDate("groupFromDate", "groupThruDate", nowTimestamp)
-                    .filterByDate("permissionFromDate", "permissionThruDate", nowTimestamp)) as boolean
+                    .filterByDate("groupFromDate", "groupThruDate", whenTimestamp)
+                    .filterByDate("permissionFromDate", "permissionThruDate", whenTimestamp)) as boolean
         } finally {
             if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
         }
@@ -459,16 +459,16 @@ class UserFacadeImpl implements UserFacade {
     @Override
     boolean isInGroup(String userGroupId) { return isInGroup(getUserId(), userGroupId, getNowTimestamp(), eci) }
 
-    static boolean isInGroup(String username, String userGroupId, Timestamp nowTimestamp, ExecutionContextImpl eci) {
+    static boolean isInGroup(String username, String userGroupId, Timestamp whenTimestamp, ExecutionContextImpl eci) {
         if (userGroupId == "ALL_USERS") return true
-        if (nowTimestamp == null) nowTimestamp = new Timestamp(System.currentTimeMillis())
+        if (whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
             EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
             if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
             if (ua == null) return false
             return (eci.getEntity().makeFind("moqui.security.UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
-                    .useCache(true).list().filterByDate("fromDate", "thruDate", nowTimestamp)) as boolean
+                    .useCache(true).list().filterByDate("fromDate", "thruDate", whenTimestamp)) as boolean
         } finally {
             if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
         }
