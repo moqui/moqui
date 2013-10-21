@@ -70,8 +70,10 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <set field="documentList" from="ec.entity.getEntityDataFeed().getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)"/>
             <set field="feedStamp" from="thruUpdateStamp ?: ec.user.nowTimestamp"/>
-            <service-call name="org.moqui.impl.EntityServices.index#DataDocuments" in-map="context"/>
-            <set field="documentsIndexed" from="documentList.size()"/>
+            <if condition="documentList">
+                <service-call name="org.moqui.impl.EntityServices.index#DataDocuments" in-map="context"/>
+            </if>
+            <set field="documentsIndexed" from="documentList?.size() ?: 0"/>
             <message>Indexed ${documentsIndexed} documents</message>
         </actions>
     </service>
