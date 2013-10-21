@@ -210,7 +210,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <div<#if panelId?has_content> id="${panelId}"</#if> class="panel-outer">
             <#if .node["panel-header"]?has_content>
                 <div<#if panelId?has_content> id="${panelId}-header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
-                </div></#if>
+                </div>
+            </#if>
             <div class="panel-middle">
                 <#if .node["panel-left"]?has_content>
                     <div<#if panelId?has_content> id="${panelId}-left"</#if> class="panel-left" style="width: ${.node["panel-left"][0]["@size"]!"180"}px;"><#recurse .node["panel-left"][0]>
@@ -226,7 +227,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </div>
             <#if .node["panel-footer"]?has_content>
                 <div<#if panelId?has_content> id="${panelId}-footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
-                </div></#if>
+                </div>
+            </#if>
         </div>
     </#if>
 </#macro>
