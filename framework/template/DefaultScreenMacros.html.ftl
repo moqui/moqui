@@ -175,9 +175,10 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "container-panel">
+    <#assign panelId = ec.resource.evaluateStringExpand(.node["@id"], "")>
     <#if .node["@dynamic"]?if_exists == "true">
         <#assign afterScreenScript>
-        $("#${.node["@id"]}").layout({
+        $("#${panelId}").layout({
         defaults: { closable: true, resizable: true, slidable: false, livePaneResizing: true, spacing_open: 5 },
         <#if .node["panel-header"]?has_content><#assign panelNode = .node["panel-header"][0]>north: { showOverflowOnHover: true, closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"false"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"auto"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
         <#if .node["panel-footer"]?has_content><#assign panelNode = .node["panel-footer"][0]>south: { showOverflowOnHover: true, closable: ${panelNode["@closable"]!"true"}, resizable: ${panelNode["@resizable"]!"false"}, spacing_open: ${panelNode["@spacing"]!"5"}, size: "${panelNode["@size"]!"auto"}"<#if panelNode["@size-min"]?has_content>, minSize: ${panelNode["@size-min"]}</#if><#if panelNode["@size-min"]?has_content>, maxSize: ${panelNode["@size-max"]}</#if> },</#if>
@@ -187,44 +188,44 @@ This Work includes contributions authored by David E. Jones, not as a
         });
         </#assign>
         <#t>${sri.appendToScriptWriter(afterScreenScript)}
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>>
+        <div<#if panelId?has_content> id="${panelId}"</#if>>
             <#if .node["panel-header"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="ui-layout-north ui-helper-clearfix"><#recurse .node["panel-header"][0]>
+                <div<#if panelId?has_content> id="${panelId}-header"</#if> class="ui-layout-north ui-helper-clearfix"><#recurse .node["panel-header"][0]>
                 </div></#if>
             <#if .node["panel-left"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-left"</#if> class="ui-layout-west"><#recurse .node["panel-left"][0]>
+                <div<#if panelId?has_content> id="${panelId}-left"</#if> class="ui-layout-west"><#recurse .node["panel-left"][0]>
                 </div>
             </#if>
-            <div<#if .node["@id"]?has_content> id="${.node["@id"]}-center"</#if> class="ui-layout-center"><#recurse .node["panel-center"][0]>
+            <div<#if panelId?has_content> id="${panelId}-center"</#if> class="ui-layout-center"><#recurse .node["panel-center"][0]>
             </div>
             <#if .node["panel-right"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-right"</#if> class="ui-layout-east"><#recurse .node["panel-right"][0]>
+                <div<#if panelId?has_content> id="${panelId}-right"</#if> class="ui-layout-east"><#recurse .node["panel-right"][0]>
                 </div>
             </#if>
             <#if .node["panel-footer"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-footer"</#if> class="ui-layout-south"><#recurse .node["panel-footer"][0]>
+                <div<#if panelId?has_content> id="${panelId}-footer"</#if> class="ui-layout-south"><#recurse .node["panel-footer"][0]>
                 </div></#if>
         </div>
     <#else>
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="panel-outer">
+        <div<#if panelId?has_content> id="${panelId}"</#if> class="panel-outer">
             <#if .node["panel-header"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
+                <div<#if panelId?has_content> id="${panelId}-header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
                 </div></#if>
             <div class="panel-middle">
                 <#if .node["panel-left"]?has_content>
-                    <div<#if .node["@id"]?has_content> id="${.node["@id"]}-left"</#if> class="panel-left" style="width: ${.node["panel-left"][0]["@size"]!"180"}px;"><#recurse .node["panel-left"][0]>
+                    <div<#if panelId?has_content> id="${panelId}-left"</#if> class="panel-left" style="width: ${.node["panel-left"][0]["@size"]!"180"}px;"><#recurse .node["panel-left"][0]>
                     </div>
                 </#if>
                 <#assign centerClass><#if .node["panel-left"]?has_content><#if .node["panel-right"]?has_content>panel-center-both<#else>panel-center-left</#if><#else><#if .node["panel-right"]?has_content>panel-center-right<#else>panel-center-only</#if></#if></#assign>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-center"</#if> class="${centerClass}"><#recurse .node["panel-center"][0]>
+                <div<#if panelId?has_content> id="${panelId}-center"</#if> class="${centerClass}"><#recurse .node["panel-center"][0]>
             </div>
             <#if .node["panel-right"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-right"</#if> class="panel-right" style="width: ${.node["panel-right"][0]["@size"]!"180"}px;"><#recurse .node["panel-right"][0]>
+                <div<#if panelId?has_content> id="${panelId}-right"</#if> class="panel-right" style="width: ${.node["panel-right"][0]["@size"]!"180"}px;"><#recurse .node["panel-right"][0]>
                 </div>
             </#if>
             </div>
             <#if .node["panel-footer"]?has_content>
-                <div<#if .node["@id"]?has_content> id="${.node["@id"]}-footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
+                <div<#if panelId?has_content> id="${panelId}-footer"</#if> class="panel-footer"><#recurse .node["panel-footer"][0]>
                 </div></#if>
         </div>
     </#if>
