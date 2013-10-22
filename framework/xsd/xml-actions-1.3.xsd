@@ -516,6 +516,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Leave out the constraint if the comparison value is empty or null.
                     Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="or-null" type="boolean" default="false">
+                <xs:annotation><xs:documentation>If true make a condition specified value or null as valid matches.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="ignore" type="xs:string" default="false">
                 <xs:annotation><xs:documentation>Ignore the econdition (leave out of the find) if set to true.
                     Defaults to false.</xs:documentation></xs:annotation>
