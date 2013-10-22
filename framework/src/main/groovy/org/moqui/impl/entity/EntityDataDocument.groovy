@@ -12,6 +12,7 @@
 package org.moqui.impl.entity
 
 import groovy.json.JsonOutput
+import groovy.mock.interceptor.Ignore
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityDynamicView
 import org.moqui.entity.EntityException
@@ -215,10 +216,11 @@ class EntityDataDocument {
                         if (fieldTreeEntry.getValue() instanceof String) {
                             if (fieldTreeEntry.getKey() == "_ALIAS") continue
                             String fieldName = fieldTreeEntry.getValue()
-                            primaryEntityMap.put(fieldName, ev.get(fieldName))
+                            Object value = ev.get(fieldName)
+                            if (value) primaryEntityMap.put(fieldName, value)
                         }
                     }
-                    docMap.put(relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName, primaryEntityMap)
+                    docMap.put((String) relationshipAliasMap.get(primaryEntityName) ?: primaryEntityName, primaryEntityMap)
 
                     documentMapMap.put(docId, docMap)
                 }
