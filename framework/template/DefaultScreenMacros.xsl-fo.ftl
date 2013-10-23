@@ -152,6 +152,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-single[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
+    ${sri.setSingleFormMapInContext(formNode)}
         <#if formNode["field-layout"]?has_content>
             <#assign fieldLayout = formNode["field-layout"][0]>
             <fo:block>

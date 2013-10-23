@@ -965,6 +965,13 @@ class ScreenRenderImpl implements ScreenRender {
     String pushContext() { ec.getContext().push(); return "" }
     String popContext() { ec.getContext().pop(); return "" }
 
+    String setSingleFormMapInContext(FtlNodeWrapper formNodeWrapper) {
+        Node formNode = formNodeWrapper.getGroovyNode()
+        String mapName = formNode."@map" ?: "fieldValues"
+        Map valueMap = (Map) ec.getContext().get(mapName)
+        ec.getContext().put("_formMap", valueMap)
+        return ""
+    }
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
         String strValue = ec.l10n.formatValue(obj, format)

@@ -92,9 +92,9 @@ This Work includes contributions authored by David E. Jones, not as a
 <#-- ====================================================== -->
 <#-- ======================= Form ========================= -->
 <#macro "form-single">
-
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
+    ${sri.setSingleFormMapInContext(formNode)}
     <#if formNode["field-layout"]?has_content>
         <#assign fieldLayout = formNode["field-layout"][0]>
         <#list formNode["field-layout"][0]?children as layoutNode>
@@ -159,7 +159,6 @@ This Work includes contributions authored by David E. Jones, not as a
 <@fieldTitle fieldSubNode/>: <#recurse fieldSubNode/> </#macro>
 
 <#macro "form-list">
-
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
     <#assign listName = formNode["@list"]>
