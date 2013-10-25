@@ -112,8 +112,8 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
                 return valuesWritten
             } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error writing data", t)
                 logger.warn("Error writing data", t)
+                tf.rollback(beganTransaction, "Error writing data", t)
                 efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
             } finally {
                 if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
@@ -159,8 +159,8 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
                 return valuesWritten
             } catch (Throwable t) {
+                logger.warn("Error writing data: " + t.toString(), t)
                 tf.rollback(beganTransaction, "Error writing data", t)
-                logger.warn("Error writing data", t)
                 efi.getEcfi().getExecutionContext().getMessage().addError(t.getMessage())
             } finally {
                 if (beganTransaction && tf.isTransactionInPlace()) tf.commit()

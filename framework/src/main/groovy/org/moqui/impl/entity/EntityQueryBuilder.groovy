@@ -278,16 +278,16 @@ class EntityQueryBuilder {
                 }
                 break
             case 12:
-                SerialBlob sblob
+                SerialBlob sblob = null
                 try {
-                    Blob theBlob = rs.getBlob(index)
-                    // fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
-                    sblob = new SerialBlob(theBlob)
-                } catch (SQLException e) {
-                    if (logger.isTraceEnabled()) logger.trace("Ignoring exception trying getBlob(), trying getBytes(): ${e.toString()}")
-                    // if getBlob didn't work try getBytes
+                    // NOTE: changed to try getBytes first because Derby blows up on getBlob and on then calling getBytes for the same field, complains about getting value twice
                     byte[] fieldBytes = rs.getBytes(index)
-                    sblob = new SerialBlob(fieldBytes)
+                    if (!rs.wasNull()) sblob = new SerialBlob(fieldBytes)
+                    // fieldBytes = theBlob != null ? theBlob.getBytes(1, (int) theBlob.length()) : null
+                } catch (SQLException e) {
+                    if (logger.isTraceEnabled()) logger.trace("Ignoring exception trying getBytes(), trying getBlob(): ${e.toString()}")
+                    Blob theBlob = rs.getBlob(index)
+                    if (!rs.wasNull()) sblob = new SerialBlob(theBlob)
                 }
                 value = sblob
                 break
@@ -296,6 +296,7 @@ class EntityQueryBuilder {
             case 15: value = rs.getObject(index); break
             }
         } catch (SQLException sqle) {
+            logger.error("SQL Exception while getting value for field: [${fieldName}] (${index})", sqle)
             throw new EntityException("SQL Exception while getting value for field: [${fieldName}] (${index})", sqle)
         }
 
