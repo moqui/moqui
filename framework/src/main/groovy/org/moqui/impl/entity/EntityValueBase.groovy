@@ -517,7 +517,7 @@ abstract class EntityValueBase implements EntityValue {
                 Object dbFieldValue = dbValue.get(nonpkFieldName)
 
                 // use compareTo if available, generally more lenient (for BigDecimal ignores scale, etc)
-                if (checkFieldValue != null && (checkFieldValue instanceof Comparable ? checkFieldValue.compareTo(dbFieldValue) != 0 : checkFieldValue != dbFieldValue)) {
+                if (checkFieldValue != null && (checkFieldValue instanceof Comparable && dbFieldValue != null ? checkFieldValue.compareTo(dbFieldValue) != 0 : checkFieldValue != dbFieldValue)) {
                     messages.add("Field [${getEntityName()}.${nonpkFieldName}] did not match; check (file) value [${checkFieldValue}], db value [${dbFieldValue}] for primary key [${getPrimaryKeys()}]")
                 }
             }
