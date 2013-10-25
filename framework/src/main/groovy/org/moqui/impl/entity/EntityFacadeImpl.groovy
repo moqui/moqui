@@ -712,6 +712,16 @@ class EntityFacadeImpl implements EntityFacade {
         return entityDataDocument.getDataDocuments(dataDocumentId, condition, fromUpdateStamp, thruUpdatedStamp)
     }
 
+    void tempSetSequencedIdPrimary(String seqName, long nextSeqNum, long bankSize) {
+        ArrayList<Long> bank = new ArrayList<Long>(2)
+        bank[0] = nextSeqNum
+        bank[1] = nextSeqNum + bankSize
+        this.entitySequenceBankCache.put(seqName, bank)
+    }
+    void tempResetSequencedIdPrimary(String seqName) {
+        this.entitySequenceBankCache.put(seqName, null)
+    }
+
     @Override
     String sequencedIdPrimary(String seqName, Long staggerMax, Long bankSize) {
         try {
