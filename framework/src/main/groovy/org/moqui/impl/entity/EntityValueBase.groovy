@@ -366,10 +366,10 @@ abstract class EntityValueBase implements EntityValue {
     void handleAuditLog(boolean isUpdate, Map oldValues) {
         if (isUpdate && oldValues == null) return
 
+        ExecutionContext ec = getEntityFacadeImpl().ecfi.executionContext
         EntityDefinition ed = getEntityDefinition()
         if (!ed.needsAuditLog()) return
-        // in this case DON'T use the ec.user.nowTimestamp because we want the real time for audits
-        Timestamp nowTimestamp = new Timestamp(System.currentTimeMillis())
+        Timestamp nowTimestamp = ec.user.nowTimestamp
 
         Map<String, Object> pksValueMap = new HashMap<String, Object>()
         addThreeFieldPkValues(pksValueMap)
@@ -392,10 +392,8 @@ abstract class EntityValueBase implements EntityValue {
                 // don't skip for this, if a field was reset then we want to record that: if (!value) continue
 
                 Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
-                        changedFieldName:fieldName,
-                        newValueText:(value as String), changedDate:nowTimestamp,
-                        changedByUserId:getEntityFacadeImpl().ecfi.executionContext.user.userId,
-                        changedInVisitId:getEntityFacadeImpl().ecfi.executionContext.user.visitId]
+                        changedFieldName:fieldName, newValueText:(value as String), changedDate:nowTimestamp,
+                        changedByUserId:ec.user.userId, changedInVisitId:ec.user.visitId]
                 parms.oldValueText = oldValue
                 parms.putAll(pksValueMap)
 
@@ -417,7 +415,7 @@ abstract class EntityValueBase implements EntityValue {
         boolean firstField = true
         for (String fieldName in pkFieldList) {
             if (firstField) firstField = false else pkTextSb.append(",")
-            pkTextSb.append(fieldName).append("=").append(get(fieldName) as String)
+            pkTextSb.append(fieldName).append(":'").append(ed.getFieldStringForFile(fieldName, get(fieldName))).append("'")
         }
         String pkText = pkTextSb.toString()
 
