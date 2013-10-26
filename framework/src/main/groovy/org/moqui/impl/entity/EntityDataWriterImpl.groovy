@@ -34,7 +34,8 @@ class EntityDataWriterImpl implements EntityDataWriter {
     protected ListOrderedSet entityNames = new ListOrderedSet()
     protected boolean dependents = false
     protected String prefix = null
-    protected Map<String, Object> filterMap = new HashMap()
+    protected Map<String, Object> filterMap = [:]
+    protected List<String> orderByList = []
     protected Timestamp fromDate = null
     protected Timestamp thruDate = null
 
@@ -47,6 +48,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
     EntityDataWriter dependentRecords(boolean d) { dependents = d; return this }
     EntityDataWriter prefix(String p) { prefix = p; return this }
     EntityDataWriter filterMap(Map<String, Object> fm) { filterMap.putAll(fm); return this }
+    EntityDataWriter orderBy(List<String> obl) { orderByList.addAll(obl); return this }
     EntityDataWriter fromDate(Timestamp fd) { fromDate = fd; return this }
     EntityDataWriter thruDate(Timestamp td) { thruDate = td; return this }
 
@@ -95,7 +97,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
                     pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
                     pw.println("<entity-facade-xml>")
 
-                    EntityFind ef = efi.makeFind(en).condition(filterMap)
+                    EntityFind ef = efi.makeFind(en).condition(filterMap).orderBy(orderByList)
                     EntityDefinition ed = efi.getEntityDefinition(en)
                     if (ed.isField("lastUpdatedStamp")) {
                         if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)

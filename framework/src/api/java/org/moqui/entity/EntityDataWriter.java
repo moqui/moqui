@@ -26,17 +26,26 @@ public interface EntityDataWriter {
      * @return Reference to this for convenience.
      */
     EntityDataWriter entityNames(List<String> entityNames);
+
     /** Should the dependent records of each record be written?
-     * @param dependents The boolean dependents indicator
+     * @param dependents Boolean dependents indicator
      * @return Reference to this for convenience.
      */
     EntityDataWriter dependentRecords(boolean dependents);
+
     /** Field name, value pairs to filter the results by. Each name/value only used on entities with a field matching
      * the name.
-     * @param filterMap The map with name/value pairs to filter by
+     * @param filterMap Map with name/value pairs to filter by
      * @return Reference to this for convenience.
      */
     EntityDataWriter filterMap(Map<String, Object> filterMap);
+
+    /** Field names order (sort) the results by. Each name only used on entities with a field matching the name.
+     * May be called multiple times. Each entry may be a comma-separated list of field names.
+     * @param orderByList List with field names to order by
+     * @return Reference to this for convenience.
+     */
+    EntityDataWriter orderBy(List<String> orderByList);
 
     /** From date for lastUpdatedStamp on each entity (lastUpdatedStamp must be greater than or equal (>=) to fromDate).
      * @param fromDate The from date
