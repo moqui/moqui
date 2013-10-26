@@ -14,6 +14,7 @@ New Features:
 - Screen form-single forms automatically add a "_formMap" field to the
   context with the Map used for the form; useful for reused forms that may
   specify different form-single.@map values
+- XML Actions iterate generates _index and _hasNext fields
 
 Bug Fixes:
 

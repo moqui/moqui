@@ -168,21 +168,30 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 <#macro iterate>
     <#if .node["@key"]?has_content>
     if (${.node["@list"]} instanceof Map) {
+        ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}.entrySet()) {
             def ${.node["@entry"]} = ${.node["@entry"]}Entry.getKey()
             def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()
-        <#recurse/>
+            <#recurse/>
+            ${.node["@entry"]}_index++
         }
     } else if (${.node["@list"]} instanceof Collection<Map.Entry>) {
+        ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}) {
             def ${.node["@entry"]} = ${.node["@entry"]}Entry.getKey()
             def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()
-        <#recurse/>
+            <#recurse/>
+            ${.node["@entry"]}_index++
         }
     } else {
     </#if>
-        for (def ${.node["@entry"]} in ${.node["@list"]}) {
-        <#recurse/>
+        ${.node["@entry"]}_index = 0
+        _${.node["@entry"]}Iterator = ${.node["@list"]}.iterator()
+        while (_${.node["@entry"]}Iterator.hasNext()) {
+            def ${.node["@entry"]} = _${.node["@entry"]}Iterator.next()
+            boolean ${.node["@entry"]}_hasNext = _${.node["@entry"]}Iterator.hasNext()
+            <#recurse/>
+            ${.node["@entry"]}_index++
         }
         if (${.node["@list"]} instanceof org.moqui.entity.EntityListIterator) ${.node["@list"]}.close()
     <#if .node["@key"]?has_content>}</#if>
