@@ -307,21 +307,24 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityFind orderBy(String orderByFieldName) {
+        if (!orderByFieldName) return this
         if (!this.orderByFields) this.orderByFields = new ArrayList()
-        if (orderByFieldName) {
-            if (orderByFieldName.contains(",")) {
-                for (String obsPart in orderByFieldName.split(",")) this.orderByFields.add(obsPart.trim())
-            } else {
-                this.orderByFields.add(orderByFieldName)
+        if (orderByFieldName.contains(",")) {
+            for (String obsPart in orderByFieldName.split(",")) {
+                String fieldName = obsPart.trim()
+                if (getEntityDef().isField(fieldName)) this.orderByFields.add(fieldName)
             }
+        } else {
+            if (getEntityDef().isField(orderByFieldName)) this.orderByFields.add(orderByFieldName)
         }
         return this
     }
 
     @Override
     EntityFind orderBy(List<String> orderByFieldNames) {
+        if (!orderByFieldNames) return this
         if (!this.orderByFields) this.orderByFields = new ArrayList()
-        if (orderByFieldNames) this.orderByFields.addAll(orderByFieldNames)
+        for (String orderByFieldName in orderByFieldNames) orderBy(orderByFieldName)
         return this
     }
 
