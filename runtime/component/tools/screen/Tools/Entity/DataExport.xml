@@ -32,6 +32,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 if (dependents) edw.dependentRecords(true)
                 if (fromDate) edw.fromDate(ec.l10n.parseTimestamp(fromDate, null))
                 if (thruDate) edw.thruDate(ec.l10n.parseTimestamp(thruDate, null))
+                if (filterMap) edw.filterMap(ec.resource.evaluateContextField(filterMap, null))
+                if (orderBy) edw.orderBy([orderBy])
 
                 noResponse = false
                 if (context.output == "file") {
@@ -67,6 +69,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="thruDate"><default-field><date-time/></default-field></field>
 
             <field name="path"><default-field><text-line size="80"/></default-field></field>
+            <field name="filterMap"><default-field><text-line size="80" default-value="[:]"/></default-field></field>
+            <field name="orderBy"><default-field><text-line size="80"/></default-field></field>
             <field name="output">
                 <default-field><radio no-current-selected-key="file">
                     <option key="file" text="Single File"/>
