@@ -105,8 +105,13 @@ task reloadSaveExec << {
     copy { from zipTree('MoquiTransactional.zip'); into file('runtime/db/derby/MoquiTransactional') }
 }
 task reloadSave {
-    dependsOn cleanAll
-    dependsOn allBuildTasks
+    //dependsOn cleanAll
+    //dependsOn allBuildTasks
+    dependsOn cleanTempDir
+    dependsOn cleanDb
+    dependsOn cleanElasticSearch
+    dependsOn cleanLog
+
     dependsOn reloadSaveExec
 }
 
