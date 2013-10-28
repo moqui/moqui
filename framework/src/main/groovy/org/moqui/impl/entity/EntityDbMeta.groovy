@@ -63,15 +63,34 @@ class EntityDbMeta {
 
         long startTime = System.currentTimeMillis()
         if (!tableExists(ed)) {
-            createTable(ed)
-            // create explicit and foreign key auto indexes
-            createIndexes(ed)
-            // create foreign keys to all other tables that exist
-            createForeignKeys(ed, false)
+            boolean suspendedTransaction = false
+            try {
+                if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                    suspendedTransaction = efi.ecfi.transactionFacade.suspend()
+                }
+                createTable(ed)
+                // create explicit and foreign key auto indexes
+                createIndexes(ed)
+                // create foreign keys to all other tables that exist
+                createForeignKeys(ed, false)
+            } finally {
+                if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
+            }
         } else {
             // table exists, see if it is missing any columns
             ListOrderedSet mcs = getMissingColumns(ed)
-            if (mcs) for (String fieldName in mcs) addColumn(ed, fieldName)
+            if (mcs) {
+                boolean suspendedTransaction = false
+                try {
+                    if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                        suspendedTransaction = efi.ecfi.transactionFacade.suspend()
+                    }
+
+                    for (String fieldName in mcs) addColumn(ed, fieldName)
+                } finally {
+                    if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
+                }
+            }
             // create foreign keys after checking each to see if it already exists
             if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
         }
@@ -433,7 +452,16 @@ class EntityDbMeta {
                 sql.append(" INITIALLY DEFERRED")
             }
 
-            runSqlUpdate(sql, groupName)
+            boolean suspendedTransaction = false
+            try {
+                if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                    suspendedTransaction = efi.ecfi.transactionFacade.suspend()
+                }
+
+                runSqlUpdate(sql, groupName)
+            } finally {
+                if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
+            }
         }
     }
 
@@ -454,27 +482,19 @@ class EntityDbMeta {
         Connection con = null
         Statement stmt = null
 
-        boolean suspendedTransaction = false
+        // use a short timeout here just in case this is in the middle of stuff going on with tables locked, may happen a lot for FK ops
+        boolean beganTx = efi.ecfi.transactionFacade.begin(5)
         try {
-            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
-                suspendedTransaction = efi.ecfi.transactionFacade.suspend()
-            }
-            // use a short timeout here just in case this is in the middle of stuff going on with tables locked, may happen a lot for FK ops
-            boolean beganTx = efi.ecfi.transactionFacade.begin(5)
-            try {
-                con = efi.getConnection(groupName)
-                stmt = con.createStatement()
-                stmt.executeUpdate(sql.toString())
-            } catch (SQLException e) {
-                logger.error("SQL Exception while executing the following SQL [${sql.toString()}]: ${e.toString()}")
-                efi.ecfi.transactionFacade.rollback(beganTx, "SQL meta data update failed; SQL [${sql.toString()}]", e)
-            } finally {
-                if (stmt != null) stmt.close()
-                if (con != null) con.close()
-                if (beganTx) efi.ecfi.transactionFacade.commit()
-            }
+            con = efi.getConnection(groupName)
+            stmt = con.createStatement()
+            stmt.executeUpdate(sql.toString())
+        } catch (SQLException e) {
+            logger.error("SQL Exception while executing the following SQL [${sql.toString()}]: ${e.toString()}")
+            efi.ecfi.transactionFacade.rollback(beganTx, "SQL meta data update failed; SQL [${sql.toString()}]", e)
         } finally {
-            if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
+            if (stmt != null) stmt.close()
+            if (con != null) con.close()
+            if (beganTx) efi.ecfi.transactionFacade.commit()
         }
     }
 }
