@@ -11,6 +11,10 @@
  */
 package org.moqui.impl.context
 
+import com.atomikos.icatch.config.TSInitInfo
+import com.atomikos.icatch.config.UserTransactionService
+import com.atomikos.icatch.config.UserTransactionServiceImp
+import com.atomikos.icatch.config.imp.TSInitInfoImp
 import com.atomikos.icatch.jta.UserTransactionManager
 
 import javax.transaction.Transaction
@@ -44,6 +48,8 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     protected final ExecutionContextFactoryImpl ecfi
 
+    protected UserTransactionService atomikosUts = null
+
     protected UserTransaction ut
     protected TransactionManager tm
 
@@ -61,9 +67,11 @@ class TransactionFacadeImpl implements TransactionFacade {
         if (transactionFactory."@factory-type" == "jndi") {
             this.populateTransactionObjectsJndi()
         } else if (transactionFactory."@factory-type" == "internal") {
-            UserTransactionManager utm = new UserTransactionManager()
             // initialize Atomikos
-            utm.init()
+            atomikosUts = new UserTransactionServiceImp()
+            atomikosUts.init()
+
+            UserTransactionManager utm = new UserTransactionManager()
             this.ut = utm
             this.tm = utm
         } else {
@@ -72,14 +80,12 @@ class TransactionFacadeImpl implements TransactionFacade {
     }
 
     void destroy() {
-        UserTransactionManager utm = this.tm instanceof UserTransactionManager ? (UserTransactionManager) this.tm : null
-
         // set to null first to avoid additional operations
         this.tm = null
         this.ut = null
 
         // destroy utm (just for internal/Atomikos; nothing for JNDI
-        if (utm != null) utm.close()
+        if (atomikosUts != null) atomikosUts.shutdown(true)
 
         transactionBeginStackList.remove()
         transactionBeginStartTimeList.remove()
