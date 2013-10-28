@@ -62,31 +62,20 @@ class EntityDbMeta {
         if (!datasourceNode."@database-conf-name") return
 
         long startTime = System.currentTimeMillis()
-        boolean suspendedTransaction = false
-        try {
-            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
-                suspendedTransaction = efi.ecfi.transactionFacade.suspend()
-            }
-            // transaction out of the way, check/create
-            if (!tableExists(ed)) {
-                createTable(ed)
-                // create explicit and foreign key auto indexes
-                createIndexes(ed)
-                // create foreign keys to all other tables that exist
-                createForeignKeys(ed, false)
-            } else {
-                // table exists, see if it is missing any columns
-                ListOrderedSet mcs = getMissingColumns(ed)
-                if (mcs) for (String fieldName in mcs) {
-                    addColumn(ed, fieldName)
-                }
-                // create foreign keys after checking each to see if it already exists
-                if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
-            }
-            entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
-        } finally {
-            if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
+        if (!tableExists(ed)) {
+            createTable(ed)
+            // create explicit and foreign key auto indexes
+            createIndexes(ed)
+            // create foreign keys to all other tables that exist
+            createForeignKeys(ed, false)
+        } else {
+            // table exists, see if it is missing any columns
+            ListOrderedSet mcs = getMissingColumns(ed)
+            if (mcs) for (String fieldName in mcs) addColumn(ed, fieldName)
+            // create foreign keys after checking each to see if it already exists
+            if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
         }
+        entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
 
         if (logger.isTraceEnabled()) logger.trace("Checked table for entity [${ed.getFullEntityName()}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
     }
@@ -465,19 +454,27 @@ class EntityDbMeta {
         Connection con = null
         Statement stmt = null
 
-        // use a short timeout here just in case this is in the middle of stuff going on with tables locked, may happen a lot for FK ops
-        boolean beganTx = efi.ecfi.transactionFacade.begin(5)
+        boolean suspendedTransaction = false
         try {
-            con = efi.getConnection(groupName)
-            stmt = con.createStatement()
-            stmt.executeUpdate(sql.toString())
-        } catch (SQLException e) {
-            logger.error("SQL Exception while executing the following SQL [${sql.toString()}]: ${e.toString()}")
-            efi.ecfi.transactionFacade.rollback(beganTx, "SQL meta data update failed; SQL [${sql.toString()}]", e)
+            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                suspendedTransaction = efi.ecfi.transactionFacade.suspend()
+            }
+            // use a short timeout here just in case this is in the middle of stuff going on with tables locked, may happen a lot for FK ops
+            boolean beganTx = efi.ecfi.transactionFacade.begin(5)
+            try {
+                con = efi.getConnection(groupName)
+                stmt = con.createStatement()
+                stmt.executeUpdate(sql.toString())
+            } catch (SQLException e) {
+                logger.error("SQL Exception while executing the following SQL [${sql.toString()}]: ${e.toString()}")
+                efi.ecfi.transactionFacade.rollback(beganTx, "SQL meta data update failed; SQL [${sql.toString()}]", e)
+            } finally {
+                if (stmt != null) stmt.close()
+                if (con != null) con.close()
+                if (beganTx) efi.ecfi.transactionFacade.commit()
+            }
         } finally {
-            if (stmt != null) stmt.close()
-            if (con != null) con.close()
-            if (beganTx) efi.ecfi.transactionFacade.commit()
+            if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
         }
     }
 }
