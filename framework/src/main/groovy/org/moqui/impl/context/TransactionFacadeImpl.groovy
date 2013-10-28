@@ -11,10 +11,8 @@
  */
 package org.moqui.impl.context
 
-import com.atomikos.icatch.config.TSInitInfo
 import com.atomikos.icatch.config.UserTransactionService
 import com.atomikos.icatch.config.UserTransactionServiceImp
-import com.atomikos.icatch.config.imp.TSInitInfoImp
 import com.atomikos.icatch.jta.UserTransactionManager
 
 import javax.transaction.Transaction
