@@ -329,6 +329,9 @@
                   table-engine="InnoDB" character-set="utf8" collate="utf8_general_ci"
                   default-isolation-level="ReadCommitted" default-jdbc-driver="com.mysql.jdbc.Driver"
                   default-test-query="SELECT 1">
+            <!-- use DATETIME instead of TIMESTAMP so can be null and gets no default value; issue with newer MySQL versions -->
+            <database-type type="date-time" sql-type="DATETIME"/>
+
             <database-type type="number-integer" sql-type="DECIMAL(20,0)"/>
             <database-type type="number-decimal" sql-type="DECIMAL(26,6)"/>
             <database-type type="number-float" sql-type="DECIMAL(32,12)"/>
