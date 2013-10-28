@@ -106,11 +106,11 @@ task reloadSaveExec << {
 }
 task reloadSave {
     //dependsOn cleanAll
-    //dependsOn allBuildTasks
     dependsOn cleanTempDir
     dependsOn cleanDb
     dependsOn cleanElasticSearch
     dependsOn cleanLog
+    dependsOn allBuildTasks
 
     dependsOn reloadSaveExec
 }
