@@ -89,6 +89,27 @@ task loadProduction(type: JavaExec) {
     main = '-jar'; args = [warName, '-load']
 }
 
+task loadSaveExec << {
+    delete file('MoquiTenant.zip'); delete file('MoquiTransactional.zip')
+    ant.zip(destfile: 'MoquiTenant.zip') { fileset(dir: 'runtime/db/derby/MoquiTenant') { include(name: '**/*') } }
+    ant.zip(destfile: 'MoquiTransactional.zip') { fileset(dir: 'runtime/db/derby/MoquiTransactional') { include(name: '**/*') } }
+}
+task loadSave {
+    dependsOn cleanDb
+    dependsOn load
+    dependsOn loadSaveExec
+}
+
+task reloadSaveExec << {
+    copy { from zipTree('MoquiTenant.zip'); into file('runtime/db/derby/MoquiTenant') }
+    copy { from zipTree('MoquiTransactional.zip'); into file('runtime/db/derby/MoquiTransactional') }
+}
+task reloadSave {
+    dependsOn cleanAll
+    dependsOn allBuildTasks
+    dependsOn reloadSaveExec
+}
+
 // ========== deploy tasks ==========
 
 task deployTomcat << {
