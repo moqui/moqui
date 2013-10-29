@@ -23,13 +23,17 @@ class ListCondition extends EntityConditionImplBase {
     ListCondition(EntityConditionFactoryImpl ecFactoryImpl,
             List<EntityConditionImplBase> conditionList, EntityCondition.JoinOperator operator) {
         super(ecFactoryImpl)
+        if (conditionList) {
+            Iterator<EntityConditionImplBase> conditionIter = conditionList.iterator()
+            while (conditionIter.hasNext()) if (conditionIter.next() == null) conditionIter.remove()
+        }
         this.conditionList = conditionList ?: new LinkedList()
-        this.operator = operator ?: EntityCondition.JoinOperator.AND
+        this.operator = operator ?: EntityCondition.AND
     }
 
     Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
 
-    void addCondition(EntityConditionImplBase condition) { conditionList.add(condition) }
+    void addCondition(EntityConditionImplBase condition) { if (condition != null) conditionList.add(condition) }
 
     @Override
     void makeSqlWhere(EntityQueryBuilder eqb) {
@@ -51,11 +55,11 @@ class ListCondition extends EntityConditionImplBase {
     boolean mapMatches(Map<String, ?> map) {
         for (EntityConditionImplBase condition in this.conditionList) {
             boolean conditionMatches = condition.mapMatches(map)
-            if (conditionMatches && this.operator == EntityCondition.JoinOperator.OR) return true
-            if (!conditionMatches && this.operator == EntityCondition.JoinOperator.AND) return false
+            if (conditionMatches && this.operator == EntityCondition.OR) return true
+            if (!conditionMatches && this.operator == EntityCondition.AND) return false
         }
         // if we got here it means that it's an OR with no trues, or an AND with no falses
-        return (this.operator == EntityCondition.JoinOperator.AND)
+        return (this.operator == EntityCondition.AND)
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {

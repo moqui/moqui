@@ -58,13 +58,18 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
     @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList, JoinOperator operator) {
         if (!conditionList) return null
-        return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, operator)
+        Iterator<EntityCondition> conditionIter = conditionList.iterator()
+        while (conditionIter.hasNext()) if (conditionIter.next() == null) conditionIter.remove()
+        if (conditionList.size() == 1) {
+            return conditionList.first()
+        } else {
+            return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, operator)
+        }
     }
 
     @Override
     EntityCondition makeCondition(List<EntityCondition> conditionList) {
-        if (!conditionList) return null
-        return new ListCondition(this, (List<EntityConditionImplBase>) conditionList, JoinOperator.AND)
+        return this.makeCondition(conditionList, JoinOperator.AND)
     }
 
     @Override
