@@ -95,7 +95,7 @@ task loadSaveExec << {
     ant.zip(destfile: 'MoquiTransactional.zip') { fileset(dir: 'runtime/db/derby/MoquiTransactional') { include(name: '**/*') } }
 }
 task loadSave {
-    dependsOn cleanDb
+    dependsOn cleanAll
     dependsOn load
     dependsOn loadSaveExec
 }
