@@ -531,6 +531,12 @@ abstract class EntityFindBase implements EntityFind {
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", true)
 
+        List<String> orderByExpanded = new ArrayList()
+        // add the manually specified ones, then the ones in the view entity's entity-condition
+        if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
+        def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
+        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
+
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         CacheImpl entityListCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
@@ -543,6 +549,7 @@ abstract class EntityFindBase implements EntityFind {
                     entityListCache.removeElement(cacheElement)
                 } else {
                     EntityList cacheHit = (EntityList) cacheElement.objectValue
+                    if (orderByExpanded) cacheHit.orderByFields(orderByExpanded)
                     efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
                     // pop the ArtifactExecutionInfo
                     ec.getArtifactExecution().pop()
@@ -572,12 +579,6 @@ abstract class EntityFindBase implements EntityFind {
         } else if (viewHaving) {
             havingCondition = viewHaving
         }
-
-        List<String> orderByExpanded = new ArrayList()
-        // add the manually specified ones, then the ones in the view entity's entity-condition
-        if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
-        def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
-        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
 
         // call the abstract method
         EntityListIterator eli = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
