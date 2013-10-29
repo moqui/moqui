@@ -522,7 +522,7 @@ public class EntityDefinition {
             allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true, false).asList()))
         }
 
-        if (!allowUserField && hasUserFields != null && !hasUserFields) return allFieldNameList
+        if (!allowUserField || (hasUserFields != null && !hasUserFields)) return allFieldNameList
 
         List<String> returnList = null
 
