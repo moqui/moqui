@@ -261,7 +261,7 @@ class ServiceDefinition {
                 parameterValue = converted
                 // put the final parameterValue back into the parameters Map
                 parameters.put(parameterName, parameterValue)
-            } else if (parameterValue) {
+            } else if (parameterValue != null) {
                 // no type conversion? error time...
                 eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
                 continue
@@ -399,8 +399,8 @@ class ServiceDefinition {
             ((ContextStack) eci.context).pop()
         }
 
-        // if no default, don't try to convert
-        if (!parameterValue) return null
+        // if null value, don't try to convert
+        if (parameterValue == null) return null
 
         String type = parameterNode."@type" ?: "String"
         if (!StupidUtilities.isInstanceOf(parameterValue, type)) {
