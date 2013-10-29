@@ -11,6 +11,9 @@
  */
 package org.moqui.context;
 
+import java.io.Writer;
+import java.util.List;
+
 /**
  * Information about execution of an artifact as the system is running
  */
@@ -23,4 +26,8 @@ public interface ArtifactExecutionInfo {
     String getAuthorizedAuthzTypeId();
     String getAuthorizedActionEnumId();
     boolean isAuthorizationInheritable();
+
+    long getRunningTime();
+    List<ArtifactExecutionInfo> getChildList();
+    void print(Writer writer, int level, boolean children);
 }

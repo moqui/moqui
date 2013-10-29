@@ -37,6 +37,7 @@ public interface ArtifactExecutionFacade {
     Deque<ArtifactExecutionInfo> getStack();
 
     List<ArtifactExecutionInfo> getHistory();
+    String printHistory();
 
     /** Disable authorization checks for the current ExecutionContext only.
      * This should be used when the system automatically does something (possible based on a user action) that the user

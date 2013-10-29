@@ -34,9 +34,9 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ArtifactExecutionFacadeImpl.class)
 
     // NOTE: these need to be in a Map instead of the DB because Enumeration records may not yet be loaded
-    protected final static Map<String, String> artifactTypeDescriptionMap = [AT_XML_SCREEN:"XML Screen",
-            AT_XML_SCREEN_TRANS:"XML Screen Transition", AT_SERVICE:"Service", AT_ENTITY:"Entity"]
-    protected final static Map<String, String> artifactActionDescriptionMap = [AUTHZA_VIEW:"View",
+    final static Map<String, String> artifactTypeDescriptionMap = [AT_XML_SCREEN:"Screen",
+            AT_XML_SCREEN_TRANS:"Transition", AT_SERVICE:"Service", AT_ENTITY:"Entity"]
+    final static Map<String, String> artifactActionDescriptionMap = [AUTHZA_VIEW:"View",
             AUTHZA_CREATE:"Create", AUTHZA_UPDATE:"Update", AUTHZA_DELETE:"Delete", AUTHZA_ALL:"All"]
 
     protected ExecutionContextImpl eci
@@ -85,7 +85,9 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
     @Override
     ArtifactExecutionInfo pop() {
         if (this.artifactExecutionInfoStack.size() > 0) {
-            return this.artifactExecutionInfoStack.removeFirst()
+            ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.removeFirst()
+            lastAeii.setEndTime()
+            return lastAeii
         } else {
             logger.warn("Tried to pop from an empty ArtifactExecutionInfo stack", new Exception("Bad pop location"))
             return null
@@ -105,7 +107,9 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
 
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
-        artifactExecutionInfoHistory.add(aeii)
+        if (lastAeii != null) lastAeii.addChild(aeii)
+        else artifactExecutionInfoHistory.add(aeii)
+
         // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact push ${username} - ${aeii}")
 
         if (!isPermitted(username, aeii, lastAeii, requiresAuthz, true, eci.getUser().getNowTimestamp())) {
@@ -120,9 +124,15 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
     @Override
     Deque<ArtifactExecutionInfo> getStack() { return this.artifactExecutionInfoStack }
-
     @Override
     List<ArtifactExecutionInfo> getHistory() { return this.artifactExecutionInfoHistory }
+
+    String printHistory() {
+        StringWriter sw = new StringWriter()
+        for (ArtifactExecutionInfo aei in artifactExecutionInfoHistory) aei.print(sw, 0, true)
+        return sw.toString()
+    }
+
 
     void setAnonymousAuthorizedAll() {
         ArtifactExecutionInfoImpl aeii = artifactExecutionInfoStack.peekFirst()

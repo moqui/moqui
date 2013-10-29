@@ -397,6 +397,13 @@ class StupidUtilities {
         while (desiredLength > outStrBfr.length()) outStrBfr.insert(0, '0')
         return outStrBfr.toString()
     }
+    static String paddedString(String input, Integer desiredLength, boolean rightPad) {
+        if (input == null) input = ""
+        StringBuilder outStrBfr = new StringBuilder(input)
+        if (!desiredLength) return outStrBfr.toString()
+        while (desiredLength > outStrBfr.length()) if (rightPad) outStrBfr.append(' ') else outStrBfr.insert(0, ' ')
+        return outStrBfr.toString()
+    }
 
     static String getRandomString(int length) {
         StringBuilder sb = new StringBuilder()

@@ -13,6 +13,7 @@ package org.moqui.impl.context
 
 import org.moqui.context.ArtifactExecutionInfo
 import org.moqui.entity.EntityValue
+import org.moqui.impl.StupidUtilities
 
 class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
 
@@ -24,12 +25,16 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String authorizedActionEnumId = null
     protected boolean authorizationInheritable = false
     //protected Exception createdLocation = null
+    protected long startTime
+    protected Long endTime = null
+    protected List<ArtifactExecutionInfoImpl> childList = []
 
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
         this.typeEnumId = typeEnumId
         this.actionEnumId = actionEnumId ?: "AUTHZA_ALL"
         //createdLocation = new Exception("Create AEII location for ${name}, type ${typeEnumId}, action ${actionEnumId}")
+        this.startTime = System.currentTimeMillis()
     }
 
     @Override
@@ -67,8 +72,24 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         setAuthorizationInheritable(aeii.authorizationInheritable)
     }
 
+    void setEndTime() { this.endTime = System.currentTimeMillis() }
+    long getRunningTime() { return endTime != null ? endTime - startTime : 0 }
+
+    void addChild(ArtifactExecutionInfoImpl aeii) { childList.add(aeii) }
+    List<ArtifactExecutionInfo> getChildList() { return childList }
+
+    void print(Writer writer, int level, boolean children) {
+        for (int i = 0; i < (level * 2); i++) writer.append(' ')
+        writer.append('[').append(StupidUtilities.paddedString(getRunningTime() as String, 6, false)).append('] ')
+        writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId), 10, true)).append(' ')
+        writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId), 7, true)).append(' ')
+        writer.append(name).append('\n')
+
+        if (children) for (ArtifactExecutionInfoImpl aeii in childList) aeii.print(writer, level + 1, true)
+    }
+
     @Override
     String toString() {
-        return "[name:${name},type:${typeEnumId},action:${actionEnumId},user:${authorizedUserId},authz:${authorizedAuthzTypeId},authAction:${authorizedActionEnumId},inheritable:${authorizationInheritable}]"
+        return "[name:'${name}',type:'${typeEnumId}',action:'${actionEnumId}',user:'${authorizedUserId}',authz:'${authorizedAuthzTypeId}',authAction:'${authorizedActionEnumId}',inheritable:${authorizationInheritable},runningTime:${getRunningTime()}]"
     }
 }

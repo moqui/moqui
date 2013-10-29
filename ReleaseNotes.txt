@@ -15,6 +15,8 @@ New Features:
   context with the Map used for the form; useful for reused forms that may
   specify different form-single.@map values
 - XML Actions iterate generates _index and _hasNext fields
+- ArtifactFacade now tracks artifact running time, keeps an hierarchical
+  instead of flat history, and can print a tree of the history
 
 Bug Fixes:
 - Fixed issue in ListCondition with null list entries, and improved the
