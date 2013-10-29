@@ -37,7 +37,7 @@ check.dependsOn.remove(test)
 
 test {
     systemProperty 'moqui.runtime', moquiDir.absolutePath + '/runtime'
-    systemProperty 'moqui.conf', 'conf/MoquiDevConf.xml'
+    systemProperty 'moqui.conf', 'conf/MoquiDevTestConf.xml'
     systemProperty 'moqui.init.static', 'true'
 
     testLogging.showStandardStreams = true

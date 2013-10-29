@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- No copyright or license for configuration file, details here are not considered a creative work. -->
+<moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.3.xsd">
+
+    <server-stats>
+        <!-- for dev testing tone down the stats, don't persist low-level hits -->
+        <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="transition" persist-bin="true" persist-hit="true"/>
+        <artifact-stats type="service" persist-bin="true" persist-hit="false"/>
+        <artifact-stats type="entity" persist-bin="true"/>
+    </server-stats>
+
+    <webapp-list>
+        <webapp name="webroot" http-port="8080" https-enabled="false">
+            <root-screen host=".*" location="component://webroot/screen/webroot.xml"/>
+        </webapp>
+    </webapp-list>
+
+    <screen-facade boundary-comments="true">
+        <!-- The default conf file has a macro location defined for html already, but this is an example of how to
+            refer to a file to override the default macros. -->
+        <screen-text-output type="html" mime-type="text/html"
+                            macro-template-location="template/screen-macro/ScreenHtmlMacros.ftl"/>
+    </screen-facade>
+
+    <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME">
+        <!-- add datasource elements here to configure databases -->
+    </entity-facade>
+
+    <repository-list>
+        <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"
+                    username="admin" password="admin"/>
+    </repository-list>
+</moqui-conf>
