@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <link url="ArtifactHitBinStats.xml" text="Get as XML" target-window="_blank"/>
             <link url="ArtifactHitBinStats.pdf" text="Get as PDF" target-window="_blank"/>
         </container>
-        <form-list name="ArtifactHitBins" list="artifactHitBinList">
+        <form-list name="ArtifactHitBins" list="artifactHitBinList" skip-form="true">
             <row-actions>
                 <set field="averageTime" from="hitCount ? (totalTimeMillis/hitCount as BigDecimal).setScale(0,BigDecimal.ROUND_UP) : 0"/>
             </row-actions>
@@ -87,6 +87,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="maxTimeMillis">
                 <header-field title="Max" show-order-by="true"/>
+                <default-field><display also-hidden="false"/></default-field>
+            </field>
+            <field name="totalTimeMillis">
+                <header-field title="Total" show-order-by="true"/>
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="find"><header-field title="Find"><submit/></header-field></field>
