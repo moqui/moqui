@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="exampleEmail" type="text-medium"/>
         <field name="exampleUrl" type="text-medium"/>
     </extend-entity>
-    <entity entity-name="Example" package-name="moqui.example">
+    <entity entity-name="Example" package-name="moqui.example" allow-user-field="true">
         <field name="exampleId" type="id" is-pk="true"><description>primary sequenced ID</description></field>
         <field name="exampleTypeEnumId" type="id"/>
         <field name="statusId" type="id" enable-audit-log="true"/>

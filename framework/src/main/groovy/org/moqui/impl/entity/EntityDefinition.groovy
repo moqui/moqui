@@ -48,6 +48,7 @@ public class EntityDefinition {
     protected List<String> pkFieldNameList = null
     protected List<String> allFieldNameList = null
     protected Boolean hasUserFields = null
+    protected Boolean allowUserField = null
     protected Map<String, Map> mePkFieldToAliasNameMapMap = null
 
     protected Boolean isView = null
@@ -89,10 +90,11 @@ public class EntityDefinition {
                 if (fieldNode."@is-pk" == "true") aliasNode."@is-pk" = "true"
             }
         } else {
-            if (this.internalEntityNode."@no-update-stamp" != "true") {
+            if (internalEntityNode."@no-update-stamp" != "true") {
                 // automatically add the lastUpdatedStamp field
-                this.internalEntityNode.appendNode("field", [name:"lastUpdatedStamp", type:"date-time"])
+                internalEntityNode.appendNode("field", [name:"lastUpdatedStamp", type:"date-time"])
             }
+            if (internalEntityNode."@allow-user-field" == "true") allowUserField = true
         }
     }
 
@@ -157,7 +159,9 @@ public class EntityDefinition {
         fn = (Node) this.internalEntityNode[nodeName].find({ it.@name == fieldName })
         fieldNodeMap.put(fieldName, fn)
 
-        if (fn == null && !this.isViewEntity()) {
+        if (fn == null && allowUserField && !this.isViewEntity() && !fieldName.contains('.')) {
+            // if fieldName has a dot it is likely a relationship name, so don't look for UserField
+
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
@@ -490,7 +494,7 @@ public class EntityDefinition {
             }
         }
 
-        if (includeUserFields) {
+        if (includeUserFields && allowUserField && !this.isViewEntity()) {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()
@@ -518,7 +522,7 @@ public class EntityDefinition {
             allFieldNameList = Collections.unmodifiableList(new ArrayList(getFieldNames(true, true, false).asList()))
         }
 
-        if (hasUserFields != null && !hasUserFields) return allFieldNameList
+        if (!allowUserField && hasUserFields != null && !hasUserFields) return allFieldNameList
 
         List<String> returnList = null
 
@@ -558,7 +562,7 @@ public class EntityDefinition {
             }
         }
 
-        if (includeUserFields && !this.isViewEntity()) {
+        if (includeUserFields && allowUserField && !this.isViewEntity()) {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 EntityList userFieldList = efi.makeFind("moqui.entity.UserField").condition("entityName", getFullEntityName()).useCache(true).list()

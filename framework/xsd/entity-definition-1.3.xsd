@@ -80,6 +80,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     this entity then set this attribute to false.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="allow-user-field" type="boolean" default="false"/>
             <xs:attribute name="cache" type="cache-options" default="false"/>
             <xs:attribute name="authorize-skip" type="authorize-skip-options" default="false"/>
         </xs:complexType>
