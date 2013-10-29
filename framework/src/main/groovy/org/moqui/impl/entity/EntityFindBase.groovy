@@ -311,11 +311,13 @@ abstract class EntityFindBase implements EntityFind {
         if (!this.orderByFields) this.orderByFields = new ArrayList()
         if (orderByFieldName.contains(",")) {
             for (String obsPart in orderByFieldName.split(",")) {
-                String fieldName = obsPart.trim()
-                if (getEntityDef().isField(fieldName)) this.orderByFields.add(fieldName)
+                String orderByName = obsPart.trim()
+                EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByName)
+                if (getEntityDef().isField(foo.fieldName)) this.orderByFields.add(orderByName)
             }
         } else {
-            if (getEntityDef().isField(orderByFieldName)) this.orderByFields.add(orderByFieldName)
+            EntityFindBuilder.FieldOrderOptions foo = new EntityFindBuilder.FieldOrderOptions(orderByFieldName)
+            if (getEntityDef().isField(foo.fieldName)) this.orderByFields.add(orderByFieldName)
         }
         return this
     }

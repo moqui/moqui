@@ -365,50 +365,8 @@ class EntityFindBuilder extends EntityQueryBuilder {
             if (isFirst) isFirst = false else this.sqlTopLevel.append(", ")
 
             // Parse the fieldName (can have other stuff in it, need to tear down to just the field name)
-            Boolean nullsFirstLast = null
-            boolean descending = false
-            Boolean caseUpperLower = null
-
-            fieldName = fieldName.trim()
-
-            if (fieldName.toUpperCase().endsWith("NULLS FIRST")) {
-                nullsFirstLast = true
-                fieldName = fieldName.substring(0, fieldName.length() - "NULLS FIRST".length()).trim()
-            }
-            if (fieldName.toUpperCase().endsWith("NULLS LAST")) {
-                nullsFirstLast = false
-                fieldName = fieldName.substring(0, fieldName.length() - "NULLS LAST".length()).trim()
-            }
-
-            int startIndex = 0
-            int endIndex = fieldName.length()
-            if (fieldName.endsWith(" DESC")) {
-                descending = true
-                endIndex -= 5
-            } else if (fieldName.endsWith(" ASC")) {
-                descending = false
-                endIndex -= 4
-            } else if (fieldName.startsWith("-")) {
-                descending = true
-                startIndex++
-            } else if (fieldName.startsWith("+")) {
-                descending = false
-                startIndex++
-            }
-            fieldName = fieldName.substring(startIndex, endIndex)
-
-            String upperText = fieldName.toUpperCase()
-            if (upperText.startsWith("UPPER(")) {
-                caseUpperLower = true
-                fieldName = fieldName.substring(6)
-            } else if (upperText.startsWith("^")) {
-                caseUpperLower = true
-                fieldName = fieldName.substring(1)
-            } else if (upperText.startsWith("LOWER(")) {
-                caseUpperLower = false
-                fieldName = fieldName.substring(6)
-            }
-            if (fieldName.endsWith(")")) { fieldName = fieldName.substring(0,fieldName.length()-1) }
+            FieldOrderOptions foo = new FieldOrderOptions(fieldName)
+            fieldName = foo.fieldName
 
             int typeValue = 1
             Node fieldNode = getMainEd().getFieldNode(fieldName)
@@ -420,13 +378,66 @@ class EntityFindBuilder extends EntityQueryBuilder {
             }
 
             // not that it's all torn down, build it back up using the column name
-            if (caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(caseUpperLower ? "UPPER(" : "LOWER(")
+            if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(foo.caseUpperLower ? "UPPER(" : "LOWER(")
             this.sqlTopLevel.append(this.mainEntityDefinition.getColumnName(fieldName, false))
-            if (caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(")")
+            if (foo.caseUpperLower != null && typeValue == 1) this.sqlTopLevel.append(")")
 
-            this.sqlTopLevel.append(descending ? " DESC" : " ASC")
+            this.sqlTopLevel.append(foo.descending ? " DESC" : " ASC")
 
-            if (nullsFirstLast != null) this.sqlTopLevel.append(nullsFirstLast ? " NULLS FIRST" : " NULLS LAST")
+            if (foo.nullsFirstLast != null) this.sqlTopLevel.append(foo.nullsFirstLast ? " NULLS FIRST" : " NULLS LAST")
+        }
+    }
+
+    static class FieldOrderOptions {
+        String fieldName = null
+        Boolean nullsFirstLast = null
+        boolean descending = false
+        Boolean caseUpperLower = null
+
+        FieldOrderOptions(String orderByName) {
+            orderByName = orderByName.trim()
+            if (!orderByName) return
+
+            if (orderByName.toUpperCase().endsWith("NULLS FIRST")) {
+                nullsFirstLast = true
+                orderByName = orderByName.substring(0, orderByName.length() - "NULLS FIRST".length()).trim()
+            }
+            if (orderByName.toUpperCase().endsWith("NULLS LAST")) {
+                nullsFirstLast = false
+                orderByName = orderByName.substring(0, orderByName.length() - "NULLS LAST".length()).trim()
+            }
+
+            int startIndex = 0
+            int endIndex = orderByName.length()
+            if (orderByName.endsWith(" DESC")) {
+                descending = true
+                endIndex -= 5
+            } else if (orderByName.endsWith(" ASC")) {
+                descending = false
+                endIndex -= 4
+            } else if (orderByName.startsWith("-")) {
+                descending = true
+                startIndex++
+            } else if (orderByName.startsWith("+")) {
+                descending = false
+                startIndex++
+            }
+            orderByName = orderByName.substring(startIndex, endIndex)
+
+            String upperText = orderByName.toUpperCase()
+            if (upperText.startsWith("UPPER(")) {
+                caseUpperLower = true
+                orderByName = orderByName.substring(6)
+            } else if (upperText.startsWith("^")) {
+                caseUpperLower = true
+                orderByName = orderByName.substring(1)
+            } else if (upperText.startsWith("LOWER(")) {
+                caseUpperLower = false
+                orderByName = orderByName.substring(6)
+            }
+            if (orderByName.endsWith(")")) { orderByName = orderByName.substring(0,orderByName.length()-1) }
+
+            fieldName = orderByName
         }
     }
 
@@ -434,7 +445,7 @@ class EntityFindBuilder extends EntityQueryBuilder {
     PreparedStatement makePreparedStatement() {
         if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
         String sql = this.getSqlTopLevel().toString()
-        // logger.warn("making PreparedStatement for SQL: ${sql}")
+        // if(this.mainEntityDefinition.getFullEntityName().contains("foo")) logger.warn("========= making PreparedStatement for SQL: ${sql}")
         try {
             this.ps = connection.prepareStatement(sql, this.entityFindBase.resultSetType, this.entityFindBase.resultSetConcurrency)
             if (this.entityFindBase.maxRows > 0) this.ps.setMaxRows(this.entityFindBase.maxRows)
