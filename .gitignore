@@ -5,6 +5,9 @@ framework.iml
 framework/build/
 framework/.gradle/
 moqui-*.war
+MoquiTenant.zip
+MoquiTransactional.zip
+MoquiAnalytical.zip
 runtime/component/example/build/
 runtime/component/example.iml
 runtime/db/derby/MoquiTenant/
