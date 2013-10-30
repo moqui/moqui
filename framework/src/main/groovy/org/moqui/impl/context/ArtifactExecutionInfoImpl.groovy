@@ -116,6 +116,25 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         if (children) for (ArtifactExecutionInfoImpl aeii in childList) aeii.print(writer, level + 1, true)
     }
 
+    String getKeyString() { return name + ":" + ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId) +
+            ":" + ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId) }
+    static List<Map> hotSpotByTime(List<ArtifactExecutionInfoImpl> aeiiList, boolean ownTime) {
+        Map<String, Long> timeByArtifact = [:]
+        for (ArtifactExecutionInfoImpl aeii in aeiiList) aeii.addToMapByTime(timeByArtifact, ownTime)
+        List<Map> hotSpotList = []
+        for (Map.Entry<String, Long> entry in timeByArtifact.entrySet()) hotSpotList.add([time:entry.value, artifact:entry.key])
+        StupidUtilities.orderMapList(hotSpotList, ['-time'])
+        return hotSpotList
+    }
+    void addToMapByTime(Map<String, Long> timeByArtifact, boolean ownTime) {
+        String key = getKeyString()
+        Long time = timeByArtifact.get(key)
+        long curTime = ownTime ? getThisRunningTime() : getRunningTime()
+        if (time == null) timeByArtifact.put(key, curTime)
+        else timeByArtifact.put(key, time + curTime)
+        for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
+    }
+
     @Override
     String toString() {
         return "[name:'${name}',type:'${typeEnumId}',action:'${actionEnumId}',user:'${authorizedUserId}',authz:'${authorizedAuthzTypeId}',authAction:'${authorizedActionEnumId}',inheritable:${authorizationInheritable},runningTime:${getRunningTime()}]"
