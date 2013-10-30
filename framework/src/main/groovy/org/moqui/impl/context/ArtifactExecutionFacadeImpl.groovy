@@ -107,7 +107,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
         ArtifactExecutionInfoImpl lastAeii = artifactExecutionInfoStack.peekFirst()
 
         // always do this regardless of the authz checks, etc; keep a history of artifacts run
-        if (lastAeii != null) lastAeii.addChild(aeii)
+        if (lastAeii != null) { lastAeii.addChild(aeii); aeii.setParent(lastAeii) }
         else artifactExecutionInfoHistory.add(aeii)
 
         // if ("AT_XML_SCREEN" == aeii.typeEnumId) logger.warn("TOREMOVE artifact push ${username} - ${aeii}")

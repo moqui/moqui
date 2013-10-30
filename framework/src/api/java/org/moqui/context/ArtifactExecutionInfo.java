@@ -12,6 +12,7 @@
 package org.moqui.context;
 
 import java.io.Writer;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -29,5 +30,10 @@ public interface ArtifactExecutionInfo {
 
     long getRunningTime();
     List<ArtifactExecutionInfo> getChildList();
+    long getThisRunningTime();
+    long getChildrenRunningTime();
+    ArtifactExecutionInfo getParent();
+    BigDecimal getPercentOfParentTime();
+
     void print(Writer writer, int level, boolean children);
 }

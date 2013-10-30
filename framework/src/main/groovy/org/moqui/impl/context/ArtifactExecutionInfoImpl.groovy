@@ -25,9 +25,11 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String authorizedActionEnumId = null
     protected boolean authorizationInheritable = false
     //protected Exception createdLocation = null
+    protected ArtifactExecutionInfoImpl parentAeii = null
     protected long startTime
     protected Long endTime = null
     protected List<ArtifactExecutionInfoImpl> childList = []
+    protected Long childrenRunningTime = null
 
     ArtifactExecutionInfoImpl(String name, String typeEnumId, String actionEnumId) {
         this.name = name
@@ -73,14 +75,40 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     }
 
     void setEndTime() { this.endTime = System.currentTimeMillis() }
+    @Override
     long getRunningTime() { return endTime != null ? endTime - startTime : 0 }
+    void calcChildTime(boolean recurse) {
+        childrenRunningTime = 0
+        for (ArtifactExecutionInfoImpl aeii in childList) {
+            childrenRunningTime += aeii.getRunningTime()
+            if (recurse) aeii.calcChildTime(true)
+        }
+    }
+    @Override
+    long getThisRunningTime() { return getRunningTime() - getChildrenRunningTime() }
+    @Override
+    long getChildrenRunningTime() {
+        if (childrenRunningTime == null) calcChildTime(false)
+        return childrenRunningTime ?: 0
+    }
+
+    void setParent(ArtifactExecutionInfoImpl parentAeii) { this.parentAeii = parentAeii }
+    @Override
+    ArtifactExecutionInfo getParent() { return parentAeii }
+    @Override
+    BigDecimal getPercentOfParentTime() { parentAeii && endTime ?
+        (((getRunningTime() / parentAeii.getRunningTime()) * 100) as BigDecimal).setScale(2, BigDecimal.ROUND_HALF_UP) : 0 }
+
 
     void addChild(ArtifactExecutionInfoImpl aeii) { childList.add(aeii) }
     List<ArtifactExecutionInfo> getChildList() { return childList }
 
     void print(Writer writer, int level, boolean children) {
         for (int i = 0; i < (level * 2); i++) writer.append(' ')
-        writer.append('[').append(StupidUtilities.paddedString(getRunningTime() as String, 6, false)).append('] ')
+        writer.append('[').append(parentAeii ? StupidUtilities.paddedString(getPercentOfParentTime() as String, 5, false) : '     ').append('%]')
+        writer.append('[').append(StupidUtilities.paddedString(getRunningTime() as String, 5, false)).append(']')
+        writer.append('[').append(StupidUtilities.paddedString(getThisRunningTime() as String, 3, false)).append(']')
+        writer.append('[').append(childList ? StupidUtilities.paddedString(getChildrenRunningTime() as String, 3, false) : '   ').append('] ')
         writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId), 10, true)).append(' ')
         writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId), 7, true)).append(' ')
         writer.append(name).append('\n')
