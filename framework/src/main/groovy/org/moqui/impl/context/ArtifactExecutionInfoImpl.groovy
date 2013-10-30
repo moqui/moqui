@@ -183,7 +183,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     }
     static void printArtifactInfoList(Writer writer, List<Map> infoList, int level) {
         for (Map info in infoList) {
-            for (int i = 0; i < level; i++) writer.append("|").append(' ')
+            for (int i = 0; i < level; i++) writer.append('|').append(' ')
             writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
             writer.append(StupidUtilities.paddedString(info.thisTime as String, 3, false)).append(':')
             writer.append(StupidUtilities.paddedString(info.childrenTime as String, 3, false)).append(']')
@@ -191,8 +191,13 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
             writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
             writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
             writer.append((String) info.name).append('\n')
-            // if we get past level 20 just give up, probably a loop in the tree
-            if (level < 20) printArtifactInfoList(writer, (List<Map>) info.childInfoList, level + 1)
+            // if we get past level 25 just give up, probably a loop in the tree
+            if (level < 25) {
+                printArtifactInfoList(writer, (List<Map>) info.childInfoList, level + 1)
+            } else {
+                for (int i = 0; i < level; i++) writer.append('|').append(' ')
+                writer.append("Reached depth limit, not printing children (may be a cycle in the 'tree')\n")
+            }
         }
     }
 
