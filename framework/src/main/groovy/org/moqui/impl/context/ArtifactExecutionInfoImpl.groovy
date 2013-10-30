@@ -141,6 +141,61 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
     }
 
+    static List<Map> consolidateArtifactInfo(List<ArtifactExecutionInfoImpl> aeiiList) {
+        List<Map> topLevelList = []
+        Map<String, Map> flatMap = [:]
+        for (ArtifactExecutionInfoImpl aeii in aeiiList) aeii.consolidateArtifactInfo(topLevelList, flatMap, null)
+        return topLevelList
+    }
+    void consolidateArtifactInfo(List<Map> topLevelList, Map<String, Map> flatMap, Map parentArtifactMap) {
+        String key = getKeyString()
+        Map artifactMap = flatMap.get(key)
+        if (artifactMap == null) {
+            artifactMap = [time:getRunningTime(), thisTime:getThisRunningTime(), childrenTime:getChildrenRunningTime(),
+                    count:1, name:name, childInfoList:[], key:key,
+                    type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
+                    action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)]
+            flatMap.put(key, artifactMap)
+            if (parentArtifactMap != null) {
+                parentArtifactMap.childInfoList.add(artifactMap)
+            } else {
+                topLevelList.add(artifactMap)
+            }
+        } else {
+            artifactMap.count = artifactMap.count + 1
+            artifactMap.time = artifactMap.time + getRunningTime()
+            artifactMap.thisTime = artifactMap.thisTime + getThisRunningTime()
+            artifactMap.childrenTime = artifactMap.childrenTime + getChildrenRunningTime()
+            if (parentArtifactMap != null) {
+                // is the current artifact in the current parent's child list? if not add it (a given artifact may be under multiple parents, normal)
+                boolean foundMap = false
+                for (Map candidate in parentArtifactMap.childInfoList) if (candidate.key == key) { foundMap = true; break }
+                if (!foundMap) parentArtifactMap.childInfoList.add(artifactMap)
+            }
+        }
+
+        for (ArtifactExecutionInfoImpl aeii in childList) aeii.consolidateArtifactInfo(topLevelList, flatMap, artifactMap)
+    }
+    static String printArtifactInfoList(List<Map> infoList) {
+        StringWriter sw = new StringWriter()
+        printArtifactInfoList(sw, infoList, 0)
+        return sw.toString()
+    }
+    static void printArtifactInfoList(Writer writer, List<Map> infoList, int level) {
+        for (Map info in infoList) {
+            for (int i = 0; i < level; i++) writer.append("|").append(' ')
+            writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.thisTime as String, 3, false)).append(':')
+            writer.append(StupidUtilities.paddedString(info.childrenTime as String, 3, false)).append(']')
+            writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
+            writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
+            writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
+            writer.append((String) info.name).append('\n')
+            // if we get past level 20 just give up, probably a loop in the tree
+            if (level < 20) printArtifactInfoList(writer, (List<Map>) info.childInfoList, level + 1)
+        }
+    }
+
     @Override
     String toString() {
         return "[name:'${name}',type:'${typeEnumId}',action:'${actionEnumId}',user:'${authorizedUserId}',authz:'${authorizedAuthzTypeId}',authAction:'${authorizedActionEnumId}',inheritable:${authorizationInheritable},runningTime:${getRunningTime()}]"
