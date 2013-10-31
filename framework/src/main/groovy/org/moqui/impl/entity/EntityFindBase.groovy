@@ -389,14 +389,26 @@ abstract class EntityFindBase implements EntityFind {
     Integer getMaxRows() { return this.maxRows }
 
     // ======================== Misc Methods ========================
-    protected EntityDefinition getEntityDef() {
-        if (this.entityDef) return this.entityDef
-        if (this.dynamicView) {
-            this.entityDef = this.dynamicView.makeEntityDefinition()
+    EntityDefinition getEntityDef() {
+        if (entityDef != null) return entityDef
+        if (dynamicView != null) {
+            entityDef = dynamicView.makeEntityDefinition()
         } else {
-            this.entityDef = this.efi.getEntityDefinition(this.entityName)
+            entityDef = efi.getEntityDefinition(entityName)
         }
-        return this.entityDef
+        return entityDef
+    }
+
+    Map<String, Object> getSimpleMapPrimaryKeys() {
+        Map<String, Object> pks = new HashMap()
+        for (String fieldName in getEntityDef().getPkFieldNames()) {
+            // only include PK fields which has a non-empty value, leave others out of the Map
+            Object value = simpleAndMap.get(fieldName)
+            // if any fields have no value we don't have a full PK so bye bye
+            if (!value) return null
+            if (value) pks.put(fieldName, value)
+        }
+        return pks
     }
 
     protected boolean shouldCache() {
@@ -782,7 +794,7 @@ abstract class EntityFindBase implements EntityFind {
             eli = iterator()
             EntityValue ev
             while ((ev = eli.next()) != null) {
-                getEfi().getEntityCache().clearCacheForValue((EntityValueBase) ev, false)
+                // not longer need to clear cache, eli.remote() does that
                 eli.remove()
                 totalDeleted++
             }

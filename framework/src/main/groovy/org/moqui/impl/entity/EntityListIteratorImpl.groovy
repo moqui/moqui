@@ -296,8 +296,8 @@ class EntityListIteratorImpl implements EntityListIterator {
     @Override
     void remove() {
         // TODO: call EECAs
-        // TODO: notify cache clear
         try {
+            efi.getEntityCache().clearCacheForValue((EntityValueBase) currentEntityValue(), false)
             rs.deleteRow()
         } catch (SQLException e) {
             throw new EntityException("Error removing row", e)
