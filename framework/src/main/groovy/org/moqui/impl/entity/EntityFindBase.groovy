@@ -512,7 +512,8 @@ abstract class EntityFindBase implements EntityFind {
 
 
         // call the abstract method
-        EntityValueBase newEntityValue = txcValue ?: oneExtended(conditionForQuery)
+        EntityValueBase newEntityValue = txcValue instanceof TransactionCache.DeletedEntityValue ? null :
+                (txcValue ?: oneExtended(conditionForQuery))
 
         // if it didn't come from the txCache put it there
         if (txcValue == null && txCache != null) txCache.onePut(newEntityValue)
