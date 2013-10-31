@@ -9,6 +9,13 @@ Moqui Framework 1.3.1 is a minor new feature and bug fix release.
 
 New Features:
 
+- Implemented write-through per-transaction cache (TransactionCache)
+  enabled through the service.@transaction attribute cache and force-cache
+  options or through direct initialization; this is a pretty big new
+  feature that significantly improves performance of various types of
+  services, but has certain limitations as described in the JavaDoc notes
+  in the TransactionCache class and code using it should be tested
+  thoroughly
 - Added econdition.@or-null attribute to make the condition an or between
   the specified condition and null
 - Screen form-single forms automatically add a "_formMap" field to the

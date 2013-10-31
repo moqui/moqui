@@ -60,7 +60,7 @@ class TransactionCache implements XAResource {
         this.ecfi = ecfi
     }
 
-    void enlist() {
+    TransactionCache enlist() {
         // logger.warn("========= Enlisting new TransactionCache")
         TransactionManager tm = ecfi.getTransactionFacade().getTransactionManager()
         if (tm == null || tm.getStatus() != Status.STATUS_ACTIVE) throw new XAException("Cannot enlist: no transaction manager or transaction not active")
@@ -68,8 +68,10 @@ class TransactionCache implements XAResource {
         if (tx == null) throw new XAException(XAException.XAER_NOTA)
         this.tx = tx
 
-        // logger.warn("================= puttng and enlisting new TransactionCache")
+        // logger.warn("================= putting and enlisting new TransactionCache")
         ecfi.getTransactionFacade().putAndEnlistActiveXaResource("TransactionCache", this)
+
+        return this
     }
 
     /** Returns true if create handled, false if not; if false caller should handle the operation */

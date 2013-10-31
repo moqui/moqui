@@ -17,6 +17,7 @@ import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextImpl
+import org.moqui.impl.context.TransactionCache
 import org.moqui.impl.context.UserFacadeImpl
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.service.runner.EntityAutoServiceRunner
@@ -236,6 +237,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
             if (pauseResumeIfNeeded && tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             boolean beganTransaction = beginTransactionIfNeeded ? tf.begin(sd.getTxTimeout()) : false
+            if (beganTransaction && sd.getTxUseCache()) new TransactionCache(sfi.getEcfi()).enlist()
             try {
                 // handle sd.serviceNode."@semaphore"; do this after local transaction created, etc.
                 checkAddSemaphore(sd, eci)

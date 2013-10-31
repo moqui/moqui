@@ -45,6 +45,7 @@ class ServiceDefinition {
     protected String internalServiceType
     protected boolean internalTxIgnore
     protected boolean internalTxForceNew
+    protected boolean internalTxUseCache
     protected Integer internalTransactionTimeout
 
     ServiceDefinition(ServiceFacadeImpl sfi, String path, Node sn) {
@@ -113,7 +114,8 @@ class ServiceDefinition {
         internalAuthenticate = serviceNode."@authenticate" ?: "true"
         internalServiceType = serviceNode."@type" ?: "inline"
         internalTxIgnore = (serviceNode."@transaction" == "ignore")
-        internalTxForceNew = (serviceNode."@transaction" == "force-new")
+        internalTxForceNew = (serviceNode."@transaction" == "force-new" || serviceNode."@transaction" == "force-cache")
+        internalTxUseCache = (serviceNode."@transaction" == "cache" || serviceNode."@transaction" == "force-cache")
         if (serviceNode."@transaction-timeout") {
             internalTransactionTimeout = serviceNode."@transaction-timeout" as Integer
         } else {
@@ -177,6 +179,7 @@ class ServiceDefinition {
     String getServiceType() { return internalServiceType }
     boolean getTxIgnore() { return internalTxIgnore }
     boolean getTxForceNew() { return internalTxForceNew }
+    boolean getTxUseCache() { return internalTxUseCache }
     Integer getTxTimeout() { return internalTransactionTimeout }
 
     static String getPathFromName(String serviceName) {
