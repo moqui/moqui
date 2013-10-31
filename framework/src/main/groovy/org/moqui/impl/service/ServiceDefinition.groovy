@@ -261,7 +261,7 @@ class ServiceDefinition {
                 parameterValue = converted
                 // put the final parameterValue back into the parameters Map
                 parameters.put(parameterName, parameterValue)
-            } else if (parameterValue != null) {
+            } else if (parameterValue) {
                 // no type conversion? error time...
                 eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
                 continue
@@ -407,7 +407,9 @@ class ServiceDefinition {
             // do type conversion if possible
             String format = parameterNode."@format"
             Object converted = null
-            if (parameterValue instanceof String) {
+            boolean isString = parameterValue instanceof String
+            boolean isEmptyString = isString && ((String) parameterValue).length() == 0
+            if (isString && !isEmptyString) {
                 // try some String to XYZ specific conversions for parsing with format, locale, etc
                 switch (type) {
                     case "Integer":
@@ -454,7 +456,7 @@ class ServiceDefinition {
             }
 
             // fallback to a really simple type conversion
-            if (converted == null) converted = StupidUtilities.basicConvert(parameterValue, type)
+            if (converted == null && !isEmptyString) converted = StupidUtilities.basicConvert(parameterValue, type)
 
             return converted
         }
