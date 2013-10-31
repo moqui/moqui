@@ -11,6 +11,9 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.entity.EntityCondition
+import org.moqui.impl.context.TransactionCache
+
 import java.sql.Connection
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -27,12 +30,16 @@ import org.slf4j.LoggerFactory
 class EntityListIteratorImpl implements EntityListIterator {
     protected final static Logger logger = LoggerFactory.getLogger(EntityListIteratorImpl.class)
 
-    protected EntityFacadeImpl efi
-    protected Connection con
-    protected ResultSet rs
+    protected final EntityFacadeImpl efi
+    protected final TransactionCache txCache
 
-    protected EntityDefinition entityDefinition
-    protected ListOrderedSet fieldsSelected
+    protected final Connection con
+    protected final ResultSet rs
+
+    protected final EntityDefinition entityDefinition
+    protected final ListOrderedSet fieldsSelected
+    protected EntityCondition queryCondition = null
+    protected List<String> orderByFields = null
 
     /** This is needed to determine if the ResultSet is empty as cheaply as possible. */
     protected boolean haveMadeValue = false
@@ -45,7 +52,11 @@ class EntityListIteratorImpl implements EntityListIterator {
         this.rs = rs
         this.entityDefinition = entityDefinition
         this.fieldsSelected = fieldsSelected
+        this.txCache = (TransactionCache) efi.getEcfi().getTransactionFacade().getActiveXaResource("TransactionCache")
     }
+
+    void setQueryCondition(EntityCondition ec) { this.queryCondition = ec }
+    void setOrderByFields(List<String> obf) { this.orderByFields = obf }
 
     @Override
     void close() {
@@ -177,7 +188,13 @@ class EntityListIteratorImpl implements EntityListIterator {
     EntityValue next() {
         try {
             if (rs.next()) {
-                return currentEntityValue()
+                EntityValueBase evb = (EntityValueBase) currentEntityValue()
+                if (txCache != null) {
+                    TransactionCache.WriteMode writeMode = txCache.checkUpdateValue(evb)
+                    // if deleted skip this value
+                    if (writeMode == TransactionCache.WriteMode.DELETE) return this.next()
+                }
+                return evb
             } else {
                 return null
             }
@@ -195,7 +212,13 @@ class EntityListIteratorImpl implements EntityListIterator {
     EntityValue previous() {
         try {
             if (rs.previous()) {
-                return currentEntityValue()
+                EntityValueBase evb = (EntityValueBase) currentEntityValue()
+                if (txCache != null) {
+                    TransactionCache.WriteMode writeMode = txCache.checkUpdateValue(evb)
+                    // if deleted skip this value
+                    if (writeMode == TransactionCache.WriteMode.DELETE) return this.previous()
+                }
+                return evb
             } else {
                 return null
             }
@@ -230,6 +253,14 @@ class EntityListIteratorImpl implements EntityListIterator {
             while ((value = this.next()) != null) {
                 list.add(value)
             }
+
+            if (txCache != null) {
+                // add all created values (updated and deleted values will be handled by the next() method
+                if (queryCondition != null) list.addAll(txCache.getCreatedValueList(queryCondition))
+                // update the order if we know the order by field list
+                if (orderByFields != null) list.orderByFields(orderByFields)
+            }
+
             return list
         } catch (SQLException e) {
             throw new EntityException("Error getting all results", e)

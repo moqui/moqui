@@ -41,7 +41,7 @@ class EntityFindImpl extends EntityFindBase {
     // ======================== Run Find Methods ==============================
 
     @Override
-    EntityValue oneExtended(EntityConditionImplBase whereCondition) throws EntityException {
+    EntityValueBase oneExtended(EntityConditionImplBase whereCondition) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
 
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
@@ -62,7 +62,7 @@ class EntityFindImpl extends EntityFindBase {
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
-        EntityValue newEntityValue = null
+        EntityValueBase newEntityValue = null
         try {
             efi.getEntityDbMeta().checkTableRuntime(ed)
 
@@ -95,7 +95,7 @@ class EntityFindImpl extends EntityFindBase {
     }
 
     @Override
-    EntityListIterator iteratorExtended(EntityConditionImplBase whereCondition, EntityConditionImplBase havingCondition,
+    EntityListIteratorImpl iteratorExtended(EntityConditionImplBase whereCondition, EntityConditionImplBase havingCondition,
                                         List<String> orderByExpanded) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
@@ -127,7 +127,7 @@ class EntityFindImpl extends EntityFindBase {
         if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
-        EntityListIterator eli
+        EntityListIteratorImpl elii
         try {
             efi.getEntityDbMeta().checkTableRuntime(ed)
 
@@ -136,7 +136,7 @@ class EntityFindImpl extends EntityFindBase {
             efb.setPreparedStatementValues()
 
             ResultSet rs = efb.executeQuery()
-            eli = new EntityListIteratorImpl(con, rs, this.getEntityDef(), this.fieldsToSelect, this.efi)
+            elii = new EntityListIteratorImpl(con, rs, this.getEntityDef(), this.fieldsToSelect, this.efi)
             // ResultSet will be closed in the EntityListIterator
             efb.releaseAll()
         } catch (EntityException e) {
@@ -147,7 +147,7 @@ class EntityFindImpl extends EntityFindBase {
             throw new EntityException("Error in find", t)
         }
 
-        return eli
+        return elii
     }
 
     @Override

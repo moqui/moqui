@@ -24,7 +24,7 @@ import org.moqui.entity.EntityValue
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
+import org.moqui.impl.context.TransactionCache
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
@@ -43,6 +43,8 @@ abstract class EntityValueBase implements EntityValue {
      * It is volatile so not stored when this is serialized, and will get a reference to the active EntityFacade after.
      */
     protected volatile EntityFacadeImpl efi
+    protected volatile TransactionCache txCache
+
 
     protected final String entityName
     protected volatile EntityDefinition entityDefinition
@@ -64,6 +66,10 @@ abstract class EntityValueBase implements EntityValue {
         // handle null after deserialize; this requires a static reference in Moqui.java or we'll get an error
         if (efi == null) efi = ((ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()).getEntityFacade()
         return efi
+    }
+    TransactionCache getTxCache() {
+        if (txCache == null) txCache = (TransactionCache) efi.getEcfi().getTransactionFacade().getActiveXaResource("TransactionCache")
+        return txCache
     }
 
     EntityDefinition getEntityDefinition() {
@@ -824,8 +830,9 @@ abstract class EntityValueBase implements EntityValue {
         ListOrderedSet fieldList = new ListOrderedSet()
         for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
-        // call the abstract method to create the main record
-        this.createExtended(fieldList)
+        // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
+        if (!getTxCache() || !getTxCache().create(this))
+            this.createExtended(fieldList)
 
         // create records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -920,8 +927,9 @@ abstract class EntityValueBase implements EntityValue {
         // do this before the db change so modified flag isn't cleared
         getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, oldValues)
 
-        // call the abstract method
-        this.updateExtended(pkFieldList, nonPkFieldList)
+        // if there is not a txCache or the txCache doesn't handle the update, call the abstract method to update the main record
+        if (!getTxCache() || !getTxCache().update(this))
+            this.updateExtended(pkFieldList, nonPkFieldList)
 
         // create or update records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -997,8 +1005,9 @@ abstract class EntityValueBase implements EntityValue {
         // NOTE2: this might be useful, but is a bit of a pain and utility is dubious, leave out for now
         // getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, null)
 
-        // call the abstract method
-        this.deleteExtended()
+        // if there is not a txCache or the txCache doesn't handle the delete, call the abstract method to delete the main record
+        if (!getTxCache() || !getTxCache().delete(this))
+            this.deleteExtended()
 
         // delete records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -1046,8 +1055,14 @@ abstract class EntityValueBase implements EntityValue {
         List<String> pkFieldList = ed.getPkFieldNames()
         if (pkFieldList.size() == 0) throw new EntityException("Entity ${getEntityName()} has no primary key fields, cannot do refresh.")
 
+        // if there is not a txCache or the txCache doesn't handle the refresh, call the abstract method to refresh
+        boolean retVal = false
+        if (getTxCache()) retVal = getTxCache().delete(this)
         // call the abstract method
-        boolean retVal = this.refreshExtended()
+        if (!retVal) {
+            retVal = this.refreshExtended()
+            if (getTxCache()) getTxCache().onePut(this)
+        }
 
         // NOTE: clear out UserFields
 

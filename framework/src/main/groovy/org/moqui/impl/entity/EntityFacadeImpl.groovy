@@ -485,6 +485,7 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    boolean hasEecaRules(String entityName) { return eecaRulesByEntityName.get(entityName) as boolean }
     void runEecaRules(String entityName, Map fieldValues, String operation, boolean before) {
         // if Entity ECA rules disabled in ArtifactExecutionFacade, just return immediately
         if (((ArtifactExecutionFacadeImpl) this.ecfi.getEci().getArtifactExecution()).entityEcaDisabled()) return

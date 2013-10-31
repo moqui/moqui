@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.impl.context.TransactionCache
+
 import java.sql.ResultSet
 import java.sql.Timestamp
 
@@ -38,6 +40,7 @@ abstract class EntityFindBase implements EntityFind {
     protected final static Logger logger = LoggerFactory.getLogger(EntityFindBase.class)
 
     protected final EntityFacadeImpl efi
+    protected final TransactionCache txCache
 
     protected String entityName
     protected EntityDefinition entityDef = null
@@ -66,6 +69,7 @@ abstract class EntityFindBase implements EntityFind {
     EntityFindBase(EntityFacadeImpl efi, String entityName) {
         this.efi = efi
         this.entityName = entityName
+        this.txCache = (TransactionCache) efi.getEcfi().getTransactionFacade().getActiveXaResource("TransactionCache")
     }
 
     EntityFacadeImpl getEfi() { return efi }
@@ -462,9 +466,12 @@ abstract class EntityFindBase implements EntityFind {
             return null
         }
 
+        // try the TX cache before the entity cache, may be more up-to-date
+        EntityValue txcValue = txCache != null ? txCache.oneGet(this) : null
+
         CacheImpl entityOneCache = null
         boolean doCache = this.shouldCache()
-        if (doCache) {
+        if (doCache && !txcValue) {
             entityOneCache = this.efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName())
             Element cacheElement = entityOneCache.getElement(whereCondition)
             if (cacheElement != null) {
@@ -505,8 +512,10 @@ abstract class EntityFindBase implements EntityFind {
 
 
         // call the abstract method
-        EntityValue newEntityValue = oneExtended(conditionForQuery)
+        EntityValueBase newEntityValue = txcValue ?: oneExtended(conditionForQuery)
 
+        // if it didn't come from the txCache put it there
+        if (txcValue == null && txCache != null) txCache.onePut(newEntityValue)
 
         // put it in whether null or not
         if (doCache) {
@@ -526,7 +535,7 @@ abstract class EntityFindBase implements EntityFind {
 
         return newEntityValue
     }
-    abstract EntityValue oneExtended(EntityConditionImplBase whereCondition) throws EntityException
+    abstract EntityValueBase oneExtended(EntityConditionImplBase whereCondition) throws EntityException
 
     @Override
     EntityList list() throws EntityException {
@@ -669,14 +678,16 @@ abstract class EntityFindBase implements EntityFind {
         if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
 
         // call the abstract method
-        EntityListIterator eli = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+        EntityListIteratorImpl elii = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+        elii.setQueryCondition(whereCondition)
+        elii.setOrderByFields(orderByExpanded)
 
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
         Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
         if (databaseNode."@offset-style" == "cursor") {
-            if (!eli.absolute(offset)) {
+            if (!elii.absolute(offset)) {
                 // can't seek to desired offset? not enough results, just go to after last result
-                eli.afterLast()
+                elii.afterLast()
             }
         }
 
@@ -686,11 +697,11 @@ abstract class EntityFindBase implements EntityFind {
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
-        return eli
+        return elii
     }
 
-    abstract EntityListIterator iteratorExtended(EntityConditionImplBase whereCondition,
-                                                 EntityConditionImplBase havingCondition, List<String> orderByExpanded)
+    abstract EntityListIteratorImpl iteratorExtended(EntityConditionImplBase whereCondition,
+            EntityConditionImplBase havingCondition, List<String> orderByExpanded)
 
     @Override
     long count() throws EntityException {
@@ -768,34 +779,47 @@ abstract class EntityFindBase implements EntityFind {
     long updateAll(Map<String, ?> fieldsToSet) {
         // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
         // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
+
         this.useCache(false).forUpdate(true)
         long totalUpdated = 0
-        EntityList el = list()
-        for (EntityValue value in el) {
-            value.putAll(fieldsToSet)
-            if (value.isModified()) {
-                // NOTE: consider implement and use the eli.set(value) method to update within a ResultSet
-                value.update()
-                totalUpdated++
+        EntityListIterator eli = null
+        try {
+            eli = iterator()
+            EntityValue value
+            while ((value = eli.next()) != null) {
+                value.putAll(fieldsToSet)
+                if (value.isModified()) {
+                    // NOTE: consider implement and use the eli.set(value) method to update within a ResultSet
+                    value.update()
+                    totalUpdated++
+                }
             }
+        } finally {
+            if (eli != null) eli.close()
         }
         return totalUpdated
     }
 
     @Override
     long deleteAll() {
-        // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
-        // NOTE: consider expanding this to do a bulk delete in the DB if there are no EECAs for the entity
+        // NOTE: this code isn't very efficient (though eli.remove() is a little bit more), but will do the trick and cause all EECAs to be fired
+
+        // if there are no EECAs for the entity OR there is a TransactionCache in place just call ev.delete() on each
+        boolean useEvDelete = txCache != null || efi.hasEecaRules(this.getEntityDef().getFullEntityName())
+        if (!useEvDelete) this.resultSetConcurrency(ResultSet.CONCUR_UPDATABLE)
         this.useCache(false).forUpdate(true)
-        this.resultSetConcurrency(ResultSet.CONCUR_UPDATABLE)
         EntityListIterator eli = null
         long totalDeleted = 0
         try {
             eli = iterator()
             EntityValue ev
             while ((ev = eli.next()) != null) {
-                // not longer need to clear cache, eli.remote() does that
-                eli.remove()
+                if (useEvDelete) {
+                    ev.delete()
+                } else {
+                    // not longer need to clear cache, eli.remote() does that
+                    eli.remove()
+                }
                 totalDeleted++
             }
         } finally {
