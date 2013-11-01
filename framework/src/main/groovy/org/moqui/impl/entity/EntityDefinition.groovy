@@ -54,6 +54,7 @@ public class EntityDefinition {
     protected Boolean isView = null
     protected Boolean needsAuditLogVal = null
     protected Boolean needsEncryptVal = null
+    protected Boolean createOnlyVal = null
 
     protected List<Node> expandedRelationshipList = null
 
@@ -121,6 +122,12 @@ public class EntityDefinition {
         // no description? just use the first non-pk field: nonPkFields.get(0)
         // not any more, can be confusing... just return empty String
         return ""
+    }
+
+    boolean createOnly() {
+        if (createOnlyVal != null) return createOnlyVal
+        createOnlyVal = internalEntityNode."@create-only" == "true"
+        return createOnlyVal
     }
 
     boolean needsAuditLog() {

@@ -794,7 +794,9 @@ abstract class EntityFindBase implements EntityFind {
         // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
         // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
 
-        this.useCache(false).forUpdate(true)
+        if (getEntityDef().createOnly()) throw new EntityException("Entity [${getEntityDef().getFullEntityName()}] is create-only (immutable), cannot be updated.")
+
+        this.useCache(false)
         long totalUpdated = 0
         EntityListIterator eli = null
         try {
@@ -818,10 +820,12 @@ abstract class EntityFindBase implements EntityFind {
     long deleteAll() {
         // NOTE: this code isn't very efficient (though eli.remove() is a little bit more), but will do the trick and cause all EECAs to be fired
 
+        if (getEntityDef().createOnly()) throw new EntityException("Entity [${getEntityDef().getFullEntityName()}] is create-only (immutable), cannot be deleted.")
+
         // if there are no EECAs for the entity OR there is a TransactionCache in place just call ev.delete() on each
         boolean useEvDelete = txCache != null || efi.hasEecaRules(this.getEntityDef().getFullEntityName())
         if (!useEvDelete) this.resultSetConcurrency(ResultSet.CONCUR_UPDATABLE)
-        this.useCache(false).forUpdate(true)
+        this.useCache(false)
         EntityListIterator eli = null
         long totalDeleted = 0
         try {

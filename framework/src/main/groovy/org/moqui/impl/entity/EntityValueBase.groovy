@@ -895,6 +895,8 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
+        if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be updated.")
+
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_UPDATE"),
                 ed.entityNode."@authorize-skip" != "true")
@@ -1037,6 +1039,8 @@ abstract class EntityValueBase implements EntityValue {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
+
+        if (ed.createOnly()) throw new EntityException("Entity [${getEntityName()}] is create-only (immutable), cannot be deleted.")
 
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_DELETE"),

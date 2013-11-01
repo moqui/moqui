@@ -83,6 +83,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="allow-user-field" type="boolean" default="false"/>
             <xs:attribute name="cache" type="cache-options" default="false"/>
             <xs:attribute name="authorize-skip" type="authorize-skip-options" default="false"/>
+            <xs:attribute name="create-only" type="boolean" default="false">
+                <xs:annotation><xs:documentation>If true values are immutable, can only be created and not updated
+                    or deleted.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="extend-entity">

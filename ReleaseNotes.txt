@@ -26,6 +26,7 @@ New Features:
   instead of flat history, and can print a tree of the history
 - Added entity.@allow-user-field attribute to specify when UserField defs
   are considered, for security and performance reasons
+- Added entity.@create-only attribute for immutable entities
 - Added eeca.@get-original-value attribute to get the original (db) value
   if run on update or delete and before the entity operation
 
