@@ -20,6 +20,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
     protected String name
     protected String typeEnumId
     protected String actionEnumId
+    protected String actionDetail = ""
     protected String authorizedUserId = null
     protected String authorizedAuthzTypeId = null
     protected String authorizedActionEnumId = null
@@ -38,6 +39,8 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         //createdLocation = new Exception("Create AEII location for ${name}, type ${typeEnumId}, action ${actionEnumId}")
         this.startTime = System.currentTimeMillis()
     }
+
+    ArtifactExecutionInfoImpl setActionDetail(String detail) { this.actionDetail = detail; return this }
 
     @Override
     String getName() { return this.name }
@@ -111,12 +114,13 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         writer.append('[').append(childList ? StupidUtilities.paddedString(getChildrenRunningTime() as String, 3, false) : '   ').append('] ')
         writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId), 10, true)).append(' ')
         writer.append(StupidUtilities.paddedString(ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId), 7, true)).append(' ')
+        writer.append(StupidUtilities.paddedString(actionDetail, 5, true)).append(' ')
         writer.append(name).append('\n')
 
         if (children) for (ArtifactExecutionInfoImpl aeii in childList) aeii.print(writer, level + 1, true)
     }
 
-    String getKeyString() { return name + ":" + typeEnumId + ":" + actionEnumId }
+    String getKeyString() { return name + ":" + typeEnumId + ":" + actionEnumId + ":" + actionDetail }
     static List<Map> hotSpotByTime(List<ArtifactExecutionInfoImpl> aeiiList, boolean ownTime, String orderBy) {
         Map<String, Map> timeByArtifact = [:]
         for (ArtifactExecutionInfoImpl aeii in aeiiList) aeii.addToMapByTime(timeByArtifact, ownTime)
@@ -130,7 +134,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         Map val = timeByArtifact.get(key)
         long curTime = ownTime ? getThisRunningTime() : getRunningTime()
         if (val == null) {
-            timeByArtifact.put(key, [time:curTime, count:1, name:name,
+            timeByArtifact.put(key, [time:curTime, count:1, name:name, actionDetail:actionDetail,
                     type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
                     action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)])
         } else {
@@ -152,7 +156,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         Map artifactMap = flatMap.get(key)
         if (artifactMap == null) {
             artifactMap = [time:getRunningTime(), thisTime:getThisRunningTime(), childrenTime:getChildrenRunningTime(),
-                    count:1, name:name, childInfoList:[], key:key,
+                    count:1, name:name, actionDetail:actionDetail, childInfoList:[], key:key,
                     type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
                     action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)]
             flatMap.put(key, artifactMap)
@@ -190,6 +194,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
             writer.append('[').append(StupidUtilities.paddedString(info.count as String, 3, false)).append('] ')
             writer.append(StupidUtilities.paddedString((String) info.type, 10, true)).append(' ')
             writer.append(StupidUtilities.paddedString((String) info.action, 7, true)).append(' ')
+            writer.append(StupidUtilities.paddedString((String) info.actionDetail, 5, true)).append(' ')
             writer.append((String) info.name).append('\n')
             // if we get past level 25 just give up, probably a loop in the tree
             if (level < 25) {

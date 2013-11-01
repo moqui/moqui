@@ -446,7 +446,7 @@ abstract class EntityFindBase implements EntityFind {
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("one"),
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-one", true)
@@ -559,7 +559,7 @@ abstract class EntityFindBase implements EntityFind {
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("list"),
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
@@ -655,7 +655,7 @@ abstract class EntityFindBase implements EntityFind {
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("iterator"),
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA
@@ -724,7 +724,7 @@ abstract class EntityFindBase implements EntityFind {
         ExecutionContext ec = efi.ecfi.executionContext
 
         ec.getArtifactExecution().push(
-                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+                new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count"),
                 (entityNode."@authorize-skip" != "true" && !entityNode."@authorize-skip"?.contains("view")))
 
         // there may not be a simpleAndMap, but that's all we have that can be treated directly by the EECA

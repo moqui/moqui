@@ -1098,7 +1098,7 @@ abstract class EntityValueBase implements EntityValue {
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW"),
+        ec.getArtifactExecution().push(new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("refresh"),
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "find-one", true)
