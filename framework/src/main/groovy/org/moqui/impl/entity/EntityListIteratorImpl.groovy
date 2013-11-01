@@ -256,7 +256,7 @@ class EntityListIteratorImpl implements EntityListIterator {
 
             if (txCache != null) {
                 // add all created values (updated and deleted values will be handled by the next() method
-                if (queryCondition != null) list.addAll(txCache.getCreatedValueList(queryCondition))
+                if (queryCondition != null) list.addAll(txCache.getCreatedValueList(entityDefinition.getFullEntityName(), queryCondition))
                 // update the order if we know the order by field list
                 if (orderByFields != null) list.orderByFields(orderByFields)
             }

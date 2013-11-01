@@ -471,7 +471,7 @@ abstract class EntityFindBase implements EntityFind {
 
         CacheImpl entityOneCache = null
         boolean doCache = this.shouldCache()
-        if (doCache && !txcValue) {
+        if (doCache && txcValue == null) {
             entityOneCache = this.efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName())
             Element cacheElement = entityOneCache.getElement(whereCondition)
             if (cacheElement != null) {
@@ -512,8 +512,18 @@ abstract class EntityFindBase implements EntityFind {
 
 
         // call the abstract method
-        EntityValueBase newEntityValue = txcValue instanceof TransactionCache.DeletedEntityValue ? null :
-                (txcValue ?: oneExtended(conditionForQuery))
+        EntityValueBase newEntityValue = null
+        if (txcValue != null) {
+            if (!(txcValue instanceof TransactionCache.DeletedEntityValue)) {
+                // if forUpdate unless this was a TX CREATE it'll be in the DB and should be locked, so do the query anyway, but ignore the result
+                if (forUpdate && !txCache.isTxCreate(txcValue)) oneExtended(conditionForQuery)
+                newEntityValue = txcValue
+            }
+            // else is deleted value, so leave newEntityValue as null
+        } else {
+            newEntityValue = oneExtended(conditionForQuery)
+        }
+
 
         // if it didn't come from the txCache put it there
         if (txcValue == null && txCache != null) txCache.onePut(newEntityValue)
@@ -605,14 +615,16 @@ abstract class EntityFindBase implements EntityFind {
         }
 
         // call the abstract method
-        EntityListIterator eli = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+        EntityListIteratorImpl elii = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+        elii.setQueryCondition(whereCondition)
+        elii.setOrderByFields(orderByExpanded)
 
         EntityListImpl el
         Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
         if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
-            el = eli.getPartialList(this.offset ?: 0, this.limit, true)
+            el = elii.getPartialList(this.offset ?: 0, this.limit, true)
         } else {
-            el = eli.getCompleteList(true)
+            el = elii.getCompleteList(true)
         }
 
         if (doCache) {

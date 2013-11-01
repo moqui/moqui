@@ -45,8 +45,6 @@ class TransactionCache implements XAResource {
 
     protected ExecutionContextFactoryImpl ecfi
 
-    protected boolean committing = false
-
     protected Transaction tx = null
     protected Xid xid = null
     protected Integer timeout = null
@@ -92,7 +90,6 @@ class TransactionCache implements XAResource {
 
     /** Returns true if create handled, false if not; if false caller should handle the operation */
     boolean create(EntityValueBase evb) {
-        if (committing) return false
         Map key = makeKey(evb)
         if (key == null) return false
 
@@ -115,7 +112,6 @@ class TransactionCache implements XAResource {
         return true
     }
     boolean update(EntityValueBase evb) {
-        if (committing) return false
         Map key = makeKey(evb)
         if (key == null) return false
         // add to readCache
@@ -137,7 +133,6 @@ class TransactionCache implements XAResource {
         return true
     }
     boolean delete(EntityValueBase evb) {
-        if (committing) return false
         Map key = makeKey(evb)
         if (key == null) return false
 
@@ -172,16 +167,21 @@ class TransactionCache implements XAResource {
         }
     }
 
+    boolean isTxCreate(EntityValueBase evb) {
+        Map key = makeKey(evb)
+        if (key == null) return false
+        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        if (currentEwi == null) return false
+        return currentEwi.writeMode == WriteMode.CREATE
+    }
     EntityValueBase oneGet(EntityFindBase efb) {
-        // if this is forUpdate never return a result, should always go to the DB so the record is locked for other TXs
-        if (efb.forUpdate) return null
+        // NOTE: do nothing here on forUpdate, handled by caller
         Map key = makeKey(efb)
         if (key == null) return null
 
         // if this has been deleted return a DeletedEntityValue instance so caller knows it was deleted and doesn't look in the DB for another record
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) return new DeletedEntityValue(efb.getEntityDef(), ecfi.getEntityFacade())
-        // TODO: in caller look for instanceof DeletedEntityValue
 
         return readCache.get(key)
     }
@@ -214,9 +214,11 @@ class TransactionCache implements XAResource {
         }
         return currentEwi.writeMode
     }
-    List<EntityValueBase> getCreatedValueList(EntityCondition ec) {
+    List<EntityValueBase> getCreatedValueList(String entityName, EntityCondition ec) {
         List<EntityValueBase> valueList = []
-        for (EntityWriteInfo ewi in writeInfoList) {
+        for (EntityWriteInfo ewi in writeInfoList.valueList()) {
+            // if (entityName.contains("FOO")) logger.warn("======= Checking ${ewi.evb.getEntityName()}:${ewi.pkMap}:${ewi.writeMode}")
+            if (ewi.evb.getEntityName() != entityName) continue
             if (ewi.writeMode == WriteMode.CREATE && ec.mapMatches(ewi.evb)) valueList.add(ewi.evb)
         }
         return valueList
@@ -295,20 +297,19 @@ class TransactionCache implements XAResource {
 
         // TODO: is this the best event to do this on? need to be able to throw an exception and mark tx for rollback
 
-        committing = true
         long startTime = System.currentTimeMillis()
         int createCount = 0
         int updateCount = 0
         int deleteCount = 0
-        for (EntityWriteInfo ewi in writeInfoList) {
+        for (EntityWriteInfo ewi in writeInfoList.valueList()) {
             if (ewi.writeMode == WriteMode.CREATE) {
-                ewi.evb.create()
+                ewi.evb.basicCreate()
                 createCount++
             } else if (ewi.writeMode == WriteMode.UPDATE) {
-                ewi.evb.update()
+                ewi.evb.basicUpdate()
                 updateCount++
             } else {
-                ewi.evb.delete()
+                ewi.evb.basicDelete()
                 deleteCount++
             }
         }

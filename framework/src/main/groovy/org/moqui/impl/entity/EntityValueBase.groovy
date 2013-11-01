@@ -830,9 +830,39 @@ abstract class EntityValueBase implements EntityValue {
         ListOrderedSet fieldList = new ListOrderedSet()
         for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
+
         // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
-        if (!getTxCache() || !getTxCache().create(this))
-            this.createExtended(fieldList)
+        if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList)
+
+
+        // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
+        // might have a null value for a previous query attempt
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, true)
+
+        handleAuditLog(false, null)
+
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
+        // count the artifact hit
+        ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
+                System.currentTimeMillis(), 1)
+        // pop the ArtifactExecutionInfo to clean it up
+        ec.getArtifactExecution().pop()
+
+        return this
+    }
+    void basicCreate() {
+        EntityDefinition ed = getEntityDefinition()
+        ListOrderedSet fieldList = new ListOrderedSet()
+        for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
+
+        basicCreate(fieldList)
+    }
+    void basicCreate(ListOrderedSet fieldList) {
+        EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
+
+        this.createExtended(fieldList)
 
         // create records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -854,21 +884,6 @@ abstract class EntityValueBase implements EntityValue {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
             }
         }
-
-        // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
-        // might have a null value for a previous query attempt
-        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, true)
-
-        handleAuditLog(false, null)
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "create", ed.getFullEntityName(), this.getPrimaryKeys(), startTime,
-                System.currentTimeMillis(), 1)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
-
-        return this
     }
     /** This method should create a corresponding record in the datasource. */
     abstract void createExtended(ListOrderedSet fieldList)
@@ -900,7 +915,6 @@ abstract class EntityValueBase implements EntityValue {
         Map oldValues = refreshedValue ? refreshedValue.getValueMap() : (dbValueMapFromDb ? dbValueMap : [:])
 
         List<String> pkFieldList = ed.getPkFieldNames()
-
         ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
         ListOrderedSet nonPkFieldList = new ListOrderedSet()
         for (String fieldName in nonPkAllFieldList) {
@@ -927,9 +941,51 @@ abstract class EntityValueBase implements EntityValue {
         // do this before the db change so modified flag isn't cleared
         getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, oldValues)
 
+
         // if there is not a txCache or the txCache doesn't handle the update, call the abstract method to update the main record
-        if (!getTxCache() || !getTxCache().update(this))
-            this.updateExtended(pkFieldList, nonPkFieldList)
+        if (getTxCache() == null || !getTxCache().update(this)) this.basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList)
+
+
+        // clear the entity cache
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
+
+        handleAuditLog(true, oldValues)
+
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
+        // count the artifact hit
+        ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(),
+                startTime, System.currentTimeMillis(), 1)
+        // pop the ArtifactExecutionInfo to clean it up
+        ec.getArtifactExecution().pop()
+
+        return this
+    }
+    void basicUpdate() {
+        EntityDefinition ed = getEntityDefinition()
+
+        boolean dbValueMapFromDb = false
+        // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
+        if (dbValueMap) for (Object val in dbValueMap.values()) if (val != null) { dbValueMapFromDb = true; break }
+
+        List<String> pkFieldList = ed.getPkFieldNames()
+        ListOrderedSet nonPkAllFieldList = ed.getFieldNames(false, true, false)
+        ListOrderedSet nonPkFieldList = new ListOrderedSet()
+        for (String fieldName in nonPkAllFieldList) {
+            if (valueMap.containsKey(fieldName) &&
+                    (!dbValueMapFromDb || valueMap.get(fieldName) != dbValueMap.get(fieldName))) {
+                nonPkFieldList.add(fieldName)
+            }
+        }
+
+        basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList)
+    }
+    void basicUpdate(boolean dbValueMapFromDb, List<String> pkFieldList, ListOrderedSet nonPkFieldList) {
+        EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
+
+        // call abstract method
+        this.updateExtended(pkFieldList, nonPkFieldList)
 
         // create or update records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -971,21 +1027,8 @@ abstract class EntityValueBase implements EntityValue {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
             }
         }
-
-        // clear the entity cache
-        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
-
-        handleAuditLog(true, oldValues)
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "update", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
-
-        return this
     }
+
     abstract void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList)
 
     @Override
@@ -1005,9 +1048,29 @@ abstract class EntityValueBase implements EntityValue {
         // NOTE2: this might be useful, but is a bit of a pain and utility is dubious, leave out for now
         // getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, true, valueMap, null)
 
+
         // if there is not a txCache or the txCache doesn't handle the delete, call the abstract method to delete the main record
-        if (!getTxCache() || !getTxCache().delete(this))
-            this.deleteExtended()
+        if (getTxCache() == null || !getTxCache().delete(this)) this.basicDelete()
+
+
+        // clear the entity cache
+        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
+
+        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
+        // count the artifact hit
+        ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(),
+                startTime, System.currentTimeMillis(), 1)
+        // pop the ArtifactExecutionInfo to clean it up
+        ec.getArtifactExecution().pop()
+
+        return this
+    }
+    void basicDelete() {
+        EntityDefinition ed = getEntityDefinition()
+        ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
+        ExecutionContext ec = ecfi.getExecutionContext()
+
+        this.deleteExtended()
 
         // delete records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -1025,18 +1088,6 @@ abstract class EntityValueBase implements EntityValue {
                 if (!alreadyDisabled) ec.getArtifactExecution().enableAuthz()
             }
         }
-
-        // clear the entity cache
-        getEntityFacadeImpl().getEntityCache().clearCacheForValue(this, false)
-
-        getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "delete", false)
-        // count the artifact hit
-        ecfi.countArtifactHit("entity", "delete", ed.getFullEntityName(), this.getPrimaryKeys(),
-                startTime, System.currentTimeMillis(), 1)
-        // pop the ArtifactExecutionInfo to clean it up
-        ec.getArtifactExecution().pop()
-
-        return this
     }
     abstract void deleteExtended()
 
@@ -1057,7 +1108,7 @@ abstract class EntityValueBase implements EntityValue {
 
         // if there is not a txCache or the txCache doesn't handle the refresh, call the abstract method to refresh
         boolean retVal = false
-        if (getTxCache()) retVal = getTxCache().delete(this)
+        if (getTxCache() != null) retVal = getTxCache().refresh(this)
         // call the abstract method
         if (!retVal) {
             retVal = this.refreshExtended()
