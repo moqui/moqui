@@ -12,8 +12,10 @@
 package org.moqui.impl.entity
 
 import net.sf.ehcache.Ehcache
+import net.sf.ehcache.Element
 import org.moqui.context.Cache
 import org.moqui.entity.EntityCondition
+import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.CacheImpl
 import org.slf4j.Logger
@@ -35,7 +37,72 @@ class EntityCache {
     private CacheImpl getCacheOneBf() { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.one_bf") }
     CacheImpl getCacheList(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.list.${entityName}") }
     private CacheImpl getCacheListRa(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.list_ra.${entityName}") }
-    private CacheImpl getCacheCount(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.count.${entityName}") }
+    CacheImpl getCacheCount(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.count.${entityName}") }
+
+    static class EmptyRecord extends EntityValueImpl {
+        EmptyRecord(EntityDefinition ed, EntityFacadeImpl efip) { super(ed, efip) }
+    }
+    EntityValueBase getFromOneCache(EntityDefinition ed, EntityCondition whereCondition, CacheImpl entityOneCache) {
+        if (entityOneCache == null) entityOneCache = getCacheOne(ed.getFullEntityName())
+
+        Element cacheElement = entityOneCache.getElement(whereCondition)
+        if (cacheElement != null) {
+            if (cacheElement.expired) {
+                entityOneCache.removeElement(cacheElement)
+            } else {
+                // if objectValue is null return something else as a placeholder for known no record
+                if (cacheElement.objectValue == null) return new EmptyRecord(ed, efi)
+                return (EntityValueBase) cacheElement.objectValue
+            }
+        }
+
+        return null
+    }
+    void putInOneCache(EntityDefinition ed, EntityCondition whereCondition, EntityValueBase newEntityValue, CacheImpl entityOneCache) {
+        if (entityOneCache == null) entityOneCache = getCacheOne(ed.getFullEntityName())
+
+        entityOneCache.put(whereCondition, newEntityValue)
+        // need to register an RA just in case the condition was not actually a primary key
+        efi.getEntityCache().registerCacheOneRa(ed.getFullEntityName(), whereCondition, newEntityValue)
+    }
+
+    EntityListImpl getFromListCache(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByList, CacheImpl entityListCache) {
+        if (entityListCache == null) entityListCache = getCacheList(ed.getFullEntityName())
+
+        Element cacheElement = entityListCache.getElement(whereCondition)
+        if (cacheElement != null) {
+            if (cacheElement.expired) {
+                entityListCache.removeElement(cacheElement)
+            } else {
+                EntityListImpl cacheHit = (EntityListImpl) cacheElement.objectValue
+                if (orderByList) cacheHit.orderByFields(orderByList)
+                return cacheHit
+            }
+        }
+        return null
+    }
+    void putInListCache(EntityDefinition ed, EntityListImpl el, EntityCondition whereCondition, CacheImpl entityListCache) {
+        if (entityListCache == null) entityListCache = getCacheList(ed.getFullEntityName())
+
+        EntityListImpl elToCache = el ?: EntityListImpl.EMPTY
+        elToCache.setFromCache(true)
+        entityListCache.put(whereCondition, elToCache)
+        efi.getEntityCache().registerCacheListRa(ed.getFullEntityName(), whereCondition, elToCache)
+    }
+
+    Long getFromCountCache(EntityDefinition ed, EntityCondition whereCondition, CacheImpl entityCountCache) {
+        if (entityCountCache == null) entityCountCache = getCacheCount(ed.getFullEntityName())
+
+        Element cacheElement = entityCountCache.getElement(whereCondition)
+        if (cacheElement != null) {
+            if (cacheElement.expired) {
+                entityCountCache.removeElement(cacheElement)
+            } else {
+                return (Long) cacheElement.objectValue
+            }
+        }
+        return null
+    }
 
     void clearCacheForValue(EntityValueBase evb, boolean isCreate) {
         try {

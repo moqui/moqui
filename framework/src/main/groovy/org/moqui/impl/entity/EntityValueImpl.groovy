@@ -23,9 +23,7 @@ import java.sql.ResultSet
 class EntityValueImpl extends EntityValueBase {
     protected final static Logger logger = LoggerFactory.getLogger(EntityValueImpl.class)
 
-    EntityValueImpl(EntityDefinition ed, EntityFacadeImpl efip) {
-        super(ed, efip)
-    }
+    EntityValueImpl(EntityDefinition ed, EntityFacadeImpl efip) { super(ed, efip) }
 
     @Override
     void createExtended(ListOrderedSet fieldList) {

@@ -31,8 +31,6 @@ import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.entity.condition.EntityConditionImplBase
 import org.moqui.impl.entity.condition.ListCondition
 
-import net.sf.ehcache.Element
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -470,68 +468,54 @@ abstract class EntityFindBase implements EntityFind {
         EntityValue txcValue = txCache != null ? txCache.oneGet(this) : null
 
         boolean doCache = this.shouldCache()
-        CacheImpl entityOneCache = doCache ? this.efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName()) : null
-        if (doCache && txcValue == null) {
-            Element cacheElement = entityOneCache.getElement(whereCondition)
-            if (cacheElement != null) {
-                if (cacheElement.expired) {
-                    entityOneCache.removeElement(cacheElement)
-                } else {
-                    EntityValue cacheHit = (EntityValue) cacheElement.objectValue
-                    // if (logger.traceEnabled) logger.trace("Found entry in cache for entity [${ed.entityName}] and condition [${whereCondition}]: ${cacheHit}")
-                    efi.runEecaRules(ed.getFullEntityName(), cacheHit, "find-one", false)
-                    // pop the ArtifactExecutionInfo
-                    ec.getArtifactExecution().pop()
-                    return cacheHit
-                }
-            }
-        }
-
-        // NOTE: do this as a separate condition because this will always be added on and isn't a part of the original where to use for the cache
-        EntityConditionImplBase conditionForQuery
-        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (viewWhere) {
-            if (whereCondition) {
-                conditionForQuery = (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition,
-                        EntityCondition.JoinOperator.AND, viewWhere)
-            } else {
-                conditionForQuery = viewWhere
-            }
-        } else {
-            conditionForQuery = whereCondition
-        }
-
-        // for find one we'll always use the basic result set type and concurrency:
-        this.resultSetType(ResultSet.TYPE_FORWARD_ONLY)
-        this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
+        CacheImpl entityOneCache = doCache ? efi.getEntityCache().getCacheOne(getEntityDef().getFullEntityName()) : null
+        EntityValueBase cacheHit = null
+        if (doCache && txcValue == null) cacheHit = efi.getEntityCache().getFromOneCache(ed, whereCondition, entityOneCache)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
-        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
+
+        // NOTE: do actual query condition as a separate condition because this will always be added on and isn't a
+        //     part of the original where to use for the cache
+        EntityConditionImplBase conditionForQuery
+        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
+        if (viewWhere) {
+            if (whereCondition) conditionForQuery = (EntityConditionImplBase) efi.getConditionFactory()
+                    .makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
+            else conditionForQuery = viewWhere
+        } else { conditionForQuery = whereCondition }
 
 
         // call the abstract method
         EntityValueBase newEntityValue = null
         if (txcValue != null) {
-            if (!(txcValue instanceof TransactionCache.DeletedEntityValue)) {
-                // if forUpdate unless this was a TX CREATE it'll be in the DB and should be locked, so do the query anyway, but ignore the result
+            if (txcValue instanceof TransactionCache.DeletedEntityValue) {
+                // is deleted value, so leave newEntityValue as null
+                // put in cache as null since this was deleted
+                if (doCache) efi.getEntityCache().putInOneCache(ed, whereCondition, null, entityOneCache)
+            } else {
+                // if forUpdate unless this was a TX CREATE it'll be in the DB and should be locked, so do the query
+                //     anyway, but ignore the result
                 if (forUpdate && !txCache.isTxCreate(txcValue)) oneExtended(conditionForQuery)
                 newEntityValue = txcValue
             }
-            // else is deleted value, so leave newEntityValue as null
+        } else if (cacheHit != null) {
+            if (cacheHit instanceof EntityCache.EmptyRecord) newEntityValue = null
+            else newEntityValue = cacheHit
         } else {
+            // for find one we'll always use the basic result set type and concurrency:
+            this.resultSetType(ResultSet.TYPE_FORWARD_ONLY)
+            this.resultSetConcurrency(ResultSet.CONCUR_READ_ONLY)
+
+            // TODO: this will not handle query conditions on UserFields, it will blow up in fact
+
             newEntityValue = oneExtended(conditionForQuery)
-        }
 
+            // it didn't come from the txCache so put it there
+            if (txCache != null) txCache.onePut(newEntityValue)
 
-        // if it didn't come from the txCache put it there
-        if (txcValue == null && txCache != null) txCache.onePut(newEntityValue)
-
-        // put it in whether null or not
-        if (doCache) {
-            entityOneCache.put(whereCondition, newEntityValue)
-            // need to register an RA just in case the condition was not actually a primary key
-            efi.getEntityCache().registerCacheOneRa(getEntityDef().getFullEntityName(), whereCondition, (EntityValueBase) newEntityValue)
+            // put it in whether null or not (already know cacheHit is null)
+            if (doCache) efi.getEntityCache().putInOneCache(ed, whereCondition, newEntityValue, entityOneCache)
         }
 
         if (logger.traceEnabled) logger.trace("Find one on entity [${ed.fullEntityName}] with condition [${whereCondition}] found value [${newEntityValue}]")
@@ -570,69 +554,55 @@ abstract class EntityFindBase implements EntityFind {
         def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
         if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
 
-        EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
-        CacheImpl entityListCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
-        if (doCache) {
-            entityListCache = this.efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName())
-            Element cacheElement = entityListCache.getElement(whereCondition)
-            if (cacheElement != null) {
-                if (cacheElement.expired) {
-                    entityListCache.removeElement(cacheElement)
-                } else {
-                    EntityList cacheHit = (EntityList) cacheElement.objectValue
-                    if (orderByExpanded) cacheHit.orderByFields(orderByExpanded)
-                    efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
-                    // pop the ArtifactExecutionInfo
-                    ec.getArtifactExecution().pop()
-                    return cacheHit
-                }
+        CacheImpl entityListCache = doCache ? efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName()) : null
+        EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
+        EntityList cacheList = null
+        if (doCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)
+
+        EntityListImpl el = null
+        if (cacheList == null) {
+            // we always want fieldsToSelect populated so that we know the order of the results coming back
+            if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
+            // TODO: this will not handle query conditions on UserFields, it will blow up in fact
+
+            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
+
+            EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
+            if (whereCondition && viewWhere) {
+                whereCondition =
+                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
+            } else if (viewWhere) {
+                whereCondition = viewWhere
             }
-        }
+            EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
+            EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
+            if (havingCondition && viewHaving) {
+                havingCondition =
+                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
+            } else if (viewHaving) {
+                havingCondition = viewHaving
+            }
 
-        // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
-        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
+            // call the abstract method
+            EntityListIteratorImpl elii = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+            // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
+            elii.setQueryCondition(whereCondition)
+            elii.setOrderByFields(orderByExpanded)
 
-        if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
+            Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
+            if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
+                el = elii.getPartialList(this.offset ?: 0, this.limit, true)
+            } else {
+                el = elii.getCompleteList(true)
+            }
 
-        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (whereCondition && viewWhere) {
-            whereCondition =
-                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
-        } else if (viewWhere) {
-            whereCondition = viewWhere
-        }
-        EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
-        EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
-        if (havingCondition && viewHaving) {
-            havingCondition =
-                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
-        } else if (viewHaving) {
-            havingCondition = viewHaving
-        }
-
-        // call the abstract method
-        EntityListIteratorImpl elii = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
-        // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
-        elii.setQueryCondition(whereCondition)
-        elii.setOrderByFields(orderByExpanded)
-
-        EntityListImpl el
-        Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
-        if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
-            el = elii.getPartialList(this.offset ?: 0, this.limit, true)
+            if (doCache) efi.getEntityCache().putInListCache(ed, el, whereCondition, entityListCache)
         } else {
-            el = elii.getCompleteList(true)
+            el = cacheList
         }
 
-        if (doCache) {
-            EntityListImpl elToCache = el ?: EntityListImpl.EMPTY
-            elToCache.setFromCache(true)
-            entityListCache.put(whereCondition, elToCache)
-            efi.getEntityCache().registerCacheListRa(getEntityDef().getFullEntityName(), whereCondition, elToCache)
-        }
         // run the final rules
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-list", false)
         // count the artifact hit
@@ -731,51 +701,43 @@ abstract class EntityFindBase implements EntityFind {
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
-        CacheImpl entityCountCache = null
         // NOTE: don't cache if there is a having condition, for now just support where
         boolean doCache = !this.havingEntityCondition && this.shouldCache()
-        if (doCache) {
-            entityCountCache = this.efi.getCacheCount(this.entityName)
-            Element cacheElement = entityCountCache.getElement(whereCondition)
-            if (cacheElement != null) {
-                if (cacheElement.expired) {
-                    entityCountCache.removeElement(cacheElement)
-                } else {
-                    Long cacheHit = (Long) cacheElement.objectValue
-                    efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
-                    // pop the ArtifactExecutionInfo
-                    ec.getArtifactExecution().pop()
-                    return cacheHit
-                }
+        CacheImpl entityCountCache = doCache ? efi.getEntityCache().getCacheCount(getEntityDef().getFullEntityName()) : null
+        Long cacheCount = null
+        if (doCache) cacheCount = efi.getEntityCache().getFromCountCache(ed, whereCondition, entityCountCache)
+
+        long count
+        if (cacheCount != null) {
+            count = cacheCount
+        } else {
+            if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true, false))
+            // TODO: this will not handle query conditions on UserFields, it will blow up in fact
+
+            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
+
+            EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
+            if (whereCondition && viewWhere) {
+                whereCondition =
+                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
+            } else if (viewWhere) {
+                whereCondition = viewWhere
             }
+
+            EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
+            EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
+            if (havingCondition && viewHaving) {
+                havingCondition =
+                    (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
+            } else if (viewHaving) {
+                havingCondition = viewHaving
+            }
+
+            // call the abstract method
+            count = countExtended(whereCondition, havingCondition)
+
+            if (doCache) entityCountCache.put(whereCondition, count)
         }
-
-        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true, false))
-        // TODO: this will not handle query conditions on UserFields, it will blow up in fact
-
-        if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
-
-        EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-        if (whereCondition && viewWhere) {
-            whereCondition =
-                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
-        } else if (viewWhere) {
-            whereCondition = viewWhere
-        }
-
-        EntityConditionImplBase havingCondition = (EntityConditionImplBase) getHavingEntityCondition()
-        EntityConditionImplBase viewHaving = ed.makeViewHavingCondition()
-        if (havingCondition && viewHaving) {
-            havingCondition =
-                (EntityConditionImplBase) efi.getConditionFactory().makeCondition(havingCondition, EntityCondition.JoinOperator.AND, viewHaving)
-        } else if (viewHaving) {
-            havingCondition = viewHaving
-        }
-
-        // call the abstract method
-        long count = countExtended(whereCondition, havingCondition)
-
-        if (doCache) entityCountCache.put(whereCondition, count)
 
         efi.runEecaRules(ed.getFullEntityName(), simpleAndMap, "find-count", false)
         // count the artifact hit
