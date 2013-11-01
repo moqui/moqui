@@ -616,6 +616,7 @@ abstract class EntityFindBase implements EntityFind {
 
         // call the abstract method
         EntityListIteratorImpl elii = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+        // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
         elii.setQueryCondition(whereCondition)
         elii.setOrderByFields(orderByExpanded)
 
