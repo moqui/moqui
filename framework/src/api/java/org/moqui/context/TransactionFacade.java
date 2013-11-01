@@ -11,6 +11,8 @@
  */
 package org.moqui.context;
 
+import javax.transaction.xa.XAResource;
+
 /** Use this interface to do transaction demarcation and related operations.
  * This should be used instead of using the JTA UserTransaction and TransactionManager interfaces.
  *
@@ -103,4 +105,7 @@ public interface TransactionFacade {
     void enlistResource(javax.transaction.xa.XAResource resource) throws TransactionException;
 
     void registerSynchronization(javax.transaction.Synchronization sync) throws TransactionException;
+
+    XAResource getActiveXaResource(String resourceName);
+    void putAndEnlistActiveXaResource(String resourceName, XAResource xar);
 }

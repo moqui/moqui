@@ -176,6 +176,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         return list
     }
 
+    @Override
     XAResource getActiveXaResource(String resourceName) {
         ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
         if (activeXaResourceStack.size() == 0) return null
@@ -183,6 +184,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         if (activeXaResourceMap != null) return activeXaResourceMap.get(resourceName)
         return null
     }
+    @Override
     void putAndEnlistActiveXaResource(String resourceName, XAResource xar) {
         ArrayList<Map<String, XAResource>> activeXaResourceStack = getActiveXaResourceStack()
         Map<String, XAResource> activeXaResourceMap = activeXaResourceStack.size() > 0 ? activeXaResourceStack.get(0) : null
