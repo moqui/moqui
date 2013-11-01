@@ -54,13 +54,14 @@ class EntityEcaRule {
         if (entityName != eecaNode."@entity") return
         if (ec.getMessage().hasError() && eecaNode."@run-on-error" != "true") return
 
+        EntityValue originalValue = null
+        if (before && (operation == "update" || operation == "delete") && eecaNode."@get-original-value" == "true") {
+            originalValue = getDbValue(ec, fieldValues)
+        }
+
         if (before && (operation == "update" || operation == "delete") && eecaNode."@get-entire-entity" == "true") {
-            Map saveMap = new HashMap(fieldValues)
             // fill in any missing (unset) values from the DB
-            EntityDefinition ed = ec.getEntity().getEntityDefinition(entityName)
-            EntityFind ef = ec.entity.makeFind(entityName)
-            for (String pkFieldName in ed.getPkFieldNames()) ef.condition(pkFieldName, saveMap.get(pkFieldName))
-            EntityValue ev = ef.one()
+            EntityValue ev = originalValue ?: getDbValue(ec, fieldValues)
             if (ev != null) {
                 // only add fields that fieldValues does not contain
                 for (Map.Entry entry in ev.entrySet())
@@ -76,6 +77,8 @@ class EntityEcaRule {
             ec.context.push()
             ec.context.putAll(fieldValues)
             ec.context.put("entityValue", fieldValues)
+            ec.context.put("originalValue", originalValue)
+            ec.context.put("eecaOperation", operation)
 
             // run the condition and if passes run the actions
             boolean conditionPassed = true
@@ -86,5 +89,12 @@ class EntityEcaRule {
         } finally {
             ec.context.pop()
         }
+    }
+
+    EntityValue getDbValue(ExecutionContext ec, Map fieldValues) {
+        EntityDefinition ed = ec.getEntity().getEntityDefinition(entityName)
+        EntityFind ef = ec.entity.makeFind(entityName)
+        for (String pkFieldName in ed.getPkFieldNames()) ef.condition(pkFieldName, fieldValues.get(pkFieldName))
+        return ef.one()
     }
 }

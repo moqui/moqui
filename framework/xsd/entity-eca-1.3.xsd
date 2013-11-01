@@ -52,7 +52,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="run-on-error" default="false" type="boolean"/>
             <xs:attribute name="get-entire-entity" default="false" type="boolean">
                 <xs:annotation><xs:documentation>Get the entire entity before running the actions for update and delete
-                    operations.</xs:documentation></xs:annotation>
+                    operations and add unset values to field values from the operation.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="get-original-value" default="false" type="boolean">
+                <xs:annotation><xs:documentation>Adds an 'originalValue' field to the context with the value from the
+                    database if called before the entity operation and is a update or delete.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
