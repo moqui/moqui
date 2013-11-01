@@ -126,6 +126,10 @@ class EntityListIteratorImpl implements EntityListIterator {
             j++
         }
         this.haveMadeValue = true
+
+        // if txCache in place always put in cache for future reference (onePut handles any stale from DB issues too)
+        if (txCache != null) txCache.onePut(newEntityValue)
+
         return newEntityValue
     }
 
@@ -254,14 +258,12 @@ class EntityListIteratorImpl implements EntityListIterator {
                 list.add(value)
             }
 
-            if (txCache != null) {
-                if (queryCondition != null) {
-                    // add all created values (updated and deleted values will be handled by the next() method
-                    List<EntityValueBase> cvList = txCache.getCreatedValueList(entityDefinition.getFullEntityName(), queryCondition)
-                    list.addAll(cvList)
-                    // update the order if we know the order by field list
-                    if (orderByFields != null && cvList) list.orderByFields(orderByFields)
-                }
+            if (txCache != null && queryCondition != null) {
+                // add all created values (updated and deleted values will be handled by the next() method
+                List<EntityValueBase> cvList = txCache.getCreatedValueList(entityDefinition.getFullEntityName(), queryCondition)
+                list.addAll(cvList)
+                // update the order if we know the order by field list
+                if (orderByFields != null && cvList) list.orderByFields(orderByFields)
             }
 
             return list

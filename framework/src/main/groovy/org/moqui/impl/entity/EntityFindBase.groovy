@@ -554,15 +554,23 @@ abstract class EntityFindBase implements EntityFind {
         def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
         if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
 
-        // NOTE: don't cache if there is a having condition, for now just support where
-        boolean doCache = !this.havingEntityCondition && this.shouldCache()
-        CacheImpl entityListCache = doCache ? efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName()) : null
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
+
+        // try the txCache first, more recent than general cache (and for update general cache entries will be cleared anyway)
+        EntityListImpl txcEli = txCache != null ? txCache.listGet(ed, whereCondition, orderByExpanded) : null
+
+        // NOTE: don't cache if there is a having condition, for now just support where
+        boolean doEntityCache = !this.havingEntityCondition && this.shouldCache()
+        CacheImpl entityListCache = doEntityCache ? efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName()) : null
         EntityList cacheList = null
-        if (doCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)
+        if (doEntityCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)
 
         EntityListImpl el = null
-        if (cacheList == null) {
+        if (txcEli != null) {
+            el = txcEli
+        } else if (cacheList != null) {
+            el = cacheList
+        } else {
             // we always want fieldsToSelect populated so that we know the order of the results coming back
             if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
@@ -598,9 +606,10 @@ abstract class EntityFindBase implements EntityFind {
                 el = elii.getCompleteList(true)
             }
 
-            if (doCache) efi.getEntityCache().putInListCache(ed, el, whereCondition, entityListCache)
-        } else {
-            el = cacheList
+            if (txCache != null) txCache.listPut(ed, whereCondition, el)
+            if (doEntityCache) efi.getEntityCache().putInListCache(ed, el, whereCondition, entityListCache)
+
+            if (ed.getFullEntityName().contains("OrderItem")) logger.warn("======== Got OrderItem from DATABASE ${el.size()} results where: ${whereCondition}")
         }
 
         // run the final rules

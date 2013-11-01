@@ -14,10 +14,11 @@ package org.moqui.impl.context
 import org.apache.commons.collections.map.ListOrderedMap
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
-import org.moqui.entity.EntityList
+import org.moqui.entity.EntityValue
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.entity.EntityFindBase
+import org.moqui.impl.entity.EntityListImpl
 import org.moqui.impl.entity.EntityValueBase
 import org.moqui.impl.entity.EntityValueImpl
 import org.slf4j.Logger
@@ -53,7 +54,8 @@ class TransactionCache implements XAResource {
     protected boolean active = false
     protected boolean suspended = false
 
-    protected Map<Map, EntityValueBase> readCache = [:]
+    protected Map<Map, EntityValueBase> readOneCache = [:]
+    protected Map<String, Map<EntityCondition, EntityListImpl>> readListCache = [:]
     protected ListOrderedMap writeInfoList = new ListOrderedMap()
 
     TransactionCache(ExecutionContextFactoryImpl ecfi) {
@@ -97,7 +99,7 @@ class TransactionCache implements XAResource {
 
         // if create info already exists blow up
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
-        if (readCache.containsKey(key) || (currentEwi != null && currentEwi.writeMode != WriteMode.DELETE))
+        if (readOneCache.containsKey(key) || (currentEwi != null && currentEwi.writeMode != WriteMode.DELETE))
             throw new EntityException("Tried to create a value that already exists, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
 
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) {
@@ -110,14 +112,20 @@ class TransactionCache implements XAResource {
         }
 
         // add to readCache after so we don't think it already exists
-        readCache.put(key, evb)
+        readOneCache.put(key, evb)
+        // add to any matching list cache entries
+        Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(evb.getEntityName())
+        if (entityListCache != null) {
+            for (Map.Entry<EntityCondition, EntityListImpl> entry in entityListCache.entrySet()) {
+                if (entry.getKey().mapMatches(evb)) entry.getValue().add(evb)
+            }
+        }
+
         return true
     }
     boolean update(EntityValueBase evb) {
         Map key = makeKey(evb)
         if (key == null) return false
-        // add to readCache
-        readCache.put(key, evb)
 
         // if is in as create or update that value (but stay in current write mode), if delete blow up, otherwise add as update
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
@@ -132,14 +140,33 @@ class TransactionCache implements XAResource {
         } else {
             writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.UPDATE))
         }
+
+        // add to readCache
+        readOneCache.put(key, evb)
+        // update any matching list cache entries, add to list cache if not there (though generally should be, depending on the condition)
+        Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(evb.getEntityName())
+        if (entityListCache != null) {
+            for (Map.Entry<EntityCondition, EntityListImpl> entry in entityListCache.entrySet()) {
+                if (entry.getKey().mapMatches(evb)) {
+                    // find an existing entry and update it
+                    boolean foundEntry = false
+                    for (EntityValue existingEv in entry.getValue()) {
+                        if (evb.getPrimaryKeys() == existingEv.getPrimaryKeys()) {
+                            existingEv.putAll(evb)
+                            foundEntry = true
+                        }
+                    }
+                    // if no existing entry found add this
+                    if (!foundEntry) entry.getValue().add(evb)
+                }
+            }
+        }
+
         return true
     }
     boolean delete(EntityValueBase evb) {
         Map key = makeKey(evb)
         if (key == null) return false
-
-        // remove from readCache if needed
-        readCache.remove(key)
 
         // if in current create remove from write list, if update change to delete, otherwise add as delete
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
@@ -155,12 +182,29 @@ class TransactionCache implements XAResource {
         } else {
             writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.DELETE))
         }
+
+        // remove from readCache if needed
+        readOneCache.remove(key)
+        // remove any matching list cache entries
+        Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(evb.getEntityName())
+        if (entityListCache != null) {
+            for (Map.Entry<EntityCondition, EntityListImpl> entry in entityListCache.entrySet()) {
+                if (entry.getKey().mapMatches(evb)) {
+                    Iterator existingEvIter = entry.getValue().iterator()
+                    while (existingEvIter.hasNext()) {
+                        EntityValue existingEv = existingEvIter.next()
+                        if (evb.getPrimaryKeys() == existingEv.getPrimaryKeys()) existingEvIter.remove()
+                    }
+                }
+            }
+        }
+
         return true
     }
     boolean refresh(EntityValueBase evb) {
         Map key = makeKey(evb)
         if (key == null) return false
-        EntityValueBase curEvb = readCache.get(key)
+        EntityValueBase curEvb = readOneCache.get(key)
         if (curEvb != null) {
             evb.setFields(curEvb, true, null, false)
             return true
@@ -172,10 +216,20 @@ class TransactionCache implements XAResource {
     boolean isTxCreate(EntityValueBase evb) {
         Map key = makeKey(evb)
         if (key == null) return false
+        return isTxCreate(key)
+    }
+    boolean isTxCreate(String entityName, Map<String, Object> pkMap) {
+        Map key = pkMap
+        if (!key) return false
+        key.put("_entityName", entityName)
+        return isTxCreate(key)
+    }
+    protected boolean isTxCreate(Map key) {
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         if (currentEwi == null) return false
         return currentEwi.writeMode == WriteMode.CREATE
     }
+
     EntityValueBase oneGet(EntityFindBase efb) {
         // NOTE: do nothing here on forUpdate, handled by caller
         Map key = makeKey(efb)
@@ -185,18 +239,39 @@ class TransactionCache implements XAResource {
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) return new DeletedEntityValue(efb.getEntityDef(), ecfi.getEntityFacade())
 
-        return readCache.get(key)
+        return readOneCache.get(key)
     }
     void onePut(EntityValueBase evb) {
         Map key = makeKey(evb)
         if (key == null) return
-        readCache.put(key, evb)
+        EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
+        // if this has been deleted we don't want to add it, but in general if we have a ewi then it's already in the
+        //     cache and we don't want to update from this (generally from DB and may be older than value already there)
+        if (currentEwi == null) readOneCache.put(key, evb)
     }
 
-    EntityList list(EntityFindBase efb) {
-        // future maybe: cache list returned
-        return null
+    EntityListImpl listGet(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByExpanded) {
+        Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(ed.getFullEntityName())
+        if (entityListCache == null) return null
+        // always clone this so that filters/sorts/etc by callers won't change this
+        EntityListImpl cacheList = entityListCache.get(whereCondition)?.cloneList()
+        if (cacheList && orderByExpanded) cacheList.orderByFields(orderByExpanded)
+        return cacheList
     }
+    Map<EntityCondition, EntityListImpl> getEntityListCache(String entityName) {
+        Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(entityName)
+        if (entityListCache == null) {
+            entityListCache = [:]
+            readListCache.put(entityName, entityListCache)
+        }
+        return entityListCache
+    }
+    void listPut(EntityDefinition ed, EntityCondition whereCondition, EntityListImpl eli) {
+        Map<EntityCondition, EntityListImpl> entityListCache = getEntityListCache(ed.getFullEntityName())
+        // don't need to do much else here; list will already have values created/updated/deleted in this TX Cache
+        entityListCache.put(whereCondition, eli)
+    }
+
     // NOTE: no need to filter EntityList or EntityListIterator, they do it internally by calling this method
     WriteMode checkUpdateValue(EntityValueBase evb) {
         Map key = makeKey(evb)
@@ -279,7 +354,7 @@ class TransactionCache implements XAResource {
                     deleteCount++
                 }
             }
-            if (logger.infoEnabled) logger.info("Wrote from TransactionCache in ${System.currentTimeMillis() - startTime}ms: ${createCount} creates, ${updateCount} updates, ${deleteCount} deletes, ${readCache.size()} read entries")
+            if (logger.infoEnabled) logger.info("Wrote from TransactionCache in ${System.currentTimeMillis() - startTime}ms: ${createCount} creates, ${updateCount} updates, ${deleteCount} deletes, ${readOneCache.size()} read entries, ${readListCache.size()} entities with list cache")
         }
 
         this.active = false
