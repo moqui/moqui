@@ -134,13 +134,15 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         Map val = timeByArtifact.get(key)
         long curTime = ownTime ? getThisRunningTime() : getRunningTime()
         if (val == null) {
-            timeByArtifact.put(key, [time:curTime, count:1, name:name, actionDetail:actionDetail,
-                    type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
+            timeByArtifact.put(key, [time:curTime, timeMin:curTime, timeMax:curTime, count:1, name:name,
+                    actionDetail:actionDetail, type:ArtifactExecutionFacadeImpl.artifactTypeDescriptionMap.get(typeEnumId),
                     action:ArtifactExecutionFacadeImpl.artifactActionDescriptionMap.get(actionEnumId)])
         } else {
             val = timeByArtifact[key]
             val.count = val.count + 1
             val.time = val.time + curTime
+            val.timeMin = val.timeMin > curTime ? curTime : val.timeMin
+            val.timeMax = val.timeMax > curTime ? val.timeMax : curTime
         }
         for (ArtifactExecutionInfoImpl aeii in childList) aeii.addToMapByTime(timeByArtifact, ownTime)
     }
