@@ -258,6 +258,30 @@ class TransactionCache implements XAResource {
             // allow a success/fail end if TX is suspended without a resume flagged start first
             if (!this.active && !this.suspended) throw new XAException(XAException.XAER_PROTO)
         }
+
+        if (flag == TMSUCCESS) {
+            // TODO: is this the best event to do this on? need to be able to throw an exception and mark tx for rollback
+            // could also do prepare or commit, though found issues on commit when creating tables on the fly
+
+            long startTime = System.currentTimeMillis()
+            int createCount = 0
+            int updateCount = 0
+            int deleteCount = 0
+            for (EntityWriteInfo ewi in writeInfoList.valueList()) {
+                if (ewi.writeMode == WriteMode.CREATE) {
+                    ewi.evb.basicCreate()
+                    createCount++
+                } else if (ewi.writeMode == WriteMode.UPDATE) {
+                    ewi.evb.basicUpdate()
+                    updateCount++
+                } else {
+                    ewi.evb.basicDelete()
+                    deleteCount++
+                }
+            }
+            if (logger.infoEnabled) logger.info("Wrote from TransactionCache in ${System.currentTimeMillis() - startTime}ms: ${createCount} creates, ${updateCount} updates, ${deleteCount} deletes, ${readCache.size()} read entries")
+        }
+
         this.active = false
     }
 
@@ -297,25 +321,7 @@ class TransactionCache implements XAResource {
         if (this.active) logger.warn("commit() called without end()")
         if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
-        // TODO: is this the best event to do this on? need to be able to throw an exception and mark tx for rollback
-
-        long startTime = System.currentTimeMillis()
-        int createCount = 0
-        int updateCount = 0
-        int deleteCount = 0
-        for (EntityWriteInfo ewi in writeInfoList.valueList()) {
-            if (ewi.writeMode == WriteMode.CREATE) {
-                ewi.evb.basicCreate()
-                createCount++
-            } else if (ewi.writeMode == WriteMode.UPDATE) {
-                ewi.evb.basicUpdate()
-                updateCount++
-            } else {
-                ewi.evb.basicDelete()
-                deleteCount++
-            }
-        }
-        if (logger.infoEnabled) logger.info("Wrote from TransactionCache in ${System.currentTimeMillis() - startTime}ms: ${createCount} creates, ${updateCount} updates, ${deleteCount} deletes, ${readCache.size()} read entries")
+        // do nothing, moved to end:TMSUCCESS
 
         this.xid = null
         this.active = false
