@@ -38,6 +38,8 @@ import javax.transaction.xa.Xid
  * - EntityListIterator.getPartialList() and iterating through results with next/previous does not add created values
  * - find with DB limit will return wrong number of values if deleted values were in the results
  * - find count doesn't add for created values, subtract for deleted values, and for updates if old matched and new doesn't subtract and vice-versa
+ * - view-entities won't work, they don't incorporate results from TX Cache
+ * - if a value is created or update, then a record with FK is created, then the value is updated again commit writes may fail with FK violation (see update() method for other notes)
  */
 class TransactionCache implements XAResource {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionCache.class)
