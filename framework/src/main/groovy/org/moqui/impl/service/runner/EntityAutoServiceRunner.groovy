@@ -148,7 +148,10 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         Node statusIdField = ed.getFieldNode("statusId")
         if (statusIdField != null) {
             // do the actual query so we'll have the current statusId
-            lookedUpValue = sfi.getEcfi().getEntityFacade().makeFind(ed.getFullEntityName()).condition(parameters).useCache(false).forUpdate(true).one()
+            lookedUpValue = preLookedUpValue ?: sfi.getEcfi().getEntityFacade().makeFind(ed.getFullEntityName()).condition(parameters).useCache(false).one()
+            if (lookedUpValue == null) {
+                throw new ServiceException("In entity-auto update service for entity [${ed.fullEntityName}] value not found, cannot update; using parameters [${parameters}]")
+            }
         }
         if (statusIdField != null && (outParamNames == null || outParamNames.contains("oldStatusId"))) {
             result.put("oldStatusId", lookedUpValue.get("statusId"))
