@@ -473,7 +473,8 @@ abstract class EntityFindBase implements EntityFind {
         if (doCache && txcValue == null) cacheHit = efi.getEntityCache().getFromOneCache(ed, whereCondition, entityOneCache)
 
         // we always want fieldsToSelect populated so that we know the order of the results coming back
-        if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
+        if (!this.fieldsToSelect || (txCache != null && txcValue == null) || (doCache && cacheHit == null))
+            this.selectFields(ed.getFieldNames(true, true, false))
 
         // NOTE: do actual query condition as a separate condition because this will always be added on and isn't a
         //     part of the original where to use for the cache
@@ -573,7 +574,7 @@ abstract class EntityFindBase implements EntityFind {
             el = cacheList
         } else {
             // we always want fieldsToSelect populated so that we know the order of the results coming back
-            if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
+            if (!this.fieldsToSelect || txCache != null || doEntityCache) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
             if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
