@@ -97,6 +97,9 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
+    boolean isFieldSet(String name) { return valueMap.containsKey(name) }
+
+    @Override
     boolean isMutable() { return mutable }
 
     @Override

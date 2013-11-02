@@ -32,6 +32,7 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     boolean isModified();
     boolean isFieldModified(String name);
+    boolean isFieldSet(String name);
 
     boolean isMutable();
 
