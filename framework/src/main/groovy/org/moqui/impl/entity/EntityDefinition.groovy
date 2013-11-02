@@ -671,6 +671,7 @@ public class EntityDefinition {
     void setFields(Map<String, ?> src, Map<String, Object> dest, boolean setIfEmpty, String namePrefix, Boolean pks) {
         if (src == null) return
 
+        EntityValue ev = src instanceof EntityValue ? (EntityValue) src : null
         for (String fieldName in (pks != null ? this.getFieldNames(pks, !pks, !pks) : this.getAllFieldNames())) {
             String sourceFieldName
             if (namePrefix) {
@@ -679,7 +680,7 @@ public class EntityDefinition {
                 sourceFieldName = fieldName
             }
 
-            if (src.containsKey(sourceFieldName)) {
+            if (ev != null ? ev.isFieldSet(sourceFieldName) : src.containsKey(sourceFieldName)) {
                 Object value = src.get(sourceFieldName)
                 if (value) {
                     if (value instanceof String) {
