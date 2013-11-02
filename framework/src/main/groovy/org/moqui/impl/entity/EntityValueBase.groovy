@@ -178,7 +178,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     Map<String, Object> getPrimaryKeys() {
-        if (internalPkMap != null) return internalPkMap
+        if (internalPkMap != null) return (Map<String, Object>) internalPkMap.clone()
         Map<String, Object> pks = new HashMap()
         for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
             // only include PK fields which has a non-empty value, leave others out of the Map
@@ -186,7 +186,7 @@ abstract class EntityValueBase implements EntityValue {
             if (value) pks.put(fieldName, value)
         }
         internalPkMap = pks
-        return pks
+        return (Map<String, Object>) internalPkMap.clone()
     }
 
     @Override
@@ -1119,7 +1119,7 @@ abstract class EntityValueBase implements EntityValue {
         // call the abstract method
         if (!retVal) {
             retVal = this.refreshExtended()
-            if (getTxCache()) getTxCache().onePut(this)
+            if (getTxCache() != null) getTxCache().onePut(this)
         }
 
         // NOTE: clear out UserFields

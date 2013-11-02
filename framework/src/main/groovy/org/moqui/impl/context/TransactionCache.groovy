@@ -93,7 +93,7 @@ class TransactionCache implements XAResource {
 
     static Map makeKey(EntityValueBase evb) {
         if (evb == null) return null
-        Map key = (Map) evb.getPrimaryKeys().clone()
+        Map key = evb.getPrimaryKeys()
         if (!key) return null
         key.put("_entityName", evb.getEntityName())
         return key
@@ -114,8 +114,10 @@ class TransactionCache implements XAResource {
 
         // if create info already exists blow up
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
-        if (readOneCache.containsKey(key) || (currentEwi != null && currentEwi.writeMode != WriteMode.DELETE))
-            throw new EntityException("Tried to create a value that already exists, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
+        if (readOneCache.containsKey(key))
+            throw new EntityException("Tried to create a value that already exists in database, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
+        if (currentEwi != null && currentEwi.writeMode != WriteMode.DELETE)
+            throw new EntityException("Tried to create a value that already exists in write cache, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
 
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) {
             // if deleted remove delete and add an update
