@@ -12,6 +12,7 @@
 package org.moqui.impl.context
 
 import org.apache.commons.collections.map.ListOrderedMap
+import org.moqui.context.TransactionException
 import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityValue
@@ -56,7 +57,9 @@ class TransactionCache implements XAResource {
 
     protected Map<Map, EntityValueBase> readOneCache = [:]
     protected Map<String, Map<EntityCondition, EntityListImpl>> readListCache = [:]
+
     protected ListOrderedMap writeInfoList = new ListOrderedMap()
+    protected Map<String, Map<Map, EntityValueBase>> createByEntityRef = [:]
 
     TransactionCache(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -70,15 +73,27 @@ class TransactionCache implements XAResource {
         if (tx == null) throw new XAException(XAException.XAER_NOTA)
         this.tx = tx
 
+        if (ecfi.getTransactionFacade().getActiveXaResource("TransactionCache")) {
+            logger.warn("Tried to enlist TransactionCache in current transaction but one is already in place, not enlisting", new TransactionException("TransactionCache already in place"))
+        }
         // logger.warn("================= putting and enlisting new TransactionCache")
         ecfi.getTransactionFacade().putAndEnlistActiveXaResource("TransactionCache", this)
 
         return this
     }
 
+    Map<Map, EntityValueBase> getCreateByEntityMap(String entityName) {
+        Map createMap = createByEntityRef.get(entityName)
+        if (createMap == null) {
+            createMap = [:]
+            createByEntityRef.put(entityName, createMap)
+        }
+        return createMap
+    }
+
     static Map makeKey(EntityValueBase evb) {
         if (evb == null) return null
-        Map key = evb.getPrimaryKeys()
+        Map key = (Map) evb.getPrimaryKeys().clone()
         if (!key) return null
         key.put("_entityName", evb.getEntityName())
         return key
@@ -109,6 +124,7 @@ class TransactionCache implements XAResource {
         } else {
             // add to createCache
             writeInfoList.put(key, new EntityWriteInfo(evb, WriteMode.CREATE))
+            getCreateByEntityMap(evb.getEntityName()).put(evb.getPrimaryKeys(), evb)
         }
 
         // add to readCache after so we don't think it already exists
@@ -252,9 +268,59 @@ class TransactionCache implements XAResource {
 
     EntityListImpl listGet(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByExpanded) {
         Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(ed.getFullEntityName())
-        if (entityListCache == null) return null
         // always clone this so that filters/sorts/etc by callers won't change this
-        EntityListImpl cacheList = entityListCache.get(whereCondition)?.cloneList()
+        EntityListImpl cacheList = entityListCache != null ? entityListCache.get(whereCondition)?.cloneList() : null
+
+        // if we are searching by a field that is a PK on a related entity to the one being searched it can only exist
+        //     in the read cache so find here and don't bother with a DB query
+        if (cacheList == null) {
+            // if the condition depends on a record that was created in this tx cache, then build the list from here
+            //     instead of letting it drop to the DB, finding nothing, then being expanded from the txCache
+            Map condMap = [:]
+            if (whereCondition.populateMap(condMap)) {
+                boolean foundCreatedDependent = false
+                for (Node relNode in ed.getEntityNode()."relationship") {
+                    if (relNode."@type" != "one") continue
+                    String relEntityName = relNode."@related-entity-name"
+                    // would be nice to skip this, but related-entity-name may not be full entity name
+                    EntityDefinition relEd = ecfi.getEntityFacade().getEntityDefinition(relEntityName)
+                    relEntityName = relEd.getFullEntityName()
+                    // first see if there is a create Map for this, then do the more expensive operation of getting the
+                    //     expanded key Map and the related entity's PK Map
+                    Map relCreateMap = getCreateByEntityMap(relEntityName)
+                    if (relCreateMap) {
+                        Map relKeyMap = ed.getRelationshipExpandedKeyMap(relNode)
+                        Map relPk = [:]
+                        boolean foundAllPks = true
+                        for (Map.Entry<String, String> entry in relKeyMap.entrySet()) {
+                            Object relValue = condMap.get(entry.getKey())
+                            if (relValue) relPk.put(entry.getValue(), relValue)
+                            else foundAllPks = false
+                        }
+                        // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("==== listGet ${relEntityName} foundAllPks=${foundAllPks} relPk=${relPk} relCreateMap=${relCreateMap}")
+                        if (!foundAllPks) continue
+                        if (relCreateMap.containsKey(relPk)) {
+                            foundCreatedDependent = true
+                            break
+                        }
+                    }
+                }
+                if (foundCreatedDependent) {
+                    EntityListImpl createdValueList = new EntityListImpl(ecfi.getEntityFacade())
+                    Map createMap = createByEntityRef.get(ed.getFullEntityName())
+                    if (createMap != null) {
+                        for (EntityValueBase createEvb in createMap.values())
+                            if (whereCondition.mapMatches(createEvb)) createdValueList.add(createEvb)
+                    }
+
+                    listPut(ed, whereCondition, createdValueList)
+                    cacheList = createdValueList.cloneList()
+                }
+            } else {
+                // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("==== listGet populateMap returned FALSE for condMap=${condMap} whereCondition=${whereCondition} class=${whereCondition.class}")
+            }
+        }
+
         if (cacheList && orderByExpanded) cacheList.orderByFields(orderByExpanded)
         return cacheList
     }
@@ -293,11 +359,9 @@ class TransactionCache implements XAResource {
     }
     List<EntityValueBase> getCreatedValueList(String entityName, EntityCondition ec) {
         List<EntityValueBase> valueList = []
-        for (EntityWriteInfo ewi in writeInfoList.valueList()) {
-            // if (entityName.contains("FOO")) logger.warn("======= Checking ${ewi.evb.getEntityName()}:${ewi.pkMap}:${ewi.writeMode}")
-            if (ewi.evb.getEntityName() != entityName) continue
-            if (ewi.writeMode == WriteMode.CREATE && ec.mapMatches(ewi.evb)) valueList.add(ewi.evb)
-        }
+        Map<Map, EntityValueBase> createMap = getCreateByEntityMap(entityName)
+        if (!createMap) return valueList
+        for (EntityValueBase evb in createMap.values()) if (ec.mapMatches(evb)) valueList.add(evb)
         return valueList
     }
 

@@ -568,6 +568,7 @@ abstract class EntityFindBase implements EntityFind {
         EntityListImpl el = null
         if (txcEli != null) {
             el = txcEli
+            // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("======== Got OrderItem from txCache ${el.size()} results where: ${whereCondition}")
         } else if (cacheList != null) {
             el = cacheList
         } else {
@@ -609,7 +610,8 @@ abstract class EntityFindBase implements EntityFind {
             if (txCache != null) txCache.listPut(ed, whereCondition, el)
             if (doEntityCache) efi.getEntityCache().putInListCache(ed, el, whereCondition, entityListCache)
 
-            if (ed.getFullEntityName().contains("OrderItem")) logger.warn("======== Got OrderItem from DATABASE ${el.size()} results where: ${whereCondition}")
+            // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("======== Got OrderItem from DATABASE ${el.size()} results where: ${whereCondition}")
+            // logger.warn("======== Got ${ed.getFullEntityName()} from DATABASE ${el.size()} results where: ${whereCondition}")
         }
 
         // run the final rules

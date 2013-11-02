@@ -26,7 +26,7 @@ class FieldToFieldCondition extends EntityConditionImplBase {
             ConditionField field, EntityCondition.ComparisonOperator operator, ConditionField toField) {
         super(ecFactoryImpl)
         this.field = field
-        this.operator = operator ?: EntityCondition.EQUALS
+        this.operator = operator ?: EQUALS
         this.toField = toField
     }
 
@@ -48,8 +48,11 @@ class FieldToFieldCondition extends EntityConditionImplBase {
 
     @Override
     boolean mapMatches(Map<String, ?> map) {
-        return compareByOperator(map.get(field.getFieldName()), this.operator, map.get(toField.getFieldName()))
+        return EntityConditionFactoryImpl.compareByOperator(map.get(field.getFieldName()), this.operator, map.get(toField.getFieldName()))
     }
+
+    @Override
+    boolean populateMap(Map<String, ?> map) { return false }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
         // this will only be called for view-entity, so we'll either have a entityAlias or an aliased fieldName

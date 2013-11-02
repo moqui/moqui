@@ -52,6 +52,7 @@ abstract class EntityValueBase implements EntityValue {
     private final Map<String, Object> valueMap = [:]
     /* Original DB Value Map: not used unless the value has been modified from its original state from the DB */
     private Map<String, Object> dbValueMap = null
+    private Map<String, Object> internalPkMap = null
 
     protected boolean modified = false
     protected boolean mutable = true
@@ -177,12 +178,14 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     Map<String, Object> getPrimaryKeys() {
+        if (internalPkMap != null) return internalPkMap
         Map<String, Object> pks = new HashMap()
         for (String fieldName in this.getEntityDefinition().getPkFieldNames()) {
             // only include PK fields which has a non-empty value, leave others out of the Map
             Object value = valueMap.get(fieldName)
             if (value) pks.put(fieldName, value)
         }
+        internalPkMap = pks
         return pks
     }
 

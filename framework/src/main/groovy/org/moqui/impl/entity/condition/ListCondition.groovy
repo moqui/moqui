@@ -28,7 +28,7 @@ class ListCondition extends EntityConditionImplBase {
             while (conditionIter.hasNext()) if (conditionIter.next() == null) conditionIter.remove()
         }
         this.conditionList = conditionList ?: new LinkedList()
-        this.operator = operator ?: EntityCondition.AND
+        this.operator = operator ?: AND
     }
 
     Class getLocalClass() { if (this.localClass == null) this.localClass = this.getClass(); return this.localClass }
@@ -55,11 +55,18 @@ class ListCondition extends EntityConditionImplBase {
     boolean mapMatches(Map<String, ?> map) {
         for (EntityConditionImplBase condition in this.conditionList) {
             boolean conditionMatches = condition.mapMatches(map)
-            if (conditionMatches && this.operator == EntityCondition.OR) return true
-            if (!conditionMatches && this.operator == EntityCondition.AND) return false
+            if (conditionMatches && this.operator == OR) return true
+            if (!conditionMatches && this.operator == AND) return false
         }
         // if we got here it means that it's an OR with no trues, or an AND with no falses
-        return (this.operator == EntityCondition.AND)
+        return (this.operator == AND)
+    }
+
+    @Override
+    boolean populateMap(Map<String, ?> map) {
+        if (operator != AND) return false
+        for (EntityConditionImplBase condition in this.conditionList) if (!condition.populateMap(map)) return false
+        return true
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {

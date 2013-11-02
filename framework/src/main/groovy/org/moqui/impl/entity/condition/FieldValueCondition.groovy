@@ -16,10 +16,11 @@ import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.moqui.impl.entity.EntityConditionFactoryImpl
 import org.moqui.impl.entity.EntityQueryBuilder
 
-import static org.moqui.entity.EntityCondition.ComparisonOperator.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class FieldValueCondition extends EntityConditionImplBase {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(FieldValueCondition.class)
+    protected final static Logger logger = LoggerFactory.getLogger(FieldValueCondition.class)
 
     protected volatile Class localClass = null
     protected ConditionField field
@@ -96,6 +97,13 @@ class FieldValueCondition extends EntityConditionImplBase {
 
     @Override
     boolean mapMatches(Map<String, ?> map) { return EntityConditionFactoryImpl.compareByOperator(map.get(field.fieldName), operator, value) }
+
+    @Override
+    boolean populateMap(Map<String, ?> map) {
+        if (operator != EQUALS || ignoreCase || field.entityAlias) return false
+        map.put(field.fieldName, value)
+        return true
+    }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {
         // this will only be called for view-entity, so we'll either have a entityAlias or an aliased fieldName

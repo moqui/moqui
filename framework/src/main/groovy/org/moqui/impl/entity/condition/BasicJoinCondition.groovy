@@ -24,7 +24,7 @@ class BasicJoinCondition extends EntityConditionImplBase {
             EntityConditionImplBase lhs, EntityCondition.JoinOperator operator, EntityConditionImplBase rhs) {
         super(ecFactoryImpl)
         this.lhs = lhs
-        this.operator = operator ? operator : EntityCondition.JoinOperator.AND
+        this.operator = operator ?: AND
         this.rhs = rhs
     }
 
@@ -43,13 +43,19 @@ class BasicJoinCondition extends EntityConditionImplBase {
         boolean lhsMatches = this.lhs.mapMatches(map)
 
         // handle cases where we don't need to evaluate rhs
-        if (lhsMatches && operator == EntityCondition.JoinOperator.OR) return true
-        if (!lhsMatches && operator == EntityCondition.JoinOperator.AND) return false
+        if (lhsMatches && operator == OR) return true
+        if (!lhsMatches && operator == AND) return false
 
         // handle opposite cases since we know cases above aren't true (ie if OR then lhs=false, if AND then lhs=true
         // if rhs then result is true whether AND or OR
         // if !rhs then result is false whether AND or OR
         return this.rhs.mapMatches(map)
+    }
+
+    @Override
+    boolean populateMap(Map<String, ?> map) {
+        if (operator != AND) return false
+        return lhs.populateMap(map) && rhs.populateMap(map)
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {

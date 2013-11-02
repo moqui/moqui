@@ -16,8 +16,8 @@ class MapCondition extends EntityConditionImplBase {
             EntityCondition.JoinOperator joinOperator) {
         super(ecFactoryImpl)
         this.fieldMap = fieldMap ? fieldMap : new HashMap()
-        this.comparisonOperator = comparisonOperator ? comparisonOperator : EQUALS
-        this.joinOperator = joinOperator ? joinOperator : AND
+        this.comparisonOperator = comparisonOperator ?: EQUALS
+        this.joinOperator = joinOperator ?: AND
     }
 
     Class getLocalClass() { if (this.internalClass == null) this.internalClass = this.getClass(); return this.internalClass }
@@ -30,6 +30,13 @@ class MapCondition extends EntityConditionImplBase {
     @Override
     boolean mapMatches(Map<String, ?> map) {
         return this.makeCondition().mapMatches(map)
+    }
+
+    @Override
+    boolean populateMap(Map<String, ?> map) {
+        if (joinOperator != AND || comparisonOperator != EQUALS || ignoreCase) return false
+        map.putAll(fieldMap)
+        return true
     }
 
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) {

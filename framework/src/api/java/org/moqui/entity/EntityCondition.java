@@ -46,6 +46,9 @@ public interface EntityCondition extends Serializable {
 
     /** Evaluate the condition in memory. */
     boolean mapMatches(Map<String, ?> map);
+    /** Create a map of name/value pairs representing the condition. Returns false if the condition can't be
+     * represented as simple name/value pairs ANDed together. */
+    boolean populateMap(Map<String, ?> map);
 
     /** Set this condition to ignore case in the query.
      * This may not have an effect for all types of conditions.

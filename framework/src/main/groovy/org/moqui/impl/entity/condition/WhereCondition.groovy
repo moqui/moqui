@@ -36,6 +36,9 @@ class WhereCondition extends EntityConditionImplBase {
         return false
     }
 
+    @Override
+    boolean populateMap(Map<String, ?> map) { return false }
+
     void getAllAliases(Set<String> entityAliasSet, Set<String> fieldAliasSet) { }
 
     @Override
