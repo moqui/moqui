@@ -445,7 +445,9 @@ class TransactionCache implements XAResource {
         return this.xid != null ? [this.xid] : []
     }
     @Override
-    boolean isSameRM(XAResource xaResource) throws XAException { return xaResource == this }
+    boolean isSameRM(XAResource xaResource) throws XAException {
+        return xaResource instanceof TransactionCache && ((TransactionCache) xaResource).xid == this.xid
+    }
     @Override
     int getTransactionTimeout() throws XAException { return this.timeout == null ? 0 : this.timeout }
     @Override
