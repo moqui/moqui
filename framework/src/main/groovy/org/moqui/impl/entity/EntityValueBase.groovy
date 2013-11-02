@@ -1119,7 +1119,7 @@ abstract class EntityValueBase implements EntityValue {
         // call the abstract method
         if (!retVal) {
             retVal = this.refreshExtended()
-            if (getTxCache() != null) getTxCache().onePut(this)
+            if (retVal && getTxCache() != null) getTxCache().onePut(this)
         }
 
         // NOTE: clear out UserFields

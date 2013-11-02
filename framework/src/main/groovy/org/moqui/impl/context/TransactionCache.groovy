@@ -114,7 +114,7 @@ class TransactionCache implements XAResource {
 
         // if create info already exists blow up
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
-        if (readOneCache.containsKey(key))
+        if (readOneCache.get(key) != null)
             throw new EntityException("Tried to create a value that already exists in database, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
         if (currentEwi != null && currentEwi.writeMode != WriteMode.DELETE)
             throw new EntityException("Tried to create a value that already exists in write cache, entity [${evb.getEntityName()}], PK ${evb.getPrimaryKeys()}")
