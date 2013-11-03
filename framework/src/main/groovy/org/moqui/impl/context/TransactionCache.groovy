@@ -279,7 +279,7 @@ class TransactionCache implements XAResource {
             // if the condition depends on a record that was created in this tx cache, then build the list from here
             //     instead of letting it drop to the DB, finding nothing, then being expanded from the txCache
             Map condMap = [:]
-            if (whereCondition.populateMap(condMap)) {
+            if (whereCondition != null && whereCondition.populateMap(condMap)) {
                 boolean foundCreatedDependent = false
                 for (Node relNode in ed.getEntityNode()."relationship") {
                     if (relNode."@type" != "one") continue
@@ -318,8 +318,6 @@ class TransactionCache implements XAResource {
                     listPut(ed, whereCondition, createdValueList)
                     cacheList = createdValueList.cloneList()
                 }
-            } else {
-                // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("==== listGet populateMap returned FALSE for condMap=${condMap} whereCondition=${whereCondition} class=${whereCondition.class}")
             }
         }
 
