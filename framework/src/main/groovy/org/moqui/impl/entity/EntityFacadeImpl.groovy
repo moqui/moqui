@@ -405,6 +405,11 @@ class EntityFacadeImpl implements EntityFacade {
                     logger.warn("Error getting definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]: ${e.toString()}")
                     continue
                 }
+                if (reverseEd == null) {
+                    logger.warn("Could not find definition for entity [${relNode."@related-entity-name"}] referred to in a relationship of entity [${entityName}]")
+                    continue
+                }
+
                 List<String> reversePkSet = reverseEd.getPkFieldNames()
                 String relType = reversePkSet.equals(pkSet) ? "one-nofk" : "many"
                 String title = relNode."@title"
