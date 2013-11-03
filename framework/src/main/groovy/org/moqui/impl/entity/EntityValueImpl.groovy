@@ -18,6 +18,7 @@ import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import java.sql.Connection
 import java.sql.ResultSet
 
 class EntityValueImpl extends EntityValueBase {
@@ -26,7 +27,7 @@ class EntityValueImpl extends EntityValueBase {
     EntityValueImpl(EntityDefinition ed, EntityFacadeImpl efip) { super(ed, efip) }
 
     @Override
-    void createExtended(ListOrderedSet fieldList) {
+    void createExtended(ListOrderedSet fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
 
         if (ed.isViewEntity()) {
@@ -54,7 +55,7 @@ class EntityValueImpl extends EntityValueBase {
             try {
                 getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
-                eqb.makeConnection()
+                if (con != null) eqb.useConnection(con) else eqb.makeConnection()
                 eqb.makePreparedStatement()
                 int index = 1
                 for (String fieldName in fieldList) {
@@ -72,7 +73,7 @@ class EntityValueImpl extends EntityValueBase {
     }
 
     @Override
-    void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList) {
+    void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
 
         if (ed.isViewEntity()) {
@@ -101,7 +102,7 @@ class EntityValueImpl extends EntityValueBase {
             try {
                 getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
-                eqb.makeConnection()
+                if (con != null) eqb.useConnection(con) else eqb.makeConnection()
                 eqb.makePreparedStatement()
                 eqb.setPreparedStatementValues()
                 if (eqb.executeUpdate() == 0)
@@ -116,7 +117,7 @@ class EntityValueImpl extends EntityValueBase {
     }
 
     @Override
-    void deleteExtended() {
+    void deleteExtended(Connection con) {
         EntityDefinition ed = getEntityDefinition()
 
         if (ed.isViewEntity()) {
@@ -137,7 +138,7 @@ class EntityValueImpl extends EntityValueBase {
             try {
                 getEntityFacadeImpl().entityDbMeta.checkTableRuntime(ed)
 
-                eqb.makeConnection()
+                if (con != null) eqb.useConnection(con) else eqb.makeConnection()
                 eqb.makePreparedStatement()
                 eqb.setPreparedStatementValues()
                 if (eqb.executeUpdate() == 0) logger.info("Tried to delete a value that does not exist [${this.toString()}]")

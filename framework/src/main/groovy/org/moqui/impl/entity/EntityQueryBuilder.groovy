@@ -48,6 +48,7 @@ class EntityQueryBuilder {
     protected PreparedStatement ps
     protected ResultSet rs
     protected Connection connection
+    protected boolean externalConnection = false
 
     EntityQueryBuilder(EntityDefinition entityDefinition, EntityFacadeImpl efi) {
         this.mainEntityDefinition = entityDefinition
@@ -70,6 +71,8 @@ class EntityQueryBuilder {
         this.connection = this.efi.getConnection(this.efi.getEntityGroupName(mainEntityDefinition))
         return this.connection
     }
+
+    void useConnection(Connection c) { this.connection = c; externalConnection = true }
 
     protected static void handleSqlException(Exception e, String sql) {
         throw new EntityException("SQL Exception with statement:" + sql + "; " + e.toString(), e)
@@ -120,7 +123,7 @@ class EntityQueryBuilder {
             this.rs.close()
             this.rs = null
         }
-        if (this.connection != null) {
+        if (this.connection != null && !externalConnection) {
             this.connection.close()
             this.connection = null
         }

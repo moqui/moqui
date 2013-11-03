@@ -31,6 +31,7 @@ import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
 import javax.transaction.xa.XAResource
 import javax.transaction.xa.Xid
+import java.sql.Connection
 
 /** This is a per-transaction cache that basically pretends to be the database for the scope of the transaction.
  * Test your code well when using this as it doesn't support everything.
@@ -236,12 +237,12 @@ class TransactionCache implements XAResource {
         if (key == null) return false
         return isTxCreate(key)
     }
-    boolean isTxCreate(String entityName, Map<String, Object> pkMap) {
+    /*boolean isTxCreate(String entityName, Map<String, Object> pkMap) {
         Map key = pkMap
         if (!key) return false
         key.put("_entityName", entityName)
         return isTxCreate(key)
-    }
+    }*/
     protected boolean isTxCreate(Map key) {
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         if (currentEwi == null) return false
@@ -365,6 +366,45 @@ class TransactionCache implements XAResource {
         return valueList
     }
 
+    void flushCache() {
+        Map<String, Connection> connectionByGroup = [:]
+        try {
+            EntityFacadeImpl efi = ecfi.getEntityFacade()
+
+            long startTime = System.currentTimeMillis()
+            int createCount = 0
+            int updateCount = 0
+            int deleteCount = 0
+            for (EntityWriteInfo ewi in (List<EntityWriteInfo>) writeInfoList.valueList()) {
+                String groupName = efi.getEntityGroupName(ewi.evb.getEntityName())
+                Connection con = connectionByGroup.get(groupName)
+                if (con == null) {
+                    con = efi.getConnection(groupName)
+                    connectionByGroup.put(groupName, con)
+                }
+
+                if (ewi.writeMode == WriteMode.CREATE) {
+                    ewi.evb.basicCreate(con)
+                    createCount++
+                } else if (ewi.writeMode == WriteMode.UPDATE) {
+                    ewi.evb.basicUpdate(con)
+                    updateCount++
+                } else {
+                    ewi.evb.basicDelete(con)
+                    deleteCount++
+                }
+            }
+
+            if (logger.infoEnabled) logger.info("Wrote from TransactionCache in ${System.currentTimeMillis() - startTime}ms: ${createCount} creates, ${updateCount} updates, ${deleteCount} deletes, ${readOneCache.size()} read entries, ${readListCache.size()} entities with list cache")
+        } catch (Throwable t) {
+            logger.error("Error writing values from TransactionCache: ${t.toString()}", t)
+            throw new XAException("Error writing values from TransactionCache: + ${t.toString()}")
+        } finally {
+            // now close connections
+            for (Connection con in connectionByGroup.values()) con.close()
+        }
+    }
+
 
     @Override
     void start(Xid xid, int flag) throws XAException {
@@ -401,24 +441,7 @@ class TransactionCache implements XAResource {
         if (flag == TMSUCCESS) {
             // TODO: is this the best event to do this on? need to be able to throw an exception and mark tx for rollback
             // could also do prepare or commit, though found issues on commit when creating tables on the fly
-
-            long startTime = System.currentTimeMillis()
-            int createCount = 0
-            int updateCount = 0
-            int deleteCount = 0
-            for (EntityWriteInfo ewi in writeInfoList.valueList()) {
-                if (ewi.writeMode == WriteMode.CREATE) {
-                    ewi.evb.basicCreate()
-                    createCount++
-                } else if (ewi.writeMode == WriteMode.UPDATE) {
-                    ewi.evb.basicUpdate()
-                    updateCount++
-                } else {
-                    ewi.evb.basicDelete()
-                    deleteCount++
-                }
-            }
-            if (logger.infoEnabled) logger.info("Wrote from TransactionCache in ${System.currentTimeMillis() - startTime}ms: ${createCount} creates, ${updateCount} updates, ${deleteCount} deletes, ${readOneCache.size()} read entries, ${readListCache.size()} entities with list cache")
+            flushCache()
         }
 
         this.active = false

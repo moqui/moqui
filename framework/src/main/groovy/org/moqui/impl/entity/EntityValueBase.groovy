@@ -28,6 +28,7 @@ import org.moqui.impl.context.TransactionCache
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
+import java.sql.Connection
 import java.sql.Date
 import java.sql.Time
 import java.sql.Timestamp
@@ -838,7 +839,7 @@ abstract class EntityValueBase implements EntityValue {
 
 
         // if there is not a txCache or the txCache doesn't handle the create, call the abstract method to create the main record
-        if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList)
+        if (getTxCache() == null || !getTxCache().create(this)) this.basicCreate(fieldList, null)
 
 
         // NOTE: cache clear is the same for create, update, delete; even on create need to clear one cache because it
@@ -856,19 +857,19 @@ abstract class EntityValueBase implements EntityValue {
 
         return this
     }
-    void basicCreate() {
+    void basicCreate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ListOrderedSet fieldList = new ListOrderedSet()
         for (String fieldName in ed.getFieldNames(true, true, false)) if (valueMap.containsKey(fieldName)) fieldList.add(fieldName)
 
-        basicCreate(fieldList)
+        basicCreate(fieldList, con)
     }
-    void basicCreate(ListOrderedSet fieldList) {
+    void basicCreate(ListOrderedSet fieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        this.createExtended(fieldList)
+        this.createExtended(fieldList, con)
 
         // create records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -892,7 +893,7 @@ abstract class EntityValueBase implements EntityValue {
         }
     }
     /** This method should create a corresponding record in the datasource. */
-    abstract void createExtended(ListOrderedSet fieldList)
+    abstract void createExtended(ListOrderedSet fieldList, Connection con)
 
     @Override
     EntityValue update() {
@@ -951,7 +952,7 @@ abstract class EntityValueBase implements EntityValue {
 
 
         // if there is not a txCache or the txCache doesn't handle the update, call the abstract method to update the main record
-        if (getTxCache() == null || !getTxCache().update(this)) this.basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList)
+        if (getTxCache() == null || !getTxCache().update(this)) this.basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, null)
 
 
         // clear the entity cache
@@ -968,7 +969,7 @@ abstract class EntityValueBase implements EntityValue {
 
         return this
     }
-    void basicUpdate() {
+    void basicUpdate(Connection con) {
         EntityDefinition ed = getEntityDefinition()
 
         boolean dbValueMapFromDb = false
@@ -985,15 +986,15 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
 
-        basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList)
+        basicUpdate(dbValueMapFromDb, pkFieldList, nonPkFieldList, con)
     }
-    void basicUpdate(boolean dbValueMapFromDb, List<String> pkFieldList, ListOrderedSet nonPkFieldList) {
+    void basicUpdate(boolean dbValueMapFromDb, List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
         // call abstract method
-        this.updateExtended(pkFieldList, nonPkFieldList)
+        this.updateExtended(pkFieldList, nonPkFieldList, con)
 
         // create or update records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -1036,8 +1037,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
     }
-
-    abstract void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList)
+    abstract void updateExtended(List<String> pkFieldList, ListOrderedSet nonPkFieldList, Connection con)
 
     @Override
     EntityValue delete() {
@@ -1060,7 +1060,7 @@ abstract class EntityValueBase implements EntityValue {
 
 
         // if there is not a txCache or the txCache doesn't handle the delete, call the abstract method to delete the main record
-        if (getTxCache() == null || !getTxCache().delete(this)) this.basicDelete()
+        if (getTxCache() == null || !getTxCache().delete(this)) this.basicDelete(null)
 
 
         // clear the entity cache
@@ -1075,12 +1075,12 @@ abstract class EntityValueBase implements EntityValue {
 
         return this
     }
-    void basicDelete() {
+    void basicDelete(Connection con) {
         EntityDefinition ed = getEntityDefinition()
         ExecutionContextFactoryImpl ecfi = getEntityFacadeImpl().getEcfi()
         ExecutionContext ec = ecfi.getExecutionContext()
 
-        this.deleteExtended()
+        this.deleteExtended(con)
 
         // delete records for the UserFields
         ListOrderedSet userFieldNameList = ed.getFieldNames(false, false, true)
@@ -1099,7 +1099,7 @@ abstract class EntityValueBase implements EntityValue {
             }
         }
     }
-    abstract void deleteExtended()
+    abstract void deleteExtended(Connection con)
 
     @Override
     boolean refresh() {
