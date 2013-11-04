@@ -636,6 +636,7 @@ abstract class EntityValueBase implements EntityValue {
         }
         // track that we visited this record
         StupidUtilities.addToSetInMap(en, pkMap, entityPksVisited)
+        // logger.warn("===== Added ${en}:${pkMap}, entityPksVisited=${entityPksVisited}")
         // write this
         this.writeXmlText(pw, prefix, false)
         valuesWritten++

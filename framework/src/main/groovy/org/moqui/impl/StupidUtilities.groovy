@@ -251,21 +251,21 @@ class StupidUtilities {
     }
 
     static void addToListInMap(String key, Object value, Map theMap) {
-        if (!theMap) return
+        if (theMap == null) return
         List theList = (List) theMap.get(key)
         if (!theList) { theList = new ArrayList(); theMap.put(key, theList) }
         theList.add(value)
     }
 
     static boolean addToSetInMap(String key, Object value, Map theMap) {
-        if (!theMap) return
+        if (theMap == null) return
         Set theSet = (Set) theMap.get(key)
         if (!theSet) { theSet = new HashSet(); theMap.put(key, theSet) }
         return theSet.add(value)
     }
 
     static void addToMapInMap(String keyOuter, String keyInner, Object value, Map theMap) {
-        if (!theMap) return
+        if (theMap == null) return
         Map innerMap = (Map) theMap.get(keyOuter)
         if (!innerMap) { innerMap = new HashMap(); theMap.put(keyOuter, innerMap) }
         innerMap.put(keyInner, value)
