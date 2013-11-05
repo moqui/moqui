@@ -5,9 +5,10 @@ framework.iml
 framework/build/
 framework/.gradle/
 moqui-*.war
-MoquiTenant.zip
-MoquiTransactional.zip
-MoquiAnalytical.zip
+SaveTenant.zip
+SaveTransactional.zip
+SaveAnalytical.zip
+SaveElasticSearch.zip
 runtime/component/example/build/
 runtime/component/example.iml
 runtime/db/derby/MoquiTenant/
@@ -19,4 +20,5 @@ runtime/elasticsearch/work/
 runtime/log/
 runtime/mantle/
 runtime/tmp/
+runtime/txlog/
 execwartmp/

@@ -40,6 +40,8 @@ task cleanTempDir(type: Delete) { delete file(execTempDir) }
 task cleanDb(type: Delete) { delete files(file(moquiRuntime+'/db/derby').listFiles()) - files(moquiRuntime+'/db/derby/derby.properties') }
 task cleanElasticSearch(type: Delete) { delete file(moquiRuntime+'/elasticsearch/data') }
 task cleanLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/log', include: '*') }
+task cleanTxLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/txlog', include: '*') }
+task cleanLoadSave(type: Delete) { delete file('SaveTenant.zip'); delete file('SaveTransactional.zip'); delete file('SaveElasticSearch.zip') }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
 task cleanAll {
@@ -47,7 +49,9 @@ task cleanAll {
     dependsOn allCleanTasks
     dependsOn cleanDb
     dependsOn cleanElasticSearch
+    dependsOn cleanTxLog
     dependsOn cleanLog
+    dependsOn cleanLoadSave
     dependsOn cleanOther
 }
 
@@ -90,9 +94,9 @@ task loadProduction(type: JavaExec) {
 }
 
 task loadSaveExec << {
-    delete file('MoquiTenant.zip'); delete file('MoquiTransactional.zip')
-    ant.zip(destfile: 'MoquiTenant.zip') { fileset(dir: 'runtime/db/derby/MoquiTenant') { include(name: '**/*') } }
-    ant.zip(destfile: 'MoquiTransactional.zip') { fileset(dir: 'runtime/db/derby/MoquiTransactional') { include(name: '**/*') } }
+    ant.zip(destfile: 'SaveTenant.zip') { fileset(dir: moquiRuntime+'/db/derby/MoquiTenant') { include(name: '**/*') } }
+    ant.zip(destfile: 'SaveTransactional.zip') { fileset(dir: moquiRuntime+'/db/derby/MoquiTransactional') { include(name: '**/*') } }
+    ant.zip(destfile: 'SaveElasticSearch.zip') { fileset(dir: moquiRuntime+'/elasticsearch/data') { include(name: '**/*') } }
 }
 task loadSave {
     dependsOn cleanAll
@@ -101,14 +105,16 @@ task loadSave {
 }
 
 task reloadSaveExec << {
-    copy { from zipTree('MoquiTenant.zip'); into file('runtime/db/derby/MoquiTenant') }
-    copy { from zipTree('MoquiTransactional.zip'); into file('runtime/db/derby/MoquiTransactional') }
+    copy { from zipTree('SaveTenant.zip'); into file(moquiRuntime+'/db/derby/MoquiTenant') }
+    copy { from zipTree('SaveTransactional.zip'); into file(moquiRuntime+'/db/derby/MoquiTransactional') }
+    copy { from zipTree('SaveElasticSearch.zip'); into file(moquiRuntime+'/elasticsearch/data') }
 }
 task reloadSave {
-    //dependsOn cleanAll
+    // dependsOn cleanAll
     dependsOn cleanTempDir
     dependsOn cleanDb
     dependsOn cleanElasticSearch
+    dependsOn cleanTxLog
     dependsOn cleanLog
     dependsOn allBuildTasks
 
