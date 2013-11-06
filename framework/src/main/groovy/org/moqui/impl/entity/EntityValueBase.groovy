@@ -379,9 +379,10 @@ abstract class EntityValueBase implements EntityValue {
     void handleAuditLog(boolean isUpdate, Map oldValues) {
         if (isUpdate && oldValues == null) return
 
-        ExecutionContext ec = getEntityFacadeImpl().ecfi.executionContext
         EntityDefinition ed = getEntityDefinition()
         if (!ed.needsAuditLog()) return
+
+        ExecutionContext ec = getEntityFacadeImpl().getEcfi().getExecutionContext()
         Timestamp nowTimestamp = ec.user.nowTimestamp
 
         Map<String, Object> pksValueMap = new HashMap<String, Object>()
@@ -412,7 +413,7 @@ abstract class EntityValueBase implements EntityValue {
 
                 // logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}], oldValues=[${oldValues}]", new Exception("AuditLog location"))
 
-                getEntityFacadeImpl().ecfi.serviceFacade.async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
+                getEntityFacadeImpl().getEcfi().getServiceFacade().async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
         }
     }
@@ -829,7 +830,7 @@ abstract class EntityValueBase implements EntityValue {
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "create", true)
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
-        if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
+        if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         // do this before the db change so modified flag isn't cleared
@@ -945,7 +946,7 @@ abstract class EntityValueBase implements EntityValue {
         }
 
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
-        if (ed.isField("lastUpdatedStamp") && !this.get("lastUpdatedStamp"))
+        if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
 
         // do this before the db change so modified flag isn't cleared
