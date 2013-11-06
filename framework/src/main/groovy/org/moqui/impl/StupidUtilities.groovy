@@ -293,6 +293,24 @@ class StupidUtilities {
 
         return null
     }
+    /** Find all values of a named field in a nested Map containing fields, Maps, and Collections of Maps (Lists, etc) */
+    static void findAllFieldsNestedMap(String key, Map theMap, Set<Object> valueSet) {
+        if (theMap.get(key)) valueSet.add(theMap.get(key))
+        for(Object value in theMap.values()) {
+            if (value instanceof Map) {
+                Map valueMap = (Map) value
+                findAllFieldsNestedMap(key, valueMap, valueSet)
+            } else if (value instanceof Collection) {
+                // only look in Collections of Maps
+                for (Object colValue in value) {
+                    if (colValue instanceof Map) {
+                        Map valueMap = (Map) colValue
+                        findAllFieldsNestedMap(key, valueMap, valueSet)
+                    }
+                }
+            }
+        }
+    }
 
     /** Creates a single Map with fields from the passed in Map and all nested Maps (for Map and Collection of Map entry values) */
     static Map flattenNestedMap(Map theMap) {

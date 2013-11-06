@@ -154,7 +154,8 @@ class EntityDataDocument {
         // add conditions
         if (condition) mainFind.condition(condition)
         for (EntityValue dataDocumentCondition in dataDocumentConditionList)
-            mainFind.condition((String) dataDocumentCondition.fieldNameAlias, dataDocumentCondition.fieldValue)
+            if (dataDocumentCondition.postQuery != "Y")
+                mainFind.condition((String) dataDocumentCondition.fieldNameAlias, dataDocumentCondition.fieldValue)
 
         // create a condition with an OR list of date range comparisons to check that at least one member-entity has lastUpdatedStamp in range
         if (fromUpdateStamp != null || thruUpdatedStamp != null) {
@@ -242,7 +243,22 @@ class EntityDataDocument {
                         .parameters([dataDocumentId:dataDocumentId, document:docMap]).call()
                 if (result.document) docMap = (Map) result.document
             }
-            documentMapList.add(docMap)
+
+            // check postQuery conditions
+            boolean allPassed = true
+            for (EntityValue dataDocumentCondition in dataDocumentConditionList) if (dataDocumentCondition.postQuery == "Y") {
+                Set<Object> valueSet = new HashSet<Object>()
+                StupidUtilities.findAllFieldsNestedMap((String) dataDocumentCondition.fieldNameAlias, docMap, valueSet)
+                if (!valueSet) {
+                    if (!dataDocumentCondition.fieldValue) { continue }
+                    else { allPassed = false; break }
+                }
+                if (!dataDocumentCondition.fieldValue) { allPassed = false; break }
+                Object fieldValueObj = dataDocumentCondition.fieldValue.asType(valueSet.first().class)
+                if (!(fieldValueObj in valueSet)) { allPassed = false; break }
+            }
+
+            if (allPassed) documentMapList.add(docMap)
         }
         return documentMapList
     }
