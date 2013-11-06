@@ -258,7 +258,8 @@ class TransactionCache implements XAResource {
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         if (currentEwi != null && currentEwi.writeMode == WriteMode.DELETE) return new DeletedEntityValue(efb.getEntityDef(), ecfi.getEntityFacade())
 
-        return readOneCache.get(key)
+        // cloneValue() so that updates aren't in the read cache until an update is done
+        return (EntityValueBase) readOneCache.get(key)?.cloneValue()
     }
     void onePut(EntityValueBase evb) {
         Map key = makeKey(evb)
@@ -272,7 +273,7 @@ class TransactionCache implements XAResource {
     EntityListImpl listGet(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByExpanded) {
         Map<EntityCondition, EntityListImpl> entityListCache = readListCache.get(ed.getFullEntityName())
         // always clone this so that filters/sorts/etc by callers won't change this
-        EntityListImpl cacheList = entityListCache != null ? entityListCache.get(whereCondition)?.cloneList() : null
+        EntityListImpl cacheList = entityListCache != null ? entityListCache.get(whereCondition)?.deepCloneList() : null
 
         // if we are searching by a field that is a PK on a related entity to the one being searched it can only exist
         //     in the read cache so find here and don't bother with a DB query
@@ -317,7 +318,7 @@ class TransactionCache implements XAResource {
                     }
 
                     listPut(ed, whereCondition, createdValueList)
-                    cacheList = createdValueList.cloneList()
+                    cacheList = createdValueList.deepCloneList()
                 }
             }
         }

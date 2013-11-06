@@ -121,6 +121,12 @@ class EntityListImpl implements EntityList {
         return newObj
     }
 
+    EntityListImpl deepCloneList() {
+        EntityListImpl newObj = new EntityListImpl(this.efi)
+        for (EntityValue ev in this.valueList) newObj.valueList.add(ev.cloneValue())
+        return newObj
+    }
+
     void setFromCache(boolean fc) { fromCache = fc }
     boolean isFromCache() { return fromCache }
 
