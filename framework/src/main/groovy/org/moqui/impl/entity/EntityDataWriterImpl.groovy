@@ -145,7 +145,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
                 int valuesWritten = 0
                 for (String en in entityNames) {
-                    EntityFind ef = efi.makeFind(en).condition(filterMap)
+                    EntityFind ef = efi.makeFind(en).condition(filterMap).orderBy(orderByList)
                     EntityDefinition ed = efi.getEntityDefinition(en)
                     if (ed.isField("lastUpdatedStamp")) {
                         if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
