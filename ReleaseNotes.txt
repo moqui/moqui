@@ -2,10 +2,26 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.2 - Date TBD
+Release 1.3.2 - 15 Nov 2013 (tentative)
 ===========================================================================
 
-Moqui Framework 1.3.1 is a minor new feature and bug fix release.
+Moqui Framework 1.3.2 is a minor new feature and bug fix release. The main
+new feature is a write-through per-transaction cache that effectively
+simulates the database for the scope of the transaction and does all DB
+updates with a single connection just before commit. This transaction cache
+is enabled on service definitions using the cache and force-cache options
+for the service.@transaction attribute. With this in place various Mantle
+services now run 2-3 times as fast with results validated by extensive
+automated tests.
+
+Another set of new features covers
+internal profiling for artifact execution (entities, services, screens,
+transitions, etc). There are various forms of output available including a
+full artifact call tree with times, a consolidated tree to see own and
+total for artifacts in context, and a hot spot list by own or total time.
+This is similar to Java-level profiling tools but focuses on business level
+artifacts and with a low overhead gathers data always but only generates
+reports when needed.
 
 New Features:
 
@@ -18,23 +34,32 @@ New Features:
   thoroughly
 - Added econdition.@or-null attribute to make the condition an or between
   the specified condition and null
-- Screen form-single forms automatically add a "_formMap" field to the
-  context with the Map used for the form; useful for reused forms that may
-  specify different form-single.@map values
-- XML Actions iterate generates _index and _hasNext fields
-- ArtifactFacade tracks artifact running time, keeps an hierarchical
-  instead of flat history, and can print a tree of the history
 - Added entity.@allow-user-field attribute to specify when UserField defs
   are considered, for security and performance reasons
 - Added entity.@create-only attribute for immutable entities
 - Added eeca.@get-original-value attribute to get the original (db) value
   if run on update or delete and before the entity operation
+- Screen form-single forms automatically add a "_formMap" field to the
+  context with the Map used for the form; useful for reused forms that may
+  specify different form-single.@map values
+- XML Actions iterate generates _index and _hasNext fields
+- ArtifactFacade tracks artifact running time, keeps an hierarchical
+  instead of flat history, and can print a tree of the history; can also
+  create a consolidated tree across larger runs to see an overview of own
+  and total time per artifact; can also create a hot spots list by own or
+  total time per artifact to see which took the most time
+- Added gradle tasks to save the Derby databases and ElasticSearch data
+  after a load (loadSave) and to cleanout and reload the saved data
+  (reloadSave)
 
 Bug Fixes:
+
 - Fixed issue in ListCondition with null list entries, and improved the
   factory method with condition List parameter when List has only one
   condition to just use that condition
 - Fixed issue in service input conversion treating empty values as nulls
+- Fixed some minor and rare Entity Facade errors as part of more extensive
+  testing for TransactionCache and a code cleanup and consolidation effort
 
 ===========================================================================
 Release 1.3.1 - 20 Oct 2013
