@@ -14,14 +14,13 @@ for the service.@transaction attribute. With this in place various Mantle
 services now run 2-3 times as fast with results validated by extensive
 automated tests.
 
-Another set of new features covers
-internal profiling for artifact execution (entities, services, screens,
-transitions, etc). There are various forms of output available including a
-full artifact call tree with times, a consolidated tree to see own and
-total for artifacts in context, and a hot spot list by own or total time.
-This is similar to Java-level profiling tools but focuses on business level
-artifacts and with a low overhead gathers data always but only generates
-reports when needed.
+Another set of new features covers internal profiling for artifact
+execution (entities, services, screens, transitions, etc). There are
+various forms of output available including a full artifact call tree with
+times, a consolidated tree to see own and total for artifacts in context,
+and a hot spot list by own or total time. This is similar to Java-level
+profiling tools but focuses on business level artifacts and with a low
+overhead gathers data always but only generates reports when needed.
 
 New Features:
 
