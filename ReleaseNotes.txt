@@ -48,7 +48,7 @@ New Features:
   and total time per artifact; can also create a hot spots list by own or
   total time per artifact to see which took the most time
 - Added gradle tasks to save the Derby databases and ElasticSearch data
-  after a load (loadSave) and to cleanout and reload the saved data
+  after a load (loadSave) and to clean out and reload the saved data
   (reloadSave)
 
 Bug Fixes:

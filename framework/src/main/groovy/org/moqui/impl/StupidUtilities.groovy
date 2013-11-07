@@ -253,22 +253,26 @@ class StupidUtilities {
     static void addToListInMap(String key, Object value, Map theMap) {
         if (theMap == null) return
         List theList = (List) theMap.get(key)
-        if (!theList) { theList = new ArrayList(); theMap.put(key, theList) }
+        if (theList == null) { theList = new ArrayList(); theMap.put(key, theList) }
         theList.add(value)
     }
-
     static boolean addToSetInMap(String key, Object value, Map theMap) {
         if (theMap == null) return
         Set theSet = (Set) theMap.get(key)
-        if (!theSet) { theSet = new HashSet(); theMap.put(key, theSet) }
+        if (theSet == null) { theSet = new HashSet(); theMap.put(key, theSet) }
         return theSet.add(value)
     }
-
     static void addToMapInMap(String keyOuter, String keyInner, Object value, Map theMap) {
         if (theMap == null) return
         Map innerMap = (Map) theMap.get(keyOuter)
-        if (!innerMap) { innerMap = new HashMap(); theMap.put(keyOuter, innerMap) }
+        if (innerMap == null) { innerMap = new HashMap(); theMap.put(keyOuter, innerMap) }
         innerMap.put(keyInner, value)
+    }
+    static void addToBigDecimalInMap(String key, BigDecimal value, Map theMap) {
+        if (value == null || theMap == null) return
+        BigDecimal curVal = (BigDecimal) theMap.get(key)
+        if (curVal == null) { theMap.put(key, value) }
+        else { theMap.put(key, curVal + value) }
     }
 
     /** Find a field value in a nested Map containing fields, Maps, and Collections of Maps (Lists, etc) */
