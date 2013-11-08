@@ -154,7 +154,7 @@ label.form-title { vertical-align: middle; display: inline-block; width: 120px; 
 .form-list-outer {
 margin: 0;
 border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
-padding: 4px; width: 100%;
+padding: 4px; width: 99%;
 display: table; table-layout: auto; border-collapse: separate; empty-cells: show;
 }
 .form-header-group { display: table-header-group; }
