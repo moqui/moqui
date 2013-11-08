@@ -1039,16 +1039,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#assign afterFormScript>
             function populate_${id}() {
                 $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
-                        function(list) {
-                            if (list) {
-                                $('#${id}').html(""); /* clear out the drop-down */
-                                $.each(list, function(key, value) {
-                                    $('#${id}').append("<option value = '" + value["${doNode["@value-field"]!"value"}"] + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
-                                })
-                            };
-                        }
-                );
-            };
+                    function(list) {
+                        if (list) {
+                            $('#${id}').html(""); /* clear out the drop-down */
+                            <#if allowEmpty?if_exists == "true">
+                            $('#${id}').append('<option value="">&nbsp;</option>');
+                            </#if>
+                            $.each(list, function(key, value) {
+                                $('#${id}').append("<option value = '" + value["${doNode["@value-field"]!"value"}"] + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
+                            }) }; } ); };
             $(document).ready(function() {
                 <#list depNodeList as depNode>
                     $("#${formName}_${depNode["@field"]}").change(function() { populate_${id}(); });
