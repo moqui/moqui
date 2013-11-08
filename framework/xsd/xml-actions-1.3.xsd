@@ -272,6 +272,9 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The name of the entity field to use as the thru/ending effective date.
                     Defaults to thruDate.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="ignore-if-empty" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Leave out the constraint if valid-date is empty or null. Defaults to false.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

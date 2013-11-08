@@ -81,7 +81,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
         StupidUtilities.filterMapList(_listToFilter, [<#list .node["field-map"] as fm>"${fm["@field-name"]}":<#if fm["@from"]?has_content>${fm["@from"]}<#else>"""${fm["@value"]}"""</#if><#if fm_has_next>, </#if></#list>])
     </#if>
     <#list .node["date-filter"] as df>
-        StupidUtilities.filterMapListByDate(_listToFilter, "${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else>ec.user.nowTimestamp</#if>)
+        StupidUtilities.filterMapListByDate(_listToFilter, "${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} ?: ec.user.nowTimestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})
     </#list>
     }
 </#macro>
@@ -119,7 +119,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     ${.node["@list"]} = ${.node["@list"]}_xafind.iterator()
     <#else>
     ${.node["@list"]} = ${.node["@list"]}_xafind.list()
-    <#if useCache><#list .node["date-filter"] as df>${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>ec.user.nowTimestamp</#if>)</#list></#if>
+    <#if useCache><#list .node["date-filter"] as df>${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})</#list></#if>
     </#if>
     <#if .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
     ${.node["@list"]}Count = ${.node["@list"]}_xafind.count()
@@ -136,7 +136,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list><#if .node["having-econditions"]?has_content><#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list></#if>.count()
 </#macro>
 <#-- =================== entity-find sub-elements =================== -->
-<#macro "date-filter">ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]?default("fromDate")}", "${.node["@thru-field-name"]?default("thruDate")}", <#if .node["@valid-date"]?has_content>${.node["@valid-date"]} as Timestamp<#else>ec.user.nowTimestamp</#if>)</#macro>
+<#macro "date-filter">ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]?default("fromDate")}", "${.node["@thru-field-name"]?default("thruDate")}", <#if .node["@valid-date"]?has_content>${.node["@valid-date"]} as Timestamp<#else>null</#if>, ${.node["@ignore-if-empty"]?default("false")})</#macro>
 <#macro "econdition">ec.entity.conditionFactory.makeActionConditionDirect("${.node["@field-name"]}", "${.node["@operator"]?default("equals")}", ${.node["@from"]?default(.node["@field-name"])}, <#if .node["@value"]?has_content>"${.node["@value"]}"<#else>null</#if>, <#if .node["@to-field-name"]?has_content>"${.node["@to-field-name"]}"<#else>null</#if>, ${.node["@ignore-case"]?default("false")}, ${.node["@ignore-if-empty"]?default("false")}, ${.node["@or-null"]?default("false")}, ${.node["@ignore"]?default("false")})</#macro>
 <#macro "econditions">ec.entity.conditionFactory.makeCondition([<#list .node?children as subCond><#visit subCond/><#if subCond_has_next>, </#if></#list>], org.moqui.impl.entity.EntityConditionFactoryImpl.getJoinOperator("${.node["@combine"]!"and"}"))</#macro>
 <#macro "econdition-object">${.node["@field"]}</#macro>

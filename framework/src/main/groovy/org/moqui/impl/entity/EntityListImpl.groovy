@@ -70,6 +70,10 @@ class EntityListImpl implements EntityList {
 
         return this
     }
+    EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment, boolean ignoreIfEmpty) {
+        if (ignoreIfEmpty && moment == null) return
+        return filterByDate(fromDateName, thruDateName, moment)
+    }
 
     @Override
     EntityList filterByAnd(Map<String, ?> fields) {

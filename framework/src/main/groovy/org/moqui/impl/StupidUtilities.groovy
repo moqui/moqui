@@ -151,6 +151,10 @@ class StupidUtilities {
             if (thruDate && compareStamp >= thruDate) theIterator.remove();
         }
     }
+    static void filterMapListByDate(List<Map> theList, String fromDateName, String thruDateName, Timestamp compareStamp, boolean ignoreIfEmpty) {
+        if (ignoreIfEmpty && compareStamp == null) return
+        filterMapListByDate(theList, fromDateName, thruDateName, compareStamp)
+    }
 
     static void orderMapList(List<Map> theList, List<String> fieldNames) {
         if (theList && fieldNames) Collections.sort(theList, new MapOrderByComparator(fieldNames))

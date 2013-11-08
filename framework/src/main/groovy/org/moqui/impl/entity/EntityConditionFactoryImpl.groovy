@@ -89,6 +89,11 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
         return new DateCondition(this, fromFieldName, thruFieldName,
                 compareStamp ?: efi.getEcfi().getExecutionContext().getUser().getNowTimestamp())
     }
+    EntityCondition makeConditionDate(String fromFieldName, String thruFieldName, Timestamp compareStamp, boolean ignoreIfEmpty) {
+        if (ignoreIfEmpty && compareStamp == null) return null
+        return new DateCondition(this, fromFieldName, thruFieldName,
+                compareStamp ?: efi.getEcfi().getExecutionContext().getUser().getNowTimestamp())
+    }
 
     @Override
     EntityCondition makeConditionWhere(String sqlWhereClause) {
