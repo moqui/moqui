@@ -41,7 +41,8 @@ class EntityListImpl implements EntityList {
         if (fromCache) return this.cloneList().filterByDate(fromDateName, thruDateName, moment)
 
         // default to now
-        Long momentLong = moment ? moment.getTime() : System.currentTimeMillis()
+        long momentLong = moment ? moment.getTime() : System.currentTimeMillis()
+        long momentDateLong = new java.sql.Date(momentLong).getTime()
         if (!fromDateName) fromDateName = "fromDate"
         if (!thruDateName) thruDateName = "thruDate"
 
@@ -62,9 +63,16 @@ class EntityListImpl implements EntityList {
             else if (thruDateObj instanceof Long) thruDateLong = thruDateObj
             else thruDateLong = null
 
-            if (!((thruDateLong == null || thruDateLong >= momentLong) &&
-                    (fromDateLong == null || fromDateLong <= momentLong))) {
-                valueIterator.remove()
+            if (fromDateObj instanceof java.sql.Date || thruDateObj instanceof java.sql.Date) {
+                if (!((thruDateLong == null || thruDateLong >= momentDateLong) &&
+                        (fromDateLong == null || fromDateLong <= momentDateLong))) {
+                    valueIterator.remove()
+                }
+            } else {
+                if (!((thruDateLong == null || thruDateLong >= momentLong) &&
+                        (fromDateLong == null || fromDateLong <= momentLong))) {
+                    valueIterator.remove()
+                }
             }
         }
 
