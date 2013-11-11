@@ -511,6 +511,11 @@ class TransactionFacadeImpl implements TransactionFacade {
         }
     }
 
+    @Override
+    void initTransactionCache() {
+        if (getActiveXaResource("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
+    }
+
     static class RollbackInfo {
         String causeMessage
         /** A rollback is often done because of another error, this represents that error. */

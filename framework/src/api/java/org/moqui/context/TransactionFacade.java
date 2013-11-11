@@ -108,4 +108,6 @@ public interface TransactionFacade {
 
     XAResource getActiveXaResource(String resourceName);
     void putAndEnlistActiveXaResource(String resourceName, XAResource xar);
+
+    void initTransactionCache();
 }
