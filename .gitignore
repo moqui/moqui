@@ -8,12 +8,14 @@ moqui-*.war
 SaveTenant.zip
 SaveTransactional.zip
 SaveAnalytical.zip
+SaveOrientDb.zip
 SaveElasticSearch.zip
 runtime/component/example/build/
 runtime/component/example.iml
 runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
 runtime/db/derby/derby.log
+runtime/db/orientdb/databases/
 runtime/elasticsearch/data/
 runtime/elasticsearch/log/
 runtime/elasticsearch/work/
