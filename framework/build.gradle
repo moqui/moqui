@@ -30,6 +30,7 @@ repositories {
     flatDir name: 'localLib', dirs: projectDir.absolutePath + '/lib'
     flatDir name: 'localLibFop', dirs: projectDir.absolutePath + '/lib/fop'
     flatDir name: 'localLibSearch', dirs: projectDir.absolutePath + '/lib/search'
+    flatDir name: 'localLibOrientdb', dirs: projectDir.absolutePath + '/lib/orientdb'
 }
 
 dependencies {
@@ -88,6 +89,18 @@ dependencies {
     compile name: 'org.eclipse.mylyn.wikitext.textile.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.tracwiki.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.twiki.core_1.8.0.I20121130-0624', version: '' // EPL
+
+    compile name: 'orient-commons', version: '1.6' // Apache 2.0
+    compile name: 'orientdb-client', version: '1.6' // Apache 2.0
+    compile name: 'orientdb-core', version: '1.6' // Apache 2.0
+    compile name: 'orientdb-enterprise', version: '1.6' // Apache 2.0
+    compile name: 'orientdb-graphdb', version: '1.6' // Apache 2.0
+    compile name: 'orientdb-server', version: '1.6' // Apache 2.0
+    compile name: 'snappy', version: '0.3' // ???
+    compile name: 'blueprints-core', version: '2.5.0-SNAPSHOT' // BSD
+    compile name: 'blueprints-orient-graph', version: '2.5.0-SNAPSHOT' // BSD
+    compile name: 'gremlin-java', version: '2.5.0-SNAPSHOT' // BSD
+    compile name: 'gremlin-groovy', version: '2.5.0-SNAPSHOT' // BSD
 
     compile name: 'quartz-all', version: '2.1.7' // Apache 2.0
 
@@ -154,6 +167,7 @@ dependencies {
     */
 
     runtime name: 'derby', version: '10.10.1.1' // Apache 2.0
+
     runtime name: 'jakarta-oro', version: '2.0.8' // Apache 2.0
     runtime name: 'shiro-ehcache', version: '1.2.1' // Apache 2.0
     runtime name: 'shiro-quartz', version: '1.2.1' // Apache 2.0
