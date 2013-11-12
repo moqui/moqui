@@ -30,7 +30,7 @@ repositories {
     flatDir name: 'localLib', dirs: projectDir.absolutePath + '/lib'
     flatDir name: 'localLibFop', dirs: projectDir.absolutePath + '/lib/fop'
     flatDir name: 'localLibSearch', dirs: projectDir.absolutePath + '/lib/search'
-    flatDir name: 'localLibOrientdb', dirs: projectDir.absolutePath + '/lib/orientdb'
+    flatDir name: 'localLibOrientDb', dirs: projectDir.absolutePath + '/lib/orientdb'
 }
 
 dependencies {

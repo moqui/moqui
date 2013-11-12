@@ -19,6 +19,8 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 // maybe in the future: repositories { mavenCentral() }
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
+    flatDir name: 'localLibSearch', dirs: frameworkDir.absolutePath + '/lib/search'
+    flatDir name: 'localLibOrientDb', dirs: frameworkDir.absolutePath + '/lib/orientdb'
     flatDir name: 'moquiLib', dirs: frameworkDir.absolutePath + '/build/libs'
 }
 
