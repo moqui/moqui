@@ -22,8 +22,17 @@ and a hot spot list by own or total time. This is similar to Java-level
 profiling tools but focuses on business level artifacts and with a low
 overhead gathers data always but only generates reports when needed.
 
+OrientDB is now included in the framework by default instead of only in an
+addon component as before. This is useful as a general graph and document
+database and as an alternative through the Entity Facade for high-write
+entities like ArtifactHit.
+
 New Features:
 
+- OrientDB is now included in the framework by default instead of only in
+  an addon component to have an embedded document and graph NoSQL database;
+  this and other graph databases can be used through the Blueprint and
+  Gremlin APIs
 - Implemented write-through per-transaction cache (TransactionCache)
   enabled through the service.@transaction attribute cache and force-cache
   options or through direct initialization; this is a pretty big new
