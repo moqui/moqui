@@ -95,12 +95,15 @@ dependencies {
     compile name: 'orientdb-core', version: '1.6' // Apache 2.0
     compile name: 'orientdb-enterprise', version: '1.6' // Apache 2.0
     compile name: 'orientdb-graphdb', version: '1.6' // Apache 2.0
+    compile name: 'orientdb-nativeos', version: '1.6' // Apache 2.0
     compile name: 'orientdb-server', version: '1.6' // Apache 2.0
     compile name: 'snappy', version: '0.3' // ???
     compile name: 'blueprints-core', version: '2.5.0-SNAPSHOT' // BSD
     compile name: 'blueprints-orient-graph', version: '2.5.0-SNAPSHOT' // BSD
     compile name: 'gremlin-java', version: '2.5.0-SNAPSHOT' // BSD
     compile name: 'gremlin-groovy', version: '2.5.0-SNAPSHOT' // BSD
+    compile name: 'jna', version: '4.0.0' // Apache 2.0
+    compile name: 'jna-platform', version: '4.0.0' // Apache 2.0
 
     compile name: 'quartz-all', version: '2.1.7' // Apache 2.0
 
