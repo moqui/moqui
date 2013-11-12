@@ -220,7 +220,7 @@
             <!-- <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/> -->
         </datasource>
         <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory">
-            <inline-other uri="local:runtime/db/orientdb/databases/MoquiNoSql" username="admin" password="admin"/>
+            <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
         </datasource>
 
         <!-- some examples of how other databases would be configured -->

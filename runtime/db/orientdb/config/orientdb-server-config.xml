@@ -87,7 +87,7 @@
     <storages>
         <!-- Default in-memory storage. Data are not saved permanently. -->
         <storage name="temp" path="memory:temp" userName="admin" userPassword="admin" loaded-at-startup="true"/>
-        <storage name="MoquiNoSql" path="local:runtime/db/orientdb/databases/MoquiNoSql"
+        <storage name="MoquiNoSql" path="local:${ORIENTDB_HOME}/databases/MoquiNoSql"
                 userName="admin" userPassword="admin" loaded-at-startup="true"/>
     </storages>
     <users>
