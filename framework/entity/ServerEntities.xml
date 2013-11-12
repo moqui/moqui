@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.server -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ArtifactHit" package-name="moqui.server"
+    <entity entity-name="ArtifactHit" package-name="moqui.server" group-name="nosql"
             cache="never" sequence-bank-size="100" authorize-skip="create">
         <field name="hitId" type="id" is-pk="true"/>
         <field name="visitId" type="id"/>
