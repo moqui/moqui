@@ -553,7 +553,7 @@ abstract class EntityFindBase implements EntityFind {
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
         def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
-        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
+        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add((String) orderBy."@field-name")
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
 
@@ -566,7 +566,7 @@ abstract class EntityFindBase implements EntityFind {
         EntityList cacheList = null
         if (doEntityCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)
 
-        EntityListImpl el = null
+        EntityListImpl el
         if (txcEli != null) {
             el = txcEli
             // if (ed.getFullEntityName().contains("OrderItem")) logger.warn("======== Got OrderItem from txCache ${el.size()} results where: ${whereCondition}")
@@ -577,7 +577,7 @@ abstract class EntityFindBase implements EntityFind {
             if (!this.fieldsToSelect || txCache != null || doEntityCache) this.selectFields(ed.getFieldNames(true, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
+            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {
@@ -596,16 +596,18 @@ abstract class EntityFindBase implements EntityFind {
             }
 
             // call the abstract method
-            EntityListIteratorImpl elii = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
-            // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
-            elii.setQueryCondition(whereCondition)
-            elii.setOrderByFields(orderByExpanded)
+            EntityListIterator eli = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+            if (eli instanceof EntityListIteratorImpl) {
+                // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
+                eli.setQueryCondition(whereCondition)
+                eli.setOrderByFields(orderByExpanded)
+            }
 
             Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
             if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
-                el = elii.getPartialList(this.offset ?: 0, this.limit, true)
+                el = eli.getPartialList(this.offset ?: 0, this.limit, true)
             } else {
-                el = elii.getCompleteList(true)
+                el = eli.getCompleteList(true)
             }
 
             if (txCache != null) txCache.listPut(ed, whereCondition, el)
@@ -647,7 +649,7 @@ abstract class EntityFindBase implements EntityFind {
         if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(true, true, false))
         // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-        if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
+        if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
 
         EntityConditionImplBase whereCondition = (EntityConditionImplBase) getWhereEntityCondition()
         EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
@@ -670,19 +672,21 @@ abstract class EntityFindBase implements EntityFind {
         // add the manually specified ones, then the ones in the view entity's entity-condition
         if (this.getOrderBy()) orderByExpanded.addAll(this.getOrderBy())
         def ecObList = ed.getEntityNode()."entity-condition"?.first?."order-by"
-        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add(orderBy."@field-name")
+        if (ecObList) for (Node orderBy in ecObList) orderByExpanded.add((String) orderBy."@field-name")
 
         // call the abstract method
-        EntityListIteratorImpl elii = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
-        elii.setQueryCondition(whereCondition)
-        elii.setOrderByFields(orderByExpanded)
+        EntityListIterator eli = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
+        if (eli instanceof EntityListIteratorImpl) {
+            eli.setQueryCondition(whereCondition)
+            eli.setOrderByFields(orderByExpanded)
+        }
 
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
         Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
         if (databaseNode."@offset-style" == "cursor") {
-            if (!elii.absolute(offset)) {
+            if (!eli.absolute(offset)) {
                 // can't seek to desired offset? not enough results, just go to after last result
-                elii.afterLast()
+                eli.afterLast()
             }
         }
 
@@ -692,10 +696,10 @@ abstract class EntityFindBase implements EntityFind {
         // pop the ArtifactExecutionInfo
         ec.getArtifactExecution().pop()
 
-        return elii
+        return eli
     }
 
-    abstract EntityListIteratorImpl iteratorExtended(EntityConditionImplBase whereCondition,
+    abstract EntityListIterator iteratorExtended(EntityConditionImplBase whereCondition,
             EntityConditionImplBase havingCondition, List<String> orderByExpanded)
 
     @Override
@@ -726,7 +730,7 @@ abstract class EntityFindBase implements EntityFind {
             if (!this.fieldsToSelect) this.selectFields(ed.getFieldNames(false, true, false))
             // TODO: this will not handle query conditions on UserFields, it will blow up in fact
 
-            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"[0]?."@distinct" == "true") this.distinct(true)
+            if (ed.isViewEntity() && ed.getEntityNode()."entity-condition"?.first?."@distinct" == "true") this.distinct(true)
 
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
             if (whereCondition && viewWhere) {

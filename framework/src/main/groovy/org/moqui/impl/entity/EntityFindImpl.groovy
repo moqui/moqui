@@ -95,7 +95,7 @@ class EntityFindImpl extends EntityFindBase {
     }
 
     @Override
-    EntityListIteratorImpl iteratorExtended(EntityConditionImplBase whereCondition, EntityConditionImplBase havingCondition,
+    EntityListIterator iteratorExtended(EntityConditionImplBase whereCondition, EntityConditionImplBase havingCondition,
                                         List<String> orderByExpanded) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
