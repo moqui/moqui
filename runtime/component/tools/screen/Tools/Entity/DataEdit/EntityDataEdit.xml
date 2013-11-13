@@ -37,7 +37,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-single name="UpdateEntityValue" transition="update" dynamic="true">
             <auto-fields-entity entity-name="${entityName}" include="pk" field-type="display"/>
             <auto-fields-entity entity-name="${entityName}" include="nonpk" field-type="edit"/>
-            <field name="entityName"><default-field><hidden/></default-field></field>
+            <field name="entityName" entry-name="entityName"><default-field><hidden/></default-field></field>
             <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
         </form-single>
         <form-list name="RelatedEntities" list="relationshipInfoList">
