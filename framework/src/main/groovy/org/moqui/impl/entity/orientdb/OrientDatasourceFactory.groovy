@@ -54,6 +54,8 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
     protected String username
     protected String password
 
+    protected Set<String> checkedClassSet = new HashSet<String>()
+
     OrientDatasourceFactory() { }
 
     @Override
@@ -128,8 +130,12 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         // TODO: do something with view entities
         if (ed.isViewEntity()) return
 
+        if (checkedClassSet.contains(ed.getFullEntityName())) return
+
         OClass oc = oddt.getMetadata().getSchema().getClass(ed.getTableName())
         if (oc == null) createDocumentClass(oddt, ed)
+
+        checkedClassSet.add(ed.getFullEntityName())
     }
     synchronized void createDocumentClass(ODatabaseDocumentTx oddt, EntityDefinition ed) {
         // TODO: do something with view entities
