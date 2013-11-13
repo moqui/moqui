@@ -20,6 +20,10 @@ import org.w3c.dom.Element;
 /** The main interface for general database operations in Moqui. */
 public interface EntityFacade {
 
+    /** Get a EntityDatasourceFactory implementation for a group. This is most useful for non-SQL databases to get
+     * access to underlying details. */
+    EntityDatasourceFactory getDatasourceFactory(String groupName);
+
     /** Get a EntityConditionFactory object that can be used to create and assemble conditions used for finds.
      *
      * @return The facade's active EntityConditionFactory object.

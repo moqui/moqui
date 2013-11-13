@@ -89,9 +89,9 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
-    EntityCache getEntityCache() {return entityCache }
-    EntityDataFeed getEntityDataFeed() {return entityDataFeed }
-    EntityDataDocument getEntityDataDocument() {return entityDataDocument }
+    EntityCache getEntityCache() { return entityCache }
+    EntityDataFeed getEntityDataFeed() { return entityDataFeed }
+    EntityDataDocument getEntityDataDocument() { return entityDataDocument }
 
     void checkInitDatasourceTables() {
         // if startup-add-missing=true check tables now
@@ -666,6 +666,9 @@ class EntityFacadeImpl implements EntityFacade {
     /* ========================= */
     /* Interface Implementations */
     /* ========================= */
+
+    @Override
+    EntityDatasourceFactory getDatasourceFactory(String groupName) { return datasourceFactoryByGroupMap.get(groupName) }
 
     @Override
     EntityConditionFactory getConditionFactory() { return this.entityConditionFactory }
