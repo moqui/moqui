@@ -67,7 +67,7 @@ class OrientEntityValue extends EntityValueBase {
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) throw new EntityException("Update not yet implemented for view-entity")
 
-        // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
+        // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
         ODatabaseDocumentTx oddt = odf.getDatabase()
         try {
             odf.checkCreateDocumentClass(oddt, ed)
@@ -79,17 +79,18 @@ class OrientEntityValue extends EntityValueBase {
             boolean isFirstPk = true
             for (String fieldName in pkFieldList) {
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("= ?")
+                sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
                 paramValues.add(getValueMap().get(fieldName))
             }
 
+            // logger.warn("=========== orient update sql=${sql.toString()}; paramValues=${paramValues}")
             OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
-            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
-            if (!documentList) throw new IllegalArgumentException("Document not found for entity [${ed.getEntityName()}] with pk [${this.getPrimaryKeys()}]")
+            if (!documentList) throw new IllegalArgumentException("Cannot update entity [${ed.getEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
 
-            ODocument document = documentList[0]
+            ODocument document = documentList.first()
             for (String fieldName in nonPkFieldList) document.field(fieldName, getValueMap().get(fieldName))
             document.save()
         } finally {
@@ -102,7 +103,7 @@ class OrientEntityValue extends EntityValueBase {
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) throw new EntityException("Delete not yet implemented for view-entity")
 
-        // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
+        // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
         ODatabaseDocumentTx oddt = odf.getDatabase()
         try {
             odf.checkCreateDocumentClass(oddt, ed)
@@ -119,12 +120,12 @@ class OrientEntityValue extends EntityValueBase {
             }
 
             OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
-            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()]))
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
-            if (!documentList) throw new IllegalArgumentException("Document not found for entity [${ed.getEntityName()}] with pk [${this.getPrimaryKeys()}]")
+            if (!documentList) throw new IllegalArgumentException("Cannot delete entity [${ed.getEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
 
-            ODocument document = documentList[0]
+            ODocument document = documentList.first()
             document.delete()
         } finally {
             oddt.close()
@@ -135,7 +136,7 @@ class OrientEntityValue extends EntityValueBase {
     boolean refreshExtended() {
         EntityDefinition ed = getEntityDefinition()
 
-        // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
+        // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
         ODatabaseDocumentTx oddt = odf.getDatabase()
         try {
             odf.checkCreateDocumentClass(oddt, ed)
@@ -147,17 +148,20 @@ class OrientEntityValue extends EntityValueBase {
             boolean isFirstPk = true
             for (String fieldName in ed.getPkFieldNames()) {
                 if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("= ?")
+                sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
                 paramValues.add(getValueMap().get(fieldName))
             }
 
             OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
-            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
-            if (!documentList) return false
+            if (!documentList) {
+                logger.info("In refresh document not found for entity [${ed.getEntityName()}] with pk [${this.getPrimaryKeys()}]")
+                return false
+            }
 
-            ODocument document = documentList[0]
+            ODocument document = documentList.first()
             for (String fieldName in ed.getFieldNames(false, true, false))
                 getValueMap().put(fieldName, document.field(fieldName))
 

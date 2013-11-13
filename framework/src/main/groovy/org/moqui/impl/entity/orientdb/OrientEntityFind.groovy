@@ -74,7 +74,7 @@ class OrientEntityFind extends EntityFindBase {
             for (EntityQueryBuilder.EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 paramValues.add(entityConditionParam.getValue())
             }
-            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
             if (!documentList) return null
@@ -138,7 +138,7 @@ class OrientEntityFind extends EntityFindBase {
             for (EntityQueryBuilder.EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 paramValues.add(entityConditionParam.getValue())
             }
-            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
             // logger.warn("TOREMOVE: got OrientDb query results: ${documentList}")
 
             eli = new OrientEntityListIterator(odf, oddt, documentList, this.getEntityDef(), this.fieldsToSelect, this.efi)
@@ -195,7 +195,7 @@ class OrientEntityFind extends EntityFindBase {
             for (EntityQueryBuilder.EntityConditionParameter entityConditionParam in efb.getParameters()) {
                 paramValues.add(entityConditionParam.getValue())
             }
-            List<ODocument> documentList = oddt.command(query).execute(paramValues)
+            List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
             if (!documentList) logger.warn("Got no result for count query: ${sqlString}")
             count = (documentList?.get(0)?.field("count") as Long) ?: 0
         } catch (Exception e) {

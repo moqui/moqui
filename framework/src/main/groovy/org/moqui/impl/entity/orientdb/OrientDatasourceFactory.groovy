@@ -155,12 +155,11 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
             }
 
             // create "pk" index
-            // this silly API uses the Java ellipses syntax for a variable number of arguments instead of allowing an array or list to be passed in, so do a silly mini-script...
             String indexName = ed.getTableName() + "_PK"
-            StringBuilder createIndexSb = new StringBuilder("oc.createIndex('").append(indexName).append("', com.orientechnologies.orient.core.metadata.schema.OClass.INDEX_TYPE.UNIQUE")
-            for (String pkFieldName in pkFieldNames) createIndexSb.append(", \"").append(ed.getColumnName(pkFieldName, false)).append("\"")
-            createIndexSb.append(")")
-            Eval.me("oc", oc, createIndexSb.toString())
+            List colNames = []
+            for (String pkFieldName in pkFieldNames) colNames.add(ed.getColumnName(pkFieldName, false))
+            // toArray because method uses Java ellipses syntax
+            oc.createIndex(indexName, OClass.INDEX_TYPE.UNIQUE, colNames.toArray(new String[colNames.size()]))
 
             // TODO: create other indexes
 
