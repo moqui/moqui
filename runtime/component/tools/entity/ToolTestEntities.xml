@@ -16,7 +16,21 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- moqui.tools.test -->
     <!-- ========================================================= -->
 
-    <entity entity-name="ToolsTestEntity" package-name="moqui.service.semaphore" sequence-bank-size="100">
+    <entity entity-name="ToolsTestEntity" package-name="moqui.tools.test" sequence-bank-size="100">
+        <field name="testId" type="id-long" is-pk="true"/>
+        <field name="testMedium" type="text-medium"/>
+        <field name="testLong" type="text-long"/>
+        <field name="testIndicator" type="text-indicator"/>
+        <field name="testDate" type="date"/>
+        <field name="testDateTime" type="date-time"/>
+        <field name="testTime" type="time"/>
+        <field name="testNumberInteger" type="number-integer"/>
+        <field name="testNumberDecimal" type="number-decimal"/>
+        <field name="testNumberFloat" type="number-float"/>
+        <field name="testCurrencyAmount" type="currency-amount"/>
+        <field name="testCurrencyPrecise" type="currency-precise"/>
+    </entity>
+    <entity entity-name="ToolsTestNoSqlEntity" package-name="moqui.tools.test" sequence-bank-size="100" group-name="nosql">
         <field name="testId" type="id-long" is-pk="true"/>
         <field name="testMedium" type="text-medium"/>
         <field name="testLong" type="text-long"/>
