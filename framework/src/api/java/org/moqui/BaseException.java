@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BaseException - the base/root exception for all exception classes in the Moqui framework.
+ * BaseException - the base/root exception for all exception classes in Moqui Framework.
  */
 public class BaseException extends RuntimeException {
     public BaseException(String message) {
@@ -69,6 +69,6 @@ public class BaseException extends RuntimeException {
             newList.add(ste);
         }
         //System.out.println("Called getFilteredStackTrace, orig.length=" + orig.length + ", newList.size()=" + newList.size());
-        return newList.toArray(new StackTraceElement[50]);
+        return newList.toArray(new StackTraceElement[newList.size()]);
     }
 }
