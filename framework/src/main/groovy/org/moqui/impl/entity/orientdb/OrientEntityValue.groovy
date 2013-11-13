@@ -103,7 +103,7 @@ class OrientEntityValue extends EntityValueBase {
             }
 
             int recordsChanged = oddt.command(new OCommandSQL(sql.toString())).execute(paramValues.toArray(new Object[paramValues.size]))
-            if (recordsChanged == 0) throw new IllegalArgumentException("Cannot update entity [${ed.getEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
+            if (recordsChanged == 0) throw new IllegalArgumentException("Cannot update entity [${ed.getFullEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
 
             /* an interesting alternative, in basic tests is about the same speed...
             StringBuilder sql = new StringBuilder()
@@ -145,23 +145,30 @@ class OrientEntityValue extends EntityValueBase {
 
             StringBuilder sql = new StringBuilder()
             List<Object> paramValues = new ArrayList<Object>()
-            sql.append("SELECT FROM ").append(ed.getTableName()).append(" WHERE ")
-
-            boolean isFirstPk = true
-            for (String fieldName in ed.getPkFieldNames()) {
-                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append("= ?")
-                paramValues.add(getValueMap().get(fieldName))
+            sql.append("DELETE FROM ")
+            if (recordId == null) {
+                sql.append(ed.getTableName()).append(" WHERE ")
+                boolean isFirstPk = true
+                for (String fieldName in ed.getPkFieldNames()) {
+                    if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                    sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
+                    paramValues.add(getValueMap().get(fieldName))
+                }
+            } else {
+                sql.append("#").append(recordId.getClusterId()).append(":").append(recordId.getClusterPosition())
             }
 
+            int recordsChanged = oddt.command(new OCommandSQL(sql.toString())).execute(paramValues.toArray(new Object[paramValues.size]))
+            if (recordsChanged == 0) throw new IllegalArgumentException("Cannot delete entity [${ed.getFullEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
+
+            /* alternate approach with query then delete():
             OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
             List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size()]))
-
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
             if (!documentList) throw new IllegalArgumentException("Cannot delete entity [${ed.getEntityName()}] value with pk [${this.getPrimaryKeys()}], document not found")
-
             ODocument document = documentList.first()
             document.delete()
+            */
         } finally {
             oddt.close()
         }
@@ -178,13 +185,17 @@ class OrientEntityValue extends EntityValueBase {
 
             StringBuilder sql = new StringBuilder()
             List<Object> paramValues = new ArrayList<Object>()
-            sql.append("SELECT FROM ").append(ed.getTableName()).append(" WHERE ")
-
-            boolean isFirstPk = true
-            for (String fieldName in ed.getPkFieldNames()) {
-                if (isFirstPk) isFirstPk = false else sql.append(" AND ")
-                sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
-                paramValues.add(getValueMap().get(fieldName))
+            sql.append("SELECT FROM ")
+            if (recordId == null) {
+                sql.append(ed.getTableName()).append(" WHERE ")
+                boolean isFirstPk = true
+                for (String fieldName in ed.getPkFieldNames()) {
+                    if (isFirstPk) isFirstPk = false else sql.append(" AND ")
+                    sql.append(ed.getColumnName(fieldName, false)).append(" = ?")
+                    paramValues.add(getValueMap().get(fieldName))
+                }
+            } else {
+                sql.append("#").append(recordId.getClusterId()).append(":").append(recordId.getClusterPosition())
             }
 
             OSQLSynchQuery<ODocument> query = new OSQLSynchQuery<ODocument>(sql.toString())
@@ -192,7 +203,7 @@ class OrientEntityValue extends EntityValueBase {
 
             // there should only be one value since we're querying by a set of fields with a unique index (the pk)
             if (!documentList) {
-                logger.info("In refresh document not found for entity [${ed.getEntityName()}] with pk [${this.getPrimaryKeys()}]")
+                logger.info("In refresh document not found for entity [${ed.getFullEntityName()}] with pk [${this.getPrimaryKeys()}]")
                 return false
             }
 
