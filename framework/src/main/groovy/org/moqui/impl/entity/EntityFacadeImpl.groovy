@@ -262,6 +262,8 @@ class EntityFacadeImpl implements EntityFacade {
         List entityLocationList = (List) entityLocationCache.get(entityName)
         if (entityLocationList == null) {
             if (logger.warnEnabled) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
+            if (logger.infoEnabled) logger.info("Unknown entity name ${entityName} location", new BaseException("Unknown entity name location"))
+
             this.loadAllEntityLocations()
             entityLocationList = (List) entityLocationCache.get(entityName)
             // no locations found for this entity, entity probably doesn't exist
