@@ -95,6 +95,8 @@ class OrientEntityFind extends EntityFindBase {
                                         List<String> orderByExpanded) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
 
+        // NOTE: see syntax at https://github.com/orientechnologies/orientdb/wiki/SQL-Query
+
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
         if (this.getDistinct()) efb.makeDistinct()
 
@@ -118,10 +120,13 @@ class OrientEntityFind extends EntityFindBase {
 
         // ORDER BY clause
         efb.makeOrderByClause(orderByExpanded)
-        // LIMIT/OFFSET clause (TODO: supported in ODB?)
-        efb.addLimitOffset(this.limit, this.offset)
+        // LIMIT/OFFSET clause
+        // efb.addLimitOffset(this.limit, this.offset)
+        if (offset) efb.getSqlTopLevel().append(" SKIP ").append(offset)
+        if (limit) efb.getSqlTopLevel().append(" LIMIT ").append(limit)
+
         // FOR UPDATE (TODO: supported in ODB?)
-        if (this.forUpdate) efb.makeForUpdate()
+        // if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
         EntityListIterator eli
