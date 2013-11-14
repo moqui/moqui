@@ -317,7 +317,7 @@ class EntityQueryBuilder {
         entityValueImpl.getValueMap().put(fieldName, value)
     }
 
-    static String enDeCrypt(String value, boolean encrypt, EntityFacadeImpl efi) {
+    public static String enDeCrypt(String value, boolean encrypt, EntityFacadeImpl efi) {
         Node entityFacadeNode = efi.ecfi.confXmlRoot."entity-facade"[0]
         String pwStr = entityFacadeNode."@crypt-pass"
         if (!pwStr) throw new IllegalArgumentException("No entity-facade.@crypt-pass setting found, NOT doing encryption")

@@ -170,14 +170,14 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
     OType getFieldType(String fieldName, EntityDefinition ed) {
         Node fieldNode = ed.getFieldNode(fieldName)
         String javaType = efi.getFieldJavaType((String) fieldNode."@type", ed)
-        if (!javaType) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${ed.getFullEntityName()}]")
+        if (javaType == null) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${ed.getFullEntityName()}]")
         int javaTypeInt = efi.getJavaTypeInt(javaType)
 
         OType fieldType = null
         switch (javaTypeInt) {
             case 1: fieldType = OType.STRING; break
             case 2: fieldType = OType.DATETIME; break
-            case 3: fieldType = OType.STRING; break // NOTE: there doesn't seem to be a time only type...
+            case 3: fieldType = OType.DATETIME; break // NOTE: there doesn't seem to be a time only type...
             case 4: fieldType = OType.DATE; break
             case 5: fieldType = OType.INTEGER; break
             case 6: fieldType = OType.LONG; break

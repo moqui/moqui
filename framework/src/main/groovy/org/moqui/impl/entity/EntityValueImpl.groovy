@@ -14,6 +14,7 @@ package org.moqui.impl.entity
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.entity.EntityException
+import org.moqui.entity.EntityValue
 import org.moqui.impl.entity.EntityQueryBuilder.EntityConditionParameter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -25,6 +26,15 @@ class EntityValueImpl extends EntityValueBase {
     protected final static Logger logger = LoggerFactory.getLogger(EntityValueImpl.class)
 
     EntityValueImpl(EntityDefinition ed, EntityFacadeImpl efip) { super(ed, efip) }
+
+    @Override
+    public EntityValue cloneValue() {
+        EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), getEntityFacadeImpl())
+        newObj.getValueMap().putAll(getValueMap())
+        if (getDbValueMap()) newObj.setDbValueMap((Map<String, Object>) getDbValueMap().clone())
+        // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
+        return newObj
+    }
 
     @Override
     void createExtended(ListOrderedSet fieldList, Connection con) {

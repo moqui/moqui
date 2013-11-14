@@ -20,6 +20,7 @@ import com.orientechnologies.orient.core.sql.OCommandSQL
 import org.apache.commons.collections.set.ListOrderedSet
 
 import org.moqui.entity.EntityException
+import org.moqui.entity.EntityValue
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.entity.EntityValueBase
@@ -28,6 +29,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import java.sql.Connection
+import java.sql.Time
+import java.sql.Timestamp
 
 class OrientEntityValue extends EntityValueBase {
     protected final static Logger logger = LoggerFactory.getLogger(OrientEntityValue.class)
@@ -43,8 +46,46 @@ class OrientEntityValue extends EntityValueBase {
     OrientEntityValue(EntityDefinition ed, EntityFacadeImpl efip, OrientDatasourceFactory odf, ODocument document) {
         super(ed, efip)
         this.odf = odf
-        for (String fieldName in ed.getAllFieldNames()) getValueMap().put(fieldName, document.field(ed.getColumnName(fieldName, false)))
         this.recordId = document.getIdentity()
+        for (String fieldName in ed.getAllFieldNames()) {
+            Object fieldValue = document.field(ed.getColumnName(fieldName, false))
+            if (fieldValue == null) { getValueMap().put(fieldName, null); continue }
+
+            Node fieldNode = ed.getFieldNode(fieldName)
+            String javaType = efip.getFieldJavaType((String) fieldNode."@type", ed)
+            if (javaType == null) throw new IllegalArgumentException("Could not find Java type for field [${fieldName}] on entity [${ed.getFullEntityName()}]")
+            int javaTypeInt = efip.getJavaTypeInt(javaType)
+
+            switch (javaTypeInt) {
+                case 1: break // should be fine as String
+                case 2: fieldValue = new Timestamp(((Date) fieldValue).getTime()); break // DATETIME needs to be converted
+                case 3: fieldValue = new Time(((Date) fieldValue).getTime()); break // NOTE: there doesn't seem to be a time only type...
+                case 4: fieldValue = new java.sql.Date(((Date) fieldValue).getTime());  break
+                case 5: break // should be fine as Integer
+                case 6: break // should be fine as Long
+                case 7: break // should be fine as Float
+                case 8: break // should be fine as Double
+                case 9: break // should be fine as BigDecimal
+                case 10: break // Boolean should be fine
+                case 11: break // NOTE: looks like we'll have to take care of the serialization for objects
+                case 12: break // do anything with BLOB?
+                case 13: break // CLOB should be fine as String
+                case 14: break // java.util.Date is native type for DATETIME
+                case 15: break // do anything with EMBEDDEDLIST (List/Set)
+            }
+
+            getValueMap().put(fieldName, fieldValue)
+        }
+    }
+
+    @Override
+    public EntityValue cloneValue() {
+        OrientEntityValue newObj = new OrientEntityValue(getEntityDefinition(), getEntityFacadeImpl(), odf)
+        newObj.getValueMap().putAll(getValueMap())
+        if (getDbValueMap()) newObj.setDbValueMap((Map<String, Object>) getDbValueMap().clone())
+        if (getRecordId() != null) newObj.setRecordId(getRecordId())
+        // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
+        return newObj
     }
 
     @Override

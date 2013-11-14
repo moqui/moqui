@@ -55,7 +55,7 @@ class OrientEntityFind extends EntityFindBase {
             // WHERE clause only for one/pk query
             // NOTE: do this here after caching because this will always be added on and isn't a part of the original where
             EntityConditionImplBase viewWhere = ed.makeViewWhereCondition()
-            if (viewWhere) whereCondition =
+            if (viewWhere != null) whereCondition =
                 (EntityConditionImplBase) efi.getConditionFactory().makeCondition(whereCondition, EntityCondition.JoinOperator.AND, viewWhere)
             efb.startWhereClause()
             whereCondition.makeSqlWhere(efb)
@@ -165,7 +165,7 @@ class OrientEntityFind extends EntityFindBase {
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
         // count function instead of select fields
-        efb.getSqlTopLevel().append("COUNT(*) ")
+        efb.getSqlTopLevel().append("COUNT(1) ")
         // efb.makeCountFunction()
         // FROM Clause
         efb.makeSqlFromClause()

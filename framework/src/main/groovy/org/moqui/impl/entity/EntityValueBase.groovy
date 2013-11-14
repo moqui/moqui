@@ -368,8 +368,7 @@ abstract class EntityValueBase implements EntityValue {
 
     @Override
     EntityValue createOrUpdate() {
-        EntityValue dbValue = (EntityValue) this.clone()
-        if (dbValue.refresh()) {
+        if (this.cloneValue().refresh()) {
             return update()
         } else {
             return create()
@@ -807,13 +806,7 @@ abstract class EntityValueBase implements EntityValue {
     @Override
     public Object clone() { return this.cloneValue() }
 
-    public EntityValue cloneValue() {
-        EntityValueImpl newObj = new EntityValueImpl(getEntityDefinition(), getEntityFacadeImpl())
-        newObj.getValueMap().putAll(getValueMap())
-        if (getDbValueMap()) newObj.setDbValueMap((Map<String, Object>) getDbValueMap().clone())
-        // don't set mutable (default to mutable even if original was not) or modified (start out not modified)
-        return newObj
-    }
+    abstract EntityValue cloneValue();
 
     // =========== The abstract methods ===========
     @Override
