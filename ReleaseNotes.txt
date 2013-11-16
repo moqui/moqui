@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.2 - 15 Nov 2013 (tentative)
+Release 1.3.2 - 22 Nov 2013 (tentative)
 ===========================================================================
 
 Moqui Framework 1.3.2 is a minor new feature and bug fix release. The main
