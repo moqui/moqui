@@ -98,7 +98,7 @@ class OrientEntityValue extends EntityValueBase {
         boolean isXaDatabase = true
         ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
-        logger.warn("======= createExtended isXaDatabase=${isXaDatabase}")
+        // logger.warn("======= createExtended isXaDatabase=${isXaDatabase}")
 
         try {
             odf.checkCreateDocumentClass(oddt, ed)
