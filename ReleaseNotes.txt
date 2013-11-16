@@ -29,6 +29,7 @@ entities like ArtifactHit.
 
 New Features:
 
+- Updated Groovy to 2.1.9
 - OrientDB is now included in the framework by default instead of only in
   an addon component to have an embedded document and graph NoSQL database;
   this and other graph databases can be used through the Blueprint and

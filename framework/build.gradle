@@ -35,7 +35,7 @@ repositories {
 
 dependencies {
     // groovy dependencies (just the library to compile with)
-    // appears this is no longer needed with Gradle 1.6: groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6' // Apache 2.0
+    // appears this is no longer needed with Gradle 1.6: groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9' // Apache 2.0
 
     compile name: 'antisamy', version: '1.4' // New BSD
 
@@ -67,8 +67,8 @@ dependencies {
     apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
     compile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
 
-    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6' // Apache 2.0
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.6' // Apache 2.0
+    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9' // Apache 2.0
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9' // Apache 2.0
 
     compile name: 'jackrabbit-api', version: '2.5.2' // Apache 2.0
     compile name: 'jackrabbit-jcr-commons', version: '2.5.2' // Apache 2.0

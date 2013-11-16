@@ -109,7 +109,7 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityFind condition(EntityCondition condition) {
-        if (!condition) return this
+        if (condition == null) return this
         if (whereEntityCondition) {
             // use ListCondition instead of ANDing two at a time to avoid a bunch of nested ANDs
             if (whereEntityCondition instanceof ListCondition) {
