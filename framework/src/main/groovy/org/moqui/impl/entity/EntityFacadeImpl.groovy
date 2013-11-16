@@ -71,14 +71,14 @@ class EntityFacadeImpl implements EntityFacade {
         this.tenantId = tenantId ?: "DEFAULT"
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
 
-        // init connection pool (DataSource) for each group
-        initAllDatasources()
-
         // init entity meta-data
         entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
         entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
         // NOTE: don't try to load entity locations before constructor is complete; this.loadAllEntityLocations()
         entitySequenceBankCache = ecfi.getCacheFacade().getCache("entity.sequence.bank")
+
+        // init connection pool (DataSource) for each group
+        initAllDatasources()
 
         // EECA rule tables
         loadEecaRulesAll()
@@ -826,6 +826,15 @@ class EntityFacadeImpl implements EntityFacade {
             entityName = entityNode."member-entity".find({ !it."@join-from-alias" })?."@entity-name"
         }
         return getEntityGroupName(entityName)
+    }
+
+    Set<String> getAllEntityNamesInGroup(String groupName) {
+        Set<String> groupEntityNames = new TreeSet<String>()
+        for (String entityName in getAllEntityNames()) {
+            // use the entity/group cache handled by getEntityGroupName()
+            if (getEntityGroupName(entityName) == groupName) groupEntityNames.add(entityName)
+        }
+        return groupEntityNames
     }
 
     @Override
