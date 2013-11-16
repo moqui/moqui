@@ -125,7 +125,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 ads = ds
             } else {
                 AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
-                ds.setUniqueResourceName((String) datasourceNode."@group-name")
+                ds.setUniqueResourceName(this.tenantId + datasourceNode."@group-name")
                 String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
                 ds.setDriverClassName(driver)
                 ds.setUrl(tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
