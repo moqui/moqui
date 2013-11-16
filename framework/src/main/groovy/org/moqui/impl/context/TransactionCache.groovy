@@ -99,7 +99,7 @@ class TransactionCache implements XAResource {
         key.put("_entityName", evb.getEntityName())
         return key
     }
-    static Map makeKey(EntityFindBase efb) {
+    static Map makeKeyFind(EntityFindBase efb) {
         // NOTE: this should never come in null (EntityFindBase.one() => oneGet() => this is only call path)
         if (efb == null) return null
         Map key = efb.getSimpleMapPrimaryKeys()
@@ -251,7 +251,7 @@ class TransactionCache implements XAResource {
 
     EntityValueBase oneGet(EntityFindBase efb) {
         // NOTE: do nothing here on forUpdate, handled by caller
-        Map key = makeKey(efb)
+        Map key = makeKeyFind(efb)
         if (key == null) return null
 
         // if this has been deleted return a DeletedEntityValue instance so caller knows it was deleted and doesn't look in the DB for another record
