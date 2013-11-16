@@ -42,7 +42,11 @@ class OrientEntityFind extends EntityFindBase {
         EntityDefinition ed = this.getEntityDef()
 
         // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+
         try {
             EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
@@ -86,7 +90,7 @@ class OrientEntityFind extends EntityFindBase {
         } catch (Exception e) {
             throw new EntityException("Error finding value", e)
         } finally {
-            oddt.close()
+            if (!isXaDatabase) oddt.close()
         }
     }
 
@@ -129,8 +133,12 @@ class OrientEntityFind extends EntityFindBase {
         // if (this.forUpdate) efb.makeForUpdate()
 
         // run the SQL now that it is built
-        EntityListIterator eli
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+        EntityListIterator eli = null
+
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
@@ -146,13 +154,14 @@ class OrientEntityFind extends EntityFindBase {
             List<ODocument> documentList = oddt.command(query).execute(paramValues.toArray(new Object[paramValues.size]))
             // logger.warn("TOREMOVE: got OrientDb query results: ${documentList}")
 
-            eli = new OrientEntityListIterator(odf, oddt, documentList, this.getEntityDef(), this.fieldsToSelect, this.efi)
+            // NOTE: for now don't pass in oddt (pass in null), we're getting the whole list up front we can close it in finally
+            eli = new OrientEntityListIterator(odf, null, documentList, getEntityDef(), this.fieldsToSelect, this.efi)
         } catch (EntityException e) {
-            oddt.close()
             throw e
         } catch (Throwable t) {
-            oddt.close()
             throw new EntityException("Error in find", t)
+        } finally {
+            if (!isXaDatabase) oddt.close()
         }
 
         return eli
@@ -187,7 +196,11 @@ class OrientEntityFind extends EntityFindBase {
 
         // run the SQL now that it is built
         long count = 0
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
@@ -206,7 +219,7 @@ class OrientEntityFind extends EntityFindBase {
         } catch (Exception e) {
             throw new EntityException("Error finding value", e)
         } finally {
-            oddt.close()
+            if (!isXaDatabase) oddt.close()
         }
 
         return count

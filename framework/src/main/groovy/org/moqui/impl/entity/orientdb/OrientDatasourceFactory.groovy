@@ -18,6 +18,7 @@ import com.orientechnologies.orient.core.metadata.schema.OProperty
 import com.orientechnologies.orient.core.metadata.schema.OType
 import com.orientechnologies.orient.server.OServer
 import com.orientechnologies.orient.server.OServerMain
+import org.moqui.context.TransactionFacade
 import org.moqui.entity.*
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
@@ -90,7 +91,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         oserver.startup(efi.getEcfi().getResourceFacade().getLocationStream("db/orientdb/config/orientdb-server-config.xml"))
         oserver.activate()
 
-        databaseDocumentPool = new ODatabaseDocumentPool()
+        databaseDocumentPool = new ODatabaseDocumentPool(uri, username, password)
         databaseDocumentPool.setup((inlineOtherNode."@pool-minsize" ?: "5") as int, (inlineOtherNode."@pool-maxsize" ?: "50") as int)
 
         return this
@@ -101,7 +102,27 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
     /** Returns the main database access object for OrientDB.
      * Remember to call close() on it when you're done with it (preferably in a try/finally block)!
      */
-    ODatabaseDocumentTx getDatabase() { return databaseDocumentPool.acquire(uri, username, password) }
+    ODatabaseDocumentTx getDatabase() { return databaseDocumentPool.acquire() }
+    // NOTE: maybe try ODatabaseDocumentTxPooled... performs better?
+
+    /** The database object returned here is shared in the transaction and should not be closed each time used. Will be
+     * closed when the tx commits or rolls back.
+     *
+     * This will return null if no transaction is in place.
+     */
+    ODatabaseDocumentTx getXaResourceDatabase() {
+        TransactionFacade tf = efi.getEcfi().getTransactionFacade()
+        OrientXaResource oxr = (OrientXaResource) tf.getActiveXaResource("OrientXaResource")
+        if (oxr == null) {
+            if (tf.isTransactionInPlace()) {
+                oxr = new OrientXaResource(efi.getEcfi(), this).enlistOrGet()
+            } else {
+                return null
+            }
+        }
+        return oxr.getDatabase()
+    }
+
 
     @Override
     void destroy() {

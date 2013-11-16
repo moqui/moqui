@@ -74,6 +74,8 @@ class OrientEntityValue extends EntityValueBase {
                 case 15: break // do anything with EMBEDDEDLIST (List/Set)
             }
 
+            // TODO: add decryption (and encryption on write)
+
             getValueMap().put(fieldName, fieldValue)
         }
     }
@@ -93,7 +95,11 @@ class OrientEntityValue extends EntityValueBase {
         EntityDefinition ed = getEntityDefinition()
         if (ed.isViewEntity()) throw new EntityException("Create not yet implemented for view-entity")
 
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+        logger.warn("======= createExtended isXaDatabase=${isXaDatabase}")
+
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
@@ -104,7 +110,7 @@ class OrientEntityValue extends EntityValueBase {
             od.save()
             recordId = od.getIdentity()
         } finally {
-            oddt.close()
+            if (!isXaDatabase) oddt.close()
         }
     }
 
@@ -114,11 +120,20 @@ class OrientEntityValue extends EntityValueBase {
         if (ed.isViewEntity()) throw new EntityException("Update not yet implemented for view-entity")
 
         // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
             // logger.warn("========== updating ${ed.getFullEntityName()} recordId=${recordId} pk=${this.getPrimaryKeys()}")
+
+            // TODO: try (works? faster? do same with delete...):
+            // ODocument document = recordId.getRecord()
+            // for (String fieldName in nonPkFieldList) document.field(fieldName, getValueMap().get(fieldName))
+            // document.save()
 
             StringBuilder sql = new StringBuilder()
             List<Object> paramValues = new ArrayList<Object>()
@@ -170,7 +185,7 @@ class OrientEntityValue extends EntityValueBase {
             document.save()
             */
         } finally {
-            oddt.close()
+            if (!isXaDatabase) oddt.close()
         }
     }
 
@@ -180,7 +195,11 @@ class OrientEntityValue extends EntityValueBase {
         if (ed.isViewEntity()) throw new EntityException("Delete not yet implemented for view-entity")
 
         // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
@@ -211,7 +230,7 @@ class OrientEntityValue extends EntityValueBase {
             document.delete()
             */
         } finally {
-            oddt.close()
+            if (!isXaDatabase) oddt.close()
         }
     }
 
@@ -220,7 +239,11 @@ class OrientEntityValue extends EntityValueBase {
         EntityDefinition ed = getEntityDefinition()
 
         // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
-        ODatabaseDocumentTx oddt = odf.getDatabase()
+
+        boolean isXaDatabase = true
+        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
+
         try {
             odf.checkCreateDocumentClass(oddt, ed)
 
@@ -236,6 +259,7 @@ class OrientEntityValue extends EntityValueBase {
                     paramValues.add(getValueMap().get(fieldName))
                 }
             } else {
+                // TODO: try recordId.getRecord()... works? faster?
                 sql.append("#").append(recordId.getClusterId()).append(":").append(recordId.getClusterPosition())
             }
 
@@ -254,7 +278,7 @@ class OrientEntityValue extends EntityValueBase {
 
             return true
         } finally {
-            oddt.close()
+            if (!isXaDatabase) oddt.close()
         }
     }
 }
