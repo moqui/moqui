@@ -96,6 +96,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
 
         // OrientDB doesn't support creating or modifying classes/tables on the fly, so iterate through all in this
         //     group and check/create each
+        /*
         ODatabaseDocumentTx createOddt = getDatabase()
         try {
             for (String entityName in efi.getAllEntityNamesInGroup((String) datasourceNode."@group-name"))
@@ -103,6 +104,7 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         } finally {
             createOddt.close()
         }
+        */
 
         return this
     }
@@ -121,6 +123,8 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
      * This will return null if no transaction is in place.
      */
     ODatabaseDocumentTx getXaResourceDatabase() {
+        return null
+
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
         OrientXaResource oxr = (OrientXaResource) tf.getActiveXaResource("OrientXaResource")
         if (oxr == null) {
