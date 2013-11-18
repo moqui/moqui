@@ -14,6 +14,7 @@ package org.moqui.impl.context
 import com.atomikos.icatch.config.UserTransactionService
 import com.atomikos.icatch.config.UserTransactionServiceImp
 import com.atomikos.icatch.jta.UserTransactionManager
+import com.atomikos.icatch.jta.ExtendedSystemException
 
 import javax.transaction.Transaction
 import javax.transaction.xa.XAResource
@@ -486,6 +487,9 @@ class TransactionFacadeImpl implements TransactionFacade {
         } catch (RollbackException e) {
             throw new TransactionException("Could not enlist XAResource in transaction", e)
         } catch (SystemException e) {
+            if (e instanceof ExtendedSystemException) {
+                for (Throwable se in e.errors) logger.error("Extended Atomikos error: ${se.toString()}", se)
+            }
             throw new TransactionException("Could not enlist XAResource in transaction", e)
         }
     }
