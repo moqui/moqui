@@ -111,8 +111,6 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
      * This will return null if no transaction is in place.
      */
     ODatabaseDocumentTx getXaResourceDatabase() {
-        return null
-
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
         OrientXaResource oxr = (OrientXaResource) tf.getActiveXaResource("OrientXaResource")
         if (oxr == null) {

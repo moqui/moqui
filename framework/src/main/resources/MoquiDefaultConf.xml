@@ -221,6 +221,7 @@
         </datasource>
         <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
                 startup-add-missing="true">
+            <!-- NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX -->
             <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
         </datasource>
 
