@@ -58,7 +58,7 @@ dependencies {
     compile name: 'commons-io', version: '2.0.1' // Apache 2.0
     compile name: 'commons-validator', version: '1.4.0' // Apache 2.0
 
-    compile name: 'ehcache', version: '2.7.2' // Apache 2.0
+    compile name: 'ehcache', version: '2.7.5' // Apache 2.0
     compile name: 'esapi', version: '2.0.1' // New BSD
     compile name: 'freemarker', version: '2.3.20' // BSD
 
@@ -105,7 +105,8 @@ dependencies {
     compile name: 'jna', version: '4.0.0' // Apache 2.0
     compile name: 'jna-platform', version: '4.0.0' // Apache 2.0
 
-    compile name: 'quartz-all', version: '2.1.7' // Apache 2.0
+    compile name: 'quartz', version: '2.2.1' // Apache 2.0
+    compile name: 'quartz-jobs', version: '2.2.1' // Apache 2.0
 
     compile name: 'ws-commons-util', version: '1.0.2' // Apache 2.0
     compile name: 'xmlrpc-client', version: '3.1.3' // Apache 2.0
@@ -116,10 +117,10 @@ dependencies {
         dependencies module(name: 'commons-beanutils', version: '1.8.3'), module(name: 'commons-logging', version: '1.1.1') }
     compile name: 'shiro-web', version: '1.2.1' // Apache 2.0
 
-    apiCompile module(name: 'slf4j-api', version: '1.6.5') { // MIT license
-        dependencies module(name: 'log4j', version: '1.2.17'), module(name: 'slf4j-log4j12', version: '1.6.5') }
-    compile module(name: 'slf4j-api', version: '1.6.5') { // MIT license
-        dependencies module(name: 'log4j', version: '1.2.17'), module(name: 'slf4j-log4j12', version: '1.6.5') }
+    apiCompile module(name: 'slf4j-api', version: '1.6.6') { // MIT license
+        dependencies module(name: 'log4j', version: '1.2.17'), module(name: 'slf4j-log4j12', version: '1.6.6') }
+    compile module(name: 'slf4j-api', version: '1.6.6') { // MIT license
+        dependencies module(name: 'log4j', version: '1.2.17'), module(name: 'slf4j-log4j12', version: '1.6.6') }
 
     apiCompile name: 'winstone', version: '0.9.10' // CDDL
     // winstone is in providedCompile so that it won't be included in the war file WEB-INF/lib

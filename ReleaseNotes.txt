@@ -29,7 +29,8 @@ entities like ArtifactHit.
 
 New Features:
 
-- Updated Atomikos TransactionEssentials to 3.9.1, Groovy to 2.1.9
+- Updated Atomikos TransactionEssentials to 3.9.1, Ehcache to 2.7.5,
+  Groovy to 2.1.9, Quartz Scheduler to 2.2.1, SLF4J to 1.6.6
 - OrientDB is now included in the framework by default instead of only in
   an addon component to have an embedded document and graph NoSQL database;
   this and other graph databases can be used through the Blueprint and
