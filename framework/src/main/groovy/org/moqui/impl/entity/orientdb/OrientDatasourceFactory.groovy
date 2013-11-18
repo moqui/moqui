@@ -94,18 +94,6 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         databaseDocumentPool = new ODatabaseDocumentPool(uri, username, password)
         databaseDocumentPool.setup((inlineOtherNode."@pool-minsize" ?: "5") as int, (inlineOtherNode."@pool-maxsize" ?: "50") as int)
 
-        // OrientDB doesn't support creating or modifying classes/tables on the fly, so iterate through all in this
-        //     group and check/create each
-        /*
-        ODatabaseDocumentTx createOddt = getDatabase()
-        try {
-            for (String entityName in efi.getAllEntityNamesInGroup((String) datasourceNode."@group-name"))
-                checkCreateDocumentClass(createOddt, efi.getEntityDefinition(entityName))
-        } finally {
-            createOddt.close()
-        }
-        */
-
         return this
     }
 
@@ -142,6 +130,16 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
     void destroy() {
         databaseDocumentPool.close()
         oserver.shutdown()
+    }
+
+    @Override
+    void checkAndAddTable(String entityName) {
+        ODatabaseDocumentTx createOddt = getDatabase()
+        try {
+            checkCreateDocumentClass(createOddt, efi.getEntityDefinition(entityName))
+        } finally {
+            createOddt.close()
+        }
     }
 
     @Override

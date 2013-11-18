@@ -219,7 +219,8 @@
                          pool-minsize="2" pool-maxsize="10"/> -->
             <!-- <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/> -->
         </datasource>
-        <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory">
+        <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
+                startup-add-missing="true">
             <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
         </datasource>
 

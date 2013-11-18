@@ -12,12 +12,12 @@
 package org.moqui.entity;
 
 import groovy.util.Node;
-
 import javax.sql.DataSource;
 
 public interface EntityDatasourceFactory {
     public EntityDatasourceFactory init(EntityFacade ef, Node datasourceNode, String tenantId);
     public void destroy();
+    public void checkAndAddTable(String entityName);
     public EntityValue makeEntityValue(String entityName);
     public EntityFind makeEntityFind(String entityName);
 

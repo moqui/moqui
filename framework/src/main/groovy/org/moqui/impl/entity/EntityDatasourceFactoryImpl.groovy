@@ -172,6 +172,9 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
     }
 
     @Override
+    void checkAndAddTable(String entityName) { efi.getEntityDbMeta().checkTableRuntime(efi.getEntityDefinition(entityName)) }
+
+    @Override
     EntityValue makeEntityValue(String entityName) {
         EntityDefinition entityDefinition = efi.getEntityDefinition(entityName)
         if (!entityDefinition) {

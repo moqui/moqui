@@ -525,11 +525,8 @@ class EntityFacadeImpl implements EntityFacade {
 
     void checkAllEntityTables(String groupName) {
         // TODO: load framework entities first, then component/mantle/etc entities for better FKs on first pass
-        for (String entityName in getAllEntityNames()) {
-            EntityDefinition ed = getEntityDefinition(entityName)
-            String entityGroupName = getEntityGroupName(ed)
-            if (!groupName || groupName == entityGroupName) getEntityDbMeta().checkTableRuntime(ed)
-        }
+        EntityDatasourceFactory edf = getDatasourceFactory(groupName)
+        for (String entityName in getAllEntityNamesInGroup(groupName)) edf.checkAndAddTable(entityName)
     }
 
     Set<String> getAllEntityNames() {
