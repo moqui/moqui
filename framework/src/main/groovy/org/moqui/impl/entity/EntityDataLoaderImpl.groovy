@@ -343,7 +343,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                         if (currentValue.getEntityDefinition().getPkFieldNames().size() == 1) {
                             currentValue.setSequencedIdPrimary()
                         } else {
-                            throw new SAXException("Cannot store value with incomplete primary key with more than 1 primary key field: " + currentValue)
+                            throw new SAXException("Cannot process value with incomplete primary key for [${currentValue.getEntityName()}] with more than 1 primary key field: " + currentValue)
                         }
                     }
 
