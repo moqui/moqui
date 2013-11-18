@@ -35,6 +35,8 @@ New Features:
   an addon component to have an embedded document and graph NoSQL database;
   this and other graph databases can be used through the Blueprint and
   Gremlin APIs
+- Various changes to EntityDatasourceFactory, EntityFindBase, etc to better
+  support other non-JDBC data sources like OrientDB
 - Implemented write-through per-transaction cache (TransactionCache)
   enabled through the service.@transaction attribute cache and force-cache
   options or through direct initialization; this is a pretty big new
