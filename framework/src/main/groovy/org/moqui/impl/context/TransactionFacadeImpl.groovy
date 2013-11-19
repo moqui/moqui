@@ -365,12 +365,12 @@ class TransactionFacadeImpl implements TransactionFacade {
         try {
             // logger.warn("================ rollback TX, currentStatus=${getStatus()}")
             if (getStatus() == Status.STATUS_NO_TRANSACTION) {
-                logger.info("Transaction not rolled back, status is STATUS_NO_TRANSACTION")
+                logger.warn("Transaction not rolled back, status is STATUS_NO_TRANSACTION")
                 return
             }
 
-            logger.warn("Transaction rollback. Here is the current location: ", new Exception("Rollback Locations"))
-            logger.warn("Transaction rollback. The rollback was originally caused by: " + causeMessage, causeThrowable)
+            logger.warn("Transaction rollback. The rollback was originally caused by: ${causeMessage}", causeThrowable)
+            logger.warn("Transaction rollback for [${causeMessage}]. Here is the current location: ", new BaseException("Rollback location"))
 
             ut.rollback()
         } catch (IllegalStateException e) {
@@ -395,6 +395,9 @@ class TransactionFacadeImpl implements TransactionFacade {
             int status = getStatus()
             if (status != Status.STATUS_NO_TRANSACTION) {
                 if (status != Status.STATUS_MARKED_ROLLBACK) {
+                    logger.warn("Transaction set rollback only. The rollback was originally caused by: ${causeMessage}", causeThrowable)
+                    logger.warn("Transaction set rollback only for [${causeMessage}]. Here is the current location: ", new BaseException("Set rollback only location"))
+
                     ut.setRollbackOnly()
                     // do this after setRollbackOnly so it only tracks it if rollback-only was actually set
                     getRollbackOnlyInfoStack().set(0, new RollbackInfo(causeMessage, causeThrowable, new Exception("Set rollback-only location")))
