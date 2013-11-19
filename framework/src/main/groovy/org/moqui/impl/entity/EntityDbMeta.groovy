@@ -304,22 +304,40 @@ class EntityDbMeta {
             if (relNode."@fk-name") indexName.append(relNode."@fk-name")
             if (!indexName) {
                 String title = relNode."@title"?:""
+                String entityName = ed.getEntityName()
+
                 int commonChars = 0
-                while (title.length() > commonChars && ed.entityName.length() > commonChars &&
-                        title.charAt(commonChars) == ed.entityName.charAt(commonChars)) commonChars++
+                while (title.length() > commonChars && entityName.length() > commonChars &&
+                        title.charAt(commonChars) == entityName.charAt(commonChars)) commonChars++
+
                 String relatedEntityName = relNode."@related-entity-name"
                 if (relatedEntityName.contains("."))
-                    relatedEntityName = relatedEntityName.substring(relatedEntityName.lastIndexOf(".")+1)
+                    relatedEntityName = relatedEntityName.substring(relatedEntityName.lastIndexOf(".") + 1)
+
+                int relLength = relatedEntityName.length()
+                int relEndCommonChars = relatedEntityName.length() - 1
+                while (relEndCommonChars > 0 && entityName.length() > relEndCommonChars &&
+                        relatedEntityName.charAt(relEndCommonChars) == entityName.charAt(entityName.length() - (relLength - relEndCommonChars)))
+                    relEndCommonChars--
+
                 if (commonChars > 0) {
                     indexName.append(ed.entityName)
                     for (Character cc in title.substring(0, commonChars)) if (cc.isUpperCase()) indexName.append(cc)
-                    indexName.append(title.substring(commonChars)).append(relatedEntityName)
+                    indexName.append(title.substring(commonChars))
+                    indexName.append(relatedEntityName.substring(0, relEndCommonChars + 1))
+                    if (relEndCommonChars < (relLength - 1)) for (Character cc in relatedEntityName.substring(relEndCommonChars + 1))
+                        if (cc.isUpperCase()) indexName.append(cc)
                 } else {
-                    indexName.append(ed.entityName).append(title).append(relatedEntityName)
+                    indexName.append(ed.entityName).append(title)
+                    indexName.append(relatedEntityName.substring(0, relEndCommonChars + 1))
+                    if (relEndCommonChars < (relLength - 1)) for (Character cc in relatedEntityName.substring(relEndCommonChars + 1))
+                        if (cc.isUpperCase()) indexName.append(cc)
                 }
-                // logger.warn("ed.getFullEntityName()=${ed.getFullEntityName()}, title=${title}, commonChars=${commonChars}, indexName=${indexName}")
+
+                // logger.warn("Index for entity [${ed.getFullEntityName()}], title=${title}, commonChars=${commonChars}, indexName=${indexName}")
+                // logger.warn("Index for entity [${ed.getFullEntityName()}], relatedEntityName=${relatedEntityName}, relEndCommonChars=${relEndCommonChars}, indexName=${indexName}")
             }
-            shrinkName(indexName, constraintNameClipLength-3)
+            shrinkName(indexName, constraintNameClipLength - 3)
             indexName.insert(0, "IDX")
 
             StringBuilder sql = new StringBuilder("CREATE INDEX ")
@@ -335,6 +353,7 @@ class EntityDbMeta {
             }
             sql.append(")")
 
+            // logger.warn("====== create relationship index [${indexName}] for entity [${ed.getFullEntityName()}]")
             runSqlUpdate(sql, groupName)
         }
     }
