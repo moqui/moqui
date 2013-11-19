@@ -63,6 +63,8 @@ New Features:
 - Added gradle tasks to save the Derby databases and ElasticSearch data
   after a load (loadSave) and to clean out and reload the saved data
   (reloadSave)
+- Some improvements to error message logging and handling in data loader,
+  ServiceTrigger, and set rollback only
 
 Bug Fixes:
 
