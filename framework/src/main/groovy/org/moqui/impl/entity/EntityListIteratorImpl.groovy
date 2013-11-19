@@ -63,14 +63,14 @@ class EntityListIteratorImpl implements EntityListIterator {
         if (this.closed) {
             logger.warn("EntityListIterator for entity [${this.entityDefinition.getFullEntityName()}] is already closed, not closing again")
         } else {
-            if (rs) {
+            if (rs != null) {
                 try {
                     rs.close()
                 } catch (SQLException e) {
                     throw new EntityException("Could not close ResultSet in EntityListIterator", e)
                 }
             }
-            if (con) {
+            if (con != null) {
                 try {
                     con.close()
                 } catch (SQLException e) {
