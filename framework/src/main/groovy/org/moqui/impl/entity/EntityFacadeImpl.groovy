@@ -509,6 +509,8 @@ class EntityFacadeImpl implements EntityFacade {
         ecfi.getServiceFacade().sync().name((String) fieldValues.serviceName)
                 .parameters((Map) ecfi.resourceFacade.evaluateContextField((String) fieldValues.mapString, ""))
                 .call()
+        if (ecfi.getExecutionContext().getMessage().hasError())
+            logger.error("Error running ServiceTrigger service [${fieldValues.serviceName}]: ${ecfi.getExecutionContext().getMessage().getErrorsString()}")
         makeValue("moqui.entity.ServiceTrigger").set("serviceTriggerId", fieldValues.serviceTriggerId)
                 .set("statusId", ecfi.getExecutionContext().getMessage().hasError() ? "SrtrRunError" : "SrtrRunSuccess")
                 .update()
