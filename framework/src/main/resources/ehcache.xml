@@ -9,7 +9,7 @@ details.
 -->
 <ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="http://ehcache.org/ehcache.xsd"
-         updateCheck="false" dynamicConfig="true">
+         updateCheck="false" dynamicConfig="true" name="MoquiCache">
 
     <!--
     Mandatory Default Cache configuration. These settings will be applied to caches
