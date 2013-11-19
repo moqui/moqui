@@ -65,6 +65,9 @@ New Features:
   (reloadSave)
 - Some improvements to error message logging and handling in data loader,
   ServiceTrigger, and set rollback only
+- When tables are created on the fly they are now only created for write
+  operations, finds just return no results if table does not exist and
+  do not create the table
 
 Bug Fixes:
 
