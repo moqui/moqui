@@ -30,7 +30,7 @@ entities like ArtifactHit.
 New Features:
 
 - Updated Ehcache to 2.7.5, Groovy to 2.1.9, Quartz Scheduler to 2.2.1,
-  SLF4J to 1.6.6
+  SLF4J to 1.6.6, Shiro to 1.2.2
 - OrientDB is now included in the framework by default instead of only in
   an addon component to have an embedded document and graph NoSQL database;
   this and other graph databases can be used through the Blueprint and
