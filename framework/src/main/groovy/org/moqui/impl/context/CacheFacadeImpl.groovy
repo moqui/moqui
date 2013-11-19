@@ -33,12 +33,13 @@ public class CacheFacadeImpl implements CacheFacade {
     /** This is the Ehcache CacheManager singleton for use in Moqui.
      * Gets config from the default location, ie the ehcache.xml file from the classpath.
      */
-    protected final CacheManager cacheManager = new CacheManager()
+    protected final CacheManager cacheManager
 
     protected final Map<String, CacheImpl> localCacheImplMap = new HashMap()
 
     CacheFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
+        cacheManager = CacheManager.create()
     }
 
     void destroy() { cacheManager.shutdown() }
