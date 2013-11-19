@@ -98,6 +98,7 @@ class EntityDbMeta {
             if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
         }
         entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
+        entityTablesExist.put(ed.getFullEntityName(), true)
 
         if (logger.isTraceEnabled()) logger.trace("Checked table for entity [${ed.getFullEntityName()}] in ${(System.currentTimeMillis()-startTime)/1000} seconds")
     }

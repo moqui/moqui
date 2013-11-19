@@ -16,7 +16,6 @@ import java.sql.Connection
 import java.sql.SQLException
 
 import org.moqui.entity.EntityDynamicView
-import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityException
 import org.moqui.impl.entity.condition.EntityConditionImplBase
@@ -44,25 +43,8 @@ class EntityFindImpl extends EntityFindBase {
     EntityValueBase oneExtended(EntityConditionImplBase whereCondition) throws EntityException {
         EntityDefinition ed = this.getEntityDef()
 
-        /*
-NOTE: the tableExists check for finds is disabled because for some reason causes Exception like this:
-
-Error loading class [com.atomikos.icatch.jta.UserTransactionServerImp] from jars in war file [/Users/jonesde123/work/moquiwork/moqui/moqui-1.3.2.war]: java.lang.IllegalStateException: zip file closed
-(NOTE: this particular class is just an example, happens with a bunch of different classes)
-
-java.lang.IllegalStateException: zip file closed
-	at java.util.zip.ZipFile.ensureOpen(ZipFile.java:634)
-	at java.util.zip.ZipFile.getEntry(ZipFile.java:305)
-	at java.util.jar.JarFile.getEntry(JarFile.java:226)
-	at java.util.jar.JarFile.getJarEntry(JarFile.java:209)
-	at MoquiStart.findJarClass(MoquiStart.java:402)
-	at MoquiStart.loadClass(MoquiStart.java:375)
-
-Found some references to this error as a JDK bug, but it supposedly fixed and still don't know why it happens when this code is enabled versus not.
-         */
-
         // table doesn't exist, just return null
-        // if (!efi.getEntityDbMeta().tableExists(ed)) return null
+        if (!efi.getEntityDbMeta().tableExists(ed)) return null
 
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
@@ -85,9 +67,9 @@ Found some references to this error as a JDK bug, but it supposedly fixed and st
         EntityValueBase newEntityValue = null
         try {
             // don't check create, above tableExists check is done:
-            efi.getEntityDbMeta().checkTableRuntime(ed)
+            // efi.getEntityDbMeta().checkTableRuntime(ed)
             // if this is a view-entity and any table in it exists check/create all or will fail with optional members, etc
-            // if (ed.isViewEntity()) efi.getEntityDbMeta().checkTableRuntime(ed)
+            if (ed.isViewEntity()) efi.getEntityDbMeta().checkTableRuntime(ed)
 
             efb.makeConnection()
             efb.makePreparedStatement()
@@ -123,7 +105,7 @@ Found some references to this error as a JDK bug, but it supposedly fixed and st
         EntityDefinition ed = this.getEntityDef()
 
         // table doesn't exist, just return empty ELI
-        // if (!efi.getEntityDbMeta().tableExists(ed)) return new EntityListIteratorWrapper([], ed, this.fieldsToSelect, this.efi)
+        if (!efi.getEntityDbMeta().tableExists(ed)) return new EntityListIteratorWrapper([], ed, this.fieldsToSelect, this.efi)
 
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
         if (this.getDistinct()) efb.makeDistinct()
@@ -157,9 +139,9 @@ Found some references to this error as a JDK bug, but it supposedly fixed and st
         EntityListIteratorImpl elii
         try {
             // don't check create, above tableExists check is done:
-            efi.getEntityDbMeta().checkTableRuntime(ed)
+            // efi.getEntityDbMeta().checkTableRuntime(ed)
             // if this is a view-entity and any table in it exists check/create all or will fail with optional members, etc
-            // if (ed.isViewEntity()) efi.getEntityDbMeta().checkTableRuntime(ed)
+            if (ed.isViewEntity()) efi.getEntityDbMeta().checkTableRuntime(ed)
 
             Connection con = efb.makeConnection()
             efb.makePreparedStatement()
@@ -186,7 +168,7 @@ Found some references to this error as a JDK bug, but it supposedly fixed and st
         EntityDefinition ed = this.getEntityDef()
 
         // table doesn't exist, just return 0
-        // if (!efi.getEntityDbMeta().tableExists(ed)) return 0
+        if (!efi.getEntityDbMeta().tableExists(ed)) return 0
 
         EntityFindBuilder efb = new EntityFindBuilder(ed, this)
 
@@ -214,9 +196,9 @@ Found some references to this error as a JDK bug, but it supposedly fixed and st
         long count = 0
         try {
             // don't check create, above tableExists check is done:
-            efi.getEntityDbMeta().checkTableRuntime(ed)
+            // efi.getEntityDbMeta().checkTableRuntime(ed)
             // if this is a view-entity and any table in it exists check/create all or will fail with optional members, etc
-            // if (ed.isViewEntity()) efi.getEntityDbMeta().checkTableRuntime(ed)
+            if (ed.isViewEntity()) efi.getEntityDbMeta().checkTableRuntime(ed)
 
             efb.makeConnection()
             efb.makePreparedStatement()
