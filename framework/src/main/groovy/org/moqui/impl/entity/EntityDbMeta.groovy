@@ -28,7 +28,10 @@ import org.slf4j.LoggerFactory
 class EntityDbMeta {
     protected final static Logger logger = LoggerFactory.getLogger(EntityDbMeta.class)
 
+    // this keeps track of when tables are checked and found to exist or are created
     protected Map entityTablesChecked = new HashMap()
+    // a separate Map for tables checked to exist only (used in finds) so repeated checks are needed for unused entities
+    protected Map<String, Boolean> entityTablesExist = new HashMap()
 
     protected EntityFacadeImpl efi
     EntityDbMeta(EntityFacadeImpl efi) {
@@ -100,27 +103,49 @@ class EntityDbMeta {
     }
 
     boolean tableExists(EntityDefinition ed) {
-        String groupName = efi.getEntityGroupName(ed)
-        Connection con = null
-        ResultSet tableSet = null
-        try {
-            con = efi.getConnection(groupName)
-            DatabaseMetaData dbData = con.getMetaData()
+        Boolean exists = entityTablesExist.get(ed.getFullEntityName())
+        if (exists != null) return exists
 
-            String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
-            tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
-            if (tableSet.next()) {
-                return true
-            } else {
-                logger.info("Table for entity [${ed.getFullEntityName()}] does NOT exist")
-                return false
+        return tableExistsInternal(ed)
+    }
+    synchronized boolean tableExistsInternal(EntityDefinition ed) {
+        Boolean exists = entityTablesExist.get(ed.getFullEntityName())
+        if (exists != null) return exists
+
+        Boolean dbResult = null
+        if (ed.isViewEntity()) {
+            boolean anyExist = false
+            for (Node memberEntityNode in ed.entityNode."member-entity") {
+                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
+                if (tableExists(med)) anyExist = true
             }
-        } catch (Exception e) {
-            throw new EntityException("Exception checking to see if table [${ed.getTableName()}] exists", e)
-        } finally {
-            if (tableSet != null) tableSet.close()
-            if (con != null) con.close()
+            dbResult = anyExist
+        } else {
+            String groupName = efi.getEntityGroupName(ed)
+            Connection con = null
+            ResultSet tableSet = null
+            try {
+                con = efi.getConnection(groupName)
+                DatabaseMetaData dbData = con.getMetaData()
+
+                String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
+                tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
+                if (tableSet.next()) {
+                    dbResult = true
+                } else {
+                    if (logger.isTraceEnabled()) logger.trace("Table for entity [${ed.getFullEntityName()}] does NOT exist")
+                    dbResult = false
+                }
+            } catch (Exception e) {
+                throw new EntityException("Exception checking to see if table [${ed.getTableName()}] exists", e)
+            } finally {
+                if (tableSet != null) tableSet.close()
+                if (con != null) con.close()
+            }
         }
+        if (dbResult == null) throw new EntityException("No result checking if entity [${ed.getFullEntityName()}] table exists")
+        entityTablesExist.put(ed.getFullEntityName(), dbResult)
+        return dbResult
     }
 
     void createTable(EntityDefinition ed) {
