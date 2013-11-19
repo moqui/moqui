@@ -90,10 +90,15 @@ public class Moqui {
 
         long startTime = System.currentTimeMillis();
 
-        long records = edl.load();
+        try {
+            long records = edl.load();
 
-        long totalSeconds = (System.currentTimeMillis() - startTime)/1000;
-        logger.info("Loaded [" + records + "] records in " + totalSeconds + " seconds.");
+            long totalSeconds = (System.currentTimeMillis() - startTime)/1000;
+            logger.info("Loaded [" + records + "] records in " + totalSeconds + " seconds.");
+        } catch (Throwable t) {
+            System.out.println("Error loading data: " + t.toString());
+            t.printStackTrace();
+        }
 
         // cleanup and quit
         activeExecutionContextFactory.destroyActiveExecutionContext();
