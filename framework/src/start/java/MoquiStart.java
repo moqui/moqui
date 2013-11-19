@@ -212,6 +212,8 @@ public class MoquiStart extends ClassLoader {
             this.jarFileList = jarFileList;
         }
         public void run() {
+            System.out.println("========== Shutting down Moqui Executable (closing jars, etc) ==========");
+
             // run this first, ie shutdown the container before closing jarFiles to avoid errors with classes missing
             if (callMethod != null) {
                 try { callMethod.invoke(callObject); } catch (Exception e) { System.out.println("Error in shutdown: " + e.toString()); }
