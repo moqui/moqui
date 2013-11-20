@@ -62,8 +62,8 @@ public class BaseException extends RuntimeException {
                     cn.startsWith("groovy.lang.")) {
                 continue;
             }
-            if ("renderSingle".equals(ste.getMethodName()) && cn.startsWith("org.moqui.impl.screen.ScreenSection")) continue;
-            if (("internalRender".equals(ste.getMethodName()) || "doActualRender".equals(ste.getMethodName())) && cn.startsWith("org.moqui.impl.screen.ScreenRenderImpl")) continue;
+            // if ("renderSingle".equals(ste.getMethodName()) && cn.startsWith("org.moqui.impl.screen.ScreenSection")) continue;
+            // if (("internalRender".equals(ste.getMethodName()) || "doActualRender".equals(ste.getMethodName())) && cn.startsWith("org.moqui.impl.screen.ScreenRenderImpl")) continue;
             if (("call".equals(ste.getMethodName()) || "callCurrent".equals(ste.getMethodName())) && ste.getLineNumber() == -1) continue;
             //System.out.println("Adding className: " + cn + ", line: " + ste.getLineNumber());
             newList.add(ste);
