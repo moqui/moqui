@@ -5,14 +5,15 @@ Moqui Framework Release Notes
 Release 1.3.2 - 22 Nov 2013 (tentative)
 ===========================================================================
 
-Moqui Framework 1.3.2 is a minor new feature and bug fix release. The main
-new feature is a write-through per-transaction cache that effectively
-simulates the database for the scope of the transaction and does all DB
-updates with a single connection just before commit. This transaction cache
-is enabled on service definitions using the cache and force-cache options
-for the service.@transaction attribute. With this in place various Mantle
-services now run 2-3 times as fast with results validated by extensive
-automated tests.
+Moqui Framework 1.3.2 is a minor new feature and bug fix release.
+
+The main new feature is a write-through per-transaction cache that
+effectively simulates the database for the scope of the transaction and
+does all DB updates with a single connection just before commit. This
+transaction cache is enabled on service definitions using the cache and
+force-cache options for the service.@transaction attribute. With this in
+place various Mantle services now run 2-3 times as fast with results
+validated by extensive automated tests.
 
 Another set of new features covers internal profiling for artifact
 execution (entities, services, screens, transitions, etc). There are
