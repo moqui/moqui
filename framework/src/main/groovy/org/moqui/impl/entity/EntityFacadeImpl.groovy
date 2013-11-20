@@ -174,7 +174,10 @@ class EntityFacadeImpl implements EntityFacade {
 
     synchronized void loadAllEntityLocations() {
         // load all entity files based on ResourceReference
-        for (ResourceReference entityRr in getAllEntityFileLocations()) this.loadEntityFileLocations(entityRr)
+        long startTime = System.currentTimeMillis()
+        List<ResourceReference> allEntityFileLocations = getAllEntityFileLocations()
+        for (ResourceReference entityRr in allEntityFileLocations) this.loadEntityFileLocations(entityRr)
+        if (logger.isInfoEnabled()) logger.info("Found entities in ${allEntityFileLocations.size()} files in ${System.currentTimeMillis() - startTime}ms")
 
         // look for view-entity definitions in the database (moqui.entity.view.DbViewEntity)
         if (entityLocationCache.get("moqui.entity.view.DbViewEntity")) {
@@ -245,7 +248,7 @@ class EntityFacadeImpl implements EntityFacade {
 
                 numEntities++
             }
-            logger.info("Found [${numEntities}] entity definitions in [${entityRr.location}]")
+            if (logger.isTraceEnabled()) logger.trace("Found [${numEntities}] entity definitions in [${entityRr.location}]")
         }
     }
 
@@ -261,8 +264,8 @@ class EntityFacadeImpl implements EntityFacade {
 
         List entityLocationList = (List) entityLocationCache.get(entityName)
         if (entityLocationList == null) {
-            if (logger.warnEnabled) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
-            if (logger.infoEnabled) logger.info("Unknown entity name ${entityName} location", new BaseException("Unknown entity name location"))
+            if (logger.isWarnEnabled()) logger.warn("No location cache found for entity-name [${entityName}], reloading ALL entity file locations known.")
+            if (logger.isInfoEnabled()) logger.info("Unknown entity name ${entityName} location", new BaseException("Unknown entity name location"))
 
             this.loadAllEntityLocations()
             entityLocationList = (List) entityLocationCache.get(entityName)
