@@ -114,35 +114,46 @@ class EntityDbMeta {
         if (exists != null) return exists
 
         Boolean dbResult = null
-        if (ed.isViewEntity()) {
-            boolean anyExist = false
-            for (Node memberEntityNode in ed.entityNode."member-entity") {
-                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
-                if (tableExists(med)) anyExist = true
+        boolean suspendedTransaction = false
+        try {
+            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
+                suspendedTransaction = efi.ecfi.transactionFacade.suspend()
             }
-            dbResult = anyExist
-        } else {
-            String groupName = efi.getEntityGroupName(ed)
-            Connection con = null
-            ResultSet tableSet = null
-            try {
-                con = efi.getConnection(groupName)
-                DatabaseMetaData dbData = con.getMetaData()
 
-                String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
-                tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
-                if (tableSet.next()) {
-                    dbResult = true
-                } else {
-                    if (logger.isTraceEnabled()) logger.trace("Table for entity [${ed.getFullEntityName()}] does NOT exist")
-                    dbResult = false
+            if (ed.isViewEntity()) {
+                boolean anyExist = false
+                for (Node memberEntityNode in ed.entityNode."member-entity") {
+                    EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
+                    if (tableExists(med)) anyExist = true
                 }
-            } catch (Exception e) {
-                throw new EntityException("Exception checking to see if table [${ed.getTableName()}] exists", e)
-            } finally {
-                if (tableSet != null) tableSet.close()
-                if (con != null) con.close()
+                dbResult = anyExist
+            } else {
+                String groupName = efi.getEntityGroupName(ed)
+                Connection con = null
+                ResultSet tableSet = null
+                boolean beganTx = efi.ecfi.transactionFacade.begin(5)
+                try {
+                    con = efi.getConnection(groupName)
+                    DatabaseMetaData dbData = con.getMetaData()
+
+                    String[] types = ["TABLE", "VIEW", "ALIAS", "SYNONYM"]
+                    tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName(), types)
+                    if (tableSet.next()) {
+                        dbResult = true
+                    } else {
+                        if (logger.isTraceEnabled()) logger.trace("Table for entity [${ed.getFullEntityName()}] does NOT exist")
+                        dbResult = false
+                    }
+                } catch (Exception e) {
+                    throw new EntityException("Exception checking to see if table [${ed.getTableName()}] exists", e)
+                } finally {
+                    if (tableSet != null) tableSet.close()
+                    if (con != null) con.close()
+                    if (beganTx) efi.ecfi.transactionFacade.commit()
+                }
             }
+        } finally {
+            if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
         }
         if (dbResult == null) throw new EntityException("No result checking if entity [${ed.getFullEntityName()}] table exists")
         entityTablesExist.put(ed.getFullEntityName(), dbResult)
