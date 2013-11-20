@@ -73,8 +73,15 @@ class EntityListIteratorImpl implements EntityListIterator {
             if (con != null) {
                 try {
                     con.close()
-                    def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(entityDefinition)).getDataSource()
-                    // logger.warn("=========== elii after close pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
+
+                    /* leaving commented as might be useful for future con pool debugging:
+                    try {
+                        def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(entityDefinition)).getDataSource()
+                        logger.warn("=========== elii after close pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
+                    } catch (Throwable t) {
+                        logger.warn("========= pool size error ${t.toString()}")
+                    }
+                    */
                 } catch (SQLException e) {
                     throw new EntityException("Could not close Connection in EntityListIterator", e)
                 }
@@ -321,7 +328,7 @@ class EntityListIteratorImpl implements EntityListIterator {
                 recordsWritten += value.writeXmlText(writer, prefix, dependents)
             }
         } catch (SQLException e) {
-            throw new EntityException("Error getting all results", e)
+            throw new EntityException("Error writing XML for all results", e)
         }
         return recordsWritten
     }

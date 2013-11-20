@@ -152,8 +152,14 @@ class EntityDataWriterImpl implements EntityDataWriter {
                         if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
                     }
 
-                    def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(ed)).getDataSource()
-                    // logger.warn("=========== edwi pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
+                    /* leaving commented as might be useful for future con pool debugging:
+                    try {
+                        def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(ed)).getDataSource()
+                        logger.warn("=========== edwi pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
+                    } catch (Throwable t) {
+                        logger.warn("========= pool size error ${t.toString()}")
+                    }
+                    */
 
                     EntityListIterator eli = ef.iterator()
                     try {
