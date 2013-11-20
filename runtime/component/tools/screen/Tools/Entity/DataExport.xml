@@ -12,9 +12,9 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
-        default-menu-title="Export" begin-transaction="false">
+        default-menu-title="Export">
 
-    <transition name="EntityExport.xml">
+    <transition name="EntityExport.xml" begin-transaction="false">
         <actions>
             <script><![CDATA[
                 import org.moqui.entity.EntityDataWriter
