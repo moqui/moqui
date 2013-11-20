@@ -268,7 +268,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     boolean begin(Integer timeout) {
         try {
             int currentStatus = ut.getStatus()
-            // logger.warn("================ begin TX, currentStatus=${currentStatus}")
+            // logger.warn("================ begin TX, currentStatus=${currentStatus}", new BaseException("beginning transaction at"))
 
             if (currentStatus == Status.STATUS_ACTIVE) {
                 // don't begin, and return false so caller knows we didn't
