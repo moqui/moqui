@@ -907,9 +907,14 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     ScreenUrlInfo buildUrl(String subscreenPath) {
-        if (subscreenUrlInfos.containsKey(subscreenPath)) return subscreenUrlInfos.get(subscreenPath)
+        List<String> pathList = getActiveScreenPath()
+        StringBuilder keyBuilder = new StringBuilder()
+        for (String pathElem in pathList) keyBuilder.append(pathElem).append("/")
+        String key = keyBuilder.append(subscreenPath).toString()
+
+        if (subscreenUrlInfos.containsKey(key)) return subscreenUrlInfos.get(key)
         ScreenUrlInfo sui = new ScreenUrlInfo(this, null, null, subscreenPath, null, null)
-        subscreenUrlInfos.put(subscreenPath, sui)
+        subscreenUrlInfos.put(key, sui)
         return sui
     }
 
