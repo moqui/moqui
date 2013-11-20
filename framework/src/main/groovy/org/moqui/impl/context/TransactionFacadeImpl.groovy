@@ -84,7 +84,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         this.ut = null
 
         // destroy utm (just for internal/Atomikos; nothing for JNDI
-        if (atomikosUts != null) atomikosUts.shutdown(true)
+        if (atomikosUts != null) atomikosUts.shutdown(false)
 
         transactionBeginStackList.remove()
         transactionBeginStartTimeList.remove()
