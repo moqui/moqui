@@ -103,7 +103,6 @@
         <priority value="warn"/>
     </category>
     <category name="com.atomikos">
-        <!-- NOTE: this is "atomikos" isntead of "com.atomikos" because that is how Atomikos is setup -->
         <priority value="warn"/>
     </category>
 
