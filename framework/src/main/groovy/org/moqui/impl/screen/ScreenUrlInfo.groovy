@@ -362,9 +362,9 @@ class ScreenUrlInfo {
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
             if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
 
-            if (nextSd.webSettingsNode?."@require-encryption"?.getAt(0) != "false") this.requireEncryption = true
-            if (nextSd.screenNode?."@begin-transaction"?.getAt(0) == "true") this.beginTransaction = true
-            if (nextSd.screenNode?."subscreens"?."@always-use-full-path"?.getAt(0) == "true") alwaysUseFullPath = true
+            if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
+            if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+            if (nextSd.screenNode?."subscreens"?."@always-use-full-path" == "true") alwaysUseFullPath = true
 
             // if standalone, clear out screenRenderDefList before adding this to it
             if (nextSd.screenNode?."@standalone" == "true" || this.lastStandalone) {
