@@ -73,6 +73,8 @@ class EntityListIteratorImpl implements EntityListIterator {
             if (con != null) {
                 try {
                     con.close()
+                    def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(entityDefinition)).getDataSource()
+                    // logger.warn("=========== elii after close pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
                 } catch (SQLException e) {
                     throw new EntityException("Could not close Connection in EntityListIterator", e)
                 }

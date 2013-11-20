@@ -282,8 +282,9 @@ class ScreenRenderImpl implements ScreenRender {
             }
 
             long transitionStartTime = System.currentTimeMillis()
-            // NOTE: always use a transaction for transition run (actions, etc)
-            boolean beganTransaction = sfi.ecfi.transactionFacade.begin(null)
+
+            boolean beginTransaction = screenUrlInfo.getTargetTransition().getBeginTransaction()
+            boolean beganTransaction = beginTransaction ? sfi.getEcfi().getTransactionFacade().begin(null) : false
             ResponseItem ri = null
             try {
                 ri = recursiveRunTransition(screenUrlInfo.screenPathDefList.iterator())

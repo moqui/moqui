@@ -151,9 +151,16 @@ class EntityDataWriterImpl implements EntityDataWriter {
                         if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
                         if (thruDate) ef.condition("lastUpdatedStamp", ComparisonOperator.LESS_THAN, thruDate)
                     }
+
+                    def dataSource = efi.getDatasourceFactory(efi.getEntityGroupName(ed)).getDataSource()
+                    // logger.warn("=========== edwi pool available size: ${dataSource.poolAvailableSize()}/${dataSource.poolTotalSize()}; ${dataSource.getMinPoolSize()}-${dataSource.getMaxPoolSize()}")
+
                     EntityListIterator eli = ef.iterator()
-                    valuesWritten += eli.writeXmlText(writer, prefix, dependents)
-                    eli.close()
+                    try {
+                        valuesWritten += eli.writeXmlText(writer, prefix, dependents)
+                    } finally {
+                        eli.close()
+                    }
                 }
 
                 writer.println("</entity-facade-xml>")

@@ -284,11 +284,14 @@ class ScreenDefinition {
         protected ResponseItem defaultResponse = null
         protected ResponseItem errorResponse = null
 
+        protected boolean beginTransaction = true
+
         TransitionItem(Node transitionNode, ScreenDefinition parentScreen) {
             this.parentScreen = parentScreen
             name = transitionNode."@name"
             method = transitionNode."@method" ?: "any"
             location = "${parentScreen.location}.transition_${StupidUtilities.cleanStringForJavaName(name)}"
+            beginTransaction = transitionNode."@begin-transaction" != "false"
 
             // path-parameter
             if (transitionNode."path-parameter") {
@@ -328,6 +331,7 @@ class ScreenDefinition {
         String getSingleServiceName() { return singleServiceName }
         List<String> getPathParameterList() { return pathParameterList }
         boolean hasActionsOrSingleService() { return actions || singleServiceName }
+        boolean getBeginTransaction() { return beginTransaction }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 
