@@ -99,7 +99,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
             AbstractDataSourceBean ads
             if (xaProperties) {
                 AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
-                ds.setUniqueResourceName(this.tenantId + datasourceNode."@group-name")
+                ds.setUniqueResourceName(this.tenantId + '_' + datasourceNode."@group-name" + '_DS')
                 String xsDsClass = inlineJdbc."@xa-ds-class" ? inlineJdbc."@xa-ds-class" : database."@default-xa-ds-class"
                 ds.setXaDataSourceClassName(xsDsClass)
 
@@ -125,7 +125,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 ads = ds
             } else {
                 AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
-                ds.setUniqueResourceName(this.tenantId + datasourceNode."@group-name")
+                ds.setUniqueResourceName(this.tenantId + '_' + datasourceNode."@group-name" + '_DS')
                 String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
                 ds.setDriverClassName(driver)
                 ds.setUrl(tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
