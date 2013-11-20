@@ -415,6 +415,8 @@ abstract class EntityFindBase implements EntityFind {
 
     protected boolean shouldCache() {
         if (this.dynamicView) return false
+        if (this.limit != null || this.offset) return false
+        if (this.useCache != null && !this.useCache) return false
         String entityCache = this.getEntityDef().getEntityNode()."@use-cache"
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
     }
