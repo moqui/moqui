@@ -9,6 +9,7 @@ Moqui Framework 1.3.3 is a minor new feature and bug fix release.
 
 New Features:
 
+- Added ISO 8601 date/time parsing as another default in L10nFacade
 
 Bug Fixes:
 
