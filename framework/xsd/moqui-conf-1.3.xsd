@@ -265,6 +265,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:element>
                 <xs:element minOccurs="0" ref="transaction-factory"/>
             </xs:sequence>
+            <xs:attribute name="use-transaction-cache" default="true" type="boolean"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="transaction-factory">

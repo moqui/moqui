@@ -59,10 +59,13 @@ class TransactionFacadeImpl implements TransactionFacade {
     private ThreadLocal<List<Exception>> suspendedTxLocationStack = new ThreadLocal<List<Exception>>()
     private ThreadLocal<ArrayList<Map<String, XAResource>>> activeXaResourceStackList = new ThreadLocal<ArrayList<Map<String, XAResource>>>()
 
+    protected boolean useTransactionCache = true
+
     TransactionFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
 
-        Node transactionFactory = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."transaction-factory"[0]
+        Node transactionFacadeNode = this.ecfi.getConfXmlRoot()."transaction-facade"[0]
+        Node transactionFactory = transactionFacadeNode."transaction-factory"[0]
         if (transactionFactory."@factory-type" == "jndi") {
             this.populateTransactionObjectsJndi()
         } else if (transactionFactory."@factory-type" == "internal") {
@@ -76,6 +79,8 @@ class TransactionFacadeImpl implements TransactionFacade {
         } else {
             throw new IllegalArgumentException("Transaction factory type [${transactionFactory."@factory-type"}] not supported")
         }
+
+        if (transactionFacadeNode."@use-transaction-cache" == "false") useTransactionCache = false
     }
 
     void destroy() {
@@ -520,7 +525,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     @Override
     void initTransactionCache() {
-        if (getActiveXaResource("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
+        if (useTransactionCache && getActiveXaResource("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
     }
 
     static class RollbackInfo {

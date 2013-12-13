@@ -496,6 +496,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     Client getElasticSearchClient() { return elasticSearchClient }
 
+    /*
+    KieContainer getKieContainer(String componentName) {
+        // TODO: implement this
+        return null
+    }
+    */
+
     // ========== Interface Implementations ==========
 
     @Override
@@ -739,6 +746,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (overrideNode."transaction-facade") {
             Node tfBaseNode = baseNode."transaction-facade"[0]
             Node tfOverrideNode = overrideNode."transaction-facade"[0]
+            tfBaseNode.attributes().putAll(tfOverrideNode.attributes())
             mergeSingleChild(tfBaseNode, tfOverrideNode, "server-jndi")
             mergeSingleChild(tfBaseNode, tfOverrideNode, "transaction-factory")
         }

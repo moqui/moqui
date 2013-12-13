@@ -76,7 +76,7 @@
         <login max-failures="3" disable-minutes="5" history-store="true" history-incorrect-password="true"/>
     </user-facade>
 
-    <transaction-facade>
+    <transaction-facade use-transaction-cache="true">
         <!-- if this is not present the default JNDI server will be used -->
         <!-- <server-jndi context-provider-url="rmi://127.0.0.1:1099"
                      initial-context-factory="com.sun.jndi.rmi.registry.RegistryContextFactory"
