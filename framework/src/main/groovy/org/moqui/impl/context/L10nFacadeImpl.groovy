@@ -141,10 +141,10 @@ public class L10nFacadeImpl implements L10nFacade {
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd", curLocale, curTz)
-        // ISO 8601 parsing using JAXB DatatypeConverter.parseDateTime(); on Java 7 can use "X" instead of "Z" in format string, but not in Java 6
-        if (cal == null) cal = DatatypeConverter.parseDateTime(input)
         // logger.warn("=========== input=${input}, cal=${cal}, long=${cal?.getTimeInMillis()}, locale=${curLocale}, timeZone=${curTz}, System=${System.currentTimeMillis()}")
         if (cal != null) return new Timestamp(cal.getTimeInMillis())
+        // ISO 8601 parsing using JAXB DatatypeConverter.parseDateTime(); on Java 7 can use "X" instead of "Z" in format string, but not in Java 6
+        if (cal == null) cal = DatatypeConverter.parseDateTime(input)
 
         // try interpreting the String as a long
         try {
