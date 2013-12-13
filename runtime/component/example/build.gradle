@@ -20,6 +20,7 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
     flatDir name: 'localLibSearch', dirs: frameworkDir.absolutePath + '/lib/search'
+    flatDir name: 'localLibKie', dirs: projectDir.absolutePath + '/lib/kie'
     flatDir name: 'localLibOrientDb', dirs: frameworkDir.absolutePath + '/lib/orientdb'
     flatDir name: 'moquiLib', dirs: frameworkDir.absolutePath + '/build/libs'
 }
@@ -27,6 +28,7 @@ repositories {
 dependencies {
     compile fileTree(dir: frameworkDir.absolutePath + '/lib', includes: ['*.jar'])
     compile fileTree(dir: frameworkDir.absolutePath + '/lib/search', includes: ['*.jar'])
+    compile fileTree(dir: frameworkDir.absolutePath + '/lib/kie', includes: ['*.jar'])
     compile fileTree(dir: frameworkDir.absolutePath + '/lib/orientdb', includes: ['*.jar'])
     compile name: 'moqui-framework', version: version // Public Domain
 }

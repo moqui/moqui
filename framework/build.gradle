@@ -30,6 +30,7 @@ repositories {
     flatDir name: 'localLib', dirs: projectDir.absolutePath + '/lib'
     flatDir name: 'localLibFop', dirs: projectDir.absolutePath + '/lib/fop'
     flatDir name: 'localLibSearch', dirs: projectDir.absolutePath + '/lib/search'
+    flatDir name: 'localLibKie', dirs: projectDir.absolutePath + '/lib/kie'
     flatDir name: 'localLibOrientDb', dirs: projectDir.absolutePath + '/lib/orientdb'
 }
 
@@ -147,6 +148,18 @@ dependencies {
     // runtime name: 'jts', version: '1.12' // LGPL (runtime only, needed by spatial4j)
     runtime name: 'spatial4j', version: '0.3' // Apache 2.0
     runtime name: 'lucene-spatial', version: '4.5.1' // Apache 2.0
+
+    // Rules Libraries: Drools/jBPM/etc
+    apiCompile name: 'kie-api', version: '6.0.0.Final' // Apache 2.0
+    compile name: 'kie-api', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'drools-compiler', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'drools-core', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'drools-decisiontables', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'drools-templates', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'drools-jsr94', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'jsr94', version: '1.1' // Apache 2.0
+    runtime name: 'kie-internal', version: '6.0.0.Final' // Apache 2.0
+    runtime name: 'mvel2', version: '2.1.7.Final' // Apache 2.0
 
     // ========== runtime-only dependencies ==========
     runtime name: 'camel-elasticsearch', version: '2.12.1' // Apache 2.0
