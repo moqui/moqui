@@ -157,9 +157,17 @@ dependencies {
     runtime name: 'drools-decisiontables', version: '6.0.0.Final' // Apache 2.0
     runtime name: 'drools-templates', version: '6.0.0.Final' // Apache 2.0
     runtime name: 'drools-jsr94', version: '6.0.0.Final' // Apache 2.0
-    runtime name: 'jsr94', version: '1.1' // Apache 2.0
+    runtime name: 'jsr94', version: '1.1' // ???
     runtime name: 'kie-internal', version: '6.0.0.Final' // Apache 2.0
     runtime name: 'mvel2', version: '2.1.7.Final' // Apache 2.0
+    runtime name: 'protobuf-java', version: '2.5.0' // New BSD
+    runtime name: 'xstream', version: '1.4.3' // New BSD
+    runtime name: 'antlr-runtime', version: '3.5' // New BSD
+    runtime name: 'poi', version: '3.9' // Apache 2.0
+    // see if we can use decisiontables without this: runtime name: 'poi-ooxml', version: '3.9' // Apache 2.0
+    // really necessary? nearly 5MB file: runtime name: 'poi-ooxml-schemas', version: '3.9' // Apache 2.0
+    runtime name: 'janino', version: '2.7.1' // New BSD
+    runtime name: 'commons-compiler', version: '2.7.1' // New BSD
 
     // ========== runtime-only dependencies ==========
     runtime name: 'camel-elasticsearch', version: '2.12.1' // Apache 2.0
