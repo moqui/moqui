@@ -12,6 +12,7 @@
 package org.moqui.impl.context
 
 import org.elasticsearch.client.Client
+import org.kie.api.runtime.KieContainer
 import org.moqui.context.ContextStack
 import org.moqui.context.ExecutionContext
 import org.moqui.context.NotificationMessage
@@ -148,6 +149,8 @@ class ExecutionContextImpl implements ExecutionContext {
     CamelContext getCamelContext() { ecfi.getCamelContext() }
     @Override
     Client getElasticSearchClient() { ecfi.getElasticSearchClient() }
+    @Override
+    KieContainer getKieContainer(String componentName) { ecfi.getKieContainer(componentName) }
 
 
     @Override

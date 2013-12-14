@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.apache.camel.CamelContext;
 import org.elasticsearch.client.Client;
+import org.kie.api.runtime.KieContainer;
 import org.moqui.entity.EntityFacade;
 import org.moqui.entity.EntityValue;
 import org.moqui.service.ServiceFacade;
@@ -88,6 +89,9 @@ public interface ExecutionContext {
 
     /** ElasticSearch Client is used for indexing and searching documents */
     Client getElasticSearchClient();
+
+    /** Get a KIE Container for Drools, jBPM, OptaPlanner, etc */
+    KieContainer getKieContainer(String componentName);
 
     /** This should be called by a filter or servlet at the beginning of an HTTP request to initialize a web facade
      * for the current thread.

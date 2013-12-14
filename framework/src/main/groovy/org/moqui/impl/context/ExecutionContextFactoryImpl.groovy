@@ -11,6 +11,13 @@
  */
 package org.moqui.impl.context
 
+import org.kie.api.KieServices
+import org.kie.api.builder.KieBuilder
+import org.kie.api.builder.Message
+import org.kie.api.builder.ReleaseId
+import org.kie.api.builder.Results
+import org.kie.api.runtime.KieContainer
+import org.moqui.context.Cache
 import org.moqui.impl.StupidWebUtilities
 
 import java.sql.Timestamp
@@ -82,6 +89,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     /* ElasticSearch fields */
     org.elasticsearch.node.Node elasticSearchNode
     Client elasticSearchClient
+
+    /* KIE fields */
+    protected final Cache kieComponentReleaseIdCache
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -174,6 +184,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
 
+        kieComponentReleaseIdCache = this.cacheFacade.getCache("kie.component.releaseId")
+
         postFacadeInit()
     }
 
@@ -224,6 +236,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         this.l10nFacade = new L10nFacadeImpl(this)
         logger.info("Moqui L10nFacadeImpl Initialized")
 
+        kieComponentReleaseIdCache = this.cacheFacade.getCache("kie.component.releaseId")
+
         postFacadeInit()
     }
 
@@ -240,6 +254,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // everything else ready to go, init Camel
         initCamel()
+
+        // init KIE (build modules for all components)
+        initKie()
 
         // ========== load a few things in advance so first page hit is faster in production (in dev mode will reload anyway as caches timeout)
         // load entity defs
@@ -375,6 +392,19 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
+    protected void initKie() {
+        if (!System.getProperty("drools.dialect.java.compiler")) System.setProperty("drools.dialect.java.compiler", "JANINO")
+
+        KieServices services = KieServices.Factory.get()
+        for (String componentName in componentBaseLocations.keySet()) {
+            try {
+                buildKieModule(componentName, services)
+            } catch (Throwable t) {
+                logger.error("Error initializing KIE in component ${componentName}: ${t.toString()}", t)
+            }
+        }
+    }
+
     synchronized void destroy() {
         if (!this.destroyed) {
             // stop Camel to prevent more calls coming in
@@ -496,12 +526,47 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     Client getElasticSearchClient() { return elasticSearchClient }
 
-    /*
     KieContainer getKieContainer(String componentName) {
-        // TODO: implement this
+        KieServices services = KieServices.Factory.get()
+
+        ReleaseId releaseId = kieComponentReleaseIdCache.get(componentName)
+        if (releaseId == null) releaseId = buildKieModule(componentName, services)
+
+        if (releaseId != null) return services.newKieContainer(releaseId)
         return null
     }
-    */
+
+    protected synchronized ReleaseId buildKieModule(String componentName, KieServices services) {
+        ReleaseId releaseId = kieComponentReleaseIdCache.get(componentName)
+        if (releaseId != null) return releaseId
+
+        ResourceReference kieRr = getResourceFacade().getLocationReference("component://${componentName}/kie")
+        if (!kieRr.getExists() || !kieRr.isDirectory()) {
+            if (logger.isTraceEnabled()) logger.trace("No kie directory in component ${componentName}, not building KIE module.")
+            return null
+        }
+
+        File kieDir = new File(kieRr.getUri())
+        KieBuilder builder = services.newKieBuilder(kieDir)
+
+        // build the KIE module
+        builder.buildAll()
+        Results results = builder.getResults()
+        if (results.hasMessages(Message.Level.ERROR)) {
+            throw new BaseException("Error building KIE module in component ${componentName}: ${results.toString()}")
+        } else if (results.hasMessages(Message.Level.WARNING)) {
+            logger.warn("Warning building KIE module in component ${componentName}: ${results.toString()}")
+        }
+
+        // get the release ID and cache it
+        releaseId = builder.getKieModule().getReleaseId()
+        kieComponentReleaseIdCache.put(componentName, releaseId)
+
+        // TODO: get all KieBase and KieSession names and create reverse-reference Map so we know which component's
+        //     module they are in, then add convenience methods to get any KieBase or KieSession by name
+
+        return releaseId
+    }
 
     // ========== Interface Implementations ==========
 
