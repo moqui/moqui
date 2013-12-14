@@ -166,8 +166,7 @@ dependencies {
     runtime name: 'poi', version: '3.9' // Apache 2.0
     // see if we can use decisiontables without this: runtime name: 'poi-ooxml', version: '3.9' // Apache 2.0
     // really necessary? nearly 5MB file: runtime name: 'poi-ooxml-schemas', version: '3.9' // Apache 2.0
-    runtime name: 'janino', version: '2.7.1' // New BSD
-    runtime name: 'commons-compiler', version: '2.7.1' // New BSD
+    runtime name: 'janino', version: '2.5.16' // New BSD
 
     // ========== runtime-only dependencies ==========
     runtime name: 'camel-elasticsearch', version: '2.12.1' // Apache 2.0
