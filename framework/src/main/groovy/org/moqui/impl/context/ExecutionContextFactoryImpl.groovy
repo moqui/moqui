@@ -256,7 +256,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         initCamel()
 
         // init KIE (build modules for all components)
-        initKie()
+        // TODO: figure this out: disabling KIE init for now because causing PermGen errors, even with MaxPermSize set to 256M
+        // initKie()
 
         // ========== load a few things in advance so first page hit is faster in production (in dev mode will reload anyway as caches timeout)
         // load entity defs
