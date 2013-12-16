@@ -47,6 +47,9 @@ dependencies {
     // may use in the future: runtime name: 'atomikos-transactions-jms', version: '3.8.0' // Apache 2.0
     compile name: 'atomikos-transactions-jta', version: '3.8.0' // Apache 2.0
 
+    // this is an optional alternative to Atomikos
+    compile name: 'btm', version: '2.1.4' // LGPL <== NOTE!
+
     apiCompile name: 'camel-core', version: '2.12.1' // Apache 2.0
     compile name: 'camel-core', version: '2.12.1' // Apache 2.0
 

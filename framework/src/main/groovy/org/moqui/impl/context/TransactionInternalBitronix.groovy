@@ -11,12 +11,9 @@
  */
 package org.moqui.impl.context
 
-import com.atomikos.icatch.config.UserTransactionService
-import com.atomikos.icatch.config.UserTransactionServiceImp
-import com.atomikos.icatch.jta.UserTransactionManager
-import com.atomikos.jdbc.AbstractDataSourceBean
-import com.atomikos.jdbc.AtomikosDataSourceBean
-import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
+import bitronix.tm.BitronixTransactionManager
+import bitronix.tm.TransactionManagerServices
+import bitronix.tm.resource.jdbc.PoolingDataSource
 
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.TransactionInternal
@@ -28,26 +25,25 @@ import org.moqui.impl.entity.EntityFacadeImpl
 import javax.sql.DataSource
 import javax.transaction.TransactionManager
 import javax.transaction.UserTransaction
+import java.sql.Connection
 
-class TransactionInternalAtomikos implements TransactionInternal {
+class TransactionInternalBitronix implements TransactionInternal {
 
     protected ExecutionContextFactoryImpl ecfi
 
-    protected UserTransactionService atomikosUts = null
+    protected BitronixTransactionManager btm
     protected UserTransaction ut
     protected TransactionManager tm
 
-    protected List<AbstractDataSourceBean> adsList = []
+    protected List<PoolingDataSource> pdsList = []
 
     @Override
     TransactionInternal init(ExecutionContextFactory ecf) {
         this.ecfi = (ExecutionContextFactoryImpl) ecf
-        atomikosUts = new UserTransactionServiceImp()
-        atomikosUts.init()
 
-        UserTransactionManager utm = new UserTransactionManager()
-        this.ut = utm
-        this.tm = utm
+        btm = TransactionManagerServices.getTransactionManager()
+        this.ut = btm
+        this.tm = btm
 
         return this
     }
@@ -84,12 +80,11 @@ class TransactionInternalAtomikos implements TransactionInternal {
         Node xaProperties = inlineJdbc."xa-properties"[0]
         Node database = efi.getDatabaseNode((String) datasourceNode."@group-name")
 
-        AbstractDataSourceBean ads
+        PoolingDataSource pds = new PoolingDataSource()
+        pds.setUniqueName(tenantId + '_' + datasourceNode."@group-name" + '_DS')
         if (xaProperties) {
-            AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
-            ds.setUniqueResourceName(tenantId + '_' + datasourceNode."@group-name" + '_DS')
             String xsDsClass = inlineJdbc."@xa-ds-class" ? inlineJdbc."@xa-ds-class" : database."@default-xa-ds-class"
-            ds.setXaDataSourceClassName(xsDsClass)
+            pds.setClassName(xsDsClass)
 
             Properties p = new Properties()
             if (tenantDataSourceXaPropList) {
@@ -108,51 +103,59 @@ class TransactionInternalAtomikos implements TransactionInternal {
                     p.setProperty(entry.getKey(), propValue)
                 }
             }
-            ds.setXaProperties(p)
-
-            ads = ds
+            pds.setDriverProperties(p)
         } else {
-            AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
-            ds.setUniqueResourceName(tenantId + '_' + datasourceNode."@group-name" + '_DS')
+            pds.setClassName("bitronix.tm.resource.jdbc.lrc.LrcXADataSource")
             String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
-            ds.setDriverClassName(driver)
-            ds.setUrl(tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
-            ds.setUser(tenantDataSource ? (String) tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
-            ds.setPassword(tenantDataSource ? (String) tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
-
-            ads = ds
+            pds.getDriverProperties().setProperty("driverClassName", driver)
+            pds.getDriverProperties().setProperty("url", tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
+            pds.getDriverProperties().setProperty("user", tenantDataSource ? (String) tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
+            pds.getDriverProperties().setProperty("password", tenantDataSource ? (String) tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
         }
 
         String txIsolationLevel = inlineJdbc."@isolation-level" ? inlineJdbc."@isolation-level" : database."@default-isolation-level"
-        if (txIsolationLevel && efi.getTxIsolationFromString(txIsolationLevel) != -1) {
-            ads.setDefaultIsolationLevel(efi.getTxIsolationFromString(txIsolationLevel))
+        int isolationInt = efi.getTxIsolationFromString(txIsolationLevel)
+        if (txIsolationLevel && isolationInt != -1) {
+            switch (isolationInt) {
+                case Connection.TRANSACTION_SERIALIZABLE: pds.setIsolationLevel("SERIALIZABLE"); break
+                case Connection.TRANSACTION_REPEATABLE_READ: pds.setIsolationLevel("REPEATABLE_READ"); break
+                case Connection.TRANSACTION_READ_UNCOMMITTED: pds.setIsolationLevel("READ_UNCOMMITTED"); break
+                case Connection.TRANSACTION_READ_COMMITTED: pds.setIsolationLevel("READ_COMMITTED"); break
+                case Connection.TRANSACTION_NONE: pds.setIsolationLevel("NONE"); break
+            }
         }
 
         // no need for this, just sets min and max sizes: ads.setPoolSize
-        if (inlineJdbc."@pool-minsize") ads.setMinPoolSize(inlineJdbc."@pool-minsize" as int)
-        if (inlineJdbc."@pool-maxsize") ads.setMaxPoolSize(inlineJdbc."@pool-maxsize" as int)
+        if (inlineJdbc."@pool-minsize") pds.setMinPoolSize(inlineJdbc."@pool-minsize" as int)
+        if (inlineJdbc."@pool-maxsize") pds.setMaxPoolSize(inlineJdbc."@pool-maxsize" as int)
 
-        if (inlineJdbc."@pool-time-idle") ads.setMaxIdleTime(inlineJdbc."@pool-time-idle" as int)
-        if (inlineJdbc."@pool-time-reap") ads.setReapTimeout(inlineJdbc."@pool-time-reap" as int)
-        if (inlineJdbc."@pool-time-maint") ads.setMaintenanceInterval(inlineJdbc."@pool-time-maint" as int)
-        if (inlineJdbc."@pool-time-wait") ads.setBorrowConnectionTimeout(inlineJdbc."@pool-time-wait" as int)
+        if (inlineJdbc."@pool-time-idle") pds.setMaxIdleTime(inlineJdbc."@pool-time-idle" as int)
+        // if (inlineJdbc."@pool-time-reap") ads.setReapTimeout(inlineJdbc."@pool-time-reap" as int)
+        // if (inlineJdbc."@pool-time-maint") ads.setMaintenanceInterval(inlineJdbc."@pool-time-maint" as int)
+        if (inlineJdbc."@pool-time-wait") pds.setAcquisitionTimeout(inlineJdbc."@pool-time-wait" as int)
+        pds.setAllowLocalTransactions(true) // allow mixing XA and non-XA transactions
+        pds.setAutomaticEnlistingEnabled(true) // automatically enlist/delist this resource in the tx
+        pds.setShareTransactionConnections(true) // share connections within a transaction
 
         if (inlineJdbc."@pool-test-query") {
-            ads.setTestQuery((String) inlineJdbc."@pool-test-query")
+            pds.setTestQuery((String) inlineJdbc."@pool-test-query")
         } else if (database."@default-test-query") {
-            ads.setTestQuery((String) database."@default-test-query")
+            pds.setTestQuery((String) database."@default-test-query")
         }
 
-        adsList.add(ads)
+        // init the DataSource
+        pds.init()
 
-        return ads
+        pdsList.add(pds)
+
+        return pds
     }
 
     @Override
     void destroy() {
         // close the DataSources
-        for (AbstractDataSourceBean ads in adsList) ads.close()
-        // shutdown Atomikos
-        atomikosUts.shutdown(false)
+        for (PoolingDataSource pds in pdsList) pds.close()
+        // shutdown Bitronix
+        btm.shutdown()
     }
 }

@@ -19,6 +19,7 @@ New Features:
   transaction-internal instead of single transaction-factory;
   transaction-internal has a class attribute to specify an implementation
   of the TransactionInternal interface to init/destroy the JTA impl
+- Added Bitronix BTM 2.1.4 as alternative to Atomikos
 
 Bug Fixes:
 
