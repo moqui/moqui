@@ -11,6 +11,7 @@
  */
 package org.moqui.context;
 
+import javax.transaction.Synchronization;
 import javax.transaction.xa.XAResource;
 
 /** Use this interface to do transaction demarcation and related operations.
@@ -102,12 +103,13 @@ public interface TransactionFacade {
 
     java.sql.Connection enlistConnection(javax.sql.XAConnection con) throws TransactionException;
 
-    void enlistResource(javax.transaction.xa.XAResource resource) throws TransactionException;
-
-    void registerSynchronization(javax.transaction.Synchronization sync) throws TransactionException;
-
+    void enlistResource(XAResource resource) throws TransactionException;
     XAResource getActiveXaResource(String resourceName);
     void putAndEnlistActiveXaResource(String resourceName, XAResource xar);
+
+    void registerSynchronization(Synchronization sync) throws TransactionException;
+    Synchronization getActiveSynchronization(String syncName);
+    void putAndEnlistActiveSynchronization(String syncName, Synchronization sync);
 
     void initTransactionCache();
 }

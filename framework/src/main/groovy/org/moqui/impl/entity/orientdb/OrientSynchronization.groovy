@@ -18,46 +18,43 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import javax.transaction.Status
+import javax.transaction.Synchronization
 import javax.transaction.Transaction
 import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
 import javax.transaction.xa.XAResource
 import javax.transaction.xa.Xid
 
-class OrientXaResource implements XAResource {
-    protected final static Logger logger = LoggerFactory.getLogger(OrientXaResource.class)
+class OrientSynchronization implements Synchronization {
+    protected final static Logger logger = LoggerFactory.getLogger(OrientSynchronization.class)
 
     protected ExecutionContextFactoryImpl ecfi
     protected OrientDatasourceFactory odf
     protected ODatabaseDocumentTx database
 
     protected Transaction tx = null
-    protected Xid xid = null
-    protected Integer timeout = null
-    protected boolean active = false
-    protected boolean suspended = false
 
 
-    OrientXaResource(ExecutionContextFactoryImpl ecfi, OrientDatasourceFactory odf) {
+    OrientSynchronization(ExecutionContextFactoryImpl ecfi, OrientDatasourceFactory odf) {
         this.ecfi = ecfi
         this.odf = odf
     }
 
-    OrientXaResource enlistOrGet() {
-        // logger.warn("========= Enlisting new OrientXaResource")
+    OrientSynchronization enlistOrGet() {
+        // logger.warn("========= Enlisting new OrientSynchronization")
         TransactionManager tm = ecfi.getTransactionFacade().getTransactionManager()
         if (tm == null || tm.getStatus() != Status.STATUS_ACTIVE) throw new XAException("Cannot enlist: no transaction manager or transaction not active")
         Transaction tx = tm.getTransaction()
         if (tx == null) throw new XAException(XAException.XAER_NOTA)
         this.tx = tx
 
-        OrientXaResource existingOxr = (OrientXaResource) ecfi.getTransactionFacade().getActiveXaResource("OrientXaResource")
+        OrientSynchronization existingOxr = (OrientSynchronization) ecfi.getTransactionFacade().getActiveXaResource("OrientSynchronization")
         if (existingOxr != null) {
-            logger.warn("Tried to enlist OrientXaResource in current transaction but one is already in place, not enlisting", new TransactionException("OrientXaResource already in place"))
+            logger.warn("Tried to enlist OrientSynchronization in current transaction but one is already in place, not enlisting", new TransactionException("OrientSynchronization already in place"))
             return existingOxr
         }
-        // logger.warn("================= putting and enlisting new OrientXaResource")
-        ecfi.getTransactionFacade().putAndEnlistActiveXaResource("OrientXaResource", this)
+        // logger.warn("================= putting and enlisting new OrientSynchronization")
+        ecfi.getTransactionFacade().putAndEnlistActiveSynchronization("OrientSynchronization", this)
 
         this.database = odf.getDatabase()
         this.database.begin()
@@ -68,8 +65,40 @@ class OrientXaResource implements XAResource {
     ODatabaseDocumentTx getDatabase() { return database }
 
     @Override
+    void beforeCompletion() { }
+
+    @Override
+    void afterCompletion(int status) {
+        if (status == Status.STATUS_COMMITTED) {
+            try {
+                database.commit()
+            } catch (Exception e) {
+                logger.error("Error in OrientDB commit: ${e.toString()}", e)
+                throw new XAException("Error in OrientDB commit: ${e.toString()}")
+            } finally {
+                database.close()
+            }
+        } else {
+            try {
+                database.rollback()
+            } catch (Exception e) {
+                logger.error("Error in OrientDB rollback: ${e.toString()}", e)
+                throw new XAException("Error in OrientDB rollback: ${e.toString()}")
+            } finally {
+                database.close()
+            }
+        }
+    }
+
+    /* old XAResource stuff:
+    protected Xid xid = null
+    protected Integer timeout = null
+    protected boolean active = false
+    protected boolean suspended = false
+
+    @Override
     void start(Xid xid, int flag) throws XAException {
-        // logger.warn("========== OrientXaResource.start(${xid}, ${flag})")
+        // logger.warn("========== OrientSynchronization.start(${xid}, ${flag})")
         if (this.active) {
             if (this.xid != null && this.xid.equals(xid)) {
                 throw new XAException(XAException.XAER_DUPID);
@@ -79,7 +108,7 @@ class OrientXaResource implements XAResource {
         }
         if (this.xid != null && !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
-        // logger.warn("================= starting OrientXaResource with xid=${xid}; suspended=${suspended}")
+        // logger.warn("================= starting OrientSynchronization with xid=${xid}; suspended=${suspended}")
         this.active = true
         this.suspended = false
         this.xid = xid
@@ -87,12 +116,12 @@ class OrientXaResource implements XAResource {
 
     @Override
     void end(Xid xid, int flag) throws XAException {
-        // logger.warn("========== OrientXaResource.end(${xid}, ${flag})")
+        // logger.warn("========== OrientSynchronization.end(${xid}, ${flag})")
         if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
         if (flag == TMSUSPEND) {
             if (!this.active) throw new XAException(XAException.XAER_PROTO)
             this.suspended = true
-            // logger.warn("================= suspending OrientXaResource with xid=${xid}")
+            // logger.warn("================= suspending OrientSynchronization with xid=${xid}")
         }
         if (flag == TMSUCCESS || flag == TMFAIL) {
             // allow a success/fail end if TX is suspended without a resume flagged start first
@@ -104,7 +133,7 @@ class OrientXaResource implements XAResource {
 
     @Override
     void forget(Xid xid) throws XAException {
-        // logger.warn("========== OrientXaResource.forget(${xid})")
+        // logger.warn("========== OrientSynchronization.forget(${xid})")
         if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
         this.xid = null
         if (active) logger.warn("forget() called without end()")
@@ -112,19 +141,19 @@ class OrientXaResource implements XAResource {
 
     @Override
     int prepare(Xid xid) throws XAException {
-        // logger.warn("========== OrientXaResource.prepare(${xid}); this.xid=${this.xid}")
+        // logger.warn("========== OrientSynchronization.prepare(${xid}); this.xid=${this.xid}")
         if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
         return XA_OK
     }
 
     @Override
     Xid[] recover(int flag) throws XAException {
-        // logger.warn("========== OrientXaResource.recover(${flag}); this.xid=${this.xid}")
+        // logger.warn("========== OrientSynchronization.recover(${flag}); this.xid=${this.xid}")
         return this.xid != null ? [this.xid] : []
     }
     @Override
     boolean isSameRM(XAResource xaResource) throws XAException {
-        return xaResource instanceof OrientXaResource && ((OrientXaResource) xaResource).xid == this.xid
+        return xaResource instanceof OrientSynchronization && ((OrientSynchronization) xaResource).xid == this.xid
     }
     @Override
     int getTransactionTimeout() throws XAException { return this.timeout == null ? 0 : this.timeout }
@@ -136,7 +165,7 @@ class OrientXaResource implements XAResource {
 
     @Override
     void commit(Xid xid, boolean onePhase) throws XAException {
-        // logger.warn("========== OrientXaResource.commit(${xid}, ${onePhase}); this.xid=${this.xid}; this.active=${this.active}")
+        // logger.warn("========== OrientSynchronization.commit(${xid}, ${onePhase}); this.xid=${this.xid}; this.active=${this.active}")
         if (this.active) logger.warn("commit() called without end()")
         if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
@@ -155,7 +184,7 @@ class OrientXaResource implements XAResource {
 
     @Override
     void rollback(Xid xid) throws XAException {
-        // logger.warn("========== OrientXaResource.rollback(${xid}); this.xid=${this.xid}; this.active=${this.active}")
+        // logger.warn("========== OrientSynchronization.rollback(${xid}); this.xid=${this.xid}; this.active=${this.active}")
         if (this.active) logger.warn("rollback() called without end()")
         if (this.xid == null || !this.xid.equals(xid)) throw new XAException(XAException.XAER_NOTA)
 
@@ -171,4 +200,5 @@ class OrientXaResource implements XAResource {
         this.xid = null
         this.active = false
     }
+    */
 }

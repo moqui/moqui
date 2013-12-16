@@ -44,6 +44,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     private ThreadLocal<ArrayList<Transaction>> suspendedTxStackList = new ThreadLocal<ArrayList<Transaction>>()
     private ThreadLocal<List<Exception>> suspendedTxLocationStack = new ThreadLocal<List<Exception>>()
     private ThreadLocal<ArrayList<Map<String, XAResource>>> activeXaResourceStackList = new ThreadLocal<ArrayList<Map<String, XAResource>>>()
+    private ThreadLocal<ArrayList<Map<String, Synchronization>>> activeSynchronizationStackList = new ThreadLocal<ArrayList<Map<String, Synchronization>>>()
 
     protected boolean useTransactionCache = true
 
@@ -84,6 +85,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         suspendedTxStackList.remove()
         suspendedTxLocationStack.remove()
         activeXaResourceStackList.remove()
+        activeSynchronizationStackList.remove()
     }
 
     /** This is called to make sure all transactions, etc are closed for the thread.
@@ -113,6 +115,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         suspendedTxStackList.remove()
         suspendedTxLocationStack.remove()
         activeXaResourceStackList.remove()
+        activeSynchronizationStackList.remove()
     }
 
     TransactionInternal getTransactionInternal() { return transactionInternal }
@@ -202,6 +205,38 @@ class TransactionFacadeImpl implements TransactionFacade {
         return list
     }
 
+    @Override
+    Synchronization getActiveSynchronization(String syncName) {
+        ArrayList<Map<String, Synchronization>> activeSynchronizationStack = getActiveSynchronizationStack()
+        if (activeSynchronizationStack.size() == 0) return null
+        Map<String, Synchronization> activeSynchronizationMap = activeSynchronizationStack.get(0)
+        if (activeSynchronizationMap != null) return activeSynchronizationMap.get(syncName)
+        return null
+    }
+    @Override
+    void putAndEnlistActiveSynchronization(String syncName, Synchronization sync) {
+        ArrayList<Map<String, Synchronization>> activeSynchronizationStack = getActiveSynchronizationStack()
+        Map<String, Synchronization> activeSynchronizationMap = activeSynchronizationStack.size() > 0 ? activeSynchronizationStack.get(0) : null
+        if (activeSynchronizationMap == null) {
+            activeSynchronizationMap = [:]
+            if (activeSynchronizationStack.size() == 0) {
+                activeSynchronizationStack.add(0, activeSynchronizationMap)
+            } else {
+                activeSynchronizationStack.set(0, activeSynchronizationMap)
+            }
+        }
+        registerSynchronization(sync)
+        activeSynchronizationMap.put(syncName, sync)
+    }
+    ArrayList<Map<String, Synchronization>> getActiveSynchronizationStack() {
+        ArrayList<Map<String, Synchronization>> list = (ArrayList<Map<String, Synchronization>>) activeSynchronizationStackList.get()
+        if (list == null) {
+            list = new ArrayList<Map<String, Synchronization>>(10)
+            activeSynchronizationStackList.set(list)
+        }
+        return list
+    }
+
 
     @Override
     int getStatus() {
@@ -287,7 +322,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
             getTransactionBeginStack().set(0, new Exception("Tx Begin Placeholder"))
             getTransactionBeginStartTimeList().set(0, System.currentTimeMillis())
-            // logger.warn("================ begin TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
+            // logger.warn("================ begin TX, getActiveSynchronizationStack()=${getActiveSynchronizationStack()}")
 
             return true
         } catch (NotSupportedException e) {
@@ -340,7 +375,8 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
             if (getActiveXaResourceStack()) getActiveXaResourceStack().set(0, null)
-            // logger.warn("================ commit TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
+            if (getActiveSynchronizationStack()) getActiveSynchronizationStack().set(0, null)
+            // logger.warn("================ commit TX, getActiveSynchronizationStack()=${getActiveSynchronizationStack()}")
         }
     }
 
@@ -378,7 +414,8 @@ class TransactionFacadeImpl implements TransactionFacade {
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
             if (getActiveXaResourceStack()) getActiveXaResourceStack().set(0, null)
-            // logger.warn("================ rollback TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
+            if (getActiveSynchronizationStack()) getActiveSynchronizationStack().set(0, null)
+            // logger.warn("================ rollback TX, getActiveSynchronizationStack()=${getActiveSynchronizationStack()}")
         }
     }
 
@@ -420,7 +457,8 @@ class TransactionFacadeImpl implements TransactionFacade {
             getSuspendedTxStack().add(0, tx)
             getSuspendedTxLocationStack().add(0, new Exception("Transaction Suspend Location"))
             getActiveXaResourceStack().add(0, null)
-            // logger.warn("================ suspending TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
+            getActiveSynchronizationStack().add(0, null)
+            // logger.warn("================ suspending TX, getActiveSynchronizationStack()=${getActiveSynchronizationStack()}")
 
             return true
         } catch (SystemException e) {
@@ -443,7 +481,8 @@ class TransactionFacadeImpl implements TransactionFacade {
                 sts.remove(0)
                 getSuspendedTxLocationStack().remove(0)
                 getActiveXaResourceStack().remove(0)
-                // logger.warn("================ resuming TX, getActiveXaResourceStack()=${getActiveXaResourceStack()}")
+                getActiveSynchronizationStack().remove(0)
+                // logger.warn("================ resuming TX, getActiveSynchronizationStack()=${getActiveSynchronizationStack()}")
             } else {
                 logger.warn("No transaction suspended, so not resuming.")
             }
@@ -514,6 +553,7 @@ class TransactionFacadeImpl implements TransactionFacade {
     @Override
     void initTransactionCache() {
         if (useTransactionCache && getActiveXaResource("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
+        // TODO: if (useTransactionCache && getActiveSynchronization("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
     }
 
     static class RollbackInfo {

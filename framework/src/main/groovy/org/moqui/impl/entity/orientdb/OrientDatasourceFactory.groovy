@@ -112,10 +112,10 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
      */
     ODatabaseDocumentTx getXaResourceDatabase() {
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
-        OrientXaResource oxr = (OrientXaResource) tf.getActiveXaResource("OrientXaResource")
+        OrientSynchronization oxr = (OrientSynchronization) tf.getActiveXaResource("OrientSynchronization")
         if (oxr == null) {
             if (tf.isTransactionInPlace()) {
-                oxr = new OrientXaResource(efi.getEcfi(), this).enlistOrGet()
+                oxr = new OrientSynchronization(efi.getEcfi(), this).enlistOrGet()
             } else {
                 return null
             }
