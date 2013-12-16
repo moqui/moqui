@@ -552,8 +552,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     @Override
     void initTransactionCache() {
-        if (useTransactionCache && getActiveXaResource("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
-        // TODO: if (useTransactionCache && getActiveSynchronization("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
+        if (useTransactionCache && getActiveSynchronization("TransactionCache") == null) new TransactionCache(this.ecfi).enlist()
     }
 
     static class RollbackInfo {

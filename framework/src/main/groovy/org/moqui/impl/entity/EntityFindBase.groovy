@@ -67,7 +67,7 @@ abstract class EntityFindBase implements EntityFind {
     EntityFindBase(EntityFacadeImpl efi, String entityName) {
         this.efi = efi
         this.entityName = entityName
-        this.txCache = (TransactionCache) efi.getEcfi().getTransactionFacade().getActiveXaResource("TransactionCache")
+        this.txCache = (TransactionCache) efi.getEcfi().getTransactionFacade().getActiveSynchronization("TransactionCache")
     }
 
     EntityFacadeImpl getEfi() { return efi }

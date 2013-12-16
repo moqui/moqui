@@ -26,6 +26,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import javax.transaction.Status
+import javax.transaction.Synchronization
 import javax.transaction.Transaction
 import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
@@ -44,17 +45,13 @@ import java.sql.Connection
  * - view-entities won't work, they don't incorporate results from TX Cache
  * - if a value is created or update, then a record with FK is created, then the value is updated again commit writes may fail with FK violation (see update() method for other notes)
  */
-class TransactionCache implements XAResource {
+class TransactionCache implements Synchronization {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionCache.class)
     public enum WriteMode { CREATE, UPDATE, DELETE }
 
     protected ExecutionContextFactoryImpl ecfi
 
     protected Transaction tx = null
-    protected Xid xid = null
-    protected Integer timeout = null
-    protected boolean active = false
-    protected boolean suspended = false
 
     protected Map<Map, EntityValueBase> readOneCache = [:]
     protected Map<String, Map<EntityCondition, EntityListImpl>> readListCache = [:]
@@ -74,11 +71,12 @@ class TransactionCache implements XAResource {
         if (tx == null) throw new XAException(XAException.XAER_NOTA)
         this.tx = tx
 
-        if (ecfi.getTransactionFacade().getActiveXaResource("TransactionCache")) {
+        if (ecfi.getTransactionFacade().getActiveSynchronization("TransactionCache")) {
             logger.warn("Tried to enlist TransactionCache in current transaction but one is already in place, not enlisting", new TransactionException("TransactionCache already in place"))
+            return
         }
         // logger.warn("================= putting and enlisting new TransactionCache")
-        ecfi.getTransactionFacade().putAndEnlistActiveXaResource("TransactionCache", this)
+        ecfi.getTransactionFacade().putAndEnlistActiveSynchronization("TransactionCache", this)
 
         return this
     }
@@ -408,6 +406,19 @@ class TransactionCache implements XAResource {
 
 
     @Override
+    void beforeCompletion() { flushCache() }
+
+    @Override
+    void afterCompletion(int i) { }
+
+    /* Old XAResource approach:
+
+    protected Xid xid = null
+    protected Integer timeout = null
+    protected boolean active = false
+    protected boolean suspended = false
+
+    @Override
     void start(Xid xid, int flag) throws XAException {
         // logger.warn("========== TransactionCache.start(${xid}, ${flag})")
         if (this.active) {
@@ -503,6 +514,7 @@ class TransactionCache implements XAResource {
         this.xid = null
         this.active = false
     }
+    */
 
     static class EntityWriteInfo {
         WriteMode writeMode
