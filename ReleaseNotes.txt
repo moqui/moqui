@@ -20,6 +20,10 @@ New Features:
   transaction-internal has a class attribute to specify an implementation
   of the TransactionInternal interface to init/destroy the JTA impl
 - Added Bitronix BTM 2.1.4 as alternative to Atomikos
+- TransactionFacade now has active Synchronization registry like the active
+  XAResource registry per transaction that existed before
+- Moved XAResource tools to Synchronization: TransactionCache, OrientDB tx
+  handler
 
 Bug Fixes:
 
