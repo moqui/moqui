@@ -813,7 +813,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             Node tfOverrideNode = overrideNode."transaction-facade"[0]
             tfBaseNode.attributes().putAll(tfOverrideNode.attributes())
             mergeSingleChild(tfBaseNode, tfOverrideNode, "server-jndi")
-            mergeSingleChild(tfBaseNode, tfOverrideNode, "transaction-factory")
+            mergeSingleChild(tfBaseNode, tfOverrideNode, "transaction-jndi")
+            mergeSingleChild(tfBaseNode, tfOverrideNode, "transaction-internal")
         }
 
         if (overrideNode."resource-facade") {

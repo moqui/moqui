@@ -11,10 +11,8 @@
  */
 package org.moqui.impl.context
 
-import com.atomikos.icatch.config.UserTransactionService
-import com.atomikos.icatch.config.UserTransactionServiceImp
-import com.atomikos.icatch.jta.UserTransactionManager
 import com.atomikos.icatch.jta.ExtendedSystemException
+import org.moqui.context.TransactionInternal
 
 import javax.transaction.Transaction
 import javax.transaction.xa.XAResource
@@ -47,7 +45,7 @@ class TransactionFacadeImpl implements TransactionFacade {
 
     protected final ExecutionContextFactoryImpl ecfi
 
-    protected UserTransactionService atomikosUts = null
+    protected TransactionInternal transactionInternal = null
 
     protected UserTransaction ut
     protected TransactionManager tm
@@ -65,17 +63,18 @@ class TransactionFacadeImpl implements TransactionFacade {
         this.ecfi = ecfi
 
         Node transactionFacadeNode = this.ecfi.getConfXmlRoot()."transaction-facade"[0]
-        Node transactionFactory = transactionFacadeNode."transaction-factory"[0]
-        if (transactionFactory."@factory-type" == "jndi") {
+        if (transactionFacadeNode."transaction-jndi") {
             this.populateTransactionObjectsJndi()
-        } else if (transactionFactory."@factory-type" == "internal") {
-            // initialize Atomikos
-            atomikosUts = new UserTransactionServiceImp()
-            atomikosUts.init()
+        } else if (transactionFacadeNode."transaction-internal") {
+            // initialize internal
+            Node transactionInternalNode = transactionFacadeNode."transaction-internal"[0]
+            String tiClassName = (String) transactionInternalNode."@class"
+            transactionInternal = (TransactionInternal) Thread.currentThread().getContextClassLoader()
+                    .loadClass(tiClassName).newInstance()
+            transactionInternal.init(ecfi)
 
-            UserTransactionManager utm = new UserTransactionManager()
-            this.ut = utm
-            this.tm = utm
+            this.ut = transactionInternal.getUserTransaction()
+            this.tm = transactionInternal.getTransactionManager()
         } else {
             throw new IllegalArgumentException("Transaction factory type [${transactionFactory."@factory-type"}] not supported")
         }
@@ -88,8 +87,8 @@ class TransactionFacadeImpl implements TransactionFacade {
         this.tm = null
         this.ut = null
 
-        // destroy utm (just for internal/Atomikos; nothing for JNDI
-        if (atomikosUts != null) atomikosUts.shutdown(false)
+        // destroy internal if applicable; nothing for JNDI
+        if (transactionInternal != null) transactionInternal.destroy()
 
         transactionBeginStackList.remove()
         transactionBeginStartTimeList.remove()
@@ -545,9 +544,9 @@ class TransactionFacadeImpl implements TransactionFacade {
     // ========== Initialize/Populate Methods ==========
 
     void populateTransactionObjectsJndi() {
-        Node transactionFactory = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."transaction-factory"[0]
-        String userTxJndiName = transactionFactory."@user-transaction-jndi-name"
-        String txMgrJndiName = transactionFactory."@transaction-manager-jndi-name"
+        Node transactionJndiNode = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."transaction-jndi"[0]
+        String userTxJndiName = transactionJndiNode."@user-transaction-jndi-name"
+        String txMgrJndiName = transactionJndiNode."@transaction-manager-jndi-name"
 
         Node serverJndi = this.ecfi.getConfXmlRoot()."transaction-facade"[0]."server-jndi"[0]
 

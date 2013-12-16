@@ -11,10 +11,14 @@ New Features:
 
 - Added JBoss KIE and Drools library and Moqui API additions for getting
   a KieContext, plus Moqui automatically loads and builds component kie
-  directories when present
+  directories when present; current version 6.0.0.Final
 - Added ISO 8601 date/time parsing as another default in L10nFacade
 - Added transaction-facade.@use-transaction-cache attribute, defaults to
   true, set to false to disable the TransactionCache globally
+- Added new transaction-facade sub-elements transaction-jndi and
+  transaction-internal instead of single transaction-factory;
+  transaction-internal has a class attribute to specify an implementation
+  of the TransactionInternal interface to init/destroy the JTA impl
 
 Bug Fixes:
 

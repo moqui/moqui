@@ -263,23 +263,23 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="server-jndi">
                     <xs:annotation><xs:documentation>If not present the default JNDI server will be used.</xs:documentation></xs:annotation>
                 </xs:element>
-                <xs:element minOccurs="0" ref="transaction-factory"/>
+                <xs:choice minOccurs="0">
+                    <xs:element minOccurs="0" ref="transaction-jndi"/>
+                    <xs:element minOccurs="0" ref="transaction-internal"/>
+                </xs:choice>
             </xs:sequence>
             <xs:attribute name="use-transaction-cache" default="true" type="boolean"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="transaction-factory">
+    <xs:element name="transaction-jndi">
         <xs:complexType>
-            <xs:attribute name="factory-type" use="required">
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="internal"/>
-                        <xs:enumeration value="jndi"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-            <xs:attribute name="user-transaction-jndi-name" type="xs:string"/>
-            <xs:attribute name="transaction-manager-jndi-name" type="xs:string"/>
+            <xs:attribute name="user-transaction-jndi-name" type="xs:string" use="required"/>
+            <xs:attribute name="transaction-manager-jndi-name" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="transaction-internal">
+        <xs:complexType>
+            <xs:attribute name="class" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
 
