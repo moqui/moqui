@@ -11,6 +11,10 @@
  */
 package org.moqui.context;
 
+import groovy.util.Node;
+import org.moqui.entity.EntityFacade;
+
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
@@ -19,6 +23,7 @@ public interface TransactionInternal {
 
     TransactionManager getTransactionManager();
     UserTransaction getUserTransaction();
+    DataSource getDataSource(EntityFacade ef, Node datasourceNode, String tenantId);
 
     void destroy();
 }

@@ -12,33 +12,21 @@
 package org.moqui.impl.context
 
 import com.atomikos.icatch.jta.ExtendedSystemException
-import org.moqui.context.TransactionInternal
-
-import javax.transaction.Transaction
-import javax.transaction.xa.XAResource
-import javax.transaction.Synchronization
-import javax.transaction.SystemException
-import javax.transaction.UserTransaction
-import javax.transaction.TransactionManager
-import javax.transaction.Status
-import javax.transaction.NotSupportedException
-import javax.transaction.RollbackException
-import javax.transaction.HeuristicMixedException
-import javax.transaction.HeuristicRollbackException
-import javax.transaction.InvalidTransactionException
-import javax.naming.InitialContext
-import javax.naming.NamingException
-import javax.naming.Context
-import java.sql.SQLException
-import javax.sql.XAConnection
-import java.sql.Connection
-
+import org.moqui.BaseException
 import org.moqui.context.TransactionException
 import org.moqui.context.TransactionFacade
-import org.moqui.BaseException
-
+import org.moqui.context.TransactionInternal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import javax.naming.Context
+import javax.naming.InitialContext
+import javax.naming.NamingException
+import javax.sql.XAConnection
+import javax.transaction.*
+import javax.transaction.xa.XAResource
+import java.sql.Connection
+import java.sql.SQLException
 
 class TransactionFacadeImpl implements TransactionFacade {
     protected final static Logger logger = LoggerFactory.getLogger(TransactionFacadeImpl.class)
@@ -127,6 +115,7 @@ class TransactionFacadeImpl implements TransactionFacade {
         activeXaResourceStackList.remove()
     }
 
+    TransactionInternal getTransactionInternal() { return transactionInternal }
     TransactionManager getTransactionManager() { return tm }
     UserTransaction getUserTransaction() { return ut }
     Long getCurrentTransactionStartTime() {

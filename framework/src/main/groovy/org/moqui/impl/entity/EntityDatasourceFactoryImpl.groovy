@@ -11,19 +11,15 @@
  */
 package org.moqui.impl.entity
 
-import com.atomikos.jdbc.AbstractDataSourceBean
-import com.atomikos.jdbc.AtomikosDataSourceBean
-import com.atomikos.jdbc.nonxa.AtomikosNonXADataSourceBean
+import org.moqui.context.TransactionInternal
+import org.moqui.entity.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.naming.Context
 import javax.naming.InitialContext
 import javax.naming.NamingException
 import javax.sql.DataSource
-
-import org.moqui.entity.*
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
     protected final static Logger logger = LoggerFactory.getLogger(EntityDatasourceFactoryImpl.class)
@@ -44,24 +40,21 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
         this.tenantId = tenantId
 
         // init the DataSource
-        EntityValue tenant = null
-        EntityFacadeImpl defaultEfi = null
-        if (this.tenantId != "DEFAULT") {
-            defaultEfi = efi.ecfi.getEntityFacade("DEFAULT")
-            tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
-        }
-
-        EntityValue tenantDataSource = null
-        EntityList tenantDataSourceXaPropList = null
-        if (tenant != null) {
-            tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
-                    .condition("entityGroupName", datasourceNode."@group-name").one()
-            tenantDataSourceXaPropList = defaultEfi.makeFind("moqui.tenant.TenantDataSourceXaProp")
-                    .condition("tenantId", this.tenantId).condition("entityGroupName", datasourceNode."@group-name")
-                    .list()
-        }
 
         if (datasourceNode."jndi-jdbc") {
+            EntityValue tenant = null
+            EntityFacadeImpl defaultEfi = null
+            if (this.tenantId != "DEFAULT") {
+                defaultEfi = efi.ecfi.getEntityFacade("DEFAULT")
+                tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
+            }
+
+            EntityValue tenantDataSource = null
+            if (tenant != null) {
+                tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
+                        .condition("entityGroupName", datasourceNode."@group-name").one()
+            }
+
             Node serverJndi = efi.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]
             try {
                 InitialContext ic;
@@ -86,76 +79,14 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
                 logger.error("Error finding DataSource with name [${datasourceNode."jndi-jdbc"[0]."@jndi-name"}] in JNDI server [${serverJndi ? serverJndi."@context-provider-url" : "default"}] for datasource with group-name [${datasourceNode."@group-name"}].", ne)
             }
         } else if (datasourceNode."inline-jdbc") {
-            Node inlineJdbc = datasourceNode."inline-jdbc"[0]
-            Node xaProperties = inlineJdbc."xa-properties"[0]
-            Node database = efi.getDatabaseNode((String) datasourceNode."@group-name")
-
             // special thing for embedded derby, just set an system property; for derby.log, etc
             if (datasourceNode."@database-conf-name" == "derby") {
                 System.setProperty("derby.system.home", System.getProperty("moqui.runtime") + "/db/derby")
                 logger.info("Set property derby.system.home to [${System.getProperty("derby.system.home")}]")
             }
 
-            AbstractDataSourceBean ads
-            if (xaProperties) {
-                AtomikosDataSourceBean ds = new AtomikosDataSourceBean()
-                ds.setUniqueResourceName(this.tenantId + '_' + datasourceNode."@group-name" + '_DS')
-                String xsDsClass = inlineJdbc."@xa-ds-class" ? inlineJdbc."@xa-ds-class" : database."@default-xa-ds-class"
-                ds.setXaDataSourceClassName(xsDsClass)
-
-                Properties p = new Properties()
-                if (tenantDataSourceXaPropList) {
-                    for (EntityValue tenantDataSourceXaProp in tenantDataSourceXaPropList) {
-                        String propValue = tenantDataSourceXaProp.propValue
-                        // NOTE: consider changing this to expand for all system properties using groovy or something
-                        if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
-                        p.setProperty((String) tenantDataSourceXaProp.propName, propValue)
-                    }
-                } else {
-                    for (Map.Entry<String, String> entry in xaProperties.attributes().entrySet()) {
-                        // the Derby "databaseName" property has a ${moqui.runtime} which is a System property, others may have it too
-                        String propValue = entry.getValue()
-                        // NOTE: consider changing this to expand for all system properties using groovy or something
-                        if (propValue.contains("\${moqui.runtime}")) propValue = propValue.replace("\${moqui.runtime}", System.getProperty("moqui.runtime"))
-                        p.setProperty(entry.getKey(), propValue)
-                    }
-                }
-                ds.setXaProperties(p)
-
-                ads = ds
-            } else {
-                AtomikosNonXADataSourceBean ds = new AtomikosNonXADataSourceBean()
-                ds.setUniqueResourceName(this.tenantId + '_' + datasourceNode."@group-name" + '_DS')
-                String driver = inlineJdbc."@jdbc-driver" ? inlineJdbc."@jdbc-driver" : database."@default-jdbc-driver"
-                ds.setDriverClassName(driver)
-                ds.setUrl(tenantDataSource ? (String) tenantDataSource.jdbcUri : inlineJdbc."@jdbc-uri")
-                ds.setUser(tenantDataSource ? (String) tenantDataSource.jdbcUsername : inlineJdbc."@jdbc-username")
-                ds.setPassword(tenantDataSource ? (String) tenantDataSource.jdbcPassword : inlineJdbc."@jdbc-password")
-
-                ads = ds
-            }
-
-            String txIsolationLevel = inlineJdbc."@isolation-level" ? inlineJdbc."@isolation-level" : database."@default-isolation-level"
-            if (txIsolationLevel && efi.getTxIsolationFromString(txIsolationLevel) != -1) {
-                ads.setDefaultIsolationLevel(efi.getTxIsolationFromString(txIsolationLevel))
-            }
-
-            // no need for this, just sets min and max sizes: ads.setPoolSize
-            if (inlineJdbc."@pool-minsize") ads.setMinPoolSize(inlineJdbc."@pool-minsize" as int)
-            if (inlineJdbc."@pool-maxsize") ads.setMaxPoolSize(inlineJdbc."@pool-maxsize" as int)
-
-            if (inlineJdbc."@pool-time-idle") ads.setMaxIdleTime(inlineJdbc."@pool-time-idle" as int)
-            if (inlineJdbc."@pool-time-reap") ads.setReapTimeout(inlineJdbc."@pool-time-reap" as int)
-            if (inlineJdbc."@pool-time-maint") ads.setMaintenanceInterval(inlineJdbc."@pool-time-maint" as int)
-            if (inlineJdbc."@pool-time-wait") ads.setBorrowConnectionTimeout(inlineJdbc."@pool-time-wait" as int)
-
-            if (inlineJdbc."@pool-test-query") {
-                ads.setTestQuery((String) inlineJdbc."@pool-test-query")
-            } else if (database."@default-test-query") {
-                ads.setTestQuery((String) database."@default-test-query")
-            }
-
-            this.dataSource = ads
+            TransactionInternal ti = efi.getEcfi().getTransactionFacade().getTransactionInternal()
+            this.dataSource = ti.getDataSource(efi, datasourceNode, tenantId)
         } else {
             throw new EntityException("Found datasource with no jdbc sub-element (in datasource with group-name [${datasourceNode."@group-name"}])")
         }
@@ -165,10 +96,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
 
     @Override
     void destroy() {
-        // destroy anything related to the internal impl, ie Atomikos
-        if (dataSource instanceof AtomikosDataSourceBean) {
-            ((AtomikosDataSourceBean) dataSource).close()
-        }
+        // NOTE: TransactionInternal DataSource will be destroyed when the TransactionFacade is destroyed
     }
 
     @Override
