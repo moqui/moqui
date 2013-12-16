@@ -44,7 +44,7 @@ class OrientEntityFind extends EntityFindBase {
         // NOTE: the native Java query API does not used indexes and such, so use the OSQL approach
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
 
         try {
@@ -136,7 +136,7 @@ class OrientEntityFind extends EntityFindBase {
         EntityListIterator eli = null
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
 
         try {
@@ -198,7 +198,7 @@ class OrientEntityFind extends EntityFindBase {
         long count = 0
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
 
         try {

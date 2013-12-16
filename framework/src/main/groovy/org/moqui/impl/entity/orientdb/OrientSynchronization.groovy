@@ -48,7 +48,7 @@ class OrientSynchronization implements Synchronization {
         if (tx == null) throw new XAException(XAException.XAER_NOTA)
         this.tx = tx
 
-        OrientSynchronization existingOxr = (OrientSynchronization) ecfi.getTransactionFacade().getActiveXaResource("OrientSynchronization")
+        OrientSynchronization existingOxr = (OrientSynchronization) ecfi.getTransactionFacade().getActiveSynchronization("OrientSynchronization")
         if (existingOxr != null) {
             logger.warn("Tried to enlist OrientSynchronization in current transaction but one is already in place, not enlisting", new TransactionException("OrientSynchronization already in place"))
             return existingOxr

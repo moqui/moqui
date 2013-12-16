@@ -96,7 +96,7 @@ class OrientEntityValue extends EntityValueBase {
         if (ed.isViewEntity()) throw new EntityException("Create not yet implemented for view-entity")
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
         // logger.warn("======= createExtended isXaDatabase=${isXaDatabase}")
 
@@ -122,7 +122,7 @@ class OrientEntityValue extends EntityValueBase {
         // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
 
         try {
@@ -197,7 +197,7 @@ class OrientEntityValue extends EntityValueBase {
         // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
 
         try {
@@ -241,7 +241,7 @@ class OrientEntityValue extends EntityValueBase {
         // NOTE: according to OrientDB documentation the native Java query API does not use indexes and such, so use the OSQL approach
 
         boolean isXaDatabase = true
-        ODatabaseDocumentTx oddt = odf.getXaResourceDatabase()
+        ODatabaseDocumentTx oddt = odf.getSynchronizationDatabase()
         if (oddt == null) { oddt = odf.getDatabase(); isXaDatabase = false }
 
         try {

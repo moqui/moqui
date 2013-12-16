@@ -110,9 +110,9 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
      *
      * This will return null if no transaction is in place.
      */
-    ODatabaseDocumentTx getXaResourceDatabase() {
+    ODatabaseDocumentTx getSynchronizationDatabase() {
         TransactionFacade tf = efi.getEcfi().getTransactionFacade()
-        OrientSynchronization oxr = (OrientSynchronization) tf.getActiveXaResource("OrientSynchronization")
+        OrientSynchronization oxr = (OrientSynchronization) tf.getActiveSynchronization("OrientSynchronization")
         if (oxr == null) {
             if (tf.isTransactionInPlace()) {
                 oxr = new OrientSynchronization(efi.getEcfi(), this).enlistOrGet()
