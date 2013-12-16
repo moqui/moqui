@@ -19,11 +19,10 @@ import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 
 import javax.transaction.Status
+import javax.transaction.Synchronization
 import javax.transaction.Transaction
 import javax.transaction.TransactionManager
 import javax.transaction.xa.XAException
-import javax.transaction.xa.XAResource
-import javax.transaction.xa.Xid
 import java.sql.Timestamp
 
 import org.slf4j.Logger
@@ -152,15 +151,15 @@ class EntityDataFeed {
             if (dataDocumentIdSet) {
                 // logger.warn("============== DataFeed registering entity value [${ev.getEntityName()}] value: ${ev}")
                 // NOTE: comment out this line to disable real-time push DataFeed in one simple place:
-                getDataFeedXaResource().addValueToFeed(ev, dataDocumentIdSet)
+                getDataFeedSynchronization().addValueToFeed(ev, dataDocumentIdSet)
             }
         }
     }
 
-    protected DataFeedXaResource getDataFeedXaResource() {
-        DataFeedXaResource dfxr = (DataFeedXaResource) efi.getEcfi().getTransactionFacade().getActiveXaResource("DataFeedXaResource")
+    protected DataFeedSynchronization getDataFeedSynchronization() {
+        DataFeedSynchronization dfxr = (DataFeedSynchronization) efi.getEcfi().getTransactionFacade().getActiveSynchronization("DataFeedSynchronization")
         if (dfxr == null) {
-            dfxr = new DataFeedXaResource(this)
+            dfxr = new DataFeedSynchronization(this)
             dfxr.enlist()
         }
         return dfxr
@@ -328,48 +327,63 @@ class EntityDataFeed {
         }
     }
 
-    static class DataFeedXaResource implements XAResource {
-        protected final static Logger logger = LoggerFactory.getLogger(DataFeedXaResource.class)
+    static class DataFeedSynchronization implements Synchronization {
+        protected final static Logger logger = LoggerFactory.getLogger(DataFeedSynchronization.class)
 
         protected ExecutionContextFactoryImpl ecfi
         protected EntityDataFeed edf
 
         protected Transaction tx = null
-        protected Xid xid = null
-        protected Integer timeout = null
-        protected boolean active = false
-        protected boolean suspended = false
 
         protected EntityList feedValues
         protected Set<String> allDataDocumentIds = new HashSet<String>()
 
-        DataFeedXaResource(EntityDataFeed edf) {
-            // logger.warn("========= Creating new DataFeedXaResource")
+        DataFeedSynchronization(EntityDataFeed edf) {
+            // logger.warn("========= Creating new DataFeedSynchronization")
             this.edf = edf
             ecfi = edf.getEfi().getEcfi()
             feedValues = new EntityListImpl(edf.getEfi())
         }
 
         void enlist() {
-            // logger.warn("========= Enlisting new DataFeedXaResource")
+            // logger.warn("========= Enlisting new DataFeedSynchronization")
             TransactionManager tm = ecfi.getTransactionFacade().getTransactionManager()
             if (tm == null || tm.getStatus() != Status.STATUS_ACTIVE) throw new XAException("Cannot enlist: no transaction manager or transaction not active")
             Transaction tx = tm.getTransaction()
             if (tx == null) throw new XAException(XAException.XAER_NOTA)
             this.tx = tx
 
-            // logger.warn("================= puttng and enlisting new DataFeedXaResource")
-            ecfi.getTransactionFacade().putAndEnlistActiveXaResource("DataFeedXaResource", this)
+            // logger.warn("================= puttng and enlisting new DataFeedSynchronization")
+            ecfi.getTransactionFacade().putAndEnlistActiveSynchronization("DataFeedSynchronization", this)
         }
 
         void addValueToFeed(EntityValue ev, Set<String> dataDocumentIdSet) {
             // this log message is for an issue where Atomikos seems to suspend and resume without calling start() on
             //     this XAResource; everything seems to work fine, but it results in funny state
             // this can be reproduced by running the data load with DataFeed/DataDocument data already in the DB
-            if (!active && logger.isTraceEnabled()) logger.trace("Adding value to inactive DataFeedXaResource! \nThis shouldn't happen and may mean the same DataFeedXaResource is being used after a TX suspend; suspended=${suspended}")
+            // if (!active && logger.isTraceEnabled()) logger.trace("Adding value to inactive DataFeedSynchronization! \nThis shouldn't happen and may mean the same DataFeedSynchronization is being used after a TX suspend; suspended=${suspended}")
             feedValues.add(ev)
             allDataDocumentIds.addAll(dataDocumentIdSet)
         }
+
+        @Override
+        void beforeCompletion() { }
+
+        @Override
+        void afterCompletion(int status) {
+            if (status == Status.STATUS_COMMITTED) {
+                // send feed in new thread and tx
+                feedInThreadAndTx()
+                // logger.warn("================================================================\n================ feeding DataFeed with documents ${allDataDocumentIds}")
+            }
+        }
+
+        /* Old XAResource approach:
+
+        protected Xid xid = null
+        protected Integer timeout = null
+        protected boolean active = false
+        protected boolean suspended = false
 
         @Override
         void start(Xid xid, int flag) throws XAException {
@@ -460,6 +474,7 @@ class EntityDataFeed {
             this.xid = null
             this.active = false
         }
+        */
 
         void feedInThreadAndTx() {
             Thread thread = new Thread() {
@@ -621,23 +636,22 @@ class EntityDataFeed {
                                 //     associated with the DataDocument
                                 List<Map> documents = efi.getDataDocuments(dataDocumentId, condition, null, null)
 
-                                if (!documents) {
+                                if (documents) {
+                                    EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
+                                            .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
+                                            .condition("dataDocumentId", dataDocumentId).useCache(true).list()
+
+                                    // do the actual feed receive service calls (authz is disabled to allow the service
+                                    //     call, but also allows anything in the services...)
+                                    for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList) {
+                                        // NOTE: this is a sync call so authz disabled is preserved; it is in its own thread
+                                        //     so user/etc are not inherited here
+                                        ecfi.getServiceFacade().sync().name((String) dataFeedAndDocument.feedReceiveServiceName)
+                                                .parameters([dataFeedId:dataFeedAndDocument.dataFeedId, feedStamp:feedStamp,
+                                                documentList:documents]).call()
+                                    }
+                                } else {
                                     logger.warn("In DataFeed no documents found for dataDocumentId [${dataDocumentId}]")
-                                    continue
-                                }
-
-                                EntityList dataFeedAndDocumentList = efi.makeFind("moqui.entity.feed.DataFeedAndDocument")
-                                        .condition("dataFeedTypeEnumId", "DTFDTP_RT_PUSH")
-                                        .condition("dataDocumentId", dataDocumentId).useCache(true).list()
-
-                                // do the actual feed receive service calls (authz is disabled to allow the service
-                                //     call, but also allows anything in the services...)
-                                for (EntityValue dataFeedAndDocument in dataFeedAndDocumentList) {
-                                    // NOTE: this is a sync call so authz disabled is preserved; it is in its own thread
-                                    //     so user/etc are not inherited here
-                                    ecfi.getServiceFacade().sync().name((String) dataFeedAndDocument.feedReceiveServiceName)
-                                            .parameters([dataFeedId:dataFeedAndDocument.dataFeedId, feedStamp:feedStamp,
-                                            documentList:documents]).call()
                                 }
                             } finally {
                                 if (!alreadyDisabled) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()

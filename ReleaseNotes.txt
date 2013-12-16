@@ -24,7 +24,7 @@ New Features:
   XAResource registry per transaction that existed before
 - Moved XAResource tools to Synchronization: TransactionCache, OrientDB tx
   handler, ServiceCallSpecial.registerOnCommit() and registerOnRollback(),
-  Service ECA rule tx-commit and tx-rollback
+  Service ECA rule tx-commit and tx-rollback, EntityDataFeed
 
 Bug Fixes:
 
