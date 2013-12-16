@@ -23,7 +23,8 @@ New Features:
 - TransactionFacade now has active Synchronization registry like the active
   XAResource registry per transaction that existed before
 - Moved XAResource tools to Synchronization: TransactionCache, OrientDB tx
-  handler
+  handler, ServiceCallSpecial.registerOnCommit() and registerOnRollback(),
+  Service ECA rule tx-commit and tx-rollback
 
 Bug Fixes:
 

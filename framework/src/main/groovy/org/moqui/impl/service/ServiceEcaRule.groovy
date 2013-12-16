@@ -14,12 +14,12 @@ package org.moqui.impl.service
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.context.ExecutionContext
+
+import javax.transaction.Synchronization
 import javax.transaction.xa.XAException
 import javax.transaction.Transaction
 import javax.transaction.Status
 import javax.transaction.TransactionManager
-import javax.transaction.xa.Xid
-import javax.transaction.xa.XAResource
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -84,25 +84,20 @@ class ServiceEcaRule {
 
     void registerTx(String serviceName, Map<String, Object> parameters, ExecutionContextFactoryImpl ecfi) {
         if (serviceName != secaNode."@service") return
-        def sxr = new SecaXaResource(this, parameters, ecfi)
+        def sxr = new SecaSynchronization(this, parameters, ecfi)
         sxr.enlist()
     }
 
-    static class SecaXaResource implements XAResource {
-        protected final static Logger logger = LoggerFactory.getLogger(SecaXaResource.class)
+    static class SecaSynchronization implements Synchronization {
+        protected final static Logger logger = LoggerFactory.getLogger(SecaSynchronization.class)
 
         protected ExecutionContextFactoryImpl ecfi
         protected ServiceEcaRule sec
         protected Map<String, Object> parameters
 
         protected Transaction tx = null
-        protected Xid xid = null
-        protected Integer timeout = null
 
-        protected boolean active = false
-        protected boolean suspended = false
-
-        SecaXaResource(ServiceEcaRule sec, Map<String, Object> parameters, ExecutionContextFactoryImpl ecfi) {
+        SecaSynchronization(ServiceEcaRule sec, Map<String, Object> parameters, ExecutionContextFactoryImpl ecfi) {
             this.ecfi = ecfi
             this.sec = sec
             this.parameters = new HashMap(parameters)
@@ -116,8 +111,27 @@ class ServiceEcaRule {
             if (tx == null) throw new XAException(XAException.XAER_NOTA)
 
             this.tx = tx
-            tx.enlistResource(this)
+            tx.registerSynchronization(this)
         }
+
+        @Override
+        void beforeCompletion() { }
+
+        @Override
+        void afterCompletion(int status) {
+            if (status == Status.STATUS_COMMITTED) {
+                if (sec.secaNode."@when" == "tx-commit") runInThreadAndTx()
+            } else {
+                if (sec.secaNode."@when" == "tx-rollback") runInThreadAndTx()
+            }
+        }
+
+        /* Old XAResource approach:
+
+        protected Xid xid = null
+        protected Integer timeout = null
+        protected boolean active = false
+        protected boolean suspended = false
 
         @Override
         void start(Xid xid, int flag) throws XAException {
@@ -197,6 +211,7 @@ class ServiceEcaRule {
             this.xid = null
             this.active = false
         }
+        */
 
         void runInThreadAndTx() {
             Thread thread = new Thread() {
