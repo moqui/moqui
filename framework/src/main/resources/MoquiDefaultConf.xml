@@ -78,8 +78,8 @@
 
     <transaction-facade use-transaction-cache="true">
         <!-- Use this one for the internal transaction manager -->
-        <transaction-internal class="org.moqui.impl.context.TransactionInternalAtomikos"/>
-        <!-- <transaction-internal class="org.moqui.impl.context.TransactionInternalBitronix"/> -->
+        <!-- <transaction-internal class="org.moqui.impl.context.TransactionInternalAtomikos"/> -->
+        <transaction-internal class="org.moqui.impl.context.TransactionInternalBitronix"/>
 
         <!-- if this is not present the default JNDI server will be used -->
         <!-- <server-jndi context-provider-url="rmi://127.0.0.1:1099"
