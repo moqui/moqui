@@ -12,6 +12,7 @@
 package org.moqui.impl.context
 
 import bitronix.tm.BitronixTransactionManager
+import bitronix.tm.Configuration
 import bitronix.tm.TransactionManagerServices
 import bitronix.tm.resource.jdbc.PoolingDataSource
 
@@ -40,6 +41,8 @@ class TransactionInternalBitronix implements TransactionInternal {
     @Override
     TransactionInternal init(ExecutionContextFactory ecf) {
         this.ecfi = (ExecutionContextFactoryImpl) ecf
+
+        // NOTE: see the bitronix-default-config.properties file for more config
 
         btm = TransactionManagerServices.getTransactionManager()
         this.ut = btm
