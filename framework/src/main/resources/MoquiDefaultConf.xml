@@ -238,14 +238,32 @@
                     pool-minsize="2" pool-maxsize="50"/> - ->
         </datasource>
         -->
+
         <!-- MySQL
-        NOTE: for MySQL setup this way set transaction-facade.@use-transaction-cache=false (causes lock wait timeout errors)
         <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
             <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
-                    jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="50"/>
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
+        </datasource>
+
+        MySQL Example using the same database for all datasources:
+        <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
+            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
+        </datasource>
+        <datasource group-name="analytical" database-conf-name="mysql" schema-name="">
+            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
+        </datasource>
+        <datasource group-name="tenantcommon" database-conf-name="mysql" schema-name="">
+            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
+        </datasource>
+        <datasource group-name="nosql" database-conf-name="mysql" schema-name="" object-factory="">
+            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
         </datasource>
         -->
+
         <!-- Oracle
         <datasource group-name="transactional" database-conf-name="oracle" schema-name="MOQUI">
             <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiTransactional"
