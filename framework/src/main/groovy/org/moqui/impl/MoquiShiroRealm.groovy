@@ -11,6 +11,8 @@
  */
 package org.moqui.impl
 
+import org.moqui.entity.EntityException
+
 import java.sql.Timestamp
 
 import org.apache.shiro.authc.AuthenticationInfo
@@ -174,6 +176,9 @@ class MoquiShiroRealm implements Realm {
                 boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
                 try {
                     ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext).call()
+                } catch (EntityException ee) {
+                    // this blows up on MySQL, may in other cases, and is only so important so log a warning but don't rethrow
+                    logger.warn("UserLoginHistory create failed: ${ee.toString()}", ee)
                 } finally {
                     if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
                 }
