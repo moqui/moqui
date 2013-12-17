@@ -71,8 +71,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <script><![CDATA[
             import org.moqui.entity.EntityDataLoader
+            import org.moqui.context.ExecutionContext
+            ExecutionContext ec = context.ec
 
             ec.artifactExecution.disableAuthz()
+            ec.getArtifactExecution().push("loadData", "AT_OTHER", "AUTHZA_ALL", false)
+            ec.getArtifactExecution().setAnonymousAuthorizedAll()
+            boolean loggedInAnonymous = ec.getUser().loginAnonymousIfNoUser()
 
             // TODO: reject requests until this is done?
 
@@ -83,7 +88,11 @@ This Work includes contributions authored by David E. Jones, not as a
             records = edl.load()
             totalSeconds = (System.currentTimeMillis() - startTime) / 1000
 
+            ec.artifactExecution.pop()
+            if (loggedInAnonymous) ec.getUser().logoutAnonymousOnly()
             ec.artifactExecution.enableAuthz()
+
+            ec.cache.clearAllCaches()
             ]]></script>
             <log level="info" message="Loaded [${records}] records in ${totalSeconds} seconds."/>
         </actions>
