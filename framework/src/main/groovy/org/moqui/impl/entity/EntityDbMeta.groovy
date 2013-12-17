@@ -33,7 +33,10 @@ class EntityDbMeta {
     // a separate Map for tables checked to exist only (used in finds) so repeated checks are needed for unused entities
     protected Map<String, Boolean> entityTablesExist = new HashMap()
 
+    protected boolean useTxForMetaData = false
+
     protected EntityFacadeImpl efi
+
     EntityDbMeta(EntityFacadeImpl efi) {
         this.efi = efi
         // this is nice as a cache but slower and checked MANY times with lots of entity/db traffic:
@@ -131,7 +134,7 @@ class EntityDbMeta {
                 String groupName = efi.getEntityGroupName(ed)
                 Connection con = null
                 ResultSet tableSet = null
-                boolean beganTx = efi.ecfi.transactionFacade.begin(5)
+                boolean beganTx = useTxForMetaData ? efi.ecfi.transactionFacade.begin(5) : false
                 try {
                     con = efi.getConnection(groupName)
                     DatabaseMetaData dbData = con.getMetaData()
@@ -539,7 +542,7 @@ class EntityDbMeta {
         Statement stmt = null
 
         // use a short timeout here just in case this is in the middle of stuff going on with tables locked, may happen a lot for FK ops
-        boolean beganTx = efi.ecfi.transactionFacade.begin(5)
+        boolean beganTx = useTxForMetaData ? efi.ecfi.transactionFacade.begin(5) : false
         try {
             con = efi.getConnection(groupName)
             stmt = con.createStatement()
