@@ -341,7 +341,6 @@ public class MoquiStart extends ClassLoader {
                 }
             }
         }
-        // NOTE: should we return null instead of this?
         return super.findResource(resourceName);
     }
 
@@ -374,17 +373,19 @@ public class MoquiStart extends ClassLoader {
         Class<?> c = null;
         try {
             try {
+                ClassLoader cl = getParent();
+                c = cl.loadClass(className);
+                if (c != null) return c;
+            } catch (ClassNotFoundException e) { /* let the next one handle this */ }
+
+            try {
                 c = findJarClass(className);
                 if (c != null) return c;
             } catch (Exception e) {
                 System.out.println("Error loading class [" + className + "] from jars in war file [" + outerFile.getName() + "]: " + e.toString());
                 e.printStackTrace();
             }
-            try {
-                ClassLoader cl = getParent();
-                c = cl.loadClass(className);
-                return c;
-            } catch (ClassNotFoundException e) { /* let the next one handle this */ }
+
             throw new ClassNotFoundException("Class [" + className + "] not found");
         } finally {
             if (c != null  &&  resolve) {
