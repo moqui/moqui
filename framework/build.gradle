@@ -195,8 +195,10 @@ dependencies {
     runtime name: 'derby', version: '10.10.1.1' // Apache 2.0
 
     runtime name: 'jakarta-oro', version: '2.0.8' // Apache 2.0
-    runtime name: 'shiro-ehcache', version: '1.2.2' // Apache 2.0
-    runtime name: 'shiro-quartz', version: '1.2.2' // Apache 2.0
+
+    // shiro-ehcache is good for caching auth in distributed environments, but has some quirks so not enabled by default (see shiro.ini)
+    // runtime name: 'shiro-ehcache', version: '1.2.2' // Apache 2.0
+    // runtime name: 'shiro-quartz', version: '1.2.2' // Apache 2.0
 
     // ========== test dependencies ==========
     testCompile name: 'spock-core', version: '0.7-groovy-2.0' // Apache 2.0
