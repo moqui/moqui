@@ -332,6 +332,8 @@ class UserFacadeImpl implements UserFacade {
 
     @Override
     String getPreference(String preferenceKey) {
+        String userId = getUserId()
+        if (!userId) return null
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
             EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", getUserId())
@@ -344,6 +346,8 @@ class UserFacadeImpl implements UserFacade {
 
     @Override
     void setPreference(String preferenceKey, String preferenceValue) {
+        String userId = getUserId()
+        if (!userId) throw new IllegalStateException("Cannot set preference with key [${preferenceKey}], no user logged in.")
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         boolean beganTransaction = eci.transaction.begin(null)
         try {
