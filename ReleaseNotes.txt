@@ -28,6 +28,10 @@ New Features:
 
 Bug Fixes:
 
+- Due to some quirks in Shiro ehcache support it is disabled by default; it
+  is still supported for use in distributed environments with shared auth
+  cache (see shiro.ini for details)
+
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013
