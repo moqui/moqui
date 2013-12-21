@@ -31,6 +31,8 @@ Bug Fixes:
 - Due to some quirks in Shiro ehcache support it is disabled by default; it
   is still supported for use in distributed environments with shared auth
   cache (see shiro.ini for details)
+- Fixed issue with entity-condition in a view-entity when the econdition
+  value matched a localized string different from the original value
 
 
 ===========================================================================

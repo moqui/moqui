@@ -922,7 +922,8 @@ public class EntityDefinition {
                 }
                 // NOTE: may need to convert value from String to object for field
                 String condValue = econdition."@value" ?: null
-                if (condValue) condValue = efi.getEcfi().getResourceFacade().evaluateStringExpand(condValue, "")
+                // NOTE: only expand if contains "${", expanding normal strings does l10n and messes up key values; hopefully this won't result in a similar issue
+                if (condValue && condValue.contains("\${")) condValue = efi.getEcfi().getResourceFacade().evaluateStringExpand(condValue, "")
                 cond = new FieldValueCondition((EntityConditionFactoryImpl) this.efi.conditionFactory, field,
                         EntityConditionFactoryImpl.getComparisonOperator((String) econdition."@operator"), condValue)
             } else {
