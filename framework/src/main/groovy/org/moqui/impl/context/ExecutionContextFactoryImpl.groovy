@@ -17,6 +17,8 @@ import org.kie.api.builder.Message
 import org.kie.api.builder.ReleaseId
 import org.kie.api.builder.Results
 import org.kie.api.runtime.KieContainer
+import org.kie.api.runtime.KieSession
+import org.kie.api.runtime.StatelessKieSession
 import org.moqui.context.Cache
 import org.moqui.impl.StupidWebUtilities
 
@@ -92,6 +94,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     /* KIE fields */
     protected final Cache kieComponentReleaseIdCache
+    protected final Cache kieSessionComponentCache
 
     // ======== Permanent Delegated Facades ========
     protected final CacheFacadeImpl cacheFacade
@@ -185,6 +188,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Moqui L10nFacadeImpl Initialized")
 
         kieComponentReleaseIdCache = this.cacheFacade.getCache("kie.component.releaseId")
+        kieSessionComponentCache = this.cacheFacade.getCache("kie.session.component")
 
         postFacadeInit()
     }
@@ -562,10 +566,31 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         releaseId = builder.getKieModule().getReleaseId()
         kieComponentReleaseIdCache.put(componentName, releaseId)
 
-        // TODO: get all KieBase and KieSession names and create reverse-reference Map so we know which component's
+        // get all KieBase and KieSession names and create reverse-reference Map so we know which component's
         //     module they are in, then add convenience methods to get any KieBase or KieSession by name
+        ResourceReference kmoduleRr = kieRr.findChildFile("src/main/resources/META-INF/kmodule.xml")
+        Node kmoduleNode = new XmlParser().parseText(kmoduleRr.getText())
+        for (Node kbaseNode in kmoduleNode."kbase") {
+            for (Node ksessionNode in kbaseNode."ksession") {
+                String ksessionName = ksessionNode."@name"
+                String existingComponentName = kieSessionComponentCache.get(ksessionName)
+                if (existingComponentName) logger.warn("Found KIE session [${ksessionName}] in component [${existingComponentName}], replacing with session in component [${componentName}]")
+                kieSessionComponentCache.put(ksessionName, componentName)
+            }
+        }
 
         return releaseId
+    }
+
+    KieSession getKieSession(String ksessionName) {
+        String componentName = kieSessionComponentCache.get(ksessionName)
+        if (!componentName) throw new IllegalStateException("No component KIE module found with session [${ksessionName}]")
+        return getKieContainer(componentName).newKieSession(ksessionName)
+    }
+    StatelessKieSession getStatelessKieSession(String ksessionName) {
+        String componentName = kieSessionComponentCache.get(ksessionName)
+        if (!componentName) throw new IllegalStateException("No component KIE module found with session [${ksessionName}]")
+        return getKieContainer(componentName).newStatelessKieSession(ksessionName)
     }
 
     // ========== Interface Implementations ==========
