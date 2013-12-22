@@ -33,7 +33,10 @@ Bug Fixes:
   cache (see shiro.ini for details)
 - Fixed issue with entity-condition in a view-entity when the econdition
   value matched a localized string different from the original value
-
+- Fixed issue with form-single and form-list.@transition when it matches
+  a localized string (especially on MySQL or other DBs with case
+  insensitive string matching), now only expands transition value if it
+  contains a "${"
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013
