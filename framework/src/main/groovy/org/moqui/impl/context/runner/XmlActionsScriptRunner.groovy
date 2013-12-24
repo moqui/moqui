@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context.runner
 
+import freemarker.template.Template
+
 import org.moqui.context.Cache
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ScriptRunner
@@ -18,12 +20,15 @@ import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.actions.XmlAction
 import org.moqui.context.ExecutionContext
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 class XmlActionsScriptRunner implements ScriptRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(XmlActionsScriptRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(XmlActionsScriptRunner.class)
 
     protected ExecutionContextFactoryImpl ecfi
     protected Cache scriptXmlActionLocationCache
-    protected freemarker.template.Template xmlActionsTemplate = null
+    protected Template xmlActionsTemplate = null
 
     XmlActionsScriptRunner() { }
 
@@ -42,19 +47,19 @@ class XmlActionsScriptRunner implements ScriptRunner {
 
     XmlAction getXmlActionByLocation(String location) {
         XmlAction xa = (XmlAction) scriptXmlActionLocationCache.get(location)
-        if (!xa) loadXmlAction(location)
+        if (xa == null) xa = loadXmlAction(location)
         return xa
     }
-    protected XmlAction loadXmlAction(String location) {
+    protected synchronized XmlAction loadXmlAction(String location) {
         XmlAction xa = (XmlAction) scriptXmlActionLocationCache.get(location)
-        if (!xa) {
+        if (xa == null) {
             xa = new XmlAction(ecfi, ecfi.resourceFacade.getLocationText(location, false), location)
             scriptXmlActionLocationCache.put(location, xa)
         }
         return xa
     }
 
-    freemarker.template.Template getXmlActionsTemplate() {
+    Template getXmlActionsTemplate() {
         if (xmlActionsTemplate == null) makeXmlActionsTemplate()
         return xmlActionsTemplate
     }
@@ -62,11 +67,11 @@ class XmlActionsScriptRunner implements ScriptRunner {
         if (xmlActionsTemplate != null) return
 
         String templateLocation = ecfi.confXmlRoot."resource-facade"[0]."@xml-actions-template-location"
-        freemarker.template.Template newTemplate = null
+        Template newTemplate = null
         Reader templateReader = null
         try {
             templateReader = new InputStreamReader(ecfi.resourceFacade.getLocationStream(templateLocation))
-            newTemplate = new freemarker.template.Template(templateLocation, templateReader,
+            newTemplate = new Template(templateLocation, templateReader,
                     ecfi.resourceFacade.ftlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             logger.error("Error while initializing XMLActions template at [${templateLocation}]", e)
