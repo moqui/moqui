@@ -154,9 +154,17 @@ class ExecutionContextImpl implements ExecutionContext {
     @Override
     KieContainer getKieContainer(String componentName) { ecfi.getKieContainer(componentName) }
     @Override
-    KieSession getKieSession(String ksessionName) { ecfi.getKieSession(ksessionName) }
+    KieSession getKieSession(String ksessionName) {
+        KieSession session = ecfi.getKieSession(ksessionName)
+        session.setGlobal("ec", this)
+        return session
+    }
     @Override
-    StatelessKieSession getStatelessKieSession(String ksessionName) { ecfi.getStatelessKieSession(ksessionName) }
+    StatelessKieSession getStatelessKieSession(String ksessionName) {
+        StatelessKieSession session = ecfi.getStatelessKieSession(ksessionName)
+        session.setGlobal("ec", this)
+        return session
+    }
 
 
     @Override

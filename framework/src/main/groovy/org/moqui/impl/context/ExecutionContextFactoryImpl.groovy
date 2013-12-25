@@ -373,42 +373,6 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    protected void initElasticSearch() {
-        // set the ElasticSearch home directory
-        System.setProperty("es.path.home", runtimePath + "/elasticsearch")
-        if (confXmlRoot."tools"[0]."@enable-elasticsearch" != "false") {
-            logger.info("Starting ElasticSearch")
-            elasticSearchNode = NodeBuilder.nodeBuilder().node()
-            elasticSearchClient = elasticSearchNode.client()
-        } else {
-            logger.info("ElasticSearch disabled, not starting")
-        }
-    }
-
-    protected void initCamel() {
-        if (confXmlRoot."tools"[0]."@enable-camel" != "false") {
-            logger.info("Starting Camel")
-            moquiServiceComponent = new MoquiServiceComponent(this)
-            camelContext.addComponent("moquiservice", moquiServiceComponent)
-            camelContext.start()
-        } else {
-            logger.info("Camel disabled, not starting")
-        }
-    }
-
-    protected void initKie() {
-        if (!System.getProperty("drools.dialect.java.compiler")) System.setProperty("drools.dialect.java.compiler", "JANINO")
-
-        KieServices services = KieServices.Factory.get()
-        for (String componentName in componentBaseLocations.keySet()) {
-            try {
-                buildKieModule(componentName, services)
-            } catch (Throwable t) {
-                logger.error("Error initializing KIE in component ${componentName}: ${t.toString()}", t)
-            }
-        }
-    }
-
     synchronized void destroy() {
         if (!this.destroyed) {
             // stop Camel to prevent more calls coming in
@@ -523,12 +487,52 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     L10nFacade getL10nFacade() { return l10nFacade }
 
+    // =============== Apache Camel Methods ===============
     CamelContext getCamelContext() { return camelContext }
     MoquiServiceComponent getMoquiServiceComponent() { return moquiServiceComponent }
     void registerCamelConsumer(String uri, MoquiServiceConsumer consumer) { camelConsumerByUriMap.put(uri, consumer) }
     MoquiServiceConsumer getCamelConsumer(String uri) { return camelConsumerByUriMap.get(uri) }
 
+    protected void initCamel() {
+        if (confXmlRoot."tools"[0]."@enable-camel" != "false") {
+            logger.info("Starting Camel")
+            moquiServiceComponent = new MoquiServiceComponent(this)
+            camelContext.addComponent("moquiservice", moquiServiceComponent)
+            camelContext.start()
+        } else {
+            logger.info("Camel disabled, not starting")
+        }
+    }
+
+    // =============== ElasticSearch Methods ===============
     Client getElasticSearchClient() { return elasticSearchClient }
+
+    protected void initElasticSearch() {
+        // set the ElasticSearch home directory
+        System.setProperty("es.path.home", runtimePath + "/elasticsearch")
+        if (confXmlRoot."tools"[0]."@enable-elasticsearch" != "false") {
+            logger.info("Starting ElasticSearch")
+            elasticSearchNode = NodeBuilder.nodeBuilder().node()
+            elasticSearchClient = elasticSearchNode.client()
+        } else {
+            logger.info("ElasticSearch disabled, not starting")
+        }
+    }
+
+
+    // =============== KIE Methods ===============
+    protected void initKie() {
+        if (!System.getProperty("drools.dialect.java.compiler")) System.setProperty("drools.dialect.java.compiler", "JANINO")
+
+        KieServices services = KieServices.Factory.get()
+        for (String componentName in componentBaseLocations.keySet()) {
+            try {
+                buildKieModule(componentName, services)
+            } catch (Throwable t) {
+                logger.error("Error initializing KIE in component ${componentName}: ${t.toString()}", t)
+            }
+        }
+    }
 
     KieContainer getKieContainer(String componentName) {
         KieServices services = KieServices.Factory.get()
@@ -562,9 +566,21 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             logger.warn("Warning building KIE module in component ${componentName}: ${results.toString()}")
         }
 
+        findComponentKieSessions(componentName)
+
         // get the release ID and cache it
         releaseId = builder.getKieModule().getReleaseId()
         kieComponentReleaseIdCache.put(componentName, releaseId)
+
+        return releaseId
+    }
+
+    protected void findAllComponentKieSessions() {
+        for (String componentName in componentBaseLocations.keySet()) findComponentKieSessions(componentName)
+    }
+    protected void findComponentKieSessions(String componentName) {
+        ResourceReference kieRr = getResourceFacade().getLocationReference("component://${componentName}/kie")
+        if (!kieRr.getExists() || !kieRr.isDirectory()) return
 
         // get all KieBase and KieSession names and create reverse-reference Map so we know which component's
         //     module they are in, then add convenience methods to get any KieBase or KieSession by name
@@ -579,17 +595,24 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             }
         }
 
-        return releaseId
     }
 
     KieSession getKieSession(String ksessionName) {
         String componentName = kieSessionComponentCache.get(ksessionName)
-        if (!componentName) throw new IllegalStateException("No component KIE module found with session [${ksessionName}]")
+        // try finding all component sessions
+        if (!componentName) findAllComponentKieSessions()
+        componentName = kieSessionComponentCache.get(ksessionName)
+        // still nothing? blow up
+        if (!componentName) throw new IllegalStateException("No component KIE module found for session [${ksessionName}]")
         return getKieContainer(componentName).newKieSession(ksessionName)
     }
     StatelessKieSession getStatelessKieSession(String ksessionName) {
         String componentName = kieSessionComponentCache.get(ksessionName)
-        if (!componentName) throw new IllegalStateException("No component KIE module found with session [${ksessionName}]")
+        // try finding all component sessions
+        if (!componentName) findAllComponentKieSessions()
+        componentName = kieSessionComponentCache.get(ksessionName)
+        // still nothing? blow up
+        if (!componentName) throw new IllegalStateException("No component KIE module found for session [${ksessionName}]")
         return getKieContainer(componentName).newStatelessKieSession(ksessionName)
     }
 
