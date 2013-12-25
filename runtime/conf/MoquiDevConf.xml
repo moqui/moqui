@@ -14,6 +14,8 @@
         <cache name="service.location" expire-time-idle="5"/>
         <cache name="service.java.class" expire-time-idle="5"/>
 
+        <cache name="kie.component.releaseId" expire-time-idle="5"/>
+
         <cache name="screen.location" expire-time-idle="5"/>
         <cache name="screen.template.mode" expire-time-idle="5"/>
         <cache name="screen.template.location" expire-time-idle="5"/>
