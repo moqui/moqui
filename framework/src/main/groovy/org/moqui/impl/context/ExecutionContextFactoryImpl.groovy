@@ -11,6 +11,8 @@
  */
 package org.moqui.impl.context
 
+import org.drools.decisiontable.InputType
+import org.drools.decisiontable.SpreadsheetCompiler
 import org.kie.api.KieServices
 import org.kie.api.builder.KieBuilder
 import org.kie.api.builder.Message
@@ -553,6 +555,17 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             if (logger.isTraceEnabled()) logger.trace("No kie directory in component ${componentName}, not building KIE module.")
             return null
         }
+
+        /*
+        if (componentName == "mantle-usl") {
+            SpreadsheetCompiler sc = new SpreadsheetCompiler()
+            String drl = sc.compile(getResourceFacade().getLocationStream("component://mantle-usl/kie/src/main/resources/mantle/shipment/orderrate/OrderShippingDt.xls"), InputType.XLS)
+            StringBuilder groovyWithLines = new StringBuilder()
+            int lineNo = 1
+            for (String line in drl.split("\n")) groovyWithLines.append(lineNo++).append(" : ").append(line).append("\n")
+            logger.error("XLS DC as DRL: [\n${groovyWithLines}\n]")
+        }
+        */
 
         File kieDir = new File(kieRr.getUri())
         KieBuilder builder = services.newKieBuilder(kieDir)
