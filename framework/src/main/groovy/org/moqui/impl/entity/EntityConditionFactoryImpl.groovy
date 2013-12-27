@@ -216,7 +216,7 @@ class EntityConditionFactoryImpl implements EntityConditionFactory {
             "like":ComparisonOperator.LIKE,
             "LIKE":ComparisonOperator.LIKE,
 
-            "not-like":ComparisonOperator.LIKE,
+            "not-like":ComparisonOperator.NOT_LIKE,
             "NOT LIKE":ComparisonOperator.NOT_LIKE
     ]
 

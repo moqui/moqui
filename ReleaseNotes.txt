@@ -37,6 +37,7 @@ Bug Fixes:
   a localized string (especially on MySQL or other DBs with case
   insensitive string matching), now only expands transition value if it
   contains a "${"
+- Fixed not-like entity condition operator which was treated as like
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013
