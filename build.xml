@@ -36,6 +36,7 @@ The actual build is done with Gradle.
         </copy>
         <copy todir="wartemp/WEB-INF/lib"><fileset dir="${moqui.runtime}/lib" includes="*.jar"/></copy>
         <copy todir="wartemp/WEB-INF/classes"><fileset dir="${moqui.runtime}/classes" includes="**/*"/></copy>
+        <copy todir="wartemp/WEB-INF/lib"><fileset dir="${moqui.runtime}/component" includes="**/*.jar"/></copy>
         <copy file="MoquiInit.properties" todir="wartemp/WEB-INF/classes" overwrite="true"/>
 
         <!-- zip it up again -->
