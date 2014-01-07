@@ -1331,6 +1331,8 @@ Features considered, but may not to be included in 1.x series
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
 
+- Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
+
 - Interesting JS plugins
   - http://arshaw.com/fullcalendar/
   - http://www.datatables.net
