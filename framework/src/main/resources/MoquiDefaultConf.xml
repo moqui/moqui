@@ -414,7 +414,7 @@
 
             <database-type type="text-short" sql-type="VARCHAR2(10)"/>
             <database-type type="text-medium" sql-type="VARCHAR2(255)"/>
-            <database-type type="text-long" sql-type="VARCHAR2(32000)"/>
+            <database-type type="text-long" sql-type="VARCHAR2(4000)"/>
         </database>
         <database name="postgres" use-fk-initially-deferred="false" join-style="ansi" result-fetch-size="50"
                   default-isolation-level="ReadCommitted" default-test-query="SELECT 1"
