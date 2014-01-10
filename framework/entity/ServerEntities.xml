@@ -31,7 +31,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="runningTimeMillis" type="number-integer"/>
         <field name="outputSize" type="number-integer"/>
         <field name="wasError" type="text-indicator"/>
-        <field name="errorMessage" type="text-medium"/>
+        <field name="errorMessage" type="text-long"/>
         <field name="requestUrl" type="text-long"/>
         <field name="referrerUrl" type="text-long"/>
         <field name="serverIpAddress" type="id"/>
