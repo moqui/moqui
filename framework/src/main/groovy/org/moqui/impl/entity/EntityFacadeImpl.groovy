@@ -725,6 +725,11 @@ class EntityFacadeImpl implements EntityFacade {
         return entityDataDocument.getDataDocuments(dataDocumentId, condition, fromUpdateStamp, thruUpdatedStamp)
     }
 
+    @Override
+    List<Map> getDataFeedDocuments(String dataFeedId, Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp) {
+        return entityDataFeed.getFeedDocuments(dataFeedId, fromUpdateStamp, thruUpdatedStamp)
+    }
+
     void tempSetSequencedIdPrimary(String seqName, long nextSeqNum, long bankSize) {
         ArrayList<Long> bank = new ArrayList<Long>(2)
         bank[0] = nextSeqNum

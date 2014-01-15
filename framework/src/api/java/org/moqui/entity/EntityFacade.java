@@ -76,6 +76,16 @@ public interface EntityFacade {
     List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                 Timestamp thruUpdatedStamp);
 
+    /** Find and assemble data documents represented by a Map that can be easily turned into a JSON document. This is
+     * similar to the getDataDocuments() method except that the dataDocumentId(s) are looked up using the dataFeedId.
+     *
+     * @param dataFeedId Used to look up the DataFeed records to find the associated DataDocument records.
+     * @param fromUpdateStamp The lastUpdatedStamp on at least one entity selected must be after (>=) this Timestamp.
+     * @param thruUpdatedStamp The lastUpdatedStamp on at least one entity selected must be before (<) this Timestamp.
+     * @return List of Maps with these entries:
+     */
+    List<Map> getDataFeedDocuments(String dataFeedId, Timestamp fromUpdateStamp, Timestamp thruUpdatedStamp);
+
     /** Get the next guaranteed unique seq id from the sequence with the given sequence name;
      * if the named sequence doesn't exist, it will be created.
      *
