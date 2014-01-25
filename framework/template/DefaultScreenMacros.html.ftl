@@ -29,13 +29,25 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign menuId = .node["@id"]!"subscreensMenu">
     <#if .node["@type"]?if_exists == "popup">
         <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
-        <#assign menuUrlInfo = sri.buildUrl("")>
-        <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>>
+        <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
+        <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
             <#-- <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo?exists && urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list> -->
-            <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> --></a>
+            <li id="${menuId}" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <ul class="dropdown-menu">
+                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInfo.isPermitted()>
+                            <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        </#if>
+                    </#if></#list>
+                </ul>
+            </li>
+            <#--
+            <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
@@ -45,12 +57,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     </#if></#list>
                 </ul>
             </li>
-        </ul>
+            -->
+        <#-- </ul> -->
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
         <script>
             <#-- move the menu to the header-menus container -->
             $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
-            $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});
+            <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
         </script>
     <#elseif .node["@type"]?if_exists == "popup-tree">
     <#else>
@@ -91,13 +104,25 @@ This Work includes contributions authored by David E. Jones, not as a
     <#if .node["@type"]?if_exists == "popup">
         <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
         <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
-        <#assign menuUrlInfo = sri.buildUrl("")>
-        <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>
+        <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
+        <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
             <#-- <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list> -->
-            <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> --></a>
+            <li id="${menuId}" class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
+                <ul class="dropdown-menu">
+                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                        <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
+                        <#if urlInfo.isPermitted()>
+                            <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
+                        </#if>
+                    </#if></#list>
+                </ul>
+            </li>
+            <#--
+            <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
                 <ul>
                     <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
@@ -107,12 +132,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     </#if></#list>
                 </ul>
             </li>
-        </ul>
+            -->
+        <#-- </ul> -->
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
         <script>
             <#-- move the menu to the header menus section -->
             $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
-            $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }});
+            <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
         </script>
 
         ${sri.renderSubscreen()}
@@ -178,6 +204,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro "container-panel">
     <#assign panelId = ec.resource.evaluateStringExpand(.node["@id"], "")>
+    <#-- DEJ 24 Jan 2014: disabling dynamic panels for now, need to research with new Metis admin theme:
     <#if .node["@dynamic"]?if_exists == "true">
         <#assign afterScreenScript>
         $("#${panelId}").layout({
@@ -209,6 +236,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </div></#if>
         </div>
     <#else>
+    -->
         <div<#if panelId?has_content> id="${panelId}"</#if> class="panel-outer">
             <#if .node["panel-header"]?has_content>
                 <div<#if panelId?has_content> id="${panelId}-header"</#if> class="panel-header"><#recurse .node["panel-header"][0]>
@@ -232,22 +260,35 @@ This Work includes contributions authored by David E. Jones, not as a
                 </div>
             </#if>
         </div>
-    </#if>
+    <#-- </#if> -->
 </#macro>
 
 <#macro "container-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
-    <button id="${.node["@id"]}-button" iconcls="ui-icon-newwin">${buttonText}</button>
-    <div id="${.node["@id"]}" title="${buttonText}" style="display: none;">
-    <#recurse>
+    <button id="${.node["@id"]}-button" data-toggle="modal" data-target="#${.node["@id"]}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <div id="${.node["@id"]}" class="modal fade" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">${buttonText}</h4>
+                </div>
+                <div class="modal-body">
+                    <#recurse>
+                </div>
+                <#-- <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div> -->
+            </div>
+        </div>
     </div>
+    <#-- for jQuery dialog:
     <#assign afterScreenScript>
         $("#${.node["@id"]}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"}, modal:false });
-        <#--, buttons: { Close: function() { $(this).dialog("close"); } } -->
-        <#--, close: function() { } -->
+        <#--, buttons: { Close: function() { $(this).dialog("close"); } } - ->
+        <#--, close: function() { } - ->
         $("#${.node["@id"]}-button").click(function() { $("#${.node["@id"]}").dialog("open"); });
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
+    -->
 </#macro>
 
 <#macro "dynamic-container">
@@ -265,14 +306,33 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
-    <button id="${divId}Button" iconcls="ui-icon-newwin">${buttonText}</button>
+
+    <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">${buttonText}</h4>
+                </div>
+                <div class="modal-body" id="${divId}-body">
+                    <img src="/images/wait_anim_16x16.gif" alt="Loading...">
+                </div>
+                <#-- <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div> -->
+            </div>
+        </div>
+    </div>
+    <script>$("#${divId}").on("show.bs.modal", function (e) { $("#${divId}-body").load('${urlInfo.urlWithParams}') })</script>
+    <#-- jQuery dialog:
+    <button id="${divId}-button"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${divId}" title="${buttonText}"></div>
     <#assign afterScreenScript>
         $("#${divId}").dialog({autoOpen:false, height:${.node["@height"]!"600"}, width:${.node["@width"]!"600"},
             modal:false, open: function() { $(this).load('${urlInfo.urlWithParams}', function() { activateAllButtons() }) } });
-        $("#${divId}Button").click(function() { $("#${divId}").dialog("open"); return false; });
+        $("#${divId}-button").click(function() { $("#${divId}").dialog("open"); return false; });
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
+    -->
 </#macro>
 
 <#-- ==================== Includes ==================== -->
@@ -341,12 +401,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
         <#if (linkNode["@link-type"]?if_exists == "anchor" || linkNode["@link-type"]?if_exists == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
-            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "anchor-button"> class="button"</#if><#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if>>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "anchor-button"> class="btn btn-default btn-sm"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
-            <button type="submit" form="${linkFormId}"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "hidden-form-link"> class="button-plain"</#if>>
+            <button type="submit" form="${linkFormId}"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-default btn-sm<#if linkNode["@link-type"]?if_exists == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>
                 <#if linkNode["image"]?has_content>
                     <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
@@ -377,7 +437,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
                     <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
                         <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                     <#else>
-                        <button type="submit"<#if linkNode["@icon"]?has_content> iconcls="ui-icon-${linkNode["@icon"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]?if_exists == "hidden-form-link"> class="button-plain"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
+                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-default btn-sm<#if linkNode["@link-type"]?if_exists == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
                     </#if>
                 </#if>
             </form>

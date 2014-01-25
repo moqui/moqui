@@ -10,23 +10,25 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
-/* defaults */
+/* defaults
 * {
 margin: 0px; border: 0px; outline: 0px; padding: 0px;
 background: transparent; text-decoration: none;
 font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-weight: normal;
-font-size: 14px; /* set base font size here, all others relative using em */
+font-size: 14px; / * set base font size here, all others relative using em * /
 vertical-align: middle;
 }
+*/
 
-/* needed to get buttons inside and outside forms to align */
-div, form { vertical-align: top; }
+/* needed to get buttons inside and outside forms to align
+div, form { vertical-align: top; } */
 
 /* ========================== body, etc ========================== */
 
-html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
+/*html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
 html { overflow: hidden; }
 body { overflow: auto; background: #DDDDDF; }
+*/
 
 /* The overflow: auto is needed for scroll in non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
 #body-decorator { position: absolute; top: 8px; left: 8px; bottom: 8px; right: 8px;
@@ -44,7 +46,7 @@ div.error span { color: red; }
 #apps-footer-content { margin: 5px auto 0px auto; /*border-top: 1px solid #DDDDDF;*/ width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
-
+/*
 h1 { font-size: 1.6em; font-weight: bold; }
 h2 { font-size: 1.3em; font-weight: bold; }
 h3 { font-size: 1.1em; font-weight: bold; }
@@ -62,6 +64,8 @@ a:hover { text-decoration: underline; }
 a span { font-size: 1em; font-weight: bold; }
 p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
 li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
+*/
+
 form { display: inline; }
 
 form.editable-form button { background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px; outline: 0px; }
@@ -104,14 +108,14 @@ tr:hover { background-color: #DDD; }
 
 /* ======================= XML Screen Styles ======================= */
 
-/* styles based on convention in jquery-layout */
+/* styles based on convention in jquery-layout
 div.ui-layout-north { display: none; }
 div.ui-layout-west { display: none; }
 div.ui-layout-center { display: none; }
 div.ui-layout-east { display: none; }
 div.ui-layout-south { display: none; }
 div.ui-layout-container { height: 100%; }
-
+*/
 /* styles for non-dynamic table layout, not using jquery-layout */
 div.panel-outer {  }
 div.panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }

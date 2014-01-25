@@ -9,6 +9,10 @@ Moqui Framework 1.3.3 is a minor new feature and bug fix release.
 
 New Features:
 
+- Added the Metis Admin Template version 2.1.3
+  (see https://github.com/onokumus/Bootstrap-Admin-Template);
+  This includes an update to jQuery 2.0.3, Bootstrap 3.0.3,
+  jQuery UI 1.10.3, and many other JS libraries.
 - Added Bitronix BTM 2.1.4 as alternative to Atomikos
 - Added JBoss KIE and Drools libraries (version 6.0.0.Final) and Moqui API
   additions for getting a KieContext, plus Moqui automatically loads and
@@ -1366,6 +1370,7 @@ Features considered, but may not to be included in 1.x series
   x export screen (design similar to entity export screen; select documents, from/thru dates, file or browser output
   x DataDocumentRelationshipAlias (need shorter name) for more flexible output: dataDocumentId, relationshipName, documentAlias
 - Data Search
+  - different ElasticSearch instances or indexes per Tenant
   x use elasticsearch.org
   x get data from Data Feed, Data Search index is a feed receive service
   x receive#DataFeed interface service implementation
