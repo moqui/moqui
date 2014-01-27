@@ -1325,13 +1325,14 @@ Features considered, but may not to be included in 1.x series
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
 
+- Add MySchedule to run OOTB for Quartz admin: https://code.google.com/p/myschedule/
+- Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
+
 - Workflow that manages activity flow with screens and service attached to
   activities and tasks based on them taking users to defined or automatic
   screen; see BonitaSoft.com Open Source BPM for similar concept; generally
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
-
-- Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
 
 - Interesting JS plugins
   - http://arshaw.com/fullcalendar/
