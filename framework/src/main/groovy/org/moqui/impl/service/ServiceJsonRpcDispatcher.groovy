@@ -14,11 +14,12 @@ package org.moqui.impl.service
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
 import com.thetransactioncompany.jsonrpc2.JSONRPC2ParamsType
 import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
+import com.thetransactioncompany.jsonrpc2.JSONRPC2Error
+import com.thetransactioncompany.jsonrpc2.JSONRPC2ParseException
 
 import javax.servlet.http.HttpServletResponse
 
 import org.moqui.impl.context.ExecutionContextImpl
-import org.moqui.service.ServiceException
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,54 +34,59 @@ public class ServiceJsonRpcDispatcher {
     }
 
     public void dispatch(InputStream is, HttpServletResponse response) {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, (String) request.getCharacterEncoding() ?: "UTF-8"))
+        // TODO: support batched calls with different IDs
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, (String) response.getCharacterEncoding() ?: "UTF-8"))
         StringBuilder jsonBuilder = new StringBuilder()
         String currentLine
         while ((currentLine = br.readLine()) != null) jsonBuilder.append(currentLine).append('\n');
 
-        JSONRPC2Request jrr = JSONRPC2Request.parse(jsonBuilder.toString())
+        JSONRPC2Request jrr
+        try {
+            jrr = JSONRPC2Request.parse(jsonBuilder.toString())
+        } catch (JSONRPC2ParseException e) {
+            int errorCode = e.getCauseType() == JSONRPC2ParseException.JSON ? JSONRPC2Error.PARSE_ERROR.code : JSONRPC2Error.INVALID_REQUEST.code
+            JSONRPC2Response respOut = new JSONRPC2Response(new JSONRPC2Error(errorCode, e.getMessage()))
+            eci.getWeb().sendJsonResponse(respOut.toString())
+            return
+        }
+
         String method = jrr.getMethod()
 
+        String errorMessage = null
+        Integer errorCode = null
         ServiceDefinition sd = eci.service.getServiceDefinition(method)
-        if (sd == null)
-            throw new ServiceException("Received JSON-RPC service call for unknown service [${method}]")
-        if (sd.serviceNode."@allow-remote" != "true")
-            throw new ServiceException("Received JSON-RPC service call to service [${sd.serviceName}] that does not allow remote calls.")
-
-        // We expect named parameters (JSON object)
-        JSONRPC2ParamsType paramsType = jrr.getParamsType();
-        if (paramsType != JSONRPC2ParamsType.OBJECT) {
-            throw new ServiceException("Received JSON-RPC service call with parameters of type [${paramsType.toString()}], we need an OBJECT (Map) type")
+        if (sd == null) {
+            errorMessage = "Unknown service [${method}]"
+            errorCode = JSONRPC2Error.METHOD_NOT_FOUND.getCode()
+        } else if (sd.serviceNode."@allow-remote" != "true") {
+            errorMessage = "Service [${sd.serviceName}] does not allow remote calls"
+            errorCode = JSONRPC2Error.METHOD_NOT_FOUND.getCode()
+        } else if (jrr.getParamsType() != JSONRPC2ParamsType.OBJECT) {
+            // We expect named parameters (JSON object)
+            errorMessage = "Parameters must be named parameters (object), got type [${jrr.getParamsType().toString()}]"
+            errorCode = JSONRPC2Error.INVALID_PARAMS.getCode()
         }
 
-        Map params = (Map) jrr.getParams()
-        // probably don't need this: NamedParamsRetriever np = new NamedParamsRetriever(params);
+        Map result = null
+        if (errorMessage == null) {
+            Map params = jrr.getNamedParams()
+            result = eci.service.sync().name(sd.serviceName).parameters(params).call()
 
-        Map result = eci.service.sync().name(sd.serviceName).parameters(params).call()
+            if (eci.getMessage().hasError()) {
+                logger.warn("Got errors in JSON-RPC call to service [${sd.serviceName}]: ${eci.message.errorsString}")
+                errorMessage = eci.message.errorsString
+                // could use whatever code here as long as it is not -32768 to -32000, this was chosen somewhat arbitrarily
+                errorCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+            }
+        }
 
-        String jsonStr
-        if (eci.getMessage().hasError()) {
-            logger.warn("Got errors in JSON-RPC call to service [${sd.serviceName}]: ${eci.message.errorsString}")
-            JSONRPC2Response respOut = new JSONRPC2Response(eci.message.errorsString, jrr.getID())
-            jsonStr = respOut.toString()
-        } else {
+        if (errorMessage == null) {
             JSONRPC2Response respOut = new JSONRPC2Response(result, jrr.getID())
-            jsonStr = respOut.toString()
-        }
-
-        response.setContentType("application/x-json")
-        // NOTE: String.length not correct for byte length
-        String charset = response.characterEncoding ?: "UTF-8"
-        int length = jsonStr.getBytes(charset).length
-        response.setContentLength(length)
-
-        if (logger.infoEnabled) logger.info("Sending JSON-RPC response of length [${length}] with [${charset}] encoding")
-
-        try {
-            response.writer.write(jsonStr)
-            response.writer.flush()
-        } catch (IOException e) {
-            logger.error("Error sending JSON-RPC string response", e)
+            eci.getWeb().sendJsonResponse(respOut.toString())
+        } else {
+            logger.warn("Responding with JSON-RPC error: ${errorMessage}")
+            JSONRPC2Response respOut = new JSONRPC2Response(new JSONRPC2Error(errorCode, errorMessage), jrr.getID())
+            eci.getWeb().sendJsonResponse(respOut.toString())
         }
     }
 }

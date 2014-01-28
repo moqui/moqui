@@ -9,6 +9,7 @@ Moqui Framework 1.3.3 is a minor new feature and bug fix release.
 
 New Features:
 
+- Updated jsonrpc2 base to 1.35, client to 1.14.4, server to 1.10.1
 - Added Bitronix BTM 2.1.4 as alternative to Atomikos
 - Added JBoss KIE and Drools libraries (version 6.0.0.Final) and Moqui API
   additions for getting a KieContext, plus Moqui automatically loads and

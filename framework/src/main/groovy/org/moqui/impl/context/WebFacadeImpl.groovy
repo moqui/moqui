@@ -332,22 +332,29 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     void sendJsonResponse(Object responseObj) {
-        JsonBuilder jb = new JsonBuilder()
-        if (eci.getMessage().hasError()) {
-            // if there are return those
-            Map responseMap = new HashMap()
-            // if the responseObj is a Map add all of it's data
-            if (responseObj instanceof Map) responseMap.putAll((Map) responseObj)
-            responseMap.put("errors", eci.message.errorsString)
-            jb.call(responseMap)
-
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+        String jsonStr
+        if (responseObj instanceof String) {
+            jsonStr = (String) responseObj
         } else {
-            jb.call(responseObj)
-            response.setStatus(HttpServletResponse.SC_OK)
+            if (eci.getMessage().hasError()) {
+                JsonBuilder jb = new JsonBuilder()
+                // if there are return those
+                Map responseMap = new HashMap()
+                // if the responseObj is a Map add all of it's data
+                if (responseObj instanceof Map) responseMap.putAll((Map) responseObj)
+                responseMap.put("errors", eci.message.errorsString)
+                jb.call(responseMap)
+                jsonStr = jb.toString()
+
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+            } else {
+                JsonBuilder jb = new JsonBuilder()
+                jb.call(responseObj)
+                jsonStr = jb.toString()
+                response.setStatus(HttpServletResponse.SC_OK)
+            }
         }
 
-        String jsonStr = jb.toString()
         if (!jsonStr) return
 
         response.setContentType("application/json")
