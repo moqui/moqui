@@ -42,12 +42,11 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
         if (!location) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no location specified.")
         if (!method) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no method specified.")
 
-        Long callId = UUID.randomUUID().leastSignificantBits
-        JSONRPC2Request jrr = new JSONRPC2Request(method, parameters, callId)
+        JSONRPC2Request jrr = new JSONRPC2Request(method, parameters, 1)
         String jsonRequest = jrr.toString()
 
         // send the remote call
-        StringEntity responseEntity = new StringEntity(jsonRequest, "application/x-json; charset=\"UTF-8\"")
+        StringEntity responseEntity = new StringEntity(jsonRequest, "application/json; charset=\"UTF-8\"")
         responseEntity.setChunked(true)
         HttpPost httpPost = new HttpPost(location)
         httpPost.setEntity(responseEntity)
