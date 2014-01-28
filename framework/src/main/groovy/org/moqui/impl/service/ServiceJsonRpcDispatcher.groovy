@@ -74,7 +74,7 @@ public class ServiceJsonRpcDispatcher {
         Object paramsObj = eci.web.getRequestParameters().get("params")
         Object id = eci.web.getRequestParameters().get("id") ?: 1
 
-        logger.warn("========= JSON-RPC call method=[${method}], id=[${id}], params=${paramsObj}")
+        // logger.warn("========= JSON-RPC call method=[${method}], id=[${id}], params=${paramsObj}")
 
         String errorMessage = null
         Integer errorCode = null
