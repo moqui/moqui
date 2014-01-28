@@ -54,7 +54,7 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
         String jsonRequest = jb.toString()
 
         // send the remote call
-        StringEntity responseEntity = new StringEntity(jsonRequest, "application/json; charset=\"UTF-8\"")
+        StringEntity responseEntity = new StringEntity(jsonRequest, "application/json", "UTF-8")
         responseEntity.setChunked(true)
         HttpPost httpPost = new HttpPost(location)
         httpPost.setEntity(responseEntity)
