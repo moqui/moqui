@@ -44,8 +44,14 @@ public class ServiceJsonRpcDispatcher {
         try {
             jrr = JSONRPC2Request.parse(jsonBuilder.toString())
         } catch (JSONRPC2ParseException e) {
+            logger.error("JSON-RPC parse exception: ${e.toString()}", e)
             int errorCode = e.getCauseType() == JSONRPC2ParseException.JSON ? JSONRPC2Error.PARSE_ERROR.code : JSONRPC2Error.INVALID_REQUEST.code
             JSONRPC2Response respOut = new JSONRPC2Response(new JSONRPC2Error(errorCode, e.getMessage()))
+            eci.getWeb().sendJsonResponse(respOut.toString())
+            return
+        } catch (Exception e) {
+            logger.error("JSON-RPC error during parse: ${e.toString()}", e)
+            JSONRPC2Response respOut = new JSONRPC2Response(new JSONRPC2Error(JSONRPC2Error.PARSE_ERROR.code, e.getMessage()))
             eci.getWeb().sendJsonResponse(respOut.toString())
             return
         }
