@@ -38,7 +38,7 @@ public class MoquiStart extends ClassLoader {
         // now grab the first arg and see if it is a known command
         String firstArg = args.length > 0 ? args[0] : "";
 
-        if ("-help".equals(firstArg) || "-?".equals(firstArg)) {
+        if (firstArg.contains("-help") || "-?".equals(firstArg)) {
             // setup the class loader
             MoquiStart moquiStartLoader = new MoquiStart(true);
             Thread.currentThread().setContextClassLoader(moquiStartLoader);
@@ -53,7 +53,7 @@ public class MoquiStart extends ClassLoader {
             System.out.println("------------------------------------------------");
             System.out.println("Current runtime directory (moqui.runtime): " + System.getProperty("moqui.runtime"));
             System.out.println("Current configuration file (moqui.conf): " + System.getProperty("moqui.conf"));
-            System.out.println("To set these properties use something like: java -Dmoqui.conf=conf/MoquiStagingConf.xml -jar moqui.jar ...");
+            System.out.println("To set these properties use something like: java -Dmoqui.conf=conf/MoquiStagingConf.xml -jar moqui.war ...");
             System.out.println("------------------------------------------------");
             System.out.println("Usage: java -jar moqui.war [command] [arguments]");
             System.out.println("-help, -? ---- Help (this text)");
