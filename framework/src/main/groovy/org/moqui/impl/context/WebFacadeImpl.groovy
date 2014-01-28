@@ -398,13 +398,9 @@ class WebFacadeImpl implements WebFacade {
         }
     }
 
-    void handleXmlRpcServiceCall() {
-        new ServiceXmlRpcDispatcher(eci).dispatch(request, response)
-    }
+    void handleXmlRpcServiceCall() { new ServiceXmlRpcDispatcher(eci).dispatch(request, response) }
 
-    void handleJsonRpcServiceCall() {
-        new ServiceJsonRpcDispatcher(eci).dispatch(request.inputStream, response)
-    }
+    void handleJsonRpcServiceCall() { new ServiceJsonRpcDispatcher(eci).dispatch(request, response) }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
         session.setAttribute("moqui.screen.last.path", screenPath ?: request.getPathInfo())
