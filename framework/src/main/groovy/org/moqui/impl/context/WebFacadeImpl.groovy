@@ -134,14 +134,18 @@ class WebFacadeImpl implements WebFacade {
         // if there is a JSON document submitted consider those as parameters too
         if (request.getHeader("Content-Type") == "application/json") {
             JsonSlurper slurper = new JsonSlurper()
-            Object jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
-                    (String) request.getCharacterEncoding() ?: "UTF-8")))
+            Object jsonObj = null
+            try {
+                jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
+                        (String) request.getCharacterEncoding() ?: "UTF-8")))
+            } catch (Throwable t) {
+                logger.error("Error parsing HTTP request body JSON: ${t.toString()}", t)
+                jsonParameters = [_requestBodyJsonParseError:t.getMessage()]
+            }
             if (jsonObj instanceof Map) {
-                jsonParameters = new HashMap()
-                Map<String, Object> jsonMap = (Map<String, Object>) jsonObj
-                for (Map.Entry<String, Object> entry in jsonMap) {
-                    jsonParameters.put(entry.getKey(), entry.getValue())
-                }
+                jsonParameters = (Map<String, Object>) jsonObj
+            } else if (jsonObj instanceof List) {
+                jsonParameters = [_requestBodyJsonList:jsonObj]
             }
         }
     }
