@@ -93,6 +93,25 @@ class WebFacadeImpl implements WebFacade {
             session.removeAttribute("moqui.message.validationErrors")
         }
 
+        // if there is a JSON document submitted consider those as parameters too
+        String contentType = request.getHeader("Content-Type")
+        if (contentType == "application/json" || contentType == "text/json") {
+            JsonSlurper slurper = new JsonSlurper()
+            Object jsonObj = null
+            try {
+                jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
+                        (String) request.getCharacterEncoding() ?: "UTF-8")))
+            } catch (Throwable t) {
+                logger.error("Error parsing HTTP request body JSON: ${t.toString()}", t)
+                jsonParameters = [_requestBodyJsonParseError:t.getMessage()]
+            }
+            if (jsonObj instanceof Map) {
+                jsonParameters = (Map<String, Object>) jsonObj
+            } else if (jsonObj instanceof List) {
+                jsonParameters = [_requestBodyJsonList:jsonObj]
+            }
+        }
+
         // if this is a multi-part request, get the data for it
         if (ServletFileUpload.isMultipartContent(request)) {
             multiPartParameters = new HashMap()
@@ -127,20 +146,6 @@ class WebFacadeImpl implements WebFacade {
                         ...
                         uploadedStream.close()
                      */
-                }
-            }
-        }
-
-        // if there is a JSON document submitted consider those as parameters too
-        if (request.getHeader("Content-Type") == "application/json") {
-            JsonSlurper slurper = new JsonSlurper()
-            Object jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
-                    (String) request.getCharacterEncoding() ?: "UTF-8")))
-            if (jsonObj instanceof Map) {
-                jsonParameters = new HashMap()
-                Map<String, Object> jsonMap = (Map<String, Object>) jsonObj
-                for (Map.Entry<String, Object> entry in jsonMap) {
-                    jsonParameters.put(entry.getKey(), entry.getValue())
                 }
             }
         }
@@ -332,22 +337,29 @@ class WebFacadeImpl implements WebFacade {
 
     @Override
     void sendJsonResponse(Object responseObj) {
-        JsonBuilder jb = new JsonBuilder()
-        if (eci.getMessage().hasError()) {
-            // if there are return those
-            Map responseMap = new HashMap()
-            // if the responseObj is a Map add all of it's data
-            if (responseObj instanceof Map) responseMap.putAll((Map) responseObj)
-            responseMap.put("errors", eci.message.errorsString)
-            jb.call(responseMap)
-
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+        String jsonStr
+        if (responseObj instanceof String) {
+            jsonStr = (String) responseObj
         } else {
-            jb.call(responseObj)
-            response.setStatus(HttpServletResponse.SC_OK)
+            if (eci.getMessage().hasError()) {
+                JsonBuilder jb = new JsonBuilder()
+                // if there are return those
+                Map responseMap = new HashMap()
+                // if the responseObj is a Map add all of it's data
+                if (responseObj instanceof Map) responseMap.putAll((Map) responseObj)
+                responseMap.put("errors", eci.message.errorsString)
+                jb.call(responseMap)
+                jsonStr = jb.toString()
+
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
+            } else {
+                JsonBuilder jb = new JsonBuilder()
+                jb.call(responseObj)
+                jsonStr = jb.toString()
+                response.setStatus(HttpServletResponse.SC_OK)
+            }
         }
 
-        String jsonStr = jb.toString()
         if (!jsonStr) return
 
         response.setContentType("application/json")
@@ -391,13 +403,9 @@ class WebFacadeImpl implements WebFacade {
         }
     }
 
-    void handleXmlRpcServiceCall() {
-        new ServiceXmlRpcDispatcher(eci).dispatch(request, response)
-    }
+    void handleXmlRpcServiceCall() { new ServiceXmlRpcDispatcher(eci).dispatch(request, response) }
 
-    void handleJsonRpcServiceCall() {
-        new ServiceJsonRpcDispatcher(eci).dispatch(request.inputStream, response)
-    }
+    void handleJsonRpcServiceCall() { new ServiceJsonRpcDispatcher(eci).dispatch(request, response) }
 
     void saveScreenLastInfo(String screenPath, Map parameters) {
         session.setAttribute("moqui.screen.last.path", screenPath ?: request.getPathInfo())

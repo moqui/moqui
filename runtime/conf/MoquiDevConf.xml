@@ -35,7 +35,7 @@
         <cache name="l10n.message" expire-time-idle="600"/>
     </cache-list>
     
-    <server-stats>
+    <server-stats stats-skip-condition="ec.web?.request?.pathInfo?.startsWith('/rpc') || ec.web?.request?.pathInfo?.startsWith('/status')">
         <!-- For development, track everything! It'll run slow through... -->
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>

@@ -17,6 +17,7 @@ New Features:
 - Added JBoss KIE and Drools libraries (version 6.0.0.Final) and Moqui API
   additions for getting a KieContext, plus Moqui automatically loads and
   builds component kie directories when present
+- Removed Dzhuvinov JSON-RPC jars (implemented internally now)
 - Added ISO 8601 date/time parsing as another default in L10nFacade
 - Added transaction-facade.@use-transaction-cache attribute, defaults to
   true, set to false to disable the TransactionCache globally
@@ -1329,13 +1330,14 @@ Features considered, but may not to be included in 1.x series
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
 
+- Add MySchedule to run OOTB for Quartz admin: https://code.google.com/p/myschedule/
+- Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
+
 - Workflow that manages activity flow with screens and service attached to
   activities and tasks based on them taking users to defined or automatic
   screen; see BonitaSoft.com Open Source BPM for similar concept; generally
   workflow without requiring implementation of an entire app once the
   workflow itself is defined
-
-- Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
 
 - Interesting JS plugins
   - http://arshaw.com/fullcalendar/

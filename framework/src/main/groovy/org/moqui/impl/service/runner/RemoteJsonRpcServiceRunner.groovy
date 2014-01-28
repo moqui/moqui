@@ -11,23 +11,29 @@
  */
 package org.moqui.impl.service.runner
 
+import groovy.json.JsonBuilder
+import groovy.json.JsonSlurper
+
+import org.moqui.context.ExecutionContext
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Request
-import com.thetransactioncompany.jsonrpc2.JSONRPC2Response
-import org.moqui.context.ExecutionContext
+
 import org.apache.http.entity.StringEntity
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.DefaultHttpClient
 import org.apache.http.protocol.HttpContext
 import org.apache.http.protocol.BasicHttpContext
 import org.apache.http.HttpResponse
-import org.apache.http.HttpHost
 import org.apache.http.HttpEntity
 import org.apache.http.util.EntityUtils
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class RemoteJsonRpcServiceRunner implements ServiceRunner {
+    protected final static Logger logger = LoggerFactory.getLogger(RemoteJsonRpcServiceRunner.class)
+
     protected ServiceFacadeImpl sfi = null
 
     RemoteJsonRpcServiceRunner() {}
@@ -42,12 +48,13 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
         if (!location) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no location specified.")
         if (!method) throw new IllegalArgumentException("Cannot call remote service [${sd.serviceName}] because it has no method specified.")
 
-        Long callId = UUID.randomUUID().leastSignificantBits
-        JSONRPC2Request jrr = new JSONRPC2Request(method, parameters, callId)
-        String jsonRequest = jrr.toString()
+        Map jsonRequestMap = [jsonrpc:"2.0", id:1, method:method, params:parameters]
+        JsonBuilder jb = new JsonBuilder()
+        jb.call(jsonRequestMap)
+        String jsonRequest = jb.toString()
 
         // send the remote call
-        StringEntity responseEntity = new StringEntity(jsonRequest, "application/x-json; charset=\"UTF-8\"")
+        StringEntity responseEntity = new StringEntity(jsonRequest, "application/json; charset=\"UTF-8\"")
         responseEntity.setChunked(true)
         HttpPost httpPost = new HttpPost(location)
         httpPost.setEntity(responseEntity)
@@ -60,16 +67,35 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
         String jsonResponse = EntityUtils.toString(entity)
 
         // parse and return the results
-        JSONRPC2Response respOut = JSONRPC2Response.parse(jsonResponse)
-        if (respOut.indicatesSuccess()) {
-            Object jr = respOut.result
-            if (jr instanceof Map<String, Object>) {
-                return jr
+        JsonSlurper slurper = new JsonSlurper()
+        Object jsonObj = null
+        try {
+            jsonObj = slurper.parseText(jsonResponse)
+        } catch (Throwable t) {
+            String errMsg = "Error parsing JSON-RPC response for service [${sd.getServiceName()}]: ${t.toString()}"
+            logger.error(errMsg, t)
+            ec.message.addError(errMsg)
+            return null
+        }
+
+        if (jsonObj instanceof Map) {
+            Map responseMap = jsonObj
+            if (responseMap.error) {
+                logger.error("JSON-RPC service [${sd.getServiceName()}] returned an error: ${responseMap.error}")
+                ec.message.addError((String) responseMap.error?.message ?: "JSON-RPC error with no message, code [${responseMap.error?.code}]")
+                return null
             } else {
-                return [response:jr]
+                Object jr = responseMap.result
+                if (jr instanceof Map<String, Object>) {
+                    return jr
+                } else {
+                    return [response:jr]
+                }
             }
         } else {
-            ec.message.addError(respOut.error.message)
+            String errMsg = "JSON-RPC response was not a object/Map for service [${sd.getServiceName()}]: ${jsonObj}"
+            logger.error(errMsg)
+            ec.message.addError(errMsg)
             return null
         }
     }
