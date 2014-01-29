@@ -100,7 +100,7 @@ class WebFacadeImpl implements WebFacade {
             Object jsonObj = null
             try {
                 jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
-                        (String) request.getCharacterEncoding() ?: "UTF-8")))
+                        request.getCharacterEncoding() ?: "UTF-8")))
             } catch (Throwable t) {
                 logger.error("Error parsing HTTP request body JSON: ${t.toString()}", t)
                 jsonParameters = [_requestBodyJsonParseError:t.getMessage()]
@@ -110,6 +110,7 @@ class WebFacadeImpl implements WebFacade {
             } else if (jsonObj instanceof List) {
                 jsonParameters = [_requestBodyJsonList:jsonObj]
             }
+            // logger.warn("=========== Got JSON HTTP request body: ${jsonParameters}")
         }
 
         // if this is a multi-part request, get the data for it

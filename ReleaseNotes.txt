@@ -15,7 +15,9 @@ New Features:
   builds component kie directories when present
 - Updated Apache HttpCore to 4.3.1, HttpClient to 4.3.2, Commons Logging
   to 1.1.3, Commons Codec to 1.6
+
 - Removed Dzhuvinov JSON-RPC jars (implemented internally now)
+- Improved and fixed JSON-RPC remote service client and auto-mapping server
 
 - Added ISO 8601 date/time parsing as another default in L10nFacade
 - Added transaction-facade.@use-transaction-cache attribute, defaults to
