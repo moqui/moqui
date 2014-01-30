@@ -38,7 +38,7 @@ class MoquiSessionListener implements HttpSessionListener {
 
         String visitId = session.getAttribute("moqui.visitId")
         if (!visitId) {
-            logger.warn("Not updating (closing) visit for session [${session.id}], no moqui.visitId attribute found")
+            logger.info("Not updating (closing) visit for session [${session.id}], no moqui.visitId attribute found")
             return
         }
 
