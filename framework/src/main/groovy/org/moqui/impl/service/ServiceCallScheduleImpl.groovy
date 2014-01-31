@@ -89,9 +89,8 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
 
         // Before scheduling the service check a few basic things so they show up sooner than later:
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
-        if (sd == null && !((verb == "create" || verb == "update" || verb == "delete") && sfi.ecfi.entityFacade.getEntityDefinition(noun) != null)) {
-            throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
-        }
+        if (sd == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+
         if (sd != null) {
             String serviceType = sd.serviceNode."@type" ?: "inline"
             if (serviceType == "interface") throw new IllegalArgumentException("Cannot run interface service [${getServiceName()}]")

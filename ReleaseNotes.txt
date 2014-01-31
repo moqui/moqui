@@ -15,7 +15,6 @@ New Features:
   builds component kie directories when present
 - Updated Apache HttpCore to 4.3.1, HttpClient to 4.3.2, Commons Logging
   to 1.1.3, Commons Codec to 1.6
-
 - Removed Dzhuvinov JSON-RPC jars (implemented internally now)
 - Improved and fixed JSON-RPC remote service client and auto-mapping server
 
@@ -31,6 +30,8 @@ New Features:
 - Moved XAResource tools to Synchronization: TransactionCache, OrientDB tx
   handler, ServiceCallSpecial.registerOnCommit() and registerOnRollback(),
   Service ECA rule tx-commit and tx-rollback, EntityDataFeed
+- Enhanced EntityDataLoader to also call services, just use the service
+  name (leave out hash (#)) instead of entity name for the XML element
 
 Bug Fixes:
 

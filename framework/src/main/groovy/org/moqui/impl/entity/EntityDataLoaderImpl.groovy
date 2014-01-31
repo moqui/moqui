@@ -11,6 +11,10 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.impl.service.ServiceCallSyncImpl
+import org.moqui.impl.service.ServiceFacadeImpl
+import org.moqui.service.ServiceCallSync
+
 import javax.xml.parsers.SAXParserFactory
 
 import org.apache.commons.codec.binary.Base64
@@ -37,6 +41,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     protected final static Logger logger = LoggerFactory.getLogger(EntityDataLoaderImpl.class)
 
     protected EntityFacadeImpl efi
+    protected ServiceFacadeImpl sfi
 
     // NOTE: these are Groovy Beans style with no access modifier, results in private fields with implicit getters/setters
     List<String> locationList = new LinkedList<String>()
@@ -48,7 +53,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     boolean dummyFks = false
     boolean disableEeca = false
 
-    EntityDataLoaderImpl(EntityFacadeImpl efi) { this.efi = efi }
+    EntityDataLoaderImpl(EntityFacadeImpl efi) {
+        this.efi = efi
+        this.sfi = efi.getEcfi().getServiceFacade()
+    }
 
     EntityFacadeImpl getEfi() { return efi }
 
@@ -196,12 +204,14 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected EntityDataLoaderImpl edli
         ValueHandler(EntityDataLoaderImpl edli) { this.edli = edli }
         abstract void handleValue(EntityValue value)
+        abstract void handleService(ServiceCallSync scs)
     }
     static class CheckValueHandler extends ValueHandler {
         protected List<String> messageList = new LinkedList()
         CheckValueHandler(EntityDataLoaderImpl edli) { super(edli) }
         List<String> getMessageList() { return messageList }
         void handleValue(EntityValue value) { value.checkAgainstDatabase(messageList) }
+        void handleService(ServiceCallSync scs) { messageList.add("Not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
     }
     static class LoadValueHandler extends ValueHandler {
         LoadValueHandler(EntityDataLoaderImpl edli) { super(edli) }
@@ -219,6 +229,10 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 value.createOrUpdate()
             }
         }
+        void handleService(ServiceCallSync scs) {
+            Map results = scs.call()
+            logger.info("Called service [${scs.getServiceName()}] in data load, results: ${results}")
+        }
     }
     static class ListValueHandler extends ValueHandler {
         protected EntityList el
@@ -227,6 +241,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             el.add(value)
         }
         EntityList getEntityList() { return el }
+        void handleService(ServiceCallSync scs) { logger.warn("For load to EntityList not calling service [${scs.getServiceName()}] with parameters ${scs.getCurrentParameters()}") }
     }
 
     static class TypeToSkipException extends RuntimeException {
@@ -238,7 +253,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected EntityDataLoaderImpl edli
         protected ValueHandler valueHandler
 
-        protected EntityValueImpl currentValue = null
+        protected EntityValueImpl currentEntityValue = null
+        protected ServiceCallSyncImpl currentScs = null
         protected String currentFieldName = null
         protected StringBuilder currentFieldValue = null
         protected long valuesRead = 0
@@ -269,7 +285,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
             if (!loadElements) return
 
-            if (currentValue != null) {
+            if (currentEntityValue != null || currentScs != null) {
                 // nested value/CDATA element
                 currentFieldName = qName
             } else {
@@ -279,26 +295,43 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 if (entityName.contains('-')) entityName = entityName.substring(entityName.indexOf('-') + 1)
                 if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
 
-                if (edli.efi.getEntityDefinition(entityName)) {
-                    currentValue = (EntityValueImpl) edli.efi.makeValue(entityName)
+                if (edli.efi.isEntityDefined(entityName)) {
+                    currentEntityValue = (EntityValueImpl) edli.efi.makeValue(entityName)
 
                     int length = attributes.getLength()
                     for (int i = 0; i < length; i++) {
                         String name = attributes.getLocalName(i)
                         String value = attributes.getValue(i)
-
                         if (!name) name = attributes.getQName(i)
+
                         try {
                             // treat empty strings as nulls
                             if (value) {
-                                if (currentValue.getEntityDefinition().isField(name)) {
-                                    currentValue.setString(name, value)
+                                if (currentEntityValue.getEntityDefinition().isField(name)) {
+                                    currentEntityValue.setString(name, value)
                                 } else {
-                                    logger.warn("Ignoring invalid attribute name [${name}] for entity [${currentValue.getEntityName()}] with value [${value}] because it is not field of that entity")
+                                    logger.warn("Ignoring invalid attribute name [${name}] for entity [${currentEntityValue.getEntityName()}] with value [${value}] because it is not field of that entity")
                                 }
+                            } else {
+                                currentEntityValue.set(name, null)
                             }
                         } catch (Exception e) {
                             logger.warn("Could not set field [${entityName}.${name}] to the value [${value}]", e)
+                        }
+                    }
+                } else if (edli.sfi.getServiceDefinition(entityName) != null) {
+                    currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
+                    int length = attributes.getLength()
+                    for (int i = 0; i < length; i++) {
+                        String name = attributes.getLocalName(i)
+                        String value = attributes.getValue(i)
+                        if (!name) name = attributes.getQName(i)
+
+                        // treat empty strings as nulls
+                        if (value) {
+                            currentScs.parameter(name, value)
+                        } else {
+                            currentScs.parameter(name, null)
                         }
                     }
                 } else {
@@ -307,7 +340,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
         }
         void characters(char[] chars, int offset, int length) {
-            if (currentValue != null && currentFieldName) {
+            if ((currentEntityValue != null || currentScs != null) && currentFieldName) {
                 if (currentFieldValue == null) currentFieldValue = new StringBuilder()
                 currentFieldValue.append(chars, offset, length)
             }
@@ -318,41 +351,54 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 return
             }
             if (!loadElements) return
-            if (currentValue != null) {
-                if (currentFieldName != null) {
-                    if (currentFieldValue) {
-                        EntityDefinition ed = currentValue.getEntityDefinition()
+
+            if (currentFieldName != null) {
+                if (currentFieldValue) {
+                    if (currentEntityValue != null) {
+                        EntityDefinition ed = currentEntityValue.getEntityDefinition()
                         if (ed.isField(currentFieldName)) {
                             Node fieldNode = ed.getFieldNode(currentFieldName)
                             String type = fieldNode."@type"
                             if (type == "binary-very-long") {
                                 byte[] binData = Base64.decodeBase64(currentFieldValue.toString())
-                                currentValue.setBytes(currentFieldName, binData)
+                                currentEntityValue.setBytes(currentFieldName, binData)
                             } else {
-                                currentValue.setString(currentFieldName, currentFieldValue.toString())
+                                currentEntityValue.setString(currentFieldName, currentFieldValue.toString())
                             }
                         } else {
-                            logger.warn("Ignoring invalid field name [${currentFieldName}] found for the entity ${currentValue.getEntityName()} with value ${currentFieldValue}")
+                            logger.warn("Ignoring invalid field name [${currentFieldName}] found for the entity ${currentEntityValue.getEntityName()} with value ${currentFieldValue}")
                         }
-                        currentFieldValue = null
+                    } else if (currentScs != null) {
+                        currentScs.parameter(currentFieldName, currentFieldValue)
                     }
-                    currentFieldName = null
-                } else {
+                    currentFieldValue = null
+                }
+                currentFieldName = null
+            } else {
+                if (currentEntityValue != null) {
                     // before we write currentValue check to see if PK is there, if not and it is one field, generate it from a sequence using the entity name
-                    if (!currentValue.containsPrimaryKey()) {
-                        if (currentValue.getEntityDefinition().getPkFieldNames().size() == 1) {
-                            currentValue.setSequencedIdPrimary()
+                    if (!currentEntityValue.containsPrimaryKey()) {
+                        if (currentEntityValue.getEntityDefinition().getPkFieldNames().size() == 1) {
+                            currentEntityValue.setSequencedIdPrimary()
                         } else {
-                            throw new SAXException("Cannot process value with incomplete primary key for [${currentValue.getEntityName()}] with more than 1 primary key field: " + currentValue)
+                            throw new SAXException("Cannot process value with incomplete primary key for [${currentEntityValue.getEntityName()}] with more than 1 primary key field: " + currentEntityValue)
                         }
                     }
 
                     try {
-                        valueHandler.handleValue(currentValue)
+                        valueHandler.handleValue(currentEntityValue)
                         valuesRead++
-                        currentValue = null
+                        currentEntityValue = null
                     } catch (EntityException e) {
-                        throw new SAXException("Error storing value: " + e.toString(), e)
+                        throw new SAXException("Error storing entity [${currentEntityValue.getEntityName()}] value: " + e.toString(), e)
+                    }
+                } else if (currentScs != null) {
+                    try {
+                        valueHandler.handleService(currentScs)
+                        valuesRead++
+                        currentScs = null
+                    } catch (Exception e) {
+                        throw new SAXException("Error running service [${currentScs.getServiceName()}]: " + e.toString(), e)
                     }
                 }
             }

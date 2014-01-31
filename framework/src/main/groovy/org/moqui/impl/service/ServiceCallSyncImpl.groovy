@@ -68,8 +68,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
     @Override
     Map<String, Object> call() {
-        ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
-        ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
+        ServiceDefinition sd = getServiceDefinition()
+        ExecutionContextImpl eci = (ExecutionContextImpl) sfi.getEcfi().getExecutionContext()
 
         Collection<String> inParameterNames = null
         if (sd != null) {
@@ -117,12 +117,6 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         } else {
             return callSingle(this.parameters, sd, eci)
         }
-    }
-
-    protected boolean isEntityAutoPattern() {
-        // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
-        return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
-                sfi.getEcfi().getEntityFacade().getEntityDefinition(noun) != null
     }
 
     Map<String, Object> callSingle(Map<String, Object> currentParameters, ServiceDefinition sd, ExecutionContextImpl eci) {

@@ -46,12 +46,16 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
 
     @Override
     void registerOnCommit() {
+        if (getServiceDefinition() == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+
         ServiceSynchronization sxr = new ServiceSynchronization(this, sfi.ecfi, true)
         sxr.enlist()
     }
 
     @Override
     void registerOnRollback() {
+        if (getServiceDefinition() == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
+
         ServiceSynchronization sxr = new ServiceSynchronization(this, sfi.ecfi, false)
         sxr.enlist()
     }
@@ -68,7 +72,7 @@ class ServiceCallSpecialImpl extends ServiceCallImpl implements ServiceCallSpeci
 
         ServiceSynchronization(ServiceCallSpecialImpl scsi, ExecutionContextFactoryImpl ecfi, boolean runOnCommit) {
             this.ecfi = ecfi
-            this.serviceName = scsi.serviceName
+            this.serviceName = scsi.getServiceName()
             this.parameters = new HashMap(scsi.parameters)
             this.runOnCommit = runOnCommit
         }

@@ -18,6 +18,7 @@ class ServiceCallImpl implements ServiceCall {
     protected String path = null
     protected String verb = null
     protected String noun = null
+    protected ServiceDefinition sd = null
 
     protected Map<String, Object> parameters = new HashMap<String, Object>()
 
@@ -26,9 +27,16 @@ class ServiceCallImpl implements ServiceCall {
     }
 
     protected void setServiceName(String serviceName) {
-        path = ServiceDefinition.getPathFromName(serviceName)
-        verb = ServiceDefinition.getVerbFromName(serviceName)
-        noun = ServiceDefinition.getNounFromName(serviceName)
+        sd = sfi.getServiceDefinition(serviceName)
+        if (sd != null) {
+            path = sd.getPath()
+            verb = sd.getVerb()
+            noun = sd.getNoun()
+        } else {
+            path = ServiceDefinition.getPathFromName(serviceName)
+            verb = ServiceDefinition.getVerbFromName(serviceName)
+            noun = ServiceDefinition.getNounFromName(serviceName)
+        }
     }
 
     @Override
@@ -36,4 +44,15 @@ class ServiceCallImpl implements ServiceCall {
 
     @Override
     Map<String, Object> getCurrentParameters() { return parameters }
+
+    ServiceDefinition getServiceDefinition() {
+        if (sd == null) sd = sfi.getServiceDefinition(getServiceName())
+        return sd
+    }
+
+    boolean isEntityAutoPattern() {
+        // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
+        return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
+                sfi.getEcfi().getEntityFacade().getEntityDefinition(noun) != null
+    }
 }
