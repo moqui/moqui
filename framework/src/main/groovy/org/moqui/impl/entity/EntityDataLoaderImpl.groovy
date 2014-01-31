@@ -11,6 +11,10 @@
  */
 package org.moqui.impl.entity
 
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVRecord
+import org.moqui.BaseException
 import org.moqui.impl.service.ServiceCallSyncImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.service.ServiceCallSync
@@ -76,28 +80,31 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     List<String> check() {
         CheckValueHandler cvh = new CheckValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, cvh)
+        EntityCsvHandler ech = new EntityCsvHandler(this, cvh)
 
-        internalRun(exh)
+        internalRun(exh, ech)
         return cvh.getMessageList()
     }
 
     long load() {
         LoadValueHandler lvh = new LoadValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, lvh)
+        EntityCsvHandler ech = new EntityCsvHandler(this, lvh)
 
-        internalRun(exh)
-        return exh.getValuesRead()
+        internalRun(exh, ech)
+        return exh.getValuesRead() + ech.getValuesRead()
     }
 
     EntityList list() {
         ListValueHandler lvh = new ListValueHandler(this)
         EntityXmlHandler exh = new EntityXmlHandler(this, lvh)
+        EntityCsvHandler ech = new EntityCsvHandler(this, lvh)
 
-        internalRun(exh)
+        internalRun(exh, ech)
         return lvh.entityList
     }
 
-    void internalRun(EntityXmlHandler exh) {
+    void internalRun(EntityXmlHandler exh, EntityCsvHandler ech) {
         boolean reenableEeca = false
         if (this.disableEeca) reenableEeca = !this.efi.ecfi.eci.artifactExecution.disableEntityEca()
 
@@ -122,7 +129,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     // get all files in the directory
                     TreeMap<String, ResourceReference> dataDirEntries = new TreeMap<String, ResourceReference>()
                     for (ResourceReference dataRr in dataDirRr.directoryEntries) {
-                        if (!dataRr.isFile() || !dataRr.location.endsWith(".xml")) continue
+                        if (!dataRr.isFile() || (!dataRr.location.endsWith(".xml") && !dataRr.location.endsWith(".csv"))) continue
                         dataDirEntries.put(dataRr.getFileName(), dataRr)
                     }
                     for (Map.Entry<String, ResourceReference> dataDirEntry in dataDirEntries) {
@@ -135,7 +142,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             }
         }
         if (locationList && logger.infoEnabled) {
-            StringBuilder lm = new StringBuilder("Loading entity XML data from the following locations: ")
+            StringBuilder lm = new StringBuilder("Loading entity data from the following locations: ")
             for (String loc in locationList) lm.append("\n - ").append(loc)
             logger.info(lm.toString())
         }
@@ -153,13 +160,13 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     reader.parse(new InputSource(new StringReader(this.xmlText)))
                 }
             } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error loading XML text", t)
+                tf.rollback(beganTransaction, "Error loading entity data", t)
             } finally {
                 if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
             }
             // load each file in its own transaction
             for (String location in this.locationList) {
-                loadSingleFile(location, exh)
+                loadSingleFile(location, exh, ech)
             }
         } catch (TransactionException e) {
             throw e
@@ -170,22 +177,29 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         if (reenableEeca) this.efi.ecfi.eci.artifactExecution.enableEntityEca()
     }
 
-    void loadSingleFile(String location, EntityXmlHandler exh) {
+    void loadSingleFile(String location, EntityXmlHandler exh, EntityCsvHandler ech) {
         TransactionFacade tf = efi.ecfi.transactionFacade
         boolean beganTransaction = tf.begin(transactionTimeout)
         try {
             InputStream inputStream = null
             try {
-                logger.info("Loading entity XML data from [${location}]")
-                long beforeRecords = exh.valuesRead ?: 0
+                logger.info("Loading entity data from [${location}]")
                 long beforeTime = System.currentTimeMillis()
 
                 inputStream = efi.ecfi.resourceFacade.getLocationStream(location)
-                XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
-                reader.setContentHandler(exh)
-                reader.parse(new InputSource(inputStream))
 
-                logger.info("Loaded ${(exh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
+                if (location.endsWith(".xml")) {
+                    long beforeRecords = exh.valuesRead ?: 0
+                    XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
+                    reader.setContentHandler(exh)
+                    reader.parse(new InputSource(inputStream))
+                    logger.info("Loaded ${(exh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
+                } else if (location.endsWith(".csv")) {
+                    long beforeRecords = ech.valuesRead ?: 0
+                    ech.loadFile(location, inputStream)
+                    logger.info("Loaded ${(ech.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
+                }
+
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
                 if (logger.isTraceEnabled()) logger.trace("Skipping file [${location}], is a type to skip (${e.toString()})")
@@ -193,8 +207,8 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 if (inputStream) inputStream.close()
             }
         } catch (Throwable t) {
-            tf.rollback(beganTransaction, "Error loading XML text", t)
-            throw new IllegalArgumentException("Error loading XML data file [${location}]", t)
+            tf.rollback(beganTransaction, "Error loading entity data", t)
+            throw new IllegalArgumentException("Error loading entity data file [${location}]", t)
         } finally {
             if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
         }
@@ -318,28 +332,22 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                             logger.warn("Could not set field [${entityName}.${name}] to the value [${value}]", e)
                         }
                     }
-                } else {
+                } else if (edli.sfi.isServiceDefined(entityName)) {
                     currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
-                    if (currentScs.getServiceDefinition() != null || currentScs.isEntityAutoPattern()) {
-                        int length = attributes.getLength()
-                        for (int i = 0; i < length; i++) {
-                            String name = attributes.getLocalName(i)
-                            String value = attributes.getValue(i)
-                            if (!name) name = attributes.getQName(i)
+                    int length = attributes.getLength()
+                    for (int i = 0; i < length; i++) {
+                        String name = attributes.getLocalName(i)
+                        String value = attributes.getValue(i)
+                        if (!name) name = attributes.getQName(i)
 
-                            // treat empty strings as nulls
-                            if (value) {
-                                currentScs.parameter(name, value)
-                            } else {
-                                currentScs.parameter(name, null)
-                            }
+                        // treat empty strings as nulls
+                        if (value) {
+                            currentScs.parameter(name, value)
+                        } else {
+                            currentScs.parameter(name, null)
                         }
-                    } else {
-                        currentScs = null
                     }
-                }
-
-                if (currentEntityValue == null && currentScs == null) {
+                } else {
                     throw new SAXException("Found element [${qName}] name, transformed to [${entityName}], that is not a valid entity name or service name")
                 }
             }
@@ -411,6 +419,85 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
         public void setDocumentLocator(Locator locator) {
             this.locator = locator;
+        }
+    }
+
+    static class EntityCsvHandler {
+        protected EntityDataLoaderImpl edli
+        protected ValueHandler valueHandler
+
+        protected long valuesRead = 0
+        protected List<String> messageList = new LinkedList()
+
+        EntityCsvHandler(EntityDataLoaderImpl edli, ValueHandler valueHandler) {
+            this.edli = edli
+            this.valueHandler = valueHandler
+        }
+
+        ValueHandler getValueHandler() { return valueHandler }
+        long getValuesRead() { return valuesRead }
+        List<String> getMessageList() { return messageList }
+
+        void loadFile(String location, InputStream is) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"))
+
+            String firstLine = reader.readLine()
+            if (firstLine == null) throw new BaseException("Not loading file [${location}], no data found")
+
+            String entityName = firstLine.trim()
+            boolean isService
+            if (edli.efi.isEntityDefined(entityName)) {
+                isService = false
+            } else if (edli.sfi.isServiceDefined(entityName)) {
+                isService = true
+            } else {
+                throw new BaseException("CSV first line [${entityName}] is not a valid entity name or service name")
+            }
+
+            // TODO: add EntityDataLoad methods to specify these?
+            CSVParser parser = CSVFormat.newFormat((char) ',')
+                    .withCommentStart((char) '#')
+                    .withQuoteChar((char) '"')
+                    .withSkipHeaderRecord(true)
+                    .withIgnoreEmptyLines(true)
+                    .withIgnoreSurroundingSpaces(true)
+                    .parse(reader)
+
+            Iterator<CSVRecord> iterator = parser.iterator()
+
+            if (!iterator.hasNext()) throw new BaseException("Not loading file [${location}], no second (header) line found")
+            CSVRecord headerRecord = iterator.next()
+            Map<String, Integer> headerMap = [:]
+            for (int i = 0; i < headerRecord.size(); i++) headerMap.put(headerRecord.get(i), i)
+
+            // logger.warn("======== CSV entity/service [${entityName}] headerMap: ${headerMap}")
+            while (iterator.hasNext()) {
+                CSVRecord record = iterator.next()
+                // logger.warn("======== CSV record: ${record.toString()}")
+                if (isService) {
+                    ServiceCallSyncImpl currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
+                    for (Map.Entry<String, Integer> header in headerMap)
+                        currentScs.parameter(header.key, record.get((int) header.value))
+                    valueHandler.handleService(currentScs)
+                    valuesRead++
+                } else {
+                    EntityValueImpl currentEntityValue = (EntityValueImpl) edli.efi.makeValue(entityName)
+                    for (Map.Entry<String, Integer> header in headerMap)
+                        currentEntityValue.setString(header.key, record.get((int) header.value))
+
+                    if (!currentEntityValue.containsPrimaryKey()) {
+                        if (currentEntityValue.getEntityDefinition().getPkFieldNames().size() == 1) {
+                            currentEntityValue.setSequencedIdPrimary()
+                        } else {
+                            throw new BaseException("Cannot process value with incomplete primary key for [${currentEntityValue.getEntityName()}] with more than 1 primary key field: " + currentEntityValue)
+                        }
+                    }
+
+                    // logger.warn("======== CSV entity: ${currentEntityValue.toString()}")
+                    valueHandler.handleValue(currentEntityValue)
+                    valuesRead++
+                }
+            }
         }
     }
 }

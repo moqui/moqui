@@ -55,6 +55,7 @@ dependencies {
 
     compile name: 'commons-codec', version: '1.6' // Apache 2.0
     compile name: 'commons-collections', version: '3.2.1' // Apache 2.0
+    compile name: 'commons-csv', version: '1.0-20140122' // Apache 2.0
     compile name: 'commons-email', version: '1.2' // Apache 2.0
     compile name: 'commons-fileupload', version: '1.2.2' // Apache 2.0
     compile name: 'commons-io', version: '2.0.1' // Apache 2.0
