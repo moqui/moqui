@@ -335,7 +335,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                         }
                     }
                 } else {
-                    logger.warn("Found element name [${entityName}] that is not a valid entity name")
+                    logger.warn("Found element name [${entityName}] that is not a valid entity name or service name")
                 }
             }
         }
