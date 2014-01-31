@@ -290,10 +290,9 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 currentFieldName = qName
             } else {
                 String entityName = qName
-
-                // if a dash or colon is in the tag name, grab what is after it
-                if (entityName.contains('-')) entityName = entityName.substring(entityName.indexOf('-') + 1)
+                // get everything after a colon, but replace - with # for verb#noun separation
                 if (entityName.contains(':')) entityName = entityName.substring(entityName.indexOf(':') + 1)
+                if (entityName.contains('-')) entityName = entityName.replace('-', '#')
 
                 if (edli.efi.isEntityDefined(entityName)) {
                     currentEntityValue = (EntityValueImpl) edli.efi.makeValue(entityName)
@@ -319,23 +318,29 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                             logger.warn("Could not set field [${entityName}.${name}] to the value [${value}]", e)
                         }
                     }
-                } else if (edli.sfi.getServiceDefinition(entityName) != null) {
-                    currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
-                    int length = attributes.getLength()
-                    for (int i = 0; i < length; i++) {
-                        String name = attributes.getLocalName(i)
-                        String value = attributes.getValue(i)
-                        if (!name) name = attributes.getQName(i)
-
-                        // treat empty strings as nulls
-                        if (value) {
-                            currentScs.parameter(name, value)
-                        } else {
-                            currentScs.parameter(name, null)
-                        }
-                    }
                 } else {
-                    logger.warn("Found element name [${entityName}] that is not a valid entity name or service name")
+                    currentScs = (ServiceCallSyncImpl) edli.sfi.sync().name(entityName)
+                    if (currentScs.getServiceDefinition() != null || currentScs.isEntityAutoPattern()) {
+                        int length = attributes.getLength()
+                        for (int i = 0; i < length; i++) {
+                            String name = attributes.getLocalName(i)
+                            String value = attributes.getValue(i)
+                            if (!name) name = attributes.getQName(i)
+
+                            // treat empty strings as nulls
+                            if (value) {
+                                currentScs.parameter(name, value)
+                            } else {
+                                currentScs.parameter(name, null)
+                            }
+                        }
+                    } else {
+                        currentScs = null
+                    }
+                }
+
+                if (currentEntityValue == null && currentScs == null) {
+                    throw new SAXException("Found element [${qName}] name, transformed to [${entityName}], that is not a valid entity name or service name")
                 }
             }
         }
