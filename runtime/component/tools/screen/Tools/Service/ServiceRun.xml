@@ -24,11 +24,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <service-call name="${serviceName}" in-map="context" out-map="serviceResults"/>
             <script>
+                /*
                 StringBuilder sb = new StringBuilder("Service Run Results:\n")
                 for (def resultEntry in serviceResults) sb.append("${resultEntry.key}: ${resultEntry.value}\n")
                 ec.logger.info(sb.toString())
-                // TODO: this doesn't seem to be making it through to the results form on redirect
-                ec.web.session.setAttribute("moqui.saved.parameters", serviceResults)
+                */
+                // save the results to display on the screen in the next request (after the transition redirect)
+                ec.web.saveParametersToSession(serviceResults)
             </script>
         </actions>
         <default-response url="." save-parameters="true"/>
