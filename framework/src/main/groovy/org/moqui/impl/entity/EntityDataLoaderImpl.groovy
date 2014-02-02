@@ -50,12 +50,17 @@ class EntityDataLoaderImpl implements EntityDataLoader {
     // NOTE: these are Groovy Beans style with no access modifier, results in private fields with implicit getters/setters
     List<String> locationList = new LinkedList<String>()
     String xmlText = null
+    String csvText = null
     Set<String> dataTypes = new HashSet<String>()
 
     int transactionTimeout = 600
     boolean useTryInsert = false
     boolean dummyFks = false
     boolean disableEeca = false
+
+    char csvDelimiter = ','
+    char csvCommentStart = '#'
+    char csvQuoteChar = '"'
 
     EntityDataLoaderImpl(EntityFacadeImpl efi) {
         this.efi = efi
@@ -64,18 +69,35 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
     EntityFacadeImpl getEfi() { return efi }
 
+    @Override
     EntityDataLoader location(String location) { this.locationList.add(location); return this }
+    @Override
     EntityDataLoader locationList(List<String> ll) { this.locationList.addAll(ll); return this }
+    @Override
     EntityDataLoader xmlText(String xmlText) { this.xmlText = xmlText; return this }
+    @Override
+    EntityDataLoader csvText(String csvText) { this.csvText = csvText; return this }
+    @Override
     EntityDataLoader dataTypes(Set<String> dataTypes) {
         for (String dt in dataTypes) this.dataTypes.add(dt.trim())
         return this
     }
 
+    @Override
     EntityDataLoader transactionTimeout(int tt) { this.transactionTimeout = tt; return this }
+    @Override
     EntityDataLoader useTryInsert(boolean useTryInsert) { this.useTryInsert = useTryInsert; return this }
+    @Override
     EntityDataLoader dummyFks(boolean dummyFks) { this.dummyFks = dummyFks; return this }
+    @Override
     EntityDataLoader disableEntityEca(boolean disableEeca) { this.disableEeca = disableEeca; return this }
+
+    @Override
+    EntityDataLoader csvDelimiter(char delimiter) { this.csvDelimiter = delimiter; return this }
+    @Override
+    EntityDataLoader csvCommentStart(char commentStart) { this.csvCommentStart = commentStart; return this }
+    @Override
+    EntityDataLoader csvQuoteChar(char quoteChar) { this.csvQuoteChar = quoteChar; return this }
 
     List<String> check() {
         CheckValueHandler cvh = new CheckValueHandler(this)
@@ -141,10 +163,11 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 }
             }
         }
-        if (locationList && logger.infoEnabled) {
+        if (locationList && logger.isInfoEnabled()) {
             StringBuilder lm = new StringBuilder("Loading entity data from the following locations: ")
             for (String loc in locationList) lm.append("\n - ").append(loc)
             logger.info(lm.toString())
+            logger.info("Loading data types: ${dataTypes ?: 'ALL'}")
         }
 
         TransactionFacade tf = efi.ecfi.transactionFacade
@@ -152,18 +175,34 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         try {
             if (tf.isTransactionInPlace()) suspendedTransaction = tf.suspend()
             // load the XML text in its own transaction
-            boolean beganTransaction = tf.begin(transactionTimeout)
-            try {
-                if (this.xmlText) {
+            if (this.xmlText) {
+                boolean beganTransaction = tf.begin(transactionTimeout)
+                try {
                     XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
+                    exh.setLocation("xmlText")
                     reader.setContentHandler(exh)
                     reader.parse(new InputSource(new StringReader(this.xmlText)))
+                } catch (Throwable t) {
+                    tf.rollback(beganTransaction, "Error loading XML entity data", t)
+                } finally {
+                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
                 }
-            } catch (Throwable t) {
-                tf.rollback(beganTransaction, "Error loading entity data", t)
-            } finally {
-                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
             }
+
+            // load the CSV text in its own transaction
+            if (this.csvText) {
+                boolean beganTransaction = tf.begin(transactionTimeout)
+                InputStream csvInputStream = new ByteArrayInputStream(csvText.getBytes("UTF-8"))
+                try {
+                    ech.loadFile("csvText", csvInputStream)
+                } catch (Throwable t) {
+                    tf.rollback(beganTransaction, "Error loading CSV entity data", t)
+                } finally {
+                    if (csvInputStream != null) csvInputStream.close()
+                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                }
+            }
+
             // load each file in its own transaction
             for (String location in this.locationList) {
                 loadSingleFile(location, exh, ech)
@@ -191,20 +230,21 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                 if (location.endsWith(".xml")) {
                     long beforeRecords = exh.valuesRead ?: 0
                     XMLReader reader = SAXParserFactory.newInstance().newSAXParser().XMLReader
+                    exh.setLocation(location)
                     reader.setContentHandler(exh)
                     reader.parse(new InputSource(inputStream))
                     logger.info("Loaded ${(exh.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
                 } else if (location.endsWith(".csv")) {
                     long beforeRecords = ech.valuesRead ?: 0
-                    ech.loadFile(location, inputStream)
-                    logger.info("Loaded ${(ech.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
+                    if (ech.loadFile(location, inputStream)) {
+                        logger.info("Loaded ${(ech.valuesRead?:0) - beforeRecords} records from [${location}] in ${((System.currentTimeMillis() - beforeTime)/1000)} seconds")
+                    }
                 }
 
             } catch (TypeToSkipException e) {
                 // nothing to do, this just stops the parsing when we know the file is not in the types we want
-                if (logger.isTraceEnabled()) logger.trace("Skipping file [${location}], is a type to skip (${e.toString()})")
             } finally {
-                if (inputStream) inputStream.close()
+                if (inputStream != null) inputStream.close()
             }
         } catch (Throwable t) {
             tf.rollback(beganTransaction, "Error loading entity data", t)
@@ -273,6 +313,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         protected StringBuilder currentFieldValue = null
         protected long valuesRead = 0
         protected List<String> messageList = new LinkedList()
+        String location
 
         protected boolean loadElements = false
 
@@ -287,16 +328,21 @@ class EntityDataLoaderImpl implements EntityDataLoader {
 
         void startElement(String ns, String localName, String qName, Attributes attributes) {
             // logger.info("startElement ns [${ns}], localName [${localName}] qName [${qName}]")
+            String type = null
+            if (qName == "entity-facade-xml") { type = attributes.getValue("type") }
+            else if (qName == "seed-data") { type = "seed" }
+            if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
+                if (logger.isInfoEnabled()) logger.info("Skipping file [${location}], is a type to skip (${type})")
+                throw new TypeToSkipException()
+            }
+
             if (qName == "entity-facade-xml") {
-                String type = attributes.getValue("type")
-                if (type && edli.dataTypes && !edli.dataTypes.contains(type)) throw new TypeToSkipException()
                 loadElements = true
                 return
             } else if (qName == "seed-data") {
                 loadElements = true
                 return
             }
-
             if (!loadElements) return
 
             if (currentEntityValue != null || currentScs != null) {
@@ -438,32 +484,40 @@ class EntityDataLoaderImpl implements EntityDataLoader {
         long getValuesRead() { return valuesRead }
         List<String> getMessageList() { return messageList }
 
-        void loadFile(String location, InputStream is) {
+        boolean loadFile(String location, InputStream is) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"))
 
-            String firstLine = reader.readLine()
-            if (firstLine == null) throw new BaseException("Not loading file [${location}], no data found")
+            CSVParser parser = CSVFormat.newFormat(edli.csvDelimiter)
+                    .withCommentStart(edli.csvCommentStart) // is this start of line only? will it interfere with service names?
+                    .withQuoteChar(edli.csvQuoteChar)
+                    .withSkipHeaderRecord(true) // TODO: remove this? does it even do anything?
+                    .withIgnoreEmptyLines(true)
+                    .withIgnoreSurroundingSpaces(true)
+                    .parse(reader)
 
-            String entityName = firstLine.trim()
+            Iterator<CSVRecord> iterator = parser.iterator()
+
+            if (!iterator.hasNext()) throw new BaseException("Not loading file [${location}], no data found")
+
+            CSVRecord firstLineRecord = iterator.next()
+            String entityName = firstLineRecord.get(0)
             boolean isService
             if (edli.efi.isEntityDefined(entityName)) {
                 isService = false
             } else if (edli.sfi.isServiceDefined(entityName)) {
                 isService = true
             } else {
-                throw new BaseException("CSV first line [${entityName}] is not a valid entity name or service name")
+                throw new BaseException("CSV first line first field [${entityName}] is not a valid entity name or service name")
             }
 
-            // TODO: add EntityDataLoad methods to specify these?
-            CSVParser parser = CSVFormat.newFormat((char) ',')
-                    .withCommentStart((char) '#')
-                    .withQuoteChar((char) '"')
-                    .withSkipHeaderRecord(true)
-                    .withIgnoreEmptyLines(true)
-                    .withIgnoreSurroundingSpaces(true)
-                    .parse(reader)
-
-            Iterator<CSVRecord> iterator = parser.iterator()
+            if (firstLineRecord.size() > 1) {
+                // second field is data type
+                String type = firstLineRecord.get(1)
+                if (type && edli.dataTypes && !edli.dataTypes.contains(type)) {
+                    if (logger.isInfoEnabled()) logger.info("Skipping file [${location}], is a type to skip (${type})")
+                    return false
+                }
+            }
 
             if (!iterator.hasNext()) throw new BaseException("Not loading file [${location}], no second (header) line found")
             CSVRecord headerRecord = iterator.next()
@@ -498,6 +552,7 @@ class EntityDataLoaderImpl implements EntityDataLoader {
                     valuesRead++
                 }
             }
+            return true
         }
     }
 }
