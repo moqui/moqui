@@ -98,6 +98,7 @@ public class MoquiStart extends ClassLoader {
             }
 
             try {
+                System.out.println("Loading data with args [" + argMap + "]");
                 Class<?> c = moquiStartLoader.loadClass("org.moqui.Moqui");
                 Method m = c.getMethod("loadData", new Class[] { Map.class });
                 m.invoke(null, argMap);
