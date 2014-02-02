@@ -35,6 +35,9 @@ New Features:
   name (leave out hash (#)) instead of entity name for the XML element
 - Enhanced EntityDataLoader to support CSV files with the entity or service
   name on the first line, then a header line, then the data lines
+- The entity-find-one.@value-field attribute can now be an existing Map
+  that is not an EntityValue and if so entity fields are added to the Map
+  instead of assigning the find result to @value-field
 
 Bug Fixes:
 

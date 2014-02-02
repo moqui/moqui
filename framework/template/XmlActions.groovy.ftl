@@ -98,8 +98,16 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
 
 <#-- =================== entity-find elements =================== -->
 
-<#macro "entity-find-one">    ${.node["@value-field"]} = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if>
-            <#if .node["@auto-field-map"]?if_exists == "true" || ((!.node["@auto-field-map"]?has_content) && (!.node["field-map"]?has_content))>.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
+<#macro "entity-find-one">
+    if (true) {
+        org.moqui.entity.EntityValue find_one_result = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if>
+                <#if .node["@auto-field-map"]?if_exists == "true" || ((!.node["@auto-field-map"]?has_content) && (!.node["field-map"]?has_content))>.condition(context)</#if><#list .node["field-map"] as fieldMap>.condition("${fieldMap["@field-name"]}", <#if fieldMap["@from"]?has_content>${fieldMap["@from"]}<#elseif fieldMap["@value"]?has_content>"""${fieldMap["@value"]}"""<#else>${fieldMap["@field-name"]}</#if>)</#list><#list .node["select-field"] as sf>.selectField("${sf["@field-name"]}")</#list>.one()
+        if (${.node["@value-field"]} instanceof Map && !(${.node["@value-field"]} instanceof org.moqui.entity.EntityValue)) {
+            if (find_one_result) ${.node["@value-field"]}.putAll(find_one_result)
+        } else {
+            ${.node["@value-field"]} = find_one_result
+        }
+    }
 </#macro>
 <#macro "entity-find">
     <#assign useCache = (.node["@cache"]?if_exists != "true")>
