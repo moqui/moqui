@@ -42,7 +42,8 @@ task cleanOrientDb(type: Delete) { delete file(moquiRuntime+'/db/orientdb/databa
 task cleanElasticSearch(type: Delete) { delete file(moquiRuntime+'/elasticsearch/data') }
 task cleanLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/log', include: '*') }
 task cleanTxLog(type: Delete) { delete fileTree(dir: moquiRuntime+'/txlog', include: '*') }
-task cleanLoadSave(type: Delete) { delete file('SaveTenant.zip'); delete file('SaveTransactional.zip'); delete file('SaveOrientDb.zip'); delete file('SaveElasticSearch.zip') }
+task cleanLoadSave(type: Delete) { delete file('SaveTenant.zip'); delete file('SaveTransactional.zip');
+    delete file('SaveAnalytical.zip'); delete file('SaveOrientDb.zip'); delete file('SaveElasticSearch.zip') }
 task cleanOther(type: Delete) { delete fileTree(dir: '.', includes: ['**/.nbattrs', '**/*~', '**/.#*', '**/.DS_Store', '**/*.rej', '**/*.orig']) }
 
 task cleanAll {
@@ -107,6 +108,7 @@ task loadProduction(type: JavaExec) {
 task loadSaveExec << {
     ant.zip(destfile: 'SaveTenant.zip') { fileset(dir: moquiRuntime+'/db/derby/MoquiTenant') { include(name: '**/*') } }
     ant.zip(destfile: 'SaveTransactional.zip') { fileset(dir: moquiRuntime+'/db/derby/MoquiTransactional') { include(name: '**/*') } }
+    ant.zip(destfile: 'SaveAnalytical.zip') { fileset(dir: moquiRuntime+'/db/derby/MoquiAnalytical') { include(name: '**/*') } }
     ant.zip(destfile: 'SaveOrientDb.zip') { fileset(dir: moquiRuntime+'/db/orientdb/databases') { include(name: '**/*') } }
     ant.zip(destfile: 'SaveElasticSearch.zip') { fileset(dir: moquiRuntime+'/elasticsearch/data') { include(name: '**/*') } }
 }
@@ -119,6 +121,7 @@ task loadSave {
 task reloadSaveExec << {
     copy { from zipTree('SaveTenant.zip'); into file(moquiRuntime+'/db/derby/MoquiTenant') }
     copy { from zipTree('SaveTransactional.zip'); into file(moquiRuntime+'/db/derby/MoquiTransactional') }
+    copy { from zipTree('SaveAnalytical.zip'); into file(moquiRuntime+'/db/derby/MoquiAnalytical') }
     copy { from zipTree('SaveOrientDb.zip'); into file(moquiRuntime+'/db/orientdb/databases') }
     copy { from zipTree('SaveElasticSearch.zip'); into file(moquiRuntime+'/elasticsearch/data') }
 }
