@@ -20,7 +20,7 @@ The actual build is done with Gradle.
 <project name="Moqui WAR Tools" default="run" basedir=".">
     <property environment="env"/>
     <property name="version" value="1.3.3"/>
-    <property name="tomcat.home" value="../apache-tomcat-7.0.32"/>
+    <property name="tomcat.home" value="../apache-tomcat-7.0.50"/>
 
     <property name="moqui.runtime" value="runtime"/>
     <property name="moqui.conf.dev" value="conf/MoquiDevConf.xml"/>
@@ -32,7 +32,7 @@ The actual build is done with Gradle.
         <unzip src="moqui-${version}.war" dest="wartemp"/>
 
         <copy todir="wartemp">
-            <fileset dir="." includes="${moqui.runtime}/**" excludes="**/*.jar,${moqui.runtime}/db/**,${moqui.runtime}/log/**,${moqui.runtime}/classes/**"/>
+            <fileset dir="." includes="${moqui.runtime}/**" excludes="**/*.jar,${moqui.runtime}/lib/**,${moqui.runtime}/classes/**,${moqui.runtime}/log/**"/>
         </copy>
         <copy todir="wartemp/WEB-INF/lib"><fileset dir="${moqui.runtime}/lib" includes="*.jar"/></copy>
         <copy todir="wartemp/WEB-INF/classes"><fileset dir="${moqui.runtime}/classes" includes="**/*"/></copy>
