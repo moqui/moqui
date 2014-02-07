@@ -372,6 +372,10 @@ class UserFacadeImpl implements UserFacade {
 
     @Override
     boolean loginUser(String username, String password, String tenantId) {
+        if (!username) {
+            eci.message.addError("No username specified")
+            return false
+        }
         if (tenantId) {
             eci.changeTenant(tenantId)
             this.visitId = null
