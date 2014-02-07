@@ -28,16 +28,20 @@ import java.sql.Timestamp
 
 public class EntityAutoServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(EntityAutoServiceRunner.class)
+
+    final static Set<String> verbSet = new TreeSet(["create", "update", "delete", "store"])
     protected ServiceFacadeImpl sfi = null
 
     EntityAutoServiceRunner() {}
 
     public ServiceRunner init(ServiceFacadeImpl sfi) { this.sfi = sfi; return this }
 
+    // TODO: add update-expire and delete-expire entity-auto service verbs for entities with from/thru dates
+    // TODO: add find (using search input parameters) and find-one (using literal PK, or as many PK fields as are passed on) entity-auto verbs
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         // check the verb and noun
-        if (!sd.verb || ("create" != sd.verb && "update" != sd.verb && "delete" != sd.verb && "store" != sd.verb))
-            throw new ServiceException("In service [${sd.serviceName}] the verb must be create, update, or delete for entity-auto type services.")
+        if (!sd.verb || !verbSet.contains(sd.verb))
+            throw new ServiceException("In service [${sd.serviceName}] the verb must be one of ${verbSet} for entity-auto type services.")
         if (!sd.noun)  throw new ServiceException("In service [${sd.serviceName}] you must specify a noun for entity-auto engine")
 
         EntityDefinition ed = sfi.ecfi.entityFacade.getEntityDefinition(sd.noun)
@@ -63,6 +67,14 @@ public class EntityAutoServiceRunner implements ServiceRunner {
                 deleteEntity(sfi, ed, parameters)
             } else if ("store" == sd.verb) {
                 storeEntity(sfi, ed, parameters, result, sd.getOutParameterNames())
+            } else if ("update-expire" == sd.verb) {
+                // TODO
+            } else if ("delete-expire" == sd.verb) {
+                // TODO
+            } else if ("find" == sd.verb) {
+                // TODO
+            } else if ("find-one" == sd.verb) {
+                // TODO
             }
         } catch (BaseException e) {
             throw new ServiceException("Error doing entity-auto operation for entity [${ed.fullEntityName}] in service [${sd.serviceName}]", e)

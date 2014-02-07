@@ -239,6 +239,8 @@ class ServiceFacadeImpl implements ServiceFacade {
                 // get the service file location without the .xml and without everything up to the "service" directory
                 String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
                 if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
+                if (location.charAt(0) == '/') location = location.substring(1)
+                location = location.replace('/', '.')
 
                 for (Node serviceNode in serviceRoot."service") {
                     sns.add(location + "." + serviceNode."@verb" +

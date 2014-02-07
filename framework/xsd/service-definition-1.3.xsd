@@ -231,6 +231,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The value specified will be used for the parameter if no value is
                     passed in (only used if required=false).</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="entity-name" type="xs:string"/>
+            <xs:attribute name="field-name" type="xs:string"/>
             <xs:attributeGroup ref="attlist.parameter-general"/>
         </xs:complexType>
     </xs:element>

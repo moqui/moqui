@@ -82,6 +82,23 @@ class ServiceDefinition {
             }
         }
 
+        // expand auto-parameters and merge parameter in in-parameters and out-parameters
+        for (Node paramNode in serviceNode."in-parameters"?.getAt(0)?.children()) {
+            if (paramNode.name() == "auto-parameters") {
+                mergeAutoParameters(inParameters, paramNode)
+            } else if (paramNode.name() == "parameter") {
+                mergeParameter(inParameters, paramNode)
+            }
+        }
+        for (Node paramNode in serviceNode."out-parameters"?.getAt(0)?.children()) {
+            if (paramNode.name() == "auto-parameters") {
+                mergeAutoParameters(outParameters, paramNode)
+            } else if (paramNode.name() == "parameter") {
+                mergeParameter(outParameters, paramNode)
+            }
+        }
+
+        /*
         // expand auto-parameters in in-parameters and out-parameters
         if (serviceNode."in-parameters"?.getAt(0)?."auto-parameters")
             for (Node autoParameters in serviceNode."in-parameters"[0]."auto-parameters")
@@ -97,6 +114,7 @@ class ServiceDefinition {
         if (serviceNode."out-parameters"?.getAt(0)?."parameter")
             for (Node parameterNode in serviceNode."out-parameters"[0]."parameter")
                 mergeParameter(outParameters, parameterNode)
+        */
 
         // replace the in-parameters and out-parameters Nodes for the service
         if (serviceNode."in-parameters") serviceNode.remove((Node) serviceNode."in-parameters"[0])
@@ -144,7 +162,7 @@ class ServiceDefinition {
             String javaType = sfi.ecfi.entityFacade.getFieldJavaType((String) ed.getFieldNode(fieldName)."@type", ed)
             mergeParameter(parametersNode, fieldName,
                     [type:javaType, required:requiredStr, "allow-html":allowHtmlStr,
-                            "entity-name":entityName, "field-name":fieldName])
+                            "entity-name":ed.getFullEntityName(), "field-name":fieldName])
         }
     }
 
@@ -158,6 +176,9 @@ class ServiceDefinition {
             }
             // is a validation, just add it in, or the original has been removed so add the new one
             baseParameterNode.append(childNode)
+        }
+        if (baseParameterNode."@entity-name" && !baseParameterNode."@field-name") {
+            baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
         }
     }
 
