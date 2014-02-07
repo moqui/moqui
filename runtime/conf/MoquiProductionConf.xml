@@ -3,6 +3,8 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.3.xsd">
 
+    <tools enable-elasticsearch="true" enable-camel="false"/>
+
     <server-stats stats-skip-condition="ec.web?.request?.pathInfo?.startsWith('/rpc') || ec.web?.request?.pathInfo?.startsWith('/status')">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
@@ -13,7 +15,7 @@
 
     <webapp-list>
         <!-- NOTE: when you set https-enabled="true" make sure to set the http-port and https-port attributes -->
-        <webapp name="webroot" http-port="" http-host=""
+        <webapp name="webroot" http-port="80" http-host=""
                 https-port="" https-host="" https-enabled="false"
                 content-prefix-secure="" content-prefix-standard="" cookie-domain="">
             <root-screen host=".*" location="component://webroot/screen/webroot.xml"/>

@@ -3,6 +3,8 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.3.xsd">
 
+    <tools enable-elasticsearch="true" enable-camel="false"/>
+
     <server-stats stats-skip-condition="ec.web?.request?.pathInfo?.startsWith('/rpc') || ec.web?.request?.pathInfo?.startsWith('/status')">
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>
         <artifact-stats type="screen-content" persist-bin="true" persist-hit="true"/>
@@ -22,7 +24,7 @@
     <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME"/>
 
     <repository-list>
-        <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="staging"
-                    username="admin" password="admin"/>
+        <!-- <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="staging"
+                    username="admin" password="admin"/> -->
     </repository-list>
 </moqui-conf>

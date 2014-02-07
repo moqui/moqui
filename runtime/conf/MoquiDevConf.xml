@@ -3,6 +3,8 @@
 <moqui-conf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/moqui-conf-1.3.xsd">
 
+    <tools enable-elasticsearch="true" enable-camel="false"/>
+
     <cache-list>
         <!-- Development Mode - don't use these for production, load testing, etc.
              Cleared by default every 20 seconds from when loaded into cache. -->
