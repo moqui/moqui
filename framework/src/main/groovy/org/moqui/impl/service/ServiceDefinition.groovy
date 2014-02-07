@@ -223,13 +223,12 @@ class ServiceDefinition {
     }
 
     void convertValidateCleanParameters(Map<String, Object> parameters, ExecutionContextImpl eci) {
-        if (this.serviceNode."@validate" != "false") {
-            checkParameterMap("", parameters, parameters, (Node) serviceNode."in-parameters"[0], eci)
-        }
+        // even if validate is false still apply defaults, convert defined params, etc
+        checkParameterMap("", parameters, parameters, (Node) serviceNode."in-parameters"[0], this.serviceNode."@validate" == "true", eci)
     }
 
     protected void checkParameterMap(String namePrefix, Map<String, Object> rootParameters, Map parameters,
-                                     Node parametersParentNode, ExecutionContextImpl eci) {
+                                     Node parametersParentNode, boolean validate, ExecutionContextImpl eci) {
         Set<String> parameterNames = new HashSet()
         for (Node parameter in parametersParentNode."parameter") parameterNames.add(parameter."@name")
         // if service is to be validated, go through service in-parameters definition and only get valid parameters
@@ -238,9 +237,12 @@ class ServiceDefinition {
         iterateSet.addAll(parameterNames)
         for (String parameterName in iterateSet) {
             if (!parameterNames.contains(parameterName)) {
-                parameters.remove(parameterName)
-                if (logger.traceEnabled && parameterName != "ec")
-                    logger.trace("Parameter [${namePrefix}${parameterName}] was passed to service [${getServiceName()}] but is not defined as an in parameter, removing from parameters.")
+                if (validate) {
+                    parameters.remove(parameterName)
+                    if (logger.traceEnabled && parameterName != "ec")
+                        logger.trace("Parameter [${namePrefix}${parameterName}] was passed to service [${getServiceName()}] but is not defined as an in parameter, removing from parameters.")
+                }
+                // even if we are not validating, ie letting extra parameters fall through in this case, we don't want to do the type convert or anything
                 continue
             }
 
@@ -251,7 +253,7 @@ class ServiceDefinition {
             // check if required and empty - use groovy non-empty rules, except for Boolean objects if they are a
             //     non-null instanceof Boolean, then consider it not-empty (normally if false would eval to false)
             if (!parameterValue && !(parameterValue instanceof Boolean)) {
-                if (parameterNode."@required" == "true") {
+                if (validate && parameterNode."@required" == "true") {
                     eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
                 }
                 // NOTE: should we change empty values to null? for now, no
@@ -266,7 +268,7 @@ class ServiceDefinition {
                 parameters.put(parameterName, parameterValue)
             } else if (parameterValue) {
                 // no type conversion? error time...
-                eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
+                if (validate) eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field was type [${parameterValue?.class?.name}], expecting type [${type}]", null)
                 continue
             }
             if (converted == null && !parameterValue && parameterValue != null && !StupidUtilities.isInstanceOf(parameterValue, type)) {
@@ -276,26 +278,26 @@ class ServiceDefinition {
                 parameters.put(parameterName, parameterValue)
             }
 
-            checkSubtype(parameterName, parameterNode, parameterValue, eci)
-            validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
+            if (validate) checkSubtype(parameterName, parameterNode, parameterValue, eci)
+            if (validate) validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
 
             // do this after the convert so we can deal with objects when needed
-            validateParameter(parameterNode, parameterName, parameterValue, eci)
+            if (validate) validateParameter(parameterNode, parameterName, parameterValue, eci)
 
             // now check parameter sub-elements
             if (parameterValue instanceof Map) {
                 // any parameter sub-nodes?
                 if (parameterNode."parameter")
-                    checkParameterMap("${namePrefix}${parameterName}.", rootParameters, (Map) parameterValue, parameterNode, eci)
+                    checkParameterMap("${namePrefix}${parameterName}.", rootParameters, (Map) parameterValue, parameterNode, validate, eci)
             } else if (parameterValue instanceof Node) {
                 if (parameterNode."parameter")
-                    checkParameterNode("${namePrefix}${parameterName}.", rootParameters, (Node) parameterValue, parameterNode, eci)
+                    checkParameterNode("${namePrefix}${parameterName}.", rootParameters, (Node) parameterValue, parameterNode, validate, eci)
             }
         }
     }
 
     protected void checkParameterNode(String namePrefix, Map<String, Object> rootParameters, Node nodeValue,
-                                     Node parametersParentNode, ExecutionContextImpl eci) {
+                                      Node parametersParentNode, boolean validate, ExecutionContextImpl eci) {
         // NOTE: don't worry about extra attributes or sub-Nodes... let them through
 
         // go through attributes of Node, validate each that corresponds to a parameter def
@@ -312,11 +314,11 @@ class ServiceDefinition {
             // NOTE: required check is done later, now just validating the parameters seen
             // NOTE: no type conversion for Node attributes, they are always String
 
-            validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
+            if (validate) validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
 
             // NOTE: only use the converted value for validation, attributes must be strings so can't put it back there
             Object converted = checkConvertType(parameterNode, namePrefix, parameterName, parameterValue, rootParameters, eci)
-            validateParameter(parameterNode, parameterName, converted, eci)
+            if (validate) validateParameter(parameterNode, parameterName, converted, eci)
 
             // NOTE: no sub-nodes here, it's an attribute, so ignore child parameter elements
         }
@@ -335,18 +337,18 @@ class ServiceDefinition {
 
             if (parameterNode."@type" == "Node" || parameterNode."@type" == "groovy.util.Node") {
                 // recurse back into this method
-                checkParameterNode("${namePrefix}${parameterName}.", rootParameters, childNode, parameterNode, eci)
+                checkParameterNode("${namePrefix}${parameterName}.", rootParameters, childNode, parameterNode, validate, eci)
             } else {
                 Object parameterValue = childNode.text()
 
                 // NOTE: required check is done later, now just validating the parameters seen
                 // NOTE: no type conversion for Node attributes, they are always String
 
-                validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
+                if (validate) validateParameterHtml(parameterNode, namePrefix, parameterName, parameterValue, eci)
 
                 // NOTE: only use the converted value for validation, attributes must be strings so can't put it back there
                 Object converted = checkConvertType(parameterNode, namePrefix, parameterName, parameterValue, rootParameters, eci)
-                validateParameter(parameterNode, parameterName, converted, eci)
+                if (validate) validateParameter(parameterNode, parameterName, converted, eci)
             }
         }
 
@@ -355,15 +357,15 @@ class ServiceDefinition {
         if (textValueNode != null) {
             Object parameterValue = nodeValue.text()
             if (!parameterValue) {
-                if (textValueNode."@required" == "true") {
+                if (validate && textValueNode."@required" == "true") {
                     eci.message.addError("${namePrefix}_VALUE cannot be empty (service ${getServiceName()})")
                 }
             } else {
-                validateParameterHtml(textValueNode, namePrefix, "_VALUE", parameterValue, eci)
+                if (validate) validateParameterHtml(textValueNode, namePrefix, "_VALUE", parameterValue, eci)
 
                 // NOTE: only use the converted value for validation, attributes must be strings so can't put it back there
                 Object converted = checkConvertType(textValueNode, namePrefix, "_VALUE", parameterValue, rootParameters, eci)
-                validateParameter(textValueNode, "_VALUE", converted, eci)
+                if (validate) validateParameter(textValueNode, "_VALUE", converted, eci)
             }
         }
 
@@ -386,8 +388,7 @@ class ServiceDefinition {
                     }
                 }
 
-                if (!valueFound)
-                    eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
+                if (validate && !valueFound) eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
             }
         }
     }

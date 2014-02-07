@@ -38,6 +38,9 @@ New Features:
 - The entity-find-one.@value-field attribute can now be an existing Map
   that is not an EntityValue and if so entity fields are added to the Map
   instead of assigning the find result to @value-field
+- Changed service.@validate=false to still apply defaults and type
+  conversions for defined in-parameters, but not exclude undefined params
+  or error on other validation errors
 
 Bug Fixes:
 
