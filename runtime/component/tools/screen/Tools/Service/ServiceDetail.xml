@@ -39,11 +39,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <label type="strong" text="${serviceNode.'description'?.getAt(0)?.value()?.getAt(0) ?: ''}" display-if-empty="false"/>
         <!-- <label type="p" text="${serviceNode.attributes()}"/> -->
         <label type="p" text="Authenticate: ${serviceDefinition.getAuthenticate()}"/>
-        <label type="p" text="Service Type: ${serviceDefinition.getServiceType()}"/>
-        <label type="p" text="Tx Ignore: ${serviceDefinition.getTxIgnore()}"/>
-        <label type="p" text="Tx Force New: ${serviceDefinition.getTxForceNew()}"/>
-        <label type="p" text="Tx Use Cache: ${serviceDefinition.getTxUseCache()}"/>
-        <label type="p" text="Tx Timeout: ${serviceDefinition.getTxTimeout()}"/>
+        <label type="p" text="Service Type: ${serviceDefinition.getServiceType()}${serviceDefinition.getLocation() ? ', Location: ' + serviceDefinition.getLocation() : ''}${serviceDefinition.getMethod() ? ', Method: ' + serviceDefinition.getMethod() : ''}"/>
+        <label type="p" text="Tx Ignore: ${serviceDefinition.getTxIgnore()}, Force New: ${serviceDefinition.getTxForceNew()}, Use Tx Cache: ${serviceDefinition.getTxUseCache()}, Timeout: ${serviceDefinition.getTxTimeout()}"/>
 
         <label type="h3" text="In Parameters"/>
         <form-list name="InParameters" list="inParameterNodes" list-entry="parameterNode" skip-form="true">

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.path="$MODULE_DIR$" external.root.project.path="$MODULE_DIR$/../../.." external.system.id="GRADLE" external.system.module.group="moqui" external.system.module.version="1.3.3" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/groovy" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/groovy" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" exported="" name="Gradle: atomikos-util-3.8.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-xmlrpc-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-core-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.mylyn.wikitext.tracwiki.core_1.8.0.I20121130-0624" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: shiro-core-1.2.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-fileupload-1.2.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: antlr-runtime-3.5" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-shiro-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: btm-2.1.4" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jcr-2.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: blueprints-orient-graph-2.5.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: spatial4j-0.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-queryparser-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-suggest-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-core-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: spock-core-0.7-groovy-2.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-analyzers-common-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: blueprints-core-2.5.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: liquibase-2.0.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jts-1.12" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: kie-internal-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: quartz-2.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: geronimo-j2ee-connector_1.5_spec" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-grouping-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jackrabbit-jcr-rmi-2.5.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: shiro-ehcache-1.2.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jackrabbit-jcr-commons-2.5.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-highlighter-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-io-2.0.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.mylyn.wikitext.core_1.8.0.I20121130-0624" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: xmlrpc-client-3.1.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: shiro-web-1.2.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: freemarker-2.3.20" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-join-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-groovy-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-spatial-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orient-commons-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: xmlrpc-common-3.1.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.mylyn.wikitext.textile.core_1.8.0.I20121130-0624" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: drools-decisiontables-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: junit-4.10" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-freemarker-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: antisamy-1.4" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jna-4.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-sandbox-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: mail" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: atomikos-transactions-3.8.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-email-1.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: atomikos-transactions-jdbc-3.8.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: log4j-1.2.17" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: ws-commons-util-1.0.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: derby-10.10.1.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-beanutils-1.8.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-codecs-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: kie-api-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: gremlin-groovy-2.5.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: shiro-quartz-1.2.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jsr94-1.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-collections-3.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: janino-2.5.16" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-quartz-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: protobuf-java-2.5.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.mylyn.wikitext.confluence.core_1.8.0.I20121130-0624" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-misc-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orientdb-core-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: xmlrpc-server-3.1.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-queries-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: poi-ooxml-3.9" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: esapi-2.0.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: xstream-1.4.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: snappy-0.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.mylyn.wikitext.mediawiki.core_1.8.0.I20121130-0624" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orientdb-nativeos-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orientdb-enterprise-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: geronimo-jms_1.1_spec-1.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: drools-jsr94-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: quartz-jobs-2.2.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: poi-3.9" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jsr173_1.0_api" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orientdb-graphdb-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: drools-compiler-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: lucene-memory-4.5.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: gremlin-java-2.5.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-lucene-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: drools-core-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jackrabbit-api-2.5.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: geronimo-jta_1.1_spec-1.1.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: winstone-0.9.10" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: drools-templates-6.0.0.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: org.eclipse.mylyn.wikitext.twiki.core_1.8.0.I20121130-0624" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: groovy-all-2.1.9" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: mvel2-2.1.7.Final" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-mail-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-http4-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: slf4j-api-1.6.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orientdb-client-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-jms-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-validator-1.4.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jna-platform-4.0.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: camel-elasticsearch-2.12.1" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: atomikos-transactions-api-3.8.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: elasticsearch-0.90.7" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jakarta-oro-2.0.8" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: atomikos-transactions-jta-3.8.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: orientdb-server-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: jackrabbit-jcr2dav-2.5.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: ehcache-2.7.5" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: slf4j-log4j12-1.6.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: moqui-framework-1.3.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-codec-1.6" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-csv-1.0-20140122" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: commons-logging-1.1.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: httpclient-4.3.2" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: httpcore-4.3.1" level="project" />
+  </component>
+</module>
+

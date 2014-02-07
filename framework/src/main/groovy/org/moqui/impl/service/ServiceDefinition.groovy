@@ -83,18 +83,21 @@ class ServiceDefinition {
         }
 
         // expand auto-parameters and merge parameter in in-parameters and out-parameters
+        // if noun is a valid entity name set it on parameters with valid field names on it
+        EntityDefinition ed = null
+        if (sfi.getEcfi().getEntityFacade().isEntityDefined(this.noun)) ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(this.noun)
         for (Node paramNode in serviceNode."in-parameters"?.getAt(0)?.children()) {
             if (paramNode.name() == "auto-parameters") {
                 mergeAutoParameters(inParameters, paramNode)
             } else if (paramNode.name() == "parameter") {
-                mergeParameter(inParameters, paramNode)
+                mergeParameter(inParameters, paramNode, ed)
             }
         }
         for (Node paramNode in serviceNode."out-parameters"?.getAt(0)?.children()) {
             if (paramNode.name() == "auto-parameters") {
                 mergeAutoParameters(outParameters, paramNode)
             } else if (paramNode.name() == "parameter") {
-                mergeParameter(outParameters, paramNode)
+                mergeParameter(outParameters, paramNode, ed)
             }
         }
 
@@ -166,7 +169,7 @@ class ServiceDefinition {
         }
     }
 
-    static void mergeParameter(Node parametersNode, Node overrideParameterNode) {
+    static void mergeParameter(Node parametersNode, Node overrideParameterNode, EntityDefinition ed) {
         Node baseParameterNode = mergeParameter(parametersNode, (String) overrideParameterNode."@name",
                 overrideParameterNode.attributes())
         // merge description, subtype, ParameterValidations
@@ -177,7 +180,10 @@ class ServiceDefinition {
             // is a validation, just add it in, or the original has been removed so add the new one
             baseParameterNode.append(childNode)
         }
-        if (baseParameterNode."@entity-name" && !baseParameterNode."@field-name") {
+        if (baseParameterNode."@entity-name") {
+            if (!baseParameterNode."@field-name") baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
+        } else if (ed != null && ed.isField(baseParameterNode."@name")) {
+            baseParameterNode.attributes().put("entity-name", ed.getFullEntityName())
             baseParameterNode.attributes().put("field-name", baseParameterNode."@name")
         }
     }
@@ -226,6 +232,7 @@ class ServiceDefinition {
         // TODO: see if the location is an alias from the conf -> service-facade
         return serviceNode."@location"
     }
+    String getMethod() { return serviceNode."@method" }
 
     XmlAction getXmlAction() { return xmlAction }
 
