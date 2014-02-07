@@ -547,13 +547,20 @@ class EntityFacadeImpl implements EntityFacade {
     }
 
     boolean isEntityDefined(String entityName) {
-        try {
-            EntityDefinition ed = getEntityDefinition(entityName)
-            return ed != null
-        } catch (EntityException ee) {
-            // ignore the exception, just means entity not found
-            return false
-        }
+            if (!entityName) return false
+            entityLocationCache.clearExpired()
+            if (entityLocationCache.size() > 0) {
+                return entityLocationCache.containsKey(entityName)
+            } else {
+                // faster to not do this, causes reload of all entity files if not found (happens a lot for this method):
+                try {
+                    EntityDefinition ed = getEntityDefinition(entityName)
+                    return ed != null
+                } catch (EntityException ee) {
+                    // ignore the exception, just means entity not found
+                    return false
+                }
+            }
     }
 
     EntityDefinition getEntityDefinition(String entityName) {
