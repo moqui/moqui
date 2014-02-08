@@ -86,10 +86,10 @@ border-color: #999 #bbb #ddd; color: #666;
 */
 .ui-button-text { font-size: 1em; font-weight: bold; text-decoration: none; }
 
-input[type=""], input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea, select {
+input[type=""], input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea {
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
 margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
-font-size: 1em; font-family: Lucida Console, Monaco, monospace;
+font-size: 0.9em; font-family: Lucida Console, Monaco, monospace;
 }
 
 select option {
