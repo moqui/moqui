@@ -20,6 +20,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <subscreens default-item="FindExample"/>
 
     <widgets>
+        <!-- showing conditionally here is only needed because of the pattern used for New Example using the
+          EditExample screen; if a separate dialog or something is used this is not needed as EditExample would always
+          have an exampleId parameter and conditional menu can be automatic -->
         <section name="ExampleMenu">
             <condition><expression>exampleId</expression></condition>
             <widgets><subscreens-menu id="example-menu" type="tab"/></widgets>
