@@ -31,6 +31,7 @@ body { overflow: auto; background: #DDDDDF; }
 */
 
 /* The overflow: auto is needed for scroll in non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
+/*
 #body-decorator { position: absolute; top: 8px; left: 8px; bottom: 8px; right: 8px;
     background: white; padding: 8px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; overflow: auto; }
 
@@ -38,12 +39,13 @@ body { overflow: auto; background: #DDDDDF; }
 #header-logo h1, #header-logo a { font-size: 1.6em; font-family: Courier, "Courier New", monospace; font-weight: bold; border: 0px; padding: 0px; margin: 0px; }
 #header-menus { float: left; }
 #header-user { float: right; }
+*/
 
 div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
-#apps-footer-content { margin: 5px auto 0px auto; /*border-top: 1px solid #DDDDDF;*/ width: 200px; text-align: center; }
+#apps-footer-content { margin: 5px auto 0px auto; width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
 /*
@@ -83,8 +85,9 @@ font-size: 1em; font-weight: bold; text-decoration: none;
 button:active, input[type="reset"]:active, input[type="submit"]:active, input[type="button"]:active, a.button:active {
 border-color: #999 #bbb #ddd; color: #666;
 }
-*/
+
 .ui-button-text { font-size: 1em; font-weight: bold; text-decoration: none; }
+*/
 
 /*
 input[type=""], input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea {
@@ -104,11 +107,11 @@ input:required:invalid, input:invalid, textarea:invalid { background-color: #FEE
 input:focus:valid, textarea:focus:valid { background-color: #EEE; }
 
 
-th { text-align: left; padding: 0px 4px 0px 2px; }
-td { padding: 0px 4px 0px 2px; }
-tr:nth-child(odd) { background-color: #EEE; }
-/*tr:nth-child(even) { background-color: #FFF; }*/
-tr:hover { background-color: #DDD; }
+.form-list-outer th { text-align: left; padding: 0px 4px 0px 2px; }
+.form-list-outer td { padding: 0px 4px 0px 2px; }
+.form-list-outer tr:nth-child(odd) { background-color: #EEE; }
+/*.form-list-outer tr:nth-child(even) { background-color: #FFF; }*/
+.form-list-outer tr:hover { background-color: #DDD; }
 
 /* ======================= XML Screen Styles ======================= */
 
@@ -197,7 +200,7 @@ a.active { color: red; }
 
 /* ======================= Screen-specific ======================= */
 
-#login-box { width: 280px; margin: 0 auto 0 auto; padding: 10px; }
+/* #login-box { width: 280px; margin: 0 auto 0 auto; padding: 10px; } */
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: .8em; }
@@ -250,9 +253,11 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 
 /* css for timepicker */
+/*
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
 .ui-timepicker-div dl { text-align: left; }
 .ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
 .ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
 .ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+*/

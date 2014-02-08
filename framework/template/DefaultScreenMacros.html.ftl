@@ -974,7 +974,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#t><#if !isHeaderField && isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
     <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
-    <#if !isMultiFinalRow><div<#if !formListSkipClass!> class="form-cell"</#if>></#if>
+    <#if !isMultiFinalRow><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
@@ -1024,6 +1024,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_from"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@type"]! != "time">
+        <#-- TODO: replace datepicker()
         <#assign afterFormScript>
             <#if .node["@type"]! == "date">
             $("#${id}_from,#${id}_thru").datepicker({
@@ -1032,26 +1033,45 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </#if>showOn: 'button', buttonImage: '', buttonText: '...', buttonImageOnly: false, dateFormat: 'yy-mm-dd'});
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
+        -->
     </#if>
 </span>
 </#macro>
 <#macro "date-time">
 <span class="form-date-time">
-    <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!)>
-    <#if .node["@type"]! == "time"><#assign size=9/><#assign maxlength=13/><#elseif .node["@type"]! == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=19/><#assign maxlength=23/></#if>
+    <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm:ss">
+    <#elseif .node["@type"]! == "date"><#assign size=10><#assign maxlength=10><#assign defaultFormat="yyyy-MM-dd">
+    <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm:ss">
+    </#if>
+    <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!defaultFormat)>
     <#assign id><@fieldId .node/></#assign>
 
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
-            <div class="input-group input-append date" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd">
-                <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
-                <span class="input-group-addon add-on"><i class="fa fa-calendar"></i></span>
+            <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd">
+                <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
+                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
+            <#assign afterFormScript>$('#${id}').datetimepicker({minView:2});</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
-            <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd hh:ii:ss">
+                <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
+                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+            <#assign afterFormScript>$('#${id}').datetimepicker();</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
-        <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}" id="${id}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+        <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="hh:ii:ss">
+            <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+        <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
+            <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
+        </div>
+        <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1});</#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 
     <#-- old jquery stuff:
