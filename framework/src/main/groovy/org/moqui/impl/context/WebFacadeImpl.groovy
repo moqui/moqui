@@ -100,7 +100,7 @@ class WebFacadeImpl implements WebFacade {
             Object jsonObj = null
             try {
                 jsonObj = slurper.parse(new BufferedReader(new InputStreamReader(request.getInputStream(),
-                        (String) request.getCharacterEncoding() ?: "UTF-8")))
+                        request.getCharacterEncoding() ?: "UTF-8")))
             } catch (Throwable t) {
                 logger.error("Error parsing HTTP request body JSON: ${t.toString()}", t)
                 jsonParameters = [_requestBodyJsonParseError:t.getMessage()]
@@ -110,6 +110,7 @@ class WebFacadeImpl implements WebFacade {
             } else if (jsonObj instanceof List) {
                 jsonParameters = [_requestBodyJsonList:jsonObj]
             }
+            // logger.warn("=========== Got JSON HTTP request body: ${jsonParameters}")
         }
 
         // if this is a multi-part request, get the data for it
@@ -428,9 +429,20 @@ class WebFacadeImpl implements WebFacade {
         if (eci.message.errors) session.setAttribute("moqui.message.errors", eci.message.errors)
         if (eci.message.validationErrors) session.setAttribute("moqui.message.validationErrors", eci.message.validationErrors)
     }
+
+    /** Save passed parameters Map to a Map in the moqui.saved.parameters session attribute */
+    void saveParametersToSession(Map parameters) {
+        Map parms = new HashMap()
+        Map currentSavedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
+        if (currentSavedParameters) parms.putAll(currentSavedParameters)
+        if (parameters) parms.putAll(parameters)
+        session.setAttribute("moqui.saved.parameters", parms)
+    }
     /** Save request parameters and attributes to a Map in the moqui.saved.parameters session attribute */
     void saveRequestParametersToSession() {
         Map parms = new HashMap()
+        Map currentSavedParameters = (Map) request.session.getAttribute("moqui.saved.parameters")
+        if (currentSavedParameters) parms.putAll(currentSavedParameters)
         if (requestParameters) parms.putAll(requestParameters)
         if (requestAttributes) parms.putAll(requestAttributes)
         session.setAttribute("moqui.saved.parameters", parms)

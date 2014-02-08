@@ -39,6 +39,8 @@ public interface EntityDataLoader {
      * @return Reference to this for convenience.
      */
     EntityDataLoader xmlText(String xmlText);
+    EntityDataLoader csvText(String csvText);
+
     /** A Set of data types to match against the candidate files from the component data directories and the
      * entity-facade.load-data elements.
      * @return Reference to this for convenience.
@@ -71,6 +73,10 @@ public interface EntityDataLoader {
      * @return Reference to this for convenience.
      */
     EntityDataLoader disableEntityEca(boolean disableEeca);
+
+    EntityDataLoader csvDelimiter(char delimiter);
+    EntityDataLoader csvCommentStart(char commentStart);
+    EntityDataLoader csvQuoteChar(char quoteChar);
 
     /** Only check the data against matching records in the database. Report on records that don't exist in the database
      * and any differences with records that have matching primary keys.

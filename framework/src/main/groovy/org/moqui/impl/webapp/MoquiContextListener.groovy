@@ -25,7 +25,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class MoquiContextListener implements ServletContextListener {
-    protected final static Logger logger = LoggerFactory.getLogger(MoquiContextListener.class)
 
     protected static String getId(ServletContext sc) {
         String contextPath = sc.getContextPath()
@@ -33,30 +32,35 @@ class MoquiContextListener implements ServletContextListener {
     }
 
     void contextInitialized(ServletContextEvent servletContextEvent) {
-        ServletContext sc = servletContextEvent.servletContext
-        String webappId = getId(sc)
-        String moquiWebappName = sc.getInitParameter("moqui-name")
-        String webappRealPath = sc.getRealPath("/")
+        try {
+            ServletContext sc = servletContextEvent.servletContext
+            String webappId = getId(sc)
+            String moquiWebappName = sc.getInitParameter("moqui-name")
+            String webappRealPath = sc.getRealPath("/")
 
-        logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${moquiWebappName}], context name [${sc.getServletContextName()}], located at [${webappRealPath}]")
+            // before we init the ECF, see if there is a runtime directory in the webappRealPath, and if so set that as the moqui.runtime System property
+            if (new File(webappRealPath + "/runtime").exists()) System.setProperty("moqui.runtime", webappRealPath + "/runtime")
 
-        // before we init the ECF, see if there is a runtime directory in the webappRealPath, and if so set that as the moqui.runtime System property
-        if (new File(webappRealPath + "/runtime").exists()) System.setProperty("moqui.runtime", webappRealPath + "/runtime")
+            ExecutionContextFactory ecfi = new ExecutionContextFactoryImpl()
+            sc.setAttribute("executionContextFactory", ecfi)
+            // there should always be one ECF that is active for things like deserialize of EntityValue
+            // for a servlet that has a factory separate from the rest of the system DON'T call this (ie to have multiple ECFs on a single system)
+            Moqui.dynamicInit(ecfi)
 
-        ExecutionContextFactory ecfi = new ExecutionContextFactoryImpl()
-        sc.setAttribute("executionContextFactory", ecfi)
-        // there should always be one ECF that is active for things like deserialize of EntityValue
-        // for a servlet that has a factory separate from the rest of the system DON'T call this (ie to have multiple ECFs on a single system)
-        Moqui.dynamicInit(ecfi)
+            Logger logger = LoggerFactory.getLogger(MoquiContextListener.class)
+            logger.info("Loading Moqui Webapp at [${webappId}], moqui webapp name [${moquiWebappName}], context name [${sc.getServletContextName()}], located at [${webappRealPath}]")
 
-        logger.info("Loaded Moqui Execution Context Factory for webapp [${webappId}]")
-
-        // run after-startup actions
-        WebappInfo wi = ecfi.getWebappInfo(moquiWebappName)
-        if (wi.afterStartupActions) {
-            ExecutionContext ec = ecfi.getExecutionContext()
-            wi.afterStartupActions.run(ec)
-            ec.destroy()
+            // run after-startup actions
+            WebappInfo wi = ecfi.getWebappInfo(moquiWebappName)
+            if (wi.afterStartupActions) {
+                ExecutionContext ec = ecfi.getExecutionContext()
+                wi.afterStartupActions.run(ec)
+                ec.destroy()
+            }
+        } catch (Throwable t) {
+            System.out.println("Error initializing webapp context: ${t.toString()}")
+            t.printStackTrace()
+            throw t
         }
     }
 
@@ -65,6 +69,7 @@ class MoquiContextListener implements ServletContextListener {
         String webappId = getId(sc)
         String moquiWebappName = sc.getInitParameter("moqui-name")
 
+        Logger logger = LoggerFactory.getLogger(MoquiContextListener.class)
         logger.info("Destroying Moqui Execution Context Factory for webapp [${webappId}]")
         if (sc.getAttribute("executionContextFactory")) {
             ExecutionContextFactoryImpl ecfi = (ExecutionContextFactoryImpl) sc.getAttribute("executionContextFactory")

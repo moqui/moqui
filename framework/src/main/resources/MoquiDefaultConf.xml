@@ -5,7 +5,8 @@
 
     <!-- Settings in this file can be overridden in a runtime conf file that has a any of the desired sub-elements. -->
 
-    <tools enable-elasticsearch="true" enable-camel="true"/>
+    <tools enable-elasticsearch="true" enable-camel="false"/>
+
     <cache-list>
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
         <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
@@ -222,11 +223,19 @@
                          pool-minsize="2" pool-maxsize="10"/> -->
             <!-- <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/> -->
         </datasource>
+
+        <datasource group-name="nosql" database-conf-name="derby" schema-name="MOQUI">
+            <inline-jdbc pool-minsize="2" pool-maxsize="10">
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
+            </inline-jdbc>
+        </datasource>
+        <!-- Above the nosql group is in the transactional db by default. To use OrientDB use this instead:
         <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
                 startup-add-missing="true">
-            <!-- NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX -->
+            <!- - NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX - ->
             <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
         </datasource>
+        -->
 
         <!-- some examples of how other databases would be configured -->
         <!-- PostgreSQL

@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
-        default-menu-title="Service Run">
+        default-menu-title="Service Run" default-menu-index="2">
 
     <parameter name="serviceName"/>
     <parameter name="doingRun"/>
@@ -24,9 +24,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <service-call name="${serviceName}" in-map="context" out-map="serviceResults"/>
             <script>
-            ec.logger.warn("Service Results: ${serviceResults}")
-            // TODO: this doesn't seem to be making it through to the results form on redirect
-            ec.web.session.setAttribute("moqui.saved.parameters", serviceResults)
+                StringBuilder sb = new StringBuilder("Service Run Results:\n")
+                for (def resultEntry in serviceResults) sb.append("${resultEntry.key}: ${resultEntry.value?.toString()}\n")
+                ec.logger.info(sb.toString())
+
+                // save the results to display on the screen in the next request (after the transition redirect)
+                ec.web.saveParametersToSession(serviceResults)
             </script>
         </actions>
         <default-response url="." save-parameters="true"/>

@@ -152,15 +152,22 @@ class MoquiShiroRealm implements Realm {
                 userId = newUserAccount.userId
 
                 // no more auth failures? record the various account state updates, hasLoggedOut=N
-                Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
-                        disabled:"N", disabledDateTime:null, hasLoggedOut:"N"]
-                ecfi.serviceFacade.sync().name("update", "moqui.security.UserAccount").parameters(uaParameters).call()
+                if (newUserAccount.successiveFailedLogins != 0 || newUserAccount.disabled != "N" ||
+                        newUserAccount.disabledDateTime != null || newUserAccount.hasLoggedOut != "N") {
+                    Map<String, Object> uaParameters = (Map<String, Object>) [userId:userId, successiveFailedLogins:0,
+                            disabled:"N", disabledDateTime:null, hasLoggedOut:"N"]
+                    // this is important to run in a separate TX so the UserAccount record isn't locked for the entire
+                    //    surrounding transaction, preventing other transactions by the same user
+                    ecfi.serviceFacade.sync().name("update", "moqui.security.UserAccount").parameters(uaParameters)
+                            .requireNewTransaction(true).call()
+                }
 
                 // update visit if no user in visit yet
                 EntityValue visit = ecfi.executionContext.user.visit
                 if (visit && !visit.userId) {
                     ecfi.serviceFacade.sync().name("update", "moqui.server.Visit")
-                            .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId]).call()
+                            .parameters((Map<String, Object>) [visitId:visit.visitId, userId:userId])
+                            .requireNewTransaction(true).call()
                 }
             } finally {
                 if (!alreadyDisabled) ecfi.executionContext.artifactExecution.enableAuthz()
@@ -175,7 +182,8 @@ class MoquiShiroRealm implements Realm {
                 if (!successful && loginNode."@history-incorrect-password" != "false") ulhContext.passwordUsed = token.credentials
                 boolean alreadyDisabled = ecfi.executionContext.artifactExecution.disableAuthz()
                 try {
-                    ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext).call()
+                    ecfi.serviceFacade.sync().name("create", "moqui.security.UserLoginHistory").parameters(ulhContext)
+                            .requireNewTransaction(true).call()
                 } catch (EntityException ee) {
                     // this blows up on MySQL, may in other cases, and is only so important so log a warning but don't rethrow
                     logger.warn("UserLoginHistory create failed: ${ee.toString()}", ee)

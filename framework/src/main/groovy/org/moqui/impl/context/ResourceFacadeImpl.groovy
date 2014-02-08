@@ -217,6 +217,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         return rr.openStream()
     }
 
+    @Override
     String getLocationText(String location, boolean cache) {
         if (cache && textLocationCache.containsKey(location)) return (String) textLocationCache.get(location)
         InputStream locStream = getLocationStream(location)

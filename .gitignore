@@ -14,6 +14,7 @@ runtime/component/example/build/
 runtime/component/example.iml
 runtime/db/derby/MoquiTenant/
 runtime/db/derby/MoquiTransactional/
+runtime/db/derby/MoquiAnalytical/
 runtime/db/derby/derby.log
 runtime/db/orientdb/databases/
 runtime/elasticsearch/data/

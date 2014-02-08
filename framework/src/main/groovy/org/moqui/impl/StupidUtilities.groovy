@@ -341,6 +341,16 @@ class StupidUtilities {
         return outMap
     }
 
+    /** Removes entries with a null value from the Map, returns the passed in Map for convenience (does not clone before removes!). */
+    static Map removeNullsFromMap(Map theMap) {
+        Iterator<Map.Entry> iterator = theMap.entrySet().iterator()
+        while (iterator.hasNext()) {
+            Map.Entry entry = iterator.next()
+            if (entry.getValue() == null) iterator.remove()
+        }
+        return theMap
+    }
+
     static Node deepCopyNode(Node original) { return deepCopyNode(original, null) }
     static Node deepCopyNode(Node original, Node parent) {
         // always pass in a null parent and expect this to be appended to the parent node by the caller if desired

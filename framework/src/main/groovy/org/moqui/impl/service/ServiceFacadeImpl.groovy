@@ -81,6 +81,23 @@ class ServiceFacadeImpl implements ServiceFacade {
 
     ServiceRunner getServiceRunner(String type) { return serviceRunners.get(type) }
 
+    boolean isServiceDefined(String serviceName) {
+        ServiceDefinition sd = getServiceDefinition(serviceName)
+        if (sd != null) return true
+
+        String path = ServiceDefinition.getPathFromName(serviceName)
+        String verb = ServiceDefinition.getVerbFromName(serviceName)
+        String noun = ServiceDefinition.getNounFromName(serviceName)
+        return isEntityAutoPattern(path, verb, noun)
+    }
+
+    boolean isEntityAutoPattern(String path, String verb, String noun) {
+        // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
+        return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
+                getEcfi().getEntityFacade().getEntityDefinition(noun) != null
+    }
+
+
     ServiceDefinition getServiceDefinition(String serviceName) {
         String path = ServiceDefinition.getPathFromName(serviceName)
         String verb = ServiceDefinition.getVerbFromName(serviceName)
@@ -222,6 +239,8 @@ class ServiceFacadeImpl implements ServiceFacade {
                 // get the service file location without the .xml and without everything up to the "service" directory
                 String location = entryRr.location.substring(0, entryRr.location.lastIndexOf("."))
                 if (location.startsWith(baseLocation)) location = location.substring(baseLocation.length())
+                if (location.charAt(0) == '/') location = location.substring(1)
+                location = location.replace('/', '.')
 
                 for (Node serviceNode in serviceRoot."service") {
                     sns.add(location + "." + serviceNode."@verb" +
