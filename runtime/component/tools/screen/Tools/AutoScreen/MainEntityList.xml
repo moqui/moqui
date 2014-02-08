@@ -25,9 +25,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <form-single name="SelectEntity" transition="find">
             <field name="aen"><default-field title="All Entities">
-                <drop-down combo-box="true" allow-empty="true">
-                    <list-options list="allEntityList" key="${fullEntityName}"
-                                  text="${entityName} - ${context.package}"/>
+                <drop-down allow-empty="true">
+                    <list-options list="allEntityList" key="${fullEntityName}" text="${entityName} - ${context.package}"/>
                 </drop-down>
             </default-field></field>
             <field name="submitButton"><default-field title="Select"><submit/></default-field></field>

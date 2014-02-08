@@ -25,6 +25,15 @@ This Work includes contributions authored by David E. Jones, not as a
         <set field="knownServiceNames" from="ec.service.knownServiceNames"/>
     </actions>
     <widgets>
+        <form-single name="SelectService" transition="serviceRun">
+            <field name="serviceName"><default-field title="Service Name (path.verb#noun)">
+                <drop-down allow-empty="true" current="selected">
+                    <list-options list="knownServiceNames" key="${entry}"/>
+                </drop-down>
+            </default-field></field>
+            <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row></field-layout>
+        </form-single>
         <form-list name="ServiceList" list="knownServiceNames" list-entry="serviceName" skip-form="true">
             <field name="serviceName"><default-field><display/></default-field></field>
             <field name="detail"><default-field>

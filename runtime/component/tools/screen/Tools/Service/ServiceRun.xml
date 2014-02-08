@@ -41,7 +41,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <form-single name="SelectService" transition="select">
             <field name="serviceName"><default-field title="Service Name (path.verb#noun)">
-                <drop-down combo-box="true" allow-empty="true" current="selected">
+                <drop-down allow-empty="true" current="selected">
                     <list-options list="knownServiceNames" key="${entry}"/>
                 </drop-down>
             </default-field></field>
