@@ -1,27 +1,33 @@
-.idea/
-.gradle/
-moqui.iml
-framework.iml
-framework/build/
-framework/.gradle/
-moqui-*.war
-SaveTenant.zip
-SaveTransactional.zip
-SaveAnalytical.zip
-SaveOrientDb.zip
-SaveElasticSearch.zip
-runtime/component/example/build/
-runtime/component/example.iml
-runtime/db/derby/MoquiTenant/
-runtime/db/derby/MoquiTransactional/
-runtime/db/derby/MoquiAnalytical/
-runtime/db/derby/derby.log
-runtime/db/orientdb/databases/
-runtime/elasticsearch/data/
-runtime/elasticsearch/log/
-runtime/elasticsearch/work/
-runtime/log/
-runtime/mantle/
-runtime/tmp/
-runtime/txlog/
-execwartmp/
+# gradle/build files
+build
+.gradle
+/settings.gradle
+
+# IntelliJ IDEA files
+.idea
+*.iml
+
+# build generated files
+/moqui-*.war
+/SaveTenant.zip
+/SaveTransactional.zip
+/SaveAnalytical.zip
+/SaveOrientDb.zip
+/SaveElasticSearch.zip
+
+# runtime generated files
+# TODO: how to ignore everything in runtime/component except example, tools, webroot?
+/runtime/db/derby/MoquiTenant/
+/runtime/db/derby/MoquiTransactional/
+/runtime/db/derby/MoquiAnalytical/
+/runtime/db/derby/derby.log
+/runtime/db/orientdb/databases/
+/runtime/elasticsearch/data/
+/runtime/elasticsearch/log/
+/runtime/elasticsearch/work/
+/runtime/lib/*.jar
+/runtime/log/
+/runtime/mantle/
+/runtime/tmp/
+/runtime/txlog/
+/execwartmp/
