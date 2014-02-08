@@ -664,10 +664,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
     <div class="form-group"><#-- was single-form-field -->
         <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
-        <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)>
+        <#if fieldSubNode["submit"]?has_content>
+        <div class="<#if inFieldRow>col-lg-4<#else>col-lg-2</#if>"> </div>
+        <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
         <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
         </#if>
-        <#-- NOTE: this style is only good for 2 fields in a field-row! -->
+        <#-- NOTE: this style is only good for 2 fields in a field-row! in field-row cols are double size because are inside a col-lg-6 element -->
         <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
@@ -1232,7 +1234,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
 <#macro submit>
     <#assign confirmationMessage = ec.resource.evaluateStringExpand(.node["@confirmation"]!, "")/>
-    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if> class="btn btn-default btn-sm"><#if .node["@icon"]?has_content><i class="${.node["@icon"]}"></i> </#if>
+    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if> class="btn btn-default"><#if .node["@icon"]?has_content><i class="${.node["@icon"]}"></i> </#if>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
         <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>>
     <#else>
