@@ -150,17 +150,18 @@ div.panel-right { float: right; width: 180px; margin-left: 10px; }
 .form-list-paginate a, .form-list-paginate span { padding-right: 4px;
     font-family: "Courier New", monospace; font-weight: bold; font-size: .8em; vertical-align: top; }
 
+/* replaced by Metis styles:
 fieldset.form-single-outer { padding: 4px;
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #DDDDDF;
 }
-
 .single-form-field { padding-right: 10px; }
 .single-form-field span { font-size: 1em; display: inline-block; }
 .single-form-field span input { margin-right: 4px; }
 label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
-
+.form-title { padding: 0px 8px 0px 2px; font-size: 1em; font-weight: bold; }
 .field-row { }
 .field-row-item { float: left; display: inline-block; }
+*/
 
 .form-list-outer {
 margin: 0;
@@ -181,7 +182,6 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .form-row:hover { background-color: #DDD; }
 
-.form-title { padding: 0px 8px 0px 2px; font-size: 1em; font-weight: bold; }
 .form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
 
 .form-header-field { white-space: nowrap; }

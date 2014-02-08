@@ -494,13 +494,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
     <#assign formId = formNode["@name"]>
     <#assign listEntryIndex = "">
+    <#assign inFieldRow = false>
     <#if !skipStart>
     <form name="${formNode["@name"]}" id="${formId}" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
     </#if>
+        <fieldset class="form-horizontal"><#-- was form-single-outer -->
     <#if formNode["field-layout"]?has_content>
         <#assign fieldLayout = formNode["field-layout"][0]>
-        <fieldset class="form-single-outer">
             <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
             <#assign collapsible = (fieldLayout["@collapsible"]! == "true")>
             <#assign active = fieldLayout["@active"]!>
@@ -537,11 +538,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#t>${sri.appendToScriptWriter(afterFormScript)}
                     <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
                   </#if>
-                    <div class="field-row ui-helper-clearfix">
+                    <div class="row"><#-- was field-row -->
                     <#assign inFieldRow = true>
                     <#list layoutNode?children as rowChildNode>
                         <#if rowChildNode?node_name == "field-ref">
-                            <div class="field-row-item">
+                            <div class="col-lg-6"><#-- was field-row-item -->
                                 <#assign fieldRef = rowChildNode["@name"]>
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -574,10 +575,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                 <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                             <#elseif groupNode?node_name == "field-row">
-                                <div class="field-row ui-helper-clearfix">
+                                <div class="row"><#-- was field-row -->
+                                <#assign inFieldRow = true>
                                 <#list groupNode?children as rowChildNode>
                                     <#if rowChildNode?node_name == "field-ref">
-                                        <div class="field-row-item">
+                                        <div class="col-lg-6"><#-- was field-row-item -->
                                             <#assign fieldRef = rowChildNode["@name"]>
                                             <#assign fieldNode = "invalid">
                                             <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -592,6 +594,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                         <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                                     </#if>
                                 </#list>
+                                <#assign inFieldRow = false>
                                 </div>
                             </#if>
                         </#list>
@@ -605,12 +608,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#assign>
                 <#t>${sri.appendToScriptWriter(afterFormScript)}
             </#if>
-        </fieldset>
     <#else>
-        <fieldset class="form-single-outer">
-            <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
-        </fieldset>
+        <#list formNode["field"] as fieldNode><@formSingleSubField fieldNode/></#list>
     </#if>
+        </fieldset>
     <#if !skipEnd></form></#if>
     <#if !skipStart>
         <#assign afterFormScript>
@@ -661,9 +662,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if fieldSubNode["ignored"]?has_content && (fieldSubNode?parent["@hide"]! != "false")><#return></#if>
     <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]! != "false")><#recurse fieldSubNode/><#return></#if>
     <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
-    <div class="single-form-field">
+    <div class="form-group"><#-- was single-form-field -->
         <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
-        <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)><label class="form-title" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label></#if>
+        <#if !fieldSubNode["submit"]?has_content && !(inFieldRow?if_exists && !curFieldTitle?has_content)>
+        <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+        </#if>
+        <#-- NOTE: this style is only good for 2 fields in a field-row! -->
+        <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
@@ -679,6 +684,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </#if>
         </#list>
         ${sri.popContext()}
+        </div>
     </div>
 </#macro>
 
