@@ -27,14 +27,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <set field="outParameterNodes" from="serviceNode.'out-parameters'.'parameter'"/>
     </actions>
     <widgets>
-        <!--
-    String getAuthenticate() { return internalAuthenticate }
-    String getServiceType() { return internalServiceType }
-    boolean getTxIgnore() { return internalTxIgnore }
-    boolean getTxForceNew() { return internalTxForceNew }
-    boolean getTxUseCache() { return internalTxUseCache }
-    Integer getTxTimeout() { return internalTransactionTimeout }
-        -->
         <label type="h2" text="${serviceName}"/>
         <label type="strong" text="${serviceNode.'description'?.getAt(0)?.value()?.getAt(0) ?: ''}" display-if-empty="false"/>
         <!-- <label type="p" text="${serviceNode.attributes()}"/> -->
