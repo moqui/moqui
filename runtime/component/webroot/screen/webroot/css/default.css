@@ -86,6 +86,7 @@ border-color: #999 #bbb #ddd; color: #666;
 */
 .ui-button-text { font-size: 1em; font-weight: bold; text-decoration: none; }
 
+/*
 input[type=""], input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea {
 -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
 margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
@@ -96,9 +97,12 @@ select option {
 margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
 font-size: 1em; font-family: Lucida Console, Monaco, monospace;
 }
+*/
 
-input:required:invalid, input:invalid, textarea:invalid { background-color: #FDD; }
+
+input:required:invalid, input:invalid, textarea:invalid { background-color: #FEE; }
 input:focus:valid, textarea:focus:valid { background-color: #EEE; }
+
 
 th { text-align: left; padding: 0px 4px 0px 2px; }
 td { padding: 0px 4px 0px 2px; }
@@ -252,67 +256,3 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
 .ui-timepicker-div td { font-size: 90%; }
 .ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
-
-/* ================ jQuery Layout Styles =============== */
-/* see http://layout.jquery-dev.net/lib/css/layout-default-latest.css */
-
-/* layout panes */
-.ui-layout-pane { background: transparent; /*border: 1px solid red;*/ /*padding: 1px;*/ overflow: auto; }
-.ui-layout-west { padding: 0 5px 0 0; }
-.ui-layout-center { }
-.ui-layout-east { padding: 0 0 0 5px; }
-/* doesn't seem to be used: .ui-layout-content { padding: 10px; position: relative; overflow: auto; } */
-
-/* Must come AFTER pane-class above so will override */
-.layout-child-container, .layout-content-container { padding: 0; overflow: auto; }
-.layout-child-container { border: 0; /* remove border because inner-layout-panes probably have borders */ }
-.layout-scroll { overflow: auto; }
-.layout-hide { display: none; }
-
-/* resizer bars */
-.ui-layout-resizer { background: transparent; }
-.ui-layout-resizer-north { background: transparent; border-top: 1px solid #BBB; }
-.ui-layout-resizer-south { background: transparent; border-bottom: 1px solid #BBB; }
-/* resizer bars - while resize in progress */
-.ui-layout-resizer-drag { }
-/* affects both open and closed states */
-.ui-layout-resizer-hover { }
-/* NOTE: It looks best when 'hover' and 'dragging' are set to the same color,
-    otherwise color shifts while dragging when bar can't keep up with mouse */
-/* hover-color to 'resize' and 'dragging' */
-.ui-layout-resizer-open-hover, .ui-layout-resizer-dragging { background: #096ac8; }
-.ui-layout-resizer-dragging { /*border: 1px solid #BBB;*/ }
-.ui-layout-resizer-north-dragging, .ui-layout-resizer-south-dragging { border-width: 1px 0; }
-.ui-layout-resizer-west-dragging, .ui-layout-resizer-east-dragging { border-width: 0 1px; }
-/* resizer at min or max size-limit */
-.ui-layout-resizer-dragging-limit { background: #E1A4A4; }
-/* hover-color to 'slide open' */
-.ui-layout-resizer-closed-hover { background: #EBD5AA; }
-/* resizer when pane is 'slid open' */
-.ui-layout-resizer-sliding { opacity: .10; filter: alpha(opacity=10); }
-/* sliding resizer - hover */
-.ui-layout-resizer-sliding-hover { opacity: 1.00; filter: alpha(opacity=100); }
-/* sliding resizer - add 'outside-border' to resizer on-hover
- * this sample illustrates how to target specific panes and states */
-.ui-layout-resizer-north-sliding-hover { border-bottom-width: 1px; }
-.ui-layout-resizer-south-sliding-hover { border-top-width:  1px; }
-.ui-layout-resizer-west-sliding-hover { border-right-width: 1px; }
-.ui-layout-resizer-east-sliding-hover { border-left-width: 1px; }
-
-/* layout toggler buttons */
-.ui-layout-toggler { border: 1px solid #BBB; background-color: #BBB; }
-.ui-layout-resizer-hover .ui-layout-toggler { opacity: .60; filter: alpha(opacity=60); }
-.ui-layout-toggler-hover, .ui-layout-resizer-hover .ui-layout-toggler-hover { background-color: #00498F; opacity: 1.00; filter: alpha(opacity=100); }
-.ui-layout-toggler-north, .ui-layout-toggler-south { border-width: 0 1px; }
-.ui-layout-toggler-west, .ui-layout-toggler-east { border-width: 1px 0; }
-/* hide the toggler-button when the pane is 'slid open' */
-.ui-layout-resizer-sliding .ui-layout-toggler { display: none; }
-/* style the text we put INSIDE the togglers */
-.ui-layout-toggler .content { color: #666; font-size: 12px; font-weight: bold; width: 100%; padding-bottom: 0.35ex; }
-
-/* layout pane masks - these styles are hard-coded on mask elems, but are also included here as !important to ensure will overrides any generic styles */
-.ui-layout-mask { border: none !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important;
-    position: absolute !important; opacity: 0 !important; filter: Alpha(Opacity="0") !important; }
-.ui-layout-mask-inside-pane { top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; }
-div.ui-layout-mask {}
-iframe.ui-layout-mask {} /* standard mask for iframes */

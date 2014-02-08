@@ -1,6 +1,15 @@
 
+/* This file contains overrides to the standard Metis main.min.css which should not be changed */
+
 #top .navbar { border-top: 1px solid black; }
 .inner { border: 10px solid white; }
 #footer { height: 56px; }
 
 .btn { margin: 4px 4px 4px 0; }
+
+.login{padding-top:40px;padding-bottom:40px;background:url("../img/pattern/black_mamba.png") repeat #444}
+.login .form-signin .form-control { position: relative; font-size: 16px; height: auto; padding: 10px; }
+.login .form-signin .top { margin-bottom: -1px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.login .form-signin .middle { margin-bottom: -1px; border-radius: 0; }
+.login .form-signin .bottom { margin-bottom: 10px; border-top-left-radius: 0; border-top-right-radius: 0; }
+.login form.form-signin { display: block; }

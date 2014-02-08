@@ -124,9 +124,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-single name="UpdateExample" extends="CreateExample" transition="updateExample" map="example">
                     <field name="exampleId">
                         <!-- this is in a conditional-field instead of default-field so that it can override the one in CreateExample -->
-                        <conditional-field condition="exampleId">
-                            <display/>
-                        </conditional-field>
+                        <conditional-field condition="exampleId"><display/></conditional-field>
                     </field>
                     <field name="exampleTypeEnumId">
                         <default-field title="Type" tooltip="This is the type of example">

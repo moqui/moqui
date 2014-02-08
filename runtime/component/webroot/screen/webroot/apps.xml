@@ -73,7 +73,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </div>
                 ]]></text></render-mode>
         </container>
-<!--
+<!-- pre-Metis stuff:
         <container-panel id="apps-container" dynamic="true">
             <panel-header>
                 <container id="header-logo"><label text="${ec.tenant?.tenantName ?: 'Welcome to Moqui'}" type="h1"/></container>

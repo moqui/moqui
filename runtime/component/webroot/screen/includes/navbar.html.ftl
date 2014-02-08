@@ -14,11 +14,13 @@
     </header>
     <div class="topnav">
         <div class="btn-toolbar">
+            <#-- uncomment if/when we have a sidebar
             <div class="btn-group">
                 <a data-placement="bottom" data-original-title="Show / Hide Sidebar" data-toggle="tooltip" class="btn btn-success btn-sm" id="changeSidebarPos">
                     <i class="fa fa-expand"></i>
                 </a>
             </div>
+            -->
             <#if ec.getUser().getUserId()?has_content>
                 <#--
                 <div class="btn-group">
