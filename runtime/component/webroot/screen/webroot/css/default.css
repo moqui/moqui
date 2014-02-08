@@ -126,12 +126,12 @@ div.ui-layout-container { height: 100%; }
 /* styles for non-dynamic table layout, not using jquery-layout */
 div.panel-outer {  }
 div.panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }
-div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 10px; height: 100%; }
-div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; }
-div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; }
-div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; }
-div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; }
-div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 10px; height: 100%; }
+div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; }
+div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; }
+div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; }
+div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; }
+div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; }
+div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; }
 div.panel-header { width: 100%; }
 div.panel-footer { width: 100%; }
 
