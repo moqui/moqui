@@ -802,17 +802,17 @@ class ScreenRenderImpl implements ScreenRender {
 
         Set<String> vcs = new HashSet()
         if (parameterNode."@required" == "true") vcs.add("required")
-        if (parameterNode."number-integer") vcs.add("number")
-        if (parameterNode."number-decimal") vcs.add("number")
-        if (parameterNode."text-email") vcs.add("email")
-        if (parameterNode."text-url") vcs.add("url")
-        if (parameterNode."text-digits") vcs.add("digits")
-        if (parameterNode."credit-card") vcs.add("creditcard")
+        if (parameterNode."number-integer") vcs.add("custom[number]")
+        if (parameterNode."number-decimal") vcs.add("custom[number]")
+        if (parameterNode."text-email") vcs.add("custom[email]")
+        if (parameterNode."text-url") vcs.add("custom[url]")
+        if (parameterNode."text-digits") vcs.add("custom[digits]")
+        if (parameterNode."credit-card") vcs.add("creditCard")
 
         String type = parameterNode."@type"
         if (type && (type.endsWith("BigDecimal") || type.endsWith("BigInteger") || type.endsWith("Long") ||
                 type.endsWith("Integer") || type.endsWith("Double") || type.endsWith("Float") ||
-                type.endsWith("Number"))) vcs.add("number")
+                type.endsWith("Number"))) vcs.add("custom[number]")
 
         StringBuilder sb = new StringBuilder()
         for (String vc in vcs) { if (sb) sb.append(" "); sb.append(vc); }

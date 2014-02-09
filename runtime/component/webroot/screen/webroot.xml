@@ -21,6 +21,7 @@ This Work includes contributions authored by David E. Jones, not as a
             '/assets/lib/uniform/jquery.uniform.min.js',
             '/assets/lib/datetimepicker/js/bootstrap-datetimepicker.min.js',
             '/assets/lib/chosen/chosen.jquery.min.js',
+            '/assets/lib/validationengine/js/jquery.validationEngine.js', '/assets/lib/validationengine/js/languages/jquery.validationEngine-en.js',
             '/assets/lib/autosize/jquery.autosize.min.js',
             '/assets/lib/jasny/js/jasny-bootstrap.min.js', '/assets/js/main.min.js',
             '/js/jquery-jeditable-1.7.1.min.js']"/>
@@ -43,6 +44,7 @@ This Work includes contributions authored by David E. Jones, not as a
             '/assets/css/main.min.css', '/assets/lib/uniform/themes/default/css/uniform.default.min.css',
             '/assets/lib/datetimepicker/css/bootstrap-datetimepicker.min.css',
             '/assets/lib/chosen/chosen.min.css',
+            '/assets/lib/validationengine/css/validationEngine.jquery.css',
             '/assets/lib/jasny/css/jasny-bootstrap.min.css',
             '/assets/lib/jquery-ui.css', '/assets/css/theme.css', '/css/default.css']"/>
     </always-actions>
