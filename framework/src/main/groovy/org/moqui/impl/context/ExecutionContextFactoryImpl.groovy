@@ -646,7 +646,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
-    ExecutionContextImpl getEci() { return (ExecutionContextImpl) this.executionContext }
+    ExecutionContextImpl getEci() { return (ExecutionContextImpl) this.getExecutionContext() }
 
     void destroyActiveExecutionContext() {
         ExecutionContext ec = this.activeContext.get()
@@ -685,7 +685,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     // ========== Server Stat Tracking ==========
     boolean getSkipStats() {
         // NOTE: the results of this condition eval can't be cached because the expression can use any data in the ec
-        return (skipStatsCond && getEci().getResource().evaluateCondition(skipStatsCond, null))
+        return skipStatsCond ? getEci().getResource().evaluateCondition(skipStatsCond, null) : false
     }
 
     protected boolean artifactPersistHit(String artifactType, String artifactSubType) {
@@ -721,12 +721,14 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // don't count the ones this calls
         if (artifactType == "service" && artifactName.contains("moqui.server.ArtifactHit")) return
         if (artifactType == "entity" && artifactName == "moqui.server.ArtifactHit") return
+        if (["screen", "transition", "screen-content"].contains(artifactType) && getSkipStats()) return
 
         ExecutionContextImpl eci = this.getEci()
         long runningTimeMillis = endTime - startTime
 
-        // NOTE: never save hits for entity artifact hits, way too heavy and also avoids self-reference (could also be done by checking for ArtifactHit/etc of course)
-        if (!"entity".equals(artifactType) && artifactPersistHit(artifactType, artifactSubType) && !getSkipStats()) {
+        // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
+        //     (could also be done by checking for ArtifactHit/etc of course)
+        if (!"entity".equals(artifactType) && artifactPersistHit(artifactType, artifactSubType)) {
             Map<String, Object> ahp = (Map<String, Object>) [visitId:eci.user.visitId, userId:eci.user.userId,
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                 startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
@@ -770,7 +772,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
             // call async, let the server do it whenever
             eci.service.async().name("create", "moqui.server.ArtifactHit").parameters(ahp).call()
         }
-        if (artifactPersistBin(artifactType, artifactSubType) && !getSkipStats()) {
+        if (artifactPersistBin(artifactType, artifactSubType)) {
             Map<String, Object> ahb = artifactHitBinByType.get(artifactType + "." + artifactSubType + ":" + artifactName)
             if (ahb == null) ahb = makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
 

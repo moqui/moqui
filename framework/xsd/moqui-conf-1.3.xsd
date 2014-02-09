@@ -79,7 +79,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="visit-enabled" type="boolean" default="true"/>
             <xs:attribute name="visitor-enabled" type="boolean" default="true"/>
-            <xs:attribute name="stats-skip-condition" type="xs:string"/>
+            <xs:attribute name="stats-skip-condition" type="xs:string">
+                <xs:annotation><xs:documentation>If evaluates to true skips creating visit and visitor, and doesn't
+                    track ArtifactHit for screens.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="artifact-stats">
