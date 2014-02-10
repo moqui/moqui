@@ -177,7 +177,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
                     spinner: '<span class="ui-loading">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
                     ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Error loading screen..."); } },
-                    load: function(event, ui) { activateAllButtons(); }
+                    load: function(event, ui) { <#-- activateAllButtons(); --> }
                 });
             </#assign>
             <#t>${sri.appendToScriptWriter(afterScreenScript)}
@@ -296,7 +296,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
-        function load${divId}() { $("#${divId}").load("${urlInfo.passThroughSpecialParameters().urlWithParams}", function() { activateAllButtons() }) }
+        function load${divId}() { $("#${divId}").load("${urlInfo.passThroughSpecialParameters().urlWithParams}", function() { <#-- activateAllButtons() --> }) }
         load${divId}();
     </#assign>
     <#t>${sri.appendToScriptWriter(afterScreenScript)}
@@ -765,7 +765,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if _dynamic_container_id?has_content>
                         <#-- if we have an _dynamic_container_id this was loaded in a dynamic-container so init ajaxForm; for examples see http://www.malsup.com/jquery/form/#ajaxForm -->
                         <#assign afterFormScript>
-                            $("#${headerFormId}").ajaxForm({ target: '#${_dynamic_container_id}', success: activateAllButtons, resetForm: false });
+                            $("#${headerFormId}").ajaxForm({ target: '#${_dynamic_container_id}', <#-- success: activateAllButtons, --> resetForm: false });
                         </#assign>
                         <#t>${sri.appendToScriptWriter(afterFormScript)}
                     </#if>

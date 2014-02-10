@@ -45,7 +45,7 @@ This Work includes contributions authored by David E. Jones, not as a
         $("#auto-menu").tabs({ collapsible: true, selected: ${dynamicActive},
             spinner: '<span class="ui-loading">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>',
             ajaxOptions: { error: function(xhr, status, index, anchor) { $(anchor.hash).html("Error loading screen..."); } },
-            load: function(event, ui) { activateAllButtons(); }
+            load: function(event, ui) { <#-- activateAllButtons(); --> }
         });
         </script>
     </#if>

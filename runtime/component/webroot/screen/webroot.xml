@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- TODO: implement way to only load base JS and CSS files and load others as needed on different screens! -->
         <set field="html_scripts" from="['/assets/lib/jquery.min.js',
             '/assets/lib/bootstrap/js/bootstrap.min.js', '/assets/lib/jquery-ui.min.js',
-            '/assets/lib/uniform/jquery.uniform.min.js',
+            '/assets/lib/uniform/jquery.uniform.min.js', '/assets/lib/form/jquery.form.js',
             '/assets/lib/datetimepicker/js/bootstrap-datetimepicker.min.js',
             '/assets/lib/chosen/chosen.jquery.min.js',
             '/assets/lib/validationengine/js/jquery.validationEngine.js', '/assets/lib/validationengine/js/languages/jquery.validationEngine-en.js',
