@@ -1125,7 +1125,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#assign currentDescription = ec.resource.evaluateStringExpand(.node["@current-description"], "")/>
     </#if>
     <#assign id><@fieldId .node/></#assign>
-    <select name="<@fieldName .node/>" class="form-control<#if .node["@search"]! != "false"> chzn-select</#if>" id="${id}"<#if .node["@allow-multiple"]! == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <select name="<@fieldName .node/>" class="form-control" id="${id}"<#if .node["@allow-multiple"]! == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if currentValue?has_content && (.node["@current"]! != "selected") && !(.node["@allow-multiple"]! == "true")>
         <option selected="selected" value="${currentValue}"><#if currentDescription?has_content>${currentDescription}<#else>${currentValue}</#if></option><#rt/>
         <option value="${currentValue}">---</option><#rt/>
@@ -1141,6 +1141,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#list>
     </#if>
     </select>
+    <#if .node["@combo-box"]! == "true">
+    <#-- TODO: find a real combobox that allows entering additional elements; make sure chosen style removed for whatever it is
+        <#assign afterFormScript>$("#${id}").combobox();</#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
+    -->
+        <#assign afterFormScript>$("#${id}").chosen({ search_contains:true, disable_search_threshold:10 });</#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
+    <#elseif .node["@search"]! != "false">
+        <#assign afterFormScript>$("#${id}").chosen({ search_contains:true, disable_search_threshold:10 });</#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
+    </#if>
 
     <#if .node["dynamic-options"]?has_content>
         <#assign doNode = .node["dynamic-options"][0]>
@@ -1166,14 +1177,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             });
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
-    </#if>
-    <#if .node["@combo-box"]! == "true">
-    <#-- TODO: find a real combobox that allows entering additional elements; make sure chosen style removed for whatever it is
-        <#assign afterFormScript>
-            $("#${id}").combobox();
-        </#assign>
-        <#t>${sri.appendToScriptWriter(afterFormScript)}
-    -->
     </#if>
 </#macro>
 

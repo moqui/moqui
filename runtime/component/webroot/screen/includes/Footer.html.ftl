@@ -11,7 +11,6 @@ ${sri.getAfterScreenWriterText()}
     }
     activateAllButtons();
     -->
-    $(".chzn-select").chosen({ search_contains:true, disable_search_threshold:10 });
     ${sri.getScriptWriterText()}
 </script>
 </body>
