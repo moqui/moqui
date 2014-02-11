@@ -615,7 +615,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if !skipEnd></form></#if>
     <#if !skipStart>
         <#assign afterFormScript>
-            $("#${formNode["@name"]}").validationEngine({ promptPosition:"topLeft" });
+            $("#${formNode["@name"]}").validVal({ errorClass: 'help-block', errorElement: 'span',
+                highlight: function(element, errorClass, validClass) { $(element).parents('.form-group').removeClass('has-success').addClass('has-error'); },
+                unhighlight: function(element, errorClass, validClass) { $(element).parents('.form-group').removeClass('has-error').addClass('has-success'); }
+            });
+            <#-- alternative validation lib: $("#${formNode["@name"]}").validationEngine({ promptPosition:"topLeft" }); -->
             <#-- TODO init tooltips
             $(document).tooltip();
             -->
@@ -1249,8 +1253,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign name><@fieldName .node/></#assign>
     <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!)>
     <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])>
+    <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>
     <#-- NOTE: removed number type (<#elseif validationClasses?contains("number")>number) because on Safari, maybe others, ignores size and behaves funny for decimal values -->
-    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> validate[${validationClasses}]</#if>"<#if validationClasses?contains("required")> required</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#elseif validationClasses?contains("number")>number<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@ac-transition"]?has_content>
         <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
         <#assign afterFormScript>
@@ -1268,17 +1273,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
+    <#-- OLD approach for validate() with regexp (with validVal just goes in pattern attribute):
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>
     <#if regexpInfo?has_content>
-    <#-- TODO: replace validate() for regexp
     <#assign afterFormScript>
     $("#${formNode["@name"]}").validate();
     $.validator.addMethod("${id}_v", function (value, element) { return this.optional(element) || /${regexpInfo.regexp}/.test(value); }, "${regexpInfo.message!"Input invalid"}");
     $("#${id}").rules("add", { ${id}_v:true })
     </#assign>
     <#t>${sri.appendToScriptWriter(afterFormScript)}
-    -->
     </#if>
+    -->
 </#macro>
 
 <#macro "text-find">
