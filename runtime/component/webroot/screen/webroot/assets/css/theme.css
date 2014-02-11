@@ -5,6 +5,8 @@
 .inner { border: 10px solid white; }
 #footer { height: 56px; }
 
+#content { overflow: visible; }
+
 .btn { margin: 4px 4px 4px 0; }
 
 .login{ padding-top:40px;padding-bottom:40px;background:url("../img/pattern/black_mamba.png") repeat #444 }
