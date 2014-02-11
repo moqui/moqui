@@ -265,7 +265,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro "container-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
-    <button id="${.node["@id"]}-button" data-toggle="modal" data-target="#${.node["@id"]}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <button id="${.node["@id"]}-button" data-toggle="modal" data-target="#${.node["@id"]}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${.node["@id"]}" class="modal fade" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
@@ -276,7 +276,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <div class="modal-body">
                     <#recurse>
                 </div>
-                <#-- <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div> -->
+                <#-- <div class="modal-footer"><button type="button" class="btn btn-primary" data-dismiss="modal">Close</button></div> -->
             </div>
         </div>
     </div>
@@ -307,7 +307,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign divId>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
 
-    <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
@@ -318,7 +318,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <div class="modal-body" id="${divId}-body">
                     <img src="/images/wait_anim_16x16.gif" alt="Loading...">
                 </div>
-                <#-- <div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Close</button></div> -->
+                <#-- <div class="modal-footer"><button type="button" class="btn btn-primary" data-dismiss="modal">Close</button></div> -->
             </div>
         </div>
     </div>
@@ -401,12 +401,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
-            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]! == "anchor-button"> class="btn btn-default btn-sm"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]! == "anchor-button"> class="btn btn-primary btn-sm"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
-            <button type="submit" form="${linkFormId}"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-default btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>
+            <button type="submit" form="${linkFormId}"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-primary btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>
                 <#if linkNode["image"]?has_content>
                     <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
@@ -437,7 +437,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
                         <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                     <#else>
-                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-default btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
+                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-primary btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
                     </#if>
                 </#if>
             </form>
@@ -1237,7 +1237,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
 <#macro submit>
     <#assign confirmationMessage = ec.resource.evaluateStringExpand(.node["@confirmation"]!, "")/>
-    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if> class="btn btn-default"><#if .node["@icon"]?has_content><i class="${.node["@icon"]}"></i> </#if>
+    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary"><#if .node["@icon"]?has_content><i class="${.node["@icon"]}"></i> </#if>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
         <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>>
     <#else>
