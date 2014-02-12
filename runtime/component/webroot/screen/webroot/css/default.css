@@ -162,6 +162,9 @@ label.form-title { vertical-align: middle; display: inline-block; width: 120px; 
 .field-row { }
 .field-row-item { float: left; display: inline-block; }
 */
+/* these are still used when a row has more than 2 fields in it */
+.field-row-item { float: left; display: inline-block; }
+.single-form-field { margin-right: 10px; }
 
 .form-list-outer {
 margin: 0 0 10px 0; padding: 4px; width: 100%;
@@ -263,3 +266,6 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 /* ================ Extensions for bootstrap.min.css theme =============== */
 
 .form-control { width: auto; }
+
+/* TODO: this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!! */
+.chosen-container { width: 100% !important; }

@@ -495,6 +495,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign formId = formNode["@name"]>
     <#assign listEntryIndex = "">
     <#assign inFieldRow = false>
+    <#assign bigRow = false>
+    <#assign bigRowFirst = false>
     <#if !skipStart>
     <form name="${formNode["@name"]}" id="${formId}" class="validation-engine-init" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
@@ -540,9 +542,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                   </#if>
                     <div class="row"><#-- was field-row -->
                     <#assign inFieldRow = true>
+                    <#assign bigRow = (layoutNode?children?size > 2)>
+                    <#assign bigRowFirst = bigRow>
+                    <#if bigRow><div class="col-lg-12"></#if>
                     <#list layoutNode?children as rowChildNode>
                         <#if rowChildNode?node_name == "field-ref">
-                            <div class="col-lg-6"><#-- was field-row-item -->
+                            <div class="<#if bigRow>field-row-item<#else>col-lg-6</#if>"><#-- was field-row-item -->
                                 <#assign fieldRef = rowChildNode["@name"]>
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -556,7 +561,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                             <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                             <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                         </#if>
+                        <#assign bigRowFirst = false>
                     </#list>
+                    <#if bigRow></div></#if>
+                    <#assign bigRow = false>
                     <#assign inFieldRow = false>
                     </div>
                 <#elseif layoutNode?node_name == "field-group">
@@ -577,9 +585,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                             <#elseif groupNode?node_name == "field-row">
                                 <div class="row"><#-- was field-row -->
                                 <#assign inFieldRow = true>
+                                <#assign bigRow = (groupNode?children?size > 2)>
+                                <#assign bigRowFirst = bigRow>
+                                <#if bigRow><div class="col-lg-12"></#if>
                                 <#list groupNode?children as rowChildNode>
                                     <#if rowChildNode?node_name == "field-ref">
-                                        <div class="col-lg-6"><#-- was field-row-item -->
+                                        <div class="<#if bigRow>field-row-item<#else>col-lg-6</#if>"><#-- was field-row-item -->
                                             <#assign fieldRef = rowChildNode["@name"]>
                                             <#assign fieldNode = "invalid">
                                             <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -593,7 +604,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                         <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                         <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                                     </#if>
+                                    <#assign bigRowFirst = false>
                                 </#list>
+                                <#if bigRow></div></#if>
+                                <#assign bigRow = false>
                                 <#assign inFieldRow = false>
                                 </div>
                             </#if>
@@ -664,32 +678,50 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if fieldSubNode["ignored"]?has_content && (fieldSubNode?parent["@hide"]! != "false")><#return></#if>
     <#if fieldSubNode["hidden"]?has_content && (fieldSubNode?parent["@hide"]! != "false")><#recurse fieldSubNode/><#return></#if>
     <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
-    <div class="form-group"><#-- was single-form-field -->
-        <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
-        <#if fieldSubNode["submit"]?has_content>
-        <div class="<#if inFieldRow>col-lg-4<#else>col-lg-2</#if>"> </div>
-        <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
-        <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+    <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
+    <#if bigRow>
+        <#if curFieldTitle?has_content>
+            <label class="control-label col-lg-2" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
         </#if>
-        <#-- NOTE: this style is only good for 2 fields in a field-row! in field-row cols are double size because are inside a col-lg-6 element -->
-        <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
-        ${sri.pushContext()}
-        <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
-        <#list fieldSubNode?children as widgetNode>
-            <#if widgetNode?node_name == "link">
-                <#assign linkNode = widgetNode>
-                <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
-                <#assign linkFormId><@fieldId linkNode/></#assign>
-                <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
-                <#t>${sri.appendToAfterScreenWriter(afterFormText)}
-                <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
-            <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
-            <#else><#t><#visit widgetNode>
-            </#if>
-        </#list>
-        ${sri.popContext()}
+    <#else>
+        <#if fieldSubNode["submit"]?has_content>
+        <div class="form-group"><#-- was single-form-field -->
+            <div class="<#if inFieldRow>col-lg-4<#else>col-lg-2</#if>"> </div>
+            <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
+        <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
+        <div class="form-group"><#-- was single-form-field -->
+            <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+            <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
+        </#if>
+    </#if>
+    <#-- NOTE: this style is only good for 2 fields in a field-row! in field-row cols are double size because are inside a col-lg-6 element -->
+    ${sri.pushContext()}
+    <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
+    <#list fieldSubNode?children as widgetNode>
+        <#if widgetNode?node_name == "link">
+            <#assign linkNode = widgetNode>
+            <#assign linkUrlInfo = sri.makeUrlByType(linkNode["@url"], linkNode["@url-type"]!"transition", linkNode, linkNode["@expand-transition-url"]!"true")>
+            <#assign linkFormId><@fieldId linkNode/></#assign>
+            <#assign afterFormText><@linkFormForm linkNode linkFormId linkUrlInfo/></#assign>
+            <#t>${sri.appendToAfterScreenWriter(afterFormText)}
+            <#t><@linkFormLink linkNode linkFormId linkUrlInfo/>
+        <#elseif widgetNode?node_name == "set"><#-- do nothing, handled above -->
+        <#else><#t><#visit widgetNode>
+        </#if>
+    </#list>
+    ${sri.popContext()}
+    <#if bigRow>
+        <#if curFieldTitle?has_content>
+        </#if>
+    <#else>
+        <#if fieldSubNode["submit"]?has_content>
+            </div>
         </div>
-    </div>
+        <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
+            </div>
+        </div>
+        </#if>
+    </#if>
 </#macro>
 
 <#macro "form-list">
