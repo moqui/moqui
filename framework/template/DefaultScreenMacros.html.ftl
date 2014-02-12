@@ -544,10 +544,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#assign inFieldRow = true>
                     <#assign bigRow = (layoutNode?children?size > 2)>
                     <#assign bigRowFirst = bigRow>
-                    <#if bigRow><div class="col-lg-12"></#if>
                     <#list layoutNode?children as rowChildNode>
                         <#if rowChildNode?node_name == "field-ref">
-                            <div class="<#if bigRow>field-row-item<#else>col-lg-6</#if>"><#-- was field-row-item -->
+                            <#if !bigRow><div class="col-lg-6"></#if><#-- was field-row-item -->
                                 <#assign fieldRef = rowChildNode["@name"]>
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -556,14 +555,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 <#else>
                                     <@formSingleSubField fieldNode/>
                                 </#if>
-                            </div>
+                            <#if !bigRow></div></#if>
                         <#elseif rowChildNode?node_name == "fields-not-referenced">
                             <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                             <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                         </#if>
                         <#assign bigRowFirst = false>
                     </#list>
-                    <#if bigRow></div></#if>
+                    <#if bigRow></div></#if><#-- this is a bit weird, closes col-lg-10 opened by first in row in the formSingleWidget macro -->
                     <#assign bigRow = false>
                     <#assign inFieldRow = false>
                     </div>
@@ -587,10 +586,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 <#assign inFieldRow = true>
                                 <#assign bigRow = (groupNode?children?size > 2)>
                                 <#assign bigRowFirst = bigRow>
-                                <#if bigRow><div class="col-lg-12"></#if>
                                 <#list groupNode?children as rowChildNode>
                                     <#if rowChildNode?node_name == "field-ref">
-                                        <div class="<#if bigRow>field-row-item<#else>col-lg-6</#if>"><#-- was field-row-item -->
+                                        <#if !bigRow><div class="col-lg-6"></#if><#-- was field-row-item -->
                                             <#assign fieldRef = rowChildNode["@name"]>
                                             <#assign fieldNode = "invalid">
                                             <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -599,14 +597,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                             <#else>
                                                 <@formSingleSubField fieldNode/>
                                             </#if>
-                                        </div>
+                                        <#if !bigRow></div></#if>
                                     <#elseif rowChildNode?node_name == "fields-not-referenced">
                                         <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                         <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                                     </#if>
                                     <#assign bigRowFirst = false>
                                 </#list>
-                                <#if bigRow></div></#if>
+                                <#if bigRow></div></#if><#-- this is a bit weird, closes col-lg-10 opened by first in row in the formSingleWidget macro -->
                                 <#assign bigRow = false>
                                 <#assign inFieldRow = false>
                                 </div>
@@ -629,11 +627,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if !skipEnd></form></#if>
     <#if !skipStart>
         <#assign afterFormScript>
-            $("#${formNode["@name"]}").validVal({ errorClass: 'help-block', errorElement: 'span',
+            $("#${formNode["@name"]}").validate({ errorClass: 'help-block', errorElement: 'span',
                 highlight: function(element, errorClass, validClass) { $(element).parents('.form-group').removeClass('has-success').addClass('has-error'); },
                 unhighlight: function(element, errorClass, validClass) { $(element).parents('.form-group').removeClass('has-error').addClass('has-success'); }
             });
-            <#-- alternative validation lib: $("#${formNode["@name"]}").validationEngine({ promptPosition:"topLeft" }); -->
             <#-- TODO init tooltips
             $(document).tooltip();
             -->
@@ -680,9 +677,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
     <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
     <#if bigRow>
-        <#if curFieldTitle?has_content>
+        <#if bigRowFirst>
+            <#if curFieldTitle?has_content>
             <label class="control-label col-lg-2" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+            <#else>
+            <div class="col-lg-2"> </div>
+            </#if>
+            <div class="col-lg-10">
         </#if>
+        <div class="field-row-item">
+            <div class="form-group">
     <#else>
         <#if fieldSubNode["submit"]?has_content>
         <div class="form-group"><#-- was single-form-field -->
@@ -713,6 +717,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if bigRow>
         <#if curFieldTitle?has_content>
         </#if>
+            </div><!-- /form-group -->
+        </div><!-- /field-row-item -->
     <#else>
         <#if fieldSubNode["submit"]?has_content>
             </div>
@@ -847,7 +853,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </div>
             <#else>
                 <#assign afterFormScript>
-                    $("#${formNode["@name"]}_${listEntryIndex}").validationEngine();
+                    $("#${formNode["@name"]}_${listEntryIndex}").validate();
                 </#assign>
                 <#t>${sri.appendToScriptWriter(afterFormScript)}
             </form>
@@ -870,7 +876,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
         <#if isMulti && !skipStart && !skipForm>
             <#assign afterFormScript>
-                $("#${formNode["@name"]}").validationEngine();
+                $("#${formNode["@name"]}").validate();
                 <#-- TODO $(document).tooltip(); -->
             </#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
@@ -926,7 +932,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </div>
             <#else>
                 <#assign afterFormScript>
-                    $("#${formNode["@name"]}_${listEntryIndex}").validationEngine();
+                    $("#${formNode["@name"]}_${listEntryIndex}").validate();
                 </#assign>
                 <#t>${sri.appendToScriptWriter(afterFormScript)}
                 </form>
@@ -949,7 +955,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
         <#if isMulti && !skipStart && !skipForm>
             <#assign afterFormScript>
-                $("#${formNode["@name"]}").validationEngine();
+                $("#${formNode["@name"]}").validate();
                 <#-- TODO $(document).tooltip(); -->
             </#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
@@ -1287,7 +1293,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])>
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>
     <#-- NOTE: removed number type (<#elseif validationClasses?contains("number")>number) because on Safari, maybe others, ignores size and behaves funny for decimal values -->
-    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#elseif validationClasses?contains("number")>number<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@ac-transition"]?has_content>
         <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
         <#assign afterFormScript>
