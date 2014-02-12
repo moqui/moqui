@@ -73,57 +73,5 @@ This Work includes contributions authored by David E. Jones, not as a
                     </div>
                 ]]></text></render-mode>
         </container>
-<!-- pre-Metis stuff:
-        <container-panel id="apps-container" dynamic="true">
-            <panel-header>
-                <container id="header-logo"><label text="${ec.tenant?.tenantName ?: 'Welcome to Moqui'}" type="h1"/></container>
-                <container id="header-menus">
-                    <link url="ScreenTree" text="Site Map" link-type="anchor-button"/>
-                    <subscreens-menu type="popup" id="header-menu" title="Application"/>
-                </container>
-                <section name="headerUser">
-                    <condition><compare field="ec.user.userId" operator="not-empty"/></condition>
-                    <widgets>
-                        <container id="header-user">
-                            <label text="${ec.user.userAccount?.userFullName}"/>
-                            <link text="Logout" url="/Login/logout" link-type="hidden-form" icon="key"/>
-                        </container>
-                    </widgets>
-                </section>
-            </panel-header>
-            <panel-center>
-                <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
-                    <widgets><container style="message"><label text="${message}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
-                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
-                    <!- - TODO: put these by fields instead of in header - ->
-                    <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                </section-iterate>
-
-                <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
-                    <widgets><container style="message"><label text="${message}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
-                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
-                    <!- - TODO: put these by fields instead of in header - ->
-                    <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                </section-iterate>
-
-                <subscreens-active/>
-            </panel-center>
-            <panel-footer>
-                <render-mode><text type="html"><![CDATA[
-                    <div id="apps-footer-content">
-                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.3.3</a></h6>
-                    </div>
-                ]]></text></render-mode>
-            </panel-footer>
-        </container-panel>
--->
     </widgets>
 </screen>
