@@ -1055,28 +1055,28 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd">
-                <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}').datetimepicker({minView:2});</#assign>
+            <#assign afterFormScript>$('#${id}').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd hh:ii:ss">
-                <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
             <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}').datetimepicker();</#assign>
+            <#assign afterFormScript>$('#${id}').datetimepicker({pickerPosition:'bottom-left'});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
         <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="hh:ii:ss">
-            <input type="text" class="form-control" readonly name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
         <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
-        <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1});</#assign>
+        <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 
