@@ -238,7 +238,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="auto"><xs:annotation><xs:documentation>
                             If selected the hidden-form type will be used if the url-mode is transition and the
-                            transition has an event, otherwise the anchor type will be used.
+                            transition has actions, otherwise the anchor type will be used.
                         </xs:documentation></xs:annotation></xs:enumeration>
                         <xs:enumeration value="anchor"/>
                         <xs:enumeration value="anchor-button"/>
