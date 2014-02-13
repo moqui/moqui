@@ -261,6 +261,15 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>No FK in order to allow externally authenticated users.</description>
         </relationship>
     </entity>
+    <view-entity entity-name="UserGroupAndMember" package-name="moqui.security">
+        <member-entity entity-alias="UGM" entity-name="moqui.security.UserGroupMember"/>
+        <member-entity entity-alias="UG" entity-name="moqui.security.UserGroup" join-from-alias="UGM">
+            <key-map field-name="userGroupId"/>
+        </member-entity>
+        <alias-all entity-alias="UGM"/>
+        <alias-all entity-alias="UG"/>
+    </view-entity>
+
     <entity entity-name="UserGroupPermission" package-name="moqui.security" cache="true">
         <field name="userGroupId" type="id" is-pk="true"/>
         <field name="userPermissionId" type="id-long" is-pk="true"/>
