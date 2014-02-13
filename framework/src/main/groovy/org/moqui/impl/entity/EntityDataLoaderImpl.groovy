@@ -15,6 +15,7 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
 import org.apache.commons.csv.CSVRecord
 import org.moqui.BaseException
+import org.moqui.context.ExecutionContext
 import org.moqui.impl.service.ServiceCallSyncImpl
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.service.ServiceCallSync
@@ -251,6 +252,12 @@ class EntityDataLoaderImpl implements EntityDataLoader {
             throw new IllegalArgumentException("Error loading entity data file [${location}]", t)
         } finally {
             if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+
+            ExecutionContext ec = efi.getEcfi().getExecutionContext()
+            if (ec.message.hasError()) {
+                logger.error("Error messages loading entity data: " + ec.message.getErrorsString())
+                ec.message.clearErrors()
+            }
         }
     }
 

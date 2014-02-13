@@ -52,4 +52,6 @@ public class MessageFacadeImpl implements MessageFacade {
         for (ValidationError validationError in validationErrorList) errorBuilder.append("${validationError.message} (for field ${validationError.field}${validationError.form ? ' on form ' + validationError.form : ''}${validationError.serviceName ? ' of service ' + validationError.serviceName : ''})").append("\n")
         return errorBuilder.toString()
     }
+
+    void clearErrors() { errorList.clear(); validationErrorList.clear(); }
 }

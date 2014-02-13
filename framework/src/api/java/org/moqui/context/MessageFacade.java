@@ -46,4 +46,6 @@ public interface MessageFacade {
      * @return String with all error messages.
      */
     String getErrorsString();
+
+    void clearErrors();
 }
