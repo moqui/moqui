@@ -73,6 +73,9 @@ Bug Fixes:
   OrientDB to not run at all under Tomcat and other external containers
 - Fixed issue with Logger initializing before moqui.runtime is set when
   running under external servlet containers like Tomcat
+- Fixed issue with DbResourceReference.putStream which tried to pass an
+  InputStream to the JDBC driver, which isn't likely to be handled; now
+  reads from the stream to a byte[] and wraps in a SerialBlob
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013

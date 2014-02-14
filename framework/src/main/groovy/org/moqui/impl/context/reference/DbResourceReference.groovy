@@ -104,7 +104,11 @@ class DbResourceReference extends BaseResourceReference {
         this.putObject(sblob)
     }
     void putStream(InputStream stream) {
-        this.putObject(stream)
+        if (stream == null) return
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        StupidUtilities.copyStream(stream, baos)
+        SerialBlob sblob = new SerialBlob(baos.toByteArray())
+        this.putObject(sblob)
     }
     protected void putObject(Object fileObj) {
         EntityValue dbrf = getDbResourceFile()
