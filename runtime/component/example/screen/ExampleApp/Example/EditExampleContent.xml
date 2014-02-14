@@ -37,7 +37,8 @@ This Work includes contributions authored by David E. Jones, not as a
             String fileName = contentFile.getName()
             ec.logger.info("Uploading file [${fileName}] for Example [${exampleId}] in repository [${repositoryName}] with purpose [${purposeEnumId}] and locale [${locale}]")
 
-            String contentLocation = "content://${repositoryName}/moqui/example/${exampleId}/${fileName}"
+            // String contentLocation = "content://${repositoryName}/moqui/example/${exampleId}/${fileName}"
+            String contentLocation = "dbresource://moqui/example/${exampleId}/${fileName}"
             ResourceReference newRr = ec.resource.getLocationReference(contentLocation)
             InputStream fileStream = contentFile.getInputStream()
             newRr.putStream(fileStream)
@@ -96,7 +97,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <form-single name="UploadExampleContent" transition="uploadExampleContent">
                     <field name="exampleId"><default-field><hidden/></default-field></field>
                     <field name="contentFile"><default-field><file/></default-field></field>
-                    <field name="repositoryName"><default-field><text-line size="20" default-value="main"/></default-field></field>
+                    <!-- <field name="repositoryName"><default-field><text-line size="20" default-value="main"/></default-field></field> -->
                     <field name="purposeEnumId"><default-field title="Purpose">
                         <drop-down><entity-options><entity-find entity-name="moqui.basic.Enumeration">
                             <econdition field-name="enumTypeId" value="ExampleContentPurpose"/>
