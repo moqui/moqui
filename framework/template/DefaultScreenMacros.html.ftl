@@ -1209,8 +1209,15 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                             $('#${id}').append('<option value="">&nbsp;</option>');
                             </#if>
                             $.each(list, function(key, value) {
-                                $('#${id}').append("<option value = '" + value["${doNode["@value-field"]!"value"}"] + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
-                            }) }; } ); };
+                                var optionValue = value["${doNode["@value-field"]!"value"}"];
+                                if (optionValue == "${currentValue}") {
+                                    $('#${id}').append("<option selected='selected' value='" + optionValue + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
+                                } else {
+                                    $('#${id}').append("<option value='" + optionValue + "'>" + value["${doNode["@label-field"]!"label"}"] + "</option>");
+                                }
+                            });
+                            $("#${id}").trigger("chosen:updated");
+                }; } ); };
             $(document).ready(function() {
                 <#list depNodeList as depNode>
                     $("#${formName}_${depNode["@field"]}").change(function() { populate_${id}(); });
