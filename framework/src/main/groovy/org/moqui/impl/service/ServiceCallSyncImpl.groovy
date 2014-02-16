@@ -271,7 +271,13 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                             .parameters([serviceName:getServiceName()]).requireNewTransaction(true).call()
                 }
 
-                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                try {
+                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                } catch (Exception e) {
+                    String errMsg = "Error committing entity-auto service transaction: " + e.toString()
+                    logger.error(errMsg, e)
+                    eci.getMessage().addError(errMsg)
+                }
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
             }
         } catch (TransactionException e) {
@@ -384,7 +390,13 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     parent = parent.getCause()
                 }
             } finally {
-                if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                try {
+                    if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
+                } catch (Exception e) {
+                    String errMsg = "Error committing entity-auto service transaction: " + e.toString()
+                    logger.error(errMsg, e)
+                    eci.getMessage().addError(errMsg)
+                }
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
             }
         } catch (TransactionException e) {
