@@ -16,9 +16,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- To test this try something like:
     NOTE: "am9obi5kb2U6bW9xdWk=" is the Base64 encoded String "john.doe:moqui"
-    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/apps/example/ExampleEntity/100010
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/apps/example/ExampleEntity/TEST2
+    curl -X GET -H "Authorization: Basic am9obi5kb2U6bW9xdWk=" http://localhost:8080/apps/example/ExampleEntity?exampleId=TEST2
     -->
-    <transition name="ExampleEntity" method="get">
+    <transition name="ExampleEntity" method="get" read-only="true">
         <path-parameter name="exampleId"/>
         <actions>
             <entity-find-one entity-name="Example" value-field="example"/>

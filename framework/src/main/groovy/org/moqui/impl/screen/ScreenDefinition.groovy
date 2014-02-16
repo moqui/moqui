@@ -285,6 +285,7 @@ class ScreenDefinition {
         protected ResponseItem errorResponse = null
 
         protected boolean beginTransaction = true
+        protected boolean readOnly = false
 
         TransitionItem(Node transitionNode, ScreenDefinition parentScreen) {
             this.parentScreen = parentScreen
@@ -292,6 +293,7 @@ class ScreenDefinition {
             method = transitionNode."@method" ?: "any"
             location = "${parentScreen.location}.transition_${StupidUtilities.cleanStringForJavaName(name)}"
             beginTransaction = transitionNode."@begin-transaction" != "false"
+            readOnly = transitionNode."@read-only" == "true"
 
             // path-parameter
             if (transitionNode."path-parameter") {
@@ -332,6 +334,7 @@ class ScreenDefinition {
         List<String> getPathParameterList() { return pathParameterList }
         boolean hasActionsOrSingleService() { return actions || singleServiceName }
         boolean getBeginTransaction() { return beginTransaction }
+        boolean isReadOnly() { return readOnly }
 
         boolean checkCondition(ExecutionContext ec) { return condition ? condition.checkCondition(ec) : true }
 

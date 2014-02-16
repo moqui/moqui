@@ -243,6 +243,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Begin a transaction for the screen transition action run if there is
                     not one already in place.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="read-only" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Declare that this transition does only read operations to skip the
+                    check for insecure parameters.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="path-parameter">

@@ -269,7 +269,8 @@ class ScreenRenderImpl implements ScreenRender {
         if (screenUrlInfo.targetTransition) {
             // if this transition has actions and request was not secure or any parameters were not in the body
             // return an error, helps prevent XSRF attacks
-            if (request != null && screenUrlInfo.targetTransition.actions != null) {
+            if (request != null && screenUrlInfo.getTargetTransition().hasActionsOrSingleService() &&
+                    !screenUrlInfo.getTargetTransition().isReadOnly()) {
                 if ((!request.isSecure() && getWebappNode()."@https-enabled" != "false") ||
                         request.getQueryString() ||
                         StupidWebUtilities.getPathInfoParameterMap(request.getPathInfo())) {
@@ -277,7 +278,7 @@ class ScreenRenderImpl implements ScreenRender {
                         """Cannot run screen transition with actions from non-secure request or with URL
                         parameters for security reasons (they are not encrypted and need to be for data
                         protection and source validation). Change the link this came from to be a
-                        form with hidden input fields instead.""")
+                        form with hidden input fields instead, or declare the transition as read-only.""")
                 }
             }
 
