@@ -144,8 +144,14 @@ class EntityDbMeta {
                     if (tableSet.next()) {
                         dbResult = true
                     } else {
-                        if (logger.isTraceEnabled()) logger.trace("Table for entity [${ed.getFullEntityName()}] does NOT exist")
-                        dbResult = false
+                        // try lower case, just in case DB is case sensitive
+                        tableSet = dbData.getTables(null, ed.getSchemaName(), ed.getTableName().toLowerCase(), types)
+                        if (tableSet.next()) {
+                            dbResult = true
+                        } else {
+                            if (logger.isTraceEnabled()) logger.trace("Table for entity [${ed.getFullEntityName()}] does NOT exist")
+                            dbResult = false
+                        }
                     }
                 } catch (Exception e) {
                     throw new EntityException("Exception checking to see if table [${ed.getTableName()}] exists", e)
@@ -231,14 +237,33 @@ class EntityDbMeta {
             colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName(), "%")
             while (colSet.next()) {
                 String colName = colSet.getString("COLUMN_NAME")
-                String fieldName = null
-                for (String fn in fnSet) if (ed.getColumnName(fn, false) == colName) { fieldName = fn; break }
-                if (fieldName) fnSet.remove(fieldName)
+                for (String fn in fnSet) {
+                    String fieldColName = ed.getColumnName(fn, false)
+                    if (fieldColName == colName || fieldColName.toLowerCase() == colName) {
+                        fnSet.remove(fn)
+                        break
+                    }
+                }
             }
 
             if (fnSet.size() == fieldCount) {
-                logger.warn("Could not find any columns to match fields for entity [${ed.getFullEntityName()}]")
-                return null
+                // try lower case table name
+                colSet = dbData.getColumns(null, ed.getSchemaName(), ed.getTableName().toLowerCase(), "%")
+                while (colSet.next()) {
+                    String colName = colSet.getString("COLUMN_NAME")
+                    for (String fn in fnSet) {
+                        String fieldColName = ed.getColumnName(fn, false)
+                        if (fieldColName == colName || fieldColName.toLowerCase() == colName) {
+                            fnSet.remove(fn)
+                            break
+                        }
+                    }
+                }
+
+                if (fnSet.size() == fieldCount) {
+                    logger.warn("Could not find any columns to match fields for entity [${ed.getFullEntityName()}]")
+                    return null
+                }
             }
             return fnSet
         } catch (Exception e) {
