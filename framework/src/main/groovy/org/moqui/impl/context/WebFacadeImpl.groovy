@@ -351,16 +351,19 @@ class WebFacadeImpl implements WebFacade {
                     // only add an errors if it is not a jsonrpc response (JSON RPC has it's own error handling)
                     if (!responseMap.containsKey("jsonrpc")) responseMap.put("errors", eci.message.errorsString)
                     jb.call(responseMap)
-                } else {
+                } else if (responseObj) {
                     jb.call(responseObj)
                 }
 
                 jsonStr = jb.toString()
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR)
-            } else {
+            } else if (responseObj) {
                 JsonBuilder jb = new JsonBuilder()
                 jb.call(responseObj)
                 jsonStr = jb.toString()
+                response.setStatus(HttpServletResponse.SC_OK)
+            } else {
+                jsonStr = ""
                 response.setStatus(HttpServletResponse.SC_OK)
             }
         }
