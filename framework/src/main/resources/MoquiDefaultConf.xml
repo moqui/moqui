@@ -428,12 +428,8 @@
         <database name="postgres" use-fk-initially-deferred="false" join-style="ansi" result-fetch-size="50"
                   default-isolation-level="ReadCommitted" default-test-query="SELECT 1"
                   default-jdbc-driver="org.postgresql.Driver" default-xa-ds-class="org.postgresql.xa.PGXADataSource">
-            <database-type type="id" sql-type="TEXT"/>
-            <database-type type="id-long" sql-type="TEXT"/>
-
             <database-type type="number-float" sql-type="FLOAT8"/>
 
-            <database-type type="text-short" sql-type="TEXT"/>
             <database-type type="text-medium" sql-type="TEXT"/>
             <database-type type="text-long" sql-type="TEXT"/>
             <database-type type="text-very-long" sql-type="TEXT"/>
