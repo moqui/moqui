@@ -239,7 +239,7 @@
 
         <!-- some examples of how other databases would be configured -->
         <!-- PostgreSQL
-        <datasource group-name="transactional" database-conf-name="postgres" schema-name="public">
+        <datasource group-name="transactional" database-conf-name="postgres" schema-name="public" startup-add-missing="true" runtime-add-missing="false">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
                 <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="5432"
                                databaseName="MoquiTransactional"/>
