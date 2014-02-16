@@ -59,6 +59,16 @@ class EntityDbMeta {
             internalCheckTable(ed)
         }
     }
+    void checkTableStartup(EntityDefinition ed) {
+        if (ed.isViewEntity()) {
+            for (Node memberEntityNode in ed.entityNode."member-entity") {
+                EntityDefinition med = efi.getEntityDefinition((String) memberEntityNode."@entity-name")
+                checkTableStartup(med)
+            }
+        } else {
+            internalCheckTable(ed)
+        }
+    }
     synchronized void internalCheckTable(EntityDefinition ed) {
         // if it's in this table we've already checked it
         if (entityTablesChecked.containsKey(ed.getFullEntityName())) return
