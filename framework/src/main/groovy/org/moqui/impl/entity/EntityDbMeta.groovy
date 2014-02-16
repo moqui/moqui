@@ -56,7 +56,7 @@ class EntityDbMeta {
             // if it's in this table we've already checked it
             if (entityTablesChecked.containsKey(ed.getFullEntityName())) return
             // otherwise do the real check, in a synchronized method
-            internalCheckTable(ed)
+            internalCheckTable(ed, false)
         }
     }
     void checkTableStartup(EntityDefinition ed) {
@@ -66,10 +66,10 @@ class EntityDbMeta {
                 checkTableStartup(med)
             }
         } else {
-            internalCheckTable(ed)
+            internalCheckTable(ed, true)
         }
     }
-    synchronized void internalCheckTable(EntityDefinition ed) {
+    synchronized void internalCheckTable(EntityDefinition ed, boolean startup) {
         // if it's in this table we've already checked it
         if (entityTablesChecked.containsKey(ed.getFullEntityName())) return
 
@@ -108,7 +108,7 @@ class EntityDbMeta {
                 }
             }
             // create foreign keys after checking each to see if it already exists
-            if (datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
+            if (startup || datasourceNode?."@runtime-add-fks" == "true") createForeignKeys(ed, true)
         }
         entityTablesChecked.put(ed.getFullEntityName(), new Timestamp(System.currentTimeMillis()))
         entityTablesExist.put(ed.getFullEntityName(), true)
@@ -436,12 +436,34 @@ class EntityDbMeta {
             while (ikSet.next()) {
                 String pkTable = ikSet.getString("PKTABLE_NAME")
                 // logger.info("FK exists [${ed.getFullEntityName()}] - [${relNode."@title"}${relEd.getFullEntityName()}] PKTABLE_NAME [${ikSet.getString("PKTABLE_NAME")}] PKCOLUMN_NAME [${ikSet.getString("PKCOLUMN_NAME")}] FKCOLUMN_NAME [${ikSet.getString("FKCOLUMN_NAME")}]")
-                if (pkTable != relEd.tableName) continue
+                if (pkTable != relEd.getTableName() && pkTable != relEd.getTableName().toLowerCase()) continue
                 String fkCol = ikSet.getString("FKCOLUMN_NAME")
                 fkColsFound.add(fkCol)
-                String foundField = null
-                for (String fn in fieldNames) if (ed.getColumnName(fn, false) == fkCol) foundField = fn
-                if (foundField) fieldNames.remove(foundField)
+                for (String fn in fieldNames) {
+                    String fnColName = ed.getColumnName(fn, false)
+                    if (fnColName == fkCol || fnColName.toLowerCase() == fkCol) {
+                        fieldNames.remove(fn)
+                        break
+                    }
+                }
+            }
+            if (fieldNames.size() > 0) {
+                // try with lower case table name
+                ikSet = dbData.getImportedKeys(null, ed.getSchemaName(), ed.getTableName().toLowerCase())
+                while (ikSet.next()) {
+                    String pkTable = ikSet.getString("PKTABLE_NAME")
+                    // logger.info("FK exists [${ed.getFullEntityName()}] - [${relNode."@title"}${relEd.getFullEntityName()}] PKTABLE_NAME [${ikSet.getString("PKTABLE_NAME")}] PKCOLUMN_NAME [${ikSet.getString("PKCOLUMN_NAME")}] FKCOLUMN_NAME [${ikSet.getString("FKCOLUMN_NAME")}]")
+                    if (pkTable != relEd.getTableName() && pkTable != relEd.getTableName().toLowerCase()) continue
+                    String fkCol = ikSet.getString("FKCOLUMN_NAME")
+                    fkColsFound.add(fkCol)
+                    for (String fn in fieldNames) {
+                        String fnColName = ed.getColumnName(fn, false)
+                        if (fnColName == fkCol || fnColName.toLowerCase() == fkCol) {
+                            fieldNames.remove(fn)
+                            break
+                        }
+                    }
+                }
             }
 
             // logger.info("Checking FK exists for entity [${ed.getFullEntityName()}] relationship [${relNode."@title"}${relEd.getFullEntityName()}] fields to match are [${keyMap.keySet()}] FK columns found [${fkColsFound}] final fieldNames (empty for match) [${fieldNames}]")
