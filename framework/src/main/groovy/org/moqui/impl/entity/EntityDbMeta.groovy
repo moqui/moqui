@@ -564,7 +564,7 @@ class EntityDbMeta {
                 sql.append(relEd.getColumnName((String) keyMap.get(keyName), false))
             }
             sql.append(")")
-            if (databaseNode."@use-fk-initially-deferred") {
+            if (databaseNode."@use-fk-initially-deferred" == "true") {
                 sql.append(" INITIALLY DEFERRED")
             }
 
