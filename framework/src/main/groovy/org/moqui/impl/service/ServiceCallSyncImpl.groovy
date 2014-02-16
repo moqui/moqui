@@ -273,10 +273,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
 
                 try {
                     if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
-                } catch (Exception e) {
-                    String errMsg = "Error committing entity-auto service transaction: " + e.toString()
-                    logger.error(errMsg, e)
-                    eci.getMessage().addError(errMsg)
+                } catch (Throwable t) {
+                    logger.warn("Error committing transaction for service [${getServiceName()}]", t)
+                    // add all exception messages to the error messages list
+                    eci.getMessage().addError(t.getMessage())
+                    Throwable parent = t.getCause()
+                    while (parent != null) {
+                        eci.getMessage().addError(parent.getMessage())
+                        parent = parent.getCause()
+                    }
                 }
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
             }
@@ -392,10 +397,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             } finally {
                 try {
                     if (beganTransaction && tf.isTransactionInPlace()) tf.commit()
-                } catch (Exception e) {
-                    String errMsg = "Error committing entity-auto service transaction: " + e.toString()
-                    logger.error(errMsg, e)
-                    eci.getMessage().addError(errMsg)
+                } catch (Throwable t) {
+                    logger.warn("Error committing transaction for entity-auto service [${getServiceName()}]", t)
+                    // add all exception messages to the error messages list
+                    eci.getMessage().addError(t.getMessage())
+                    Throwable parent = t.getCause()
+                    while (parent != null) {
+                        eci.getMessage().addError(parent.getMessage())
+                        parent = parent.getCause()
+                    }
                 }
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-commit")
             }
