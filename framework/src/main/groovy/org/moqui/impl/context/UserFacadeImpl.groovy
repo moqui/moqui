@@ -160,6 +160,19 @@ class UserFacadeImpl implements UserFacade {
                         }
                     }
                 }
+                if (cookieVisitorId) {
+                    // make sure the Visitor record actually exists, if not act like we got no moqui.visitor cookie
+                    boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
+                    try {
+                        EntityValue visitor = eci.entity.makeFind("moqui.server.Visitor").condition("visitorId", cookieVisitorId).one()
+                        if (visitor == null) {
+                            logger.info("Got invalid visitorId [${cookieVisitorId}] in moqui.visitor cookie in session [${session.id}], throwing away and making a new one")
+                            cookieVisitorId = null
+                        }
+                    } finally {
+                        if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+                    }
+                }
                 if (!cookieVisitorId) {
                     // NOTE: disable authz for this call, don't normally want to allow create of Visitor, but this is a special case
                     boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
