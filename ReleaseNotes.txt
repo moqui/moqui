@@ -21,6 +21,9 @@ New Features:
   to 1.1.3, Commons Codec to 1.6
 - Added Apache Commons CSV 1.0-SNAPSHOT 20140122
 - Added ISO 8601 date/time parsing as another default in L10nFacade
+- Added transition.@read-only attribute to skip XSRF check for insecure
+  parameters when the transition does not modify data, and when data is
+  not too sensitive
 
 - Entity Facade
   - Enhanced EntityDataLoader to also call services, just use the service
@@ -76,6 +79,10 @@ Bug Fixes:
 - Fixed issue with DbResourceReference.putStream which tried to pass an
   InputStream to the JDBC driver, which isn't likely to be handled; now
   reads from the stream to a byte[] and wraps in a SerialBlob
+- Fixed issue when startup-add-missing is true but runtime-add-missing is
+  false it would not really check and add missing on startup
+- Improvements to DB meta data handling for databases like Postgres that
+  default to lower-case table, column, and foreign names
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013
