@@ -32,7 +32,7 @@
     </entity-facade>
 
     <repository-list>
-        <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"
-                    username="admin" password="admin"/>
+        <!-- <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="default"
+                    username="admin" password="admin"/> -->
     </repository-list>
 </moqui-conf>

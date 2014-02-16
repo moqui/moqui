@@ -21,7 +21,9 @@
 
     <screen-facade boundary-comments="true"/>
 
-    <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME"/>
+    <entity-facade crypt-pass="MoquiDefaultPassword:CHANGEME">
+        <!-- add datasource elements here to configure databases -->
+    </entity-facade>
 
     <repository-list>
         <!-- <repository name="main" location="http://localhost:8081/rmi" type="rmi" workspace="staging"
