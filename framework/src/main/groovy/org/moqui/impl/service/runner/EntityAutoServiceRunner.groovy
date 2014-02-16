@@ -91,7 +91,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
         List<String> pkFieldNames = ed.getPkFieldNames()
 
         // always make fromDate optional, whether or not part of the pk; do this before the allPksIn check
-        if (pkFieldNames.contains("fromDate") && !parameters.containsKey("fromDate")) {
+        if (pkFieldNames.contains("fromDate") && parameters.get("fromDate") == null) {
             Timestamp fromDate = ecfi.getExecutionContext().getUser().getNowTimestamp()
             parameters.put("fromDate", fromDate)
             result.put("fromDate", fromDate)
@@ -133,6 +133,7 @@ public class EntityAutoServiceRunner implements ServiceRunner {
             /* **** plain specified primary key **** */
             newEntityValue.setFields(parameters, true, null, true)
         } else {
+            logger.error("Entity [${ed.getFullEntityName()}] auto create pk fields ${pkFieldNames} incomplete: ${parameters}")
             throw new ServiceException("In entity-auto create service for entity [${ed.fullEntityName}]: " +
                     "could not find a valid combination of primary key settings to do a create operation; options include: " +
                     "1. a single entity primary-key field for primary auto-sequencing with or without matching in-parameter, and with or without matching out-parameter for the possibly sequenced value, " +
