@@ -39,6 +39,9 @@ New Features:
   - Changed service.@validate=false to still apply defaults and type
     conversions for defined in-parameters, but not exclude undefined params
     or error on other validation errors
+  - Added parameter.@default attribute which is like the @default-value
+    attribute except that it is a field name or expression for the default
+    field value.
 - Transaction Facade
   - Added transaction-facade.@use-transaction-cache attribute, defaults to
     true, set to false to disable the TransactionCache globally
