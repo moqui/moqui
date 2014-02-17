@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="name"><default-field><display/></default-field></field>
             <field name="type"><default-field><display text="${type?:'String'}"/></default-field></field>
             <field name="required"><default-field><display text="${required?:'false'}"/></default-field></field>
-            <field name="defaultValue"><default-field><display text="${parameterNode.'@default-value' ?: ''}"/></default-field></field>
+            <field name="default"><default-field><display text="${parameterNode.'@default' ?: ''} - ${parameterNode.'@default-value' ?: ''}"/></default-field></field>
             <field name="format"><default-field><display/></default-field></field>
             <field name="description"><default-field><display text="${parameterNode.'description'?.getAt(0)?.value()?.getAt(0) ?: ''}"/></default-field></field>
             <field name="entityField"><default-field><display text="${parameterNode.'@entity-name' ?: ''}${parameterNode.'@field-name' ? '.' + parameterNode.'@field-name' : ''}"/></default-field></field>
@@ -52,7 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="name"><default-field><display/></default-field></field>
             <field name="type"><default-field><display text="${type?:'String'}"/></default-field></field>
             <field name="required"><default-field><display/></default-field></field>
-            <field name="defaultValue"><default-field><display text="${parameterNode.'@default-value' ?: ''}"/></default-field></field>
+            <field name="default"><default-field><display text="${parameterNode.'@default' ?: ''} - ${parameterNode.'@default-value' ?: ''}"/></default-field></field>
             <field name="format"><default-field><display/></default-field></field>
             <field name="description"><default-field><display text="${parameterNode.'description'?.getAt(0)?.value()?.getAt(0) ?: ''}"/></default-field></field>
             <field name="entityField"><default-field><display text="${parameterNode.'@entity-name' ?: ''}${parameterNode.'@field-name' ? '.' + parameterNode.'@field-name' : ''}"/></default-field></field>
