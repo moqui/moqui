@@ -252,7 +252,7 @@ class ServiceDefinition {
 
     void convertValidateCleanParameters(Map<String, Object> parameters, ExecutionContextImpl eci) {
         // even if validate is false still apply defaults, convert defined params, etc
-        checkParameterMap("", parameters, parameters, (Node) serviceNode."in-parameters"[0], this.serviceNode."@validate" == "true", eci)
+        checkParameterMap("", parameters, parameters, (Node) serviceNode."in-parameters"[0], this.serviceNode."@validate" != "false", eci)
     }
 
     protected void checkParameterMap(String namePrefix, Map<String, Object> rootParameters, Map parameters,
