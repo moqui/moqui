@@ -36,6 +36,10 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
 
     boolean isMutable();
 
+    /** Gets a cloned, mutable Map with the field values that is independent of this value object. Can be augmented or
+     * modified without modifying or being constrained by this entity value. */
+    Map getMap();
+
     /** Get the named field.
      *
      * If there is a matching entry in the moqui.basic.LocalizedEntityField entity using the Locale in the current ExecutionContext

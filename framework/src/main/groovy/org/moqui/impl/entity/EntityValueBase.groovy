@@ -104,6 +104,9 @@ abstract class EntityValueBase implements EntityValue {
     boolean isMutable() { return mutable }
 
     @Override
+    Map getMap() { return new HashMap(valueMap) }
+
+    @Override
     Object get(String name) {
         EntityDefinition ed = getEntityDefinition()
 
