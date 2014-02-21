@@ -992,12 +992,15 @@ class ScreenRenderImpl implements ScreenRender {
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         // NOTE: defaultValue is handled below so that for a plain string it is not run through evaluateStringExpand
         Object obj = getFieldValue(fieldNodeWrapper, "")
+        if (!obj) return defaultValue ?: ""
+        // BigDecimal toString() uses scientific notation, annoying, so use toPlainString()
+        if (obj instanceof BigDecimal) return ((BigDecimal) obj).toPlainString()
         // handle the special case of timestamps used for primary keys, make sure we avoid TZ, etc problems
         if (obj instanceof Timestamp) return ((Timestamp) obj).getTime().toString()
         // here's another alternative to consider, but sticking to the more reliable approach above for now:
         //if (obj instanceof Timestamp) return ec.l10n.formatValue(obj, "yyyy-MM-dd hh:mm:ss.SSS z")
 
-        return obj ? obj.toString() : (defaultValue ?: "")
+        return obj.toString()
         // NOTE: this approach causes problems with currency fields, but kills the string expand for default-value... a better approach?
         //return obj ? obj.toString() : (defaultValue ? ec.getResource().evaluateStringExpand(defaultValue, null) : "")
     }
@@ -1008,8 +1011,8 @@ class ScreenRenderImpl implements ScreenRender {
         String mapName = fieldNode.parent()."@map" ?: "fieldValues"
         Object value = null
         // if this is an error situation try parameters first, otherwise try parameters last
-        if (ec.getWeb() != null && ec.getWeb().errorParameters != null && (ec.getWeb().errorParameters.moquiFormName == fieldNode.parent()."@name"))
-            value = ec.getWeb().errorParameters.get(fieldName)
+        if (ec.getWeb() != null && ec.getWeb().getErrorParameters() != null && (ec.getWeb().getErrorParameters().moquiFormName == fieldNode.parent()."@name"))
+            value = ec.getWeb().getErrorParameters().get(fieldName)
         if (!value && ec.getContext().get(mapName) && fieldNode.parent().name() == "form-single") {
             try {
                 Map valueMap = (Map) ec.getContext().get(mapName)
