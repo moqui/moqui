@@ -178,16 +178,16 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     if (${.node["@list"]} instanceof Map) {
         ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}.entrySet()) {
-            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getKey()
-            def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()
+            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
+            def ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
             <#recurse/>
             ${.node["@entry"]}_index++
         }
     } else if (${.node["@list"]} instanceof Collection<Map.Entry>) {
         ${.node["@entry"]}_index = 0
         for (def ${.node["@entry"]}Entry in ${.node["@list"]}) {
-            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getKey()
-            def ${.node["@key"]} = ${.node["@entry"]}Entry.getValue()
+            def ${.node["@entry"]} = ${.node["@entry"]}Entry.getValue()
+            def ${.node["@key"]} = ${.node["@entry"]}Entry.getKey()
             <#recurse/>
             ${.node["@entry"]}_index++
         }

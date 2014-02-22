@@ -90,6 +90,8 @@ Bug Fixes:
   BigDecimal objects as BigDecimal.toString() uses scientific notation by
   default and aside from being annoying the parser doesn't handle it and
   treats things like 100 represented as 1E2 as 1
+- Fixed issue with iterate over a Map when key attribute is set where the
+  key and value were switched in the specified field names
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013
