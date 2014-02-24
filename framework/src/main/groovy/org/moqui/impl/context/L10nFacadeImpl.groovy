@@ -178,7 +178,7 @@ public class L10nFacadeImpl implements L10nFacade {
 
     @Override
     String formatValue(Object value, String format) {
-        if (!value) return ""
+        if (value == null) return ""
         if (value instanceof String) return value
         if (value instanceof Number) return formatNumber(value, format)
         if (value instanceof Timestamp) return formatTimestamp(value, format)

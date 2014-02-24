@@ -1031,7 +1031,9 @@ class ScreenRenderImpl implements ScreenRender {
         if (!value) value = ec.getContext().get(fieldName)
         // this isn't needed since the parameters are copied to the context: if (!isError && isWebAndSameForm && !value) value = ec.web.parameters.get(fieldName)
         if (value) return value
-        return ec.getResource().evaluateStringExpand(defaultValue, null)
+        String defaultStr = ec.getResource().evaluateStringExpand(defaultValue, null)
+        if (defaultStr) return defaultStr
+        return value
     }
     String getFieldValueClass(FtlNodeWrapper fieldNodeWrapper) {
         Object fieldValue = null
