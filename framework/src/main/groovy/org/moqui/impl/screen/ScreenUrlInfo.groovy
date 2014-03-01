@@ -179,7 +179,7 @@ class ScreenUrlInfo {
         if (targetScreen != null) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
                 Object value = pi.getValue(sri.ec)
-                if (value) pm.put(pi.name, value as String)
+                if (value) pm.put(pi.name, ScreenRenderImpl.makeValuePlainString(value))
             }
         }
         if (targetTransition != null && targetTransition.getSingleServiceName()) {
@@ -187,9 +187,9 @@ class ScreenUrlInfo {
             ServiceDefinition sd = ((ServiceFacadeImpl) sri.getEc().getService()).getServiceDefinition(targetServiceName)
             if (sd != null) {
                 for (String pn in sd.getInParameterNames()) {
-                    Object value = sri.ec.context.get(pn)
-                    if (!value && sri.ec.web != null) value = sri.ec.web.parameters.get(pn)
-                    if (value) pm.put(pn, value as String)
+                    Object value = sri.getEc().getContext().get(pn)
+                    if (!value && sri.getEc().getWeb() != null) value = sri.getEc().getWeb().getParameters().get(pn)
+                    if (value) pm.put(pn, ScreenRenderImpl.makeValuePlainString(value))
                 }
             } else if (targetServiceName.contains("#")) {
                 // service name but no service def, see if it is an entity op and if so try the pk fields
@@ -199,9 +199,9 @@ class ScreenUrlInfo {
                     EntityDefinition ed = ((EntityFacadeImpl) sri.ec.entity).getEntityDefinition(en)
                     if (ed != null) {
                         for (String fn in ed.getPkFieldNames()) {
-                            Object value = sri.ec.context.get(fn)
-                            if (!value && sri.ec.web != null) value = sri.ec.web.parameters.get(fn)
-                            if (value) pm.put(fn, value as String)
+                            Object value = sri.getEc().getContext().get(fn)
+                            if (!value && sri.getEc().getWeb() != null) value = sri.getEc().getWeb().getParameters().get(fn)
+                            if (value) pm.put(fn, ScreenRenderImpl.makeValuePlainString(value))
                         }
                     }
                 }
@@ -236,13 +236,13 @@ class ScreenUrlInfo {
 
     ScreenUrlInfo addParameter(Object name, Object value) {
         if (!name || value == null) return this
-        pathParameterMap.put(name as String, value as String)
+        pathParameterMap.put(name as String, ScreenRenderImpl.makeValuePlainString(value))
         return this
     }
     ScreenUrlInfo addParameters(Map manualParameters) {
         if (!manualParameters) return this
         for (Map.Entry mpEntry in manualParameters.entrySet()) {
-            pathParameterMap.put(mpEntry.key as String, mpEntry.value as String)
+            pathParameterMap.put(mpEntry.key as String, ScreenRenderImpl.makeValuePlainString(mpEntry.value))
         }
         return this
     }

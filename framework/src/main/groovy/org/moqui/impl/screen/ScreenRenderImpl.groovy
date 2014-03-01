@@ -992,7 +992,13 @@ class ScreenRenderImpl implements ScreenRender {
     String getFieldValuePlainString(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         // NOTE: defaultValue is handled below so that for a plain string it is not run through evaluateStringExpand
         Object obj = getFieldValue(fieldNodeWrapper, "")
-        if (!obj) return defaultValue ?: ""
+        if (!obj && defaultValue) return defaultValue
+        return makeValuePlainString(obj)
+        // NOTE: this approach causes problems with currency fields, but kills the string expand for default-value... a better approach?
+        //return obj ? obj.toString() : (defaultValue ? ec.getResource().evaluateStringExpand(defaultValue, null) : "")
+    }
+    static String makeValuePlainString(Object obj) {
+        if (obj == null) return ""
         // BigDecimal toString() uses scientific notation, annoying, so use toPlainString()
         if (obj instanceof BigDecimal) return ((BigDecimal) obj).toPlainString()
         // handle the special case of timestamps used for primary keys, make sure we avoid TZ, etc problems
@@ -1001,9 +1007,8 @@ class ScreenRenderImpl implements ScreenRender {
         //if (obj instanceof Timestamp) return ec.l10n.formatValue(obj, "yyyy-MM-dd hh:mm:ss.SSS z")
 
         return obj.toString()
-        // NOTE: this approach causes problems with currency fields, but kills the string expand for default-value... a better approach?
-        //return obj ? obj.toString() : (defaultValue ? ec.getResource().evaluateStringExpand(defaultValue, null) : "")
     }
+
     Object getFieldValue(FtlNodeWrapper fieldNodeWrapper, String defaultValue) {
         Node fieldNode = fieldNodeWrapper.getGroovyNode()
         if (fieldNode."@entry-name") return ec.getResource().evaluateContextField((String) fieldNode."@entry-name", null)
