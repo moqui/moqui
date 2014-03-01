@@ -24,6 +24,8 @@ New Features:
 - Added transition.@read-only attribute to skip XSRF check for insecure
   parameters when the transition does not modify data, and when data is
   not too sensitive
+- Added transition.parameter sub-elements to declare additional parameters
+  for a transition, just like and in addition to the screen parameters
 
 - Entity Facade
   - Enhanced EntityDataLoader to also call services, just use the service

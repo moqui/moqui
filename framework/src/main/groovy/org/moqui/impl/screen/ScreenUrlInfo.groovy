@@ -174,33 +174,40 @@ class ScreenUrlInfo {
     List<String> getExtraPathNameList() { return extraPathNameList }
 
     Map<String, String> getParameterMap() {
+        ExecutionContext ec = sri.getEc()
         Map<String, String> pm = new HashMap()
         // get default parameters for the target screen
         if (targetScreen != null) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
-                Object value = pi.getValue(sri.ec)
+                Object value = pi.getValue(ec)
+                if (value) pm.put(pi.name, ScreenRenderImpl.makeValuePlainString(value))
+            }
+        }
+        if (targetTransition != null && targetTransition.getParameterMap()) {
+            for (ParameterItem pi in targetTransition.getParameterMap().values()) {
+                Object value = pi.getValue(ec)
                 if (value) pm.put(pi.name, ScreenRenderImpl.makeValuePlainString(value))
             }
         }
         if (targetTransition != null && targetTransition.getSingleServiceName()) {
             String targetServiceName = targetTransition.getSingleServiceName()
-            ServiceDefinition sd = ((ServiceFacadeImpl) sri.getEc().getService()).getServiceDefinition(targetServiceName)
+            ServiceDefinition sd = ((ServiceFacadeImpl) ec.getService()).getServiceDefinition(targetServiceName)
             if (sd != null) {
                 for (String pn in sd.getInParameterNames()) {
-                    Object value = sri.getEc().getContext().get(pn)
-                    if (!value && sri.getEc().getWeb() != null) value = sri.getEc().getWeb().getParameters().get(pn)
+                    Object value = ec.getContext().get(pn)
+                    if (!value && ec.getWeb() != null) value = ec.getWeb().getParameters().get(pn)
                     if (value) pm.put(pn, ScreenRenderImpl.makeValuePlainString(value))
                 }
             } else if (targetServiceName.contains("#")) {
                 // service name but no service def, see if it is an entity op and if so try the pk fields
                 String verb = targetServiceName.substring(0, targetServiceName.indexOf("#"))
                 if (verb == "create" || verb == "update" || verb == "delete" || verb == "store") {
-                    String en = targetServiceName.substring(targetServiceName.indexOf("#")+1)
-                    EntityDefinition ed = ((EntityFacadeImpl) sri.ec.entity).getEntityDefinition(en)
+                    String en = targetServiceName.substring(targetServiceName.indexOf("#") + 1)
+                    EntityDefinition ed = ((EntityFacadeImpl) ec.getEntity()).getEntityDefinition(en)
                     if (ed != null) {
                         for (String fn in ed.getPkFieldNames()) {
-                            Object value = sri.getEc().getContext().get(fn)
-                            if (!value && sri.getEc().getWeb() != null) value = sri.getEc().getWeb().getParameters().get(fn)
+                            Object value = ec.getContext().get(fn)
+                            if (!value && ec.getWeb() != null) value = ec.getWeb().getParameters().get(fn)
                             if (value) pm.put(fn, ScreenRenderImpl.makeValuePlainString(value))
                         }
                     }
@@ -227,9 +234,9 @@ class ScreenUrlInfo {
         StringBuilder ps = new StringBuilder()
         Map<String, String> pm = this.getParameterMap()
         for (Map.Entry<String, String> pme in pm) {
-            if (!pme.value) continue
+            if (!pme.getValue()) continue
             ps.append("/~")
-            ps.append(pme.key).append("=").append(sri.urlCodec.encode(pme.value))
+            ps.append(pme.getKey()).append("=").append(sri.urlCodec.encode(pme.getValue()))
         }
         return ps.toString()
     }
@@ -242,7 +249,7 @@ class ScreenUrlInfo {
     ScreenUrlInfo addParameters(Map manualParameters) {
         if (!manualParameters) return this
         for (Map.Entry mpEntry in manualParameters.entrySet()) {
-            pathParameterMap.put(mpEntry.key as String, ScreenRenderImpl.makeValuePlainString(mpEntry.value))
+            pathParameterMap.put(mpEntry.getKey() as String, ScreenRenderImpl.makeValuePlainString(mpEntry.getValue()))
         }
         return this
     }

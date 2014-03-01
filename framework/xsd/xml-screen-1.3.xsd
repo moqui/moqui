@@ -51,8 +51,8 @@ This Work includes contributions authored by David E. Jones, not as a
                         screen can get them from by default (usually just default to the same from, but can be a
                         static value for default or whatever).
 
-                        Individual transition-response and other elements can override where the parameter comes from
-                        with their own parameter sub-elements.
+                        Individual transition, transition.*-response and other elements can override where the parameter
+                        comes from with their own parameter sub-elements.
                     </xs:documentation></xs:annotation>
                 </xs:element>
                 <xs:element ref="always-actions" minOccurs="0"/>
@@ -164,6 +164,16 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
+                <xs:element ref="parameter" minOccurs="0" maxOccurs="unbounded">
+                    <xs:annotation><xs:documentation>
+                        These are the parameters the transition expects or allows to be passed in, and where the calling
+                        screen can get them from by default (usually just default to the same from, but can be a
+                        static value for default or whatever).
+
+                        These are in addition to the screen.parameter values. Individual transition.*-response and other
+                        elements can override where the parameter comes from with their own parameter sub-elements.
+                    </xs:documentation></xs:annotation>
+                </xs:element>
                 <xs:element ref="path-parameter" minOccurs="0" maxOccurs="unbounded">
                     <xs:annotation><xs:documentation>
                         These are additional path elements after the transition's path element. The values will be added
