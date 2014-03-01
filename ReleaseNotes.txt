@@ -92,6 +92,9 @@ Bug Fixes:
   treats things like 100 represented as 1E2 as 1
 - Fixed issue with iterate over a Map when key attribute is set where the
   key and value were switched in the specified field names
+- Links (including URL parameter and hidden form) now handle Timestamp and
+  BigDecimal the same as hidden form fields. This resolves issues with time
+  zones for Timestamps, and with number parsing for BigDecimals.
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013
