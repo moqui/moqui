@@ -59,8 +59,8 @@ class ScreenSection {
             }
             Iterator listIterator = null
             if (list instanceof Iterator) listIterator = list
-            else if (list instanceof List) listIterator = list.iterator()
             else if (list instanceof Map) listIterator = list.entrySet().iterator()
+            else if (list instanceof Iterable) listIterator = list.iterator()
 
             // TODO: handle paginate, paginate-size (lower priority...)
             int index = 0
