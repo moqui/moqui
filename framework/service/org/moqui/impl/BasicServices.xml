@@ -36,6 +36,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <entity-find entity-name="moqui.basic.StatusFlowTransitionToDetail" list="statusDetailList">
                 <econdition field-name="statusId"/>
                 <econdition field-name="statusFlowId" ignore-if-empty="true"/>
+                <order-by field-name="${orderByField}"/>
             </entity-find>
         </actions>
     </service>
