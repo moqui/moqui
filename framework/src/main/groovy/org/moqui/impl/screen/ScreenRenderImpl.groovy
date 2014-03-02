@@ -609,26 +609,26 @@ class ScreenRenderImpl implements ScreenRender {
                 if (sd.screenNode."@login-path") loginPath = sd.screenNode."@login-path"
             }
 
-            /*
-            // respond with 401 and the login screen instead of a redirect; JS client libraries handle this much better
-            List<String> pathElements = loginPath.split("/") as List
-            if (loginPath.startsWith("/")) {
-                this.originalScreenPathNameList = pathElements
+            if (screenUrlInfo.isLastStandalone() || screenUrlInfo.getTargetTransition() != null) {
+                // respond with 401 and the login screen instead of a redirect; JS client libraries handle this much better
+                List<String> pathElements = loginPath.split("/") as List
+                if (loginPath.startsWith("/")) {
+                    this.originalScreenPathNameList = pathElements
+                } else {
+                    this.originalScreenPathNameList = screenUrlInfo.preTransitionPathNameList
+                    this.originalScreenPathNameList.addAll(pathElements)
+                }
+                // reset screenUrlInfo and call this again to start over with the new target
+                screenUrlInfo = null
+                internalRender()
+                if (response != null) response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
+                return false
             } else {
-                this.originalScreenPathNameList = screenUrlInfo.preTransitionPathNameList
-                this.originalScreenPathNameList.addAll(pathElements)
+                // now prepare and send the redirect
+                ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], loginPath, false, false)
+                response.sendRedirect(sui.url)
+                return false
             }
-            // reset screenUrlInfo and call this again to start over with the new target
-            screenUrlInfo = null
-            internalRender()
-            if (response != null) response.setStatus(HttpServletResponse.SC_UNAUTHORIZED)
-            return false
-            */
-
-            // now prepare and send the redirect
-            ScreenUrlInfo sui = new ScreenUrlInfo(this, rootScreenDef, [], loginPath, false, false)
-            response.sendRedirect(sui.url)
-            return false
         }
 
         // if request not secure and screens requires secure redirect to https
