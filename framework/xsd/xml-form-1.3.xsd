@@ -573,6 +573,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     auto-fields-service will inherit from service parameter.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="default-value" type="xs:string"/>
+            <xs:attribute name="size" type="xs:positiveInteger"/>
+            <xs:attribute name="max-length" type="xs:positiveInteger"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="display" substitutionGroup="SubFields">
