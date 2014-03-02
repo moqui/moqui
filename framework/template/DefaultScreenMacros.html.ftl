@@ -1081,6 +1081,35 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
 </span>
 </#macro>
+<#--
+Bootstrap datepicker format refer to https://github.com/smalot/bootstrap-datetimepicker
+Java simple date format refer to http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+Java	Datepicker	Description
+a	    p	        am/pm
+a	    P	        AM/PM
+s	    s	        seconds without leading zeros
+ss	    ss	        seconds, 2 digits with leading zeros
+m	    i	        minutes without leading zeros
+mm	    ii	        minutes, 2 digits with leading zeros
+H	    h	        hour without leading zeros - 24-hour format
+HH	    hh	        hour, 2 digits with leading zeros - 24-hour format
+h	    H	        hour without leading zeros - 12-hour format
+hh	    HH	        hour, 2 digits with leading zeros - 12-hour format
+d	    d	        day of the month without leading zeros
+dd	    dd	        day of the month, 2 digits with leading zeros
+M	    m	        numeric representation of month without leading zeros
+MM	    mm	        numeric representation of the month, 2 digits with leading zeros
+MMM	    M	        short textual representation of a month, three letters
+MMMM	MM	        full textual representation of a month, such as January or March
+yy	    yy	        two digit representation of a year
+yyyy	yyyy	    full numeric representation of a year, 4 digits
+
+The java format that requires to be translate to bootstrap datepicker format, others not in this list but in SimpleDateFormat should not be used:
+a -> p m -> i h -> H H -> h M - m MMM -> M MMMM -> MM
+-->
+<#-- if condition to avoid recursion of replacing "h" and "H" -->
+<#macro getBootstrapDateFormat dateFormat><#if dateFormat?contains("h")>${dateFormat?replace("a","p")?replace("m","i")?replace("h","H")?replace("M","m")?replace("mmmm","MM")?replace("mmm","M")}<#else>${dateFormat?replace("a","p")?replace("m","i")?replace("H","h")?replace("M","m")?replace("mmmm","MM")?replace("mmm","M")}</#if></#macro>
+
 <#macro "date-time">
 <span class="form-date-time">
     <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm:ss">
@@ -1089,10 +1118,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!defaultFormat)>
     <#assign id><@fieldId .node/></#assign>
-
+    <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
+    <#assign size = .node["@size"]?default(size)>
+    <#assign maxlength = .node["@max-length"]?default(maxlength)>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
-            <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd">
+            <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
@@ -1100,7 +1131,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#assign afterFormScript>$('#${id}').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
-            <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="yyyy-mm-dd hh:ii:ss">
+            <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
             <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
@@ -1109,7 +1140,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
-        <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="hh:ii:ss">
+        <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
             <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
         <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
