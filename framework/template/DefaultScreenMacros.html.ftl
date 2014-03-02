@@ -1081,6 +1081,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
 </span>
 </#macro>
+
 <#--
 Bootstrap datepicker format refer to https://github.com/smalot/bootstrap-datetimepicker
 Java simple date format refer to http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
@@ -1105,7 +1106,7 @@ yy	    yy	        two digit representation of a year
 yyyy	yyyy	    full numeric representation of a year, 4 digits
 
 The java format that requires to be translate to bootstrap datepicker format, others not in this list but in SimpleDateFormat should not be used:
-a -> p m -> i h -> H H -> h M - m MMM -> M MMMM -> MM
+a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 -->
 <#-- if condition to avoid recursion of replacing "h" and "H" -->
 <#macro getBootstrapDateFormat dateFormat><#if dateFormat?contains("h")>${dateFormat?replace("a","p")?replace("m","i")?replace("h","H")?replace("M","m")?replace("mmmm","MM")?replace("mmm","M")}<#else>${dateFormat?replace("a","p")?replace("m","i")?replace("H","h")?replace("M","m")?replace("mmmm","MM")?replace("mmm","M")}</#if></#macro>
