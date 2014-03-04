@@ -11,6 +11,8 @@
  */
 package org.moqui.service;
 
+import org.quartz.Scheduler;
+
 /**
  * ServiceFacade Interface
  */
@@ -30,4 +32,6 @@ public interface ServiceFacade {
      * @param serviceCallback The callback implementation.
      */
     void registerCallback(String serviceName, ServiceCallback serviceCallback);
+
+    Scheduler getScheduler();
 }

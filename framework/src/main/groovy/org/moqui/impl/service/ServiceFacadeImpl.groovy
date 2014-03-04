@@ -399,6 +399,9 @@ class ServiceFacadeImpl implements ServiceFacade {
         callbackList.add(serviceCallback)
     }
 
+    @Override
+    Scheduler getScheduler() { return scheduler }
+
     // ========== Quartz Listeners ==========
 
     boolean shouldSkipScheduleHistory(TriggerKey triggerKey) {
