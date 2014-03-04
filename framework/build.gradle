@@ -106,6 +106,7 @@ dependencies {
     compile name: 'jna', version: '4.0.0' // Apache 2.0
     compile name: 'jna-platform', version: '4.0.0' // Apache 2.0
 
+    apiCompile name: 'quartz', version: '2.2.1' // Apache 2.0
     compile name: 'quartz', version: '2.2.1' // Apache 2.0
     compile name: 'quartz-jobs', version: '2.2.1' // Apache 2.0
 
