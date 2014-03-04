@@ -42,6 +42,8 @@ public interface ServiceCallSync extends ServiceCall {
      */
     ServiceCallSync multi(boolean mlt);
 
+    ServiceCallSync disableAuthz();
+
     /* * If null defaults to configured value for service, or container. For possible values see JavaDoc for javax.sql.Connection.
      * @return Reference to this for convenience.
      */
