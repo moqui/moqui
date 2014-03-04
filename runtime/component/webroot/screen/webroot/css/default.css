@@ -191,6 +191,8 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .9em; }
 .form-date-time { white-space: nowrap; }
 
+.form-text-find input { display: inline-block; }
+
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
 a.form-order-by:hover { color: blue; }
