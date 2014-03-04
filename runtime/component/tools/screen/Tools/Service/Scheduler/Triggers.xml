@@ -24,6 +24,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions><script>ec.service.scheduler.resumeTrigger(org.quartz.TriggerKey.triggerKey(triggerName, triggerGroup))</script></actions>
         <default-response url="."/>
     </transition>
+    <transition name="deleteJob">
+        <parameter name="jobName"/><parameter name="jobGroup"/>
+        <actions><script>ec.service.scheduler.deleteJob(org.quartz.JobKey.jobKey(jobName, jobGroup))</script></actions>
+        <default-response url="."/>
+    </transition>
 
     <actions>
         <set field="triggerGroupList" from="ec.service.scheduler.getTriggerGroupNames()"/>
@@ -68,6 +73,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <conditional-field condition="triggerState == 'PAUSED'"><link url="resumeTrigger" text="Resume"/></conditional-field>
                         <default-field><link url="pauseTrigger" text="Pause"/></default-field>
                     </field>
+                    <field name="deleteJob"><default-field><link url="deleteJob" text="Delete"/></default-field></field>
                 </form-list>
             </widgets>
         </section-iterate>
