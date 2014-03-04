@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
+        default-menu-index="2">
+
+    <transition name="pauseTrigger">
+        <parameter name="triggerName"/><parameter name="triggerGroup"/>
+        <actions><script>ec.service.scheduler.pauseTrigger(org.quartz.TriggerKey.triggerKey(triggerName, triggerGroup))</script></actions>
+        <default-response url="."/>
+    </transition>
+    <transition name="resumeTrigger">
+        <parameter name="triggerName"/><parameter name="triggerGroup"/>
+        <actions><script>ec.service.scheduler.resumeTrigger(org.quartz.TriggerKey.triggerKey(triggerName, triggerGroup))</script></actions>
+        <default-response url="."/>
+    </transition>
+
+    <actions>
+        <set field="jobGroupList" from="ec.service.scheduler.getJobGroupNames()"/>
+    </actions>
+    <widgets>
+        <section-iterate name="TriggerGroupsSection" list="jobGroupList" entry="jobGroup">
+            <actions>
+                <script>
+                    import groovy.json.JsonBuilder
+                    import org.quartz.JobDetail
+                    import org.quartz.JobKey
+                    import org.quartz.impl.matchers.GroupMatcher
+                    import org.quartz.Scheduler
+                    import org.quartz.Trigger
+                    import org.quartz.TriggerKey
+
+                    Scheduler scheduler = ec.service.scheduler
+                    jobInfoList = []
+                    Set jobKeys = scheduler.getJobKeys(GroupMatcher.jobGroupEquals((String) jobGroup))
+                    for (JobKey jobKey in jobKeys) {
+                        JobDetail job = scheduler.getJobDetail(jobKey)
+                        if (job == null) continue
+                        // skip jobs with triggers? if (scheduler.getTriggersOfJob(job.getKey()).size() > 0) continue
+                        List triggers = scheduler.getTriggersOfJob(job.getKey())
+                        if (triggers) {
+                            for (Trigger trigger in triggers) {
+                                JsonBuilder jb = new JsonBuilder(); jb.call(trigger.getJobDataMap()); String paramString = jb.toString()
+                                jobInfoList.add([triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                                        jobGroup:job.getKey().getGroup(), jobName:job.getKey().getName(),
+                                        nextFireTime:(trigger.getNextFireTime() ? new Timestamp(trigger.getNextFireTime().getTime()) : null),
+                                        previousFireTime:(trigger.getPreviousFireTime() ? new Timestamp(trigger.getPreviousFireTime().getTime()) : null),
+                                        triggerState:scheduler.getTriggerState(trigger.getKey()).toString(), paramString:paramString])
+                            }
+                        } else {
+                            JsonBuilder jb = new JsonBuilder(); jb.call(job.getJobDataMap()); String paramString = jb.toString()
+                            jobInfoList.add([jobGroup: job.getKey().getGroup(), jobName: job.getKey().getName(),
+                                    paramString:paramString])
+                        }
+                    }
+                </script>
+            </actions>
+            <widgets>
+                <label type="h3" text="Job Group ${jobGroup}"/>
+                <form-list name="JobDetailList" list="jobInfoList" skip-form="true">
+                    <field name="triggerGroup"><default-field><display/></default-field></field>
+                    <field name="triggerName"><default-field><display/></default-field></field>
+                    <field name="jobGroup"><default-field><display/></default-field></field>
+                    <field name="jobName"><default-field><display/></default-field></field>
+                    <field name="nextFireTime"><default-field><display/></default-field></field>
+                    <field name="previousFireTime"><default-field><display/></default-field></field>
+                    <field name="triggerState"><default-field><display/></default-field></field>
+                    <field name="paramString"><default-field><display/></default-field></field>
+                    <field name="pauseResume">
+                        <conditional-field condition="triggerState == 'PAUSED'"><link url="resumeTrigger" text="Resume"/></conditional-field>
+                        <conditional-field condition="triggerState"><link url="pauseTrigger" text="Pause"/></conditional-field>
+                        <default-field><display text=""/></default-field>
+                    </field>
+                </form-list>
+            </widgets>
+        </section-iterate>
+    </widgets>
+</screen>

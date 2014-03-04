@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
+        default-menu-index="3">
+
+    <transition name="pauseTrigger">
+        <parameter name="triggerName"/><parameter name="triggerGroup"/>
+        <actions><script>ec.service.scheduler.pauseTrigger(org.quartz.TriggerKey.triggerKey(triggerName, triggerGroup))</script></actions>
+        <default-response url="."/>
+    </transition>
+    <transition name="resumeTrigger">
+        <parameter name="triggerName"/><parameter name="triggerGroup"/>
+        <actions><script>ec.service.scheduler.resumeTrigger(org.quartz.TriggerKey.triggerKey(triggerName, triggerGroup))</script></actions>
+        <default-response url="."/>
+    </transition>
+
+    <actions>
+        <set field="triggerGroupList" from="ec.service.scheduler.getTriggerGroupNames()"/>
+    </actions>
+    <widgets>
+        <section-iterate name="TriggerGroupsSection" list="triggerGroupList" entry="triggerGroup">
+            <actions>
+                <script>
+                    import groovy.json.JsonBuilder
+                    import org.quartz.impl.matchers.GroupMatcher
+                    import org.quartz.Scheduler
+                    import org.quartz.Trigger
+                    import org.quartz.TriggerKey
+
+                    Scheduler scheduler = ec.service.scheduler
+                    triggerInfoList = []
+                    Set triggerKeys = scheduler.getTriggerKeys(GroupMatcher.triggerGroupEquals((String) triggerGroup))
+                    for (TriggerKey triggerKey in triggerKeys) {
+                        Trigger trigger = scheduler.getTrigger(triggerKey)
+                        if (trigger == null) continue
+                        JsonBuilder jb = new JsonBuilder(); jb.call(trigger.getJobDataMap().getWrappedMap()); String paramString = jb.toString()
+                        triggerInfoList.add([triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                            jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
+                            nextFireTime:(trigger.getNextFireTime() ? new Timestamp(trigger.getNextFireTime().getTime()) : null),
+                            previousFireTime:(trigger.getPreviousFireTime() ? new Timestamp(trigger.getPreviousFireTime().getTime()) : null),
+                            triggerState:scheduler.getTriggerState(triggerKey).toString(), paramString:paramString])
+                    }
+                </script>
+            </actions>
+            <widgets>
+                <label type="h3" text="Trigger Group ${triggerGroup}"/>
+                <form-list name="TriggerDetailList" list="triggerInfoList" skip-form="true">
+                    <field name="triggerGroup"><default-field><display/></default-field></field>
+                    <field name="triggerName"><default-field><display/></default-field></field>
+                    <field name="jobGroup"><default-field><display/></default-field></field>
+                    <field name="jobName"><default-field><display/></default-field></field>
+                    <field name="nextFireTime"><default-field><display/></default-field></field>
+                    <field name="previousFireTime"><default-field><display/></default-field></field>
+                    <field name="triggerState"><default-field><display/></default-field></field>
+                    <field name="paramString"><default-field><display/></default-field></field>
+                    <field name="pauseResume">
+                        <conditional-field condition="triggerState == 'PAUSED'"><link url="resumeTrigger" text="Resume"/></conditional-field>
+                        <default-field><link url="pauseTrigger" text="Pause"/></default-field>
+                    </field>
+                </form-list>
+            </widgets>
+        </section-iterate>
+    </widgets>
+</screen>
