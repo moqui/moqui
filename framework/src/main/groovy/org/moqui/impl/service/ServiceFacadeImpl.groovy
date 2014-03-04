@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service
 
+import groovy.json.JsonBuilder
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
 import org.moqui.service.ServiceFacade
@@ -22,8 +23,15 @@ import org.moqui.service.ServiceCallSpecial
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.context.reference.ClasspathResourceReference
-
+import org.quartz.JobDetail
+import org.quartz.JobExecutionContext
+import org.quartz.JobKey
 import org.quartz.Scheduler
+import org.quartz.SchedulerException
+import org.quartz.SchedulerListener
+import org.quartz.Trigger
+import org.quartz.TriggerKey
+import org.quartz.TriggerListener
 import org.quartz.impl.StdSchedulerFactory
 import javax.mail.internet.MimeMessage
 import org.moqui.context.ExecutionContext
@@ -31,6 +39,8 @@ import org.moqui.BaseException
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import java.sql.Timestamp
 
 class ServiceFacadeImpl implements ServiceFacade {
     protected final static Logger logger = LoggerFactory.getLogger(ServiceFacadeImpl.class)
@@ -45,12 +55,12 @@ class ServiceFacadeImpl implements ServiceFacade {
     protected final Map<String, ServiceRunner> serviceRunners = new HashMap()
 
     protected final Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler()
+    protected Map<String, Object> schedulerInfoMap
 
     protected final Map<String, List<ServiceCallback>> callbackRegistry = new HashMap()
 
     ServiceFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
-
         this.serviceLocationCache = ecfi.getCacheFacade().getCache("service.location")
 
         // load Service ECA rules
@@ -65,8 +75,17 @@ class ServiceFacadeImpl implements ServiceFacade {
             serviceRunners.put((String) serviceType."@name", sr.init(this))
         }
 
+        // prep data for scheduler history listeners
+        InetAddress localHost = InetAddress.getLocalHost()
+        schedulerInfoMap = [hostAddress:localHost.getHostAddress(), hostName:localHost.getHostName(),
+                schedulerId:scheduler.getSchedulerInstanceId(), schedulerName:scheduler.getSchedulerName()]
+
+        scheduler.getListenerManager().addTriggerListener(new HistoryTriggerListener());
+        scheduler.getListenerManager().addSchedulerListener(new HistorySchedulerListener());
+
         // init quartz scheduler (do last just in case it gets any jobs going right away)
         scheduler.start()
+        // TODO: add a job to delete scheduler history
     }
 
     void destroy() {
@@ -378,5 +397,179 @@ class ServiceFacadeImpl implements ServiceFacade {
             callbackRegistry.put(serviceName, callbackList)
         }
         callbackList.add(serviceCallback)
+    }
+
+    // ========== Quartz Listeners ==========
+
+    boolean shouldSkipScheduleHistory(TriggerKey triggerKey) {
+        // filter out high-frequency, temporary jobs (these are mostly async service calls)
+        return triggerKey.getGroup() == "NowTrigger"
+    }
+
+    protected class HistorySchedulerListener implements SchedulerListener {
+
+        @Override
+        void jobScheduled(Trigger trigger) {
+            if (shouldSkipScheduleHistory(trigger.getKey())) return
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobScheduled",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                        jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName()]).disableAuthz().call()
+        }
+        @Override
+        void jobUnscheduled(TriggerKey triggerKey) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobUnscheduled",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        triggerGroup:triggerKey.getGroup(), triggerName:triggerKey.getName()]).disableAuthz().call()
+        }
+
+        @Override
+        void triggerPaused(TriggerKey triggerKey) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggerPaused",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        triggerGroup:triggerKey.getGroup(), triggerName:triggerKey.getName()]).disableAuthz().call()
+        }
+        @Override
+        void triggersPaused(String triggerGroup) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggersPaused",
+                        eventDate:new Timestamp(System.currentTimeMillis()), triggerGroup:triggerGroup]).disableAuthz().call()
+        }
+
+        @Override
+        void triggerResumed(TriggerKey triggerKey) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggerResumed",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        triggerGroup:triggerKey.getGroup(), triggerName:triggerKey.getName()]).disableAuthz().call()
+        }
+
+        @Override
+        void triggersResumed(String triggerGroup) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggersResumed",
+                        eventDate:new Timestamp(System.currentTimeMillis()), triggerGroup:triggerGroup]).disableAuthz().call()
+        }
+
+        @Override
+        void schedulerError(String msg, SchedulerException cause) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvSchedulerError",
+                        eventDate:new Timestamp(System.currentTimeMillis()), message:msg]).disableAuthz().call()
+            // TODO: do anything with the cause?
+        }
+
+        @Override
+        void schedulerInStandbyMode() { }
+        @Override
+        void schedulerStarting() { }
+        @Override
+        void schedulerStarted() { }
+        @Override
+        void schedulerShutdown() { }
+        @Override
+        void schedulerShuttingdown() { }
+
+        @Override
+        void schedulingDataCleared() { }
+
+        @Override
+        void jobAdded(JobDetail jobDetail) { }
+        @Override
+        void jobDeleted(JobKey jobKey) {
+            /* do nothing, no easy way to filter the high-frequency jobs:
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobDeleted",
+                    eventDate:new Timestamp(System.currentTimeMillis()),
+                    jobGroup:jobKey.getGroup(), jobName:jobKey.getName()]).disableAuthz().call()
+             */
+        }
+
+        @Override
+        void jobPaused(JobKey jobKey) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobPaused",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        jobGroup:jobKey.getGroup(), jobName:jobKey.getName()]).disableAuthz().call()
+        }
+        @Override
+        void jobResumed(JobKey jobKey) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobResumed",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        jobGroup:jobKey.getGroup(), jobName:jobKey.getName()]).disableAuthz().call()
+        }
+        @Override
+        void jobsPaused(String jobGroup) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobsPaused",
+                        eventDate:new Timestamp(System.currentTimeMillis()), jobGroup:jobGroup]).disableAuthz().call()
+        }
+        @Override
+        void jobsResumed(String jobGroup) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvJobsResumed",
+                        eventDate:new Timestamp(System.currentTimeMillis()), jobGroup:jobGroup]).disableAuthz().call()
+        }
+
+        @Override
+        void triggerFinalized(Trigger trigger) {
+            if (shouldSkipScheduleHistory(trigger.getKey())) return
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggerFinalized",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                        jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName()]).disableAuthz().call()
+        }
+    }
+
+    protected class HistoryTriggerListener implements TriggerListener {
+        @Override
+        String getName() { return "Moqui.Service.HistoryTriggerListener" }
+
+        @Override
+        void triggerFired(Trigger trigger, JobExecutionContext context) {
+            if (shouldSkipScheduleHistory(trigger.getKey())) return
+            JsonBuilder jb = new JsonBuilder()
+            jb.call(context.getMergedJobDataMap())
+            String paramString = jb.toString()
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggerFired",
+                        eventDate:new Timestamp(context.getFireTime().getTime()),
+                        triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                        jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
+                        fireIntanceId:context.getFireInstanceId(), paramString:paramString]).disableAuthz().call()
+        }
+
+        @Override
+        boolean vetoJobExecution(Trigger trigger, JobExecutionContext context) { return false }
+
+        @Override
+        void triggerMisfired(Trigger trigger) {
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggerMisfired",
+                        eventDate:new Timestamp(System.currentTimeMillis()),
+                        triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                        jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName()]).disableAuthz().call()
+        }
+
+        @Override
+        void triggerComplete(Trigger trigger, JobExecutionContext context,
+                                    Trigger.CompletedExecutionInstruction triggerInstructionCode) {
+            if (shouldSkipScheduleHistory(trigger.getKey())) return
+            JsonBuilder jb = new JsonBuilder()
+            jb.call(context.getMergedJobDataMap())
+            String paramString = jb.toString()
+            sync().name("create#moqui.service.scheduler.SchedulerHistory")
+                    .parameters(schedulerInfoMap + [eventTypeEnumId:"SchEvTriggerComplete",
+                        eventDate:new Timestamp(context.getFireTime().getTime()),
+                        triggerGroup:trigger.getKey().getGroup(), triggerName:trigger.getKey().getName(),
+                        jobGroup:trigger.getJobKey().getGroup(), jobName:trigger.getJobKey().getName(),
+                        fireIntanceId:context.getFireInstanceId(), paramString:paramString,
+                        triggerInstructionCode:triggerInstructionCode.toString()]).disableAuthz().call()
+        }
     }
 }

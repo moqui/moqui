@@ -44,6 +44,8 @@ New Features:
   - Added parameter.@default attribute which is like the @default-value
     attribute except that it is a field name or expression for the default
     field value.
+  - Added SchedulerHistory and code to populate it on various Quartz
+    Scheduler events
 - Transaction Facade
   - Added transaction-facade.@use-transaction-cache attribute, defaults to
     true, set to false to disable the TransactionCache globally

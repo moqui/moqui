@@ -22,4 +22,49 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="lockThread" type="text-medium"/>
         <field name="lockTime" type="date-time"/>
     </entity>
+
+    <!-- ========================================================= -->
+    <!-- moqui.service.scheduler -->
+    <!-- ========================================================= -->
+    <entity entity-name="SchedulerHistory" package-name="moqui.service.scheduler">
+        <field name="schedulerHistoryId" type="id" is-pk="true"/>
+        <field name="hostAddress" type="text-short"/>
+        <field name="hostName" type="text-medium"/>
+        <field name="schedulerId" type="text-medium"/>
+        <field name="schedulerName" type="text-medium"/>
+        <field name="eventTypeEnumId" type="id"/>
+        <field name="eventDate" type="date-time"/>
+        <field name="triggerGroup" type="text-medium"/>
+        <field name="triggerName" type="text-medium"/>
+        <field name="jobGroup" type="text-medium"/>
+        <field name="jobName" type="text-medium"/>
+        <field name="fireIntanceId" type="text-medium"/>
+        <field name="message" type="text-medium"/>
+        <field name="paramString" type="text-long"/>
+        <field name="triggerInstructionCode" type="text-short"/>
+        <!-- this is one-nofk because it is used during initial data load, need a better solution for this -->
+        <relationship type="one-nofk" title="SchedulerEventType" related-entity-name="moqui.basic.Enumeration">
+            <key-map field-name="eventTypeEnumId"/>
+        </relationship>
+        <seed-data>
+            <!-- Scheduler Event Type -->
+            <moqui.basic.EnumerationType description="Scheduler Event Type" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Job Scheduled" enumId="SchEvJobScheduled" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Job Unscheduled" enumId="SchEvJobUnscheduled" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Trigger Paused" enumId="SchEvTriggerPaused" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Trigger Resumed" enumId="SchEvTriggerResumed" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Triggers Paused" enumId="SchEvTriggersPaused" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Triggers Resumed" enumId="SchEvTriggersResumed" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Scheduler Error" enumId="SchEvSchedulerError" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Job Deleted" enumId="SchEvJobDeleted" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Job Paused" enumId="SchEvJobPaused" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Job Resumed" enumId="SchEvJobResumed" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Jobs Paused" enumId="SchEvJobsPaused" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Jobs Resumed" enumId="SchEvJobsResumed" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Trigger Finalized" enumId="SchEvTriggerFinalized" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Trigger Fired" enumId="SchEvTriggerFired" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Trigger Complete" enumId="SchEvTriggerComplete" enumTypeId="SchedulerEventType"/>
+            <moqui.basic.Enumeration description="Trigger Misfired" enumId="SchEvTriggerMisfired" enumTypeId="SchedulerEventType"/>
+        </seed-data>
+    </entity>
 </entities>
