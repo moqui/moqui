@@ -64,6 +64,8 @@ abstract class EntityFindBase implements EntityFind {
     protected Integer fetchSize = null
     protected Integer maxRows = null
 
+    protected boolean disableAuthz = false
+
     EntityFindBase(EntityFacadeImpl efi, String entityName) {
         this.efi = efi
         this.entityName = entityName
@@ -427,19 +429,28 @@ abstract class EntityFindBase implements EntityFind {
                 "OFFSET [${offset}] LIMIT [${limit}] FOR UPDATE [${forUpdate}]"
     }
 
-    // ======================== Abstract Methods ========================
+    // ======================== Find and Abstract Methods ========================
+
+    EntityFind disableAuthz() { disableAuthz = true; return this }
+
     abstract EntityDynamicView makeEntityDynamicView()
 
     @Override
     EntityValue one() throws EntityException {
-        if (this.dynamicView) {
-            throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
+        boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
+        try {
+            return oneInternal()
+        } finally {
+            if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
         }
+    }
+    protected EntityValue oneInternal() throws EntityException {
+        if (this.dynamicView) throw new IllegalArgumentException("Dynamic View not supported for 'one' find.")
 
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
-        ExecutionContext ec = efi.ecfi.getExecutionContext()
+        ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
         if (ed.isViewEntity() && (!entityNode."member-entity" || !entityNode."alias"))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
@@ -531,14 +542,23 @@ abstract class EntityFindBase implements EntityFind {
 
         return newEntityValue
     }
+
     abstract EntityValueBase oneExtended(EntityConditionImplBase whereCondition) throws EntityException
 
     @Override
     EntityList list() throws EntityException {
+        boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
+        try {
+            return listInternal()
+        } finally {
+            if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+    }
+    protected EntityList listInternal() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
-        ExecutionContext ec = efi.ecfi.executionContext
+        ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
         if (ed.isViewEntity() && (!entityNode."member-entity" || !entityNode."alias"))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
@@ -631,10 +651,18 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     EntityListIterator iterator() throws EntityException {
+        boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
+        try {
+            return iteratorInternal()
+        } finally {
+            if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+    }
+    protected EntityListIterator iteratorInternal() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
-        ExecutionContext ec = efi.ecfi.executionContext
+        ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
         if (ed.isViewEntity() && (!entityNode."member-entity" || !entityNode."alias"))
             throw new EntityException("Cannot do find for view-entity with name [${entityName}] because it has no member entities or no aliased fields.")
@@ -706,10 +734,18 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     long count() throws EntityException {
+        boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
+        try {
+            return countInternal()
+        } finally {
+            if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+    }
+    protected long countInternal() throws EntityException {
         long startTime = System.currentTimeMillis()
         EntityDefinition ed = this.getEntityDef()
         Node entityNode = ed.getEntityNode()
-        ExecutionContext ec = efi.ecfi.executionContext
+        ExecutionContext ec = efi.getEcfi().getExecutionContext()
 
         ec.getArtifactExecution().push(
                 new ArtifactExecutionInfoImpl(ed.getFullEntityName(), "AT_ENTITY", "AUTHZA_VIEW").setActionDetail("count"),
@@ -770,6 +806,14 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     long updateAll(Map<String, ?> fieldsToSet) {
+        boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
+        try {
+            return updateAllInternal(fieldsToSet)
+        } finally {
+            if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+    }
+    protected long updateAllInternal(Map<String, ?> fieldsToSet) {
         // NOTE: this code isn't very efficient, but will do the trick and cause all EECAs to be fired
         // NOTE: consider expanding this to do a bulk update in the DB if there are no EECAs for the entity
 
@@ -797,6 +841,14 @@ abstract class EntityFindBase implements EntityFind {
 
     @Override
     long deleteAll() {
+        boolean enableAuthz = disableAuthz ? !efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz() : false
+        try {
+            return deleteAllInternal()
+        } finally {
+            if (enableAuthz) efi.getEcfi().getExecutionContext().getArtifactExecution().enableAuthz()
+        }
+    }
+    protected long deleteAllInternal() {
         // NOTE: this code isn't very efficient (though eli.remove() is a little bit more), but will do the trick and cause all EECAs to be fired
 
         if (getEntityDef().createOnly()) throw new EntityException("Entity [${getEntityDef().getFullEntityName()}] is create-only (immutable), cannot be deleted.")

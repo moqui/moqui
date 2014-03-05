@@ -226,6 +226,8 @@ public interface EntityFind extends java.io.Serializable {
 
     // ======================== Run Find Methods ==============================
 
+    EntityFind disableAuthz();
+
     /** Runs a find with current options to get a single record by primary key.
      * This method ignores the cache setting and always gets results from the database.
      */

@@ -162,15 +162,10 @@ class UserFacadeImpl implements UserFacade {
                 }
                 if (cookieVisitorId) {
                     // make sure the Visitor record actually exists, if not act like we got no moqui.visitor cookie
-                    boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
-                    try {
-                        EntityValue visitor = eci.entity.makeFind("moqui.server.Visitor").condition("visitorId", cookieVisitorId).one()
-                        if (visitor == null) {
-                            logger.info("Got invalid visitorId [${cookieVisitorId}] in moqui.visitor cookie in session [${session.id}], throwing away and making a new one")
-                            cookieVisitorId = null
-                        }
-                    } finally {
-                        if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
+                    EntityValue visitor = eci.entity.makeFind("moqui.server.Visitor").condition("visitorId", cookieVisitorId).disableAuthz().one()
+                    if (visitor == null) {
+                        logger.info("Got invalid visitorId [${cookieVisitorId}] in moqui.visitor cookie in session [${session.id}], throwing away and making a new one")
+                        cookieVisitorId = null
                     }
                 }
                 if (!cookieVisitorId) {
@@ -339,14 +334,9 @@ class UserFacadeImpl implements UserFacade {
     String getPreference(String preferenceKey) {
         String userId = getUserId()
         if (!userId) return null
-        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
-        try {
-            EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", getUserId())
-                    .condition("preferenceKey", preferenceKey).useCache(true).one()
-            return up ? up.preferenceValue : null
-        } finally {
-            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
-        }
+        EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", getUserId())
+                .condition("preferenceKey", preferenceKey).useCache(true).disableAuthz().one()
+        return up ? up.preferenceValue : null
     }
 
     @Override
@@ -542,13 +532,8 @@ class UserFacadeImpl implements UserFacade {
     EntityValue getUserAccount() {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
-            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
-            try {
-                internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount")
-                        .condition("username", this.getUsername()).useCache(false).one()
-            } finally {
-                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
-            }
+            internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount")
+                    .condition("username", this.getUsername()).useCache(false).disableAuthz().one()
         }
         // logger.info("Got UserAccount [${internalUserAccount}] with userIdStack [${userIdStack}]")
         return internalUserAccount
@@ -563,14 +548,7 @@ class UserFacadeImpl implements UserFacade {
     @Override
     EntityValue getVisit() {
         if (!visitId) return null
-
-        EntityValue vst = null
-        boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
-        try {
-            vst = eci.getEntity().makeFind("moqui.server.Visit").condition("visitId", visitId).useCache(true).one()
-        } finally {
-            if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
-        }
+        EntityValue vst = eci.getEntity().makeFind("moqui.server.Visit").condition("visitId", visitId).useCache(true).disableAuthz().one()
         return vst
     }
 
