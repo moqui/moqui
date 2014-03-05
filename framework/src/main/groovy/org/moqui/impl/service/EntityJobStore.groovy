@@ -189,7 +189,7 @@ class EntityJobStore implements JobStore {
 
         Map ftMap = [schedName:instanceName, jobGroup:jobGroup]
         if (jobName) ftMap.put("jobName", jobName)
-        EntityList qftList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers").condition(ftMap).list()
+        EntityList qftList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers").condition(ftMap).disableAuthz().list()
 
         for (EntityValue qft in qftList) {
             FiredTriggerRecord rec = new FiredTriggerRecord()
@@ -213,7 +213,7 @@ class EntityJobStore implements JobStore {
 
     protected boolean isTriggerGroupPaused(String triggerGroup) {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
-                .condition([schedName:instanceName, triggerGroup:triggerGroup]).count() > 0
+                .condition([schedName:instanceName, triggerGroup:triggerGroup]).disableAuthz().count() > 0
     }
     protected void insertPausedTriggerGroup(String triggerGroup) {
         ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzPausedTriggerGrps")
@@ -222,9 +222,9 @@ class EntityJobStore implements JobStore {
 
     @Override
     void storeJobsAndTriggers(Map<JobDetail, Set<? extends Trigger>> jobDetailSetMap, boolean replaceExisting) throws ObjectAlreadyExistsException, JobPersistenceException {
-        for(Map.Entry<JobDetail, Set<? extends Trigger>> e: jobDetailSetMap.entrySet()) {
+        for (Map.Entry<JobDetail, Set<? extends Trigger>> e: jobDetailSetMap.entrySet()) {
             storeJob(e.getKey(), replaceExisting)
-            for(Trigger trigger: e.getValue()) storeTrigger((OperableTrigger) trigger, replaceExisting)
+            for (Trigger trigger: e.getValue()) storeTrigger((OperableTrigger) trigger, replaceExisting)
         }
     }
 
@@ -232,9 +232,9 @@ class EntityJobStore implements JobStore {
     boolean removeJob(JobKey jobKey) throws JobPersistenceException {
         Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
         // remove all job triggers
-        ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).deleteAll()
+        ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().deleteAll()
         // remove job
-        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).deleteAll() as boolean
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().deleteAll() as boolean
     }
 
     @Override
@@ -277,14 +277,14 @@ class EntityJobStore implements JobStore {
     @Override
     boolean checkExists(JobKey jobKey) throws JobPersistenceException {
         return ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzJobDetails")
-                .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]).one() != null
+                .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]).disableAuthz().count() > 0
     }
 
     @Override
     boolean checkExists(TriggerKey triggerKey) throws JobPersistenceException {
         return ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group])
-                .one() != null
+                .disableAuthz().count() > 0
     }
 
     @Override
