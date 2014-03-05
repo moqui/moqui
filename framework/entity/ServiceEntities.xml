@@ -72,6 +72,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ========================================================= -->
     <!-- moqui.service.quartz -->
+    <!-- NOTE: these entities do not follow general Moqui conventions because they are intended to match the standard Quartz tables -->
     <!-- ========================================================= -->
 
     <entity entity-name="QrtzJobDetails" package-name="moqui.service.quartz">
@@ -172,12 +173,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="triggerGroup" type="text-medium"/>
         <field name="instanceName" type="text-medium"/>
         <field name="firedTime" type="number-integer"/>
+        <field name="schedTime" type="number-integer"/>
         <field name="priority" type="number-integer"/>
         <field name="state" type="text-short"/>
         <field name="jobName" type="text-medium"/>
         <field name="jobGroup" type="text-medium"/>
         <field name="isNonconcurrent" type="text-indicator"/>
-        <field name="requestsRecovert" type="text-indicator"/>
+        <field name="requestsRecovery" type="text-indicator"/>
     </entity>
     <entity entity-name="QrtzSchedulerState" package-name="moqui.service.quartz">
         <field name="schedName" type="text-medium" is-pk="true"/>

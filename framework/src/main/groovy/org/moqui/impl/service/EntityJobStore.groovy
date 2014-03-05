@@ -12,7 +12,10 @@
 package org.moqui.impl.service
 
 import org.moqui.Moqui
+import org.moqui.entity.EntityList
+import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+
 import org.quartz.JobDetail
 import org.quartz.JobKey
 import org.quartz.JobPersistenceException
@@ -21,6 +24,8 @@ import org.quartz.SchedulerConfigException
 import org.quartz.SchedulerException
 import org.quartz.Trigger
 import org.quartz.TriggerKey
+import org.quartz.impl.jdbcjobstore.Constants
+import org.quartz.impl.jdbcjobstore.FiredTriggerRecord
 import org.quartz.impl.matchers.GroupMatcher
 import org.quartz.spi.ClassLoadHelper
 import org.quartz.spi.JobStore
@@ -39,23 +44,6 @@ class EntityJobStore implements JobStore {
     protected boolean shutdown = false
 
     protected String instanceId, instanceName
-
-    static final String STATE_WAITING = "WAITING"
-    static final String STATE_ACQUIRED = "ACQUIRED"
-    static final String STATE_EXECUTING = "EXECUTING"
-    static final String STATE_COMPLETE = "COMPLETE"
-    static final String STATE_BLOCKED = "BLOCKED"
-    static final String STATE_ERROR = "ERROR"
-    static final String STATE_PAUSED = "PAUSED"
-    static final String STATE_PAUSED_BLOCKED = "PAUSED_BLOCKED"
-    static final String STATE_DELETED = "DELETED"
-    static final String STATE_MISFIRED = "MISFIRED"
-
-    static final String TTYPE_SIMPLE = "SIMPLE"
-    static final String TTYPE_CRON = "CRON"
-    static final String TTYPE_CAL_INT = "CAL_INT"
-    static final String TTYPE_DAILY_TIME_INT = "DAILY_I"
-    static final String TTYPE_BLOB = "BLOB"
 
     @Override
     void initialize(ClassLoadHelper classLoadHelper, SchedulerSignaler schedulerSignaler) throws SchedulerConfigException {
@@ -86,7 +74,7 @@ class EntityJobStore implements JobStore {
     @Override
     void storeJobAndTrigger(JobDetail jobDetail, OperableTrigger operableTrigger) throws ObjectAlreadyExistsException, JobPersistenceException {
         storeJob(jobDetail, false)
-        storeTrigger(operableTrigger, false)
+        storeTrigger(operableTrigger, jobDetail, false, Constants.STATE_WAITING, false, false)
     }
 
     @Override
@@ -99,84 +87,190 @@ class EntityJobStore implements JobStore {
                 requestsRecovery:(job.requestsRecovery() ? "T" : "F")]
         if (checkExists(job.getKey())) {
             if (replaceExisting) {
-                ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzJobDetails").parameters(jobMap).call()
+                ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzJobDetails").parameters(jobMap).disableAuthz().call()
             } else {
                 throw new ObjectAlreadyExistsException(job)
             }
         } else {
-            ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzJobDetails").parameters(jobMap).call()
+            ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzJobDetails").parameters(jobMap).disableAuthz().call()
         }
     }
 
     @Override
     void storeTrigger(OperableTrigger trigger, boolean replaceExisting) throws ObjectAlreadyExistsException, JobPersistenceException {
-        String triggerState = "TODO"
-        ByteArrayOutputStream baos = new ByteArrayOutputStream()
-        if (trigger.jobDataMap != null) {
-            ObjectOutputStream out = new ObjectOutputStream(baos)
-            out.writeObject(trigger.jobDataMap)
-            out.flush()
-        }
-        byte[] jobData = baos.toByteArray()
+        storeTrigger(trigger, null, replaceExisting, Constants.STATE_WAITING, false, false)
+    }
+    protected void storeTrigger(OperableTrigger trigger, JobDetail job, boolean replaceExisting, String state,
+                                boolean forceState, boolean recovering)
+            throws ObjectAlreadyExistsException, JobPersistenceException {
+        // TODO: handle shouldBePaused, job update (see JobStoreSupport:1184)
+        boolean triggerExists = checkExists(trigger.getKey())
+        if (triggerExists && !replaceExisting) throw new ObjectAlreadyExistsException(trigger)
 
-        Map triggerMap = [schedName:instanceName, triggerName:trigger.key.name, triggerGroup:trigger.key.group,
-                jobName:trigger.jobKey.name, jobGroup:trigger.jobKey.group, description:trigger.description,
-                nextFireTime:trigger.nextFireTime?.time, prevFireTime:trigger.previousFireTime?.time,
-                priority:trigger.priority, triggerState:triggerState, triggerType:TTYPE_BLOB,
-                startTime:trigger.startTime?.time, endTime:trigger.endTime?.time, calendarName:trigger.calendarName,
-                misfireInstr:trigger.misfireInstruction, jobData:new SerialBlob(jobData)]
+        state = state ?: Constants.STATE_WAITING
 
-        if (checkExists(trigger.getKey())) {
-            if (replaceExisting) {
-                ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzTriggers").parameters(triggerMap).call()
-            } else {
-                throw new ObjectAlreadyExistsException(trigger)
+        try {
+            boolean shouldBePaused
+            if (!forceState) {
+                shouldBePaused = isTriggerGroupPaused(trigger.getKey().getGroup())
+                if(!shouldBePaused) {
+                    shouldBePaused = isTriggerGroupPaused(Constants.ALL_GROUPS_PAUSED)
+                    if (shouldBePaused) insertPausedTriggerGroup(trigger.getKey().getGroup());
+                }
+                if (shouldBePaused && (state == Constants.STATE_WAITING || state == Constants.STATE_ACQUIRED))
+                    state = Constants.STATE_PAUSED
             }
-        } else {
-            ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzTriggers").parameters(triggerMap).call()
+
+            if (job == null) job = retrieveJob(trigger.getJobKey())
+            if (job == null) throw new JobPersistenceException("The job (${trigger.getJobKey()}) referenced by the trigger does not exist.")
+
+            if (job.isConcurrentExectionDisallowed() && !recovering) state = checkBlockedState(job.getKey(), state)
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream()
+            if (trigger.jobDataMap != null) {
+                ObjectOutputStream out = new ObjectOutputStream(baos)
+                out.writeObject(trigger.jobDataMap)
+                out.flush()
+            }
+            byte[] jobData = baos.toByteArray()
+            Map triggerMap = [schedName:instanceName, triggerName:trigger.key.name, triggerGroup:trigger.key.group,
+                    jobName:trigger.jobKey.name, jobGroup:trigger.jobKey.group, description:trigger.description,
+                    nextFireTime:trigger.nextFireTime?.time, prevFireTime:trigger.previousFireTime?.time,
+                    priority:trigger.priority, triggerState:state, triggerType:Constants.TTYPE_BLOB,
+                    startTime:trigger.startTime?.time, endTime:trigger.endTime?.time, calendarName:trigger.calendarName,
+                    misfireInstr:trigger.misfireInstruction, jobData:new SerialBlob(jobData)]
+
+            ByteArrayOutputStream baosTrig = new ByteArrayOutputStream()
+            if (trigger.jobDataMap != null) {
+                ObjectOutputStream out = new ObjectOutputStream(baosTrig)
+                out.writeObject(trigger)
+                out.flush()
+            }
+            byte[] triggerData = baosTrig.toByteArray()
+            Map triggerBlobMap = [schedName:instanceName, triggerName:trigger.key.name, triggerGroup:trigger.key.group,
+                    blobData:new SerialBlob(triggerData)]
+
+            if (triggerExists) {
+                ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzTriggers").parameters(triggerMap)
+                        .disableAuthz().call()
+                // TODO handle TriggerPersistenceDelegate (for create and update)?
+                // uses QrtzSimpleTriggers, QrtzCronTriggers, QrtzSimpropTriggers
+                // TriggerPersistenceDelegate tDel = findTriggerPersistenceDelegate(trigger)
+                // tDel.updateExtendedTriggerProperties(conn, trigger, state, jobDetail)
+                ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzBlobTriggers").parameters(triggerBlobMap)
+                        .disableAuthz().call()
+            } else {
+                ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzTriggers").parameters(triggerMap)
+                        .disableAuthz().call()
+                ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzBlobTriggers").parameters(triggerBlobMap)
+                        .disableAuthz().call()
+            }
+        } catch (Exception e) {
+            throw new JobPersistenceException("Couldn't store trigger '${trigger.getKey()}' for '${trigger.getJobKey()}' job: ${e.getMessage()}", e)
         }
+    }
+
+    protected String checkBlockedState(JobKey jobKey, String currentState) throws JobPersistenceException {
+        // State can only transition to BLOCKED from PAUSED or WAITING.
+        if (currentState != Constants.STATE_WAITING && currentState != Constants.STATE_PAUSED) return currentState
+
+        List<FiredTriggerRecord> lst = selectFiredTriggerRecordsByJob(jobKey.getName(), jobKey.getGroup())
+        if (lst.size() > 0) {
+            FiredTriggerRecord rec = lst.get(0)
+            if (rec.isJobDisallowsConcurrentExecution()) { // OLD_TODO: worry about failed/recovering/volatile job  states?
+                return (Constants.STATE_PAUSED == currentState) ? Constants.STATE_PAUSED_BLOCKED : Constants.STATE_BLOCKED
+            }
+        }
+
+        return currentState;
+    }
+    protected List<FiredTriggerRecord> selectFiredTriggerRecordsByJob(String jobName, String jobGroup) {
+        List<FiredTriggerRecord> lst = new LinkedList<FiredTriggerRecord>()
+
+        Map ftMap = [schedName:instanceName, jobGroup:jobGroup]
+        if (jobName) ftMap.put("jobName", jobName)
+        EntityList qftList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers").condition(ftMap).list()
+
+        for (EntityValue qft in qftList) {
+            FiredTriggerRecord rec = new FiredTriggerRecord()
+            rec.setFireInstanceId((String) qft.entryId)
+            rec.setFireInstanceState((String) qft.state)
+            rec.setFireTimestamp((long) qft.firedTime)
+            rec.setScheduleTimestamp((long) qft.schedTime)
+            rec.setPriority((int) qft.priority)
+            rec.setSchedulerInstanceId((String) qft.instanceName)
+            rec.setTriggerKey(new TriggerKey((String) qft.triggerName, (String) qft.triggerGroup))
+            if (!rec.getFireInstanceState().equals(Constants.STATE_ACQUIRED)) {
+                rec.setJobDisallowsConcurrentExecution(qft.isNonconcurrent == "T")
+                rec.setJobRequestsRecovery(qft.requestsRecovery == "T")
+                rec.setJobKey(new JobKey((String) qft.jobName, (String) qft.jobGroup))
+            }
+            lst.add(rec);
+        }
+
+        return lst
+    }
+
+    protected boolean isTriggerGroupPaused(String triggerGroup) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
+                .condition([schedName:instanceName, triggerGroup:triggerGroup]).count() > 0
+    }
+    protected void insertPausedTriggerGroup(String triggerGroup) {
+        ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzPausedTriggerGrps")
+                .parameters([schedName:instanceName, triggerGroup:triggerGroup]).disableAuthz().call()
     }
 
     @Override
     void storeJobsAndTriggers(Map<JobDetail, Set<? extends Trigger>> jobDetailSetMap, boolean replaceExisting) throws ObjectAlreadyExistsException, JobPersistenceException {
         for(Map.Entry<JobDetail, Set<? extends Trigger>> e: jobDetailSetMap.entrySet()) {
-            storeJob(e.getKey(), true)
-            for(Trigger trigger: e.getValue()) storeTrigger((OperableTrigger) trigger, true)
+            storeJob(e.getKey(), replaceExisting)
+            for(Trigger trigger: e.getValue()) storeTrigger((OperableTrigger) trigger, replaceExisting)
         }
     }
 
     @Override
     boolean removeJob(JobKey jobKey) throws JobPersistenceException {
-        return false
+        Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
+        // remove all job triggers
+        ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).deleteAll()
+        // remove job
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).deleteAll() as boolean
     }
 
     @Override
     boolean removeJobs(List<JobKey> jobKeys) throws JobPersistenceException {
-        return false
+        boolean allFound = true
+        for (JobKey jobKey in jobKeys) allFound = removeJob(jobKey) && allFound
+        return allFound
     }
 
     @Override
     JobDetail retrieveJob(JobKey jobKey) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     boolean removeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
+        // TODO
         return false
     }
 
     @Override
     boolean removeTriggers(List<TriggerKey> triggerKeys) throws JobPersistenceException {
+        // TODO
         return false
     }
 
     @Override
     boolean replaceTrigger(TriggerKey triggerKey, OperableTrigger operableTrigger) throws JobPersistenceException {
+        // TODO
         return false
     }
 
     @Override
     OperableTrigger retrieveTrigger(TriggerKey triggerKey) throws JobPersistenceException {
+        // TODO
         return null
     }
 
@@ -195,147 +289,166 @@ class EntityJobStore implements JobStore {
 
     @Override
     void clearAllSchedulingData() throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     void storeCalendar(String s, org.quartz.Calendar calendar, boolean b, boolean b2) throws ObjectAlreadyExistsException, JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     boolean removeCalendar(String s) throws JobPersistenceException {
+        // TODO
         return false
     }
 
     @Override
     org.quartz.Calendar retrieveCalendar(String s) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     int getNumberOfJobs() throws JobPersistenceException {
+        // TODO
         return 0
     }
 
     @Override
     int getNumberOfTriggers() throws JobPersistenceException {
+        // TODO
         return 0
     }
 
     @Override
     int getNumberOfCalendars() throws JobPersistenceException {
+        // TODO
         return 0
     }
 
     @Override
     Set<JobKey> getJobKeys(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     List<String> getJobGroupNames() throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     List<String> getTriggerGroupNames() throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     List<String> getCalendarNames() throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     List<OperableTrigger> getTriggersForJob(JobKey jobKey) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     Trigger.TriggerState getTriggerState(TriggerKey triggerKey) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void pauseTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     Collection<String> pauseTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void pauseJob(JobKey jobKey) throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     Collection<String> pauseJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void resumeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     Collection<String> resumeTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     Set<String> getPausedTriggerGroups() throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void resumeJob(JobKey jobKey) throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     Collection<String> resumeJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void pauseAll() throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     void resumeAll() throws JobPersistenceException {
-
+        // TODO
     }
 
     @Override
     List<OperableTrigger> acquireNextTriggers(long l, int i, long l2) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void releaseAcquiredTrigger(OperableTrigger operableTrigger) {
-
+        // TODO
     }
 
     @Override
     List<TriggerFiredResult> triggersFired(List<OperableTrigger> operableTriggers) throws JobPersistenceException {
+        // TODO
         return null
     }
 
     @Override
     void triggeredJobComplete(OperableTrigger operableTrigger, JobDetail jobDetail, Trigger.CompletedExecutionInstruction completedExecutionInstruction) {
-
+        // TODO
     }
 
     @Override
