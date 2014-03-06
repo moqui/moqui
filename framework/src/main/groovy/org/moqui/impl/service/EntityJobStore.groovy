@@ -220,7 +220,7 @@ class EntityJobStore implements JobStore {
         List<FiredTriggerRecord> lst = selectFiredTriggerRecordsByJob(jobKey.getName(), jobKey.getGroup())
         if (lst.size() > 0) {
             FiredTriggerRecord rec = lst.get(0)
-            if (rec.isJobDisallowsConcurrentExecution()) { // OLD_TODO: worry about failed/recovering/volatile job  states?
+            if (rec.isJobDisallowsConcurrentExecution()) {
                 return (Constants.STATE_PAUSED == currentState) ? Constants.STATE_PAUSED_BLOCKED : Constants.STATE_BLOCKED
             }
         }
@@ -651,30 +651,38 @@ class EntityJobStore implements JobStore {
 
     @Override
     void pauseJob(JobKey jobKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        List<OperableTrigger> triggers = getTriggersForJob(jobKey)
+        for (OperableTrigger trigger in triggers) pauseTrigger(trigger.getKey())
     }
 
     @Override
-    Collection<String> pauseJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    Collection<String> pauseJobs(GroupMatcher<JobKey> matcher) throws JobPersistenceException {
+        Set<String> groupNames = new HashSet<String>()
+        Set<JobKey> jobNames = getJobKeys(matcher)
+        for (JobKey jobKey : jobNames) {
+            List<OperableTrigger> triggers = getTriggersForJob(jobKey)
+            for (OperableTrigger trigger : triggers) pauseTrigger(trigger.getKey())
+            groupNames.add(jobKey.getGroup())
+        }
+        return groupNames
     }
 
     @Override
     void resumeJob(JobKey jobKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        List<OperableTrigger> triggers = getTriggersForJob(jobKey)
+        for (OperableTrigger trigger in triggers) resumeTrigger(trigger.getKey())
     }
 
     @Override
-    Collection<String> resumeJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    Collection<String> resumeJobs(GroupMatcher<JobKey> matcher) throws JobPersistenceException {
+        Set<String> groupNames = new HashSet<String>()
+        Set<JobKey> jobNames = getJobKeys(matcher)
+        for (JobKey jobKey : jobNames) {
+            List<OperableTrigger> triggers = getTriggersForJob(jobKey)
+            for (OperableTrigger trigger : triggers) resumeTrigger(trigger.getKey())
+            groupNames.add(jobKey.getGroup())
+        }
+        return groupNames
     }
 
     @Override
