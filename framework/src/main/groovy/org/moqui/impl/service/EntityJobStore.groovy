@@ -289,26 +289,60 @@ class EntityJobStore implements JobStore {
 
     @Override
     boolean removeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-        // TODO
-        return false
+        // delete the trigger
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        if (triggerValue == null) return false
+        triggerValue.delete()
+
+        // if there are no other triggers for the job, delete the job
+        Map jobMap = [schedName:instanceName, jobName:triggerValue.jobName, jobGroup:triggerValue.jobGroup]
+        EntityList jobTriggers = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().list()
+        if (!jobTriggers) ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().deleteAll()
+
+        return true
     }
 
     @Override
     boolean removeTriggers(List<TriggerKey> triggerKeys) throws JobPersistenceException {
-        // TODO
-        return false
+        boolean allFound = true
+        for (TriggerKey triggerKey in triggerKeys) allFound = removeTrigger(triggerKey) && allFound
+        return allFound
     }
 
     @Override
     boolean replaceTrigger(TriggerKey triggerKey, OperableTrigger operableTrigger) throws JobPersistenceException {
-        // TODO
-        return false
+        // get the existing trigger and job
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        if (triggerValue == null) return false
+        JobDetail job = retrieveJob(new JobKey((String) triggerValue.jobName, (String) triggerValue.jobGroup))
+
+        // delete the old trigger
+        removeTrigger(triggerKey)
+
+        // create the new one
+        storeTrigger(operableTrigger, job, false, Constants.STATE_WAITING, false, false)
+
+        return true
     }
 
     @Override
     OperableTrigger retrieveTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-        // TODO
-        return null
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        if (triggerValue == null) return null
+
+        if (triggerValue.triggerType != Constants.TTYPE_BLOB)
+            throw new JobPersistenceException("Trigger ${triggerValue.triggerName}:${triggerValue.triggerGroup} with type ${triggerValue.triggerType} cannot be retrieved, only blob type triggers currently supported.")
+
+        EntityValue blobTriggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzBlobTriggers").condition(triggerMap).disableAuthz().one()
+        if (!blobTriggerValue) throw new JobPersistenceException("Count not find trigger ${triggerValue.triggerName}:${triggerValue.triggerGroup}")
+
+        OperableTrigger trigger = null
+        ObjectInputStream ois = new ObjectInputStream(blobTriggerValue.getSerialBlob("blobData").binaryStream)
+        try { trigger = (OperableTrigger) ois.readObject() } finally { ois.close() }
+        return trigger
     }
 
     @Override
@@ -327,165 +361,175 @@ class EntityJobStore implements JobStore {
     @Override
     void clearAllSchedulingData() throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void storeCalendar(String s, org.quartz.Calendar calendar, boolean b, boolean b2) throws ObjectAlreadyExistsException, JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     boolean removeCalendar(String s) throws JobPersistenceException {
         // TODO
-        return false
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     org.quartz.Calendar retrieveCalendar(String s) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     int getNumberOfJobs() throws JobPersistenceException {
         // TODO
-        return 0
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     int getNumberOfTriggers() throws JobPersistenceException {
         // TODO
-        return 0
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     int getNumberOfCalendars() throws JobPersistenceException {
         // TODO
-        return 0
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Set<JobKey> getJobKeys(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<String> getJobGroupNames() throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<String> getTriggerGroupNames() throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<String> getCalendarNames() throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<OperableTrigger> getTriggersForJob(JobKey jobKey) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Trigger.TriggerState getTriggerState(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void pauseTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> pauseTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void pauseJob(JobKey jobKey) throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> pauseJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void resumeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> resumeTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Set<String> getPausedTriggerGroups() throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void resumeJob(JobKey jobKey) throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> resumeJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void pauseAll() throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void resumeAll() throws JobPersistenceException {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<OperableTrigger> acquireNextTriggers(long l, int i, long l2) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void releaseAcquiredTrigger(OperableTrigger operableTrigger) {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<TriggerFiredResult> triggersFired(List<OperableTrigger> operableTriggers) throws JobPersistenceException {
         // TODO
-        return null
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void triggeredJobComplete(OperableTrigger operableTrigger, JobDetail jobDetail, Trigger.CompletedExecutionInstruction completedExecutionInstruction) {
         // TODO
+        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
