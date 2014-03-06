@@ -22,7 +22,14 @@ import org.kie.api.runtime.KieContainer
 import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.StatelessKieSession
 import org.moqui.context.Cache
+import org.moqui.context.CacheFacade
+import org.moqui.context.LoggerFacade
+import org.moqui.context.ResourceFacade
+import org.moqui.context.ScreenFacade
+import org.moqui.context.TransactionFacade
+import org.moqui.entity.EntityFacade
 import org.moqui.impl.StupidWebUtilities
+import org.moqui.service.ServiceFacade
 
 import java.sql.Timestamp
 import java.util.jar.JarFile
@@ -490,7 +497,9 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     L10nFacade getL10nFacade() { return l10nFacade }
 
     // =============== Apache Camel Methods ===============
+    @Override
     CamelContext getCamelContext() { return camelContext }
+
     MoquiServiceComponent getMoquiServiceComponent() { return moquiServiceComponent }
     void registerCamelConsumer(String uri, MoquiServiceConsumer consumer) { camelConsumerByUriMap.put(uri, consumer) }
     MoquiServiceConsumer getCamelConsumer(String uri) { return camelConsumerByUriMap.get(uri) }
@@ -507,6 +516,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     // =============== ElasticSearch Methods ===============
+    @Override
     Client getElasticSearchClient() { return elasticSearchClient }
 
     protected void initElasticSearch() {
@@ -536,6 +546,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         }
     }
 
+    @Override
     KieContainer getKieContainer(String componentName) {
         KieServices services = KieServices.Factory.get()
 
@@ -610,6 +621,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     }
 
+    @Override
     KieSession getKieSession(String ksessionName) {
         String componentName = kieSessionComponentCache.get(ksessionName)
         // try finding all component sessions
@@ -619,6 +631,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         if (!componentName) throw new IllegalStateException("No component KIE module found for session [${ksessionName}]")
         return getKieContainer(componentName).newKieSession(ksessionName)
     }
+    @Override
     StatelessKieSession getStatelessKieSession(String ksessionName) {
         String componentName = kieSessionComponentCache.get(ksessionName)
         // try finding all component sessions
@@ -681,6 +694,30 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     Map<String, String> getComponentBaseLocations() {
         return Collections.unmodifiableMap(componentLocationMap)
     }
+
+    @Override
+    L10nFacade getL10n() { getL10nFacade() }
+
+    @Override
+    ResourceFacade getResource() { getResourceFacade() }
+
+    @Override
+    LoggerFacade getLogger() { getLoggerFacade() }
+
+    @Override
+    CacheFacade getCache() { getCacheFacade() }
+
+    @Override
+    TransactionFacade getTransaction() { getTransactionFacade() }
+
+    @Override
+    EntityFacade getEntity() { getEntityFacade(getExecutionContext()?.getTenantId()) }
+
+    @Override
+    ServiceFacade getService() { getServiceFacade() }
+
+    @Override
+    ScreenFacade getScreen() { getScreenFacade() }
 
     // ========== Server Stat Tracking ==========
     boolean getSkipStats() {

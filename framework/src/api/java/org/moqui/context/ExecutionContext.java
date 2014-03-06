@@ -55,11 +55,11 @@ public interface ExecutionContext {
     /** For user messages including general feedback, errors, and field-specific validation errors. */
     MessageFacade getMessage();
 
-    /** For localization (l10n) functionality, like localizing messages. */
-    L10nFacade getL10n();
-
     /** For information about artifacts as they are being executed. */
     ArtifactExecutionFacade getArtifactExecution();
+
+    /** For localization (l10n) functionality, like localizing messages. */
+    L10nFacade getL10n();
 
     /** For accessing resources by location string (http://, jar://, component://, content://, classpath://, etc). */
     ResourceFacade getResource();

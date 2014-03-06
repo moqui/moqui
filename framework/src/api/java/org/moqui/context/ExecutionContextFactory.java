@@ -11,7 +11,15 @@
  */
 package org.moqui.context;
 
+import org.apache.camel.CamelContext;
+import org.elasticsearch.client.Client;
+import org.kie.api.runtime.KieContainer;
+import org.kie.api.runtime.KieSession;
+import org.kie.api.runtime.StatelessKieSession;
 import org.moqui.BaseException;
+import org.moqui.entity.EntityFacade;
+import org.moqui.service.ServiceFacade;
+
 import java.util.Map;
 
 /**
@@ -48,4 +56,41 @@ public interface ExecutionContextFactory {
 
     /** Get a Map where each key is a component name and each value is the component's base location. */
     Map<String, String> getComponentBaseLocations();
+
+    /** For localization (l10n) functionality, like localizing messages. */
+    L10nFacade getL10n();
+
+    /** For accessing resources by location string (http://, jar://, component://, content://, classpath://, etc). */
+    ResourceFacade getResource();
+
+    /** For trace, error, etc logging to the console, files, etc. */
+    LoggerFacade getLogger();
+
+    /** For managing and accessing caches. */
+    CacheFacade getCache();
+
+    /** For transaction operations use this facade instead of the JTA UserTransaction and TransactionManager. See javadoc comments there for examples of code usage. */
+    TransactionFacade getTransaction();
+
+    /** For interactions with a relational database. */
+    EntityFacade getEntity();
+
+    /** For calling services (local or remote, sync or async or scheduled). */
+    ServiceFacade getService();
+
+    /** For rendering screens for general use (mostly for things other than web pages or web page snippets). */
+    ScreenFacade getScreen();
+
+    /** Apache Camel is used for integration message routing. To interact directly with Camel get the context here. */
+    CamelContext getCamelContext();
+
+    /** ElasticSearch Client is used for indexing and searching documents */
+    Client getElasticSearchClient();
+
+    /** Get a KIE Container for Drools, jBPM, OptaPlanner, etc from the KIE Module in the given component. */
+    KieContainer getKieContainer(String componentName);
+    /** Get a KIE Session by name from the last component KIE Module loaded with the given session name. */
+    KieSession getKieSession(String ksessionName);
+    /** Get a KIE Stateless Session by name from the last component KIE Module loaded with the given session name. */
+    StatelessKieSession getStatelessKieSession(String ksessionName);
 }
