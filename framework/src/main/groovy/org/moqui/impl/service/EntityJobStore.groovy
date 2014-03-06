@@ -24,6 +24,7 @@ import org.quartz.JobDetail
 import org.quartz.JobKey
 import org.quartz.JobPersistenceException
 import org.quartz.ObjectAlreadyExistsException
+import org.quartz.Scheduler
 import org.quartz.SchedulerConfigException
 import org.quartz.SchedulerException
 import org.quartz.Trigger
@@ -36,6 +37,7 @@ import org.quartz.spi.ClassLoadHelper
 import org.quartz.spi.JobStore
 import org.quartz.spi.OperableTrigger
 import org.quartz.spi.SchedulerSignaler
+import org.quartz.spi.TriggerFiredBundle
 import org.quartz.spi.TriggerFiredResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -59,7 +61,7 @@ class EntityJobStore implements JobStore {
 
     public long getMisfireThreshold() { return misfireThreshold }
     public void setMisfireThreshold(long misfireThreshold) {
-        if (misfireThreshold < 1) throw new IllegalArgumentException("Misfirethreshold must be larger than 0")
+        if (misfireThreshold < 1) throw new IllegalArgumentException("MisfireThreshold must be larger than 0")
         this.misfireThreshold = misfireThreshold;
     }
     protected long getMisfireTime() {
@@ -386,160 +388,197 @@ class EntityJobStore implements JobStore {
     @Override
     void clearAllSchedulingData() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void storeCalendar(String s, org.quartz.Calendar calendar, boolean b, boolean b2) throws ObjectAlreadyExistsException, JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     boolean removeCalendar(String s) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     org.quartz.Calendar retrieveCalendar(String s) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     int getNumberOfJobs() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     int getNumberOfTriggers() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     int getNumberOfCalendars() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Set<JobKey> getJobKeys(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<String> getJobGroupNames() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<String> getTriggerGroupNames() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<String> getCalendarNames() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<OperableTrigger> getTriggersForJob(JobKey jobKey) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Trigger.TriggerState getTriggerState(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void pauseTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> pauseTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void pauseJob(JobKey jobKey) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> pauseJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void resumeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> resumeTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Set<String> getPausedTriggerGroups() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void resumeJob(JobKey jobKey) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     Collection<String> resumeJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void pauseAll() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     void resumeAll() throws JobPersistenceException {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
     List<OperableTrigger> acquireNextTriggers(final long noLaterThan, final int maxCount, final long timeWindow) throws JobPersistenceException {
+        // this will happen during init because Quartz is initialized before ECFI init is final, so don't blow up
+        try { getEcfi() } catch (Exception e) { return new ArrayList<OperableTrigger>() }
+
+        boolean beganTransaction = ecfi.transactionFacade.begin(0)
+        try {
+            return acquireNextTriggersInternal(noLaterThan, maxCount, timeWindow)
+        } catch (Throwable t) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in acquireNextTriggers", t)
+            throw t
+        } finally {
+            if (ecfi.transactionFacade.isTransactionInPlace()) ecfi.transactionFacade.commit(beganTransaction)
+        }
+    }
+    protected List<OperableTrigger> acquireNextTriggersInternal(final long noLaterThan, final int maxCount, final long timeWindow) throws JobPersistenceException {
         if (timeWindow < 0) throw new IllegalArgumentException("timeWindow cannot be less than 0")
 
         List<OperableTrigger> acquiredTriggers = new ArrayList<OperableTrigger>()
-        // this will happen during init because Quartz is initialized before ECFI init is final, so don't blow up
-        try { getEcfi() } catch (Exception e) { return acquiredTriggers }
 
         Set<JobKey> acquiredJobKeysForNoConcurrentExec = new HashSet<JobKey>()
         final int MAX_DO_LOOP_RETRY = 3
@@ -604,17 +643,9 @@ class EntityJobStore implements JobStore {
     }
 
     /**
-     * <p>
-     * Select the next trigger which will fire to fire between the two given timestamps
-     * in ascending order of fire time, and then descending by priority.
-     * </p>
-     *
-     * @param conn the DB Connection
      * @param noLaterThan highest value of <code>getNextFireTime()</code> of the triggers (exclusive)
      * @param noEarlierThan highest value of <code>getNextFireTime()</code> of the triggers (inclusive)
      * @param maxCount maximum number of trigger keys allow to acquired in the returning list.
-     *
-     * @return A (never null, possibly empty) list of the identifiers (Key objects) of the next triggers to be fired.
      */
     protected List<TriggerKey> selectTriggerToAcquire(long noLaterThan, long noEarlierThan, int maxCount) {
         EntityConditionFactory ecf = ecfi.entityFacade.getConditionFactory()
@@ -641,28 +672,145 @@ class EntityJobStore implements JobStore {
     protected static long ftrCtr = System.currentTimeMillis()
     protected synchronized String getFiredTriggerRecordId() { return instanceId + ftrCtr++ }
 
-    public int updateTriggerStateFromOtherState(TriggerKey triggerKey, String newState, String oldState) {
+    protected int updateTriggerState(TriggerKey triggerKey, String state) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group])
+                .disableAuthz().updateAll([triggerState:state])
+    }
+    protected int updateTriggerStateFromOtherState(TriggerKey triggerKey, String newState, String oldState) {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group, triggerState:oldState])
+                .disableAuthz().updateAll([triggerState:newState])
+    }
+    protected int updateTriggerStatesForJobFromOtherState(JobKey jobKey, String newState, String oldState) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group, triggerState:oldState])
                 .disableAuthz().updateAll([triggerState:newState])
     }
 
 
     @Override
     void releaseAcquiredTrigger(OperableTrigger operableTrigger) {
-        // TODO
-        throw new IllegalStateException("Not yet implemented")
+        boolean beganTransaction = ecfi.transactionFacade.begin(0)
+        try {
+            updateTriggerStateFromOtherState(operableTrigger.getKey(), Constants.STATE_WAITING, Constants.STATE_ACQUIRED)
+            deleteFiredTrigger(operableTrigger.getFireInstanceId());
+        } catch (Throwable t) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in releaseAcquiredTrigger", t)
+            throw t
+        } finally {
+            if (ecfi.transactionFacade.isTransactionInPlace()) ecfi.transactionFacade.commit(beganTransaction)
+        }
+    }
+    protected int deleteFiredTrigger(String entryId) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers")
+                .condition([schedName:instanceName, entryId:entryId]).disableAuthz().deleteAll()
     }
 
     @Override
     List<TriggerFiredResult> triggersFired(List<OperableTrigger> operableTriggers) throws JobPersistenceException {
-        // TODO
-        throw new IllegalStateException("Not yet implemented")
+        List<TriggerFiredResult> results = new ArrayList<TriggerFiredResult>()
+
+        boolean beganTransaction = ecfi.transactionFacade.begin(0)
+        try {
+            TriggerFiredResult result
+            for (OperableTrigger trigger : operableTriggers) {
+                try {
+                    TriggerFiredBundle bundle = triggerFired(trigger)
+                    result = new TriggerFiredResult(bundle)
+                } catch (JobPersistenceException jpe) {
+                    result = new TriggerFiredResult(jpe)
+                } catch(RuntimeException re) {
+                    result = new TriggerFiredResult(re)
+                }
+                results.add(result)
+            }
+        } catch (Throwable t) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in triggersFired", t)
+            throw t
+        } finally {
+            if (ecfi.transactionFacade.isTransactionInPlace()) ecfi.transactionFacade.commit(beganTransaction)
+        }
+
+        return results
+    }
+    protected TriggerFiredBundle triggerFired(OperableTrigger trigger) throws JobPersistenceException {
+        JobDetail job
+        org.quartz.Calendar cal = null
+
+        // Make sure trigger wasn't deleted, paused, or completed...
+        // if trigger was deleted, state will be STATE_DELETED
+        String state = selectTriggerState(trigger.getKey())
+        if (!state.equals(Constants.STATE_ACQUIRED)) return null
+
+        try {
+            job = retrieveJob(trigger.getJobKey())
+            if (job == null) return null
+        } catch (JobPersistenceException jpe) {
+            try {
+                logger.error("Error retrieving job, setting trigger state to ERROR.", jpe)
+                updateTriggerState(trigger.getKey(), Constants.STATE_ERROR)
+            } catch (Exception sqle) {
+                logger.error("Unable to set trigger state to ERROR.", sqle)
+            }
+            throw jpe
+        }
+
+        if (trigger.getCalendarName() != null) {
+            cal = retrieveCalendar(trigger.getCalendarName())
+            if (cal == null) return null
+        }
+
+        ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzFiredTriggers")
+                .parameters([schedName:instanceName, entryId:trigger.getFireInstanceId(),
+                    triggerName:trigger.key.name, triggerGroup:trigger.key.group,
+                    instanceName:instanceId, firedTime:System.currentTimeMillis(),
+                    schedTime:trigger.getNextFireTime().getTime(), priority:trigger.priority,
+                    state:Constants.STATE_EXECUTING, jobName:job.key.name,
+                    jobGroup:job.key.group, isNonconcurrent:(job.isConcurrentExectionDisallowed() ? "T" : "F"),
+                    requestsRecovery:(job.requestsRecovery() ? "T" : "F")])
+                .disableAuthz().call()
+
+        Date prevFireTime = trigger.getPreviousFireTime()
+
+        // call triggered - to update the trigger's next-fire-time state...
+        trigger.triggered(cal)
+
+        state = Constants.STATE_WAITING
+        boolean force = true
+
+        if (job.isConcurrentExectionDisallowed()) {
+            state = Constants.STATE_BLOCKED;
+            force = false;
+            updateTriggerStatesForJobFromOtherState(job.getKey(), Constants.STATE_BLOCKED, Constants.STATE_WAITING)
+            updateTriggerStatesForJobFromOtherState(job.getKey(), Constants.STATE_BLOCKED, Constants.STATE_ACQUIRED)
+            updateTriggerStatesForJobFromOtherState(job.getKey(), Constants.STATE_PAUSED_BLOCKED, Constants.STATE_PAUSED)
+        }
+
+        if (trigger.getNextFireTime() == null) {
+            state = Constants.STATE_COMPLETE
+            force = true
+        }
+
+        storeTrigger(trigger, job, true, state, force, false)
+
+        job.getJobDataMap().clearDirtyFlag()
+
+        return new TriggerFiredBundle(job, trigger, cal, trigger.getKey().getGroup()
+                .equals(Scheduler.DEFAULT_RECOVERY_GROUP), new Date(), trigger
+                .getPreviousFireTime(), prevFireTime, trigger.getNextFireTime())
+    }
+    protected String selectTriggerState(TriggerKey triggerKey) {
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        if (!triggerValue) return Constants.STATE_DELETED
+        return triggerValue.triggerState
     }
 
     @Override
     void triggeredJobComplete(OperableTrigger operableTrigger, JobDetail jobDetail, Trigger.CompletedExecutionInstruction completedExecutionInstruction) {
         // TODO
+        logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
     }
 
