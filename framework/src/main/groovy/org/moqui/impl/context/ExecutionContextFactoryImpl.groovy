@@ -63,7 +63,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     
     protected boolean destroyed = false
     
-    protected final String runtimePath
+    protected String runtimePath
 
     protected final String confPath
     protected final Node confXmlRoot

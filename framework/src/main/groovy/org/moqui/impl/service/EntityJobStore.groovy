@@ -12,6 +12,8 @@
 package org.moqui.impl.service
 
 import org.moqui.Moqui
+import org.moqui.entity.EntityCondition
+import org.moqui.entity.EntityConditionFactory
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
@@ -35,19 +37,42 @@ import org.quartz.spi.JobStore
 import org.quartz.spi.OperableTrigger
 import org.quartz.spi.SchedulerSignaler
 import org.quartz.spi.TriggerFiredResult
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import javax.sql.rowset.serial.SerialBlob
 
+// NOTE: Implementing a Quartz JobStore is a HUGE PITA, Quartz puts a lot of scheduler and state handling logic in the
+//     JobStore. The code here is based mostly on the JobStoreSupport class to replicate that logic.
+
 class EntityJobStore implements JobStore {
+    protected final static Logger logger = LoggerFactory.getLogger(EntityJobStore.class)
 
     protected ClassLoadHelper classLoadHelper
     protected SchedulerSignaler schedulerSignaler
-    protected ExecutionContextFactoryImpl ecfi = (ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()
 
     protected boolean schedulerRunning = false
     protected boolean shutdown = false
 
     protected String instanceId, instanceName
+    private long misfireThreshold = 60000L; // one minute
+
+    public long getMisfireThreshold() { return misfireThreshold }
+    public void setMisfireThreshold(long misfireThreshold) {
+        if (misfireThreshold < 1) throw new IllegalArgumentException("Misfirethreshold must be larger than 0")
+        this.misfireThreshold = misfireThreshold;
+    }
+    protected long getMisfireTime() {
+        long misfireTime = System.currentTimeMillis()
+        if (getMisfireThreshold() > 0) misfireTime -= getMisfireThreshold()
+        return misfireTime > 0 ? misfireTime : 0
+    }
+
+    ExecutionContextFactoryImpl getEcfi() {
+        ExecutionContextFactoryImpl executionContextFactory = (ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()
+        if (executionContextFactory == null) throw new IllegalStateException("ExecutionContextFactory not yet initialized")
+        return executionContextFactory
+    }
 
     @Override
     void initialize(ClassLoadHelper classLoadHelper, SchedulerSignaler schedulerSignaler) throws SchedulerConfigException {
@@ -509,10 +534,119 @@ class EntityJobStore implements JobStore {
     }
 
     @Override
-    List<OperableTrigger> acquireNextTriggers(long l, int i, long l2) throws JobPersistenceException {
-        // TODO
-        throw new IllegalStateException("Not yet implemented")
+    List<OperableTrigger> acquireNextTriggers(final long noLaterThan, final int maxCount, final long timeWindow) throws JobPersistenceException {
+        if (timeWindow < 0) throw new IllegalArgumentException("timeWindow cannot be less than 0")
+
+        List<OperableTrigger> acquiredTriggers = new ArrayList<OperableTrigger>()
+        // this will happen during init because Quartz is initialized before ECFI init is final, so don't blow up
+        try { getEcfi() } catch (Exception e) { return acquiredTriggers }
+
+        Set<JobKey> acquiredJobKeysForNoConcurrentExec = new HashSet<JobKey>()
+        final int MAX_DO_LOOP_RETRY = 3
+        int currentLoopCount = 0
+        long firstAcquiredTriggerFireTime = 0
+
+        while (true) {
+            currentLoopCount ++
+            try {
+                List<TriggerKey> keys = selectTriggerToAcquire(noLaterThan + timeWindow, getMisfireTime(), maxCount)
+
+                // No trigger is ready to fire yet.
+                if (keys == null || keys.size() == 0) return acquiredTriggers
+
+                for (TriggerKey triggerKey in keys) {
+                    // If our trigger is no longer available, try a new one.
+                    OperableTrigger nextTrigger = retrieveTrigger(triggerKey)
+                    if (nextTrigger == null) continue // next trigger
+
+                    // If trigger's job is set as @DisallowConcurrentExecution, and it has already been added to result, then
+                    // put it back into the timeTriggers set and continue to search for next trigger.
+                    JobKey jobKey = nextTrigger.getJobKey()
+                    JobDetail job = retrieveJob(jobKey)
+                    if (job.isConcurrentExectionDisallowed()) {
+                        if (acquiredJobKeysForNoConcurrentExec.contains(jobKey)) {
+                            continue // next trigger
+                        } else {
+                            acquiredJobKeysForNoConcurrentExec.add(jobKey)
+                        }
+                    }
+
+                    // We now have a acquired trigger, let's add to return list.
+                    // If our trigger was no longer in the expected state, try a new one.
+                    int rowsUpdated = updateTriggerStateFromOtherState(triggerKey, Constants.STATE_ACQUIRED, Constants.STATE_WAITING)
+                    if (rowsUpdated <= 0) continue // next trigger
+
+                    nextTrigger.setFireInstanceId(getFiredTriggerRecordId())
+
+                    ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzFiredTriggers")
+                            .parameters([schedName:instanceName, entryId:nextTrigger.getFireInstanceId(),
+                                triggerName:nextTrigger.key.name, triggerGroup:nextTrigger.key.group,
+                                instanceName:instanceId, firedTime:System.currentTimeMillis(),
+                                schedTime:nextTrigger.getNextFireTime().getTime(), priority:nextTrigger.priority,
+                                state:Constants.STATE_ACQUIRED, jobName:nextTrigger.jobKey?.name,
+                                jobGroup:nextTrigger.jobKey?.group, isNonconcurrent:"F", requestsRecovery:"F"])
+                            .disableAuthz().call()
+
+                    acquiredTriggers.add(nextTrigger)
+                    if (firstAcquiredTriggerFireTime == 0) firstAcquiredTriggerFireTime = nextTrigger.getNextFireTime().getTime()
+                }
+
+                // if we didn't end up with any trigger to fire from that first
+                // batch, try again for another batch. We allow with a max retry count.
+                if (acquiredTriggers.size() != 0 || currentLoopCount >= MAX_DO_LOOP_RETRY) break
+            } catch (Exception e) {
+                throw new JobPersistenceException("Couldn't acquire next trigger: " + e.getMessage(), e)
+            }
+        }
+
+        // Return the acquired trigger list
+        return acquiredTriggers
     }
+
+    /**
+     * <p>
+     * Select the next trigger which will fire to fire between the two given timestamps
+     * in ascending order of fire time, and then descending by priority.
+     * </p>
+     *
+     * @param conn the DB Connection
+     * @param noLaterThan highest value of <code>getNextFireTime()</code> of the triggers (exclusive)
+     * @param noEarlierThan highest value of <code>getNextFireTime()</code> of the triggers (inclusive)
+     * @param maxCount maximum number of trigger keys allow to acquired in the returning list.
+     *
+     * @return A (never null, possibly empty) list of the identifiers (Key objects) of the next triggers to be fired.
+     */
+    protected List<TriggerKey> selectTriggerToAcquire(long noLaterThan, long noEarlierThan, int maxCount) {
+        EntityConditionFactory ecf = ecfi.entityFacade.getConditionFactory()
+        List<TriggerKey> nextTriggers = new LinkedList<TriggerKey>()
+
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .selectFields(['triggerName', 'triggerGroup', 'nextFireTime', 'priority'])
+                .condition([schedName:instanceName, triggerState:Constants.STATE_WAITING])
+                .condition(ecf.makeCondition("nextFireTime", EntityCondition.LESS_THAN_EQUAL_TO, noLaterThan))
+                .condition(ecf.makeCondition(ecf.makeCondition("misfireInstr", EntityCondition.EQUALS, -1), EntityCondition.OR,
+                    ecf.makeCondition(ecf.makeCondition("misfireInstr", EntityCondition.NOT_EQUAL, -1), EntityCondition.AND,
+                            ecf.makeCondition("nextFireTime", EntityCondition.GREATER_THAN_EQUAL_TO, noEarlierThan))))
+                .orderBy(['nextFireTime', '-priority'])
+                .maxRows(maxCount).fetchSize(maxCount).disableAuthz().list()
+
+        for (EntityValue triggerValue in triggerList) {
+            if (nextTriggers.size() >= maxCount) break
+            nextTriggers.add(new TriggerKey((String) triggerValue.triggerName, (String) triggerValue.triggerGroup))
+        }
+
+        return nextTriggers
+    }
+
+    protected static long ftrCtr = System.currentTimeMillis()
+    protected synchronized String getFiredTriggerRecordId() { return instanceId + ftrCtr++ }
+
+    public int updateTriggerStateFromOtherState(TriggerKey triggerKey, String newState, String oldState) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group, triggerState:oldState])
+                .disableAuthz().updateAll([triggerState:newState])
+    }
+
 
     @Override
     void releaseAcquiredTrigger(OperableTrigger operableTrigger) {
