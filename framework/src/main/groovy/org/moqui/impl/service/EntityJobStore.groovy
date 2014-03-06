@@ -432,9 +432,15 @@ class EntityJobStore implements JobStore {
 
     @Override
     void clearAllSchedulingData() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzSimpleTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzCronTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzSimpropTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzBlobTriggers").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName]).deleteAll()
+
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName]).deleteAll()
+        ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzPausedTriggerGrps").condition([schedName:instanceName]).deleteAll()
     }
 
     @Override
@@ -459,17 +465,24 @@ class EntityJobStore implements JobStore {
     }
 
     @Override
+    List<String> getCalendarNames() throws JobPersistenceException {
+        EntityList calendarList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars")
+                .condition([schedName:instanceName]).selectField("calendarName").distinct(true).disableAuthz().list()
+        List<String> resultList = new ArrayList<>(calendarList.size())
+        for (EntityValue calendarValue in calendarList) resultList.add((String) calendarValue.calendarName)
+        return resultList
+    }
+
+    @Override
     int getNumberOfJobs() throws JobPersistenceException {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName])
                 .disableAuthz().count()
     }
-
     @Override
     int getNumberOfTriggers() throws JobPersistenceException {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName])
                 .disableAuthz().count()
     }
-
     @Override
     int getNumberOfCalendars() throws JobPersistenceException {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName])
@@ -522,13 +535,6 @@ class EntityJobStore implements JobStore {
         List<String> triggerGroupList = new ArrayList<>(triggerList.size())
         for (EntityValue triggerValue in triggerList) triggerGroupList.add((String) triggerValue.triggerGroup)
         return triggerGroupList
-    }
-
-    @Override
-    List<String> getCalendarNames() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
     }
 
     @Override
