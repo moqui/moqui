@@ -12,10 +12,12 @@
 package org.moqui.impl.service
 
 import org.moqui.Moqui
+import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
+import org.quartz.Job
+import org.quartz.JobDataMap
 import org.quartz.JobDetail
 import org.quartz.JobKey
 import org.quartz.JobPersistenceException
@@ -24,6 +26,7 @@ import org.quartz.SchedulerConfigException
 import org.quartz.SchedulerException
 import org.quartz.Trigger
 import org.quartz.TriggerKey
+import org.quartz.impl.JobDetailImpl
 import org.quartz.impl.jdbcjobstore.Constants
 import org.quartz.impl.jdbcjobstore.FiredTriggerRecord
 import org.quartz.impl.matchers.GroupMatcher
@@ -37,6 +40,7 @@ import javax.sql.rowset.serial.SerialBlob
 
 class EntityJobStore implements JobStore {
 
+    protected ClassLoadHelper classLoadHelper
     protected SchedulerSignaler schedulerSignaler
     protected ExecutionContextFactoryImpl ecfi = (ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()
 
@@ -47,6 +51,7 @@ class EntityJobStore implements JobStore {
 
     @Override
     void initialize(ClassLoadHelper classLoadHelper, SchedulerSignaler schedulerSignaler) throws SchedulerConfigException {
+        this.classLoadHelper = classLoadHelper
         this.schedulerSignaler = schedulerSignaler
     }
 
@@ -79,12 +84,19 @@ class EntityJobStore implements JobStore {
 
     @Override
     void storeJob(JobDetail job, boolean replaceExisting) throws ObjectAlreadyExistsException, JobPersistenceException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        if (job.jobDataMap) {
+            ObjectOutputStream out = new ObjectOutputStream(baos)
+            out.writeObject(job.jobDataMap)
+            out.flush()
+        }
+        byte[] jobData = baos.toByteArray()
         Map jobMap = [schedName:instanceName, jobName:job.key.name, jobGroup:job.key.group,
                 description:job.description, jobClassName:job.jobClass.name,
                 isDurable:(job.isDurable() ? "T" : "F"),
                 isNonconcurrent:(job.isConcurrentExectionDisallowed() ? "T" : "F"),
                 isUpdateData:(job.isPersistJobDataAfterExecution() ? "T" : "F"),
-                requestsRecovery:(job.requestsRecovery() ? "T" : "F")]
+                requestsRecovery:(job.requestsRecovery() ? "T" : "F"), jobData:new SerialBlob(jobData)]
         if (checkExists(job.getKey())) {
             if (replaceExisting) {
                 ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzJobDetails").parameters(jobMap).disableAuthz().call()
@@ -127,7 +139,7 @@ class EntityJobStore implements JobStore {
             if (job.isConcurrentExectionDisallowed() && !recovering) state = checkBlockedState(job.getKey(), state)
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream()
-            if (trigger.jobDataMap != null) {
+            if (trigger.jobDataMap) {
                 ObjectOutputStream out = new ObjectOutputStream(baos)
                 out.writeObject(trigger.jobDataMap)
                 out.flush()
@@ -246,8 +258,33 @@ class EntityJobStore implements JobStore {
 
     @Override
     JobDetail retrieveJob(JobKey jobKey) throws JobPersistenceException {
-        // TODO
-        return null
+        try {
+            Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
+            EntityValue jobValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().one()
+            JobDetailImpl job = new JobDetailImpl()
+
+            job.setName((String) jobValue.jobName)
+            job.setGroup((String) jobValue.jobGroup)
+            job.setDescription((String) jobValue.description)
+            job.setJobClass(classLoadHelper.loadClass((String) jobValue.jobClassName, Job.class));
+            job.setDurability(jobValue.isDurable == "T")
+            job.setRequestsRecovery(jobValue.requestsRecovery == "T")
+            // TODO: StdJDBCDelegate doesn't set these, but do we need them? isNonconcurrent, isUpdateData
+
+            ObjectInputStream ois = new ObjectInputStream(jobValue.getSerialBlob("jobData").binaryStream)
+            Map jobDataMap
+            try { jobDataMap = (Map) ois.readObject() } finally { ois.close() }
+            // TODO: need this? if (canUseProperties()) map = getMapFromProperties(rs);
+            if (jobDataMap) job.setJobDataMap(new JobDataMap(jobDataMap))
+
+            return job
+        } catch (ClassNotFoundException e) {
+            throw new JobPersistenceException("Couldn't retrieve job because a required class was not found: ${e.getMessage()}", e)
+        } catch (IOException e) {
+            throw new JobPersistenceException("Couldn't retrieve job because the BLOB couldn't be deserialized: ${e.getMessage()}", e)
+        } catch (EntityException e) {
+            throw new JobPersistenceException("Couldn't retrieve job: ${e.getMessage()}", e)
+        }
     }
 
     @Override
