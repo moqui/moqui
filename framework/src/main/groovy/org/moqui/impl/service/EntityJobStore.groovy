@@ -29,12 +29,14 @@ import org.quartz.SchedulerConfigException
 import org.quartz.SchedulerException
 import org.quartz.Trigger
 import org.quartz.Trigger.CompletedExecutionInstruction
+import org.quartz.Trigger.TriggerState
 import org.quartz.TriggerKey
 import org.quartz.impl.JobDetailImpl
 import org.quartz.impl.jdbcjobstore.Constants
 import org.quartz.impl.jdbcjobstore.FiredTriggerRecord
 import org.quartz.impl.jdbcjobstore.TriggerStatus
 import org.quartz.impl.matchers.GroupMatcher
+import org.quartz.impl.matchers.StringMatcher
 import org.quartz.spi.ClassLoadHelper
 import org.quartz.spi.JobStore
 import org.quartz.spi.OperableTrigger
@@ -260,6 +262,15 @@ class EntityJobStore implements JobStore {
         ecfi.serviceFacade.sync().name("create#moqui.service.quartz.QrtzPausedTriggerGrps")
                 .parameters([schedName:instanceName, triggerGroup:triggerGroup]).disableAuthz().call()
     }
+    protected void deletePausedTriggerGroup(String triggerGroup) {
+        ecfi.serviceFacade.sync().name("delete#moqui.service.quartz.QrtzPausedTriggerGrps")
+                .parameters([schedName:instanceName, triggerGroup:triggerGroup]).disableAuthz().call()
+    }
+    protected int deletePausedTriggerGroup(GroupMatcher<TriggerKey> matcher) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
+                .condition([schedName:instanceName]).condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
+                .disableAuthz().deleteAll()
+    }
 
     @Override
     void storeJobsAndTriggers(Map<JobDetail, Set<? extends Trigger>> jobDetailSetMap, boolean replaceExisting) throws ObjectAlreadyExistsException, JobPersistenceException {
@@ -365,9 +376,13 @@ class EntityJobStore implements JobStore {
 
         if (triggerValue.triggerType != Constants.TTYPE_BLOB)
             throw new JobPersistenceException("Trigger ${triggerValue.triggerName}:${triggerValue.triggerGroup} with type ${triggerValue.triggerType} cannot be retrieved, only blob type triggers currently supported.")
+        return getTriggerFromBlob(triggerKey.name, triggerKey.group)
+    }
+    OperableTrigger getTriggerFromBlob(String triggerName, String triggerGroup) {
+        Map triggerMap = [schedName:instanceName, triggerName:triggerName, triggerGroup:triggerGroup]
 
         EntityValue blobTriggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzBlobTriggers").condition(triggerMap).disableAuthz().one()
-        if (!blobTriggerValue) throw new JobPersistenceException("Count not find trigger ${triggerValue.triggerName}:${triggerValue.triggerGroup}")
+        if (!blobTriggerValue) throw new JobPersistenceException("Count not find blob for trigger ${triggerName}:${triggerGroup}")
 
         OperableTrigger trigger = null
         ObjectInputStream ois = new ObjectInputStream(blobTriggerValue.getSerialBlob("blobData").binaryStream)
@@ -418,51 +433,68 @@ class EntityJobStore implements JobStore {
 
     @Override
     int getNumberOfJobs() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition([schedName:instanceName])
+                .disableAuthz().count()
     }
 
     @Override
     int getNumberOfTriggers() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition([schedName:instanceName])
+                .disableAuthz().count()
     }
 
     @Override
     int getNumberOfCalendars() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition([schedName:instanceName])
+                .disableAuthz().count()
     }
 
     @Override
-    Set<JobKey> getJobKeys(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    Set<JobKey> getJobKeys(GroupMatcher<JobKey> matcher) throws JobPersistenceException {
+        EntityList jobList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails")
+                .condition([schedName:instanceName]).condition("jobGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
+                .selectField("jobName").selectField("jobGroup").disableAuthz().list()
+        Set<JobKey> jobKeySet = new ArrayList<>(jobList.size())
+        for (EntityValue jobValue in jobList) jobKeySet.add(new JobKey((String) jobValue.jobName, (String) jobValue.jobGroup))
+        return jobKeySet
     }
 
     @Override
-    Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    Set<TriggerKey> getTriggerKeys(GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName]).condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
+                .selectField("triggerName").selectField("triggerGroup").disableAuthz().list()
+        Set<TriggerKey> triggerKeySet = new ArrayList<>(triggerList.size())
+        for (EntityValue triggerValue in triggerList)
+            triggerKeySet.add(new TriggerKey((String) triggerValue.triggerName, (String) triggerValue.triggerGroup))
+        return triggerKeySet
     }
 
     @Override
     List<String> getJobGroupNames() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        EntityList jobList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails")
+                .condition([schedName:instanceName]).selectField("jobGroup").distinct(true).disableAuthz().list()
+        List<String> jobGroupList = new ArrayList<>(jobList.size())
+        for (EntityValue jobValue in jobList) jobGroupList.add((String) jobValue.jobGroup)
+        return jobGroupList
     }
 
     @Override
     List<String> getTriggerGroupNames() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName]).selectField("triggerGroup").distinct(true).disableAuthz().list()
+        List<String> triggerGroupList = new ArrayList<>(triggerList.size())
+        for (EntityValue triggerValue in triggerList) triggerGroupList.add((String) triggerValue.triggerGroup)
+        return triggerGroupList
+    }
+
+    protected List<String> getTriggerGroupNames(GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName]).condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
+                .selectField("triggerGroup").distinct(true).disableAuthz().list()
+        List<String> triggerGroupList = new ArrayList<>(triggerList.size())
+        for (EntityValue triggerValue in triggerList) triggerGroupList.add((String) triggerValue.triggerGroup)
+        return triggerGroupList
     }
 
     @Override
@@ -474,16 +506,43 @@ class EntityJobStore implements JobStore {
 
     @Override
     List<OperableTrigger> getTriggersForJob(JobKey jobKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(jobMap).disableAuthz().list()
+        List<OperableTrigger> resultList = []
+        for (EntityValue triggerValue in triggerList)
+            resultList.add(getTriggerFromBlob((String) triggerValue.triggerName, (String) triggerValue.triggerGroup))
+        return resultList
     }
 
     @Override
-    Trigger.TriggerState getTriggerState(TriggerKey triggerKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    TriggerState getTriggerState(TriggerKey triggerKey) throws JobPersistenceException {
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        String ts = triggerValue?.triggerState
+
+        if (ts == null) return TriggerState.NONE
+        if (ts.equals(Constants.STATE_DELETED)) return TriggerState.NONE
+        if (ts.equals(Constants.STATE_COMPLETE)) return TriggerState.COMPLETE
+        if (ts.equals(Constants.STATE_PAUSED)) return TriggerState.PAUSED
+        if (ts.equals(Constants.STATE_PAUSED_BLOCKED)) return TriggerState.PAUSED
+        if (ts.equals(Constants.STATE_ERROR)) return TriggerState.ERROR
+        if (ts.equals(Constants.STATE_BLOCKED)) return TriggerState.BLOCKED
+
+        return TriggerState.NORMAL
+    }
+    protected TriggerStatus selectTriggerStatus(TriggerKey triggerKey) {
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        if (!triggerValue) return null
+
+        Long nextFireTime = triggerValue.getLong("nextFireTime")
+        Date nft = null
+        if (nextFireTime) nft = new Date(nextFireTime)
+        TriggerStatus status = new TriggerStatus((String) triggerValue.triggerState, nft)
+        status.setKey(triggerKey)
+        status.setJobKey(new JobKey((String) triggerValue.jobName, (String) triggerValue.jobGroup))
+
+        return status
     }
 
     @Override
@@ -494,10 +553,51 @@ class EntityJobStore implements JobStore {
     }
 
     @Override
-    Collection<String> pauseTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
+    Collection<String> pauseTriggers(GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
+        updateTriggerGroupStateFromOtherStates(matcher, Constants.STATE_PAUSED,
+                [Constants.STATE_ACQUIRED, Constants.STATE_WAITING, Constants.STATE_WAITING])
+        updateTriggerGroupStateFromOtherStates(matcher, Constants.STATE_PAUSED_BLOCKED, [Constants.STATE_BLOCKED])
+
+        List<String> groups = getTriggerGroupNames(matcher)
+
+        // make sure to account for an exact group match for a group that doesn't yet exist
+        StringMatcher.StringOperatorName operator = matcher.getCompareWithOperator()
+        if (operator.equals(StringMatcher.StringOperatorName.EQUALS) && !groups.contains(matcher.getCompareToValue()))
+            groups.add(matcher.getCompareToValue())
+
+        for (String group : groups) if (!isTriggerGroupPaused(group)) insertPausedTriggerGroup(group)
+
+        return new HashSet<String>(groups)
+    }
+
+    @Override
+    void resumeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
         // TODO
         logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
+    }
+
+    @Override
+    Collection<String> resumeTriggers(GroupMatcher<TriggerKey> matcher) throws JobPersistenceException {
+        deletePausedTriggerGroup(matcher)
+
+        HashSet<String> groups = new HashSet<String>()
+        Set<TriggerKey> keys = getTriggerKeys(matcher)
+        for (TriggerKey key in keys) {
+            resumeTrigger(key)
+            groups.add(key.getGroup())
+        }
+
+        return groups
+    }
+
+    @Override
+    Set<String> getPausedTriggerGroups() throws JobPersistenceException {
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzPausedTriggerGrps")
+                .condition([schedName:instanceName]).selectField("triggerGroup").disableAuthz().list()
+        Set<String> triggerGroupSet = new HashSet<>(triggerList.size())
+        for (EntityValue triggerValue in triggerList) triggerGroupSet.add((String) triggerValue.triggerGroup)
+        return triggerGroupSet
     }
 
     @Override
@@ -509,27 +609,6 @@ class EntityJobStore implements JobStore {
 
     @Override
     Collection<String> pauseJobs(GroupMatcher<JobKey> jobKeyGroupMatcher) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
-    }
-
-    @Override
-    void resumeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
-    }
-
-    @Override
-    Collection<String> resumeTriggers(GroupMatcher<TriggerKey> triggerKeyGroupMatcher) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
-    }
-
-    @Override
-    Set<String> getPausedTriggerGroups() throws JobPersistenceException {
         // TODO
         logger.warn("Not yet implemented", new Exception())
         throw new IllegalStateException("Not yet implemented")
@@ -551,16 +630,16 @@ class EntityJobStore implements JobStore {
 
     @Override
     void pauseAll() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        List<String> names = getTriggerGroupNames()
+        for (String name: names) pauseTriggers(GroupMatcher.triggerGroupEquals(name))
+        if (!isTriggerGroupPaused(Constants.ALL_GROUPS_PAUSED)) insertPausedTriggerGroup(Constants.ALL_GROUPS_PAUSED)
     }
 
     @Override
     void resumeAll() throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        List<String> names = getTriggerGroupNames()
+        for (String name: names) resumeTriggers(GroupMatcher.triggerGroupEquals(name))
+        deletePausedTriggerGroup(Constants.ALL_GROUPS_PAUSED)
     }
 
     @Override
@@ -695,6 +774,36 @@ class EntityJobStore implements JobStore {
                 .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group, triggerState:oldState])
                 .disableAuthz().updateAll([triggerState:newState])
     }
+    protected int updateTriggerGroupStateFromOtherStates(GroupMatcher<TriggerKey> matcher, String newState, List<String> oldStates) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName])
+                .condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
+                .condition("triggerState", EntityCondition.IN, oldStates)
+                .disableAuthz().updateAll([triggerState:newState])
+    }
+    protected static String toSqlLikeClause(final GroupMatcher<?> matcher) {
+        String groupName;
+        switch(matcher.getCompareWithOperator()) {
+            case StringMatcher.StringOperatorName.EQUALS:
+                groupName = matcher.getCompareToValue();
+                break;
+            case StringMatcher.StringOperatorName.CONTAINS:
+                groupName = "%" + matcher.getCompareToValue() + "%";
+                break;
+            case StringMatcher.StringOperatorName.ENDS_WITH:
+                groupName = "%" + matcher.getCompareToValue();
+                break;
+            case StringMatcher.StringOperatorName.STARTS_WITH:
+                groupName = matcher.getCompareToValue() + "%";
+                break;
+            case StringMatcher.StringOperatorName.ANYTHING:
+                groupName = "%";
+                break;
+            default:
+                throw new UnsupportedOperationException("Don't know how to translate " + matcher.getCompareWithOperator() + " into SQL");
+        }
+        return groupName;
+    }
 
 
     @Override
@@ -813,20 +922,6 @@ class EntityJobStore implements JobStore {
         EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (!triggerValue) return Constants.STATE_DELETED
         return triggerValue.triggerState
-    }
-    protected TriggerStatus selectTriggerStatus(TriggerKey triggerKey) {
-        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
-        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
-        if (!triggerValue) return null
-
-        Long nextFireTime = triggerValue.getLong("nextFireTime")
-        Date nft = null
-        if (nextFireTime) nft = new Date(nextFireTime)
-        TriggerStatus status = new TriggerStatus((String) triggerValue.triggerState, nft)
-        status.setKey(triggerKey)
-        status.setJobKey(new JobKey((String) triggerValue.jobName, (String) triggerValue.jobGroup))
-
-        return status
     }
 
     @Override
