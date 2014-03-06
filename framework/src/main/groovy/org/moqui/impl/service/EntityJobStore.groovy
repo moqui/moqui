@@ -28,10 +28,12 @@ import org.quartz.Scheduler
 import org.quartz.SchedulerConfigException
 import org.quartz.SchedulerException
 import org.quartz.Trigger
+import org.quartz.Trigger.CompletedExecutionInstruction
 import org.quartz.TriggerKey
 import org.quartz.impl.JobDetailImpl
 import org.quartz.impl.jdbcjobstore.Constants
 import org.quartz.impl.jdbcjobstore.FiredTriggerRecord
+import org.quartz.impl.jdbcjobstore.TriggerStatus
 import org.quartz.impl.matchers.GroupMatcher
 import org.quartz.spi.ClassLoadHelper
 import org.quartz.spi.JobStore
@@ -320,7 +322,8 @@ class EntityJobStore implements JobStore {
         Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
         EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
         if (triggerValue == null) return false
-        triggerValue.delete()
+        ecfi.serviceFacade.sync().name("delete#moqui.service.quartz.QrtzBlobTriggers").parameters(triggerMap).disableAuthz().call()
+        ecfi.serviceFacade.sync().name("delete#moqui.service.quartz.QrtzTriggers").parameters(triggerMap).disableAuthz().call()
 
         // if there are no other triggers for the job, delete the job
         Map jobMap = [schedName:instanceName, jobName:triggerValue.jobName, jobGroup:triggerValue.jobGroup]
@@ -682,6 +685,11 @@ class EntityJobStore implements JobStore {
                 .condition([schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group, triggerState:oldState])
                 .disableAuthz().updateAll([triggerState:newState])
     }
+    protected int updateTriggerStatesForJob(JobKey jobKey, String newState) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group])
+                .disableAuthz().updateAll([triggerState:newState])
+    }
     protected int updateTriggerStatesForJobFromOtherState(JobKey jobKey, String newState, String oldState) {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group, triggerState:oldState])
@@ -806,12 +814,100 @@ class EntityJobStore implements JobStore {
         if (!triggerValue) return Constants.STATE_DELETED
         return triggerValue.triggerState
     }
+    protected TriggerStatus selectTriggerStatus(TriggerKey triggerKey) {
+        Map triggerMap = [schedName:instanceName, triggerName:triggerKey.name, triggerGroup:triggerKey.group]
+        EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+        if (!triggerValue) return null
+
+        Long nextFireTime = triggerValue.getLong("nextFireTime")
+        Date nft = null
+        if (nextFireTime) nft = new Date(nextFireTime)
+        TriggerStatus status = new TriggerStatus((String) triggerValue.triggerState, nft)
+        status.setKey(triggerKey)
+        status.setJobKey(new JobKey((String) triggerValue.jobName, (String) triggerValue.jobGroup))
+
+        return status
+    }
 
     @Override
-    void triggeredJobComplete(OperableTrigger operableTrigger, JobDetail jobDetail, Trigger.CompletedExecutionInstruction completedExecutionInstruction) {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    void triggeredJobComplete(OperableTrigger trigger, JobDetail jobDetail, CompletedExecutionInstruction triggerInstCode) {
+        boolean beganTransaction = ecfi.transactionFacade.begin(0)
+        try {
+            triggeredJobCompleteInternal(trigger, jobDetail, triggerInstCode)
+        } catch (Throwable t) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in triggeredJobComplete", t)
+            throw t
+        } finally {
+            if (ecfi.transactionFacade.isTransactionInPlace()) ecfi.transactionFacade.commit(beganTransaction)
+        }
+    }
+    void triggeredJobCompleteInternal(OperableTrigger trigger, JobDetail jobDetail, CompletedExecutionInstruction triggerInstCode) {
+        if (triggerInstCode == CompletedExecutionInstruction.DELETE_TRIGGER) {
+            if(trigger.getNextFireTime() == null) {
+                // double check for possible reschedule within job
+                // execution, which would cancel the need to delete...
+                TriggerStatus stat = selectTriggerStatus(trigger.getKey())
+                if(stat != null && stat.getNextFireTime() == null) removeTrigger(trigger.getKey())
+            } else{
+                removeTrigger(trigger.getKey())
+                signalSchedulingChangeOnTxCompletion(0L)
+            }
+        } else if (triggerInstCode == CompletedExecutionInstruction.SET_TRIGGER_COMPLETE) {
+            updateTriggerState(trigger.getKey(), Constants.STATE_COMPLETE)
+            signalSchedulingChangeOnTxCompletion(0L)
+        } else if (triggerInstCode == CompletedExecutionInstruction.SET_TRIGGER_ERROR) {
+            logger.info("Trigger " + trigger.getKey() + " set to ERROR state.");
+            updateTriggerState(trigger.getKey(), Constants.STATE_ERROR)
+            signalSchedulingChangeOnTxCompletion(0L)
+        } else if (triggerInstCode == CompletedExecutionInstruction.SET_ALL_JOB_TRIGGERS_COMPLETE) {
+            updateTriggerStatesForJob(trigger.getJobKey(), Constants.STATE_COMPLETE)
+            signalSchedulingChangeOnTxCompletion(0L)
+        } else if (triggerInstCode == CompletedExecutionInstruction.SET_ALL_JOB_TRIGGERS_ERROR) {
+            logger.info("All triggers of Job " + trigger.getKey() + " set to ERROR state.")
+            updateTriggerStatesForJob(trigger.getJobKey(), Constants.STATE_ERROR)
+            signalSchedulingChangeOnTxCompletion(0L)
+        }
+
+        if (jobDetail.isConcurrentExectionDisallowed()) {
+            updateTriggerStatesForJobFromOtherState(jobDetail.getKey(), Constants.STATE_WAITING, Constants.STATE_BLOCKED)
+            updateTriggerStatesForJobFromOtherState(jobDetail.getKey(), Constants.STATE_PAUSED, Constants.STATE_PAUSED_BLOCKED)
+
+            signalSchedulingChangeOnTxCompletion(0L)
+        }
+        if (jobDetail.isPersistJobDataAfterExecution()) {
+            try {
+                if (jobDetail.getJobDataMap().isDirty()) updateJobData(jobDetail)
+            } catch (IOException e) {
+                throw new JobPersistenceException("Couldn't serialize job data: " + e.getMessage(), e)
+            }
+        }
+    }
+
+    void updateJobData(JobDetail job) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream()
+        if (job.jobDataMap) {
+            ObjectOutputStream out = new ObjectOutputStream(baos)
+            out.writeObject(job.jobDataMap)
+            out.flush()
+        }
+        byte[] jobData = baos.toByteArray()
+        Map jobMap = [schedName:instanceName, jobName:job.key.name, jobGroup:job.key.group, jobData:new SerialBlob(jobData)]
+        ecfi.serviceFacade.sync().name("update#moqui.service.quartz.QrtzJobDetails").parameters(jobMap).disableAuthz().call()
+    }
+
+    protected ThreadLocal<Long> sigChangeForTxCompletion = new ThreadLocal<Long>()
+    protected void signalSchedulingChangeOnTxCompletion(long candidateNewNextFireTime) {
+        Long sigTime = sigChangeForTxCompletion.get()
+        if (sigTime == null && candidateNewNextFireTime >= 0L) {
+            sigChangeForTxCompletion.set(candidateNewNextFireTime)
+        } else {
+            if (sigTime == null || candidateNewNextFireTime < sigTime) sigChangeForTxCompletion.set(candidateNewNextFireTime)
+        }
+    }
+    protected Long clearAndGetSignalSchedulingChangeOnTxCompletion() {
+        Long t = sigChangeForTxCompletion.get()
+        sigChangeForTxCompletion.set(null)
+        return t
     }
 
     @Override
