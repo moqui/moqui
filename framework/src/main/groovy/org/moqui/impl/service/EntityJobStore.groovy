@@ -272,6 +272,33 @@ class EntityJobStore implements JobStore {
                 .disableAuthz().deleteAll()
     }
 
+    protected boolean updateMisfiredTrigger(TriggerKey triggerKey, String newStateIfNotComplete, boolean forceState)
+            throws JobPersistenceException {
+        OperableTrigger trig = retrieveTrigger(triggerKey)
+
+        long misfireTime = System.currentTimeMillis()
+        if (getMisfireThreshold() > 0) misfireTime -= getMisfireThreshold()
+        if (trig.getNextFireTime().getTime() > misfireTime) return false
+
+        doUpdateOfMisfiredTrigger(trig, forceState, newStateIfNotComplete, false)
+        return true
+    }
+    private void doUpdateOfMisfiredTrigger(OperableTrigger trig, boolean forceState, String newStateIfNotComplete,
+                                           boolean recovering) throws JobPersistenceException {
+        org.quartz.Calendar cal = null
+        if (trig.getCalendarName() != null) cal = retrieveCalendar(trig.getCalendarName())
+
+        this.schedulerSignaler.notifyTriggerListenersMisfired(trig)
+        trig.updateAfterMisfire(cal)
+
+        if (trig.getNextFireTime() == null) {
+            storeTrigger(trig, null, true, Constants.STATE_COMPLETE, forceState, recovering)
+            this.schedulerSignaler.notifySchedulerListenersFinalized(trig)
+        } else {
+            storeTrigger(trig, null, true, newStateIfNotComplete, forceState, false)
+        }
+    }
+
     @Override
     void storeJobsAndTriggers(Map<JobDetail, Set<? extends Trigger>> jobDetailSetMap, boolean replaceExisting) throws ObjectAlreadyExistsException, JobPersistenceException {
         for (Map.Entry<JobDetail, Set<? extends Trigger>> e: jobDetailSetMap.entrySet()) {
@@ -547,9 +574,12 @@ class EntityJobStore implements JobStore {
 
     @Override
     void pauseTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        String oldState = getTriggerState(triggerKey)
+        if (oldState.equals(Constants.STATE_WAITING) || oldState.equals(Constants.STATE_ACQUIRED)) {
+            updateTriggerState(triggerKey, Constants.STATE_PAUSED)
+        } else if (oldState.equals(Constants.STATE_BLOCKED)) {
+            updateTriggerState(triggerKey, Constants.STATE_PAUSED_BLOCKED)
+        }
     }
 
     @Override
@@ -572,9 +602,22 @@ class EntityJobStore implements JobStore {
 
     @Override
     void resumeTrigger(TriggerKey triggerKey) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+        TriggerStatus status = selectTriggerStatus(triggerKey)
+        if (status == null || status.getNextFireTime() == null) return
+
+        boolean blocked = false
+        if (Constants.STATE_PAUSED_BLOCKED == status.getStatus()) blocked = true
+
+        String newState = checkBlockedState(status.getJobKey(), Constants.STATE_WAITING)
+
+        boolean misfired = false
+        if (schedulerRunning && status.getNextFireTime().before(new Date()))
+            misfired = updateMisfiredTrigger(triggerKey, newState, true)
+
+        if (!misfired) {
+            if (blocked) updateTriggerStateFromOtherState(triggerKey, newState, Constants.STATE_PAUSED_BLOCKED)
+            else updateTriggerStateFromOtherState(triggerKey, newState, Constants.STATE_PAUSED)
+        }
     }
 
     @Override
