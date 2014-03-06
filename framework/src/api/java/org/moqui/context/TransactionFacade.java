@@ -25,10 +25,9 @@ import javax.transaction.xa.XAResource;
  *     ...
  * } catch (Throwable t) {
  *     transactionFacade.rollback(beganTransaction, "...", t);
+ *     throw t;
  * } finally {
- *     if (transactionFacade.isTransactionInPlace()) {
- *         transactionFacade.commit(beganTransaction);
- *     }
+ *     if (transactionFacade.isTransactionInPlace()) transactionFacade.commit(beganTransaction);
  * }
  * </pre>
  *
@@ -47,10 +46,9 @@ import javax.transaction.xa.XAResource;
  *         ...
  *     } catch (Throwable t) {
  *         transactionFacade.rollback(beganTransaction, "...", t);
+ *         throw t;
  *     } finally {
- *         if (transactionFacade.isTransactionInPlace()) {
- *             transactionFacade.commit(beganTransaction);
- *         }
+ *         if (transactionFacade.isTransactionInPlace()) transactionFacade.commit(beganTransaction);
  *     }
  * } catch (TransactionException e) {
  *     ...
