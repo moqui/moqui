@@ -18,6 +18,7 @@ import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import org.moqui.impl.context.ExecutionContextFactoryImpl
+
 import org.quartz.Job
 import org.quartz.JobDataMap
 import org.quartz.JobDetail
@@ -43,6 +44,7 @@ import org.quartz.spi.OperableTrigger
 import org.quartz.spi.SchedulerSignaler
 import org.quartz.spi.TriggerFiredBundle
 import org.quartz.spi.TriggerFiredResult
+
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -336,12 +338,12 @@ class EntityJobStore implements JobStore {
             job.setJobClass(classLoadHelper.loadClass((String) jobValue.jobClassName, Job.class));
             job.setDurability(jobValue.isDurable == "T")
             job.setRequestsRecovery(jobValue.requestsRecovery == "T")
-            // TODO: StdJDBCDelegate doesn't set these, but do we need them? isNonconcurrent, isUpdateData
+            // NOTE: StdJDBCDelegate doesn't set these, but do we need them? isNonconcurrent, isUpdateData
 
             ObjectInputStream ois = new ObjectInputStream(jobValue.getSerialBlob("jobData").binaryStream)
             Map jobDataMap
             try { jobDataMap = (Map) ois.readObject() } finally { ois.close() }
-            // TODO: need this? if (canUseProperties()) map = getMapFromProperties(rs);
+            // NOTE: need this? if (canUseProperties()) map = getMapFromProperties(rs);
             if (jobDataMap) job.setJobDataMap(new JobDataMap(jobDataMap))
 
             return job
@@ -444,24 +446,81 @@ class EntityJobStore implements JobStore {
     }
 
     @Override
-    void storeCalendar(String s, org.quartz.Calendar calendar, boolean b, boolean b2) throws ObjectAlreadyExistsException, JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    void storeCalendar(final String calName, final org.quartz.Calendar calendar, final boolean replaceExisting,
+                       final boolean updateTriggers) throws ObjectAlreadyExistsException, JobPersistenceException {
+        try {
+            boolean existingCal = calendarExists(calName)
+            if (existingCal && !replaceExisting) throw new ObjectAlreadyExistsException("Calendar with name '" + calName + "' already exists.")
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream()
+            ObjectOutputStream out = new ObjectOutputStream(baos)
+            out.writeObject(calendar)
+            out.flush()
+            byte[] calendarData = baos.toByteArray()
+
+            if (existingCal) {
+                ecfi.service.sync().name("update#moqui.service.quartz.QrtzCalendars")
+                        .parameters([schedName:instanceName, calendarName:calName, calendar:new SerialBlob(calendarData)])
+                        .disableAuthz().call()
+
+                if(updateTriggers) {
+                    List<OperableTrigger> trigs = getTriggersForCalendar(calName)
+                    for(OperableTrigger trigger: trigs) {
+                        trigger.updateWithNewCalendar(calendar, getMisfireThreshold())
+                        storeTrigger(trigger, null, true, Constants.STATE_WAITING, false, false)
+                    }
+                }
+            } else {
+                ecfi.service.sync().name("create#moqui.service.quartz.QrtzCalendars")
+                        .parameters([schedName:instanceName, calendarName:calName, calendar:new SerialBlob(calendarData)])
+                        .disableAuthz().call()
+            }
+        } catch (IOException e) {
+            throw new JobPersistenceException("Couldn't store calendar because the BLOB couldn't be serialized: " + e.getMessage(), e)
+        } catch (ClassNotFoundException e) {
+            throw new JobPersistenceException("Couldn't store calendar: " + e.getMessage(), e)
+        }
+    }
+
+    boolean calendarExists(String calendarName) throws JobPersistenceException {
+        return ecfi.getEntityFacade().makeFind("moqui.service.quartz.QrtzCalendars")
+                .condition([schedName:instanceName, calendarName:calendarName]).disableAuthz().count() > 0
+    }
+
+    List<OperableTrigger> getTriggersForCalendar(String calendarName) throws JobPersistenceException {
+        Map calMap = [schedName:instanceName, calendarName:calendarName]
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(calMap).disableAuthz().list()
+        List<OperableTrigger> resultList = []
+        for (EntityValue triggerValue in triggerList)
+            resultList.add(getTriggerFromBlob((String) triggerValue.triggerName, (String) triggerValue.triggerGroup))
+        return resultList
     }
 
     @Override
-    boolean removeCalendar(String s) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    boolean removeCalendar(String calendarName) throws JobPersistenceException {
+        Map calMap = [schedName:instanceName, calendarName:calendarName]
+        if (ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(calMap)
+                .disableAuthz().count() > 0) throw new JobPersistenceException("Calender cannot be removed if it referenced by a trigger!")
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition(calMap).disableAuthz().deleteAll() as boolean
     }
 
     @Override
-    org.quartz.Calendar retrieveCalendar(String s) throws JobPersistenceException {
-        // TODO
-        logger.warn("Not yet implemented", new Exception())
-        throw new IllegalStateException("Not yet implemented")
+    org.quartz.Calendar retrieveCalendar(String calendarName) throws JobPersistenceException {
+        try {
+            Map calMap = [schedName:instanceName, calendarName:calendarName]
+
+            EntityValue calValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzCalendars").condition(calMap).disableAuthz().one()
+            if (!calValue) return null
+
+            org.quartz.Calendar cal = null
+            ObjectInputStream ois = new ObjectInputStream(calValue.getSerialBlob("calendar").binaryStream)
+            try { cal = (org.quartz.Calendar) ois.readObject() } finally { ois.close() }
+            return cal
+        } catch (ClassNotFoundException e) {
+            throw new JobPersistenceException("Couldn't retrieve calendar because a required class was not found: " + e.getMessage(), e)
+        } catch (IOException e) {
+            throw new JobPersistenceException("Couldn't retrieve calendar because the BLOB couldn't be deserialized: " + e.getMessage(), e)
+        }
     }
 
     @Override
