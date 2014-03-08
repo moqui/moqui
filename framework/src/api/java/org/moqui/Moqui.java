@@ -40,12 +40,14 @@ public class Moqui {
             // initialize the activeExecutionContextFactory from configuration using java.util.ServiceLoader
             // the implementation class name should be in: "META-INF/services/org.moqui.context.ExecutionContextFactory"
             activeExecutionContextFactory = executionContextFactoryLoader.iterator().next();
+            activeExecutionContextFactory.postInit();
         }
     }
 
     public static void dynamicInit(ExecutionContextFactory executionContextFactory) {
         if (activeExecutionContextFactory == null) {
             activeExecutionContextFactory = executionContextFactory;
+            activeExecutionContextFactory.postInit();
         } else {
             throw new IllegalStateException("Active ExecutionContextFactory already in place, cannot set one dynamically.");
         }

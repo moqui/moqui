@@ -82,7 +82,9 @@ class ServiceFacadeImpl implements ServiceFacade {
 
         scheduler.getListenerManager().addTriggerListener(new HistoryTriggerListener());
         scheduler.getListenerManager().addSchedulerListener(new HistorySchedulerListener());
+    }
 
+    void postInit() {
         // init quartz scheduler (do last just in case it gets any jobs going right away)
         scheduler.start()
         // TODO: add a job to delete scheduler history

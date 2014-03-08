@@ -251,7 +251,11 @@ abstract class EntityValueBase implements EntityValue {
 
     byte[] getBytes(String name) {
         Object o = this.get(name)
-        if (o instanceof SerialBlob) return ((SerialBlob) o).getBytes(1, (int) o.length())
+        if (o == null) return null
+        if (o instanceof SerialBlob) {
+            if (((SerialBlob) o).length() == 0) return new byte[0]
+            return ((SerialBlob) o).getBytes(1, (int) o.length())
+        }
         if (o instanceof byte[]) return o
         // try groovy...
         return o as byte[]
@@ -263,6 +267,7 @@ abstract class EntityValueBase implements EntityValue {
 
     SerialBlob getSerialBlob(String name) {
         Object o = this.get(name)
+        if (o == null) return null
         if (o instanceof SerialBlob) return o
         if (o instanceof byte[]) return new SerialBlob((byte[]) o)
         // try groovy...

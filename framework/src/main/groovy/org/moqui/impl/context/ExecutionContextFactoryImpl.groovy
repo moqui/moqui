@@ -254,6 +254,11 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         postFacadeInit()
     }
 
+    @Override
+    void postInit() {
+        this.serviceFacade.postInit()
+    }
+
     protected void preFacadeInit() {
         // must load components before ClassLoader since ClassLoader currently adds lib and classes directories at init time
         initComponents()

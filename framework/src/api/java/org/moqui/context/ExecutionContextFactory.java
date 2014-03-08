@@ -32,6 +32,8 @@ public interface ExecutionContextFactory {
     /** Destroy the active Execution Context. When another is requested in this thread a new one will be created. */
     void destroyActiveExecutionContext();
 
+    /** Run after construction is complete and object is active in the Moqui class (called by Moqui.java) */
+    void postInit();
     /** Destroy this Execution Context Factory. */
     void destroy();
 
