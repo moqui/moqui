@@ -46,6 +46,9 @@ New Features:
     field value.
   - Added SchedulerHistory and code to populate it on various Quartz
     Scheduler events
+  - Added EntityJobStore to do persistence for Quartz Scheduler through
+    the Entity Facade instead of direct to DB for easier deployment and
+    more consistent operation with other parts of Moqui Framework
 - Transaction Facade
   - Added transaction-facade.@use-transaction-cache attribute, defaults to
     true, set to false to disable the TransactionCache globally
