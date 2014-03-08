@@ -28,6 +28,7 @@ import org.quartz.ObjectAlreadyExistsException
 import org.quartz.Scheduler
 import org.quartz.SchedulerConfigException
 import org.quartz.SchedulerException
+import org.quartz.SimpleTrigger
 import org.quartz.Trigger
 import org.quartz.Trigger.CompletedExecutionInstruction
 import org.quartz.Trigger.TriggerState
@@ -38,6 +39,7 @@ import org.quartz.impl.jdbcjobstore.FiredTriggerRecord
 import org.quartz.impl.jdbcjobstore.TriggerStatus
 import org.quartz.impl.matchers.GroupMatcher
 import org.quartz.impl.matchers.StringMatcher
+import org.quartz.impl.triggers.SimpleTriggerImpl
 import org.quartz.spi.ClassLoadHelper
 import org.quartz.spi.JobStore
 import org.quartz.spi.OperableTrigger
@@ -63,18 +65,20 @@ class EntityJobStore implements JobStore {
     protected boolean shutdown = false
 
     protected String instanceId, instanceName
-    private long misfireThreshold = 60000L; // one minute
+    protected long misfireThreshold = 60000L // one minute
+    protected int maxToRecoverAtATime = 20
 
     public long getMisfireThreshold() { return misfireThreshold }
     public void setMisfireThreshold(long misfireThreshold) {
         if (misfireThreshold < 1) throw new IllegalArgumentException("MisfireThreshold must be larger than 0")
-        this.misfireThreshold = misfireThreshold;
+        this.misfireThreshold = misfireThreshold
     }
     protected long getMisfireTime() {
         long misfireTime = System.currentTimeMillis()
         if (getMisfireThreshold() > 0) misfireTime -= getMisfireThreshold()
         return misfireTime > 0 ? misfireTime : 0
     }
+    public void setMaxMisfiresToHandleAtATime(int maxToRecoverAtATime) { this.maxToRecoverAtATime = maxToRecoverAtATime }
 
     ExecutionContextFactoryImpl getEcfi() {
         ExecutionContextFactoryImpl executionContextFactory = (ExecutionContextFactoryImpl) Moqui.getExecutionContextFactory()
@@ -90,9 +94,172 @@ class EntityJobStore implements JobStore {
 
     @Override
     void schedulerStarted() throws SchedulerException {
-        // TODO recover jobs
+        // recover jobs
+        try {
+            recoverJobs()
+        } catch (Exception e) {
+            throw new SchedulerConfigException("Failure occured during job recovery.", e)
+        }
+
+        // TODO: is MisfireHandler needed?
 
         schedulerRunning = true
+    }
+
+    protected void recoverJobs() throws JobPersistenceException {
+        boolean beganTransaction = ecfi.transactionFacade.begin(0)
+        try {
+            // update inconsistent job states
+            int rows = updateTriggerStatesFromOtherStates(Constants.STATE_WAITING, [Constants.STATE_ACQUIRED, Constants.STATE_BLOCKED])
+            rows += updateTriggerStatesFromOtherStates(Constants.STATE_PAUSED, [Constants.STATE_PAUSED_BLOCKED])
+
+            logger.info("Freed " + rows + " triggers from 'acquired' / 'blocked' state.")
+
+            // clean up misfired jobs
+            recoverMisfiredJobs(true)
+
+            // recover jobs marked for recovery that were not fully executed
+            List<OperableTrigger> recoveringJobTriggers = selectTriggersForRecoveringJobs()
+            logger.info("Recovering " + recoveringJobTriggers.size() + " jobs that were in-progress at the time of the last shut-down.")
+
+            for (OperableTrigger recoveringJobTrigger: recoveringJobTriggers) {
+                if (checkExists(recoveringJobTrigger.getJobKey())) {
+                    recoveringJobTrigger.computeFirstFireTime(null)
+                    storeTrigger(recoveringJobTrigger, null, false, Constants.STATE_WAITING, false, true)
+                }
+            }
+            logger.info("Quartz recovery complete")
+
+            // remove lingering 'complete' triggers...
+            EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                    .condition([schedName:instanceName, triggerState:Constants.STATE_COMPLETE])
+                    .disableAuthz().list()
+            for (EntityValue triggerValue in triggerList) {
+                TriggerKey ct = new TriggerKey((String) triggerValue.triggerName, (String) triggerValue.triggerGroup)
+                removeTrigger(ct)
+            }
+            logger.info("Removed " + triggerList.size() + " 'complete' triggers")
+
+            // clean up any fired trigger entries
+            int n = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers")
+                    .condition([schedName:instanceName]).disableAuthz().deleteAll()
+            logger.info("Removed " + n + " stale fired job entries")
+        } catch (JobPersistenceException e) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in recoverJobs", e)
+            throw e
+        } catch (Exception e) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in recoverJobs", e)
+            throw new JobPersistenceException("Couldn't recover jobs: " + e.getMessage(), e)
+        } catch (Throwable t) {
+            ecfi.transactionFacade.rollback(beganTransaction, "Error in recoverJobs", t)
+            throw t
+        } finally {
+            if (ecfi.transactionFacade.isTransactionInPlace()) ecfi.transactionFacade.commit(beganTransaction)
+        }
+    }
+
+    protected static class RecoverMisfiredJobsResult {
+        public static final RecoverMisfiredJobsResult NO_OP = new RecoverMisfiredJobsResult(false, 0, Long.MAX_VALUE)
+
+        private boolean _hasMoreMisfiredTriggers
+        private int _processedMisfiredTriggerCount
+        private long _earliestNewTime
+
+        public RecoverMisfiredJobsResult(boolean hasMoreMisfiredTriggers, int processedMisfiredTriggerCount, long earliestNewTime) {
+            _hasMoreMisfiredTriggers = hasMoreMisfiredTriggers
+            _processedMisfiredTriggerCount = processedMisfiredTriggerCount
+            _earliestNewTime = earliestNewTime
+        }
+
+        public boolean hasMoreMisfiredTriggers() { return _hasMoreMisfiredTriggers }
+        public int getProcessedMisfiredTriggerCount() { return _processedMisfiredTriggerCount }
+        public long getEarliestNewTime() { return _earliestNewTime }
+    }
+    protected RecoverMisfiredJobsResult recoverMisfiredJobs(boolean recovering) throws JobPersistenceException {
+        // If recovering, we want to handle all of the misfired
+        // triggers right away.
+        int maxMisfiresToHandleAtATime = recovering ? -1 : maxToRecoverAtATime
+
+        List<TriggerKey> misfiredTriggers = new LinkedList<TriggerKey>()
+        long earliestNewTime = Long.MAX_VALUE;
+        // We must still look for the MISFIRED state in case triggers were left
+        // in this state when upgrading to this version that does not support it.
+        boolean hasMoreMisfiredTriggers = hasMisfiredTriggersInState(Constants.STATE_WAITING, getMisfireTime(),
+                maxMisfiresToHandleAtATime, misfiredTriggers)
+
+        if (hasMoreMisfiredTriggers) {
+            logger.info("Handling the first " + misfiredTriggers.size() +" triggers that missed their scheduled fire-time. More misfired triggers remain to be processed.")
+        } else if (misfiredTriggers.size() > 0) {
+            logger.info("Handling " + misfiredTriggers.size() + " trigger(s) that missed their scheduled fire-time.")
+        } else {
+            logger.debug("Found 0 triggers that missed their scheduled fire-time.")
+            return RecoverMisfiredJobsResult.NO_OP;
+        }
+
+        for (TriggerKey triggerKey in misfiredTriggers) {
+            OperableTrigger trig = retrieveTrigger(triggerKey)
+            if (trig == null) continue
+
+            doUpdateOfMisfiredTrigger(trig, false, Constants.STATE_WAITING, recovering)
+
+            if(trig.getNextFireTime() != null && trig.getNextFireTime().getTime() < earliestNewTime)
+                earliestNewTime = trig.getNextFireTime().getTime();
+        }
+
+        return new RecoverMisfiredJobsResult(hasMoreMisfiredTriggers, misfiredTriggers.size(), earliestNewTime)
+    }
+    public boolean hasMisfiredTriggersInState(String state1, long ts, int count, List<TriggerKey> resultList) {
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName, triggerState:state1])
+                .condition("misfireInstr", EntityCondition.NOT_EQUAL, Trigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY)
+                .condition("nextFireTime", EntityCondition.LESS_THAN, ts)
+                .disableAuthz().list()
+
+        boolean hasReachedLimit = false
+        for (EntityValue trigger in triggerList) {
+            if (resultList.size() == count) {
+                hasReachedLimit = true
+                break
+            } else {
+                resultList.add(new TriggerKey((String) trigger.triggerName, (String) trigger.triggerGroup))
+            }
+        }
+
+        return hasReachedLimit
+    }
+
+    public List<OperableTrigger> selectTriggersForRecoveringJobs() throws IOException, ClassNotFoundException {
+        EntityList triggerList = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzFiredTriggers")
+                .condition([schedName:instanceName, instanceName:instanceId, requestsRecovery:"T"])
+                .disableAuthz().list()
+
+        long dumId = System.currentTimeMillis()
+        LinkedList<OperableTrigger> list = new LinkedList<OperableTrigger>()
+        for (EntityValue ev in triggerList) {
+            SimpleTriggerImpl rcvryTrig = new SimpleTriggerImpl("recover_" + instanceId + "_" + String.valueOf(dumId++),
+                    Scheduler.DEFAULT_RECOVERY_GROUP, new Date(ev.getLong("schedTime")))
+            rcvryTrig.setJobName((String) ev.jobName)
+            rcvryTrig.setJobGroup((String) ev.jobGroup)
+            rcvryTrig.setPriority(ev.priority as int)
+            rcvryTrig.setMisfireInstruction(SimpleTrigger.MISFIRE_INSTRUCTION_IGNORE_MISFIRE_POLICY)
+
+            Map triggerMap = [schedName:instanceName, triggerName:ev.triggerName, triggerGroup:ev.triggerGroup]
+            EntityValue triggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers").condition(triggerMap).disableAuthz().one()
+            JobDataMap jd = new JobDataMap()
+            if (triggerValue != null && triggerValue.jobData != null && triggerValue.getSerialBlob("jobData").length() > 0) {
+                ObjectInputStream ois = new ObjectInputStream(triggerValue.getSerialBlob("jobData").binaryStream)
+                try { jd = (JobDataMap) ois.readObject() } finally { ois.close() }
+            }
+
+            jd.put(Scheduler.FAILED_JOB_ORIGINAL_TRIGGER_NAME, (String) ev.triggerName)
+            jd.put(Scheduler.FAILED_JOB_ORIGINAL_TRIGGER_GROUP, (String) ev.triggerGroup)
+            jd.put(Scheduler.FAILED_JOB_ORIGINAL_TRIGGER_FIRETIME_IN_MILLISECONDS, ev.firedTime as String)
+            jd.put(Scheduler.FAILED_JOB_ORIGINAL_TRIGGER_SCHEDULED_FIRETIME_IN_MILLISECONDS, ev.schedTime as String)
+            rcvryTrig.setJobDataMap(jd)
+
+            list.add(rcvryTrig)
+        }
+        return list
     }
 
     @Override
@@ -148,7 +315,7 @@ class EntityJobStore implements JobStore {
     protected void storeTrigger(OperableTrigger trigger, JobDetail job, boolean replaceExisting, String state,
                                 boolean forceState, boolean recovering)
             throws ObjectAlreadyExistsException, JobPersistenceException {
-        // TODO: handle shouldBePaused, job update (see JobStoreSupport:1184)
+
         boolean triggerExists = checkExists(trigger.getKey())
         if (triggerExists && !replaceExisting) throw new ObjectAlreadyExistsException(trigger)
 
@@ -330,6 +497,7 @@ class EntityJobStore implements JobStore {
         try {
             Map jobMap = [schedName:instanceName, jobName:jobKey.name, jobGroup:jobKey.group]
             EntityValue jobValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzJobDetails").condition(jobMap).disableAuthz().one()
+            if (!jobValue) return null
             JobDetailImpl job = new JobDetailImpl()
 
             job.setName((String) jobValue.jobName)
@@ -340,9 +508,11 @@ class EntityJobStore implements JobStore {
             job.setRequestsRecovery(jobValue.requestsRecovery == "T")
             // NOTE: StdJDBCDelegate doesn't set these, but do we need them? isNonconcurrent, isUpdateData
 
-            ObjectInputStream ois = new ObjectInputStream(jobValue.getSerialBlob("jobData").binaryStream)
-            Map jobDataMap
-            try { jobDataMap = (Map) ois.readObject() } finally { ois.close() }
+            Map jobDataMap = null
+            if (jobValue.jobData != null && jobValue.getSerialBlob("jobData").length() > 0) {
+                ObjectInputStream ois = new ObjectInputStream(jobValue.getSerialBlob("jobData").binaryStream)
+                try { jobDataMap = (Map) ois.readObject() } finally { ois.close() }
+            }
             // NOTE: need this? if (canUseProperties()) map = getMapFromProperties(rs);
             if (jobDataMap) job.setJobDataMap(new JobDataMap(jobDataMap))
 
@@ -894,6 +1064,12 @@ class EntityJobStore implements JobStore {
         return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
                 .condition([schedName:instanceName])
                 .condition("triggerGroup", EntityCondition.LIKE, toSqlLikeClause(matcher))
+                .condition("triggerState", EntityCondition.IN, oldStates)
+                .disableAuthz().updateAll([triggerState:newState])
+    }
+    protected int updateTriggerStatesFromOtherStates(String newState, List<String> oldStates) {
+        return ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzTriggers")
+                .condition([schedName:instanceName])
                 .condition("triggerState", EntityCondition.IN, oldStates)
                 .disableAuthz().updateAll([triggerState:newState])
     }
