@@ -315,6 +315,9 @@ class ScreenUrlInfo {
                 // handle case where last one may be a transition name, and not a subscreen name
                 TransitionItem ti = lastSd.getTransitionItem(pathName, ec.web ? ec.web.request.method : "")
                 if (ti) {
+                    // extra path elements always allowed after transitions for parameters, but we don't want the transition name on it
+                    extraPathNameList.remove(0)
+
                     // Screen Transition as a URL Alias:
                     // if fromScreenPath is a transition, and that transition has no condition,
                     // service/actions or conditional-response then use the default-response.url instead
@@ -326,7 +329,7 @@ class ScreenUrlInfo {
                         // remove transition name
                         aliasPathList.remove(aliasPathList.size()-1)
 
-                        Map transitionParameters = ti.defaultResponse.expandParameters(ec)
+                        Map transitionParameters = ti.defaultResponse.expandParameters(this, ec)
 
                         // create a ScreenUrlInfo, then copy its info into this
                         ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList,
@@ -342,9 +345,6 @@ class ScreenUrlInfo {
 
                     this.targetTransition = ti
                     this.targetTransitionActualName = pathName
-
-                    // extra path elements always allowed after transitions for parameters, but we don't want the transition name on it
-                    extraPathNameList.remove(0)
 
                     // if no return above, just break out; a transition means we're at the end
                     break

@@ -29,6 +29,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <service-call name="org.moqui.example.ExampleServices.updateExample"/>
         <default-response url="."/>
     </transition>
+    <transition name="edit">
+        <path-parameter name="exampleId"/>
+        <default-response url="."><parameter name="exampleId" from="exampleId"/></default-response>
+    </transition>
+
     <transition name="getExampleTypeEnumList">
         <actions>
             <log level="warn" message="In getExampleTypeEnumList transition statusId=${statusId}"/>
@@ -50,6 +55,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <condition><expression>example</expression></condition>
             <widgets><link url="newExample" text="New Example" link-type="hidden-form" icon="plusthick"/></widgets>
         </section>
+        <link url="edit" text="Edit" link-type="hidden-form"/>
 
         <section name="create">
             <condition><compare field="example" operator="empty"/></condition>

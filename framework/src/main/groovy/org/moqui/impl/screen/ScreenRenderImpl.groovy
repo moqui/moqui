@@ -337,7 +337,7 @@ class ScreenRenderImpl implements ScreenRender {
 
                 if (urlType == "plain") {
                     StringBuilder ps = new StringBuilder()
-                    Map<String, String> pm = (Map<String, String>) ri.expandParameters(ec)
+                    Map<String, String> pm = (Map<String, String>) ri.expandParameters(getScreenUrlInfo(), ec)
                     if (pm) {
                         for (Map.Entry<String, String> pme in pm) {
                             if (!pme.value) continue
@@ -354,7 +354,7 @@ class ScreenRenderImpl implements ScreenRender {
                 } else {
                     // default is screen-path
                     ScreenUrlInfo fullUrl = buildUrl(rootScreenDef, screenUrlInfo.preTransitionPathNameList, url)
-                    fullUrl.addParameters(ri.expandParameters(ec))
+                    fullUrl.addParameters(ri.expandParameters(getScreenUrlInfo(), ec))
                     // if this was a screen-last and the screen has declared parameters include them in the URL
                     Map savedParameters = ((WebFacadeImpl) ec.getWeb())?.getSavedParameters()
                     ScreenUrlInfo.copySpecialParameters(savedParameters, fullUrl.getPathParameterMap())
