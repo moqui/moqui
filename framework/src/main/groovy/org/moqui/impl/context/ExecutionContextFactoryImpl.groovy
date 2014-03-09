@@ -731,6 +731,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected boolean artifactPersistHit(String artifactType, String artifactSubType) {
+        if ("entity".equals(artifactType)) return false
         String cacheKey = artifactType + "#" + artifactSubType
         Boolean ph = artifactPersistHitByType.get(cacheKey)
         if (ph == null) {
@@ -758,11 +759,13 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         return artifactStats
     }
 
+    protected Set<String> entitiesToSkipHitCount =
+            new TreeSet(['moqui.server.ArtifactHit', 'moqui.server.ArtifactHitBin', 'moqui.entity.SequenceValueItem'])
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
         if (artifactType == "service" && artifactName.contains("moqui.server.ArtifactHit")) return
-        if (artifactType == "entity" && artifactName == "moqui.server.ArtifactHit") return
+        if (artifactType == "entity" && artifactName in entitiesToSkipHitCount) return
         if (["screen", "transition", "screen-content"].contains(artifactType) && getSkipStats()) return
 
         ExecutionContextImpl eci = this.getEci()
@@ -770,7 +773,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         // NOTE: never save individual hits for entity artifact hits, way too heavy and also avoids self-reference
         //     (could also be done by checking for ArtifactHit/etc of course)
-        if (!"entity".equals(artifactType) && artifactPersistHit(artifactType, artifactSubType)) {
+        if (artifactPersistHit(artifactType, artifactSubType)) {
             Map<String, Object> ahp = (Map<String, Object>) [visitId:eci.user.visitId, userId:eci.user.userId,
                 artifactType:artifactType, artifactSubType:artifactSubType, artifactName:artifactName,
                 startDateTime:new Timestamp(startTime), runningTimeMillis:runningTimeMillis]
