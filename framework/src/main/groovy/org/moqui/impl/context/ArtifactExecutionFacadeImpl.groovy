@@ -225,7 +225,9 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             long maxHitsDuration = artifactTarpit.getLong("maxHitsDuration")
                             // count hits in this duration; start with 1 to count the current hit
                             long hitsInDuration = 1
-                            for (Long hitTime in hitTimeList) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
+                            // clone the list to avoid a ConcurrentModificationException
+                            // TODO: a better approach to concurrency that won't ever miss hits would be better
+                            for (Long hitTime in (List<Long>) hitTimeList?.clone()) if ((hitTime - checkTime) < maxHitsDuration) hitsInDuration++
                             // logger.warn("TOREMOVE artifact [${tarpitKey}], now has ${hitsInDuration} hits in ${maxHitsDuration} seconds")
                             if (hitsInDuration > artifactTarpit.getLong("maxHitsCount") && artifactTarpit.getLong("tarpitDuration") > lockForSeconds) {
                                 lockForSeconds = artifactTarpit.getLong("tarpitDuration")

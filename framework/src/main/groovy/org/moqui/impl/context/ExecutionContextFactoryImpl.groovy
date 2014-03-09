@@ -843,9 +843,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // check the time again and return just in case something got in while waiting with the same type
         if (startTime < (binStartTime + hitBinLengthMillis)) return ahb
 
-        // otherwise, persist the old (async so this is fast) and create a new one
+        // otherwise, persist the old and create a new one
         ahb.binEndDateTime = new Timestamp(binStartTime + hitBinLengthMillis)
-        executionContext.service.async().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
+        // do this sync to avoid overhead of job scheduling for a very simple service call, and to avoid infinite recursion when EntityJobStore is in place
+        executionContext.service.sync().name("create", "moqui.server.ArtifactHitBin").parameters(ahb).call()
 
         return makeArtifactHitBinMap(artifactType, artifactSubType, artifactName, startTime)
     }

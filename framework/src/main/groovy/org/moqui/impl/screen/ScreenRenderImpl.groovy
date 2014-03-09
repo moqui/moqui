@@ -250,7 +250,6 @@ class ScreenRenderImpl implements ScreenRender {
         // before we render, set the character encoding (set the content type later, after we see if there is sub-content with a different type)
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
-
         // if there is a transition run that INSTEAD of the screen to render
         if (screenUrlInfo.targetTransition) {
             // if this transition has actions and request was not secure or any parameters were not in the body

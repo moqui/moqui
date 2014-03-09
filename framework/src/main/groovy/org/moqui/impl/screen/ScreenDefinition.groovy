@@ -338,7 +338,7 @@ class ScreenDefinition {
         String getSingleServiceName() { return singleServiceName }
         List<String> getPathParameterList() { return pathParameterList }
         Map<String, ParameterItem> getParameterMap() { return parameterByName }
-        boolean hasActionsOrSingleService() { return actions || singleServiceName }
+        boolean hasActionsOrSingleService() { return actions != null }
         boolean getBeginTransaction() { return beginTransaction }
         boolean isReadOnly() { return readOnly }
 
@@ -402,7 +402,7 @@ class ScreenDefinition {
 
             // don't push a map on the context, let the transition actions set things that will remain: sri.ec.context.push()
             ec.getContext().put("sri", sri)
-            if (actions) actions.run(ec)
+            if (actions != null) actions.run(ec)
 
             ResponseItem ri = null
             // if there is an error-response and there are errors, we have a winner
