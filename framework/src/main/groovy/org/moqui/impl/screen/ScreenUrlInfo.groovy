@@ -325,14 +325,11 @@ class ScreenUrlInfo {
                     if (ti.condition == null && !ti.hasActionsOrSingleService() && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&
                             ti.defaultResponse.urlType == "screen-path" && ec.web != null && expandAliasTransition) {
-                        List<String> aliasPathList = new ArrayList(fullPathNameList)
-                        // remove transition name
-                        aliasPathList.remove(aliasPathList.size()-1)
 
                         Map transitionParameters = ti.defaultResponse.expandParameters(this, ec)
 
                         // create a ScreenUrlInfo, then copy its info into this
-                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, aliasPathList,
+                        ScreenUrlInfo aliasUrlInfo = new ScreenUrlInfo(sri, fromSd, preTransitionPathNameList,
                                 ti.defaultResponse.url, false,
                                 (this.lastStandalone || transitionParameters.lastStandalone == "true"))
 

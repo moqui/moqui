@@ -62,7 +62,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <label text="Test/Example Links:"/>
         <link url="edit" text="Edit" link-type="anchor"/>
         <link url="features" text="Features" link-type="anchor"/>
-        <link url="/apps/example/Example/EditExample/features/${exampleId}" url-type="plain" text="Features 2" link-type="anchor"/>
+        <link url="/apps/example/Example/EditExample/features/${exampleId}" url-type="plain" text="Features - Path Parameter" link-type="anchor"/>
 
         <section name="create">
             <condition><compare field="example" operator="empty"/></condition>

@@ -346,8 +346,8 @@ class ScreenDefinition {
 
         void setAllParameters(ScreenUrlInfo screenUrlInfo, ExecutionContext ec) {
             // get the path parameters
-            if (screenUrlInfo.getExtraPathNameList() && screenUrlInfo.targetTransition?.getPathParameterList()) {
-                List<String> pathParameterList = screenUrlInfo.targetTransition.getPathParameterList()
+            if (screenUrlInfo.getExtraPathNameList() && getPathParameterList()) {
+                List<String> pathParameterList = getPathParameterList()
                 int i = 0
                 for (String extraPathName in screenUrlInfo.getExtraPathNameList()) {
                     if (pathParameterList.size() > i) {
