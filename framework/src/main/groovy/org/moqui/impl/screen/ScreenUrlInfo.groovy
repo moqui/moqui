@@ -322,7 +322,7 @@ class ScreenUrlInfo {
                     // if fromScreenPath is a transition, and that transition has no condition,
                     // service/actions or conditional-response then use the default-response.url instead
                     // of the name (if type is screen-path or empty, url-type is url or empty)
-                    if (ti.condition == null && ti.hasActionsOrSingleService() && !ti.conditionalResponseList &&
+                    if (ti.condition == null && !ti.hasActionsOrSingleService() && !ti.conditionalResponseList &&
                             ti.defaultResponse && ti.defaultResponse.type == "url" &&
                             ti.defaultResponse.urlType == "screen-path" && ec.web != null && expandAliasTransition) {
                         List<String> aliasPathList = new ArrayList(fullPathNameList)
