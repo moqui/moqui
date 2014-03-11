@@ -106,13 +106,13 @@ if (createEmailMessage) {
     Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
             fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
             ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
-            contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user.userId]
+            contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
     ec.artifactExecution.disableAuthz()
     ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).call()
     ec.artifactExecution.enableAuthz()
 }
 
-logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml [${bodyHtml}] bodyText [${bodyText}]")
+logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml:\n${bodyHtml}\n bodyText:\n${bodyText}")
 
 // send the email
 email.send()

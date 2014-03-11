@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.screen
 
+import org.moqui.BaseException
 import org.moqui.context.ContextStack
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
@@ -359,12 +360,16 @@ class ScreenUrlInfo {
                     break
                 }
 
-                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName,
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, extraPathNameList?.last(), null,
                         new Exception("Screen sub-content not found here"))
             }
 
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
-            if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
+            if (nextSd == null) {
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, pathName, nextLoc,
+                        new Exception("Screen subscreen or transition not found here"))
+                // throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is subscreen [${pathName}] in relative screen reference [${fromScreenPath}] in screen [${lastSd.location}]")
+            }
 
             if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
             if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
@@ -422,10 +427,16 @@ class ScreenUrlInfo {
                     break
                 }
 
-                throw new IllegalArgumentException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, subscreenName, null,
+                        new Exception("Screen subscreen or transition not found here"))
+                // throw new BaseException("Could not find subscreen or transition [${subscreenName}] in screen [${lastSd.location}]")
             }
             ScreenDefinition nextSd = sri.sfi.getScreenDefinition(nextLoc)
-            if (nextSd == null) throw new IllegalArgumentException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            if (nextSd == null) {
+                throw new ScreenResourceNotFoundException(fromSd, fullPathNameList, lastSd, subscreenName, nextLoc,
+                        new Exception("Screen subscreen or transition not found here"))
+                // throw new BaseException("Could not find screen at location [${nextLoc}], which is default subscreen [${subscreenName}] in screen [${lastSd.location}]")
+            }
 
             if (nextSd.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
             if (nextSd.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
@@ -451,6 +462,7 @@ class ScreenUrlInfo {
             baseUrl = sri.baseLinkUrl
             if (baseUrl && baseUrl.charAt(baseUrl.length()-1) == '/') baseUrl.substring(0, baseUrl.length()-1)
         } else {
+            if (!sri.webappName) throw new BaseException("No webappName specified, cannot get base URL for screen location ${sri.rootScreenLocation}")
             baseUrl = WebFacadeImpl.getWebappRootUrl(sri.webappName, sri.servletContextPath, true,
                     this.requireEncryption, (ExecutionContextImpl) ec)
         }
