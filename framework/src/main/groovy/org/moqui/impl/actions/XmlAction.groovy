@@ -37,7 +37,7 @@ class XmlAction {
         this.location = location
         FtlNodeWrapper ftlNode = FtlNodeWrapper.wrapNode(xmlNode)
         groovyString = makeGroovyString(ecfi, ftlNode, location)
-        // logger.info("Xml Action [${location}] groovyString: ${groovyString}")
+        // if (logger.isTraceEnabled()) logger.trace("Xml Action [${location}] groovyString: ${groovyString}")
         try {
             groovyClass = new GroovyClassLoader(Thread.currentThread().getContextClassLoader())
                     .parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
@@ -92,18 +92,23 @@ class XmlAction {
     Object run(ExecutionContext ec) {
         if (!groovyClass) throw new IllegalStateException("No Groovy class in place for XML actions, look earlier in log for the error in init")
 
+        if (logger.isDebugEnabled()) logger.debug("Running groovy script: \n${writeGroovyWithLines()}\n")
+
         Script script = InvokerHelper.createScript(groovyClass, new ContextBinding(ec.context))
         try {
             Object result = script.run()
             return result
         } catch (Throwable t) {
-            StringBuilder groovyWithLines = new StringBuilder()
-            int lineNo = 1
-            for (String line in groovyString.split("\n")) groovyWithLines.append(lineNo++).append(" : ").append(line).append("\n")
-
-            logger.error("Error running groovy script [\n${groovyWithLines}\n]: ${t.toString()}")
+            logger.error("Error running groovy script (${t.toString()}): \n${writeGroovyWithLines()}\n")
             throw t
         }
+    }
+
+    String writeGroovyWithLines() {
+        StringBuilder groovyWithLines = new StringBuilder()
+        int lineNo = 1
+        for (String line in groovyString.split("\n")) groovyWithLines.append(lineNo++).append(" : ").append(line).append("\n")
+        return groovyWithLines.toString()
     }
 
     boolean checkCondition(ExecutionContext ec) { return run(ec) as boolean }
