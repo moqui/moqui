@@ -581,7 +581,11 @@ class EntityJobStore implements JobStore {
         Map triggerMap = [schedName:instanceName, triggerName:triggerName, triggerGroup:triggerGroup]
 
         EntityValue blobTriggerValue = ecfi.entityFacade.makeFind("moqui.service.quartz.QrtzBlobTriggers").condition(triggerMap).disableAuthz().one()
-        if (!blobTriggerValue) throw new JobPersistenceException("Count not find blob for trigger ${triggerName}:${triggerGroup}")
+        if (!blobTriggerValue) {
+            logger.warn("Count not find blob for trigger ${triggerName}:${triggerGroup}")
+            return null
+            // throw new JobPersistenceException("Count not find blob for trigger ${triggerName}:${triggerGroup}")
+        }
 
         OperableTrigger trigger = null
         ObjectInputStream ois = new ObjectInputStream(blobTriggerValue.getSerialBlob("blobData").binaryStream)
