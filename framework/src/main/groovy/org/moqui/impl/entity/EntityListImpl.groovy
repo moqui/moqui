@@ -30,6 +30,8 @@ class EntityListImpl implements EntityList {
 
     protected List<EntityValue> valueList = new LinkedList<EntityValue>()
     protected boolean fromCache = false
+    protected Integer offset = null
+    protected Integer limit = null
 
     EntityListImpl(EntityFacadeImpl efi) { this.efi = efi }
 
@@ -79,7 +81,7 @@ class EntityListImpl implements EntityList {
         return this
     }
     EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment, boolean ignoreIfEmpty) {
-        if (ignoreIfEmpty && moment == null) return
+        if (ignoreIfEmpty && moment == null) return this
         return filterByDate(fromDateName, thruDateName, moment)
     }
 
@@ -87,13 +89,6 @@ class EntityListImpl implements EntityList {
     EntityList filterByAnd(Map<String, ?> fields) {
         if (fromCache) return this.cloneList().filterByAnd(fields)
         return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), true)
-    }
-
-    @Override
-    EntityList orderByFields(List<String> fieldNames) {
-        if (fromCache) return this.cloneList().orderByFields(fieldNames)
-        if (fieldNames) Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
-        return this
     }
 
     @Override
@@ -109,6 +104,57 @@ class EntityListImpl implements EntityList {
             // didn't match, if include is true remove it
             if ((matches && !include) || (!matches && include)) valueIterator.remove()
         }
+        return this
+    }
+
+    @Override
+    EntityList filterByLimit(Integer offset, Integer limit) {
+        if (fromCache) return this.cloneList().filterByLimit(offset, limit)
+        if (offset == null && limit == null) return this
+
+        this.offset = offset
+        this.limit = limit
+
+        Integer maxIndex = limit != null ? (offset ?: 0) + limit : null
+        int curIndex = 0
+        Iterator<EntityValue> valueIterator = this.valueList.iterator()
+        while (valueIterator.hasNext()) {
+            valueIterator.next()
+            if (offset != null && curIndex < offset) valueIterator.remove()
+            if (maxIndex != null && curIndex >= maxIndex) valueIterator.remove()
+            curIndex++
+        }
+
+        return this
+    }
+
+    @Override
+    EntityList filterByLimit(String inputFieldsMapName, boolean alwaysPaginate) {
+        if (fromCache) return this.cloneList().filterByLimit(inputFieldsMapName, alwaysPaginate)
+        Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] : efi.ecfi.executionContext.context
+        if (alwaysPaginate || inf.get("pageIndex")) {
+            int pageIndex = (inf.get("pageIndex") ?: 0) as int
+            int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
+            int offset = pageIndex * pageSize
+            return filterByLimit(offset, pageSize)
+        } else {
+            return this
+        }
+    }
+
+    @Override
+    Integer getOffset() { return this.offset }
+    @Override
+    Integer getLimit() { return this.limit }
+    @Override
+    int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+    @Override
+    int getPageSize() { return limit ?: 20 }
+
+    @Override
+    EntityList orderByFields(List<String> fieldNames) {
+        if (fromCache) return this.cloneList().orderByFields(fieldNames)
+        if (fieldNames) Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
         return this
     }
 
@@ -246,13 +292,36 @@ class EntityListImpl implements EntityList {
     static class EmptyEntityList implements EntityList {
         static final ListIterator emptyIterator = new LinkedList().listIterator()
 
+        protected Integer offset = null
+        protected Integer limit = null
+
         EmptyEntityList() { }
 
         EntityValue getFirst() { return null }
         EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) { return this }
         EntityList filterByAnd(Map<String, ?> fields) { return this }
-        EntityList orderByFields(List<String> fieldNames) { return this }
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
+        EntityList filterByLimit(Integer offset, Integer limit) {
+            this.offset = offset
+            this.limit = limit
+            return this
+        }
+        EntityList filterByLimit(String inputFieldsMapName, boolean alwaysPaginate) {
+            Map inf = inputFieldsMapName ? (Map) efi.ecfi.executionContext.context[inputFieldsMapName] : efi.ecfi.executionContext.context
+            if (alwaysPaginate || inf.get("pageIndex")) {
+                int pageIndex = (inf.get("pageIndex") ?: 0) as int
+                int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
+                int offset = pageIndex * pageSize
+                return filterByLimit(offset, pageSize)
+            } else {
+                return this
+            }
+        }
+        Integer getOffset() { return this.offset }
+        Integer getLimit() { return this.limit }
+        int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+        int getPageSize() { return limit ?: 20 }
+        EntityList orderByFields(List<String> fieldNames) { return this }
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
         int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }

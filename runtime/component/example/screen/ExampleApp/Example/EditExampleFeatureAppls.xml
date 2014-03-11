@@ -35,6 +35,14 @@ This Work includes contributions authored by David E. Jones, not as a
             <econdition field-name="exampleId" from="exampleId"/>
             <order-by field-name="sequenceNum"/>
         </entity-find>
+        <!-- for pagination testing of a complex scenario: cached, with search-form-inputs and a date-filter:
+        <entity-find entity-name="ExampleFeatureAppl" list="exampleFeatureApplList" cache="true">
+            <search-form-inputs/>
+            <date-filter/>
+            <econdition field-name="exampleId" from="exampleId"/>
+            <order-by field-name="sequenceNum"/>
+        </entity-find>
+        -->
 
         <entity-find entity-name="moqui.basic.Enumeration" list="exampleFeatureApplEnumList">
             <econdition field-name="enumTypeId" value="ExampleFeatureAppl"/>
@@ -46,7 +54,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList">
+        <!-- for pagination testing: <label text="PageRangeHigh = ${exampleFeatureApplListPageRangeHigh}, PageRangeLow=${exampleFeatureApplListPageRangeLow}, PageMaxIndex=${exampleFeatureApplListPageMaxIndex}, Count=${exampleFeatureApplListCount}, size=${exampleFeatureApplList.size()}, where=${exampleFeatureApplList_xafind.getWhereEntityCondition()}"/> -->
+        <form-list name="ListExampleFeatureAppls" transition="updateExampleFeatureAppl" list="exampleFeatureApplList" paginate="true">
             <auto-fields-service service-name="update#ExampleFeatureAppl"/>
             <field name="exampleId"><default-field><hidden/></default-field></field>
             <field name="exampleFeatureId">

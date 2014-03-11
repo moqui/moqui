@@ -35,6 +35,7 @@ New Features:
   - The entity-find-one.@value-field attribute can now be an existing Map
     that is not an EntityValue and if so entity fields are added to the Map
     instead of assigning the find result to @value-field
+  - Improved EntityFind and EntityList for cached pagination
 - Service Facade
   - Removed Dzhuvinov JSON-RPC jars (implemented internally now)
   - Improved and fixed JSON-RPC remote service client and auto server
@@ -108,6 +109,10 @@ Bug Fixes:
   parameters
 - Fixed issue in sendEmailTemplate.groovy where webappName was passed into
   the screen render for the HTML for the email, but not the plain text
+- Fixed issues related to entity-find.@cache attribute used inconsistently
+  in generated code, and more generally with filtering and pagination when
+  using both entity-find.@cache=true and entity-find.search-form-inputs,
+  especially along with entity-find.date-filter.
 
 ===========================================================================
 Release 1.3.2 - 20 Nov 2013

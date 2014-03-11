@@ -229,11 +229,11 @@ abstract class EntityFindBase implements EntityFind {
         String orderByString = inf.get("orderByField") ?: defaultOrderBy
         this.orderBy(orderByString)
 
-        // look for the pageIndex and optional pageSize parameters
-        if (alwaysPaginate || inf.get("pageIndex")) {
+        // look for the pageIndex and optional pageSize parameters; don't set these if should cache as will disable the cached query
+        if ((alwaysPaginate || inf.get("pageIndex")) && !shouldCache()) {
             int pageIndex = (inf.get("pageIndex") ?: 0) as int
             int pageSize = (inf.get("pageSize") ?: (this.limit ?: 20)) as int
-            offset(pageIndex * pageSize)
+            offset(pageIndex, pageSize)
             limit(pageSize)
         }
 
@@ -245,9 +245,6 @@ abstract class EntityFindBase implements EntityFind {
 
         return this
     }
-
-    int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
-    int getPageSize() { return limit ?: 20 }
 
     EntityFind findNode(Node node) {
         ExecutionContext ec = this.efi.ecfi.executionContext
@@ -362,6 +359,11 @@ abstract class EntityFindBase implements EntityFind {
     Integer getLimit() { return this.limit }
 
     @Override
+    int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
+    @Override
+    int getPageSize() { return limit ?: 20 }
+
+    @Override
     EntityFind forUpdate(boolean forUpdate) { this.forUpdate = forUpdate; return this }
     @Override
     boolean getForUpdate() { return this.forUpdate }
@@ -416,7 +418,8 @@ abstract class EntityFindBase implements EntityFind {
 
     protected boolean shouldCache() {
         if (this.dynamicView) return false
-        if (this.limit != null || this.offset) return false
+        if (this.havingEntityCondition != null) return false
+        if (this.limit != null || this.offset != null) return false
         if (this.useCache != null && !this.useCache) return false
         String entityCache = this.getEntityDef().getEntityNode()."@use-cache"
         return ((this.useCache == Boolean.TRUE && entityCache != "never") || entityCache == "true")
@@ -582,7 +585,7 @@ abstract class EntityFindBase implements EntityFind {
         EntityListImpl txcEli = txCache != null ? txCache.listGet(ed, whereCondition, orderByExpanded) : null
 
         // NOTE: don't cache if there is a having condition, for now just support where
-        boolean doEntityCache = !this.havingEntityCondition && this.shouldCache()
+        boolean doEntityCache = this.shouldCache()
         CacheImpl entityListCache = doEntityCache ? efi.getEntityCache().getCacheList(getEntityDef().getFullEntityName()) : null
         EntityList cacheList = null
         if (doEntityCache) cacheList = efi.getEntityCache().getFromListCache(ed, whereCondition, orderByExpanded, entityListCache)

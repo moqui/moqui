@@ -49,14 +49,6 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      */
     EntityList filterByAnd(Map<String, ?> fields);
 
-    /** Modify this EntityList so that is ordered by the field names passed in.
-     *
-     *@param fieldNames The field names for the entity values to sort the list by. Optionally prefix each field name
-     * with a plus sign (+) for ascending or a minus sign (-) for descending. Defaults to ascending.
-     *@return List of EntityValue objects in the specified order.
-     */
-    EntityList orderByFields(List<String> fieldNames);
-
     /** Modify this EntityList so that it includes (or excludes) values matching the condition.
      *
      * @param condition EntityCondition to filter by.
@@ -65,6 +57,33 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      * @return List with filtered values.
      */
     EntityList filterByCondition(EntityCondition condition, Boolean include);
+
+    /** Modify this EntityList to only contain up to limit values starting at the offset.
+     *
+     * @param offset Starting index to include
+     * @param limit Include only this many values
+     * @return List with filtered values.
+     */
+    EntityList filterByLimit(Integer offset, Integer limit);
+    /** For limit filter in a cached entity-find with search-form-inputs, done after the query */
+    EntityList filterByLimit(String inputFieldsMapName, boolean alwaysPaginate);
+
+    /** The offset used to filter the list, if filterByLimit has been called. */
+    Integer getOffset();
+    /** The limit used to filter the list, if filterByLimit has been called. */
+    Integer getLimit();
+    /** For use with filterByLimit when paginated. Equals offset (default 0) divided by page size. */
+    int getPageIndex();
+    /** For use with filterByLimit when paginated. Equals limit (default 20; exists for consistency/conveience along with getPageIndex()). */
+    int getPageSize();
+
+    /** Modify this EntityList so that is ordered by the field names passed in.
+     *
+     *@param fieldNames The field names for the entity values to sort the list by. Optionally prefix each field name
+     * with a plus sign (+) for ascending or a minus sign (-) for descending. Defaults to ascending.
+     *@return List of EntityValue objects in the specified order.
+     */
+    EntityList orderByFields(List<String> fieldNames);
 
     /** Writes XML text with an attribute or CDATA element for each field of each record. If dependents is true also
      * writes all dependent (descendant) records.

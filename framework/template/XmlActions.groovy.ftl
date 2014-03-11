@@ -110,12 +110,14 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     }
 </#macro>
 <#macro "entity-find">
-    <#assign useCache = (.node["@cache"]?if_exists != "true")>
-    ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if .node["@cache"]?has_content>.useCache(${.node["@cache"]})</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
+    <#assign useCache = (.node["@cache"]?if_exists == "true")>
+    <#assign doPaginate = .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
+    ${.node["@list"]}_xafind = ec.entity.makeFind("${.node["@entity-name"]}")<#if useCache>.useCache(true)</#if><#if .node["@for-update"]?has_content>.forUpdate(${.node["@for-update"]})</#if><#if .node["@distinct"]?has_content>.distinct(${.node["@distinct"]})</#if><#if .node["@offset"]?has_content>.offset(${.node["@offset"]})</#if><#if .node["@limit"]?has_content>.limit(${.node["@limit"]})</#if><#list .node["select-field"] as sf>.selectField('${sf["@field-name"]}')</#list><#list .node["order-by"] as ob>.orderBy("${ob["@field-name"]}")</#list>
             <#if !useCache><#list .node["date-filter"] as df>.condition(<#visit df/>)</#list></#if><#list .node["econdition"] as ecn>.condition(<#visit ecn/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list>
-    <#if .node["search-form-inputs"]?has_content><#assign sfiNode = .node["search-form-inputs"][0]>${.node["@list"]}_xafind.searchFormInputs("${sfiNode["@input-fields-map"]!""}", "${sfiNode["@default-order-by"]?default("")}", ${sfiNode["@paginate"]?default("true")})
-    </#if>
+    <#-- do having-econditions first, if present will disable cached query, used in search-form-inputs -->
     <#if .node["having-econditions"]?has_content>${.node["@list"]}_xafind<#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list>
+    </#if>
+    <#if .node["search-form-inputs"]?has_content><#assign sfiNode = .node["search-form-inputs"][0]>${.node["@list"]}_xafind.searchFormInputs("${sfiNode["@input-fields-map"]!""}", "${sfiNode["@default-order-by"]!("")}", ${sfiNode["@paginate"]!("true")})
     </#if>
     <#if .node["limit-range"]?has_content && !useCache>
     org.moqui.entity.EntityListIterator ${.node["@list"]}_xafind_eli = ${.node["@list"]}_xafind.iterator()
@@ -126,17 +128,29 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
     <#elseif .node["use-iterator"]?has_content && !useCache>
     ${.node["@list"]} = ${.node["@list"]}_xafind.iterator()
     <#else>
-    ${.node["@list"]} = ${.node["@list"]}_xafind.list()
-    <#if useCache><#list .node["date-filter"] as df>${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})</#list></#if>
+        ${.node["@list"]} = ${.node["@list"]}_xafind.list()
+        <#if useCache>
+            <#list .node["date-filter"] as df>${.node["@list"]} = ${.node["@list"]}.filterByDate("${df["@from-field-name"]?default("fromDate")}", "${df["@thru-field-name"]?default("thruDate")}", <#if df["@valid-date"]?has_content>${df["@valid-date"]} as Timestamp<#else>null</#if>, ${df["@ignore-if-empty"]?default("false")})</#list>
+            <#if doPaginate>
+                <#-- get the Count after the date-filter, but before the limit/pagination filter -->
+                ${.node["@list"]}Count = ${.node["@list"]}.size()
+                ${.node["@list"]} = ${.node["@list"]}.filterByLimit("${sfiNode["@input-fields-map"]!""}", ${sfiNode["@paginate"]!("true")})
+                <#-- get the PageIndex and PageSize after date-filter AND after limit filter -->
+                ${.node["@list"]}PageIndex = ${.node["@list"]}.pageIndex
+                ${.node["@list"]}PageSize = ${.node["@list"]}.pageSize
+            </#if>
+        </#if>
     </#if>
-    <#if .node["search-form-inputs"]?has_content && !(.node["search-form-inputs"][0]["@paginate"]?if_exists == "false")>
-    ${.node["@list"]}Count = ${.node["@list"]}_xafind.count()
-    ${.node["@list"]}PageIndex = ${.node["@list"]}_xafind.pageIndex
-    ${.node["@list"]}PageSize = ${.node["@list"]}_xafind.pageSize
-    ${.node["@list"]}PageMaxIndex = ((BigDecimal) ${.node["@list"]}Count).divide(${.node["@list"]}PageSize, 0, BigDecimal.ROUND_DOWN) as int
-    ${.node["@list"]}PageRangeLow = ${.node["@list"]}PageIndex * ${.node["@list"]}PageSize + 1
-    ${.node["@list"]}PageRangeHigh = (${.node["@list"]}PageIndex * ${.node["@list"]}PageSize) + ${.node["@list"]}PageSize
-    if (${.node["@list"]}PageRangeHigh > ${.node["@list"]}Count) ${.node["@list"]}PageRangeHigh = ${.node["@list"]}Count
+    <#if doPaginate>
+        <#if !useCache>
+            ${.node["@list"]}Count = ${.node["@list"]}_xafind.count()
+            ${.node["@list"]}PageIndex = ${.node["@list"]}_xafind.pageIndex
+            ${.node["@list"]}PageSize = ${.node["@list"]}_xafind.pageSize
+        </#if>
+        ${.node["@list"]}PageMaxIndex = ((BigDecimal) (${.node["@list"]}Count - 1)).divide(${.node["@list"]}PageSize, 0, BigDecimal.ROUND_DOWN) as int
+        ${.node["@list"]}PageRangeLow = ${.node["@list"]}PageIndex * ${.node["@list"]}PageSize + 1
+        ${.node["@list"]}PageRangeHigh = (${.node["@list"]}PageIndex * ${.node["@list"]}PageSize) + ${.node["@list"]}PageSize
+        if (${.node["@list"]}PageRangeHigh > ${.node["@list"]}Count) ${.node["@list"]}PageRangeHigh = ${.node["@list"]}Count
     </#if>
 </#macro>
 <#macro "entity-find-count">
@@ -144,7 +158,7 @@ if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_te
             <#list .node["date-filter"] as df>.condition(<#visit df/>)</#list><#list .node["econdition"] as ec>.condition(<#visit ec/>)</#list><#list .node["econditions"] as ecs>.condition(<#visit ecs/>)</#list><#list .node["econdition-object"] as eco>.condition(<#visit eco/>)</#list><#if .node["having-econditions"]?has_content><#list .node["having-econditions"]["*"] as havingCond>.havingCondition(<#visit havingCond/>)</#list></#if>.count()
 </#macro>
 <#-- =================== entity-find sub-elements =================== -->
-<#macro "date-filter">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]?default("fromDate")}", "${.node["@thru-field-name"]?default("thruDate")}", <#if .node["@valid-date"]?has_content>${.node["@valid-date"]} as Timestamp<#else>null</#if>, ${.node["@ignore-if-empty"]?default("false")})</#macro>
+<#macro "date-filter">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeConditionDate("${.node["@from-field-name"]!("fromDate")}", "${.node["@thru-field-name"]!("thruDate")}", <#if .node["@valid-date"]?has_content>${.node["@valid-date"]} as Timestamp<#else>null</#if>, ${.node["@ignore-if-empty"]!("false")})</#macro>
 <#macro "econdition">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeActionConditionDirect("${.node["@field-name"]}", "${.node["@operator"]?default("equals")}", ${.node["@from"]?default(.node["@field-name"])}, <#if .node["@value"]?has_content>"${.node["@value"]}"<#else>null</#if>, <#if .node["@to-field-name"]?has_content>"${.node["@to-field-name"]}"<#else>null</#if>, ${.node["@ignore-case"]?default("false")}, ${.node["@ignore-if-empty"]?default("false")}, ${.node["@or-null"]?default("false")}, ${.node["@ignore"]?default("false")})</#macro>
 <#macro "econditions">(org.moqui.entity.EntityCondition) ec.entity.conditionFactory.makeCondition([<#list .node?children as subCond><#visit subCond/><#if subCond_has_next>, </#if></#list>], org.moqui.impl.entity.EntityConditionFactoryImpl.getJoinOperator("${.node["@combine"]!"and"}"))</#macro>
 <#macro "econdition-object">${.node["@field"]}</#macro>

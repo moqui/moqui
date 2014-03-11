@@ -168,6 +168,11 @@ public interface EntityFind extends java.io.Serializable {
     EntityFind limit(Integer limit);
     Integer getLimit();
 
+    /** For use with searchFormInputs when paginated. Equals offset (default 0) divided by page size. */
+    int getPageIndex();
+    /** For use with searchFormInputs when paginated. Equals limit (default 20; exists for consistency/conveience along with getPageIndex()). */
+    int getPageSize();
+
     /** Lock the selected record so only this transaction can change it until it is ended.
      * If this is set when the find is done the useCache setting will be ignored as this will always get the data from
      *     the database.
