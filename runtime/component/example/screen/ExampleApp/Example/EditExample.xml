@@ -35,7 +35,10 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="features">
         <path-parameter name="exampleId"/>
-        <default-response url="../EditExampleFeatureAppls"><parameter name="exampleId" from="exampleId"/></default-response>
+        <default-response url="../EditExampleFeatureAppls">
+            <parameter name="exampleId" from="exampleId"/>
+            <parameter name="test" value="foo"/>
+        </default-response>
     </transition>
 
     <transition name="getExampleTypeEnumList">

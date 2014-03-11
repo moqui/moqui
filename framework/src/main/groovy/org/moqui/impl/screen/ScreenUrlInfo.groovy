@@ -337,6 +337,9 @@ class ScreenUrlInfo {
                         // add transition parameters
                         aliasUrlInfo.addParameters(transitionParameters)
 
+                        // for alias transitions rendered in-request put the parameters in the context
+                        ec.getContext().putAll(transitionParameters)
+
                         aliasUrlInfo.copyUrlInfoInto(this)
                         return
                     }
