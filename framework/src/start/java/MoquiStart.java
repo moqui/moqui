@@ -214,14 +214,14 @@ public class MoquiStart extends ClassLoader {
             this.jarFileList = jarFileList;
         }
         public void run() {
-            // give things a couple seconds to destroy; this way of running is mostly for dev/test where this should be sufficient
-            try { Thread.currentThread().wait(2000); } catch (InterruptedException e) { }
-            System.out.println("========== Shutting down Moqui Executable (closing jars, etc) ==========");
-
             // run this first, ie shutdown the container before closing jarFiles to avoid errors with classes missing
             if (callMethod != null) {
                 try { callMethod.invoke(callObject); } catch (Exception e) { System.out.println("Error in shutdown: " + e.toString()); }
             }
+
+            // give things a couple seconds to destroy; this way of running is mostly for dev/test where this should be sufficient
+            try { this.wait(2000); } catch (Exception e) { System.out.println("Shutdown wait interrupted"); }
+            System.out.println("========== Shutting down Moqui Executable (closing jars, etc) ==========");
 
             // close all jarFiles so they will "deleteOnExit"
             for (JarFile jarFile : jarFileList) {
