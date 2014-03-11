@@ -41,7 +41,7 @@ body { overflow: auto; background: #DDDDDF; }
 #header-user { float: right; }
 */
 
-div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; }
+div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; background-color: white; }
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
