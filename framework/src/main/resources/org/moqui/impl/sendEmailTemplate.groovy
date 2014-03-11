@@ -67,13 +67,14 @@ if (emailTemplate.bccAddresses) {
 
 // prepare and set the html message
 def bodyRender = ec.screen.makeRender().rootScreen(emailTemplate.bodyScreenLocation)
-                                       .webappName(emailTemplate.webappName).renderMode("html")
+        .webappName(emailTemplate.webappName).renderMode("html")
 String bodyHtml = bodyRender.render()
 email.setHtmlMsg(bodyHtml)
 
 // set the alternative plain text message
 // render screen with renderMode=text for this
-def bodyTextRender = ec.screen.makeRender().rootScreen(emailTemplate.bodyScreenLocation).renderMode("text")
+def bodyTextRender = ec.screen.makeRender().rootScreen(emailTemplate.bodyScreenLocation)
+        .webappName(emailTemplate.webappName).renderMode("text")
 String bodyText = bodyTextRender.render()
 email.setTextMsg(bodyText)
 //email.setTextMsg("Your email client does not support HTML messages")
