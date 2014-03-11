@@ -30,13 +30,13 @@
         <form method="post" action="${sri.makeUrlByType("changePassword", "transition", null, "false").getUrl()}" class="form-signin">
             <p class="text-muted text-center">Enter details to change your password</p>
             <input type="text" name="username" placeholder="Username" required="required" class="form-control top">
-            <input type="text" name="oldPassword" placeholder="Old Password" required="required" class="form-control middle">
-            <input type="text" name="newPassword" placeholder="New Password" required="required" class="form-control middle">
+            <input type="password" name="oldPassword" placeholder="Old Password" required="required" class="form-control middle">
+            <input type="password" name="newPassword" placeholder="New Password" required="required" class="form-control middle">
             <#if !ec.getWeb()?? || ec.getWeb().getSession().getAttribute("moqui.tenantAllowOverride")! != "N">
-                <input type="text" name="newPasswordVerify" placeholder="New Password Verify" required="required" class="form-control middle">
+                <input type="password" name="newPasswordVerify" placeholder="New Password Verify" required="required" class="form-control middle">
                 <input type="text" name="tenantId" placeholder="Tenant ID" class="form-control bottom">
             <#else>
-                <input type="text" name="newPasswordVerify" placeholder="New Password Verify" required="required" class="form-control bottom">
+                <input type="password" name="newPasswordVerify" placeholder="New Password Verify" required="required" class="form-control bottom">
             </#if>
             <button class="btn btn-lg btn-danger btn-block" type="submit">Change Password</button>
         </form>
