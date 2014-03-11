@@ -11,6 +11,7 @@
  */
 
 import java.io.*;
+import java.lang.InterruptedException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -213,6 +214,8 @@ public class MoquiStart extends ClassLoader {
             this.jarFileList = jarFileList;
         }
         public void run() {
+            // give things a couple seconds to destroy; this way of running is mostly for dev/test where this should be sufficient
+            try { Thread.currentThread().wait(2000); } catch (InterruptedException e) { }
             System.out.println("========== Shutting down Moqui Executable (closing jars, etc) ==========");
 
             // run this first, ie shutdown the container before closing jarFiles to avoid errors with classes missing
