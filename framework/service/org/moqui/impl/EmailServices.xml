@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
              location="classpath://org/moqui/impl/sendEmailTemplate.groovy">
         <description>NOTE: this service is meant for internal use and authentication is not required. Do not export or
             allow this service to be called remotely.</description>
-        <implements service="org.moqui.BasicServices.send#EmailTemplate"/>
+        <implements service="org.moqui.EmailServices.send#EmailTemplate"/>
     </service>
 
     <service verb="poll" noun="EmailServer" authenticate="false" type="script" transaction-timeout="600"
