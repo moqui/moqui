@@ -88,6 +88,8 @@
     <category name="org.quartz.core"><priority value="warn"/></category>
     <category name="org.elasticsearch"><priority value="warn"/></category>
 
+    <category name="org.drools"><priority value="info"/></category>
+
     <category name="atomikos"><priority value="warn"/></category>
     <category name="com.atomikos"><priority value="warn"/></category>
     <category name="bitronix"><priority value="warn"/></category>
