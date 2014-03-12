@@ -34,6 +34,13 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
             <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row></field-layout>
         </form-single>
+        <form-single name="SelectServiceInput" transition="serviceRun">
+            <field name="serviceName"><default-field title="Service Name (path.verb#noun)">
+                <text-line size="80"/>
+            </default-field></field>
+            <field name="submitButton"><default-field title="Run Service"><submit/></default-field></field>
+            <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row></field-layout>
+        </form-single>
         <form-list name="ServiceList" list="knownServiceNames" list-entry="serviceName" skip-form="true">
             <field name="serviceName"><default-field><display/></default-field></field>
             <field name="detail"><default-field>
