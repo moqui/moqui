@@ -12,7 +12,7 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.3.xsd">
 
-    <service verb="clean" noun="ArtifactData" authenticate="false">
+    <service verb="clean" noun="ArtifactData" authenticate="false" transaction-timeout="600">
         <in-parameters>
             <parameter name="daysToKeep" type="Integer" default="60"/>
         </in-parameters>
