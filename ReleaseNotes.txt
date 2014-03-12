@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.3.3 - TBD
+Release 1.3.3 - Planned for 21 Mar 2014
 ===========================================================================
 
 Moqui Framework 1.3.3 is a minor new feature and bug fix release.
@@ -26,6 +26,8 @@ New Features:
   not too sensitive
 - Added transition.parameter sub-elements to declare additional parameters
   for a transition, just like and in addition to the screen parameters
+- Added clean#ArtifactData service to remove ArtifactHit/Bin records older
+  than a certain number of days (default 60)
 
 - Entity Facade
   - Enhanced EntityDataLoader to also call services, just use the service
@@ -1400,7 +1402,6 @@ Features considered, but may not to be included in 1.x series
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
 
-- Add MySchedule to run OOTB for Quartz admin: https://code.google.com/p/myschedule/
 - Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
 
 - Workflow that manages activity flow with screens and service attached to
