@@ -115,8 +115,8 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
             job = jobBuilder.build()
         }
 
-        // do we have to have an identity?: .withIdentity(..., "ScheduleTrigger")
         TriggerBuilder tb = TriggerBuilder.newTrigger()
+                .withIdentity(jobName, serviceName) // for now JobKey = TriggerKey, may want something different...
                 .withPriority(3)
                 .usingJobData(new JobDataMap(parameters))
                 .forJob(job)
