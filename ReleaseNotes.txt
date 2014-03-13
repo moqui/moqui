@@ -970,7 +970,7 @@ This release includes:
   - Added entity-auto support for the verb "store" which does a create if
     record does not exist and update if it does
   - Support of pre-configured scheduled job exists, see:
-    http://www.quartz-scheduler.org/docs/cookbook/JobInitPlugin.html
+    http://quartz-scheduler.org/documentation/quartz-2.2.x/cookbook/JobInitPlugin
 - Artifact Execution Facade
   - Persist data about authz failures (in ArtifactAuthzFailure entity)
   - Artifact Tar-pitting based on configuration in db (see example
