@@ -35,6 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         .condition("binEndDateTime", EntityCondition.LESS_THAN, basisTimestamp)
                         .disableAuthz().deleteAll()
             </script>
+            <log level="info" message="Removed ${artifactHitsRemoved} ArtifactHit records and ${artifactHitBinsRemoved} ArtifactHitBin records."/>
         </actions>
     </service>
 </services>
