@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<job-scheduling-data xmlns="http://www.quartz-scheduler.org/xml/JobSchedulingData"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.quartz-scheduler.org/xml/JobSchedulingData http://www.quartz-scheduler.org/xml/job_scheduling_data_1_8.xsd"
+        version="1.8">
+
+    <schedule>
+        <job>
+            <name>ServerServices_clean_ArtifactData_single</name>
+            <group>org.moqui.impl.ServerServices.clean#ArtifactData</group>
+            <description>Clean Artifact Data: ArtifactHit, ArtifactHitBin</description>
+            <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
+            <job-data-map><entry><key>daysToKeep</key><value>90</value></entry></job-data-map>
+        </job>
+        <trigger>
+            <cron>
+                <name>ServerServices_clean_ArtifactData_daily</name>
+                <group>ServerServices</group>
+                <job-name>ServerServices_clean_ArtifactData_single</job-name>
+                <job-group>org.moqui.impl.ServerServices.clean#ArtifactData</job-group>
+                <cron-expression>0 0 2 * * ?</cron-expression><!-- trigger every night at 2:00 am -->
+                <!-- for testing, run exery 2 minutes: <cron-expression>0 0/2 * * * ?</cron-expression> -->
+            </cron>
+        </trigger>
+    </schedule>
+</job-scheduling-data>
