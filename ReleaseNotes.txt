@@ -27,7 +27,8 @@ New Features:
 - Added transition.parameter sub-elements to declare additional parameters
   for a transition, just like and in addition to the screen parameters
 - Added clean#ArtifactData service to remove ArtifactHit/Bin records older
-  than a certain number of days (default 60)
+  than a certain number of days (default 60), and a XML configured Quartz
+  job with a trigger to run it every day at 2AM
 
 - Entity Facade
   - Enhanced EntityDataLoader to also call services, just use the service
