@@ -18,9 +18,8 @@
                 <group>ServerServices</group>
                 <job-name>clean_ArtifactData_single</job-name>
                 <job-group>org.moqui.impl.ServerServices.clean#ArtifactData</job-group>
-                <!-- <cron-expression>0 0 2 * * ?</cron-expression>trigger every night at 2:00 am -->
-                <!-- for testing, run every 2 minutes: -->
-                <cron-expression>0 0/2 * * * ?</cron-expression>
+                <cron-expression>0 0 2 * * ?</cron-expression><!-- trigger every night at 2:00 am -->
+                <!-- for testing, run every 2 minutes: <cron-expression>0 0/2 * * * ?</cron-expression> -->
             </cron>
         </trigger>
     </schedule>
@@ -38,9 +37,8 @@
                 <group>ServiceServices</group>
                 <job-name>clean_SchedulerHistory_single</job-name>
                 <job-group>org.moqui.impl.ServiceServices.clean#SchedulerHistory</job-group>
-                <!-- <cron-expression>0 0 2 * * ?</cron-expression>trigger every night at 2:00 am -->
-                <!-- for testing, run every 2 minutes: -->
-                <cron-expression>0 0/2 * * * ?</cron-expression>
+                <cron-expression>0 0 2 * * ?</cron-expression><!-- trigger every night at 2:00 am -->
+                <!-- for testing, run every 2 minutes: <cron-expression>0 0/2 * * * ?</cron-expression> -->
             </cron>
         </trigger>
     </schedule>
