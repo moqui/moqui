@@ -61,9 +61,10 @@ public class Moqui {
     }
 
     /** This should be called when it is known a context won't be used any more, such as at the end of a web request or service execution. */
-    public static void destroyActiveExecutionContext() {
-        activeExecutionContextFactory.destroyActiveExecutionContext();
-    }
+    public static void destroyActiveExecutionContext() { activeExecutionContextFactory.destroyActiveExecutionContext(); }
+
+    /** This should be called when the process is terminating to clean up framework and tool operations and resources. */
+    public static void destroyActiveExecutionContextFactory() { activeExecutionContextFactory.destroy(); }
 
     /** This method is meant to be run from a command-line interface and handle data loading in a generic way.
      * @param argMap Arguments, generally from command line, to configure this data load.
