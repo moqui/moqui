@@ -6,7 +6,7 @@
 
     <schedule>
         <job>
-            <name>ServerServices_clean_ArtifactData_single</name>
+            <name>clean_ArtifactData_single</name>
             <group>org.moqui.impl.ServerServices.clean#ArtifactData</group>
             <description>Clean Artifact Data: ArtifactHit, ArtifactHitBin</description>
             <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
@@ -14,12 +14,33 @@
         </job>
         <trigger>
             <cron>
-                <name>ServerServices_clean_ArtifactData_daily</name>
+                <name>clean_ArtifactData_daily</name>
                 <group>ServerServices</group>
-                <job-name>ServerServices_clean_ArtifactData_single</job-name>
+                <job-name>clean_ArtifactData_single</job-name>
                 <job-group>org.moqui.impl.ServerServices.clean#ArtifactData</job-group>
-                <cron-expression>0 0 2 * * ?</cron-expression><!-- trigger every night at 2:00 am -->
-                <!-- for testing, run exery 2 minutes: <cron-expression>0 0/2 * * * ?</cron-expression> -->
+                <!-- <cron-expression>0 0 2 * * ?</cron-expression>trigger every night at 2:00 am -->
+                <!-- for testing, run every 2 minutes: -->
+                <cron-expression>0 0/2 * * * ?</cron-expression>
+            </cron>
+        </trigger>
+    </schedule>
+    <schedule>
+        <job>
+            <name>clean_SchedulerHistory_single</name>
+            <group>org.moqui.impl.ServiceServices.clean#SchedulerHistory</group>
+            <description>Clean SchedulerHistory Data</description>
+            <job-class>org.moqui.impl.service.ServiceQuartzJob</job-class>
+            <job-data-map><entry><key>daysToKeep</key><value>90</value></entry></job-data-map>
+        </job>
+        <trigger>
+            <cron>
+                <name>clean_SchedulerHistory_daily</name>
+                <group>ServiceServices</group>
+                <job-name>clean_SchedulerHistory_single</job-name>
+                <job-group>org.moqui.impl.ServiceServices.clean#SchedulerHistory</job-group>
+                <!-- <cron-expression>0 0 2 * * ?</cron-expression>trigger every night at 2:00 am -->
+                <!-- for testing, run every 2 minutes: -->
+                <cron-expression>0 0/2 * * * ?</cron-expression>
             </cron>
         </trigger>
     </schedule>

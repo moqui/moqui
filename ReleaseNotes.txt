@@ -49,7 +49,7 @@ New Features:
     attribute except that it is a field name or expression for the default
     field value.
   - Added SchedulerHistory and code to populate it on various Quartz
-    Scheduler events
+    Scheduler events, and scheduled service to clean up old records
   - Added EntityJobStore to do persistence for Quartz Scheduler through
     the Entity Facade instead of direct to DB for easier deployment and
     more consistent operation with other parts of Moqui Framework

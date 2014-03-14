@@ -12,12 +12,9 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.3.xsd">
 
-    <service verb="clean" noun="ArtifactData" authenticate="false" transaction-timeout="600">
+    <service verb="clean" noun="SchedulerHistory" authenticate="false" transaction-timeout="600">
         <in-parameters><parameter name="daysToKeep" type="Integer" default="90"/></in-parameters>
-        <out-parameters>
-            <parameter name="artifactHitsRemoved" type="Long"/>
-            <parameter name="artifactHitBinsRemoved" type="Long"/>
-        </out-parameters>
+        <out-parameters><parameter name="recordsRemoved" type="Long"/></out-parameters>
         <actions>
             <script>
                 import org.moqui.context.ExecutionContext
@@ -26,14 +23,11 @@ This Work includes contributions authored by David E. Jones, not as a
                 Calendar basisCal = ec.user.getCalendarSafe()
                 basisCal.add(Calendar.DAY_OF_YEAR, (int) -daysToKeep)
                 basisTimestamp = new Timestamp(basisCal.getTimeInMillis())
-                artifactHitsRemoved = ec.entity.makeFind("moqui.server.ArtifactHit")
-                        .condition("startDateTime", EntityCondition.LESS_THAN, basisTimestamp)
-                        .disableAuthz().deleteAll()
-                artifactHitBinsRemoved = ec.entity.makeFind("moqui.server.ArtifactHitBin")
-                        .condition("binEndDateTime", EntityCondition.LESS_THAN, basisTimestamp)
+                recordsRemoved = ec.entity.makeFind("moqui.service.scheduler.SchedulerHistory")
+                        .condition("eventDate", EntityCondition.LESS_THAN, basisTimestamp)
                         .disableAuthz().deleteAll()
             </script>
-            <log level="info" message="Removed ${artifactHitsRemoved} ArtifactHit records and ${artifactHitBinsRemoved} ArtifactHitBin records."/>
+            <log level="info" message="Removed ${recordsRemoved} SchedulerHistory records."/>
         </actions>
     </service>
 </services>
