@@ -118,17 +118,20 @@
         <template-renderer extension=".html.ftl" class="org.moqui.impl.context.renderer.FtlTemplateRenderer"/>
         <template-renderer extension=".gstring" class="org.moqui.impl.context.renderer.GStringTemplateRenderer"/>
         <template-renderer extension=".html.gstring" class="org.moqui.impl.context.renderer.GStringTemplateRenderer"/>
+
         <template-renderer extension=".cwiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
+        <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
         <template-renderer extension=".confluence" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
         <template-renderer extension=".mediawiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
         <template-renderer extension=".textile" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
         <template-renderer extension=".tracwiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
         <template-renderer extension=".twiki" class="org.moqui.impl.context.renderer.WikiTemplateRenderer"/>
-        <template-renderer extension=".cwiki.ftl" class="org.moqui.impl.context.renderer.FtlCwikiTemplateRenderer"/>
+
         <template-renderer extension=".md" class="org.moqui.impl.context.renderer.MarkdownTemplateRenderer"/>
         <template-renderer extension=".markdown" class="org.moqui.impl.context.renderer.MarkdownTemplateRenderer"/>
         <template-renderer extension=".md.ftl" class="org.moqui.impl.context.renderer.FtlMarkdownTemplateRenderer"/>
         <template-renderer extension=".markdown.ftl" class="org.moqui.impl.context.renderer.FtlMarkdownTemplateRenderer"/>
+
         <!-- a renderer for .html isn't necessary because the default is to write the text as-is, however this is useful
             so that the extension becomes a default extension and doesn't have to be in the URL -->
         <template-renderer extension=".html" class="org.moqui.impl.context.renderer.NoTemplateRenderer"/>
