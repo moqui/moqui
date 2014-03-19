@@ -116,6 +116,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <subscreens-item name="ExamplePolicies" menu-index="4" menu-title="Policies"/>
         <subscreens-item name="ExampleTerms" menu-index="5" menu-title="Terms"/>
         <subscreens-item name="ExampleWiki" menu-index="6" menu-title="Wiki"/>
+        <subscreens-item name="ExampleMarkdown" menu-index="7" menu-title="Markdown"/>
     </subscreens>
 
     <widgets>

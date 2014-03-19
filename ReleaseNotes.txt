@@ -17,6 +17,7 @@ New Features:
 - Added JBoss KIE and Drools libraries (version 6.0.0.Final) and Moqui API
   additions for getting a KieContext, plus Moqui automatically loads and
   builds component kie directories when present
+- Added Markdown4J 2.2
 - Updated Apache HttpCore to 4.3.1, HttpClient to 4.3.2, Commons Logging
   to 1.1.3, Commons Codec to 1.6
 - Added Apache Commons CSV 1.0-SNAPSHOT 20140122
@@ -26,6 +27,8 @@ New Features:
   not too sensitive
 - Added transition.parameter sub-elements to declare additional parameters
   for a transition, just like and in addition to the screen parameters
+- Added Markdown wiki support for files with extensions .md and .markdown
+  using Markdown4J, and .md.ftl or .markdown.ftl for FTL + Markdown
 - Added clean#ArtifactData service to remove ArtifactHit/Bin records older
   than a certain number of days (default 60), and a XML configured Quartz
   job with a trigger to run it every day at 2AM
@@ -1402,8 +1405,6 @@ Features considered, but may not to be included in 1.x series
     - Configure and run chain of services (dynamic wizard)
     - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
-
-- Markdown wiki support (.markdown, .markdown.ftl - https://code.google.com/p/markdown4j/)
 
 - Workflow that manages activity flow with screens and service attached to
   activities and tasks based on them taking users to defined or automatic

@@ -84,6 +84,7 @@ dependencies {
     compile name: 'jsr173_1.0_api', version: '' // ???
     compile name: 'liquibase', version: '2.0.1' // Apache 2.0
     compile name: 'mail', version: '' // ???
+    compile name: 'markdown4j', version: '2.2' // BSD
     compile name: 'org.eclipse.mylyn.wikitext.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.confluence.core_1.8.0.I20121130-0624', version: '' // EPL
     compile name: 'org.eclipse.mylyn.wikitext.mediawiki.core_1.8.0.I20121130-0624', version: '' // EPL

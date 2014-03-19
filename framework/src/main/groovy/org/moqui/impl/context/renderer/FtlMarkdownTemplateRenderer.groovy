@@ -11,26 +11,23 @@
  */
 package org.moqui.impl.context.renderer
 
-import org.eclipse.mylyn.wikitext.confluence.core.ConfluenceLanguage
-import org.eclipse.mylyn.wikitext.core.parser.MarkupParser
-import org.eclipse.mylyn.wikitext.core.parser.builder.HtmlDocumentBuilder
+import freemarker.template.Template
+import org.markdown4j.Markdown4jProcessor
 import org.moqui.context.Cache
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.TemplateRenderer
-import org.moqui.impl.screen.ScreenRenderImpl
+import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import freemarker.template.Template
-import org.moqui.impl.context.ExecutionContextFactoryImpl
-import org.moqui.context.ExecutionContextFactory
 
-class FtlCwikiTemplateRenderer implements TemplateRenderer {
-    protected final static Logger logger = LoggerFactory.getLogger(FtlCwikiTemplateRenderer.class)
+class FtlMarkdownTemplateRenderer implements TemplateRenderer {
+    protected final static Logger logger = LoggerFactory.getLogger(FtlMarkdownTemplateRenderer.class)
 
     protected ExecutionContextFactoryImpl ecfi
 
     protected Cache templateFtlLocationCache
 
-    FtlCwikiTemplateRenderer() { }
+    FtlMarkdownTemplateRenderer() { }
 
     TemplateRenderer init(ExecutionContextFactory ecf) {
         this.ecfi = (ExecutionContextFactoryImpl) ecf
@@ -51,19 +48,15 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
 
         Template newTemplate
         try {
-            StringWriter cwikiWriter = new StringWriter()
-            HtmlDocumentBuilder builder = new HtmlDocumentBuilder(cwikiWriter)
-            // avoid the <html> and <body> tags
-            builder.setEmitAsDocument(false)
-            // if we're in the context of a screen render, use it's URL for the base
-            ScreenRenderImpl sri = (ScreenRenderImpl) ecfi.getExecutionContext().getContext().get("sri")
-            if (sri != null) builder.setBase(sri.getBaseLinkUri())
+            Markdown4jProcessor markdown4jProcessor = new Markdown4jProcessor()
+            //ScreenRenderImpl sri = (ScreenRenderImpl) ecfi.getExecutionContext().getContext().get("sri")
+            // how to set base URL? if (sri != null) builder.setBase(sri.getBaseLinkUri())
 
-            MarkupParser parser = new MarkupParser(new ConfluenceLanguage())
-            parser.setBuilder(builder)
-            parser.parse(ecfi.resourceFacade.getLocationText(location, false))
+            String mdText = markdown4jProcessor.process(ecfi.resourceFacade.getLocationText(location, false))
 
-            Reader templateReader = new StringReader(cwikiWriter.toString())
+            // logger.warn("======== .md.ftl post-markdown text: ${mdText}")
+
+            Reader templateReader = new StringReader(mdText)
             newTemplate = new Template(location, templateReader, ecfi.resourceFacade.ftlTemplateRenderer.getFtlConfiguration())
         } catch (Exception e) {
             throw new IllegalArgumentException("Error while initializing template at [${location}]", e)
@@ -74,7 +67,8 @@ class FtlCwikiTemplateRenderer implements TemplateRenderer {
     }
 
     String stripTemplateExtension(String fileName) {
-        String stripped = fileName.contains(".cwiki") ? fileName.replace(".cwiki", "") : fileName
+        String stripped = fileName.contains(".md") ? fileName.replace(".md", "") : fileName
+        stripped = stripped.contains(".markdown") ? stripped.replace(".markdown", "") : stripped
         return stripped.contains(".ftl") ? stripped.replace(".ftl", "") : stripped
     }
 

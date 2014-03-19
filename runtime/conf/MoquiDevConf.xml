@@ -31,6 +31,7 @@
         <cache name="resource.ftl.location" expire-time-idle="5"/>
         <cache name="resource.gstring.location" expire-time-idle="5"/>
         <cache name="resource.wiki.location" expire-time-idle="5"/>
+        <cache name="resource.markdown.location" expire-time-idle="5"/>
         <cache name="resource.text.location" expire-time-idle="5"/>
         <cache name="resource.reference.location" expire-time-idle="5"/>
 
