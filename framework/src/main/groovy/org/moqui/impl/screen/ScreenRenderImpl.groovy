@@ -941,17 +941,18 @@ class ScreenRenderImpl implements ScreenRender {
                 if (ctxParameterMap) sui.addParameters((Map) ctxParameterMap)
             }
             for (Node parameterNode in parameterParentNode."parameter")
-                sui.addParameter(parameterNode."@name", makeValue((String) parameterNode."@from" ?: (String) parameterNode."@name", (String) parameterNode."@value"))
+                sui.addParameter(parameterNode."@name", getContextValue(
+                        (String) parameterNode."@from" ?: (String) parameterNode."@name", (String) parameterNode."@value"))
         }
 
         return sui
     }
 
-    String makeValue(String from, String value) {
+    Object getContextValue(String from, String value) {
         if (value) {
             return ec.resource.evaluateStringExpand(value, getActiveScreenDef().location)
         } else if (from) {
-            return ec.resource.evaluateContextField(from, getActiveScreenDef().location) as String
+            return ec.resource.evaluateContextField(from, getActiveScreenDef().location)
         } else {
             return ""
         }
