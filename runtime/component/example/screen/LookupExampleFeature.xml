@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <!-- NOTE: this is for future reference only when lookups are implemented; does nothing now... -->
 
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
         standalone="true" default-menu-include="false">
 
     <transition name="lookupExampleFeature"><default-response url="."/></transition>

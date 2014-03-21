@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.3.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
         require-authentication="false" screen-theme-type-enum-id="STT_INTERNAL" default-menu-title="Applications">
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide. -->
 
@@ -68,7 +68,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <container id="footer">
             <render-mode><text type="html"><![CDATA[
                     <div id="apps-footer-content">
-                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.3.3</a></h6>
+                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.4.0</a></h6>
                         <h6><a href="/apps/ScreenTree">Site Map</a></h6>
                     </div>
                 ]]></text></render-mode>
