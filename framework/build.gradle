@@ -35,9 +35,6 @@ repositories {
 }
 
 dependencies {
-    // groovy dependencies (just the library to compile with)
-    // appears this is no longer needed with Gradle 1.6: groovy group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9' // Apache 2.0
-
     compile name: 'antisamy', version: '1.4' // New BSD
 
     compile module(name: 'atomikos-transactions', version: '3.8.0') { // Apache 2.0
@@ -63,7 +60,7 @@ dependencies {
     compile name: 'httpclient', version: '4.3.2' // Apache 2.0
     compile name: 'httpcore', version: '4.3.1' // Apache 2.0
 
-    compile name: 'ehcache', version: '2.7.5' // Apache 2.0
+    compile name: 'ehcache', version: '2.8.1' // Apache 2.0
     compile name: 'esapi', version: '2.0.1' // New BSD
     compile name: 'freemarker', version: '2.3.20' // BSD
 
@@ -72,8 +69,8 @@ dependencies {
     apiCompile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
     compile name: 'geronimo-jta_1.1_spec', version: '1.1.1' // Apache 2.0
 
-    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9' // Apache 2.0
-    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.1.9' // Apache 2.0
+    apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.2.2' // Apache 2.0
+    compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.2.2' // Apache 2.0
 
     compile name: 'jackrabbit-api', version: '2.5.2' // Apache 2.0
     compile name: 'jackrabbit-jcr-commons', version: '2.5.2' // Apache 2.0
@@ -134,22 +131,22 @@ dependencies {
     }
 
     // ElasticSearch Libraries, including Lucene
-    apiCompile name: 'elasticsearch', version: '0.90.7' // Apache 2.0
-    compile name: 'elasticsearch', version: '0.90.7' // Apache 2.0
-    compile name: 'lucene-analyzers-common', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-codecs', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-core', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-grouping', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-highlighter', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-join', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-memory', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-queries', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-queryparser', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-sandbox', version: '4.5.1' // Apache 2.0
-    compile name: 'lucene-suggest', version: '4.5.1' // Apache 2.0
-    // runtime name: 'jts', version: '1.12' // LGPL (runtime only, needed by spatial4j)
+    apiCompile name: 'elasticsearch', version: '1.0.1' // Apache 2.0
+    compile name: 'elasticsearch', version: '1.0.1' // Apache 2.0
+    compile name: 'lucene-analyzers-common', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-codecs', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-core', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-grouping', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-highlighter', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-join', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-memory', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-queries', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-queryparser', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-sandbox', version: '4.6.1' // Apache 2.0
+    compile name: 'lucene-suggest', version: '4.6.1' // Apache 2.0
+    runtime name: 'jts', version: '1.12' // LGPL (runtime only, needed by spatial4j)
     runtime name: 'spatial4j', version: '0.3' // Apache 2.0
-    runtime name: 'lucene-spatial', version: '4.5.1' // Apache 2.0
+    runtime name: 'lucene-spatial', version: '4.6.1' // Apache 2.0
 
     // Rules Libraries: Drools/jBPM/etc
     apiCompile name: 'kie-api', version: '6.0.0.Final' // Apache 2.0

@@ -36,9 +36,12 @@ New Features:
   additions for getting a KieContext, plus Moqui automatically loads and
   builds component kie directories when present
 - Added Markdown4J 2.2
+- Added Apache Commons CSV 1.0-SNAPSHOT 20140122
 - Updated Apache HttpCore to 4.3.1, HttpClient to 4.3.2, Commons Logging
   to 1.1.3, Commons Codec to 1.6
-- Added Apache Commons CSV 1.0-SNAPSHOT 20140122
+- Updated Apache Lucene to 4.6.1, ehcache to 2.8.1, ElasticSearch to 1.0.1,
+  Groovy to 2.2.2
+
 - Added ISO 8601 date/time parsing as another default in L10nFacade
 - Added transition.@read-only attribute to skip XSRF check for insecure
   parameters when the transition does not modify data, and when data is
