@@ -7,6 +7,24 @@ Release 1.4.0 - Planned for 21 Mar 2014
 
 Moqui Framework 1.4.0 is a major new feature and bug fix release.
 
+Significant new features include: incorporating the Metis Admin Template,
+adding Twitter Bootstrap and updating jQuery/jQueryUI, added Bitronix
+transaction manager and pluggable JTA implementation support, added JBoss
+KIE and Drools with framework and component knowledge base support,
+Markdown support, JSON-RPC improvements, data loading improvements for CSV
+files and calling services to load data, a Quartz Scheduler history in the
+DB and a Quartz persistence implementation, and services to clean Quartz
+history as well as Moqui artifact hit and hit bin histories.
+
+There are various bug fixes and stability improvements in this release for
+things like PostgreSQL support, input data handling, form-list and general
+pagination, Tomcat and other Servlet container deployment, and email
+sending.
+
+This release is backward compatible with the previous release (1.3.2),
+though some configuration changes may be needed and custom HTML/JS may need
+to be updated for the new JS libraries and Metis Admin Template.
+
 New Features:
 
 - Added the Metis Admin Template version 2.1.3
