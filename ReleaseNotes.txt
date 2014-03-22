@@ -1395,14 +1395,13 @@ Features considered, but may not to be included in 1.x series
   - Screen tree elements
   - Screen section-iterate pagination
   - Screen form automatic client JS validation for service in-parameters
-    for matches, number-range, text-length, text-letters, time-range,
+    for number-range, text-length, text-letters, time-range,
     credit-card.@types
   - Dynamic Screens (database-driven: DynamicScreen* entities)
   - Dynamic Forms (database-driven: DynForm* entities) like the OFBiz
     Survey and related entities (DbForm already in place to extend
     XML Screen Forms)
 - Entity Facade
-  - Support for CouchDB, and perhaps other NoSQL databases
   - LiquiBase integration, entity.change-set element
   - EntitySync tool
   - Add view log like current change audit log (AuditLogView?)
@@ -1425,7 +1424,6 @@ Features considered, but may not to be included in 1.x series
   - Script Run (or groovy shell?)
   - Service
     - Configure and run chain of services (dynamic wizard)
-    - Scheduler (view scheduled services with cancel and add)
   - Artifact Info screens (with in/out references for all)
 
 - Workflow that manages activity flow with screens and service attached to
