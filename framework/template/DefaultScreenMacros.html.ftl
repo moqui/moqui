@@ -492,19 +492,19 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
     <#assign skipEnd = (formNode["@skip-end"]! == "true")>
     <#assign urlInfo = sri.makeUrlByType(formNode["@transition"], "transition", null, "false")>
-    <#assign formId = formNode["@name"]>
+    <#assign formId = ec.resource.evaluateStringExpand(formNode["@name"], "")>
     <#assign listEntryIndex = "">
     <#assign inFieldRow = false>
     <#assign bigRow = false>
     <#assign bigRowFirst = false>
     <#if !skipStart>
-    <form name="${formNode["@name"]}" id="${formId}" class="validation-engine-init" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
+    <form name="${formId}" id="${formId}" class="validation-engine-init" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
     </#if>
         <fieldset class="form-horizontal"><#-- was form-single-outer -->
     <#if formNode["field-layout"]?has_content>
         <#assign fieldLayout = formNode["field-layout"][0]>
-            <#assign accordionId = fieldLayout["@id"]?default(formNode["@name"] + "-accordion")>
+            <#assign accordionId = fieldLayout["@id"]?default(formId + "-accordion")>
             <#assign collapsible = (fieldLayout["@collapsible"]! == "true")>
             <#assign active = fieldLayout["@active"]!>
             <#assign collapsibleOpened = false>
@@ -627,7 +627,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if !skipEnd></form></#if>
     <#if !skipStart>
         <#assign afterFormScript>
-            $("#${formNode["@name"]}").validate({ errorClass: 'help-block', errorElement: 'span',
+            $("#${formId}").validate({ errorClass: 'help-block', errorElement: 'span',
                 highlight: function(element, errorClass, validClass) { $(element).parents('.form-group').removeClass('has-success').addClass('has-error'); },
                 unhighlight: function(element, errorClass, validClass) { $(element).parents('.form-group').removeClass('has-error').addClass('has-success'); }
             });
@@ -653,7 +653,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     <#if formNode["@focus-field"]?has_content>
         <#assign afterFormScript>
-            $("#${formNode["@name"]}_${formNode["@focus-field"]}").focus();
+            $("#${formId}_${formNode["@focus-field"]}").focus();
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
@@ -679,7 +679,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if bigRow>
         <#if bigRowFirst>
             <#if curFieldTitle?has_content>
-            <label class="control-label col-lg-2" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+            <label class="control-label col-lg-2" for="${formId}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
             <#else>
             <div class="col-lg-2"> </div>
             </#if>
@@ -694,7 +694,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
         <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
         <div class="form-group"><#-- was single-form-field -->
-            <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formNode["@name"]}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+            <label class="control-label <#if inFieldRow>col-lg-4<#else>col-lg-2</#if>" for="${formId}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
             <div class="<#if inFieldRow>col-lg-8<#else>col-lg-10</#if>">
         </#if>
     </#if>
@@ -734,6 +734,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#if sri.doBoundaryComments()><!-- BEGIN form-list[@name=${.node["@name"]}] --></#if>
     <#-- Use the formNode assembled based on other settings instead of the straight one from the file: -->
     <#assign formNode = sri.getFtlFormNode(.node["@name"])>
+    <#assign formId = ec.resource.evaluateStringExpand(formNode["@name"], "")>
     <#assign isMulti = formNode["@multi"]! == "true">
     <#assign isMultiFinalRow = false>
     <#assign skipStart = (formNode["@skip-start"]! == "true")>
@@ -771,12 +772,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     <#if formListColumnList?? && (formListColumnList?size > 0)>
         <#if !skipStart>
-        <div class="form-list-outer" id="${formNode["@name"]}-table">
+        <div class="form-list-outer" id="${formId}-table">
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipForm>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-                    <#assign headerFormId>${formNode["@name"]}-header</#assign>
+                    <#assign headerFormId>${formId}-header</#assign>
                 <form name="${headerFormId}" id="${headerFormId}" class="form-header-row" method="post" action="${curUrlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
@@ -816,7 +817,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#if>
             </div>
             <#if isMulti && !skipForm>
-                <form name="${formNode["@name"]}" id="${formNode["@name"]}" class="form-body" method="post" action="${urlInfo.url}">
+                <form name="${formId}" id="${formId}" class="form-body" method="post" action="${urlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <input type="hidden" name="_isMulti" value="true">
             <#else>
@@ -830,7 +831,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#if isMulti || skipForm>
             <div class="form-row">
             <#else>
-            <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
+            <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
             </#if>
             <#assign nonReferencedFieldList = sri.getFtlFormListColumnNonReferencedHiddenFieldList(.node["@name"])>
             <#list nonReferencedFieldList as nonReferencedField><@formListSubField nonReferencedField/></#list>
@@ -853,7 +854,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             </div>
             <#else>
                 <#assign afterFormScript>
-                    $("#${formNode["@name"]}_${listEntryIndex}").validate();
+                    $("#${formId}_${listEntryIndex}").validate();
                 </#assign>
                 <#t>${sri.appendToScriptWriter(afterFormScript)}
             </form>
@@ -876,19 +877,19 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
         <#if isMulti && !skipStart && !skipForm>
             <#assign afterFormScript>
-                $("#${formNode["@name"]}").validate();
+                $("#${formId}").validate();
                 <#-- TODO $(document).tooltip(); -->
             </#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
         <#if !skipStart>
-        <div class="form-list-outer" id="${formNode["@name"]}-table">
+        <div class="form-list-outer" id="${formId}-table">
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
                 <#if needHeaderForm && !skipStart && !skipForm>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
-                    <form name="${formNode["@name"]}-header" id="${formNode["@name"]}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
+                    <form name="${formId}-header" id="${formId}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
                 <#else>
                     <div class="form-header-row">
                 </#if>
@@ -911,7 +912,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 </#if>
             </div>
             <#if isMulti && !skipForm>
-                <form name="${formNode["@name"]}" id="${formNode["@name"]}" class="form-body" method="post" action="${urlInfo.url}">
+                <form name="${formId}" id="${formId}" class="form-body" method="post" action="${urlInfo.url}">
                     <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
                     <input type="hidden" name="_isMulti" value="true">
             <#else>
@@ -925,14 +926,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#if isMulti || skipForm>
                 <div class="form-row">
             <#else>
-                <form name="${formNode["@name"]}_${listEntryIndex}" id="${formNode["@name"]}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
+                <form name="${formId}_${listEntryIndex}" id="${formId}_${listEntryIndex}" class="form-row" method="post" action="${urlInfo.url}">
             </#if>
                 <#list formNode["field"] as fieldNode><@formListSubField fieldNode/></#list>
             <#if isMulti || skipForm>
                 </div>
             <#else>
                 <#assign afterFormScript>
-                    $("#${formNode["@name"]}_${listEntryIndex}").validate();
+                    $("#${formId}_${listEntryIndex}").validate();
                 </#assign>
                 <#t>${sri.appendToScriptWriter(afterFormScript)}
                 </form>
@@ -955,7 +956,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
         <#if isMulti && !skipStart && !skipForm>
             <#assign afterFormScript>
-                $("#${formNode["@name"]}").validate();
+                $("#${formId}").validate();
                 <#-- TODO $(document).tooltip(); -->
             </#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
@@ -1038,7 +1039,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
 <#macro fieldName widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode["@name"]?html}<#if isMulti?exists && isMulti && listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
-<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${fieldNode?parent["@name"]}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
+<#macro fieldId widgetNode><#assign fieldNode=widgetNode?parent?parent/>${ec.resource.evaluateStringExpand(fieldNode?parent["@name"], "")}_${fieldNode["@name"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#macro>
 <#macro fieldTitle fieldSubNode><#assign titleValue><#if fieldSubNode["@title"]?has_content>${ec.resource.evaluateStringExpand(fieldSubNode["@title"], "")}<#else><#list fieldSubNode?parent["@name"]?split("(?=[A-Z])", "r") as nameWord>${nameWord?cap_first?replace("Id", "ID")}<#if nameWord_has_next> </#if></#list></#if></#assign>${ec.l10n.getLocalizedMessage(titleValue)}</#macro>
 
 <#macro field><#-- shouldn't be called directly, but just in case --><#recurse/></#macro>
@@ -1230,7 +1231,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#if .node["dynamic-options"]?has_content>
         <#assign doNode = .node["dynamic-options"][0]>
         <#assign depNodeList = doNode["depends-on"]>
-        <#assign formName = formNode["@name"]>
+        <#assign formName = ec.resource.evaluateStringExpand(formNode["@name"], "")>
         <#assign afterFormScript>
             function populate_${id}() {
                 $.ajax({ type:'POST', url:'${sri.screenUrlInfo.url}/${doNode["@transition"]}', data:{ <#list depNodeList as depNode>'${depNode["@field"]}': $('#${formName}_${depNode["@field"]}').val()<#if depNode_has_next>, </#if></#list> }, dataType:'json' }).done(
@@ -1354,7 +1355,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>
     <#if regexpInfo?has_content>
     <#assign afterFormScript>
-    $("#${formNode["@name"]}").validate();
+    $("#${ec.resource.evaluateStringExpand(formNode["@name"], "")}").validate();
     $.validator.addMethod("${id}_v", function (value, element) { return this.optional(element) || /${regexpInfo.regexp}/.test(value); }, "${regexpInfo.message!"Input invalid"}");
     $("#${id}").rules("add", { ${id}_v:true })
     </#assign>
