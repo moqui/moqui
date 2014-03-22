@@ -136,7 +136,6 @@ class CacheImpl implements Cache {
     }
 
     List<Map> makeElementInfoList(String orderByField) {
-        if (size() > 500) return [[key:"Not displaying cache elements because cache size [${size()}] is greater than 500."]]
         List<Map> elementInfoList = new LinkedList()
         for (Serializable key in ehcache.getKeysWithExpiryCheck()) {
             Element e = ehcache.get(key)
@@ -145,7 +144,6 @@ class CacheImpl implements Cache {
             if (e.getLastUpdateTime()) im.lastUpdateTime = new Timestamp(e.getLastUpdateTime())
             if (e.getLastAccessTime()) im.lastAccessTime = new Timestamp(e.getLastAccessTime())
             elementInfoList.add(im)
-            if (elementInfoList.size() > 200) break
         }
         if (orderByField) StupidUtilities.orderMapList(elementInfoList, [orderByField])
         return elementInfoList

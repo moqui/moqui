@@ -31,12 +31,14 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="displayLimit" from="displayLimit ?: 500"/>
         <set field="cacheElementList" from="ec.cache.getCache(cacheName)?.makeElementInfoList(orderByField?:'+key')"/>
+        <set field="totalSize" from="cacheElementList.size()"/>
+        <if condition="cacheElementList.size() &gt; displayLimit"><set field="cacheElementList" from="cacheElementList.subList(0, displayLimit)"/></if>
     </actions>
     <widgets>
-        <container>
-            <label text="Elements for Cache [${cacheName}]" type="h3"/>
-        </container>
+        <label text="Elements for Cache [${cacheName}]" type="h3"/>
+        <label text="${totalSize &gt; displayLimit ? totalSize + ' elements, displaying first ' + displayLimit : ''}" display-if-empty="false"/>
         <form-list name="CacheElements" list="cacheElementList" skip-form="true">
             <field name="key">
                 <header-field show-order-by="true"/>
