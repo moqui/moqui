@@ -60,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </actions>
             <widgets>
                 <label type="h3" text="Trigger Group ${triggerGroup}"/>
-                <form-list name="TriggerDetailList" list="triggerInfoList" skip-form="true">
+                <form-list name="TriggerDetailList_${triggerGroup_index}" list="triggerInfoList" skip-form="true">
                     <field name="triggerGroup"><default-field><display/></default-field></field>
                     <field name="triggerName"><default-field><display/></default-field></field>
                     <field name="jobGroup"><default-field><display/></default-field></field>
