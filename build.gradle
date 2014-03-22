@@ -176,6 +176,7 @@ task addRuntime << {
     delete file('wartemp')
 }
 
+// don't use this task directly, use addRuntimeTomcat which calls this
 task deployTomcatRuntime << {
     delete file(tomcatHome + '/runtime'); delete file(tomcatHome + '/webapps/ROOT'); delete file(tomcatHome + '/webapps/ROOT.war')
     copy { from file('moqui-plus-runtime.war'); into file(tomcatHome + '/webapps'); rename('moqui-plus-runtime.war', 'ROOT.war') }

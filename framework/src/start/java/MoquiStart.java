@@ -132,6 +132,7 @@ public class MoquiStart extends ClassLoader {
             argMap.put("warfile", moquiStartLoader.outerFile.getName());
             System.out.println("Running Winstone embedded server with args [" + argMap + "]");
 
+            /* for old Winstone 0.9.10:
             Class<?> c = moquiStartLoader.loadClass("winstone.Launcher");
             Method initLogger = c.getMethod("initLogger", new Class[] { Map.class });
             Method shutdown = c.getMethod("shutdown");
@@ -140,9 +141,18 @@ public class MoquiStart extends ClassLoader {
             // start Winstone with a new instance of the server
             Constructor wlc = c.getConstructor(new Class[] { Map.class });
             Object winstone = wlc.newInstance(argMap);
+            */
 
-            // now that we have an object to shutdown, set the hook
-            Thread shutdownHook = new MoquiShutdown(shutdown, winstone, moquiStartLoader.jarFileList);
+            Class<?> c = moquiStartLoader.loadClass("net.winstone.Server");
+            Method start = c.getMethod("start");
+            // Method shutdown = c.getMethod("shutdown");
+            // start Winstone with a new instance of the server
+            Constructor wlc = c.getConstructor(new Class[] { Map.class });
+            Object winstone = wlc.newInstance(argMap);
+            start.invoke(winstone);
+
+            // NOTE: winstone seems to have its own shutdown hook in the newer version, so using hook to close files only:
+            Thread shutdownHook = new MoquiShutdown(null, null, moquiStartLoader.jarFileList);
             shutdownHook.setDaemon(true);
             Runtime.getRuntime().addShutdownHook(shutdownHook);
         } catch (Exception e) {
