@@ -11,10 +11,10 @@ Significant new features include: incorporating the Metis Admin Template,
 adding Twitter Bootstrap and updating jQuery/jQueryUI, added Bitronix
 transaction manager and pluggable JTA implementation support, added JBoss
 KIE and Drools with framework and component knowledge base support,
-Markdown support, JSON-RPC improvements, data loading improvements for CSV
-files and calling services to load data, a Quartz Scheduler history in the
-DB and a Quartz persistence implementation, and services to clean Quartz
-history as well as Moqui artifact hit and hit bin histories.
+Markdown support, JSON-RPC improvements, data loading improvements to
+support CSV files and calling services to load data, a Quartz Scheduler
+history in the DB and a Quartz persistence implementation, and services to
+clean Quartz history as well as Moqui artifact hit and hit bin histories.
 
 There are various bug fixes and stability improvements in this release for
 things like PostgreSQL support, input data handling, form-list and general
