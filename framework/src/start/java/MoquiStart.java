@@ -67,7 +67,7 @@ public class MoquiStart extends ClassLoader {
             System.out.println("    -tenantId=<tenantId> ---- ID for the Tenant to load the data into");
             System.out.println("  If no -types or -location argument is used all known data files of all types will be loaded.");
             System.out.println("[default] ---- Run embedded Winstone server.");
-            System.out.println("  See http://winstone.sourceforge.net/#commandLine for all argument details.");
+            System.out.println("  See https://code.google.com/p/winstone/wiki/CmdLineOption for all argument details.");
             System.out.println("  Selected argument details:");
             System.out.println("    --httpPort               = set the http listening port. -1 to disable, Default is 8080");
             System.out.println("    --httpListenAddress      = set the http listening address. Default is all interfaces");
