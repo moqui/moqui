@@ -81,9 +81,8 @@ class EntityDbMeta {
         if (!tableExists(ed)) {
             boolean suspendedTransaction = false
             try {
-                if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
-                    suspendedTransaction = efi.ecfi.transactionFacade.suspend()
-                }
+                if (efi.ecfi.transactionFacade.isTransactionInPlace()) suspendedTransaction = efi.ecfi.transactionFacade.suspend()
+
                 createTable(ed)
                 // create explicit and foreign key auto indexes
                 createIndexes(ed)
@@ -98,9 +97,7 @@ class EntityDbMeta {
             if (mcs) {
                 boolean suspendedTransaction = false
                 try {
-                    if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
-                        suspendedTransaction = efi.ecfi.transactionFacade.suspend()
-                    }
+                    if (efi.ecfi.transactionFacade.isTransactionInPlace()) suspendedTransaction = efi.ecfi.transactionFacade.suspend()
 
                     for (String fieldName in mcs) addColumn(ed, fieldName)
                 } finally {
@@ -129,9 +126,7 @@ class EntityDbMeta {
         Boolean dbResult = null
         boolean suspendedTransaction = false
         try {
-            if (efi.ecfi.transactionFacade.isTransactionInPlace()) {
-                suspendedTransaction = efi.ecfi.transactionFacade.suspend()
-            }
+            if (efi.ecfi.transactionFacade.isTransactionInPlace()) suspendedTransaction = efi.ecfi.transactionFacade.suspend()
 
             if (ed.isViewEntity()) {
                 boolean anyExist = false
@@ -175,6 +170,21 @@ class EntityDbMeta {
             if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
         }
         if (dbResult == null) throw new EntityException("No result checking if entity [${ed.getFullEntityName()}] table exists")
+
+        if (dbResult) {
+            // on the first check also make sure all columns/etc exist; we'll do this even on read/exist check otherwise query will blow up when doesn't exist
+            ListOrderedSet mcs = getMissingColumns(ed)
+            if (mcs) {
+                suspendedTransaction = false
+                try {
+                    if (efi.ecfi.transactionFacade.isTransactionInPlace()) suspendedTransaction = efi.ecfi.transactionFacade.suspend()
+
+                    for (String fieldName in mcs) addColumn(ed, fieldName)
+                } finally {
+                    if (suspendedTransaction) efi.ecfi.transactionFacade.resume()
+                }
+            }
+        }
         entityTablesExist.put(ed.getFullEntityName(), dbResult)
         return dbResult
     }
