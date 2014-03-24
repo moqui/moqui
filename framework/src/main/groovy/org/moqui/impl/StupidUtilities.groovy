@@ -34,6 +34,7 @@ class StupidUtilities {
         if (theClass == null) throw new IllegalArgumentException("Cannot find class for type: ${javaType}")
         return theClass.isInstance(theObjectInQuestion)
     }
+
     static Object basicConvert(Object value, String javaType) {
         if (value == null) return null
 
@@ -52,6 +53,19 @@ class StupidUtilities {
             logger.warn("Error doing type conversion to [${javaType}] for value [${value}]", t)
             return value
         }
+    }
+
+    static String toPlainString(Object obj) {
+        if (obj == null) return ""
+        // BigDecimal toString() uses scientific notation, annoying, so use toPlainString()
+        if (obj instanceof BigDecimal) return ((BigDecimal) obj).toPlainString()
+        // handle the special case of timestamps used for primary keys, make sure we avoid TZ, etc problems
+        if (obj instanceof Timestamp) return ((Timestamp) obj).getTime().toString()
+        if (obj instanceof java.sql.Date) return ((java.sql.Date) obj).getTime().toString()
+        if (obj instanceof Time) return ((Time) obj).getTime().toString()
+
+        // no special case? do a simple toString()
+        return obj.toString()
     }
 
     static final boolean compareLike(Object value1, Object value2) {
