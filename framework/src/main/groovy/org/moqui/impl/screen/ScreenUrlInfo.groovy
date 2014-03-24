@@ -15,6 +15,7 @@ import org.moqui.BaseException
 import org.moqui.context.ContextStack
 import org.moqui.context.ExecutionContext
 import org.moqui.context.ResourceReference
+import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.WebFacadeImpl
 import org.moqui.impl.screen.ScreenDefinition.ParameterItem
@@ -181,13 +182,13 @@ class ScreenUrlInfo {
         if (targetScreen != null) {
             for (ParameterItem pi in targetScreen.getParameterMap().values()) {
                 Object value = pi.getValue(ec)
-                if (value) pm.put(pi.name, ScreenRenderImpl.makeValuePlainString(value))
+                if (value) pm.put(pi.name, StupidUtilities.toPlainString(value))
             }
         }
         if (targetTransition != null && targetTransition.getParameterMap()) {
             for (ParameterItem pi in targetTransition.getParameterMap().values()) {
                 Object value = pi.getValue(ec)
-                if (value) pm.put(pi.name, ScreenRenderImpl.makeValuePlainString(value))
+                if (value) pm.put(pi.name, StupidUtilities.toPlainString(value))
             }
         }
         if (targetTransition != null && targetTransition.getSingleServiceName()) {
@@ -197,7 +198,7 @@ class ScreenUrlInfo {
                 for (String pn in sd.getInParameterNames()) {
                     Object value = ec.getContext().get(pn)
                     if (!value && ec.getWeb() != null) value = ec.getWeb().getParameters().get(pn)
-                    if (value) pm.put(pn, ScreenRenderImpl.makeValuePlainString(value))
+                    if (value) pm.put(pn, StupidUtilities.toPlainString(value))
                 }
             } else if (targetServiceName.contains("#")) {
                 // service name but no service def, see if it is an entity op and if so try the pk fields
@@ -209,7 +210,7 @@ class ScreenUrlInfo {
                         for (String fn in ed.getPkFieldNames()) {
                             Object value = ec.getContext().get(fn)
                             if (!value && ec.getWeb() != null) value = ec.getWeb().getParameters().get(fn)
-                            if (value) pm.put(fn, ScreenRenderImpl.makeValuePlainString(value))
+                            if (value) pm.put(fn, StupidUtilities.toPlainString(value))
                         }
                     }
                 }
@@ -244,13 +245,13 @@ class ScreenUrlInfo {
 
     ScreenUrlInfo addParameter(Object name, Object value) {
         if (!name || value == null) return this
-        pathParameterMap.put(name as String, ScreenRenderImpl.makeValuePlainString(value))
+        pathParameterMap.put(name as String, StupidUtilities.toPlainString(value))
         return this
     }
     ScreenUrlInfo addParameters(Map manualParameters) {
         if (!manualParameters) return this
         for (Map.Entry mpEntry in manualParameters.entrySet()) {
-            pathParameterMap.put(mpEntry.getKey() as String, ScreenRenderImpl.makeValuePlainString(mpEntry.getValue()))
+            pathParameterMap.put(mpEntry.getKey() as String, StupidUtilities.toPlainString(mpEntry.getValue()))
         }
         return this
     }
