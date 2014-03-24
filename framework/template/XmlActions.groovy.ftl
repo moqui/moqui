@@ -62,8 +62,13 @@ return;
     // end inline script
 </#macro>
 
-<#macro set>    <#if .node["@set-if-empty"]?has_content && .node["@set-if-empty"] == "false">${.node["@field"]}_temp_internal = (<#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node.@value}"""</#if><#if .node["@default-value"]?has_content> ?: "${.node["@default-value"]}"</#if>)<#if .node["@type"]?has_content> as ${.node["@type"]}</#if>
-if (${.node["@field"]}_temp_internal) ${.node["@field"]} = ${.node["@field"]}_temp_internal<#else/>${.node["@field"]} = (<#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: "${.node["@default-value"]}"</#if>)<#if .node["@type"]?has_content> as ${.node["@type"]}</#if></#if>
+<#macro set>
+    <#if .node["@set-if-empty"]?has_content && .node["@set-if-empty"] == "false">
+    _temp_internal = (<#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node.@value}"""</#if><#if .node["@default-value"]?has_content> ?: "${.node["@default-value"]}"</#if>)<#if .node["@type"]?has_content> as ${.node["@type"]}</#if>
+    if (_temp_internal) ${.node["@field"]} = _temp_internal
+    <#else>
+    ${.node["@field"]} = (<#if .node["@from"]?has_content>${.node["@from"]}<#else>"""${.node["@value"]}"""</#if><#if .node["@default-value"]?has_content> ?: "${.node["@default-value"]}"</#if>)<#if .node["@type"]?has_content> as ${.node["@type"]}</#if>
+    </#if>
 </#macro>
 
 <#macro "order-map-list">
