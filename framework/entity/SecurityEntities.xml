@@ -333,6 +333,19 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.EnumerationType description="User Preference Key (optional)" enumTypeId="UserPreferenceKey"/>
         </seed-data>
     </entity>
+    <entity entity-name="UserGroupPreference" package-name="moqui.security">
+        <description>Use this entity for user-specific preferences (or properties). For default preferences use userId="_NA_".</description>
+        <field name="userGroupId" type="id" is-pk="true"/>
+        <field name="preferenceKey" type="text-medium" is-pk="true"/>
+        <field name="preferenceValue" type="text-long"/>
+        <relationship type="one-nofk" related-entity-name="moqui.security.UserGroup">
+            <description>No FK in order to allow externally authenticated users.</description>
+        </relationship>
+        <relationship type="one-nofk" title="UserPreferenceKey" related-entity-name="moqui.basic.Enumeration">
+            <description>No FK because any key can be used whether or not there is an Enumeration record for it.</description>
+            <key-map field-name="preferenceKey"/>
+        </relationship>
+    </entity>
     <entity entity-name="UserScreenTheme" package-name="moqui.security" authorize-skip="view" cache="true">
         <field name="userId" type="id-long" is-pk="true"/>
         <field name="screenThemeTypeEnumId" type="id" is-pk="true"/>

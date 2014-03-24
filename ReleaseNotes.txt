@@ -9,7 +9,9 @@ Moqui Framework 1.4.1 is a minor new feature and bug fix release.
 
 New Features:
 
-- TODO
+- Added UserGroupPreference, like UserPreference but for user groups.
+  UserFacade.getPreference() now looks for group preference if no user
+  preference is found.
 
 Bug Fixes:
 

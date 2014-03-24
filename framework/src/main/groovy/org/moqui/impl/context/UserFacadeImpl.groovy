@@ -13,6 +13,7 @@ package org.moqui.impl.context
 
 import org.moqui.BaseException
 import org.moqui.context.NotificationMessage
+import org.moqui.entity.EntityCondition
 
 import java.sql.Timestamp
 import javax.servlet.http.Cookie
@@ -334,9 +335,20 @@ class UserFacadeImpl implements UserFacade {
     String getPreference(String preferenceKey) {
         String userId = getUserId()
         if (!userId) return null
-        EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", getUserId())
+        return getPreference(preferenceKey, userId)
+    }
+
+    String getPreference(String preferenceKey, String userId) {
+        EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", userId)
                 .condition("preferenceKey", preferenceKey).useCache(true).disableAuthz().one()
-        return up ? up.preferenceValue : null
+        if (up == null) {
+            // try UserGroupPreference
+            EntityList ugpList = eci.getEntity().makeFind("moqui.security.UserGroupPreference")
+                    .condition("userGroupId", EntityCondition.IN, getUserGroupIdSet(userId))
+                    .condition("preferenceKey", preferenceKey).useCache(true).disableAuthz().list()
+            if (ugpList) up = ugpList.first
+        }
+        return up?.preferenceValue
     }
 
     @Override
@@ -481,19 +493,20 @@ class UserFacadeImpl implements UserFacade {
     Set<String> getUserGroupIdSet() {
         // first get the groups the user is in (cached), always add the "ALL_USERS" group to it
         if (usernameStack.size() == 0) return allUserGroupIdOnly
-        if (internalUserGroupIdSet == null) {
-            internalUserGroupIdSet = new HashSet(allUserGroupIdOnly)
-            boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
-            try {
-                // expand the userGroupId Set with UserGroupMember
-                for (EntityValue userGroupMember in eci.getEntity().makeFind("moqui.security.UserGroupMember")
-                        .condition("userId", userId).useCache(true).list().filterByDate(null, null, null))
-                    internalUserGroupIdSet.add((String) userGroupMember.userGroupId)
-            } finally {
-                if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
-            }
-        }
+        if (internalUserGroupIdSet == null) internalUserGroupIdSet = getUserGroupIdSet(getUserId())
         return internalUserGroupIdSet
+    }
+
+    Set<String> getUserGroupIdSet(String userId) {
+        Set<String> groupIdSet = new HashSet(allUserGroupIdOnly)
+        if (userId) {
+            // expand the userGroupId Set with UserGroupMember
+            EntityList ugmList = eci.getEntity().makeFind("moqui.security.UserGroupMember").condition("userId", userId)
+                    .useCache(true).disableAuthz().list().filterByDate(null, null, null)
+            for (EntityValue userGroupMember in ugmList) groupIdSet.add((String) userGroupMember.userGroupId)
+        }
+
+        return groupIdSet
     }
 
     EntityList getArtifactTarpitCheckList() {
