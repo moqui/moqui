@@ -245,6 +245,8 @@ class EntityDbMeta {
     }
 
     ListOrderedSet getMissingColumns(EntityDefinition ed) {
+        if (ed.isViewEntity()) return new ListOrderedSet()
+
         String groupName = efi.getEntityGroupName(ed)
         Connection con = null
         ResultSet colSet = null
