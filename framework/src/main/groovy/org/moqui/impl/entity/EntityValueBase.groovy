@@ -720,7 +720,7 @@ abstract class EntityValueBase implements EntityValue {
     boolean isEmpty() { return valueMap.isEmpty() }
 
     @Override
-    boolean containsKey(Object o) { return o instanceof String ? getEntityDefinition().isField((String) o) : false }
+    boolean containsKey(Object o) { return o instanceof String ? valueMap.containsKey((String) o) : false }
 
     @Override
     boolean containsValue(Object o) { return values().contains(o) }
