@@ -18,6 +18,10 @@ Bug Fixes:
   pre-commit
 - ArtifactHit count now skipped for UserAccount to avoid infinite recursion
   (shows as a StackOverflow exception)
+- EntityValue.containsKey() now returns true if there is a value for the
+  key (even null), not just if it is a valid field name; this was
+  inconvenient for various things, especially when treating EntityValue
+  like a Map
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014
