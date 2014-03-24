@@ -5,7 +5,7 @@ Moqui Framework Release Notes
 Release 1.4.1 - TBD
 ===========================================================================
 
-Moqui Framework 1.4.1 is a major new feature and bug fix release.
+Moqui Framework 1.4.1 is a minor new feature and bug fix release.
 
 New Features:
 
