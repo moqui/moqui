@@ -98,10 +98,22 @@ public class L10nFacadeImpl implements L10nFacade {
         if (cal == null) cal = calendarValidator.validate(input, "HH:mm:ss", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "HH:mm", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "h:mm a", curLocale, curTz)
-        if (cal == null) return null
-        Time time = new Time(cal.getTimeInMillis())
-        // logger.warn("============== parseTime input=${input} cal=${cal} long=${cal.getTimeInMillis()} time=${time} time long=${time.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
-        return time
+        if (cal == null) cal = calendarValidator.validate(input, "h:mm:ss a", curLocale, curTz)
+        if (cal != null) {
+            Time time = new Time(cal.getTimeInMillis())
+            // logger.warn("============== parseTime input=${input} cal=${cal} long=${cal.getTimeInMillis()} time=${time} time long=${time.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
+            return time
+        }
+
+        // try interpreting the String as a long
+        try {
+            Long lng = Long.valueOf(input)
+            return new Time(lng)
+        } catch (NumberFormatException e) {
+            if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Time parse: ${e.toString()}")
+        }
+
+        return null
     }
     String formatTime(Time input, String format) {
         if (!format) format = "HH:mm:ss"
@@ -117,10 +129,21 @@ public class L10nFacadeImpl implements L10nFacade {
         if (!format) format = "yyyy-MM-dd"
         Calendar cal = calendarValidator.validate(input, format, curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "MM/dd/yyyy", curLocale, curTz)
-        if (cal == null) return null
-        Date date = new Date(cal.getTimeInMillis())
-        // logger.warn("============== parseDate input=${input} cal=${cal} long=${cal.getTimeInMillis()} date=${date} date long=${date.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
-        return date
+        if (cal != null) {
+            Date date = new Date(cal.getTimeInMillis())
+            // logger.warn("============== parseDate input=${input} cal=${cal} long=${cal.getTimeInMillis()} date=${date} date long=${date.getTime()} util date=${new java.util.Date(cal.getTimeInMillis())} timestamp=${new java.sql.Timestamp(cal.getTimeInMillis())}")
+            return date
+        }
+
+        // try interpreting the String as a long
+        try {
+            Long lng = Long.valueOf(input)
+            return new Date(lng)
+        } catch (NumberFormatException e) {
+            if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Date parse: ${e.toString()}")
+        }
+
+        return null
     }
     String formatDate(Date input, String format) {
         if (!format) format = "yyyy-MM-dd"
@@ -151,9 +174,10 @@ public class L10nFacadeImpl implements L10nFacade {
             Long lng = Long.valueOf(input)
             return new Timestamp(lng)
         } catch (NumberFormatException e) {
-            if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Timestamp parse, setting to null: ${e.toString()}")
-            return null
+            if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Timestamp parse: ${e.toString()}")
         }
+
+        return null
     }
     String formatTimestamp(Timestamp input, String format) {
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS"
