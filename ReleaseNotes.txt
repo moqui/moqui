@@ -13,7 +13,11 @@ New Features:
 
 Bug Fixes:
 
-- TODO
+- Changed commit() to rollback if commit fails to cleanup the transaction,
+  can happen for example with TransactionCache has a DB error during
+  pre-commit
+- ArtifactHit count now skipped for UserAccount to avoid infinite recursion
+  (shows as a StackOverflow exception)
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014
