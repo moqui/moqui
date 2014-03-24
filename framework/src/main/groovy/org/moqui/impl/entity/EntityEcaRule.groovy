@@ -16,9 +16,11 @@ import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityValue
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class EntityEcaRule {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(EntityEcaRule.class)
+    protected final static Logger logger = LoggerFactory.getLogger(EntityEcaRule.class)
 
     protected Node eecaNode
     protected String location
@@ -58,7 +60,7 @@ class EntityEcaRule {
         if (!before && eecaNode."@run-before" == "true") return
 
         EntityValue originalValue = null
-        if ((operation == "update" || operation == "delete") && eecaNode."@get-original-value" == "true") {
+        if (before && (operation == "update" || operation == "delete") && eecaNode."@get-original-value" == "true") {
             originalValue = getDbValue(ec, fieldValues)
         }
 
