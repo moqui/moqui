@@ -371,6 +371,9 @@ class TransactionFacadeImpl implements TransactionFacade {
         } catch (SystemException e) {
             throw new TransactionException("Could not commit transaction", e)
         } finally {
+            // there shouldn't be a TX around now, but if there is the commit may have failed so rollback to clean things up
+            if (isTransactionInPlace()) rollback("Commit failed, rolling back to clean up", null)
+
             if (getRollbackOnlyInfoStack()) getRollbackOnlyInfoStack().set(0, null)
             if (getTransactionBeginStack()) getTransactionBeginStack().set(0, null)
             if (getTransactionBeginStartTimeList()) getTransactionBeginStartTimeList().set(0, null)
