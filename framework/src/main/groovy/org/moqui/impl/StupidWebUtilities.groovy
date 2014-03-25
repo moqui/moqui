@@ -11,6 +11,18 @@
  */
 package org.moqui.impl
 
+import org.apache.http.HttpEntity
+import org.apache.http.NameValuePair
+import org.apache.http.client.entity.UrlEncodedFormEntity
+import org.apache.http.client.methods.CloseableHttpResponse
+import org.apache.http.client.methods.HttpPost
+import org.apache.http.entity.ContentType
+import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.CloseableHttpClient
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.message.BasicNameValuePair
+import org.apache.http.util.EntityUtils
+
 import javax.servlet.ServletRequest
 import javax.servlet.http.HttpSession
 import javax.servlet.ServletContext
@@ -197,11 +209,11 @@ class StupidWebUtilities {
         boolean containsValue(Object o) { return mp.containsValue(o) }
         Object get(Object o) {
             // NOTE: in spite of warnings class reference to StupidWebUtilities.canonicalizeValue is necessary or Groovy blows up
-            return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.get(o))
+            return (o == null && !supportsNull) ? null : canonicalizeValue(mp.get(o))
         }
-        Object put(String k, Object v) { return StupidWebUtilities.canonicalizeValue(mp.put(k, v)) }
+        Object put(String k, Object v) { return canonicalizeValue(mp.put(k, v)) }
         Object remove(Object o) {
-            return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.remove(o))
+            return (o == null && !supportsNull) ? null : canonicalizeValue(mp.remove(o))
         }
         void putAll(Map<? extends String, ? extends Object> map) { if (map) mp.putAll(map) }
         void clear() { mp.clear() }
@@ -224,7 +236,7 @@ class StupidWebUtilities {
         CanonicalizeEntry(String key, Object value) { this.key = key; this.value = value; }
         CanonicalizeEntry(Map.Entry<String, Object> entry) { this.key = entry.getKey(); this.value = entry.getValue(); }
         String getKey() { return key }
-        Object getValue() { return StupidWebUtilities.canonicalizeValue(value) }
+        Object getValue() { return canonicalizeValue(value) }
         Object setValue(Object v) { Object orig = value; value = v; return orig; }
     }
 
@@ -243,5 +255,56 @@ class StupidWebUtilities {
         // catch strings or lists with a single string in them unwrapped above
         if (orig instanceof String) orig = defaultWebEncoder.canonicalize(orig, false)
         return orig
+    }
+
+    static String simpleHttpStringRequest(String location, String requestBody, String contentType) {
+        if (!contentType) contentType = "text/plain"
+        String resultString = ""
+        CloseableHttpClient httpClient = HttpClients.createDefault()
+        try {
+            HttpPost httpPost = new HttpPost(location)
+            if (requestBody) {
+                StringEntity requestEntity = new StringEntity(requestBody, ContentType.create(contentType, "UTF-8"))
+                httpPost.setEntity(requestEntity)
+                httpPost.setHeader("Content-Type", contentType)
+            }
+
+            CloseableHttpResponse response = httpClient.execute(httpPost)
+            try {
+                HttpEntity entity = response.getEntity()
+                resultString = EntityUtils.toString(entity)
+            } finally {
+                response.close()
+            }
+        } finally {
+            httpClient.close()
+        }
+
+        return resultString
+    }
+
+    static String simpleHttpMapRequest(String location, Map requestMap) {
+        String resultString = ""
+        CloseableHttpClient httpClient = HttpClients.createDefault()
+        try {
+            List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>()
+            for (Map.Entry requestEntry in requestMap.entrySet())
+                nameValuePairs.add(new BasicNameValuePair(requestEntry.key as String, requestEntry.value as String))
+
+            HttpPost httpPost = new HttpPost(location)
+            httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs))
+
+            CloseableHttpResponse response = httpClient.execute(httpPost)
+            try {
+                HttpEntity entity = response.getEntity()
+                resultString = EntityUtils.toString(entity)
+            } finally {
+                response.close()
+            }
+        } finally {
+            httpClient.close()
+        }
+
+        return resultString
     }
 }
