@@ -15,18 +15,10 @@ import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
 
 import org.moqui.context.ExecutionContext
+import org.moqui.impl.StupidWebUtilities
 import org.moqui.impl.service.ServiceDefinition
 import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
-
-import org.apache.http.client.methods.CloseableHttpResponse
-import org.apache.http.entity.ContentType
-import org.apache.http.impl.client.CloseableHttpClient
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.entity.StringEntity
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.HttpEntity
-import org.apache.http.util.EntityUtils
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -55,28 +47,10 @@ public class RemoteJsonRpcServiceRunner implements ServiceRunner {
 
         // logger.warn("======== JSON-RPC remote service request to location [${location}]: ${jsonRequest}")
 
-        String jsonResponse = null
-        CloseableHttpClient httpClient = HttpClients.createDefault()
-        try {
-            HttpPost httpPost = new HttpPost(location)
-            // send the remote call
-            StringEntity requestEntity = new StringEntity(jsonRequest, ContentType.create("application/json", "UTF-8"))
-            httpPost.setEntity(requestEntity)
-            httpPost.setHeader("Content-Type", "application/json")
+        String jsonResponse = StupidWebUtilities.simpleHttpStringRequest(location, jsonRequest, "application/json")
 
-            logger.info("JSON-RPC remote service [${sd.getServiceName()}] request: ${httpPost.getRequestLine()}, ${httpPost.getAllHeaders()}, ${httpPost.getEntity().contentLength} bytes")
-            // logger.warn("======== JSON-RPC remote service request entity [length:${httpPost.getEntity().contentLength}]: ${EntityUtils.toString(httpPost.getEntity())}")
-            CloseableHttpResponse response = httpClient.execute(httpPost)
-            try {
-                HttpEntity entity = response.getEntity()
-                jsonResponse = EntityUtils.toString(entity)
-            } finally {
-                response.close()
-            }
-
-        } finally {
-            httpClient.close()
-        }
+        // logger.info("JSON-RPC remote service [${sd.getServiceName()}] request: ${httpPost.getRequestLine()}, ${httpPost.getAllHeaders()}, ${httpPost.getEntity().contentLength} bytes")
+        // logger.warn("======== JSON-RPC remote service request entity [length:${httpPost.getEntity().contentLength}]: ${EntityUtils.toString(httpPost.getEntity())}")
 
         // logger.warn("======== JSON-RPC remote service response from location [${location}]: ${jsonResponse}")
 
