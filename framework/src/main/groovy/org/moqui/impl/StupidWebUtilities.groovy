@@ -209,18 +209,18 @@ class StupidWebUtilities {
         boolean containsValue(Object o) { return mp.containsValue(o) }
         Object get(Object o) {
             // NOTE: in spite of warnings class reference to StupidWebUtilities.canonicalizeValue is necessary or Groovy blows up
-            return (o == null && !supportsNull) ? null : canonicalizeValue(mp.get(o))
+            return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.get(o))
         }
-        Object put(String k, Object v) { return canonicalizeValue(mp.put(k, v)) }
+        Object put(String k, Object v) { return StupidWebUtilities.canonicalizeValue(mp.put(k, v)) }
         Object remove(Object o) {
-            return (o == null && !supportsNull) ? null : canonicalizeValue(mp.remove(o))
+            return (o == null && !supportsNull) ? null : StupidWebUtilities.canonicalizeValue(mp.remove(o))
         }
         void putAll(Map<? extends String, ? extends Object> map) { if (map) mp.putAll(map) }
         void clear() { mp.clear() }
         Set<String> keySet() { return mp.keySet() }
         Collection<Object> values() {
             List<Object> values = new ArrayList<Object>(mp.size())
-            for (Object orig in mp.values()) values.add(canonicalizeValue(orig))
+            for (Object orig in mp.values()) values.add(StupidWebUtilities.canonicalizeValue(orig))
             return values
         }
         Set<Map.Entry<String, Object>> entrySet() {
@@ -236,7 +236,7 @@ class StupidWebUtilities {
         CanonicalizeEntry(String key, Object value) { this.key = key; this.value = value; }
         CanonicalizeEntry(Map.Entry<String, Object> entry) { this.key = entry.getKey(); this.value = entry.getValue(); }
         String getKey() { return key }
-        Object getValue() { return canonicalizeValue(value) }
+        Object getValue() { return StupidWebUtilities.canonicalizeValue(value) }
         Object setValue(Object v) { Object orig = value; value = v; return orig; }
     }
 
