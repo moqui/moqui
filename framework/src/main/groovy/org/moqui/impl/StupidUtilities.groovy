@@ -441,6 +441,17 @@ class StupidUtilities {
         return newValue.toString()
     }
 
+    static String toStringCleanBom(byte[] bytes) {
+        // NOTE: this only supports UTF-8 for now!
+        if (!bytes) return ""
+        // UTF-8 BOM = 239, 187, 191
+        if (bytes[0] == (byte) 239) {
+            return new String(bytes, 3, bytes.length - 3, "UTF-8")
+        } else {
+            return new String(bytes, "UTF-8")
+        }
+    }
+
     static String paddedNumber(long number, Integer desiredLength) {
         StringBuilder outStrBfr = new StringBuilder(Long.toString(number))
         if (!desiredLength) return outStrBfr.toString()

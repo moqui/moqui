@@ -272,7 +272,7 @@ class StupidWebUtilities {
             CloseableHttpResponse response = httpClient.execute(httpPost)
             try {
                 HttpEntity entity = response.getEntity()
-                resultString = EntityUtils.toString(entity)
+                resultString = StupidUtilities.toStringCleanBom(EntityUtils.toByteArray(entity))
             } finally {
                 response.close()
             }
@@ -297,7 +297,7 @@ class StupidWebUtilities {
             CloseableHttpResponse response = httpClient.execute(httpPost)
             try {
                 HttpEntity entity = response.getEntity()
-                resultString = EntityUtils.toString(entity)
+                resultString = StupidUtilities.toStringCleanBom(EntityUtils.toByteArray(entity))
             } finally {
                 response.close()
             }
