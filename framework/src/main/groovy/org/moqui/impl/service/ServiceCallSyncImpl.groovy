@@ -245,12 +245,15 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                 checkAddSemaphore(sd, eci)
 
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
-                sfi.registerTxSecaRules(getServiceName(), currentParameters)
 
                 if (logger.traceEnabled) logger.trace("Calling service [${getServiceName()}] pre-call input: ${currentParameters}")
 
-                // run the service through the ServiceRunner
-                result = sr.runService(sd, currentParameters)
+                try {
+                    // run the service through the ServiceRunner
+                    result = sr.runService(sd, currentParameters)
+                } finally {
+                    sfi.registerTxSecaRules(getServiceName(), currentParameters, result)
+                }
 
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")
                 // if we got any errors added to the message list in the service, rollback for that too
@@ -378,14 +381,17 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             boolean beganTransaction = tf.begin(null)
             try {
                 sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-service")
-                sfi.registerTxSecaRules(getServiceName(), currentParameters)
 
-                EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(noun)
-                switch (verb) {
-                    case "create": EntityAutoServiceRunner.createEntity(sfi, ed, currentParameters, result, null); break
-                    case "update": EntityAutoServiceRunner.updateEntity(sfi, ed, currentParameters, result, null, null); break
-                    case "delete": EntityAutoServiceRunner.deleteEntity(sfi, ed, currentParameters); break
-                    case "store": EntityAutoServiceRunner.storeEntity(sfi, ed, currentParameters, result, null); break
+                try {
+                    EntityDefinition ed = sfi.getEcfi().getEntityFacade().getEntityDefinition(noun)
+                    switch (verb) {
+                        case "create": EntityAutoServiceRunner.createEntity(sfi, ed, currentParameters, result, null); break
+                        case "update": EntityAutoServiceRunner.updateEntity(sfi, ed, currentParameters, result, null, null); break
+                        case "delete": EntityAutoServiceRunner.deleteEntity(sfi, ed, currentParameters); break
+                        case "store": EntityAutoServiceRunner.storeEntity(sfi, ed, currentParameters, result, null); break
+                    }
+                } finally {
+                    sfi.registerTxSecaRules(getServiceName(), currentParameters, result)
                 }
 
                 sfi.runSecaRules(getServiceName(), currentParameters, result, "post-service")

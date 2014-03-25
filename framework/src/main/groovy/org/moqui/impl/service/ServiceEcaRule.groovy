@@ -82,11 +82,14 @@ class ServiceEcaRule {
         }
     }
 
-    void registerTx(String serviceName, Map<String, Object> parameters, ExecutionContextFactoryImpl ecfi) {
-        if (serviceName != secaNode."@service") return
-        def sxr = new SecaSynchronization(this, parameters, ecfi)
+    void registerTx(String serviceName, Map<String, Object> parameters, Map<String, Object> results, ExecutionContextFactoryImpl ecfi) {
+        if (serviceName != (secaNode."@service"?.replace("#", ""))) return
+        def sxr = new SecaSynchronization(this, parameters, results, ecfi)
         sxr.enlist()
     }
+
+    @Override
+    String toString() { return secaNode.toString() }
 
     static class SecaSynchronization implements Synchronization {
         protected final static Logger logger = LoggerFactory.getLogger(SecaSynchronization.class)
@@ -94,13 +97,15 @@ class ServiceEcaRule {
         protected ExecutionContextFactoryImpl ecfi
         protected ServiceEcaRule sec
         protected Map<String, Object> parameters
+        protected Map<String, Object> results
 
         protected Transaction tx = null
 
-        SecaSynchronization(ServiceEcaRule sec, Map<String, Object> parameters, ExecutionContextFactoryImpl ecfi) {
+        SecaSynchronization(ServiceEcaRule sec, Map<String, Object> parameters, Map<String, Object> results, ExecutionContextFactoryImpl ecfi) {
             this.ecfi = ecfi
             this.sec = sec
             this.parameters = new HashMap(parameters)
+            this.results = new HashMap(results)
         }
 
         void enlist() {
@@ -219,7 +224,7 @@ class ServiceEcaRule {
                 public void run() {
                     boolean beganTransaction = ecfi.transactionFacade.begin(null)
                     try {
-                        sec.standaloneRun(parameters, null, ecfi.executionContext)
+                        sec.standaloneRun(parameters, results, ecfi.executionContext)
                     } catch (Throwable t) {
                         logger.error("Error running Service TX ECA rule", t)
                         ecfi.transactionFacade.rollback(beganTransaction, "Error running Service TX ECA rule", t)

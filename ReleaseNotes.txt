@@ -12,6 +12,9 @@ New Features:
 - Added UserGroupPreference, like UserPreference but for user groups.
   UserFacade.getPreference() now looks for group preference if no user
   preference is found.
+- Changed Service ECA rules with @when of tx-commit or tx-rollback to
+  attach to the transaction after the service is run so that results are
+  available
 
 Bug Fixes:
 
@@ -24,6 +27,8 @@ Bug Fixes:
   key (even null), not just if it is a valid field name; this was
   inconvenient for various things, especially when treating EntityValue
   like a Map
+- Fixed issue where Service ECA rules with @when of tx-commit or
+  tx-rollback were never run
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014

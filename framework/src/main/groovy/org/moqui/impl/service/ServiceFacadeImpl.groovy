@@ -325,13 +325,13 @@ class ServiceFacadeImpl implements ServiceFacade {
         for (ServiceEcaRule ser in lst) ser.runIfMatches(serviceName, parameters, results, when, ec)
     }
 
-    void registerTxSecaRules(String serviceName, Map<String, Object> parameters) {
+    void registerTxSecaRules(String serviceName, Map<String, Object> parameters, Map<String, Object> results) {
         // remove the hash if there is one to more consistently match the service name
         if (serviceName.contains("#")) serviceName = serviceName.replace("#", "")
         List<ServiceEcaRule> lst = secaRulesByServiceName.get(serviceName)
         for (ServiceEcaRule ser in lst) {
             if (ser.when.startsWith("tx-")) {
-                ser.registerTx(serviceName, parameters, ecfi)
+                ser.registerTx(serviceName, parameters, results, ecfi)
             }
         }
     }
