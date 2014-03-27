@@ -26,19 +26,6 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="defaultLocale" type="text-short"/>
         <field name="defaultTimeZone" type="text-medium"/>
         <field name="defaultCountryGeoId" type="id"/>
-
-        <!-- Email Defaults -->
-        <field name="emailOutgoingEnabled" type="text-indicator"/>
-        <field name="emailOutgoingFromAddress" type="text-medium"/>
-        <field name="emailOutgoingRedirectAddr" type="text-medium">
-            <description>For testing purposes. If an email address is specified here all outgoing email will go to this address only.</description>
-        </field>
-        <field name="emailSmtpRelayHost" type="text-medium"/>
-        <field name="emailSmtpAuthUsername" type="text-medium"/>
-        <field name="emailSmtpAuthPassword" type="text-medium"/>
-        <field name="emailSmtpPort" type="text-short"/>
-        <field name="emailSmtpStartTls" type="text-indicator"/>
-        <field name="emailSmtpAllowNonSecure" type="text-indicator"/>
     </entity>
     <entity entity-name="TenantCurrency" package-name="moqui.tenant" group-name="tenantcommon">
         <description>Each record represents a Currency UOM to be available to the tenant.
