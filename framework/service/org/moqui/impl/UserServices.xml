@@ -27,7 +27,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="userId" required="true"/>
         </out-parameters>
         <actions>
-            <service-call name="create#UserAccount" out-map="createUaOut" in-map="context"/>
+            <service-call name="create#moqui.security.UserAccount" out-map="createUaOut" in-map="context"/>
             <service-call name="org.moqui.impl.UserServices.update#PasswordInternal"
                 in-map="[userId:createUaOut.userId, newPassword:newPassword, newPasswordVerify:newPasswordVerify]"/>
             <set field="result.userId" from="createUaOut.userId"/>
@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
 
     <service verb="increment" noun="UserAccountFailedLogins" authenticate="anonymous-all" allow-remote="false">
-        <in-parameters><parameter name="userId" type="String" required="true"/></in-parameters>
+        <in-parameters><parameter name="userId" required="true"/></in-parameters>
         <actions>
             <entity-find-one entity-name="moqui.security.UserAccount" value-field="userAccount"/>
             <set field="userAccount.successiveFailedLogins"
@@ -46,7 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <set field="userAccount.disabled" value="Y"/>
                 <set field="userAccount.disabledDateTime" from="ec.user.nowTimestamp"/>
             </if>
-            <log level="warn" message="================ Failed logins [${userAccount.successiveFailedLogins}], maxFailures [${maxFailures}], disabled [${userAccount.disabled}]"/>
+            <log level="warn" message="User ${userId} failed logins [${userAccount.successiveFailedLogins}], maxFailures [${maxFailures}], disabled [${userAccount.disabled}]"/>
             <entity-update value-field="userAccount"/>
         </actions>
     </service>
@@ -55,8 +55,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <description>Set a user's password. The userId must match the current user and the oldPassword must match the
             user's currentPassword or special permission is required.</description>
         <in-parameters>
-            <parameter name="userId" required="false"><description>Defaults to the current userId in the ExecutionContext.</description></parameter>
-            <parameter name="username" required="false"><description>May be used instead of userId to identify user.</description></parameter>
+            <parameter name="userId"><description>Defaults to the current userId in the ExecutionContext.</description></parameter>
+            <parameter name="username"><description>May be used instead of userId to identify user.</description></parameter>
             <parameter name="oldPassword" required="true"><description>Ignored if user has password admin permissions.</description></parameter>
             <parameter name="newPassword" required="true"/>
             <parameter name="newPasswordVerify" required="true"/>
