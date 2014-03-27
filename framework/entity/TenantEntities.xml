@@ -34,6 +34,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="currencyUomId" type="id" is-pk="true"/>
         <relationship type="one" related-entity-name="moqui.tenant.Tenant"/>
     </entity>
+    <!-- on reconsideration, this probably won't be useful:
     <entity entity-name="TenantEmail" package-name="moqui.tenant" group-name="tenantcommon">
         <field name="tenantId" type="id" is-pk="true"/>
         <field name="emailTypeEnumId" type="id" is-pk="true"/>
@@ -46,6 +47,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </relationship>
         <relationship type="one-nofk" related-entity-name="moqui.basic.email.EmailTemplate"/>
     </entity>
+    -->
     <entity entity-name="TenantLocale" package-name="moqui.tenant" group-name="tenantcommon">
         <description>Each record represents a Locale to be available to the tenant.
             If no records are present all system locales will be available.</description>
