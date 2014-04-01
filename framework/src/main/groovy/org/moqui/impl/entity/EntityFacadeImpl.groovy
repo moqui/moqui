@@ -50,7 +50,7 @@ class EntityFacadeImpl implements EntityFacade {
     protected final Cache entityDefinitionCache
     /** Cache with entity name as the key and List of file location Strings as the value, Map<String, List<String>> */
     protected final Cache entityLocationCache
-    /** Sequence name (often entity name) is the key and the value is an array of 2 Longs the first is the next
+    /** Sequence name (often entity name) plus tenantId is the key and the value is an array of 2 Longs the first is the next
      * available value and the second is the highest value reserved/cached in the bank. */
     protected final Cache entitySequenceBankCache
 
@@ -751,10 +751,12 @@ class EntityFacadeImpl implements EntityFacade {
         ArrayList<Long> bank = new ArrayList<Long>(2)
         bank[0] = nextSeqNum
         bank[1] = nextSeqNum + bankSize
-        this.entitySequenceBankCache.put(seqName, bank)
+        String bankCacheKey = getEcfi().getEci().getTenantId() + "::" + seqName
+        this.entitySequenceBankCache.put(bankCacheKey, bank)
     }
     void tempResetSequencedIdPrimary(String seqName) {
-        this.entitySequenceBankCache.put(seqName, null)
+        String bankCacheKey = getEcfi().getEci().getTenantId() + "::" + seqName
+        this.entitySequenceBankCache.put(bankCacheKey, null)
     }
 
     @Override
@@ -785,11 +787,12 @@ class EntityFacadeImpl implements EntityFacade {
         // that in the future if there are issues with this approach
 
         // first get a bank if we don't have one already
-        ArrayList<Long> bank = (ArrayList) this.entitySequenceBankCache.get(seqName)
+        String bankCacheKey = getEcfi().getEci().getTenantId() + "::" + seqName
+        ArrayList<Long> bank = (ArrayList) this.entitySequenceBankCache.get(bankCacheKey)
         if (bank == null || bank[0] == null || bank[0] > bank[1]) {
             if (bank == null) {
                 bank = new ArrayList<Long>(2)
-                this.entitySequenceBankCache.put(seqName, bank)
+                this.entitySequenceBankCache.put(bankCacheKey, bank)
             }
 
             TransactionFacade tf = this.ecfi.getTransactionFacade()
