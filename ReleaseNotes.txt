@@ -29,6 +29,9 @@ Bug Fixes:
   like a Map
 - Fixed issue where Service ECA rules with @when of tx-commit or
   tx-rollback were never run
+- Fixed issue with primary sequenced ID where cached current bank was
+  shared among tenants even though DB values were separate, now cached
+  current bank is also separate
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014
