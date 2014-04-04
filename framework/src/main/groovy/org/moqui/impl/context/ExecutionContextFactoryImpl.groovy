@@ -687,8 +687,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         if (componentLocationMap.containsKey(componentName))
             logger.warn("Overriding component [${componentName}] at [${componentLocationMap.get(componentName)}] with location [${baseLocation}] because another component of the same name was initialized.")
-        // put at the beginning of the Map/List, components registered later override those registered earlier
-        componentLocationMap.put(0, componentName, baseLocation)
+        // components registered later override those registered earlier by replacing the Map entry
+        componentLocationMap.put(componentName, baseLocation)
         logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
