@@ -32,6 +32,10 @@ Bug Fixes:
 - Fixed issue with primary sequenced ID where cached current bank was
   shared among tenants even though DB values were separate, now cached
   current bank is also separate
+- Fixed GitHub issue #26 where the Calendar used for setting Date/etc
+  values was not valid because the cached Calendar object in UserFacadeImpl
+  was set in a query before getting the UserAccount, and not reset by
+  getUserAccount() (ie calling clearPerUserValues())
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014

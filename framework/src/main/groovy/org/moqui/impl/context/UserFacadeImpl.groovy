@@ -233,7 +233,7 @@ class UserFacadeImpl implements UserFacade {
         if (localeCache != null) return localeCache
         Locale locale = null
         if (this.username) {
-            String localeStr = this.userAccount.locale
+            String localeStr = getUserAccount().locale
             if (localeStr) locale = localeStr.contains("_") ?
                 new Locale(localeStr.substring(0, localeStr.indexOf("_")), localeStr.substring(localeStr.indexOf("_")+1).toUpperCase()) :
                 new Locale(localeStr)
@@ -267,7 +267,7 @@ class UserFacadeImpl implements UserFacade {
     TimeZone getTimeZone() {
         TimeZone tz = null
         if (this.username) {
-            String tzStr = this.userAccount.timeZone
+            String tzStr = getUserAccount().timeZone
             if (tzStr) tz = TimeZone.getTimeZone(tzStr)
         } else {
             tz = noUserTimeZone
@@ -547,6 +547,8 @@ class UserFacadeImpl implements UserFacade {
         if (internalUserAccount == null) {
             internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount")
                     .condition("username", this.getUsername()).useCache(false).disableAuthz().one()
+            // this is necessary as temporary values may have been set before the UserAccount was retrieved
+            clearPerUserValues()
         }
         // logger.info("Got UserAccount [${internalUserAccount}] with userIdStack [${userIdStack}]")
         return internalUserAccount
