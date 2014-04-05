@@ -103,6 +103,10 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
             if (eci.getMessage().hasError()) return
         }
 
+        ExecutionContextImpl eci = sfi.getEcfi().getEci()
+        parameters.authUsername = eci.getUser().getUsername()
+        parameters.authTenantId = eci.getTenantId()
+
         // NOTE: get existing job based on jobName/serviceName pair IFF a jobName is specified
         JobKey jk = JobKey.jobKey(jobName, serviceName)
         JobDetail job

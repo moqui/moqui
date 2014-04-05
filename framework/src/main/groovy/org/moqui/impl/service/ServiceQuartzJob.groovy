@@ -35,6 +35,18 @@ class ServiceQuartzJob implements Job {
         ExecutionContext ec = Moqui.getExecutionContext()
 
         try {
+            String userId = parameters.authUserAccount?.userId ?: parameters.authUsername
+            String password = parameters.authUserAccount?.currentPassword ?: parameters.authPassword
+            String tenantId = parameters.authTenantId
+            // TODO: somehow run as user even if no password passed in, just for the special case of persisted jobs?
+            if (userId && password) {
+                ec.getUser().loginUser(userId, password, tenantId)
+            } else if (tenantId) {
+                ec.changeTenant(tenantId)
+            }
+
+            // logger.warn("=========== running quartz job for ${serviceName}, parameter tenantId=${tenantId}, active tenantId=${ec.getTenantId()}, parameters: ${parameters}")
+
             ec.service.sync().name(serviceName).parameters(parameters).call()
         } catch (Throwable t) {
             ec.message.addError(t.message)

@@ -36,6 +36,8 @@ Bug Fixes:
   values was not valid because the cached Calendar object in UserFacadeImpl
   was set in a query before getting the UserAccount, and not reset by
   getUserAccount() (ie calling clearPerUserValues())
+- Changed Quartz jobs (async and scheduled service calls) to run in the
+  tenant they were initiated in instead of always in the DEFAULT tenant
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014

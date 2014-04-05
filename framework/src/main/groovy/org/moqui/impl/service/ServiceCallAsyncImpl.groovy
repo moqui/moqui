@@ -88,6 +88,12 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
             if (eci.getMessage().hasError()) return
         }
 
+        ExecutionContextImpl eci = sfi.getEcfi().getEci()
+        parameters.authUsername = eci.getUser().getUsername()
+        parameters.authTenantId = eci.getTenantId()
+
+        // logger.warn("=========== async call ${serviceName}, parameters: ${parameters}")
+
         // NOTE: is this the best way to get a unique job name? (needed to register a listener below)
         String uniqueJobName = UUID.randomUUID()
         // NOTE: don't store durably, ie tell it to get rid of it after it is run
