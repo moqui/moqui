@@ -75,7 +75,7 @@ class EntityFacadeImpl implements EntityFacade {
         entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
         entityLocationCache = ecfi.getCacheFacade().getCache("entity.location")
         // NOTE: don't try to load entity locations before constructor is complete; this.loadAllEntityLocations()
-        entitySequenceBankCache = ecfi.getCacheFacade().getCache("entity.sequence.bank")
+        entitySequenceBankCache = ecfi.getCacheFacade().getCache("entity.sequence.bank.${this.tenantId}")
 
         // init connection pool (DataSource) for each group
         initAllDatasources()
@@ -751,12 +751,10 @@ class EntityFacadeImpl implements EntityFacade {
         ArrayList<Long> bank = new ArrayList<Long>(2)
         bank[0] = nextSeqNum
         bank[1] = nextSeqNum + bankSize
-        String bankCacheKey = getEcfi().getEci().getTenantId() + "::" + seqName
-        this.entitySequenceBankCache.put(bankCacheKey, bank)
+        this.entitySequenceBankCache.put(seqName, bank)
     }
     void tempResetSequencedIdPrimary(String seqName) {
-        String bankCacheKey = getEcfi().getEci().getTenantId() + "::" + seqName
-        this.entitySequenceBankCache.put(bankCacheKey, null)
+        this.entitySequenceBankCache.put(seqName, null)
     }
 
     @Override
@@ -787,7 +785,7 @@ class EntityFacadeImpl implements EntityFacade {
         // that in the future if there are issues with this approach
 
         // first get a bank if we don't have one already
-        String bankCacheKey = getEcfi().getEci().getTenantId() + "::" + seqName
+        String bankCacheKey = seqName
         ArrayList<Long> bank = (ArrayList) this.entitySequenceBankCache.get(bankCacheKey)
         if (bank == null || bank[0] == null || bank[0] > bank[1]) {
             if (bank == null) {
