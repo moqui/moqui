@@ -678,15 +678,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
     <#if bigRow>
         <#if bigRowFirst>
-            <#if curFieldTitle?has_content>
-            <label class="control-label col-lg-2" for="${formId}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
-            <#else>
-            <div class="col-lg-2"> </div>
-            </#if>
-            <div class="col-lg-10">
+            <div class="col-lg-12">
         </#if>
         <div class="field-row-item">
             <div class="form-group">
+                <#if curFieldTitle?has_content && !fieldSubNode["submit"]?has_content>
+                    <label class="control-label" for="${formId}_${fieldSubNode?parent["@name"]}">${curFieldTitle}</label><#-- was form-title -->
+                </#if>
     <#else>
         <#if fieldSubNode["submit"]?has_content>
         <div class="form-group"><#-- was single-form-field -->

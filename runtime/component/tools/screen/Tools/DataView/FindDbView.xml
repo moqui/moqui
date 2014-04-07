@@ -33,7 +33,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <form-single name="CreateDbViewEntity" transition="create">
-            <field name="dbViewEntityName"><default-field title="View Name"><text-line size="20"/></default-field></field>
+            <field name="dbViewEntityName"><default-field title="View Entity Name"><text-line size="20"/></default-field></field>
             <field name="packageName"><default-field title="Package"><text-line size="20"/></default-field></field>
             <field name="cache"><default-field><hidden default-value="N"/></default-field></field>
             <field name="isDataView"><default-field><hidden default-value="Y"/></default-field></field>
