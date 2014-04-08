@@ -454,7 +454,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro "drop-down">
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
-    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
+    <#assign currentValue = sri.getFieldValueString(.node?parent?parent, "", null)/>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
 </#macro>
@@ -466,7 +466,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 
 <#macro radio>
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)>
-    <#assign currentValue = sri.getFieldValue(.node?parent?parent, "")>
+    <#assign currentValue = sri.getFieldValueString(.node?parent?parent, "", null)/>
     <#if !currentValue?has_content><#assign currentValue = .node["@no-current-selected-key"]?if_exists/></#if>
     <#t><#if currentValue?has_content>${options.get(currentValue)?default(currentValue)}</#if>
 </#macro>
@@ -480,16 +480,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]?if_exists)}
 </#macro>
 
 <#macro "text-area">
-    <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
+    <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)>
     <#t><@attributeValue fieldValue/>
 </#macro>
 
 <#macro "text-line">
-    <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
+    <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)>
     <#t><@attributeValue fieldValue/>
 </#macro>
 
 <#macro "text-find">
-    <#assign fieldValue = sri.getFieldValue(.node?parent?parent, .node["@default-value"]!"")>
+    <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)>
     <#t><@attributeValue fieldValue/>
 </#macro>
