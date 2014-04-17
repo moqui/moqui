@@ -1,17 +1,12 @@
     </div>
 ${sri.getAfterScreenWriterText()}
 
-
+<#-- Footer JavaScript -->
+<#list footer_scripts?if_exists as scriptLocation>
+<script language="javascript" src="${sri.buildUrl(scriptLocation).url}" type="text/javascript"></script>
+</#list>
 <script>
-    <#-- no longer needed for Metis buttons
-    function activateAllButtons() {
-        $("input[type=submit], input[type=reset], a.button, button").each(function() {
-            $(this).button({icons: {primary: $(this).attr("iconcls")}});
-        })
-    }
-    activateAllButtons();
-    -->
-    ${sri.getScriptWriterText()}
+${sri.getScriptWriterText()}
 </script>
 </body>
 </html>
