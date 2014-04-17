@@ -16,7 +16,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide, and because the Login screen is below this. -->
     <always-actions>
         <!-- TODO: implement way to only load base JS and CSS files and load others as needed on different screens! -->
-        <set field="html_scripts" from="['/assets/lib/jquery.min.js',
+        <set field="html_scripts" from="new LinkedHashSet(['/assets/lib/jquery.min.js',
             '/assets/lib/bootstrap/js/bootstrap.min.js', '/assets/lib/jquery-ui.min.js',
             '/assets/lib/uniform/jquery.uniform.min.js', '/assets/lib/form/jquery.form.js',
             '/assets/lib/datetimepicker/js/bootstrap-datetimepicker.min.js',
@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
             '/js/chosen_v1.1.0/chosen.jquery.min.js',
             '/assets/lib/autosize/jquery.autosize.min.js',
             '/assets/lib/jasny/js/jasny-bootstrap.min.js', '/assets/js/main.min.js',
-            '/js/jquery-jeditable-1.7.1.min.js']"/>
+            '/js/jquery-jeditable-1.7.1.min.js'])"/>
         <!-- out until used in DefaultScreenMacros.html.ftl:
             '/assets/lib/inputlimiter/jquery.inputlimiter.1.3.1.min.js', '/assets/lib/tagsinput/jquery.tagsinput.min.js',
             '/assets/lib/validationengine/js/jquery.validationEngine.js', '/assets/lib/validationengine/js/languages/jquery.validationEngine-en.js',
@@ -42,13 +42,13 @@ This Work includes contributions authored by David E. Jones, not as a
             '/assets/lib/timepicker/css/bootstrap-timepicker.min.css',
             '/assets/lib/switch/build/css/bootstrap3/bootstrap-switch.min.css',
         -->
-        <set field="html_stylesheets" from="['/assets/lib/bootstrap/css/bootstrap.min.css',
+        <set field="html_stylesheets" from="new LinkedHashSet(['/assets/lib/bootstrap/css/bootstrap.min.css',
             '/assets/lib/Font-Awesome/css/font-awesome.min.css',
             '/assets/css/main.min.css', '/assets/lib/uniform/themes/default/css/uniform.default.min.css',
             '/assets/lib/datetimepicker/css/bootstrap-datetimepicker.min.css',
             '/js/chosen_v1.1.0/chosen.min.css',
             '/assets/lib/jasny/css/jasny-bootstrap.min.css',
-            '/assets/lib/jquery-ui.css', '/assets/css/theme.css', '/css/default.css']"/>
+            '/assets/lib/jquery-ui.css', '/assets/css/theme.css', '/css/default.css'])"/>
     </always-actions>
     <subscreens default-item="apps">
         <!-- if the client is an iPad, default to the ipad subscreens item instead of apps, but allow either to be used explicitly -->
