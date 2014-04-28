@@ -56,6 +56,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
+    protected String defaultGroupName = null
 
     // this will be used to temporarily cache root Node objects of entity XML files, used when loading a bunch at once,
     //     should be null otherwise to prevent its use
@@ -70,6 +71,7 @@ class EntityFacadeImpl implements EntityFacade {
         this.ecfi = ecfi
         this.tenantId = tenantId ?: "DEFAULT"
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
+        this.defaultGroupName = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
 
         // init entity meta-data
         entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
@@ -92,6 +94,7 @@ class EntityFacadeImpl implements EntityFacade {
     EntityCache getEntityCache() { return entityCache }
     EntityDataFeed getEntityDataFeed() { return entityDataFeed }
     EntityDataDocument getEntityDataDocument() { return entityDataDocument }
+    String getDefaultGroupName() { return defaultGroupName }
 
     void checkInitDatasourceTables() {
         // if startup-add-missing=true check tables now
@@ -672,12 +675,14 @@ class EntityFacadeImpl implements EntityFacade {
         return (Node) ecfi.confXmlRoot."database-list"[0].database.find({ it."@name" == databaseConfName })
     }
     String getDatabaseConfName(String groupName) {
-        Node datasourceNode = (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
+        Node datasourceNode = getDatasourceNode(groupName)
         return datasourceNode."@database-conf-name"
     }
 
     Node getDatasourceNode(String groupName) {
-        return (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
+        Node dsNode = (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == groupName })
+        if (dsNode == null) dsNode = (Node) ecfi.confXmlRoot."entity-facade"[0].datasource.find({ it."@group-name" == defaultGroupName })
+        return dsNode
     }
 
     EntityDbMeta getEntityDbMeta() { return dbMeta ? dbMeta : (dbMeta = new EntityDbMeta(this)) }
@@ -687,7 +692,12 @@ class EntityFacadeImpl implements EntityFacade {
     /* ========================= */
 
     @Override
-    EntityDatasourceFactory getDatasourceFactory(String groupName) { return datasourceFactoryByGroupMap.get(groupName) }
+    EntityDatasourceFactory getDatasourceFactory(String groupName) {
+        EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(groupName)
+        if (edf == null) edf = datasourceFactoryByGroupMap.get(defaultGroupName)
+        if (edf == null) throw new EntityException("Could not find EntityDatasourceFactory for entity group ${groupName}")
+        return edf
+    }
 
     @Override
     EntityConditionFactory getConditionFactory() { return this.entityConditionFactory }
@@ -695,14 +705,14 @@ class EntityFacadeImpl implements EntityFacade {
     @Override
     EntityValue makeValue(String entityName) {
         if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeValue")
-        EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
+        EntityDatasourceFactory edf = getDatasourceFactory(getEntityGroupName(entityName))
         return edf.makeEntityValue(entityName)
     }
 
     @Override
     EntityFind makeFind(String entityName) {
         if (!entityName) throw new EntityException("No entityName passed to EntityFacade.makeFind")
-        EntityDatasourceFactory edf = datasourceFactoryByGroupMap.get(getEntityGroupName(entityName))
+        EntityDatasourceFactory edf = getDatasourceFactory(getEntityGroupName(entityName))
         return edf.makeEntityFind(entityName)
     }
 
@@ -871,7 +881,7 @@ class EntityFacadeImpl implements EntityFacade {
         if (ed.entityNode."@group-name") {
             entityGroupName = ed.entityNode."@group-name"
         } else {
-            entityGroupName = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
+            entityGroupName = defaultGroupName
         }
         entityGroupNameMap.put(entityName, entityGroupName)
         return entityGroupName
@@ -879,7 +889,7 @@ class EntityFacadeImpl implements EntityFacade {
 
     @Override
     Connection getConnection(String groupName) {
-        EntityDatasourceFactory edf = this.datasourceFactoryByGroupMap.get(groupName)
+        EntityDatasourceFactory edf = getDatasourceFactory(groupName)
         DataSource ds = edf.getDataSource()
         if (ds == null) throw new EntityException("Cannot get JDBC Connection for group-name [${groupName}] because it has no DataSource")
         if (ds instanceof XADataSource) {

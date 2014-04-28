@@ -5,6 +5,7 @@ build/
 
 # build generated files
 /moqui-*.war
+/SaveDEFAULT.zip
 /SaveTenant.zip
 /SaveTransactional.zip
 /SaveAnalytical.zip
@@ -12,9 +13,11 @@ build/
 /SaveElasticSearch.zip
 
 # runtime generated files
+/runtime/db/derby/MoquiDEFAULT/
 /runtime/db/derby/MoquiTenant/
 /runtime/db/derby/MoquiTransactional/
 /runtime/db/derby/MoquiAnalytical/
+/runtime/db/derby/EXAMPLE1/
 /runtime/db/derby/derby.log
 /runtime/db/orientdb/databases/
 /runtime/elasticsearch/data/
@@ -71,5 +74,5 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-Linux auto files
+# Linux auto files
 *~

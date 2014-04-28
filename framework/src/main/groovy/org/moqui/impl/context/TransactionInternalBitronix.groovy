@@ -64,7 +64,7 @@ class TransactionInternalBitronix implements TransactionInternal {
 
         EntityValue tenant = null
         EntityFacadeImpl defaultEfi = null
-        if (tenantId != "DEFAULT") {
+        if (tenantId != "DEFAULT" && datasourceNode."@group-name" != "tenantcommon") {
             defaultEfi = ecfi.getEntityFacade("DEFAULT")
             tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", tenantId).one()
         }
@@ -74,9 +74,12 @@ class TransactionInternalBitronix implements TransactionInternal {
         if (tenant != null) {
             tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", tenantId)
                     .condition("entityGroupName", datasourceNode."@group-name").one()
-            tenantDataSourceXaPropList = defaultEfi.makeFind("moqui.tenant.TenantDataSourceXaProp")
-                    .condition("tenantId", tenantId).condition("entityGroupName", datasourceNode."@group-name")
-                    .list()
+            if (tenantDataSource == null) {
+                // if there is no TenantDataSource for this group, look for one for the default-group-name
+                tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", tenantId)
+                        .condition("entityGroupName", efi.getDefaultGroupName()).one()
+            }
+            tenantDataSourceXaPropList = tenantDataSource?.findRelated("moqui.tenant.TenantDataSourceXaProp", null, null, false, false)
         }
 
         Node inlineJdbc = datasourceNode."inline-jdbc"[0]

@@ -24,16 +24,4 @@ This Work includes contributions authored by David E. Jones, not as a
             propName="databaseName" propValue="${moqui.runtime}/db/derby/EXAMPLE1"/>
     <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="transactional"
             propName="createDatabase" propValue="create"/>
-
-    <moqui.tenant.TenantDataSource tenantId="EXAMPLE1" entityGroupName="analytical" jndiName="" jdbcUri="" jdbcUsername="" jdbcPassword=""/>
-    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="analytical"
-            propName="databaseName" propValue="${moqui.runtime}/db/derby/EXAMPLE1"/>
-    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="analytical"
-            propName="createDatabase" propValue="create"/>
-
-    <moqui.tenant.TenantDataSource tenantId="EXAMPLE1" entityGroupName="nosql" jndiName="" jdbcUri="" jdbcUsername="" jdbcPassword=""/>
-    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="nosql"
-            propName="databaseName" propValue="${moqui.runtime}/db/derby/EXAMPLE1"/>
-    <moqui.tenant.TenantDataSourceXaProp tenantId="EXAMPLE1" entityGroupName="nosql"
-            propName="createDatabase" propValue="create"/>
 </entity-facade-xml>

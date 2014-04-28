@@ -44,7 +44,7 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
         if (datasourceNode."jndi-jdbc") {
             EntityValue tenant = null
             EntityFacadeImpl defaultEfi = null
-            if (this.tenantId != "DEFAULT") {
+            if (this.tenantId != "DEFAULT" && datasourceNode."@group-name" != "tenantcommon") {
                 defaultEfi = efi.ecfi.getEntityFacade("DEFAULT")
                 tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
             }
@@ -53,6 +53,11 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
             if (tenant != null) {
                 tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
                         .condition("entityGroupName", datasourceNode."@group-name").one()
+                if (tenantDataSource == null) {
+                    // if there is no TenantDataSource for this group, look for one for the default-group-name
+                    tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
+                            .condition("entityGroupName", efi.getDefaultGroupName()).one()
+                }
             }
 
             Node serverJndi = efi.ecfi.getConfXmlRoot()."entity-facade"[0]."server-jndi"[0]

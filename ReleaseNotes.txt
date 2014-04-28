@@ -15,6 +15,16 @@ New Features:
 - Changed Service ECA rules with @when of tx-commit or tx-rollback to
   attach to the transaction after the service is run so that results are
   available
+- Changed datasource configuration so that if datasources other than the
+  one for the default-group-name (transactional) are not specified then
+  the default-group-name one is used. There is a similar change for the
+  TenantDataSource so that only the one for the default-group-name
+  (transactional) is required for each tenant.
+- Changed the Derby database default configuration to use a single
+  MoquiDEFAULT database instead of separate transactional, analytical,
+  nosql, and tenantcommon databases. Also changed the EXAMPLE1 tenant to
+  use the tenantId as the database name, setting a pattern for other
+  tenants.
 
 Bug Fixes:
 

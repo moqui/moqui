@@ -201,27 +201,46 @@
         To use the non-XA variety just specify the normal JDBC parameters (like jdbc-uri, etc) and leave out the
         xa-properties element. If the xa-properties element is present the normal JDBC parameters will be ignored.
         -->
+
         <datasource group-name="transactional" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiDEFAULT" createDatabase="create"/>
             </inline-jdbc>
             <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTransactional;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
                          pool-minsize="5" pool-maxsize="50"/> -->
             <!-- <jndi-jdbc jndi-name="java:/MoquiTransactionalDataSource"/> -->
         </datasource>
+        <!-- The entity-facade.default-group-name=transactional, so if other entity groups do not have a data source
+            the transactional group's datasource will be used. -->
+
+        <!-- leave these commented to use the MoquiDEFAULT database for all entity groups:
         <datasource group-name="analytical" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
                 <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiAnalytical" createDatabase="create"/>
             </inline-jdbc>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiAnalytical;create=true"
+            <!- - <inline-jdbc jdbc-uri="jdbc:derby:MoquiAnalytical;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
-                         pool-minsize="2" pool-maxsize="10"/> -->
-            <!-- <jndi-jdbc jndi-name="java:/MoquiAnalyticalDataSource"/> -->
+                         pool-minsize="2" pool-maxsize="10"/> - ->
+            <!- - <jndi-jdbc jndi-name="java:/MoquiAnalyticalDataSource"/> - ->
         </datasource>
+        <datasource group-name="nosql" database-conf-name="derby" schema-name="MOQUI">
+            <inline-jdbc pool-minsize="2" pool-maxsize="10">
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
+            </inline-jdbc>
+        </datasource>
+        <!- - Above the nosql group is in the transactional db by default. To use OrientDB use this instead:
+        <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
+                startup-add-missing="true">
+            <!- - NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX - ->
+            <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
+        </datasource> - ->
+        -->
+
+        <!-- The tenantcommon group can also in the same DB, but MUST have a separate definition for multi-tenant to work -->
         <datasource group-name="tenantcommon" database-conf-name="derby" schema-name="MOQUI">
             <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTenant" createDatabase="create"/>
+                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiDEFAULT" createDatabase="create"/>
             </inline-jdbc>
             <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTenant;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
@@ -229,60 +248,29 @@
             <!-- <jndi-jdbc jndi-name="java:/MoquiTenantDataSource"/> -->
         </datasource>
 
-        <datasource group-name="nosql" database-conf-name="derby" schema-name="MOQUI">
-            <inline-jdbc pool-minsize="2" pool-maxsize="10">
-                <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
-            </inline-jdbc>
-        </datasource>
-        <!-- Above the nosql group is in the transactional db by default. To use OrientDB use this instead:
-        <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
-                startup-add-missing="true">
-            <!- - NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX - ->
-            <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
-        </datasource>
-        -->
 
-        <!-- some examples of how other databases would be configured -->
+        <!-- ===== some examples of how other databases would be configured ===== -->
         <!-- PostgreSQL
         <datasource group-name="transactional" database-conf-name="postgres" schema-name="public" startup-add-missing="true" runtime-add-missing="false">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
                 <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="5432"
-                               databaseName="MoquiTransactional"/>
+                               databaseName="MoquiDEFAULT"/>
             </inline-jdbc>
             <!- - <inline-jdbc jdbc-uri="jdbc:postgresql://127.0.0.1/MoquiTransactional"
-                    jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="50"/> - ->
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
         </datasource>
         -->
 
         <!-- MySQL
         <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
-            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
-                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
-        </datasource>
-
-        MySQL Example using the same database for all datasources:
-        <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
-            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
-                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
-        </datasource>
-        <datasource group-name="analytical" database-conf-name="mysql" schema-name="">
-            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
-                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
-        </datasource>
-        <datasource group-name="tenantcommon" database-conf-name="mysql" schema-name="">
-            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
-                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
-        </datasource>
-        <datasource group-name="nosql" database-conf-name="mysql" schema-name="" object-factory="">
-            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiTransactional?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
+            <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiDEFAULT?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
                     jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
         </datasource>
         -->
 
         <!-- Oracle
         <datasource group-name="transactional" database-conf-name="oracle" schema-name="MOQUI">
-            <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiTransactional"
+            <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiDEFAULT"
                     jdbc-username="moqui" jdbc-password="moqui"
                     pool-minsize="2" pool-maxsize="50"/>
         </datasource>
