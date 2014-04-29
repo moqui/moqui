@@ -265,14 +265,25 @@
         <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
             <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiDEFAULT?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
                     jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
+            <!- - these two XA examples are untested, but shows the general idea; the MysqlDataSource class has a LOT of configuration options
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties user="moqui" password="moqui" pinGlobalTxToPhysicalConnection="true" explicitUrl="true"
+                        url="jdbc:mysql://127.0.0.1:3306/MoquiDEFAULT?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"/>
+                <xa-properties user="moqui" password="moqui" pinGlobalTxToPhysicalConnection="true" explicitUrl="false"
+                        hostName="127.0.0.1" port="3306" databaseName="MoquiDEFAULT" autoReconnectForPools="true"
+                        useUnicode="true" encoding="UTF-8"/>
+            </inline-jdbc>
+            - ->
         </datasource>
         -->
 
         <!-- Oracle
         <datasource group-name="transactional" database-conf-name="oracle" schema-name="MOQUI">
-            <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiDEFAULT"
-                    jdbc-username="moqui" jdbc-password="moqui"
-                    pool-minsize="2" pool-maxsize="50"/>
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties user="moqui" password="moqui" URL="jdbc:oracle:thin:@127.0.0.1:1521:MoquiDEFAULT"/>
+            </inline-jdbc>
+            <!- - <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiDEFAULT"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
         </datasource>
         -->
 
