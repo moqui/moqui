@@ -206,7 +206,7 @@
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
                 <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiDEFAULT" createDatabase="create"/>
             </inline-jdbc>
-            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiTransactional;create=true"
+            <!-- <inline-jdbc jdbc-uri="jdbc:derby:MoquiDEFAULT;create=true"
                          jdbc-username="moqui" jdbc-password="moqui"
                          pool-minsize="5" pool-maxsize="50"/> -->
             <!-- <jndi-jdbc jndi-name="java:/MoquiTransactionalDataSource"/> -->
@@ -250,22 +250,32 @@
 
 
         <!-- ===== some examples of how other databases would be configured ===== -->
-        <!-- PostgreSQL
-        <datasource group-name="transactional" database-conf-name="postgres" schema-name="public" startup-add-missing="true" runtime-add-missing="false">
+
+        <!-- DB2
+        <datasource group-name="transactional" database-conf-name="db2" schema-name="" startup-add-missing="true" runtime-add-missing="false">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
-                <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="5432"
+                <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="5021" driverType="4"
                                databaseName="MoquiDEFAULT"/>
             </inline-jdbc>
-            <!- - <inline-jdbc jdbc-uri="jdbc:postgresql://127.0.0.1/MoquiTransactional"
+            <!- - <inline-jdbc jdbc-uri="jdbc:db2://localhost:5021/MoquiDEFAULT"
                     jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
         </datasource>
         -->
-
+        <!-- MS SQL Server
+        <datasource group-name="transactional" database-conf-name="mssql" schema-name="">
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="1433"
+                               databaseName="MoquiDEFAULT"/>
+            </inline-jdbc>
+            <!- - <inline-jdbc jdbc-uri="jdbc:sqlserver://localhost:1433;databaseName=MoquiDEFAULT"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
+        </datasource>
+        -->
         <!-- MySQL
         <datasource group-name="transactional" database-conf-name="mysql" schema-name="">
             <inline-jdbc jdbc-uri="jdbc:mysql://127.0.0.1:3306/MoquiDEFAULT?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"
                     jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/>
-            <!- - these two XA examples are untested, but shows the general idea; the MysqlDataSource class has a LOT of configuration options
+            <!- - these two XA examples are untested, but show the general idea; the MysqlDataSource class has a LOT of configuration options
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
                 <xa-properties user="moqui" password="moqui" pinGlobalTxToPhysicalConnection="true" explicitUrl="true"
                         url="jdbc:mysql://127.0.0.1:3306/MoquiDEFAULT?autoReconnect=true&amp;useUnicode=true&amp;characterEncoding=UTF-8"/>
@@ -276,13 +286,22 @@
             - ->
         </datasource>
         -->
-
         <!-- Oracle
         <datasource group-name="transactional" database-conf-name="oracle" schema-name="MOQUI">
             <inline-jdbc pool-minsize="5" pool-maxsize="50">
                 <xa-properties user="moqui" password="moqui" URL="jdbc:oracle:thin:@127.0.0.1:1521:MoquiDEFAULT"/>
             </inline-jdbc>
             <!- - <inline-jdbc jdbc-uri="jdbc:oracle:thin:@127.0.0.1:1521:MoquiDEFAULT"
+                    jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
+        </datasource>
+        -->
+        <!-- PostgreSQL
+        <datasource group-name="transactional" database-conf-name="postgres" schema-name="public" startup-add-missing="true" runtime-add-missing="false">
+            <inline-jdbc pool-minsize="5" pool-maxsize="50">
+                <xa-properties user="moqui" password="moqui" serverName="localhost" portNumber="5432"
+                               databaseName="MoquiDEFAULT"/>
+            </inline-jdbc>
+            <!- - <inline-jdbc jdbc-uri="jdbc:postgresql://127.0.0.1/MoquiDEFAULT"
                     jdbc-username="moqui" jdbc-password="moqui" pool-minsize="2" pool-maxsize="50"/> - ->
         </datasource>
         -->
