@@ -48,6 +48,8 @@ Bug Fixes:
   getUserAccount() (ie calling clearPerUserValues())
 - Changed Quartz jobs (async and scheduled service calls) to run in the
   tenant they were initiated in instead of always in the DEFAULT tenant
+- Fixed issue with setBlob and the Postgres JDBC driver (GitHub issue #28),
+  similar to pull request #29
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014

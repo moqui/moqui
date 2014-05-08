@@ -461,9 +461,14 @@ class EntityQueryBuilder {
                         ps.setBytes(index, ((ByteBuffer) value).array())
                     } else if (value instanceof String) {
                         ps.setBytes(index, ((String) value).getBytes())
+                    } else if (value instanceof Blob) {
+                        // calling setBytes instead of setBlob
+                        // ps.setBlob(index, (Blob) value)
+                        Blob blb = (Blob) value
+                        ps.setBytes(index, blb.getBytes(1, (int) blb.length()))
                     } else {
                         if (value != null) {
-                            ps.setBlob(index, (Blob) value)
+                            throw new IllegalArgumentException("Type not supported for BLOB field: ${value.getClass().getName()}")
                         } else {
                             if (useBinaryTypeForBlob) { ps.setNull(index, Types.BINARY) } else { ps.setNull(index, Types.BLOB) }
                         }
