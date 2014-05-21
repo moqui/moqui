@@ -19,7 +19,7 @@ class EntityDynamicViewImpl implements EntityDynamicView {
     protected EntityFindImpl entityFind;
 
     protected String entityName = "DynamicView"
-    protected Node entityNode = new Node(null, "view-entity", ["entity-name":"DynamicView", "is-dynamic-view":"true"])
+    protected Node entityNode = new Node(null, "view-entity", ["package-name":"moqui.internal", "entity-name":"DynamicView", "is-dynamic-view":"true"])
 
     EntityDynamicViewImpl(EntityFindImpl entityFind) {
         this.entityFind = entityFind
