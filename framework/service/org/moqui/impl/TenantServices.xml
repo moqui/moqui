@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.4.xsd">
+
+    <service verb="provision" noun="Tenant" type="interface">
+        <description>Creates a new Tenant with admin user, database configuration (single database used for all entity
+            groups), and optional host attachment.</description>
+        <implements service="org.moqui.impl.UserServices.create#UserAccount"/>
+        <!-- username, newPassword, newPasswordVerify, userFullName, emailAddress, currencyUomId, locale, timeZone -->
+        <in-parameters>
+            <parameter name="tenantId" required="false"/>
+            <parameter name="tenantName" required="true"/>
+            <parameter name="isEnabled" default-value="Y"/>
+
+            <parameter name="dataLoadTypes"><description>If blank defaults to all (just like the -load -types command line argument)</description></parameter>
+
+            <parameter name="hostName"/>
+            <parameter name="hostAllowOverride"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="tenantId" required="true"/>
+            <parameter name="userId" required="true"/>
+        </out-parameters>
+    </service>
+    <service verb="setup" noun="Tenant">
+        <implements service="org.moqui.impl.TenantServices.provision#Tenant"/>
+        <actions>
+            <!-- switch to new Tenant -->
+            <script>if (tenantId) ec.changeTenant(tenantId)</script>
+
+            <!-- load data -->
+            <script>
+                EntityDataLoader edl = ec.getEntity().makeDataLoader()
+                if (argMap.containsKey("types")) edl.dataTypes(new HashSet(Arrays.asList(argMap.get("types").split(","))))
+
+                long startTime = System.currentTimeMillis()
+                records = edl.load()
+                totalSeconds = (System.currentTimeMillis() - startTime)/1000
+            </script>
+            <log level="info" message="Loaded [${records}] records in ${totalSeconds} seconds."/>
+
+            <!-- add TenantHostDefault record if hostName specified -->
+            <if condition="hostName">
+                <entity-find-one entity-name="moqui.tenant.TenantHostDefault" value-field="thDefault"/>
+                <if condition="thDefault">
+                    <message>Tenant host mapping for host name ${hostName} already exists. Not stopping the tenant setup, but you will need to set up a different tenant host mapping.</message>
+
+                    <else>
+                        <service-call name="create#moqui.tenant.TenantHostDefault" in-map="[hostName:hostName,
+                                tenantId:tenantId, allowOverride:hostAllowOverride]"/>
+                    </else>
+                </if>
+            </if>
+
+            <service-call name="org.moqui.impl.UserServices.create#UserAccount" in-map="context" out-map="context"/>
+            <!-- add to admin UserGroup -->
+            <service-call name="create#moqui.security.UserGroupMember" in-map="[userId:userId, userGroupId:'ADMIN']"/>
+        </actions>
+    </service>
+
+    <service verb="provision" noun="TenantDerby">
+        <implements service="org.moqui.impl.TenantServices.provision#Tenant"/>
+        <in-parameters>
+            <!-- use tenantId + template for JDBC URI, and admin account username/password for DB un/pw? -->
+            <!--
+            <parameter name="jndiName"/>
+            <parameter name="jdbcUri"/>
+            <parameter name="dbUsername"/>
+            <parameter name="dbPassword"/>
+            <parameter name="useXa" type="Boolean" default="false"/>
+            -->
+        </in-parameters>
+        <actions>
+            <service-call name="create#moqui.tenant.Tenant" in-map="context" out-map="context"/>
+
+            <!-- create TenantDataSource and optionally TenantDataSourceXaProp records -->
+            <service-call name="create#moqui.tenant.TenantDataSource" in-map="[tenantId:'EXAMPLE1', entityGroupName:'transactional']"/>
+            <service-call name="create#moqui.tenant.TenantDataSourceXaProp"
+                    in-map="[tenantId:'EXAMPLE1', entityGroupName:'transactional', propName:'databaseName',
+                        propValue:('${moqui.runtime}/db/derby/' + tenantId)]"/>
+            <service-call name="create#moqui.tenant.TenantDataSourceXaProp"
+                    in-map="[tenantId:'EXAMPLE1', entityGroupName:'transactional', propName:'createDatabase', propValue:'create']"/>
+
+            <!-- No need to do this for Derby, but the note here for future reference: create database(s), if datasource configured to do so -->
+
+            <!-- call setup#Tenant -->
+            <service-call name="org.moqui.impl.TenantServices.setup#Tenant" in-map="context" out-map="context"/>
+        </actions>
+    </service>
+</services>
