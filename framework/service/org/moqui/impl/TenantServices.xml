@@ -25,7 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="dataLoadTypes"><description>If blank defaults to all (just like the -load -types command line argument)</description></parameter>
 
             <parameter name="hostName"/>
-            <parameter name="hostAllowOverride"/>
+            <parameter name="hostAllowOverride" default-value="N"/>
         </in-parameters>
         <out-parameters>
             <parameter name="tenantId" required="true"/>
@@ -35,20 +35,6 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="setup" noun="Tenant">
         <implements service="org.moqui.impl.TenantServices.provision#Tenant"/>
         <actions>
-            <!-- switch to new Tenant -->
-            <script>if (tenantId) ec.changeTenant(tenantId)</script>
-
-            <!-- load data -->
-            <script>
-                EntityDataLoader edl = ec.getEntity().makeDataLoader()
-                if (argMap.containsKey("types")) edl.dataTypes(new HashSet(Arrays.asList(argMap.get("types").split(","))))
-
-                long startTime = System.currentTimeMillis()
-                records = edl.load()
-                totalSeconds = (System.currentTimeMillis() - startTime)/1000
-            </script>
-            <log level="info" message="Loaded [${records}] records in ${totalSeconds} seconds."/>
-
             <!-- add TenantHostDefault record if hostName specified -->
             <if condition="hostName">
                 <entity-find-one entity-name="moqui.tenant.TenantHostDefault" value-field="thDefault"/>
@@ -62,9 +48,28 @@ This Work includes contributions authored by David E. Jones, not as a
                 </if>
             </if>
 
+            <!-- switch to new Tenant -->
+            <script>if (tenantId) ec.changeTenant(tenantId)</script>
+
+            <!-- load data -->
+            <script>
+                import org.moqui.entity.EntityDataLoader
+                EntityDataLoader edl = ec.getEntity().makeDataLoader()
+                if (dataLoadTypes) edl.dataTypes(new HashSet(Arrays.asList(dataLoadTypes.split(","))))
+
+                long startTime = System.currentTimeMillis()
+                records = edl.load()
+                totalSeconds = (System.currentTimeMillis() - startTime) / 1000
+            </script>
+            <log level="info" message="Loaded [${records}] records in ${totalSeconds} seconds."/>
+
+            <!-- create admin user -->
             <service-call name="org.moqui.impl.UserServices.create#UserAccount" in-map="context" out-map="context"/>
             <!-- add to admin UserGroup -->
             <service-call name="create#moqui.security.UserGroupMember" in-map="[userId:userId, userGroupId:'ADMIN']"/>
+
+            <!-- TODO: need to switch back to previous tenantId? -->
+            <!-- TODO: change EntityDataFeed to be per-tenant! -->
         </actions>
     </service>
 
@@ -84,12 +89,12 @@ This Work includes contributions authored by David E. Jones, not as a
             <service-call name="create#moqui.tenant.Tenant" in-map="context" out-map="context"/>
 
             <!-- create TenantDataSource and optionally TenantDataSourceXaProp records -->
-            <service-call name="create#moqui.tenant.TenantDataSource" in-map="[tenantId:'EXAMPLE1', entityGroupName:'transactional']"/>
+            <service-call name="create#moqui.tenant.TenantDataSource" in-map="[tenantId:tenantId, entityGroupName:'transactional']"/>
             <service-call name="create#moqui.tenant.TenantDataSourceXaProp"
-                    in-map="[tenantId:'EXAMPLE1', entityGroupName:'transactional', propName:'databaseName',
+                    in-map="[tenantId:tenantId, entityGroupName:'transactional', propName:'databaseName',
                         propValue:('${moqui.runtime}/db/derby/' + tenantId)]"/>
             <service-call name="create#moqui.tenant.TenantDataSourceXaProp"
-                    in-map="[tenantId:'EXAMPLE1', entityGroupName:'transactional', propName:'createDatabase', propValue:'create']"/>
+                    in-map="[tenantId:tenantId, entityGroupName:'transactional', propName:'createDatabase', propValue:'create']"/>
 
             <!-- No need to do this for Derby, but the note here for future reference: create database(s), if datasource configured to do so -->
 
