@@ -66,20 +66,25 @@ class TransactionInternalBitronix implements TransactionInternal {
         EntityFacadeImpl defaultEfi = null
         if (tenantId != "DEFAULT" && datasourceNode."@group-name" != "tenantcommon") {
             defaultEfi = ecfi.getEntityFacade("DEFAULT")
-            tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", tenantId).one()
+            tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", tenantId).disableAuthz().one()
         }
 
         EntityValue tenantDataSource = null
         EntityList tenantDataSourceXaPropList = null
         if (tenant != null) {
-            tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", tenantId)
-                    .condition("entityGroupName", datasourceNode."@group-name").one()
-            if (tenantDataSource == null) {
-                // if there is no TenantDataSource for this group, look for one for the default-group-name
+            boolean alreadyDisabled = ecfi.getExecutionContext().getArtifactExecution().disableAuthz()
+            try {
                 tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", tenantId)
-                        .condition("entityGroupName", efi.getDefaultGroupName()).one()
+                        .condition("entityGroupName", datasourceNode."@group-name").one()
+                if (tenantDataSource == null) {
+                    // if there is no TenantDataSource for this group, look for one for the default-group-name
+                    tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", tenantId)
+                            .condition("entityGroupName", efi.getDefaultGroupName()).one()
+                }
+                tenantDataSourceXaPropList = tenantDataSource?.findRelated("moqui.tenant.TenantDataSourceXaProp", null, null, false, false)
+            } finally {
+                if (!alreadyDisabled) ecfi.getExecutionContext().getArtifactExecution().enableAuthz()
             }
-            tenantDataSourceXaPropList = tenantDataSource?.findRelated("moqui.tenant.TenantDataSourceXaProp", null, null, false, false)
         }
 
         Node inlineJdbc = datasourceNode."inline-jdbc"[0]
