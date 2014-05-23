@@ -114,6 +114,8 @@ public class CacheFacadeImpl implements CacheFacade {
         CacheConfiguration newCacheConf = newCache.getCacheConfiguration()
         Node confXmlRoot = this.ecfi.getConfXmlRoot()
         Node cacheElement = (Node) confXmlRoot."cache-list".cache.find({ it."@name" == cacheName })
+        // nothing found? try starts with, ie allow the cache configuration to be a prefix
+        if (cacheElement == null) cacheElement = (Node) confXmlRoot."cache-list".cache.find({ cacheName.startsWith(it."@name") })
 
         boolean eternal = true
         if (cacheElement?."@expire-time-idle") {
