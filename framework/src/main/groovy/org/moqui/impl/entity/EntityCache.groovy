@@ -32,12 +32,12 @@ class EntityCache {
 
     // EntityFacadeImpl getEfi() { return efi }
 
-    CacheImpl getCacheOne(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.one.${entityName}") }
-    private CacheImpl getCacheOneRa(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.one_ra.${entityName}") }
-    private CacheImpl getCacheOneBf() { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.one_bf") }
-    CacheImpl getCacheList(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.list.${entityName}") }
-    private CacheImpl getCacheListRa(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.list_ra.${entityName}") }
-    CacheImpl getCacheCount(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.${efi.tenantId}.count.${entityName}") }
+    CacheImpl getCacheOne(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.record.one.${entityName}.${efi.tenantId}") }
+    private CacheImpl getCacheOneRa(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.record.one_ra.${entityName}.${efi.tenantId}") }
+    private CacheImpl getCacheOneBf() { return efi.ecfi.getCacheFacade().getCacheImpl("entity.record.one_bf.${efi.tenantId}") }
+    CacheImpl getCacheList(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.record.list.${entityName}.${efi.tenantId}") }
+    private CacheImpl getCacheListRa(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.record.list_ra.${entityName}.${efi.tenantId}") }
+    CacheImpl getCacheCount(String entityName) { return efi.ecfi.getCacheFacade().getCacheImpl("entity.record.count.${entityName}.${efi.tenantId}") }
 
     static class EmptyRecord extends EntityValueImpl {
         EmptyRecord(EntityDefinition ed, EntityFacadeImpl efip) { super(ed, efip) }
