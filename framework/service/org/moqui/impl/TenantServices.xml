@@ -34,6 +34,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
     <service verb="setup" noun="Tenant">
         <implements service="org.moqui.impl.TenantServices.provision#Tenant"/>
+        <in-parameters>
+            <parameter name="tenantId" required="true"/>
+        </in-parameters>
         <actions>
             <!-- add TenantHostDefault record if hostName specified -->
             <if condition="hostName">
@@ -49,7 +52,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </if>
 
             <!-- switch to new Tenant -->
-            <script>if (tenantId) ec.changeTenant(tenantId)</script>
+            <script>previousTenantId = ec.getTenantId(); ec.changeTenant(tenantId)</script>
 
             <!-- load data -->
             <script>
@@ -68,8 +71,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- add to admin UserGroup -->
             <service-call name="create#moqui.security.UserGroupMember" in-map="[userId:userId, userGroupId:'ADMIN']"/>
 
-            <!-- TODO: need to switch back to previous tenantId? -->
-            <!-- TODO: change EntityDataFeed to be per-tenant! -->
+            <!-- switch back to previous tenantId -->
+            <script>ec.changeTenant(previousTenantId)</script>
         </actions>
     </service>
 
