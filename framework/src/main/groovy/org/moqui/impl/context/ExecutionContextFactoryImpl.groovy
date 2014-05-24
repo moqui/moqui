@@ -760,7 +760,8 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected Set<String> entitiesToSkipHitCount = new TreeSet(['moqui.server.ArtifactHit', 'moqui.server.ArtifactHitBin',
-            'moqui.entity.SequenceValueItem', 'moqui.security.UserAccount'])
+            'moqui.entity.SequenceValueItem', 'moqui.security.UserAccount', 'moqui.tenant.Tenant',
+            'moqui.tenant.TenantDataSource', 'moqui.tenant.TenantDataSourceXaProp'])
     void countArtifactHit(String artifactType, String artifactSubType, String artifactName, Map parameters,
                           long startTime, long endTime, Long outputSize) {
         // don't count the ones this calls
