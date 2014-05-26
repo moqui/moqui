@@ -25,6 +25,8 @@ New Features:
   nosql, and tenantcommon databases. Also changed the EXAMPLE1 tenant to
   use the tenantId as the database name, setting a pattern for other
   tenants.
+- Added basic tenant provisioning services and various multi-tenant
+  improvements and fixes to improve multi-tenant capabilities.
 
 Bug Fixes:
 
