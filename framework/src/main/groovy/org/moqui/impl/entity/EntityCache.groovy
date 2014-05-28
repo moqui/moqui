@@ -112,7 +112,7 @@ class EntityCache {
             EntityCondition pkCondition = efi.getConditionFactory().makeCondition(evb.getPrimaryKeys())
 
             // clear one cache
-            if (efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.one.${fullEntityName}")) {
+            if (efi.ecfi.getCacheFacade().cacheExists("entity.record.one.${fullEntityName}.${efi.tenantId}")) {
                 Cache entityOneCache = getCacheOne(fullEntityName)
                 Ehcache eocEhc = entityOneCache.getInternalCache()
                 // clear by PK, most common scenario
@@ -146,7 +146,7 @@ class EntityCache {
 
             // logger.warn("============= clearing list for entity ${fullEntityName}, for pkCondition [${pkCondition}] cacheExists=${efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.list.${fullEntityName}")}")
             // clear list cache, use reverse-associative Map (also a Cache)
-            if (efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.list.${fullEntityName}")) {
+            if (efi.ecfi.getCacheFacade().cacheExists("entity.record.list.${fullEntityName}.${efi.tenantId}")) {
                 // if this was a create the RA cache won't help, so go through EACH entry and see if it matches the created value
                 if (isCreate) {
                     CacheImpl entityListCache = getCacheList(fullEntityName)
@@ -185,7 +185,7 @@ class EntityCache {
             }
 
             // clear count cache (no RA because we only have a count to work with, just match by condition)
-            if (efi.ecfi.getCacheFacade().cacheExists("entity.${efi.tenantId}.count.${fullEntityName}")) {
+            if (efi.ecfi.getCacheFacade().cacheExists("entity.record.count.${fullEntityName}.${efi.tenantId}")) {
                 CacheImpl entityCountCache = getCacheCount(fullEntityName)
                 Ehcache ecEhc = entityCountCache.getInternalCache()
                 List<EntityCondition> ecEhcKeys = (List<EntityCondition>) ecEhc.getKeys()
