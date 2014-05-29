@@ -463,7 +463,7 @@ class ServiceDefinition {
                     case "java.math.BigDecimal":
                     case "BigInteger":
                     case "java.math.BigInteger":
-                        BigDecimal bdVal = eci.l10n.parseNumber(parameterValue, format)
+                        BigDecimal bdVal = eci.l10n.parseNumber((String) parameterValue, format)
                         if (bdVal == null) {
                             eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         } else {
@@ -472,21 +472,21 @@ class ServiceDefinition {
                         break
                     case "Time":
                     case "java.sql.Time":
-                        converted = eci.l10n.parseTime(parameterValue, format)
+                        converted = eci.l10n.parseTime((String) parameterValue, format)
                         if (converted == null) {
                             eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
                     case "Date":
                     case "java.sql.Date":
-                        converted = eci.l10n.parseDate(parameterValue, format)
+                        converted = eci.l10n.parseDate((String) parameterValue, format)
                         if (converted == null) {
                             eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
                         break
                     case "Timestamp":
                     case "java.sql.Timestamp":
-                        converted = eci.l10n.parseTimestamp(parameterValue, format)
+                        converted = eci.l10n.parseTimestamp((String) parameterValue, format)
                         if (converted == null) {
                             eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Value [${parameterValue}] could not be converted to a ${type}" + (format ? " using format [${format}]": ""), null)
                         }
