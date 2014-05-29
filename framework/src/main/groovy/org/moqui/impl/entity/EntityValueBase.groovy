@@ -232,7 +232,7 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
-    Timestamp getTimestamp(String name) { return (Timestamp) this.get(name).asType(Timestamp.class) }
+    Timestamp getTimestamp(String name) { return (Timestamp) this.get(name)?.asType(Timestamp.class) }
 
     @Override
     Time getTime(String name) { return this.get(name) as Time }
@@ -390,7 +390,7 @@ abstract class EntityValueBase implements EntityValue {
         if (!ed.needsAuditLog()) return
 
         ExecutionContext ec = getEntityFacadeImpl().getEcfi().getExecutionContext()
-        Timestamp nowTimestamp = ec.user.nowTimestamp
+        Timestamp nowTimestamp = ec.getUser().getNowTimestamp()
 
         Map<String, Object> pksValueMap = new HashMap<String, Object>()
         addThreeFieldPkValues(pksValueMap)
@@ -414,7 +414,7 @@ abstract class EntityValueBase implements EntityValue {
 
                 Map<String, Object> parms = (Map<String, Object>) [changedEntityName:getEntityName(),
                         changedFieldName:fieldName, newValueText:(value as String), changedDate:nowTimestamp,
-                        changedByUserId:ec.user.userId, changedInVisitId:ec.user.visitId]
+                        changedByUserId:ec.getUser().getUserId(), changedInVisitId:ec.getUser().getVisitId()]
                 parms.oldValueText = oldValue
                 parms.putAll(pksValueMap)
 
