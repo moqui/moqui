@@ -154,6 +154,7 @@ public class L10nFacadeImpl implements L10nFacade {
 
     @Override
     Timestamp parseTimestamp(String input, String format) {
+        if (!input) return null
         Locale curLocale = getLocale()
         TimeZone curTz = getTimeZone()
         if (!format) format = "yyyy-MM-dd HH:mm:ss.SSS z"
@@ -161,13 +162,14 @@ public class L10nFacadeImpl implements L10nFacade {
         // try a couple of other format strings
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss.SSS", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ss", curLocale, curTz)
+        // NOTE: JsonBuilder seems to be using this format, see GitHub issue #33
+        if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd'T'HH:mm:ssZ", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm:ss", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd HH:mm", curLocale, curTz)
         if (cal == null) cal = calendarValidator.validate(input, "yyyy-MM-dd", curLocale, curTz)
+
         // logger.warn("=========== input=${input}, cal=${cal}, long=${cal?.getTimeInMillis()}, locale=${curLocale}, timeZone=${curTz}, System=${System.currentTimeMillis()}")
         if (cal != null) return new Timestamp(cal.getTimeInMillis())
-        // ISO 8601 parsing using JAXB DatatypeConverter.parseDateTime(); on Java 7 can use "X" instead of "Z" in format string, but not in Java 6
-        if (cal == null) cal = DatatypeConverter.parseDateTime(input)
 
         // try interpreting the String as a long
         try {
@@ -175,6 +177,15 @@ public class L10nFacadeImpl implements L10nFacade {
             return new Timestamp(lng)
         } catch (NumberFormatException e) {
             if (logger.isTraceEnabled()) logger.trace("Ignoring NumberFormatException for Timestamp parse: ${e.toString()}")
+        }
+
+        try {
+            // NOTE: do this AFTER the long parse because long numbers are interpreted really weird by this
+            // ISO 8601 parsing using JAXB DatatypeConverter.parseDateTime(); on Java 7 can use "X" instead of "Z" in format string, but not in Java 6
+            cal = DatatypeConverter.parseDateTime(input)
+            if (cal != null) return new Timestamp(cal.getTimeInMillis())
+        } catch (Exception e) {
+            if (logger.isTraceEnabled()) logger.trace("Ignoring Exception for DatatypeConverter Timestamp parse: ${e.toString()}")
         }
 
         return null
