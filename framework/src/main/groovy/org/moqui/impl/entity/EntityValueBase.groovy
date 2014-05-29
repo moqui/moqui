@@ -420,7 +420,8 @@ abstract class EntityValueBase implements EntityValue {
 
                 // logger.warn("TOREMOVE: in handleAuditLog for [${ed.entityName}.${fieldName}] value=[${value}], oldValue=[${oldValue}], oldValues=[${oldValues}]", new Exception("AuditLog location"))
 
-                getEntityFacadeImpl().getEcfi().getServiceFacade().async().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
+                // NOTE: if this is changed to async the time zone on nowTimestamp gets messed up (user's time zone lost)
+                getEntityFacadeImpl().getEcfi().getServiceFacade().sync().name("create#moqui.entity.EntityAuditLog").parameters(parms).call()
             }
         }
     }
