@@ -232,13 +232,13 @@ class EntityQueryBuilder {
                 break
             case 2:
                 try {
-                    value = rs.getTimestamp(index, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly())
+                    value = rs.getTimestamp(index, efi.getCalendarForTzLc())
                 } catch (SQLException e) {
                     if (logger.isTraceEnabled()) logger.trace("Ignoring SQLException for getTimestamp(), leaving null (found this in MySQL with a date/time value of [0000-00-00 00:00:00]): ${e.toString()}")
                 }
                 break
-            case 3: value = rs.getTime(index, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()); break
-            case 4: value = rs.getDate(index, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()); break
+            case 3: value = rs.getTime(index, efi.getCalendarForTzLc()); break
+            case 4: value = rs.getDate(index, efi.getCalendarForTzLc()); break
             case 5: int intValue = rs.getInt(index); if (!rs.wasNull()) value = intValue; break
             case 6: long longValue = rs.getLong(index); if (!rs.wasNull()) value = longValue; break
             case 7: float floatValue = rs.getFloat(index); if (!rs.wasNull()) value = floatValue; break
@@ -410,18 +410,20 @@ class EntityQueryBuilder {
             } else {
                 switch (typeValue) {
                 case 1: if (value != null) { ps.setString(index, value as String) } else { ps.setNull(index, Types.VARCHAR) }; break
-                case 2: if (value != null) { ps.setTimestamp(index, value as Timestamp, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()) }
-                else { ps.setNull(index, Types.TIMESTAMP) }; break
+                case 2:
+                    if (value != null) { ps.setTimestamp(index, value as Timestamp, efi.getCalendarForTzLc()) }
+                    else { ps.setNull(index, Types.TIMESTAMP) }
+                    break
                 case 3:
                     Time tm = value as Time
                     // logger.warn("=================== setting time tm=${tm} tm long=${tm.getTime()}, cal=${cal}")
-                    if (value != null) { ps.setTime(index, tm, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()) }
+                    if (value != null) { ps.setTime(index, tm, efi.getCalendarForTzLc()) }
                     else { ps.setNull(index, Types.TIME) }
                     break
                 case 4:
                     java.sql.Date dt = (java.sql.Date) value
                     // logger.warn("=================== setting date dt=${dt} dt long=${dt.getTime()}, cal=${cal}")
-                    if (value != null) { ps.setDate(index, dt, (Calendar) efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()) }
+                    if (value != null) { ps.setDate(index, dt, efi.getCalendarForTzLc()) }
                     else { ps.setNull(index, Types.DATE) }
                     break
                 case 5: if (value != null) { ps.setInt(index, (Integer) value) } else { ps.setNull(index, Types.NUMERIC) }; break

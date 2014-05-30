@@ -27,6 +27,13 @@ New Features:
   tenants.
 - Added basic tenant provisioning services and various multi-tenant
   improvements and fixes to improve multi-tenant capabilities.
+- Changed the way database time zone and locale work so they are the same
+  for all users, either configured (@database-time-zone and
+  @database-locale attributes on the moqui-conf.entity-facade element) or
+  the Java system defaults. This is instead of using the user's time zone
+  and locale because that is inconsistent and may get undesired values
+  back, ie getting a different Timestamp object back because of a different
+  user time zone.
 
 Bug Fixes:
 

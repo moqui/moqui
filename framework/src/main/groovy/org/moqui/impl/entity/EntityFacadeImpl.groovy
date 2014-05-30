@@ -56,7 +56,9 @@ class EntityFacadeImpl implements EntityFacade {
 
     protected final Map<String, List<EntityEcaRule>> eecaRulesByEntityName = new HashMap()
     protected final Map<String, String> entityGroupNameMap = new HashMap()
-    protected String defaultGroupName = null
+    protected final String defaultGroupName
+    protected final TimeZone databaseTimeZone
+    protected final Locale databaseLocale
 
     // this will be used to temporarily cache root Node objects of entity XML files, used when loading a bunch at once,
     //     should be null otherwise to prevent its use
@@ -72,6 +74,24 @@ class EntityFacadeImpl implements EntityFacade {
         this.tenantId = tenantId ?: "DEFAULT"
         this.entityConditionFactory = new EntityConditionFactoryImpl(this)
         this.defaultGroupName = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@default-group-name"
+
+        TimeZone theTimeZone = null
+        if (this.ecfi.getConfXmlRoot()."entity-facade"[0]."@database-time-zone") {
+            try {
+                theTimeZone = TimeZone.getTimeZone(this.ecfi.getConfXmlRoot()."entity-facade"[0]."@database-time-zone")
+            } catch (Exception e) { /* do nothing */ }
+        }
+        this.databaseTimeZone = theTimeZone ?: TimeZone.getDefault()
+        Locale theLocale = null
+        if (this.ecfi.getConfXmlRoot()."entity-facade"[0]."@database-locale") {
+            try {
+                String localeStr = this.ecfi.getConfXmlRoot()."entity-facade"[0]."@database-locale"
+                if (localeStr) theLocale = localeStr.contains("_") ?
+                        new Locale(localeStr.substring(0, localeStr.indexOf("_")), localeStr.substring(localeStr.indexOf("_")+1).toUpperCase()) :
+                        new Locale(localeStr)
+            } catch (Exception e) { /* do nothing */ }
+        }
+        this.databaseLocale = theLocale ?: Locale.getDefault()
 
         // init entity meta-data
         entityDefinitionCache = ecfi.getCacheFacade().getCache("entity.definition")
@@ -95,6 +115,14 @@ class EntityFacadeImpl implements EntityFacade {
     EntityDataFeed getEntityDataFeed() { return entityDataFeed }
     EntityDataDocument getEntityDataDocument() { return entityDataDocument }
     String getDefaultGroupName() { return defaultGroupName }
+
+    TimeZone getDatabaseTimeZone() { return databaseTimeZone }
+    Locale getDatabaseLocale() { return databaseLocale }
+    Calendar getCalendarForTzLc() {
+        // the OLD approach using user's TimeZone/Locale, bad idea because user may change for same record, getting different value, etc
+        // return efi.getEcfi().getExecutionContext().getUser().getCalendarForTzLcOnly()
+        return Calendar.getInstance(getDatabaseTimeZone(), getDatabaseLocale())
+    }
 
     void checkInitDatasourceTables() {
         // if startup-add-missing=true check tables now

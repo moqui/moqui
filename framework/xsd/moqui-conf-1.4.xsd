@@ -404,6 +404,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="distributed-cache-clear-enabled" default="false" type="boolean"/>
             <xs:attribute name="sequenced-id-prefix" type="xs:string"/>
             <xs:attribute name="default-group-name" type="xs:string"/>
+            <xs:attribute name="database-time-zone" type="xs:string"/>
+            <xs:attribute name="database-locale" type="xs:string"/>
             <xs:attribute name="crypt-pass" type="xs:string"/>
             <xs:attribute name="crypt-salt" type="xs:string"/>
             <xs:attribute name="crypt-iter" type="xs:string"/>
