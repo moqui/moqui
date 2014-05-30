@@ -192,6 +192,18 @@ class ScreenDefinition {
         return subscreensItemsSorted = newList
     }
 
+    List<SubscreensItem> getMenuSubscreensItems() {
+        List<SubscreensItem> allItems = getSubscreensItemsSorted()
+        List<SubscreensItem> filteredList = new ArrayList(allItems.size())
+
+        for (SubscreensItem si in allItems) {
+            if (!si.getMenuInclude()) continue
+            filteredList.add(si)
+        }
+
+        return filteredList
+    }
+
     ScreenSection getRootSection() { return rootSection }
     void render(ScreenRenderImpl sri, boolean isTargetScreen) {
         // NOTE: don't require authz if the screen doesn't require auth

@@ -31,30 +31,30 @@ This Work includes contributions authored by David E. Jones, not as a
         <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
-            <#-- <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
+            <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo?exists && urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
-                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                         <#if urlInfo.isPermitted()>
                             <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
-                    </#if></#list>
+                    </#list>
                 </ul>
             </li>
             <#--
             <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
                 <ul>
-                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                         <#if urlInfo.isPermitted()>
                             <li class="<#if urlInfo.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
-                    </#if></#list>
+                    </#list>
                 </ul>
             </li>
             -->
@@ -71,12 +71,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <#if displayMenu!>
         <div class="ui-tabs ui-tabs-collapsible">
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
-                <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                     <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                     <#if urlInfo.isPermitted()>
                         <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
                     </#if>
-                </#if></#list>
+                </#list>
             </ul>
         </div>
         </#if>
@@ -106,30 +106,30 @@ This Work includes contributions authored by David E. Jones, not as a
         <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
-            <#-- <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem>
+            <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.inCurrentScreenPath><#assign currentItemName = ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)></#if>
             </#list> -->
             <li id="${menuId}" class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></a>
                 <ul class="dropdown-menu">
-                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                         <#if urlInfo.isPermitted()>
                             <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
-                    </#if></#list>
+                    </#list>
                 </ul>
             </li>
             <#--
             <li><a href="${menuUrlInfo.minimalPathUrlWithParams}">${menuTitle}<#-- very usable without this: <#if currentItemName?has_content> (${currentItemName})</#if> - -></a>
                 <ul>
-                    <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                    <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                         <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                         <#if urlInfo.isPermitted()>
                             <li class="<#if urlInfo.inCurrentScreenPath>ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                         </#if>
-                    </#if></#list>
+                    </#list>
                 </ul>
             </li>
             -->
@@ -151,7 +151,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs ui-tabs-collapsible">
         <#if displayMenu!>
             <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
-            <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+            <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.isPermitted()>
                     <#if dynamic>
@@ -163,7 +163,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </#if>
                     <li class="ui-state-default ui-corner-top<#if urlInfo.disableLink> ui-state-disabled<#elseif urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>"><span>${subscreensItem.menuTitle}</span></a></li>
                 </#if>
-            </#if></#list>
+            </#list>
             </ul>
         </#if>
         </div>

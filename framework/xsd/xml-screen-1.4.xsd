@@ -472,10 +472,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="menu-include" type="boolean" default="true"/>
             <xs:attribute name="disable-when" type="xs:positiveInteger">
-                <xs:annotation><xs:documentation>
-                    This condition is run the subscreens menu is rendered to see if the item is available
-                    (otherwise the button/link/etc is disabled).
-                </xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>This condition is run the subscreens menu is rendered to see if the
+                    item is available (otherwise the button/link/etc is disabled).</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>

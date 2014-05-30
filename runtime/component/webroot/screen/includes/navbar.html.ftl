@@ -59,12 +59,12 @@
             <li class='dropdown'>
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">${menuTitle}<b class="caret"></b></a>
                 <ul class="dropdown-menu">
-                <#list sri.getActiveScreenDef().getSubscreensItemsSorted() as subscreensItem><#if subscreensItem.menuInclude>
+                <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                     <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                     <#if urlInfo.isPermitted()>
                         <li class="<#if urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></li>
                     </#if>
-                </#if></#list>
+                </#list>
                 </ul>
             </li>
             -->
