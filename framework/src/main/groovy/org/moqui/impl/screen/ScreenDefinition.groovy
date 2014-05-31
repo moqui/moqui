@@ -59,9 +59,8 @@ class ScreenDefinition {
         for (Node parameterNode in screenNode."parameter")
             parameterByName.put((String) parameterNode."@name", new ParameterItem(parameterNode, location))
         // prep always-actions
-        if (screenNode."always-actions") {
+        if (screenNode."always-actions")
             alwaysActions = new XmlAction(sfi.ecfi, (Node) screenNode."always-actions"[0], location + ".always_actions")
-        }
         // transition
         for (Node transitionNode in screenNode."transition") {
             TransitionItem ti = new TransitionItem(transitionNode, this)
@@ -70,9 +69,8 @@ class ScreenDefinition {
         // subscreens
         populateSubscreens()
         // prep pre-actions
-        if (screenNode."pre-actions") {
+        if (screenNode."pre-actions")
             preActions = new XmlAction(sfi.ecfi, (Node) screenNode."pre-actions"[0], location + ".pre_actions")
-        }
 
         // get the root section
         rootSection = new ScreenSection(sfi.ecfi, screenNode, location + ".screen")
@@ -138,8 +136,8 @@ class ScreenDefinition {
         // override dir structure and subscreens-item elements with moqui.screen.SubscreensItem entity
         EntityFind subscreensItemFind = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
                 .condition([screenLocation:location])
-        subscreensItemFind.condition("userGroupId", EntityCondition.IN,
-                sfi.ecfi.executionContext.user.userGroupIdSet)
+        // NOTE: this filter should NOT be done here, causes subscreen items to be filtered by first user that renders the screen, not by current user!
+        // subscreensItemFind.condition("userGroupId", EntityCondition.IN, sfi.ecfi.executionContext.user.userGroupIdSet)
         EntityList subscreensItemList = subscreensItemFind.useCache(true).list()
         for (EntityValue subscreensItem in subscreensItemList) {
             SubscreensItem si = new SubscreensItem(subscreensItem)
@@ -197,7 +195,11 @@ class ScreenDefinition {
         List<SubscreensItem> filteredList = new ArrayList(allItems.size())
 
         for (SubscreensItem si in allItems) {
+            // check the menu include flag
             if (!si.getMenuInclude()) continue
+            // if the subscreens item is limited to a UserGroup make sure user is in that group
+            if (si.getUserGroupId() && !(si.getUserGroupId() in sfi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet())) continue
+            // made it through the checks? add it in...
             filteredList.add(si)
         }
 
@@ -510,6 +512,7 @@ class ScreenDefinition {
         protected int menuIndex
         protected boolean menuInclude
         protected Class disableWhenGroovy = null
+        protected String userGroupId = null
 
         SubscreensItem(String name, String location, GPathResult screen) {
             this.name = name
@@ -536,6 +539,7 @@ class ScreenDefinition {
             menuTitle = subscreensItem.menuTitle ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
             menuIndex = (subscreensItem.menuIndex ?: 5) as int
             menuInclude = (subscreensItem.menuInclude == "Y")
+            userGroupId = subscreensItem.userGroupId
         }
 
         String getName() { return name }
@@ -547,6 +551,7 @@ class ScreenDefinition {
             if (!disableWhenGroovy) return false
             return InvokerHelper.createScript(disableWhenGroovy, new ContextBinding(ec.context)).run() as boolean
         }
+        String getUserGroupId() { return userGroupId }
     }
 
     static class SubscreensItemComparator implements Comparator<SubscreensItem> {

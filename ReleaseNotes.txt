@@ -59,6 +59,9 @@ Bug Fixes:
   tenant they were initiated in instead of always in the DEFAULT tenant
 - Fixed issue with setBlob and the Postgres JDBC driver (GitHub issue #28),
   similar to pull request #29
+- Fixed issue where SubscreensItem records with a userGroupId were filtered
+  for the user active when the screen is first loaded as opposed to the
+  user active each time the screen is rendered
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014
