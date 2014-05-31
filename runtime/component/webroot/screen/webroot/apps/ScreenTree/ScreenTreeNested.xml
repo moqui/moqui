@@ -28,8 +28,8 @@ This Work includes contributions authored by David E. Jones, not as a
                 </actions>
                 <widgets>
                     <section name="ScreenItemRender">
-                        <condition><expression>currentScreenDef != null &amp;&amp; !currentScreenDef?.getParameterMap()
-                            &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
+                        <condition><expression>currentScreenDef != null &amp;&amp;
+                            !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
                         <widgets>
                             <link url="${currentUrlInfo.url}" link-type="anchor" url-type="plain"
                                     text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}"/>
