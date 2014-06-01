@@ -38,6 +38,7 @@ class ScreenDefinition {
     protected Map<String, TransitionItem> transitionByName = new HashMap()
     protected Map<String, SubscreensItem> subscreensByName = new HashMap()
     protected List<SubscreensItem> subscreensItemsSorted = null
+    protected Set<String> tenantsAllowed = null
 
     protected XmlAction alwaysActions = null
     protected XmlAction preActions = null
@@ -68,6 +69,12 @@ class ScreenDefinition {
         }
         // subscreens
         populateSubscreens()
+
+        // tenants-allowed
+        if (screenNode."@tenants-allowed") {
+            tenantsAllowed = new HashSet(Arrays.asList(((String) screenNode."@tenants-allowed").split(",")))
+        }
+
         // prep pre-actions
         if (screenNode."pre-actions")
             preActions = new XmlAction(sfi.ecfi, (Node) screenNode."pre-actions"[0], location + ".pre_actions")
@@ -147,10 +154,9 @@ class ScreenDefinition {
     }
 
     Node getScreenNode() { return screenNode }
-
     Node getWebSettingsNode() { return screenNode."web-settings"[0] }
-
     String getLocation() { return location }
+    Set<String> getTenantsAllowed() { return tenantsAllowed }
 
     String getScreenName() {
         String filename = location.contains("/") ? location.substring(location.lastIndexOf("/")+1) : location

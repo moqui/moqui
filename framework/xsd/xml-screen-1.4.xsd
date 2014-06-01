@@ -113,6 +113,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     Default is false and an exception will be thrown if there is extra path that does not match a
                     subscreen, a transition, or content below the screen.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="tenants-allowed" type="xs:string">
+                <xs:annotation><xs:documentation>Comma-separated set of Tenant IDs allowed to use this screen. If empty
+                    (default) all tenants can use the screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="macro-template">

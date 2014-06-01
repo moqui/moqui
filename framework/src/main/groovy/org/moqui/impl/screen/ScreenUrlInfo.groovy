@@ -123,6 +123,10 @@ class ScreenUrlInfo {
 
             boolean isLast = (index == screenPathDefList.size())
             Node screenNode = screenDef.getScreenNode()
+
+            // if screen is limited to certain tenants, and current tenant is not in the Set, it is not permitted
+            if (screenDef.getTenantsAllowed() && !screenDef.getTenantsAllowed().contains(sri.getEc().getTenantId())) return false
+
             if (!((ArtifactExecutionFacadeImpl) sri.getEc().getArtifactExecution()).isPermitted(username, aeii, lastAeii,
                     isLast ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false,
                     false, sri.getEc().getUser().getNowTimestamp())) {
