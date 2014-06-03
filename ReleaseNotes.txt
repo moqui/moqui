@@ -34,6 +34,9 @@ New Features:
   and locale because that is inconsistent and may get undesired values
   back, ie getting a different Timestamp object back because of a different
   user time zone.
+- Added screen.@tenants-allowed attribute to restrict which tenant(s) a
+  screen may be used in. The tools application is now restricted to the
+  DEFAULT tenant using this attribute in Tools.xml.
 
 Bug Fixes:
 
