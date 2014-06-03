@@ -12,6 +12,7 @@
 package org.moqui.impl.screen
 
 import freemarker.template.Template
+import org.moqui.context.ArtifactAuthorizationException
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -485,6 +486,9 @@ class ScreenRenderImpl implements ScreenRender {
         ec.artifactExecution.push(new ArtifactExecutionInfoImpl(sd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"),
                 !screenDefIterator.hasNext() ? (!screenNode."@require-authentication" || screenNode."@require-authentication" == "true") : false)
 
+        if (sd.getTenantsAllowed() && !sd.getTenantsAllowed().contains(ec.getTenantId()))
+            throw new ArtifactAuthorizationException("The screen ${sd.getScreenName()} is not available to tenant [${ec.getTenantId()}]")
+
         boolean loggedInAnonymous = false
         if (screenNode."@require-authentication" == "anonymous-all") {
             ec.artifactExecution.setAnonymousAuthorizedAll()
@@ -513,7 +517,9 @@ class ScreenRenderImpl implements ScreenRender {
 
             // run always-actions for all screens in path
             boolean hasAlwaysActions = false
-            for (ScreenDefinition sd in screenUrlInfo.screenPathDefList) if (sd.alwaysActions != null) { hasAlwaysActions = true; break }
+            for (ScreenDefinition sd in screenUrlInfo.screenPathDefList) if (sd.alwaysActions != null) {
+                hasAlwaysActions = true; break
+            }
             if (hasAlwaysActions) {
                 Iterator<ScreenDefinition> screenDefIterator = screenUrlInfo.screenPathDefList.iterator()
                 recursiveRunActions(screenDefIterator, true, false)
@@ -532,6 +538,8 @@ class ScreenRenderImpl implements ScreenRender {
             if (screenUrlInfo.renderPathDifference > 0) {
                 for (int i = 0; i < screenUrlInfo.renderPathDifference; i++) {
                     ScreenDefinition permSd = screenUrlInfo.screenPathDefList.get(i)
+                    if (permSd.getTenantsAllowed() && !permSd.getTenantsAllowed().contains(ec.getTenantId()))
+                        throw new ArtifactAuthorizationException("The screen ${permSd.getScreenName()} is not available to tenant [${ec.getTenantId()}]")
                     ec.artifactExecution.push(new ArtifactExecutionInfoImpl(permSd.location, "AT_XML_SCREEN", "AUTHZA_VIEW"), false)
                     screensPushed++
                 }
@@ -539,7 +547,9 @@ class ScreenRenderImpl implements ScreenRender {
 
             // run pre-actions for just the screens that will be rendered
             boolean hasPreActions = false
-            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) if (sd.preActions != null) { hasPreActions = true; break }
+            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) if (sd.preActions != null) {
+                hasPreActions = true; break
+            }
             if (hasPreActions) {
                 Iterator<ScreenDefinition> screenDefIterator = screenUrlInfo.screenRenderDefList.iterator()
                 recursiveRunActions(screenDefIterator, false, true)
@@ -566,6 +576,8 @@ class ScreenRenderImpl implements ScreenRender {
             }
 
             for (int i = screensPushed; i > 0; i--) ec.artifactExecution.pop()
+        } catch (ArtifactAuthorizationException e) {
+            throw e
         } catch (Throwable t) {
             String errMsg = "Error rendering screen [${getActiveScreenDef().location}]"
             sfi.ecfi.transactionFacade.rollback(beganTransaction, errMsg, t)
