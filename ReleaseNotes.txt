@@ -2,19 +2,21 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.4.1 - TBD
+Release 1.4.1 - 07 Jun 2014 (tentative date)
 ===========================================================================
 
-Moqui Framework 1.4.1 is a minor new feature and bug fix release.
+Moqui Framework 1.4.1 is a minor new feature and bug fix release. Many of
+the new features and bug fixes are related to multi-tenant support
+including better isolation of tenants and tenant provisioning services.
 
 New Features:
 
 - Added UserGroupPreference, like UserPreference but for user groups.
-  UserFacade.getPreference() now looks for group preference if no user
+  UserFacade.getPreference() now looks for group preference when no user
   preference is found.
 - Changed Service ECA rules with @when of tx-commit or tx-rollback to
-  attach to the transaction after the service is run so that results are
-  available
+  attach to the transaction after the service is run so that results of the
+  service run are available.
 - Changed datasource configuration so that if datasources other than the
   one for the default-group-name (transactional) are not specified then
   the default-group-name one is used. There is a similar change for the
@@ -42,29 +44,29 @@ Bug Fixes:
 
 - Changed commit() to rollback if commit fails to cleanup the transaction,
   can happen for example with TransactionCache has a DB error during
-  pre-commit
+  pre-commit.
 - ArtifactHit count now skipped for UserAccount to avoid infinite recursion
-  (shows as a StackOverflow exception)
+  (shows as a StackOverflow exception).
 - EntityValue.containsKey() now returns true if there is a value for the
   key (even null), not just if it is a valid field name; this was
   inconvenient for various things, especially when treating EntityValue
-  like a Map
+  like a Map.
 - Fixed issue where Service ECA rules with @when of tx-commit or
-  tx-rollback were never run
+  tx-rollback were never run.
 - Fixed issue with primary sequenced ID where cached current bank was
   shared among tenants even though DB values were separate, now cached
-  current bank is also separate
+  current bank is also separate.
 - Fixed GitHub issue #26 where the Calendar used for setting Date/etc
   values was not valid because the cached Calendar object in UserFacadeImpl
   was set in a query before getting the UserAccount, and not reset by
-  getUserAccount() (ie calling clearPerUserValues())
+  getUserAccount() (ie calling clearPerUserValues()).
 - Changed Quartz jobs (async and scheduled service calls) to run in the
   tenant they were initiated in instead of always in the DEFAULT tenant
 - Fixed issue with setBlob and the Postgres JDBC driver (GitHub issue #28),
-  similar to pull request #29
+  similar to pull request #29.
 - Fixed issue where SubscreensItem records with a userGroupId were filtered
   for the user active when the screen is first loaded as opposed to the
-  user active each time the screen is rendered
+  user active each time the screen is rendered.
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014
