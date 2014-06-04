@@ -197,7 +197,7 @@ class EntityDataDocument {
                 String docId = pkCombinedSb.toString()
 
                 /*
-                  - _index = DataDocument.indexName
+                  - _index = tenantId + "::" + DataDocument.indexName
                   - _type = dataDocumentId
                   - _id = pk field values from primary entity, double colon separated
                   - _timestamp = document created time
@@ -210,7 +210,10 @@ class EntityDataDocument {
                     docMap = (Map<String, Object>) [_type:dataDocumentId, _id:docId]
                     docMap.put("_timestamp", efi.ecfi.getL10nFacade().formatValue(
                             thruUpdatedStamp ?: new Timestamp(System.currentTimeMillis()), "yyyy-MM-dd'T'HH:mm:ss"))
-                    if (dataDocument.indexName) docMap.put("_index", (String) dataDocument.indexName)
+                    String _index = efi.getEcfi().getExecutionContext().getTenantId()
+                    if (dataDocument.indexName) _index = _index + "::" + dataDocument.indexName
+                    docMap.put("_index", _index.toLowerCase())
+
                     // add Map for primary entity
                     Map primaryEntityMap = [:]
                     for (Map.Entry fieldTreeEntry in fieldTree.entrySet()) {
