@@ -143,7 +143,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 documentList = []
 
-                if (!indexName.contains("::")) indexName = "${ec.tenantId}::${indexName}".toLowerCase()
+                if (!indexName.contains("__")) indexName = "${ec.tenantId}__${indexName}".toLowerCase()
 
                 // get the search hits
                 SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)

@@ -39,7 +39,7 @@ New Features:
 - Added screen.@tenants-allowed attribute to restrict which tenant(s) a
   screen may be used in. The tools application is now restricted to the
   DEFAULT tenant using this attribute in Tools.xml.
-- Changed Data Document _index field to be tenantId + "::" +
+- Changed Data Document _index field to be tenantId + "__" +
   DataDocument.indexName instead of just DataDocument.indexName to use a
   separate set of indexes for each tenant.
 
