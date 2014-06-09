@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.4.1 - 07 Jun 2014 (tentative date)
+Release 1.4.1 - 11 Jun 2014 (tentative date)
 ===========================================================================
 
 Moqui Framework 1.4.1 is a minor new feature and bug fix release. Many of
