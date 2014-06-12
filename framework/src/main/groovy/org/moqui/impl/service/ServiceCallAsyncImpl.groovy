@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service
 
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.service.ServiceCallAsync
 import org.moqui.service.ServiceResultReceiver
 import org.moqui.service.ServiceResultWaiter
@@ -72,6 +73,7 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
         // TODO: how to handle maxRetry
         if (logger.traceEnabled) logger.trace("Setting up call to async service [${serviceName}] with parameters [${parameters}]")
 
+        ExecutionContextImpl eci = sfi.getEcfi().getEci()
         // Before scheduling the service check a few basic things so they show up sooner than later:
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
         if (sd == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
@@ -82,13 +84,15 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
             ServiceRunner sr = sfi.getServiceRunner(serviceType)
             if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
             // validation
-            ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
             sd.convertValidateCleanParameters(this.parameters, eci)
             // if error(s) in parameters, return now with no results
             if (eci.getMessage().hasError()) return
         }
 
-        ExecutionContextImpl eci = sfi.getEcfi().getEci()
+        // always do an authz before scheduling the job
+        eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
+                ServiceDefinition.getVerbAuthzActionId(verb)), (sd != null && sd.getAuthenticate() == "true"))
+
         parameters.authUsername = eci.getUser().getUsername()
         parameters.authTenantId = eci.getTenantId()
 
@@ -114,6 +118,9 @@ class ServiceCallAsyncImpl extends ServiceCallImpl implements ServiceCallAsync {
         }
 
         sfi.scheduler.scheduleJob(job, nowTrigger)
+
+        // we did an authz before scheduling, so pop it now
+        eci.getArtifactExecution().pop()
     }
 
     @Override

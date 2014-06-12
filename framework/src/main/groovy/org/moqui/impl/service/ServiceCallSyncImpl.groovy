@@ -151,17 +151,8 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         String tenantId = currentParameters.authTenantId
         if (userId && password) userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
 
-        // default to require the "All" authz action, and for special verbs default to something more appropriate
-        String authzAction = "AUTHZA_ALL"
-        switch (verb) {
-            case "create": authzAction = "AUTHZA_CREATE"; break
-            case "update": authzAction = "AUTHZA_UPDATE"; break
-            case "delete": authzAction = "AUTHZA_DELETE"; break
-            case "view":
-            case "find": authzAction = "AUTHZA_VIEW"; break
-        }
-        eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE", authzAction),
-                (sd != null && sd.getAuthenticate() == "true"))
+        eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
+                ServiceDefinition.getVerbAuthzActionId(verb)), (sd != null && sd.getAuthenticate() == "true"))
 
         boolean loggedInAnonymous = false
         if (sd != null && sd.getAuthenticate() == "anonymous-all") {

@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.service
 
+import org.moqui.impl.context.ArtifactExecutionInfoImpl
 import org.moqui.service.ServiceCallSchedule
 // NOTE: IDEs may say this import isn't necessary since it is from an implemented interface, but compiler blows up without it
 import org.moqui.service.ServiceCall.TimeUnit
@@ -87,6 +88,8 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
     void call() {
         // TODO maxRetry: any way to set and then track the number of retries?
 
+        ExecutionContextImpl eci = sfi.getEcfi().getEci()
+
         // Before scheduling the service check a few basic things so they show up sooner than later:
         ServiceDefinition sd = sfi.getServiceDefinition(getServiceName())
         if (sd == null && !isEntityAutoPattern()) throw new IllegalArgumentException("Could not find service with name [${getServiceName()}]")
@@ -97,13 +100,15 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
             ServiceRunner sr = sfi.getServiceRunner(serviceType)
             if (sr == null) throw new IllegalArgumentException("Could not find service runner for type [${serviceType}] for service [${getServiceName()}]")
             // validation
-            ExecutionContextImpl eci = (ExecutionContextImpl) sfi.ecfi.executionContext
             sd.convertValidateCleanParameters(this.parameters, eci)
             // if error(s) in parameters, return now with no results
             if (eci.getMessage().hasError()) return
         }
 
-        ExecutionContextImpl eci = sfi.getEcfi().getEci()
+        // always do an authz before scheduling the job
+        eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
+                ServiceDefinition.getVerbAuthzActionId(verb)), (sd != null && sd.getAuthenticate() == "true"))
+
         parameters.authUsername = eci.getUser().getUsername()
         parameters.authTenantId = eci.getTenantId()
 
@@ -151,5 +156,8 @@ class ServiceCallScheduleImpl extends ServiceCallImpl implements ServiceCallSche
         Trigger trigger = tb.build()
 
         sfi.scheduler.scheduleJob(job, trigger)
+
+        // we did an authz before scheduling, so pop it now
+        eci.getArtifactExecution().pop()
     }
 }

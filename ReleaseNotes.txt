@@ -42,6 +42,11 @@ New Features:
 - Changed Data Document _index field to be tenantId + "__" +
   DataDocument.indexName instead of just DataDocument.indexName to use a
   separate set of indexes for each tenant.
+- Scheduled service jobs (including async) are now authorized before the
+  job is scheduled, and when the username/userId is passed through does
+  a no password authc for that user and turns off authz for the service
+  call; this is a mechanism for handling service calls outside the main
+  flow and still maintaining security.
 
 Bug Fixes:
 

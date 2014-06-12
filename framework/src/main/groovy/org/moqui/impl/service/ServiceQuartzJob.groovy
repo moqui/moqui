@@ -38,16 +38,28 @@ class ServiceQuartzJob implements Job {
             String userId = parameters.authUserAccount?.userId ?: parameters.authUsername
             String password = parameters.authUserAccount?.currentPassword ?: parameters.authPassword
             String tenantId = parameters.authTenantId
-            // TODO: somehow run as user even if no password passed in, just for the special case of persisted jobs?
+
+            boolean needsAuthzEnable = false
             if (userId && password) {
                 ec.getUser().loginUser(userId, password, tenantId)
+            } else if (userId) {
+                // debatable if this is the best idea, introduces a security hole with control over job scheduling,
+                //     but that is true in general for execution of server-side code, there are various ways to get
+                //     around authc that are just less convenient
+                ec.getUser().internalLoginUser(userId, tenantId)
+                // authz check will be done when job is scheduled for this sort of case, so don't check authz here
+                needsAuthzEnable = !ec.getArtifactExecution().disableAuthz()
             } else if (tenantId) {
                 ec.changeTenant(tenantId)
             }
 
             // logger.warn("=========== running quartz job for ${serviceName}, parameter tenantId=${tenantId}, active tenantId=${ec.getTenantId()}, parameters: ${parameters}")
 
-            ec.service.sync().name(serviceName).parameters(parameters).call()
+            try {
+                ec.service.sync().name(serviceName).parameters(parameters).call()
+            } finally {
+                if (needsAuthzEnable) ec.getArtifactExecution().enableAuthz()
+            }
         } catch (Throwable t) {
             ec.message.addError(t.message)
             Throwable parent = t.cause
