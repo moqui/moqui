@@ -428,6 +428,33 @@ class UserFacadeImpl implements UserFacade {
         return true
     }
 
+    /** For internal framework use only, does a login with authc. */
+    boolean internalLoginUser(String username, String tenantId) {
+        if (!username) {
+            eci.message.addError("No username specified")
+            return false
+        }
+        if (tenantId) {
+            eci.changeTenant(tenantId)
+            this.visitId = null
+            if (eci.web != null) eci.web.session.removeAttribute("moqui.visitId")
+        }
+
+        // do this first so that the rest will be done as this user
+        // just in case there is already a user authenticated push onto a stack to remember
+        usernameStack.addFirst(username)
+        internalUserAccount = null
+        internalUserGroupIdSet = null
+        internalArtifactTarpitCheckList = null
+        internalArtifactAuthzCheckList = null
+
+        // after successful login trigger the after-login actions
+        if (eci.web != null) eci.web.runAfterLoginActions()
+
+        clearPerUserValues()
+        return true
+    }
+
     @Override
     void logoutUser() {
         // before logout trigger the before-logout actions
@@ -445,7 +472,7 @@ class UserFacadeImpl implements UserFacade {
             eci.web.session.removeAttribute("moqui.tenantId")
             eci.web.session.removeAttribute("moqui.visitId")
         }
-        currentUser.logout()
+        if (currentUser != null && currentUser.isAuthenticated()) currentUser.logout()
         clearPerUserValues()
     }
 
