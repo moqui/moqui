@@ -375,6 +375,13 @@ class UserFacadeImpl implements UserFacade {
     }
 
     @Override
+    Calendar getNowCalendar() {
+        Calendar nowCal = getCalendarSafe()
+        nowCal.setTimeInMillis(getNowTimestamp().getTime())
+        return nowCal
+    }
+
+    @Override
     void setEffectiveTime(Timestamp effectiveTime) { this.effectiveTime = effectiveTime }
 
     @Override

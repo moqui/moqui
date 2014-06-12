@@ -14,10 +14,7 @@ package org.moqui.context;
 import org.moqui.entity.EntityValue;
 
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 /** For information about the user and user preferences (including locale, time zone, currency, etc). */
 public interface UserFacade {
@@ -64,6 +61,8 @@ public interface UserFacade {
      * @return Timestamp representing current date/time, or the values passed to setEffectiveTime().
      */
     Timestamp getNowTimestamp();
+    /** Get a Calendar object with user's TimeZone and Locale set, and set to same time as returned by getNowTimestamp(). */
+    Calendar getNowCalendar();
 
     /** Set an EffectiveTime for the current context which will then be returned from the getNowTimestamp() method.
      * This is used to test past and future behavior of applications.
