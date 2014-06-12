@@ -228,6 +228,19 @@ class ServiceDefinition {
         return serviceName.substring(serviceName.lastIndexOf("#") + 1)
     }
 
+    static String getVerbAuthzActionId(String theVerb) {
+        // default to require the "All" authz action, and for special verbs default to something more appropriate
+        String authzAction = "AUTHZA_ALL"
+        switch (theVerb) {
+            case "create": authzAction = "AUTHZA_CREATE"; break
+            case "update": authzAction = "AUTHZA_UPDATE"; break
+            case "delete": authzAction = "AUTHZA_DELETE"; break
+            case "view":
+            case "find": authzAction = "AUTHZA_VIEW"; break
+        }
+        return authzAction
+    }
+
     String getLocation() {
         // TODO: see if the location is an alias from the conf -> service-facade
         return serviceNode."@location"
