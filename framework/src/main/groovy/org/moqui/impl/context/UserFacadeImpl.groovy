@@ -428,6 +428,7 @@ class UserFacadeImpl implements UserFacade {
         return true
     }
 
+    @Override
     void logoutUser() {
         // before logout trigger the before-logout actions
         if (eci.web != null) eci.web.runBeforeLogoutActions()
@@ -448,6 +449,7 @@ class UserFacadeImpl implements UserFacade {
         clearPerUserValues()
     }
 
+    @Override
     boolean loginAnonymousIfNoUser() {
         if (usernameStack.size() == 0 && !loggedInAnonymous) {
             loggedInAnonymous = true
