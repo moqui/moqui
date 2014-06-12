@@ -621,11 +621,9 @@ abstract class EntityFindBase implements EntityFind {
 
             // call the abstract method
             EntityListIterator eli = this.iteratorExtended(whereCondition, havingCondition, orderByExpanded)
-            if (eli instanceof EntityListIteratorImpl) {
-                // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
-                eli.setQueryCondition(whereCondition)
-                eli.setOrderByFields(orderByExpanded)
-            }
+            // these are used by the TransactionCache methods to augment the resulting list and maintain the sort order
+            eli.setQueryCondition(whereCondition)
+            eli.setOrderByFields(orderByExpanded)
 
             Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))
             if (this.limit != null && databaseNode != null && databaseNode."@offset-style" == "cursor") {
@@ -708,10 +706,8 @@ abstract class EntityFindBase implements EntityFind {
 
         // call the abstract method
         EntityListIterator eli = iteratorExtended(whereCondition, havingCondition, orderByExpanded)
-        if (eli instanceof EntityListIteratorImpl) {
-            eli.setQueryCondition(whereCondition)
-            eli.setOrderByFields(orderByExpanded)
-        }
+        eli.setQueryCondition(whereCondition)
+        eli.setOrderByFields(orderByExpanded)
 
         // NOTE: if we are doing offset/limit with a cursor no good way to limit results, but we'll at least jump to the offset
         Node databaseNode = this.efi.getDatabaseNode(this.efi.getEntityGroupName(ed))

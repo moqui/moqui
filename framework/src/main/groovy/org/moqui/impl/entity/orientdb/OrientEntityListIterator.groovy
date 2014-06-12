@@ -15,15 +15,16 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 import org.apache.commons.collections.set.ListOrderedSet
-
+import org.moqui.entity.EntityCondition
 import org.moqui.entity.EntityException
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityListIterator
 import org.moqui.entity.EntityValue
+import org.moqui.impl.context.TransactionCache
 import org.moqui.impl.entity.EntityDefinition
 import org.moqui.impl.entity.EntityFacadeImpl
 import org.moqui.impl.entity.EntityListImpl
-
+import org.moqui.impl.entity.EntityValueBase
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -33,6 +34,8 @@ class OrientEntityListIterator implements EntityListIterator {
     protected final static Logger logger = LoggerFactory.getLogger(OrientEntityListIterator.class)
 
     protected EntityFacadeImpl efi
+    protected final TransactionCache txCache
+
     protected OrientDatasourceFactory odf
     protected ODatabaseDocumentTx oddt
     protected List<ODocument> documentList
@@ -41,6 +44,8 @@ class OrientEntityListIterator implements EntityListIterator {
 
     protected EntityDefinition entityDefinition
     protected ListOrderedSet fieldsSelected
+    protected EntityCondition queryCondition = null
+    protected List<String> orderByFields = null
 
     /** This is needed to determine if the ResultSet is empty as cheaply as possible. */
     protected boolean haveMadeValue = false
@@ -55,7 +60,11 @@ class OrientEntityListIterator implements EntityListIterator {
         this.documentList = documentList
         this.entityDefinition = entityDefinition
         this.fieldsSelected = fieldsSelected
+        this.txCache = (TransactionCache) efi.getEcfi().getTransactionFacade().getActiveSynchronization("TransactionCache")
     }
+
+    void setQueryCondition(EntityCondition ec) { this.queryCondition = ec }
+    void setOrderByFields(List<String> obf) { this.orderByFields = obf }
 
     @Override
     void close() {
@@ -151,6 +160,15 @@ class OrientEntityListIterator implements EntityListIterator {
             while ((value = this.next()) != null) {
                 list.add(value)
             }
+
+            if (txCache != null && queryCondition != null) {
+                // add all created values (updated and deleted values will be handled by the next() method
+                List<EntityValueBase> cvList = txCache.getCreatedValueList(entityDefinition.getFullEntityName(), queryCondition)
+                list.addAll(cvList)
+                // update the order if we know the order by field list
+                if (orderByFields != null && cvList) list.orderByFields(orderByFields)
+            }
+
             return list
         } finally {
             if (closeAfter) close()

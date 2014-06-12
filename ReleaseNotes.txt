@@ -70,6 +70,9 @@ Bug Fixes:
 - Fixed issue where SubscreensItem records with a userGroupId were filtered
   for the user active when the screen is first loaded as opposed to the
   user active each time the screen is rendered.
+- Fixed issue where TransactionCache was ignored for entities with no
+  table in the database, for OrientDB datasource, and in general for the
+  EntityListIteratorWrapper object.
 
 ===========================================================================
 Release 1.4.0 - 21 Mar 2014

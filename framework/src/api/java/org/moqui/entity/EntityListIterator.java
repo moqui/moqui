@@ -13,12 +13,19 @@ package org.moqui.entity;
 
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
  * Entity Cursor List Iterator for Handling Cursored Database Results
  */
 public interface EntityListIterator extends ListIterator<EntityValue>, Iterable<EntityValue> {
+
+    /** Entity Facade calls this method to tell the ELI additional information for dealing with TX cache, etc */
+    void setQueryCondition(EntityCondition ec);
+    /** Entity Facade calls this method to tell the ELI additional information for dealing with TX cache, etc */
+    void setOrderByFields(List<String> obf);
+
     /** Close the underlying ResultSet and Connection. This should ALWAYS be called when you are done with an EntityListIterator object. */
     void close() throws EntityException;
 
