@@ -483,4 +483,18 @@ class StupidUtilities {
         int getAndIncrement() { return currentValue++ }
         int getCurrentValue() { return currentValue }
     }
+
+    static int getCalendarFieldFromUomId(String uomId) {
+        switch (uomId) {
+            case "TF_ms": return Calendar.MILLISECOND
+            case "TF_s": return Calendar.SECOND
+            case "TF_min": return Calendar.MINUTE
+            case "TF_hr": return Calendar.HOUR
+            case "TF_day": return Calendar.DAY_OF_MONTH
+            case "TF_wk": return Calendar.WEEK_OF_YEAR
+            case "TF_mon": return Calendar.MONTH
+            case "TF_yr": return Calendar.YEAR
+            default: throw new IllegalArgumentException("No equivalent Calendar field found for UOM ID [${uomId}]"); break
+        }
+    }
 }
