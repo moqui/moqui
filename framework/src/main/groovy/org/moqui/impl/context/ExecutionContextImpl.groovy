@@ -199,6 +199,8 @@ class ExecutionContextImpl implements ExecutionContext {
     void changeTenant(String tenantId) {
         if (webFacade != null && webFacade.session.getAttribute("moqui.tenantAllowOverride") == "N")
             throw new IllegalArgumentException("Tenant override is not allowed for host [${webFacade.session.getAttribute("moqui.tenantHostName")?:"Unknown"}].")
+        // logout the current user, won't be valid in other tenant
+        if (userFacade != null && !userFacade.getLoggedInAnonymous()) userFacade.logoutUser()
         this.tenantId = tenantId
         if (webFacade != null) webFacade.session.setAttribute("moqui.tenantId", tenantId)
     }
