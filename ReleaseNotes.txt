@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.4.1 - 11 Jun 2014 (tentative date)
+Release 1.4.1 - 18 Jun 2014 (tentative date)
 ===========================================================================
 
 Moqui Framework 1.4.1 is a minor new feature and bug fix release. Many of
@@ -1503,6 +1503,12 @@ Features considered, but may not to be included in 1.x series
   - Service
     - Configure and run chain of services (dynamic wizard)
   - Artifact Info screens (with in/out references for all)
+
+- Email verification by random code on registration and email change
+- Login through Google, Facebook, etc
+  - OpenID, SAML, OAuth, ...
+  - https://developers.facebook.com/docs/facebook-login/login-flow-for-web/v2.0
+
 
 - Workflow that manages activity flow with screens and service attached to
   activities and tasks based on them taking users to defined or automatic
