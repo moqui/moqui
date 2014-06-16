@@ -233,7 +233,7 @@ class UserFacadeImpl implements UserFacade {
         if (localeCache != null) return localeCache
         Locale locale = null
         if (this.username) {
-            String localeStr = getUserAccount().locale
+            String localeStr = getUserAccount()?.locale
             if (localeStr) locale = localeStr.contains("_") ?
                 new Locale(localeStr.substring(0, localeStr.indexOf("_")), localeStr.substring(localeStr.indexOf("_")+1).toUpperCase()) :
                 new Locale(localeStr)
@@ -412,6 +412,7 @@ class UserFacadeImpl implements UserFacade {
             internalUserGroupIdSet = null
             internalArtifactTarpitCheckList = null
             internalArtifactAuthzCheckList = null
+            loggedInAnonymous = false
 
             // after successful login trigger the after-login actions
             if (eci.web != null) eci.web.runAfterLoginActions()
@@ -447,6 +448,7 @@ class UserFacadeImpl implements UserFacade {
         internalUserGroupIdSet = null
         internalArtifactTarpitCheckList = null
         internalArtifactAuthzCheckList = null
+        loggedInAnonymous = false
 
         // after successful login trigger the after-login actions
         if (eci.web != null) eci.web.runAfterLoginActions()
@@ -466,6 +468,7 @@ class UserFacadeImpl implements UserFacade {
             internalUserGroupIdSet = null
             internalArtifactTarpitCheckList = null
             internalArtifactAuthzCheckList = null
+            loggedInAnonymous = false
         }
 
         if (eci.web != null) {
