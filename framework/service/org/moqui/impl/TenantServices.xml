@@ -51,12 +51,25 @@ This Work includes contributions authored by David E. Jones, not as a
                 </if>
             </if>
 
-            <!-- switch to new Tenant -->
-            <script>previousTenantId = ec.getTenantId(); ec.changeTenant(tenantId)</script>
 
-            <!-- load data -->
             <script>
+                import org.moqui.context.ExecutionContext
                 import org.moqui.entity.EntityDataLoader
+
+                ExecutionContext ec = context.ec
+
+                // switch to new Tenant
+                previousTenantId = ec.tenantId
+                previousUsername = ec.user.username
+                ec.changeTenant(tenantId)
+
+                // auth anonymous user, turn off authz for data loading
+                ec.getUser().loginAnonymousIfNoUser()
+                ec.getArtifactExecution().disableAuthz()
+                ec.getArtifactExecution().push("loadData", "AT_OTHER", "AUTHZA_ALL", false)
+                ec.getArtifactExecution().setAnonymousAuthorizedAll()
+
+                // load data
                 EntityDataLoader edl = ec.getEntity().makeDataLoader()
                 if (dataLoadTypes) edl.dataTypes(new HashSet(Arrays.asList(dataLoadTypes.split(","))))
 
@@ -71,8 +84,22 @@ This Work includes contributions authored by David E. Jones, not as a
             <!-- add to admin UserGroup -->
             <service-call name="create#moqui.security.UserGroupMember" in-map="[userId:userId, userGroupId:'ADMIN']"/>
 
-            <!-- switch back to previous tenantId -->
-            <script>ec.changeTenant(previousTenantId)</script>
+            <log level="info" message="Created user [${username}] in ADMIN group."/>
+
+            <script>
+                // turn authz back on, etc
+                ec.getUser().logoutAnonymousOnly()
+                ec.getArtifactExecution().pop()
+                ec.getArtifactExecution().enableAuthz()
+
+                // login previous user, switch back to previous tenantId
+                ec.changeTenant(previousTenantId)
+                ec.user.internalLoginUser(previousUsername, previousTenantId)
+                // NOTE: for some reason when running this in the Tools app results in the Login screen showing because
+                //     session auth is lost! (internalLoginUser() doesn't auth in session because we can't through
+                //     Shiro without the password
+            </script>
+            <log level="info" message="Restored login for user [${previousUsername}] in tenant ${previousTenantId}."/>
         </actions>
     </service>
 
