@@ -95,7 +95,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 // login previous user, switch back to previous tenantId
                 ec.changeTenant(previousTenantId)
                 ec.user.internalLoginUser(previousUsername, previousTenantId)
-                // NOTE: for some reason when running this in the Tools app results in the Login screen showing because
+                // NOTE: when running this in the Tools app results in the Login screen showing because
                 //     session auth is lost! (internalLoginUser() doesn't auth in session because we can't through
                 //     Shiro without the password
             </script>
