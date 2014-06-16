@@ -61,6 +61,7 @@ class ServiceQuartzJob implements Job {
                 if (needsAuthzEnable) ec.getArtifactExecution().enableAuthz()
             }
         } catch (Throwable t) {
+            logger.error("Error calling service [${serviceName}] with parameters [${parameters}]", t)
             ec.message.addError(t.message)
             Throwable parent = t.cause
             while (parent != null) {
