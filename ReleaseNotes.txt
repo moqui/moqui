@@ -2,15 +2,18 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.4.1 - 18 Jun 2014 (tentative date)
+Release 1.4.1 - 26 Jun 2014 (tentative date)
 ===========================================================================
 
 Moqui Framework 1.4.1 is a minor new feature and bug fix release. Many of
 the new features and bug fixes are related to multi-tenant support
 including better isolation of tenants and tenant provisioning services.
+Other fixes and improvements are related to Service ECA rules, jobs, DB
+setup, and the tx cache.
 
 New Features:
 
+- Updated Apache Lucene to 4.81, ElasticSearch to 1.2.1
 - Added UserGroupPreference, like UserPreference but for user groups.
   UserFacade.getPreference() now looks for group preference when no user
   preference is found.
