@@ -18,7 +18,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters>
             <parameter name="dataFeedId" required="false"/>
             <parameter name="feedStamp" type="Timestamp" required="false"/>
-            <parameter name="getOriginalDocuments" type="Boolean" default-value="false"/>
+            <parameter name="getOriginalDocuments" type="Boolean" default="false"/>
         </in-parameters>
         <out-parameters>
             <parameter name="documentVersionList" type="List" required="true"/>
@@ -103,7 +103,7 @@ This Work includes contributions authored by David E. Jones, not as a
             The queryString format is the ElasticSearch supported one, based on the Lucene query strings which are
             partly documented here:
 
-            http://lucene.apache.org/core/4_2_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html
+            http://lucene.apache.org/core/4_6_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>
@@ -129,9 +129,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <set field="fromOffset" from="pageIndex * pageSize"/>
             <set field="sizeLimit" from="pageSize"/>
             <script>
-                /* useful docs for query API:
-                       http://www.elasticsearch.org/guide/reference/api/search/uri-request/
-                 */
+                /* useful docs for query API: http://www.elasticsearch.org/guide/reference/api/search/uri-request/ */
 
                 import org.elasticsearch.action.get.MultiGetItemResponse
                 import org.elasticsearch.action.get.MultiGetRequestBuilder
