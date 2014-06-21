@@ -55,7 +55,7 @@ dependencies {
     compile name: 'commons-csv', version: '1.0-20140122' // Apache 2.0
     compile name: 'commons-email', version: '1.2' // Apache 2.0
     compile name: 'commons-fileupload', version: '1.2.2' // Apache 2.0
-    compile name: 'commons-io', version: '2.0.1' // Apache 2.0
+    compile name: 'commons-io', version: '2.2' // Apache 2.0
     compile name: 'commons-validator', version: '1.4.0' // Apache 2.0
     compile name: 'httpclient', version: '4.3.2' // Apache 2.0
     compile name: 'httpcore', version: '4.3.1' // Apache 2.0
@@ -74,10 +74,12 @@ dependencies {
     apiCompile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.2.2' // Apache 2.0
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.2.2' // Apache 2.0
 
-    compile name: 'jackrabbit-api', version: '2.5.2' // Apache 2.0
-    compile name: 'jackrabbit-jcr-commons', version: '2.5.2' // Apache 2.0
-    compile name: 'jackrabbit-jcr2dav', version: '2.5.2' // Apache 2.0
-    compile name: 'jackrabbit-jcr-rmi', version: '2.5.2' // Apache 2.0
+    compile name: 'jackrabbit-api', version: '2.8.0' // Apache 2.0
+    compile name: 'jackrabbit-jcr-commons', version: '2.8.0' // Apache 2.0
+    compile name: 'jackrabbit-jcr2dav', version: '2.8.0' // Apache 2.0
+    compile name: 'jackrabbit-jcr-rmi', version: '2.8.0' // Apache 2.0
+    compile name: 'jackrabbit-spi', version: '2.8.0' // Apache 2.0
+    compile name: 'jackrabbit-jcr2spi', version: '2.8.0' // Apache 2.0
     compile name: 'jcr', version: '2.0' // Apache 2.0???
 
     compile name: 'jsr173_1.0_api', version: '' // ???

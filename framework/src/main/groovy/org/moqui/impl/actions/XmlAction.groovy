@@ -42,7 +42,7 @@ class XmlAction {
             groovyClass = new GroovyClassLoader(Thread.currentThread().getContextClassLoader())
                     .parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
         } catch (Throwable t) {
-            logger.error("Error parsing groovy String: ${groovyString}")
+            logger.error("Error parsing groovy String at [${location}]: ${groovyString}")
             throw t
         }
     }
@@ -59,7 +59,7 @@ class XmlAction {
         try {
             groovyClass = new GroovyClassLoader().parseClass(groovyString, StupidUtilities.cleanStringForJavaName(location))
         } catch (Throwable t) {
-            logger.error("Error parsing groovy String: ${groovyString}")
+            logger.error("Error parsing groovy String at [${location}]: ${groovyString}")
             throw t
         }
     }
@@ -85,6 +85,7 @@ class XmlAction {
         }
 
         if (logger.traceEnabled) logger.trace("xml-actions at [${location}] produced groovy script:\n${groovyText}\nFrom ftlNode:${ftlNode}")
+
         return groovyText
     }
 

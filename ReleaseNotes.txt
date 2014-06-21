@@ -13,7 +13,8 @@ setup, and the tx cache.
 
 New Features:
 
-- Updated Apache Lucene to 4.81, ElasticSearch to 1.2.1
+- Updated Apache Jackrabbit to 2.8.0, Apache Lucene to 4.8.1,
+  ElasticSearch to 1.2.1
 - Added UserGroupPreference, like UserPreference but for user groups.
   UserFacade.getPreference() now looks for group preference when no user
   preference is found.
