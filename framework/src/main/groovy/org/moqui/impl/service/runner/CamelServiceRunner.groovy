@@ -19,11 +19,13 @@ import org.moqui.impl.service.ServiceFacadeImpl
 import org.moqui.impl.service.ServiceRunner
 import org.moqui.service.ServiceException
 import org.apache.camel.Endpoint
-import org.apache.camel.Consumer
 import org.moqui.impl.service.camel.MoquiServiceConsumer
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 public class CamelServiceRunner implements ServiceRunner {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(CamelServiceRunner.class)
+    protected final static Logger logger = LoggerFactory.getLogger(CamelServiceRunner.class)
 
     protected ServiceFacadeImpl sfi
     protected ProducerTemplate producerTemplate
