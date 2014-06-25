@@ -34,9 +34,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:sequence>
             <xs:attribute name="verb" type="xs:string" use="required">
                 <xs:annotation><xs:documentation>
-                    This can be any verb, and will often be one of: create, update, delete, or find. The full name of
-                    the service will be: "${verb}${noun}". The verb is required and the noun is optional so if there is
-                    no noun the service name will be just the verb.
+                    This can be any verb, and will often be one of: create, update, store, delete, or find. The full name of
+                    the service will be: "${path}.${verb}#${noun}". The verb is required and the noun is optional so if
+                    there is no noun the service name will be just the verb.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="noun" type="xs:string" use="optional">
@@ -46,6 +46,12 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="type" default="inline">
+                <xs:annotation><xs:documentation>
+                    The service type specifies how the service is implemented. Additional types can be added by
+                    implementing the org.moqui.impl.service.ServiceRunner interface and adding an
+                    service-facade.service-type element in the Moqui Conf XML file. The default value is inline
+                    meaning the service implementation is under the service.actions element.
+                </xs:documentation></xs:annotation>
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="inline"/>
