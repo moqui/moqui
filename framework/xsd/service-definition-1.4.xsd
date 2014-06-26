@@ -115,10 +115,10 @@ This Work includes contributions authored by David E. Jones, not as a
                             transactions (if one is in place use it, if no transaction in place don't begin one).</xs:documentation></xs:annotation></xs:enumeration>
                         <xs:enumeration value="use-or-begin"><xs:annotation><xs:documentation>Use active transaction or
                             if no active transaction begin one. This is the default.</xs:documentation></xs:annotation></xs:enumeration>
-                        <xs:enumeration value="force-new"><xs:annotation><xs:documentation>Always being a new
-                            transaction, pausing the active transaction if there is one.</xs:documentation></xs:annotation></xs:enumeration>
+                        <xs:enumeration value="force-new"><xs:annotation><xs:documentation>Always begin a new
+                            transaction, pausing/resuming the active transaction if there is one.</xs:documentation></xs:annotation></xs:enumeration>
                         <xs:enumeration value="cache"><xs:annotation><xs:documentation>Like use-or-begin but with a
-                            write-through per-transaction cache in place (even if active tx in place). See notes and
+                            write-through per-transaction cache in place (works even if active TX is in place). See notes and
                             warnings in the JavaDoc comments of the TransactionCache class for details.</xs:documentation></xs:annotation></xs:enumeration>
                         <xs:enumeration value="force-cache"><xs:annotation><xs:documentation>Like force-new with a
                             transaction cache in place like the cache option.</xs:documentation></xs:annotation></xs:enumeration>
@@ -127,9 +127,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="transaction-timeout" type="xs:int">
                 <xs:annotation><xs:documentation>
-                    Defines the timeout for the transaction, in seconds.
-                    This value is only used if this service begins a transaction (either require-new, or
-                    use-or-begin and there is no other transaction already in place).
+                    The timeout for the transaction, in seconds.
+                    This value is only used if this service begins a transaction (force-new, force-cache, or
+                    use-or-begin or cache and there is no other transaction already in place).
                 </xs:documentation></xs:annotation>
             </xs:attribute>
             <!-- not supported by Atomikos/etc right now, consider for later:
@@ -155,14 +155,14 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:simpleType>
             </xs:attribute>
             <xs:attribute name="semaphore-timeout" type="xs:int" default="120">
-                <xs:annotation><xs:documentation>When waiting how long before timing out, in seconds.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>When waiting how long before timing out, in seconds. Defaults to 120s.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="semaphore-sleep" type="xs:int" default="5">
                 <xs:annotation><xs:documentation>When waiting how long to sleep between checking the semaphore, in
-                    seconds.</xs:documentation></xs:annotation>
+                    seconds. Defaults to 5s.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="semaphore-ignore" type="xs:int" default="3600">
-                <xs:annotation><xs:documentation>Ignore existing semaphores after this time, in seconds.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>Ignore existing semaphores after this time, in seconds. Defaults to 3600s (1 hour).</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -235,8 +235,12 @@ This Work includes contributions authored by David E. Jones, not as a
                         inside the element.</xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="type" type="xs:string" default="String"/>
+            <xs:attribute name="name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation></xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="type" type="xs:string" default="String">
+                <xs:annotation><xs:documentation></xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="format" type="xs:string">
                 <xs:annotation><xs:documentation>
                     Used only when the parameter is passed in as a String but the type is
