@@ -236,10 +236,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:element>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
-                <xs:annotation><xs:documentation></xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The name of the parameter, matches against the key of an entry in the
+                    parameters Map passed into or returned from the service.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="type" type="xs:string" default="String">
-                <xs:annotation><xs:documentation></xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The type of the attribute, a full Java class name or one of the common
+                    Java API classes (including String, Timestamp, Time, Date, Integer, Long, Float, Double, BigDecimal,
+                    BigInteger, Boolean, Object, Blob, Clob, Collection, List, Map, Set, Node).</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="format" type="xs:string">
                 <xs:annotation><xs:documentation>
@@ -254,15 +257,23 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>The field or expression specified will be used for the parameter if
                     no value is passed in (only used if required=false). Like default-value but is an field name or
                     expression instead of a text value. If both this and default-value are specified this will be
-                    evaluated first and only if empty will default-value be used..</xs:documentation></xs:annotation>
+                    evaluated first and only if empty will default-value be used.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="default-value" type="xs:string">
                 <xs:annotation><xs:documentation>The text value specified will be used for the parameter if no value is
                     passed in (only used if required=false). If both this and default are specified default will be
-                    evaluated first and this will only be used if default evaluates to an empty value..</xs:documentation></xs:annotation>
+                    evaluated first and this will only be used if default evaluates to an empty value.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="entity-name" type="xs:string"/>
-            <xs:attribute name="field-name" type="xs:string"/>
+            <xs:attribute name="entity-name" type="xs:string">
+                <xs:annotation><xs:documentation>Optional name of an entity with a field that this parameter is
+                    associated with.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="field-name" type="xs:string">
+                <xs:annotation><xs:documentation>Optional field name within the named entity that this parameter is
+                    associated with. Most useful for form fields defined automatically from the service parameter.
+                    This is automatically populated when parameters are defined automatically with the auto-parameters
+                    element.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attributeGroup ref="attlist.parameter-general"/>
         </xs:complexType>
     </xs:element>
@@ -273,7 +284,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:enumeration value="true"/>
                     <xs:enumeration value="false"/>
                     <xs:enumeration value="disabled">
-                        <xs:annotation><xs:documentation>Behave the same as if the parameter did not exist. Useful when
+                        <xs:annotation><xs:documentation>Behave the same as if the parameter did not exist, useful when
                             overriding a previously defined parameter.</xs:documentation></xs:annotation>
                     </xs:enumeration>
                 </xs:restriction>
@@ -342,6 +353,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <xs:element name="number-range" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate the number within the min and max range.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="min" type="xs:decimal">
                 <xs:annotation><xs:documentation>To pass number must be greater than or equal to this value.</xs:documentation></xs:annotation>
@@ -361,17 +373,23 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="number-decimal" substitutionGroup="ParameterValidations"/>
 
     <xs:element name="text-length" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the length of the text is within the min and max range.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="min" type="xs:nonNegativeInteger"/>
             <xs:attribute name="max" type="xs:nonNegativeInteger"/>
         </xs:complexType>
     </xs:element>
-    <xs:element name="text-email" substitutionGroup="ParameterValidations"/>
-    <xs:element name="text-url" substitutionGroup="ParameterValidations"/>
-    <xs:element name="text-letters" substitutionGroup="ParameterValidations"/>
-    <xs:element name="text-digits" substitutionGroup="ParameterValidations"/>
+    <xs:element name="text-email" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the text is a valid email address.</xs:documentation></xs:annotation></xs:element>
+    <xs:element name="text-url" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the text is a valid URL.</xs:documentation></xs:annotation></xs:element>
+    <xs:element name="text-letters" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the text contains only letters.</xs:documentation></xs:annotation></xs:element>
+    <xs:element name="text-digits" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the text contains only digits.</xs:documentation></xs:annotation></xs:element>
 
     <xs:element name="time-range" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the date/time is within the before and after range, using the specified format.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="after" type="xs:string"><xs:annotation><xs:documentation>Can be date/time string, or
                 "now" to compare to the current time.</xs:documentation></xs:annotation></xs:attribute>
@@ -383,6 +401,8 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
 
     <xs:element name="credit-card" substitutionGroup="ParameterValidations">
+        <xs:annotation><xs:documentation>Validate that the text is a valid credit card number using Luhn MOD-10 and if
+            specified for the given card types.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:attribute name="types" type="xs:string">
                 <xs:annotation><xs:documentation>
