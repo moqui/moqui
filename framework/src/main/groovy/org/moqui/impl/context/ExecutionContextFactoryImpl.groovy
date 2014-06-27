@@ -11,8 +11,6 @@
  */
 package org.moqui.impl.context
 
-import org.drools.decisiontable.InputType
-import org.drools.decisiontable.SpreadsheetCompiler
 import org.kie.api.KieServices
 import org.kie.api.builder.KieBuilder
 import org.kie.api.builder.Message
