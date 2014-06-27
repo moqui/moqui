@@ -41,7 +41,7 @@ public interface ServiceCallSchedule extends ServiceCall {
      */
     /* leaving this out for now, not easily supported by Quartz Scheduler: ServiceCallSchedule poolName(String poolName); */
 
-    /** Time to first run this service (in milliseconds from Java epoch).
+    /** Time to first run this service (in milliseconds from epoch).
      * @return Reference to this for convenience.
      */
     ServiceCallSchedule startTime(long startTime);
@@ -51,7 +51,7 @@ public interface ServiceCallSchedule extends ServiceCall {
      */
     ServiceCallSchedule count(int count);
 
-    /** Time that this service schedule should expire (in milliseconds from Java epoch).
+    /** Time that this service schedule should expire (in milliseconds from epoch).
      * @return Reference to this for convenience.
      */
     ServiceCallSchedule endTime(long endTime);
