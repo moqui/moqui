@@ -51,20 +51,37 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="when" use="required">
                 <xs:simpleType>
                     <xs:restriction base="xs:token">
-                        <xs:enumeration value="pre-validate"/>
-                        <xs:enumeration value="pre-auth"/>
-                        <xs:enumeration value="pre-service"/>
-                        <xs:enumeration value="post-service"/>
-                        <xs:enumeration value="post-commit"/>
+                        <xs:enumeration value="pre-auth">
+                            <xs:annotation><xs:documentation>Runs before authentication and authorization checks, but
+                                after the authUsername, authPassword and authTenantId parameters are used and specified
+                                user logged in; useful for any custom behavior related to authc or authz</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="pre-validate">
+                            <xs:annotation><xs:documentation>Runs before input parameters are validated; useful for
+                                adding or modifying parameters before validation and data type conversion</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="pre-service">
+                            <xs:annotation><xs:documentation>Runs before the service itself is run; best place for
+                                general things to be done before running the service</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="post-service">
+                            <xs:annotation><xs:documentation>Runs just after the service is run; best place for general
+                                things to be done after the service is run and independent of the transaction</xs:documentation></xs:annotation>
+                        </xs:enumeration>
+                        <xs:enumeration value="post-commit">
+                            <xs:annotation><xs:documentation>Runs just after the commit would be done, whether it is
+                                actually done or not (depending on service settings and existing TX in place, etc); to
+                                run something on the actual commit use the tx-commit option</xs:documentation></xs:annotation>
+                        </xs:enumeration>
                         <xs:enumeration value="tx-commit">
                             <xs:annotation><xs:documentation>Runs when the transaction the service is running in is
-                                successfully committed. Gets its context just before the run of the service and after
-                                the pre-service ECA rules.</xs:documentation></xs:annotation>
+                                successfully committed. Gets its data after the run of the service so will
+                                have the output/results of the service run as well as the input parameters.</xs:documentation></xs:annotation>
                         </xs:enumeration>
                         <xs:enumeration value="tx-rollback">
                             <xs:annotation><xs:documentation>Runs when the transaction the service is running in is
-                                rolled back. Gets its context just before the run of the service and after
-                                the pre-service ECA rules.</xs:documentation></xs:annotation>
+                                rolled back. Gets its data after the run of the service so will
+                                have the output/results of the service run as well as the input parameters.</xs:documentation></xs:annotation>
                         </xs:enumeration>
                     </xs:restriction>
                 </xs:simpleType>
