@@ -151,9 +151,17 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         String tenantId = currentParameters.authTenantId
         if (userId && password) userLoggedIn = eci.getUser().loginUser(userId, password, tenantId)
 
+        // pre authentication and authorization SECA rules
+        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
+
+        // push service call artifact execution, checks authz too
+        // NOTE: don't require authz if the service def doesn't authenticate
+        // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
+        //     the service on the stack)
         eci.getArtifactExecution().push(new ArtifactExecutionInfoImpl(getServiceName(), "AT_SERVICE",
                 ServiceDefinition.getVerbAuthzActionId(verb)), (sd != null && sd.getAuthenticate() == "true"))
 
+        // must be done after the artifact execution push so that AEII object to set anonymous authorized is in place
         boolean loggedInAnonymous = false
         if (sd != null && sd.getAuthenticate() == "anonymous-all") {
             eci.getArtifactExecution().setAnonymousAuthorizedAll()
@@ -162,9 +170,6 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
             eci.getArtifactExecution().setAnonymousAuthorizedView()
             loggedInAnonymous = ((UserFacadeImpl) eci.getUser()).loginAnonymousIfNoUser()
         }
-        // NOTE: don't require authz if the service def doesn't authenticate
-        // NOTE: if no sd then requiresAuthz is false, ie let the authz get handled at the entity level (but still put
-        //     the service on the stack)
 
         if (sd == null) {
             if (isEntityAutoPattern()) {
@@ -215,13 +220,6 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
         boolean suspendedTransaction = false
         Map<String, Object> result = null
         try {
-            // authentication
-            sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
-            // NOTE: auto user login done above, before first authz check
-            if (sd.getAuthenticate() == "true" && !eci.getUser().getUserId() &&
-                    !((UserFacadeImpl) eci.getUser()).getLoggedInAnonymous())
-                eci.getMessage().addError("Authentication required for service [${getServiceName()}]")
-
             // if error in auth or for other reasons, return now with no results
             if (eci.getMessage().hasError()) {
                 logger.warn("Found error(s) when checking authc for service [${getServiceName()}], so not running service. Errors: ${eci.getMessage().getErrorsString()}; the artifact stack is:\n ${eci.artifactExecution.stack}")
@@ -361,8 +359,9 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected Map<String, Object> runImplicitEntityAuto(Map<String, Object> currentParameters, ExecutionContextImpl eci) {
         // NOTE: no authentication, assume not required for this; security settings can override this and require
         //     permissions, which will require authentication
+        // done in calling method: sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
+
         sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-validate")
-        sfi.runSecaRules(getServiceName(), currentParameters, null, "pre-auth")
 
         TransactionFacade tf = sfi.getEcfi().getTransactionFacade()
         boolean suspendedTransaction = false
