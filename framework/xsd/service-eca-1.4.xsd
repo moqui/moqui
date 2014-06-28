@@ -31,11 +31,10 @@ This Work includes contributions authored by David E. Jones, not as a
             rules are a much better tool for that.
 
             When this runs the context will be whatever context the service was run in, plus the individual parameters
-            for convenience in reading the values.
-            If when is before the service itself is run there will be a context variable called "parameters" with the
-            parameters Map in it that you can modify as needed in the actions. If when is after the service itself
-            the "parameters" variable will contain the parameters and a "results" parameter will contain the results
-            that also may be modified.
+            for convenience in reading the values. If when is before the service itself is run there will be a context
+            field called parameters with the input parameters Map in it that you can modify as needed in the ECA actions.
+            If when is after the service itself the parameters field will contain the input parameters and a results
+            field will contain the output parameters (results) that also may be modified.
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
