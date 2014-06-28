@@ -68,7 +68,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="location" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>The location of the service. For scripts this is the Resource Facade
                     location of the file. For Java class methods this is the full class name. For remote services this
-                    is the URL of the remote service.</xs:documentation></xs:annotation>
+                    is the URL of the remote service. Instead of an actual location can also refer to a pre-defined
+                    location from the service-facade.service-location element in the Moqui Conf XML file. This is
+                    especially useful for remote service URLs.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="method" type="xs:string" use="optional">
                 <xs:annotation><xs:documentation>The method within the location, if applicable to the service type.</xs:documentation></xs:annotation>
