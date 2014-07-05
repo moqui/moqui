@@ -190,8 +190,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="script" substitutionGroup="CallOperations">
         <xs:annotation><xs:documentation>
             Runs the script at the specified location. You can also put a Groovy script inline under this element.
-            If a location is specified the file can be a Groovy script or an xml-actions script.
-            The script will run in the same context as the current operation.
+            If a location is specified the file can be a Groovy script, a xml-actions script, or any script setup to
+            run through the Resource Facade. The script will run in the same context as the current operation.
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:simpleContent>
@@ -608,7 +608,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="entity-find-count" substitutionGroup="EntityFindOperations">
         <xs:annotation><xs:documentation>
             Find the count of the number of records that match the given conditions.
-            Conditions follow the same structure as in the entity-find operation.
+            Conditions and other application options follow the same structure as in the entity-find operation.
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence>
@@ -880,8 +880,8 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="check-errors" substitutionGroup="ControlOperations">
-        <xs:annotation><xs:documentation>Check the ExecutionContext error message list (ec.message.errors) and if it is
-            not empty return as an error immediately.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Checks the Message Facade error message list (ec.message.errors) and if it is
+            not empty returns with an error, otherwise does nothing.</xs:documentation></xs:annotation>
     </xs:element>
     <xs:element name="return" substitutionGroup="ControlOperations">
         <xs:annotation><xs:documentation>Returns immediately.</xs:documentation></xs:annotation>
@@ -899,94 +899,17 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="assert" substitutionGroup="IfOtherOperations">
         <xs:annotation><xs:documentation>
             Each condition under the assert element will be checked and if it fails an error will be added to the given
-            error list. Note that while the definitions for the if-* operations are used, the tags should be empty
+            error list. Note that while the definitions for the if operation is used, the tags should be empty
             because of the differing semantics.
 
             This is mainly used for testing, and for writing xml-actions that are meant to be used as part of a test
-            suite.
-
-            This is mostly useful for testing because the messages are targeted at a programmer, and not really at an
-            end user.
+            suite. This is mostly useful for testing because the messages are targeted at a programmer, and not really
+            at an end user.
         </xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:group maxOccurs="unbounded" ref="IfConditions"/>
             <xs:attribute name="title" type="xs:string">
                 <xs:annotation><xs:documentation>A title that can be used in reports for testing.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-
-    <xs:element name="xml-consume" substitutionGroup="XmlOperations">
-        <xs:annotation><xs:documentation>Used to process/consume an XML document. The document can be either a text
-            file at a location or can be in a field in the current context that is either an XML text document or a
-            org.w3c.dom.Document object or even a org.w3c.dom.Element object.</xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="xml-consume-element" minOccurs="0" maxOccurs="unbounded"/>
-            </xs:sequence>
-            <xs:attribute name="location" type="xs:string"/>
-            <xs:attribute name="field" type="xs:string"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="xml-consume-element">
-        <xs:annotation><xs:documentation>
-            Process a single or list of XML elements looked up using an xpath expression relative to the current
-            element (or root element if right under the xml-consume element).
-
-            The sub-operations and xml-consume-element tags will be run for each element matching the xpath expression.
-        </xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
-                <xs:element ref="xml-consume-element" minOccurs="0" maxOccurs="unbounded"/>
-            </xs:sequence>
-            <xs:attribute name="xpath" type="xs:string"/>
-            <xs:attribute name="element" type="xs:string">
-                <xs:annotation><xs:documentation>The name of the field the element/node object will go into for the
-                    operations under this tag.This object can be treated either as a org.w3c.dom.Element or as a Map.</xs:documentation></xs:annotation>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-
-    <xs:element name="xml-produce" substitutionGroup="XmlOperations">
-        <xs:annotation><xs:documentation>Used to produce/create an XML document object. Must have at least one
-            xml-produce-element operation under it and that becomes the root element.</xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element ref="xml-produce-element" minOccurs="1" maxOccurs="unbounded"/>
-            </xs:sequence>
-            <xs:attribute name="field" type="xs:string"/>
-            <xs:attribute name="output-type" default="string">
-                <xs:annotation><xs:documentation>The type of output to produce. Either the document object created
-                    while adding elements, or that object converted to a String.</xs:documentation></xs:annotation>
-                <xs:simpleType>
-                    <xs:restriction base="xs:token">
-                        <xs:enumeration value="object"/>
-                        <xs:enumeration value="string"/>
-                    </xs:restriction>
-                </xs:simpleType>
-            </xs:attribute>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="xml-produce-element" substitutionGroup="XmlOperations">
-        <xs:annotation><xs:documentation>Create a single XML element, added to a document under the named parent
-            element field. The element created becomes the parent element for any child xml-produce-element operations
-            encountered.</xs:documentation></xs:annotation>
-        <xs:complexType>
-            <xs:sequence>
-                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
-            </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="element" type="xs:string">
-                <xs:annotation><xs:documentation>The name of the field the element/node object will go into for the
-                    operations under this tag. This object can be treated either as a org.w3c.dom.Element or as a Map
-                    to set attributes on the element.</xs:documentation></xs:annotation>
-            </xs:attribute>
-            <xs:attribute name="parent-element" type="xs:string">
-                <xs:annotation><xs:documentation>This operation is usually nested somewhere under another
-                    xml-produce-element operation and under an xml-produce operation. In those cases there will be a
-                    default parent element field that will be automatically used if this is not specified, otherwise an
-                    element field must be specified here (with an object type org.w3c.dom.Element).</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -1136,6 +1059,7 @@ This Work includes contributions authored by David E. Jones, not as a
             with character encoding, etc). When not under a condition element any xml-action operation can be nested
             under this tag, and will only be run if it evaluates to true.</xs:documentation></xs:annotation>
     </xs:element>
+
     <!-- "Other" Operations -->
     <xs:element name="log" substitutionGroup="OtherOperations">
         <xs:annotation><xs:documentation>Logs a message using Log4J.</xs:documentation></xs:annotation>
@@ -1158,4 +1082,81 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
         </xs:complexType>
     </xs:element>
+
+    <!-- XML Operations - NOT YET IMPLEMENTED! -->
+    <xs:element name="xml-consume" substitutionGroup="XmlOperations">
+        <xs:annotation><xs:documentation>Used to process/consume an XML document. The document can be either a text
+            file at a location or can be in a field in the current context that is either an XML text document or a
+            org.w3c.dom.Document object or even a org.w3c.dom.Element object.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="xml-consume-element" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="location" type="xs:string"/>
+            <xs:attribute name="field" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="xml-consume-element">
+        <xs:annotation><xs:documentation>
+            Process a single or list of XML elements looked up using an xpath expression relative to the current
+            element (or root element if right under the xml-consume element).
+
+            The sub-operations and xml-consume-element tags will be run for each element matching the xpath expression.
+        </xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+                <xs:element ref="xml-consume-element" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="xpath" type="xs:string"/>
+            <xs:attribute name="element" type="xs:string">
+                <xs:annotation><xs:documentation>The name of the field the element/node object will go into for the
+                    operations under this tag.This object can be treated either as a org.w3c.dom.Element or as a Map.</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="xml-produce" substitutionGroup="XmlOperations">
+        <xs:annotation><xs:documentation>Used to produce/create an XML document object. Must have at least one
+            xml-produce-element operation under it and that becomes the root element.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="xml-produce-element" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="field" type="xs:string"/>
+            <xs:attribute name="output-type" default="string">
+                <xs:annotation><xs:documentation>The type of output to produce. Either the document object created
+                    while adding elements, or that object converted to a String.</xs:documentation></xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:token">
+                        <xs:enumeration value="object"/>
+                        <xs:enumeration value="string"/>
+                    </xs:restriction>
+                </xs:simpleType>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="xml-produce-element" substitutionGroup="XmlOperations">
+        <xs:annotation><xs:documentation>Create a single XML element, added to a document under the named parent
+            element field. The element created becomes the parent element for any child xml-produce-element operations
+            encountered.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:group minOccurs="0" maxOccurs="unbounded" ref="AllOperations"/>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="element" type="xs:string">
+                <xs:annotation><xs:documentation>The name of the field the element/node object will go into for the
+                    operations under this tag. This object can be treated either as a org.w3c.dom.Element or as a Map
+                    to set attributes on the element.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="parent-element" type="xs:string">
+                <xs:annotation><xs:documentation>This operation is usually nested somewhere under another
+                    xml-produce-element operation and under an xml-produce operation. In those cases there will be a
+                    default parent element field that will be automatically used if this is not specified, otherwise an
+                    element field must be specified here (with an object type org.w3c.dom.Element).</xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
 </xs:schema>
