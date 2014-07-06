@@ -60,7 +60,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <section name="ExampleMenu">
             <condition><expression>example</expression></condition>
-            <widgets><link url="newExample" text="New Example" link-type="hidden-form" icon="plusthick"/></widgets>
+            <widgets><link url="newExample" text="New Example" link-type="hidden-form" icon="glyphicon glyphicon-plus"/></widgets>
         </section>
         <label text="Test/Example Links:"/>
         <link url="edit" text="Edit" link-type="anchor"/>
