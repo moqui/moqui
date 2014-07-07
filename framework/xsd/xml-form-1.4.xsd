@@ -597,7 +597,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="encode" default="true" type="boolean">
                 <xs:annotation><xs:documentation>
-                    If true text will be encoded so that it does not interfere with markup of the target output.
+                    If true the text will be encoded so that it does not interfere with markup of the target output.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
@@ -608,8 +608,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:attribute name="entity-name" type="xs:string" use="required"/>
             <xs:attribute name="key-field-name" type="xs:string"/>
-            <xs:attribute name="text" type="xs:string" default="${description}"/>
             <xs:attribute name="use-cache" default="true" type="boolean"/>
+            <xs:attribute name="text" type="xs:string" default="${description}"/>
             <xs:attribute name="also-hidden" default="true" type="boolean"/>
             <xs:attribute name="encode" default="true" type="boolean">
                 <xs:annotation><xs:documentation>
