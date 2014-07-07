@@ -61,13 +61,24 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:choice>
                 <xs:element minOccurs="0" ref="field-layout"/>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="required"/>
+            <xs:attribute name="name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the form. Used to reference it along with the XML Screen
+                    file. For HTML output this is the form name, and for other output may also be used to identify the
+                    section of the output corresponding to the form.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="extends" type="xs:string">
                 <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
-                    extend. If there is no location is a form in the current screen.</xs:documentation></xs:annotation>
+                    extend. If there is no location it is treated as a form name in the current screen.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="transition" type="xs:string"/>
-            <xs:attribute name="map" type="xs:string" default="fieldValues"/>
+            <xs:attribute name="transition" type="xs:string">
+                <xs:annotation><xs:documentation>The in the current screen to submit the form to.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="map" type="xs:string" default="fieldValues">
+                <xs:annotation><xs:documentation>The Map to get field values from. Is often a EntityValue object or a
+                    Map with data pulled from various places to populate in the form. Map keys are matched against field
+                    names. This is ignored if the field.entry-name attribute is used, that is evaluated against the
+                    context in place at the time each field is rendered. Defaults to "fieldValues".</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="focus-field" type="xs:string"/>
             <xs:attribute name="skip-start" type="boolean" default="false"/>
             <xs:attribute name="skip-end" type="boolean" default="false"/>
