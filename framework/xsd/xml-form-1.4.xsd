@@ -62,16 +62,16 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="field-layout"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required">
-                <xs:annotation><xs:documentation>The name of the form. Used to reference it along with the XML Screen
-                    file. For HTML output this is the form name, and for other output may also be used to identify the
-                    section of the output corresponding to the form.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The name of the form. Used to reference the form along with the XML Screen
+                    file location. For HTML output this is the form name and id, and for other output may also be used to identify the
+                    part of the output corresponding to the form.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="extends" type="xs:string">
-                <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
+                <xs:annotation><xs:documentation>The location and name separated by a hash/pound sign (#) of the form to
                     extend. If there is no location it is treated as a form name in the current screen.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="transition" type="xs:string">
-                <xs:annotation><xs:documentation>The in the current screen to submit the form to.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The transition in the current screen to submit the form to.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="map" type="xs:string" default="fieldValues">
                 <xs:annotation><xs:documentation>The Map to get field values from. Is often a EntityValue object or a
@@ -79,12 +79,21 @@ This Work includes contributions authored by David E. Jones, not as a
                     names. This is ignored if the field.entry-name attribute is used, that is evaluated against the
                     context in place at the time each field is rendered. Defaults to "fieldValues".</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="focus-field" type="xs:string"/>
-            <xs:attribute name="skip-start" type="boolean" default="false"/>
-            <xs:attribute name="skip-end" type="boolean" default="false"/>
+            <xs:attribute name="focus-field" type="xs:string">
+                <xs:annotation><xs:documentation>The name of the field to focus on when the form is rendered.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="skip-start" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Skip the starting rendered elements of the form. When used after a form
+                    with skip-end=true this will effectively combine the forms into one.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="skip-end" type="boolean" default="false">
+                <xs:annotation><xs:documentation>Skip the ending rendered elements of the form. Use this to leave a form
+                    open so that additional forms can be combined with it.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="dynamic" type="boolean" default="false">
-                <xs:annotation><xs:documentation>If true then this form will be considered dynamic and the internal
-                    definition will be built up each time it is used instead of only when first referred to.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>If true this form will be considered dynamic and the internal
+                    definition will be built up each time it is used instead of only when first referred to. This is
+                    necessary when auto-fields-* elements have ${} string expansion for service or entity names.</xs:documentation></xs:annotation>
             </xs:attribute>
 
             <xs:attribute name="background-submit" type="boolean" default="false">
@@ -95,7 +104,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     dynamic-container with this id.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="background-message" type="xs:string">
-                <xs:annotation><xs:documentation>After the form is submitted in the background show this message.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>After the form is submitted in the background show this message in a dialog.</xs:documentation></xs:annotation>
             </xs:attribute>
         </xs:complexType>
     </xs:element>
@@ -120,20 +129,32 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:choice>
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="form-list-column"/>
             </xs:sequence>
-            <xs:attribute name="name" type="xs:string" use="required"/>
-            <xs:attribute name="extends" type="xs:string">
-                <xs:annotation><xs:documentation>The location and name (separated by a hash/pound sign) of the form to
-                    extend. If there is no location is a form in the current screen.</xs:documentation></xs:annotation>
+            <xs:attribute name="name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>The name of the form. Used to reference the form along with the XML Screen
+                    file location. For HTML output this is the form name and id, and for other output may also be used to identify the
+                    part of the output corresponding to the form.</xs:documentation></xs:annotation>
             </xs:attribute>
-            <xs:attribute name="multi" default="true" type="boolean"/>
-            <xs:attribute name="transition" type="xs:string"/>
+            <xs:attribute name="extends" type="xs:string">
+                <xs:annotation><xs:documentation>The location and name separated by a hash/pound sign (#) of the form to
+                    extend. If there is no location it is treated as a form name in the current screen.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="transition" type="xs:string">
+                <xs:annotation><xs:documentation>The transition in the current screen to submit the form to.</xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="multi" default="true" type="boolean">
+                <xs:annotation><xs:documentation>Make the form a multi-submit form where all rows on a page are
+                    submitted together in a single request with a "_${rowNumber}" suffix on each field. Also passes a
+                    _isMulti=true parameter so the Service Facade knows to run the service (a single service-call in a
+                    transition) for each row. Defaults to true, so set to false to disable this behavior and have a
+                    separate form (submitted separately) for each row.</xs:documentation></xs:annotation>
+            </xs:attribute>
             <xs:attribute name="list" type="xs:string">
-                <xs:annotation><xs:documentation>The name of the list in the context to iterate over.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>An expression that evaluates to a list to iterate over.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="list-entry" type="xs:string">
                 <xs:annotation><xs:documentation>If specified each list entry will be put in the context with this
-                    name; otherwise the list entry must be a Map and the entries in the Map will be put into the context
-                    root directly.</xs:documentation></xs:annotation>
+                    name, otherwise the list entry must be a Map and the entries in the Map will be put into the context
+                    for each row.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="paginate" type="xs:string" default="true">
                 <xs:annotation><xs:documentation>Indicate if this form should paginate or not. Defaults to true.</xs:documentation></xs:annotation>
@@ -146,7 +167,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="skip-end" type="boolean" default="false"/>
             <xs:attribute name="skip-form" type="boolean" default="false">
                 <xs:annotation><xs:documentation>Make the output a plain table, not submittable (in HTML don't generate
-                    'form' elements).</xs:documentation></xs:annotation>
+                    'form' elements). Useful for view-only list forms to minimize output.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="dynamic" type="boolean" default="false">
                 <xs:annotation><xs:documentation>If true then this form will be considered dynamic and the internal
