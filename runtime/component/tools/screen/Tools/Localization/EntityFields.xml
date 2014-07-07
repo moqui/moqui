@@ -36,21 +36,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <container>
             <container-dialog id="CreateEntityFieldDialog" button-text="New Field L10n">
                 <form-single name="CreateLocalizedEntityField" transition="createLocalizedEntityField">
-                    <field name="entityName">
-                        <default-field><text-line size="15"/></default-field>
-                    </field>
-                    <field name="fieldName">
-                        <default-field><text-line size="15"/></default-field>
-                    </field>
-                    <field name="pkValue">
-                        <default-field><text-line size="20"/></default-field>
-                    </field>
-                    <field name="locale">
-                        <default-field><text-line size="5"/></default-field>
-                    </field>
-                    <field name="localized">
-                        <default-field><text-area rows="5" cols="60"/></default-field>
-                    </field>
+                    <field name="entityName"><default-field><text-line size="15"/></default-field></field>
+                    <field name="fieldName"><default-field><text-line size="15"/></default-field></field>
+                    <field name="pkValue"><default-field><text-line size="20"/></default-field></field>
+                    <field name="locale"><default-field><text-line size="5"/></default-field></field>
+                    <field name="localized"><default-field><text-area rows="5" cols="60"/></default-field></field>
                     <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
                 </form-single>
             </container-dialog>
@@ -73,18 +63,13 @@ This Work includes contributions authored by David E. Jones, not as a
                 <header-field show-order-by="true"><text-find hide-options="true" size="4"/></header-field>
                 <default-field><display/></default-field>
             </field>
-            <field name="localized">
-                <default-field><text-area rows="2" cols="35"/></default-field>
-            </field>
-            <field name="update">
-                <default-field title="Update"><submit/></default-field>
-            </field>
+            <field name="localized"><default-field><text-area rows="2" cols="35"/></default-field></field>
+            <field name="update"><default-field title="Update"><submit/></default-field></field>
             <field name="delete">
                 <header-field title="Find"><submit/></header-field>
                 <default-field>
-                    <link text="Delete" url="deleteLocalizedEntityField">
-                        <parameter name="entityName"/><parameter name="fieldName"/><parameter name="locale"/>
-                    </link>
+                    <link text="Delete" url="deleteLocalizedEntityField"><parameter name="entityName"/>
+                        <parameter name="fieldName"/><parameter name="locale"/></link>
                 </default-field>
             </field>
         </form-list>
