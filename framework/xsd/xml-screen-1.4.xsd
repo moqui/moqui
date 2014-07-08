@@ -279,7 +279,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                         Each screen has a list of expected parameters so this is only necessary when you need to
                         override where the parameter value comes from (default defined in the parameter tag under the
-                        screen).
+                        screen) or to pass additional parameters.
                     </xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
@@ -296,7 +296,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                         Each screen has a list of expected parameters so this is only necessary when you need to
                         override where the parameter value comes from (default defined in the parameter tag under the
-                        screen).
+                        screen) or to pass additional parameters.
                     </xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
@@ -327,8 +327,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:enumeration value="none"/>
                     <xs:enumeration value="screen-last">
                         <xs:annotation><xs:documentation>
-                            Will use the screen from the last request unless there is a saved from some previous
-                            request (using the save-last-screen attribute, done automatically for login).
+                            Go to the screen from the last request unless there is a saved one from some previous
+                            request (using the save-current-screen attribute, done automatically for login).
 
                             If no last screen is found the value in the url will be used, and if nothing there will go
                             to the default screen (just to root with whatever defaults are setup for each subscreen).
