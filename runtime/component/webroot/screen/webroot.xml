@@ -70,7 +70,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
         <render-mode>
             <text type="html" location="component://webroot/screen/includes/Footer.html.ftl"/>
-            <text type="xsl-fo">${sri.getAfterScreenWriterText()}<![CDATA[</fo:flow></fo:page-sequence></fo:root>]]></text>
+            <text type="xsl-fo"><![CDATA[${sri.getAfterScreenWriterText()}</fo:flow></fo:page-sequence></fo:root>]]></text>
         </render-mode>
     </widgets>
 </screen>
