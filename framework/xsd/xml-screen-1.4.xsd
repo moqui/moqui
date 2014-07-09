@@ -313,7 +313,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                         Each screen has a list of expected parameters so this is only necessary when you need to
                         override where the parameter value comes from (default defined in the parameter tag under the
-                        screen).
+                        screen) or to pass additional parameters.
                     </xs:documentation></xs:annotation>
                 </xs:element>
             </xs:sequence>
@@ -342,16 +342,16 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:attribute name="url" type="xs:string">
             <xs:annotation><xs:documentation>
                 The URL to follow in response, based on the url-type. The default url-type is "screen-path" which means
-                the value here is a path from the current screen to the desired screen (or transition).
+                the value here is a path from the current screen to the desired screen, transition, or sub-screen content.
 
-                You can use "." to represent the current screen, and ".." to represent the parent screen on the runtime
+                Use "." to represent the current screen, and ".." to represent the parent screen on the runtime
                 screen path. The ".." can be used multiple times, such as "../.." to get to the parent screen of the
                 parent screen (the grand-parent screen).
 
                 If the screen-path type url starts with a "/" it will be relative to the root screen instead of relative
                 to the current screen.
 
-                If the url-type is "plain" then this can be any valid URL (relative on current server or absolute).
+                If the url-type is "plain" then this can be any valid URL (relative on current domain or absolute).
             </xs:documentation></xs:annotation>
         </xs:attribute>
         <xs:attribute name="url-type" default="screen-path">
@@ -365,7 +365,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 </xs:restriction>
             </xs:simpleType>
         </xs:attribute>
-        <xs:attribute name="parameter-map" type="xs:string"/>
+        <xs:attribute name="parameter-map" type="xs:string">
+            <xs:annotation><xs:documentation>Just like the parameter subelement can be used to specify parameters to
+                pass with the redirect.</xs:documentation></xs:annotation>
+        </xs:attribute>
         <!-- deferred for future version, pending finding a good reason that it is needed:
         <xs:attribute name="save-last-screen" default="false" type="boolean">
             <xs:annotation><xs:documentation>
