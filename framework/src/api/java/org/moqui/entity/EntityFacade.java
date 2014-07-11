@@ -115,12 +115,12 @@ public interface EntityFacade {
 
     // ======= XML Related Methods ========
 
-    /** Make an object used to load XML entity data into the database or into an EntityList. The XML can come from
-     * a specific location, XML text already read from somewhere, or by searching all component data directories
-     * and the entity-facade.load-data elements for XML entity data files that match a type in the Set of types
+    /** Make an object used to load XML or CSV entity data into the database or into an EntityList. The files come from
+     * a specific location, text already read from somewhere, or by searching all component data directories
+     * and the entity-facade.load-data elements for entity data files that match a type in the Set of types
      * specified.
      *
-     * The document should have a root element like <code>&lt;entity-facade-xml type=&quot;seed&quot;&gt;</code>. The
+     * An XML document should have a root element like <code>&lt;entity-facade-xml type=&quot;seed&quot;&gt;</code>. The
      * type attribute will be used to determine if the file should be loaded by whether or not it matches the values
      * specified for data types on the loader.
      *
