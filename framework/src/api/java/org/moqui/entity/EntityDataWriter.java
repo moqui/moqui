@@ -21,7 +21,8 @@ import java.util.Map;
  * The document will have a root element like <code>&lt;entity-facade-xml&gt;</code>.
  */
 public interface EntityDataWriter {
-    /** A List of entity names to write.
+    /** A List of entity names to query and export. Data is queried and exporting from entity in the order they are
+     * specified in this list.
      * @param entityNames The list of entity names
      * @return Reference to this for convenience.
      */
@@ -33,14 +34,14 @@ public interface EntityDataWriter {
      */
     EntityDataWriter dependentRecords(boolean dependents);
 
-    /** Field name, value pairs to filter the results by. Each name/value only used on entities with a field matching
-     * the name.
+    /** A Map of field name, value pairs to filter the results by. Each name/value only used on entities that have a
+     * field matching the name.
      * @param filterMap Map with name/value pairs to filter by
      * @return Reference to this for convenience.
      */
     EntityDataWriter filterMap(Map<String, Object> filterMap);
 
-    /** Field names order (sort) the results by. Each name only used on entities with a field matching the name.
+    /** Field names to order (sort) the results by. Each name only used on entities with a field matching the name.
      * May be called multiple times. Each entry may be a comma-separated list of field names.
      * @param orderByList List with field names to order by
      * @return Reference to this for convenience.
