@@ -21,8 +21,16 @@ import java.util.Map;
  * The document will have a root element like <code>&lt;entity-facade-xml&gt;</code>.
  */
 public interface EntityDataWriter {
-    /** A List of entity names to query and export. Data is queried and exporting from entity in the order they are
-     * specified in this list.
+
+    /** Specify the name of an entity to query and export. Data is queried and exporting from entities in the order they
+     * are added by calling this or entityNames() multiple times.
+     * @param entityName The entity name
+     * @return Reference to this for convenience.
+     */
+    EntityDataWriter entityName(String entityName);
+
+    /** A List of entity names to query and export. Data is queried and exporting from entities in the order they are
+     * specified in this list and other calls to this or entityName().
      * @param entityNames The list of entity names
      * @return Reference to this for convenience.
      */

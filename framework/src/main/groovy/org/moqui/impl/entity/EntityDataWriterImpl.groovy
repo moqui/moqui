@@ -43,7 +43,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
     EntityFacadeImpl getEfi() { return efi }
 
-    EntityDataWriter entityNames(String en) { entityNames.add(en);  return this }
+    EntityDataWriter entityName(String entityName) { entityNames.add(entityName);  return this }
     EntityDataWriter entityNames(List<String> enList) { entityNames.addAll(enList);  return this }
     EntityDataWriter dependentRecords(boolean d) { dependents = d; return this }
     EntityDataWriter prefix(String p) { prefix = p; return this }
