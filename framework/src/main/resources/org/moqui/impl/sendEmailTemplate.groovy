@@ -101,12 +101,12 @@ for (def emailTemplateAttachment in emailTemplateAttachmentList) {
 }
 
 // create an moqui.basic.email.EmailMessage record with info about this sent message
-// NOTE: can do anything with: statusId, purposeEnumId, toUserId?
+// NOTE: can do anything with: purposeEnumId, toUserId?
 if (createEmailMessage) {
-    Map cemParms = [sentDate:ec.user.nowTimestamp, subject:subject, body:bodyHtml,
-            fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
-            ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
-            contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
+    Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_SENT", subject:subject, body:bodyHtml,
+                    fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
+                    ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
+                    contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
     ec.artifactExecution.disableAuthz()
     ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).call()
     ec.artifactExecution.enableAuthz()
