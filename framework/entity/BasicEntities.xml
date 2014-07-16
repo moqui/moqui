@@ -91,11 +91,6 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="Municipality" enumId="GEOT_MUNICIPALITY" enumTypeId="GeoType"/>
             <moqui.basic.Enumeration description="Province" enumId="GEOT_PROVINCE" enumTypeId="GeoType"/>
             <moqui.basic.Enumeration description="Territory" enumId="GEOT_TERRITORY" enumTypeId="GeoType"/>
-
-            <moqui.basic.EnumerationType description="Geo Assoc Type" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Geo Group Member" enumId="GAT_GROUP_MEMBER" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Region of a larger Geo (states, counties, provinces...)" enumId="GAT_REGIONS" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GeoAssocType"/>
         </seed-data>
     </entity>
     <entity entity-name="GeoAssoc" package-name="moqui.basic" cache="true">
@@ -109,6 +104,12 @@ This Work includes contributions authored by David E. Jones, not as a
         <relationship type="one" title="GeoAssocType" related-entity-name="moqui.basic.Enumeration">
             <key-map field-name="geoAssocTypeEnumId"/>
         </relationship>
+        <seed-data>
+            <moqui.basic.EnumerationType description="Geo Assoc Type" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Geo Group Member" enumId="GAT_GROUP_MEMBER" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Region of a larger Geo (states, counties, provinces...)" enumId="GAT_REGIONS" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GeoAssocType"/>
+        </seed-data>
     </entity>
     <view-entity entity-name="GeoAssocAndToDetail" package-name="moqui.basic">
         <member-entity entity-alias="GEOA" entity-name="GeoAssoc"/>
