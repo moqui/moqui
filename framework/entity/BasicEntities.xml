@@ -306,9 +306,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="note" type="text-long"/>
         <field name="headersString" type="text-very-long"/>
         <field name="fromAddress" type="text-medium"/>
-        <field name="toAddresses" type="text-very-long"/>
-        <field name="ccAddresses" type="text-very-long"/>
-        <field name="bccAddresses" type="text-very-long"/>
+        <field name="toAddresses" type="text-long"/>
+        <field name="ccAddresses" type="text-long"/>
+        <field name="bccAddresses" type="text-long"/>
         <field name="contentType" type="text-medium"/>
         <field name="messageId" type="text-medium"/>
         <field name="fromUserId" type="id-long"/>
@@ -343,13 +343,16 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.StatusItem description="Ready" sequenceNum="2" statusId="ES_READY" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Sent" sequenceNum="3" statusId="ES_SENT" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Received" sequenceNum="4" statusId="ES_RECEIVED" statusTypeId="EmailMessage"/>
+            <moqui.basic.StatusItem description="Viewed" sequenceNum="5" statusId="ES_VIEWED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Bounced" sequenceNum="8" statusId="ES_BOUNCED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusItem description="Cancelled" sequenceNum="9" statusId="ES_CANCELLED" statusTypeId="EmailMessage"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_DRAFT" toStatusId="ES_READY" transitionName="Ready"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_READY" toStatusId="ES_SENT" transitionName="Send"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_READY" toStatusId="ES_CANCELLED" transitionName="Cancel"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_SENT" toStatusId="ES_RECEIVED" transitionName="Received"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_SENT" toStatusId="ES_VIEWED" transitionName="Viewed"/>
             <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_SENT" toStatusId="ES_BOUNCED" transitionName="Bounced"/>
+            <moqui.basic.StatusFlowTransition statusFlowId="Default" statusId="ES_RECEIVED" toStatusId="ES_VIEWED" transitionName="Viewed"/>
 
             <!-- Email Type -->
             <moqui.basic.EnumerationType description="Email Type" enumTypeId="EmailType"/>
@@ -413,7 +416,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <description>Used to determine the MIME/content type, and which screen render template to use.
                 Can be used to generate XSL:FO that is transformed to a PDF and attached to the email with
                 screenRenderMode=xsl-fo.
-                If empty the attachmentLocation will be sent over as a file whose type depends on its extension.
+                If empty the content at attachmentLocation will be sent over without rendering and its MIME type will
+                be based on its extension.
             </description>
         </field>
         <relationship type="one" related-entity-name="moqui.basic.email.EmailTemplate"/>
