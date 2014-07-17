@@ -13,7 +13,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.4.xsd">
 
     <!-- Example & Related Services -->
-    <service verb="create" noun="Example" type="entity-auto">
+    <service verb="create" noun="Example" type="entity-auto" allow-remote="true">
         <in-parameters>
             <auto-parameters include="nonpk"/>
             <parameter name="exampleTypeEnumId" required="true"/>
@@ -27,7 +27,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <auto-parameters include="pk" required="true"/>
         </out-parameters>
     </service>
-    <service verb="update" noun="Example" type="entity-auto">
+    <service verb="update" noun="Example" type="entity-auto" allow-remote="true">
         <in-parameters>
             <auto-parameters include="pk" required="true"/>
             <auto-parameters include="nonpk"/>
