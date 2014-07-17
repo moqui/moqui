@@ -15,13 +15,32 @@ This Work includes contributions authored by David E. Jones, not as a
     <service verb="send" noun="EmailTemplate" type="interface">
         <description>Send Email with settings in EmailTemplate entity record</description>
         <in-parameters>
-            <parameter name="emailTemplateId" type="String" required="true"/>
+            <parameter name="emailTemplateId" required="true"/>
             <parameter name="toAddresses" type="String"/>
             <parameter name="bodyParameters" type="Map"/>
             <parameter name="createEmailMessage" type="Boolean" default="true"/>
         </in-parameters>
         <out-parameters>
-            <parameter name="messageId" type="String"/>
+            <parameter name="messageId"><description>From the Message-ID email header field.</description></parameter>
+            <parameter name="emailMessageId"><description>If createEmailMessage=true the ID of the EmailMessage record.</description></parameter>
         </out-parameters>
+    </service>
+    
+    <service verb="process" noun="EmailEca" type="interface">
+        <description>Defines input parameters matching what is available when an Email ECA rule is called.</description>
+        <in-parameters>
+            <parameter name="fields" type="Map">
+                <parameter name="toList" type="List"/>
+                <parameter name="ccList" type="List"/>
+                <parameter name="bccList" type="List"/>
+                <parameter name="from"/>
+                <parameter name="subject"/>
+                <parameter name="sentDate" type="java.util.Date"/>
+                <parameter name="receivedDate" type="java.util.Date"/>
+                <parameter name="bodyPartList" type="List"><description>List of String for each body part. If the
+                    message is not multi-part will have a single String entry.</description></parameter>
+            </parameter>
+            <parameter name="headers" type="Map"/>
+        </in-parameters>
     </service>
 </services>
