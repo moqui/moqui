@@ -103,19 +103,24 @@ for (def emailTemplateAttachment in emailTemplateAttachmentList) {
 // create an moqui.basic.email.EmailMessage record with info about this sent message
 // NOTE: can do anything with: purposeEnumId, toUserId?
 if (createEmailMessage) {
-    Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_SENT", subject:subject, body:bodyHtml,
+    Map cemParms = [sentDate:ec.user.nowTimestamp, statusId:"ES_READY", subject:subject, body:bodyHtml,
                     fromAddress:emailTemplate.fromAddress, toAddresses:toAddresses,
                     ccAddresses:emailTemplate.ccAddresses, bccAddresses:emailTemplate.bccAddresses,
                     contentType:"text/html", emailTemplateId:emailTemplateId, fromUserId:ec.user?.userId]
-    ec.artifactExecution.disableAuthz()
-    ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).call()
-    ec.artifactExecution.enableAuthz()
+    Map cemResults = ec.service.sync().name("create", "moqui.basic.email.EmailMessage").parameters(cemParms).disableAuthz().call()
+    emailMessageId = cemResults.emailMessageId
 }
 
 logger.info("Sending [${email}] email from template [${emailTemplateId}] with bodyHtml:\n${bodyHtml}\n bodyText:\n${bodyText}")
 
 // send the email
-email.send()
+messageId = email.send()
+
+if (emailMessageId) {
+    Map uemParms = [emailMessageId:emailMessageId, statusId:"ES_SENT", messageId:messageId]
+    ec.service.sync().name("update", "moqui.basic.email.EmailMessage").parameters(uemParms).disableAuthz().call()
+}
+
 } catch (Throwable t) {
     logger.info("Error in groovy", t)
     throw new BaseException("Error in sendEmailTemplate", t)
