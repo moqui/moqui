@@ -99,8 +99,8 @@
             <div class="input-group">
                 <input type="text" class="input-small form-control" placeholder="Live Search ...">
                 <span class="input-group-btn">
-                                    <button class="btn btn-primary btn-sm text-muted" type="button"><i class="fa fa-search"></i></button>
-                                </span>
+                    <button class="btn btn-primary btn-sm text-muted" type="button"><i class="fa fa-search"></i></button>
+                </span>
             </div>
         </form>
     </div>
