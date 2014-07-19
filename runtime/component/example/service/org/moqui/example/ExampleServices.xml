@@ -118,11 +118,11 @@ This Work includes contributions authored by David E. Jones, not as a
         <in-parameters><parameter name="testInput"/></in-parameters>
         <out-parameters><parameter name="testOutput"/></out-parameters>
     </service>
-    <service verb="targetCamelExample" type="inline">
+    <service verb="targetCamelExample">
         <in-parameters><parameter name="testInput"/></in-parameters>
         <out-parameters><parameter name="testOutput"/></out-parameters>
         <actions>
-            <set field="result.testOutput" value="Here's the input: ${testInput}"/>
+            <set field="testOutput" value="Here's the input: ${testInput}"/>
             <log level="warn" message="targetCamelExample testOutput: ${result.testOutput}"/>
         </actions>
     </service>
