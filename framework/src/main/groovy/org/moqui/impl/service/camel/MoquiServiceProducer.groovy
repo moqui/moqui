@@ -13,7 +13,6 @@ package org.moqui.impl.service.camel
 
 import org.apache.camel.impl.DefaultProducer
 import org.apache.camel.Exchange
-import org.apache.camel.RuntimeExchangeException
 
 /**
  * Camel Producer for the MoquiService endpoint. This processes messages send to an endpoint like:
@@ -40,7 +39,7 @@ class MoquiServiceProducer extends DefaultProducer {
         //}
         Map parameters = exchange.getIn().getBody(Map.class)
 
-        logger.warn("TOREMOVE: remaining=[${remaining}], serviceName=${serviceName}, parameters: ${parameters}")
+        // logger.warn("TOREMOVE: remaining=[${remaining}], serviceName=${serviceName}, parameters: ${parameters}")
 
         logger.info("Calling service [${serviceName}] with parameters [${parameters}]")
         Map<String, Object> result = moquiServiceEndpoint.getEcfi().getServiceFacade().sync().name(serviceName)
