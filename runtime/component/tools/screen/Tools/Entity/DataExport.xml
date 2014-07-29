@@ -27,7 +27,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     ec.message.addError("No entity names specified, not exporting anything.")
                     return
                 }
-                edw.entityNames(entityNames)
+                if (entityNames instanceof List) edw.entityNames(entityNames) else edw.entityName(entityNames)
 
                 if (dependents) edw.dependentRecords(true)
                 if (fromDate) edw.fromDate(ec.l10n.parseTimestamp(fromDate, null))
