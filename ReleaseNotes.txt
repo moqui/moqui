@@ -51,6 +51,9 @@ New Features:
   a no password authc for that user and turns off authz for the service
   call; this is a mechanism for handling service calls outside the main
   flow and still maintaining security.
+- Changed the ArtifactHit/Bin artifactName for screen, screen-content, and
+  transition to use their internal Resource Facade location (like
+  component://...) instead of external URL
 
 Bug Fixes:
 

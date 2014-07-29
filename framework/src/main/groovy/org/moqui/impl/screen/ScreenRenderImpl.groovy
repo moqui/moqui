@@ -252,7 +252,7 @@ class ScreenRenderImpl implements ScreenRender {
         if (this.response != null) response.setCharacterEncoding(this.characterEncoding)
 
         // if there is a transition run that INSTEAD of the screen to render
-        if (screenUrlInfo.targetTransition) {
+        if (screenUrlInfo.getTargetTransition()) {
             // if this transition has actions and request was not secure or any parameters were not in the body
             // return an error, helps prevent XSRF attacks
             if (request != null && screenUrlInfo.getTargetTransition().hasActionsOrSingleService() &&
@@ -292,7 +292,8 @@ class ScreenRenderImpl implements ScreenRender {
                 }
 
                 if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
-                    sfi.ecfi.countArtifactHit("transition", ri?.type ?: "", screenUrlInfo.url,
+                    sfi.ecfi.countArtifactHit("transition", ri?.type ?: "",
+                            screenUrlInfo.getTargetTransition().parentScreen.getLocation() + "#" + screenUrlInfo.getTargetTransition().name,
                             (ec.getWeb() ? ec.getWeb().requestParameters : null), transitionStartTime,
                             System.currentTimeMillis(), null)
                 }
@@ -417,7 +418,7 @@ class ScreenRenderImpl implements ScreenRender {
                         int totalLen = StupidUtilities.copyStream(is, os)
 
                         if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
-                            sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.url,
+                            sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
                                     System.currentTimeMillis(), totalLen)
                         }
@@ -461,7 +462,7 @@ class ScreenRenderImpl implements ScreenRender {
                         writer.write(text)
 
                         if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
-                            sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.url,
+                            sfi.ecfi.countArtifactHit("screen-content", fileContentType, screenUrlInfo.fileResourceRef.location,
                                     (ec.getWeb() ? ec.getWeb().requestParameters : null), resourceStartTime,
                                     System.currentTimeMillis(), length)
                         }
@@ -585,7 +586,7 @@ class ScreenRenderImpl implements ScreenRender {
         } finally {
             if (beganTransaction && sfi.ecfi.transactionFacade.isTransactionInPlace()) sfi.ecfi.transactionFacade.commit()
             if (screenUrlInfo.targetScreen.screenNode."@track-artifact-hit" != "false") {
-                sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.url,
+                sfi.ecfi.countArtifactHit("screen", this.outputContentType, screenUrlInfo.screenRenderDefList.last().getLocation(),
                         (ec.getWeb() ? ec.getWeb().requestParameters : null), screenStartTime, System.currentTimeMillis(), null)
             }
         }
