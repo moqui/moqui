@@ -188,6 +188,7 @@ class ArtifactExecutionInfoImpl implements ArtifactExecutionInfo {
         return sw.toString()
     }
     static void printArtifactInfoList(Writer writer, List<Map> infoList, int level) {
+        // "[${time}:${thisTime}:${childrenTime}][${count}] ${type} ${action} ${actionDetail} ${name}"
         for (Map info in infoList) {
             for (int i = 0; i < level; i++) writer.append('|').append(' ')
             writer.append('[').append(StupidUtilities.paddedString(info.time as String, 5, false)).append(':')
