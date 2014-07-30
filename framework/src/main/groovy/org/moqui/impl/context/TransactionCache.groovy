@@ -374,6 +374,9 @@ class TransactionCache implements Synchronization {
             int createCount = 0
             int updateCount = 0
             int deleteCount = 0
+            /*for (EntityWriteInfo ewi in (List<EntityWriteInfo>) writeInfoList.valueList()) {
+                logger.warn("===== TX Cache value to ${ewi.writeMode} ${ewi.evb.getEntityName()}: \n${ewi.evb}")
+            }*/
             for (EntityWriteInfo ewi in (List<EntityWriteInfo>) writeInfoList.valueList()) {
                 String groupName = efi.getEntityGroupName(ewi.evb.getEntityName())
                 Connection con = connectionByGroup.get(groupName)
