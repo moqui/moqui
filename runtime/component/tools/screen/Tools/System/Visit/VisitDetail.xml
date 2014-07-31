@@ -23,6 +23,19 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <form-single name="VisitDetail">
             <auto-fields-entity entity-name="moqui.server.Visit" field-type="display"/>
+            <field-layout>
+                <field-row><field-ref name="visitId"/><field-ref name="visitorId"/></field-row>
+                <field-row><field-ref name="userId"/><field-ref name="userCreated"/></field-row>
+                <field-row><field-ref name="sessionId"/><field-ref name="webappName"/></field-row>
+                <field-row><field-ref name="serverHostName"/><field-ref name="serverIpAddress"/></field-row>
+                <field-row><field-ref name="initialLocale"/><field-ref name="initialRequest"/></field-row>
+                <field-row><field-ref name="initialReferrer"/><field-ref name="initialUserAgent"/></field-row>
+                <field-row><field-ref name="clientIpAddress"/><field-ref name="clientHostName"/></field-row>
+                <field-row><field-ref name="clientUser"/><field-ref name="clientIpIspName"/></field-row>
+                <!-- <field-row><field-ref name="clientIpPostalCode"/><field-ref name="clientIpStateProvGeoId"/></field-row>
+                     <field-row><field-ref name="clientIpCountryGeoId"/></field-row> -->
+                <field-row><field-ref name="fromDate"/><field-ref name="thruDate"/></field-row>
+            </field-layout>
         </form-single>
         <form-list name="VisitArtifactHitList" list="artifactHitList">
             <field name="startDateTime"><default-field><display also-hidden="false"/></default-field></field>
