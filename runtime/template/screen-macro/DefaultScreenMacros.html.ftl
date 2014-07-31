@@ -512,7 +512,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#if layoutNode?node_name == "field-ref">
                   <#if collapsibleOpened>
                     <#assign collapsibleOpened = false>
-                    </div>
+                    </div><!-- /collapsible accordionId ${accordionId} -->
                     <#assign afterFormScript>
                         $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
                     </#assign>
@@ -533,7 +533,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                 <#elseif layoutNode?node_name == "field-row">
                   <#if collapsibleOpened>
                     <#assign collapsibleOpened = false>
-                    </div>
+                    </div><!-- /collapsible accordionId ${accordionId} -->
                     <#assign afterFormScript>
                         $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
                     </#assign>
@@ -555,17 +555,16 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 <#else>
                                     <@formSingleSubField fieldNode/>
                                 </#if>
-                            <#if !bigRow></div></#if>
+                            <#if !bigRow></div><!-- /col-lg-6 not bigRow --></#if>
                         <#elseif rowChildNode?node_name == "fields-not-referenced">
                             <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                             <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                         </#if>
-                        <#assign bigRowFirst = false>
                     </#list>
-                    <#if bigRow></div></#if><#-- this is a bit weird, closes col-lg-10 opened by first in row in the formSingleWidget macro -->
+                    <#if bigRow></div><!-- /col-lg-12 bigRow --></#if><#-- this is a bit weird, closes col-lg-12 opened by first in row in the formSingleWidget macro -->
                     <#assign bigRow = false>
                     <#assign inFieldRow = false>
-                    </div>
+                    </div><!-- /row -->
                 <#elseif layoutNode?node_name == "field-group">
                   <#if collapsible && !collapsibleOpened><#assign collapsibleOpened = true>
                     <div id="${accordionId}">
@@ -597,24 +596,23 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                             <#else>
                                                 <@formSingleSubField fieldNode/>
                                             </#if>
-                                        <#if !bigRow></div></#if>
+                                        <#if !bigRow></div><!-- /col-lg-6 not bigRow --></#if>
                                     <#elseif rowChildNode?node_name == "fields-not-referenced">
                                         <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                         <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                                     </#if>
-                                    <#assign bigRowFirst = false>
                                 </#list>
-                                <#if bigRow></div></#if><#-- this is a bit weird, closes col-lg-10 opened by first in row in the formSingleWidget macro -->
+                                <#if bigRow></div><!-- /col-lg-12 bigRow --></#if><#-- this is a bit weird, closes col-lg-12 opened by first in row in the formSingleWidget macro -->
                                 <#assign bigRow = false>
                                 <#assign inFieldRow = false>
-                                </div>
+                                </div><!-- /row -->
                             </#if>
                         </#list>
-                    </div>
+                    </div><!-- /layoutNode -->
                 </#if>
             </#list>
             <#if collapsibleOpened>
-                </div>
+                </div><!-- /accordion id ${accordionId} -->
                 <#assign afterFormScript>
                     $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
                 </#assign>
@@ -679,6 +677,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if bigRow>
         <#if bigRowFirst>
             <div class="col-lg-12">
+            <#assign bigRowFirst = false>
         </#if>
         <div class="field-row-item">
             <div class="form-group">
@@ -719,11 +718,11 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </div><!-- /field-row-item -->
     <#else>
         <#if fieldSubNode["submit"]?has_content>
-            </div>
-        </div>
+            </div><!-- /col -->
+        </div><!-- /form-group -->
         <#elseif !(inFieldRow?if_exists && !curFieldTitle?has_content)>
-            </div>
-        </div>
+            </div><!-- /col -->
+        </div><!-- /form-group -->
         </#if>
     </#if>
 </#macro>
