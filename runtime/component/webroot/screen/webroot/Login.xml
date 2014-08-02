@@ -107,7 +107,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <container id="footer">
             <render-mode><text type="html"><![CDATA[
                     <div id="apps-footer-content">
-                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.4.1</a></h6>
+                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.4.2</a></h6>
                         <h6><a href="/apps/ScreenTree">Site Map</a></h6>
                     </div>
                 ]]></text></render-mode>
