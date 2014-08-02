@@ -2,7 +2,7 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.4.1 - 09 Aug 2014 (tentative date)
+Release 1.4.1 - 01 Aug 2014
 ===========================================================================
 
 Moqui Framework 1.4.1 is a minor new feature and bug fix release. Many of
@@ -10,6 +10,11 @@ the new features and bug fixes are related to multi-tenant support
 including better isolation of tenants and tenant provisioning services.
 Other fixes and improvements are related to Service ECA rules, jobs, DB
 setup, and the tx cache.
+
+This release also has various embedded documentation (annotations, etc)
+improvements done along with the Making Apps with Moqui book which is now
+available and has comprehensive documentation of Moqui Framework and a
+summary of Mantle Business Artifacts.
 
 New Features:
 
