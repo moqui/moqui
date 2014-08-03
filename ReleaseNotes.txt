@@ -32,6 +32,10 @@ improvements done along with the Making Apps with Moqui book which is now
 available and has comprehensive documentation of Moqui Framework and a
 summary of Mantle Business Artifacts.
 
+NOTE: Starting with this version Moqui Framework requires Java 7 or later
+because updated libraries require Java 7. Partly because of this Moqui
+itself will also start to use Java 7 features.
+
 New Features:
 
 - Updated Apache Jackrabbit to 2.8.0, Apache Lucene to 4.8.1,
