@@ -17,7 +17,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <always-actions>
         <!-- TODO: implement way to only load base JS and CSS files and load others as needed on different screens! -->
         <set field="html_scripts" from="new LinkedHashSet(['/assets/lib/jquery.min.js',
-            '/assets/lib/bootstrap/js/bootstrap.min.js', '/assets/lib/jquery-ui.min.js',
+            '/assets/lib/jquery-ui/jquery-ui.min.js', '/assets/lib/bootstrap/js/bootstrap.min.js',
             '/assets/lib/form/jquery.form.js'])"/>
         <set field="footer_scripts" from="new LinkedHashSet([
             '/assets/lib/datetimepicker/js/bootstrap-datetimepicker.min.js',
@@ -26,7 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
             '/assets/lib/autosize/jquery.autosize.min.js',
             '/assets/lib/jasny/js/jasny-bootstrap.min.js',
             '/js/jquery-jeditable-1.7.1.min.js',
-            '/assets/js/main.min.js'])"/>
+            '/assets/js/main.min.js','/assets/js/minHeight.js'])"/>
 
         <!-- out until used in DefaultScreenMacros.html.ftl:
             '/assets/lib/uniform/jquery.uniform.min.js',

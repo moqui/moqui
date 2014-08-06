@@ -1,11 +1,12 @@
-
 /* This file contains overrides to the standard Metis main.min.css which should not be changed */
+body {margin-bottom: 56px;}
+#top .navbar { border-top: none; }
+.outer  {}
+.inner { padding: 10px 15px; overflow-x: auto;}
 
-#top .navbar { border-top: 1px solid black; }
-.inner { border: 10px solid white; }
-#footer { height: 56px; }
+#footer { height: 57px; }
 
-#content { overflow: visible; }
+#content {/* overflow: visible; */}
 
 .btn { margin: 4px 4px 4px 0; }
 
@@ -15,3 +16,11 @@
 .login .form-signin .middle { margin-bottom: -1px; border-radius: 0; }
 .login .form-signin .bottom { margin-bottom: 10px; border-top-left-radius: 0; border-top-right-radius: 0; }
 .login form.form-signin { display: block; }
+
+.form-date-time span {
+    display: inline-table !important;
+    padding: 9px 12px 8px !important;
+}
+.login {
+  min-height: calc(100vh - 57px);
+}

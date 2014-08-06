@@ -34,7 +34,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <error-response url="."/>
     </transition>
 
-    <pre-actions><script>html_stylesheets.add('/assets/lib/magic/magic.min.css')</script></pre-actions>
+    <pre-actions><script>html_stylesheets.add('/assets/lib/animate/animate.min.css')</script></pre-actions>
     <widgets>
         <!-- NOTE: this screen is not under the apps screen, but uses similar header/footer/etc -->
         <container style="login">
@@ -104,7 +104,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </link>
             </container>
         </container>
-        <container id="footer">
+        <container id="footer" style="Footer bg-dark dker">
             <render-mode><text type="html"><![CDATA[
                     <div id="apps-footer-content">
                         <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.4.1</a></h6>
