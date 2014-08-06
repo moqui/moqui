@@ -38,7 +38,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </container>
             -->
             <container id="content">
-                <container style="outer">
+                <!-- <container style="outer"> -->
                     <container style="inner bg-light lter">
                         <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
                             <widgets><container style="message"><label text="${message}"/></container></widgets>
@@ -64,7 +64,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
                         <subscreens-active/>
                     </container>
-                </container>
+                <!-- </container> -->
             </container>
         </container>
         <container id="footer" style="Footer bg-dark dker">
