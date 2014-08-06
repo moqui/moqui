@@ -11,7 +11,8 @@ TODO
 
 New Features:
 
-- TODO
+- Updated Metis Admin Template to version 2.2.7, thanks to contribution
+  from Osman Nuri Okumuş (onokumus), the author of Metis
 
 Bug Fixes:
 
