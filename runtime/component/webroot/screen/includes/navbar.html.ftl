@@ -1,6 +1,7 @@
+
 <!-- .navbar -->
 <nav class="navbar navbar-inverse navbar-fixed-top"><#-- navbar-static-top -->
-
+  <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
     <header class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -12,8 +13,10 @@
         <#-- ${(ec.getTenant().tenantName)!"Welcome to Moqui"} -->
         <#-- <a href="index.html" class="navbar-brand"><img src="assets/img/logo.png" alt=""></a> -->
     </header>
+    <#--
     <div class="topnav">
         <div class="btn-toolbar">
+    -->
             <#-- uncomment if/when we have a sidebar
             <div class="btn-group">
                 <a data-placement="bottom" data-original-title="Show / Hide Sidebar" data-toggle="tooltip" class="btn btn-success btn-sm" id="changeSidebarPos">
@@ -42,14 +45,17 @@
                     </a>
                 </div>
                 -->
+                <#--
                 <div class="btn-group">
                     <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!!}" data-placement="bottom" class="btn btn-metis-1 btn-sm">
                         <i class="fa fa-power-off"></i>
                     </a>
                 </div>
+                -->
             </#if>
+            <#--
         </div>
-    </div><!-- /.topnav -->
+    </div>--><!-- /.topnav -->
     <div class="collapse navbar-collapse navbar-ex1-collapse">
         <!-- .nav -->
         <ul id="header-menus" class="nav navbar-nav">
@@ -86,11 +92,16 @@
             </li>
             -->
         </ul><!-- /.nav -->
+        <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
+          <i class="fa fa-power-off"></i>
+        </a>
     </div>
+  </div> <!-- container-fluid -->
 </nav><!-- /.navbar -->
 
 <!-- header.head -->
 <header class="head">
+    <#--
     <div class="search-bar">
         <a data-original-title="Show/Hide Menu" data-placement="bottom" data-tooltip="tooltip" class="accordion-toggle btn btn-primary btn-sm visible-xs" data-toggle="collapse" href="#menu" id="menu-toggle">
             <i class="fa fa-expand"></i>
@@ -104,7 +115,7 @@
             </div>
         </form>
     </div>
-
+    -->
     <!-- ."main-bar -->
     <div class="main-bar">
         <h3>${html_title!((sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</h3>

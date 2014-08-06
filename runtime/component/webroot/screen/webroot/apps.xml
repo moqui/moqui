@@ -26,46 +26,48 @@ This Work includes contributions authored by David E. Jones, not as a
     </subscreens>
 
     <widgets>
-        <container id="top">
-            <render-mode>
-                <text type="html" location="component://webroot/screen/includes/navbar.html.ftl"/>
-            </render-mode>
-            <subscreens-menu type="popup" id="header-menu" title="Application"/>
-        </container>
-        <!--
-        <container id="left">
-        </container>
-        -->
-        <container id="content">
-            <container style="outer">
-                <container style="inner">
-                    <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
-                        <widgets><container style="message"><label text="${message}"/></container></widgets>
-                    </section-iterate>
-                    <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
-                        <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                    </section-iterate>
-                    <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
-                        <!-- TODO: put these by fields instead of in header -->
-                        <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                    </section-iterate>
+      <container id="wrap" style="bg-dark dk">
+	  <container id="top">
+	      <render-mode>
+		  <text type="html" location="component://webroot/screen/includes/navbar.html.ftl"/>
+	      </render-mode>
+	      <subscreens-menu type="popup" id="header-menu" title="Application"/>
+	  </container>
+	  <!--
+	  <container id="left">
+	  </container>
+	  -->
+	  <container id="content">
+	      <container style="outer">
+		  <container style="inner bg-light lter">
+		      <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
+			  <widgets><container style="message"><label text="${message}"/></container></widgets>
+		      </section-iterate>
+		      <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
+			  <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
+		      </section-iterate>
+		      <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
+			  <!-- TODO: put these by fields instead of in header -->
+			  <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
+		      </section-iterate>
 
-                    <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
-                        <widgets><container style="message"><label text="${message}"/></container></widgets>
-                    </section-iterate>
-                    <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
-                        <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                    </section-iterate>
-                    <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
-                        <!-- TODO: put these by fields instead of in header -->
-                        <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                    </section-iterate>
+		      <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
+			  <widgets><container style="message"><label text="${message}"/></container></widgets>
+		      </section-iterate>
+		      <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
+			  <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
+		      </section-iterate>
+		      <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
+			  <!-- TODO: put these by fields instead of in header -->
+			  <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
+		      </section-iterate>
 
-                    <subscreens-active/>
-                </container>
-            </container>
+		      <subscreens-active/>
+		  </container>
+	      </container>
+	  </container>	
         </container>
-        <container id="footer">
+        <container id="footer" style="Footer bg-dark dker">
             <render-mode><text type="html"><![CDATA[
                     <div id="apps-footer-content">
                         <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.4.2</a></h6>

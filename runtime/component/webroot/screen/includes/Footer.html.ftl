@@ -1,4 +1,3 @@
-    </div>
 ${sri.getAfterScreenWriterText()}
 
 <#-- Footer JavaScript -->
