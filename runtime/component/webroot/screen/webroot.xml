@@ -49,7 +49,7 @@ This Work includes contributions authored by David E. Jones, not as a
         -->
 
         <set field="html_stylesheets" from="new LinkedHashSet(['/assets/lib/bootstrap/css/bootstrap.min.css',
-            '/assets/lib/Font-Awesome/css/font-awesome.min.css', '/assets/lib/jquery-ui.css',
+            '/assets/lib/Font-Awesome/css/font-awesome.min.css', '/assets/lib//jquery-ui/jquery-ui.min.css',
             '/assets/lib/datetimepicker/css/bootstrap-datetimepicker.min.css',
             '/js/chosen_v1.1.0/chosen.min.css', '/assets/lib/jasny/css/jasny-bootstrap.min.css',
             '/assets/css/main.min.css', '/assets/css/theme.css', '/css/default.css'])"/>
