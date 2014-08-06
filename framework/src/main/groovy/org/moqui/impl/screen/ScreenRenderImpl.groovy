@@ -663,6 +663,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     boolean doBoundaryComments() {
+        if (screenPathIndex == 0) return false
         if (boundaryComments != null) return boundaryComments
         boundaryComments = sfi.ecfi.confXmlRoot."screen-facade"[0]."@boundary-comments" == "true"
         return boundaryComments
