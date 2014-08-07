@@ -18,7 +18,8 @@ New Features:
 
 Bug Fixes:
 
-- TODO
+- Fixed delete buttons not working on the Find Auto Screen
+- Fixed links with images (link.image element) FTL error
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
