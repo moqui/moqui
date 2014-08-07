@@ -839,6 +839,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#else>
                         <#assign formListSkipClass = true>
                         <@formListSubField fieldNode/>
+                        <#assign formListSkipClass = false>
                     </#if>
                 </#list>
                 </div>
@@ -893,7 +894,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 ((!fieldNode["@hide"]?has_content) && fieldNode?children?size == 1 &&
                                 (fieldNode["header-field"][0]?if_exists["hidden"]?has_content || fieldNode["header-field"][0]?if_exists["ignored"]?has_content))) &&
                                 !(isMulti && fieldNode["default-field"]?has_content && fieldNode["default-field"][0]["submit"]?has_content)>
-                            <div class="form-header-cell"><@formListHeaderField fieldNode/></div>
+                            <div class="form-header-cell">
+                                <@formListHeaderField fieldNode/>
+                            </div>
                         <#elseif fieldNode["header-field"][0]?if_exists["hidden"]?has_content>
                             <#recurse fieldNode["header-field"][0]/>
                         </#if>
@@ -1012,7 +1015,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#t><#if !isHeaderField && isMulti && !isMultiFinalRow && fieldSubNode["submit"]?has_content><#return/></#if>
     <#t><#if !isHeaderField && isMulti && isMultiFinalRow && !fieldSubNode["submit"]?has_content><#return/></#if>
     <#if fieldSubNode["hidden"]?has_content><#recurse fieldSubNode/><#return/></#if>
-    <#if !isMultiFinalRow><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
+    <#if !isMultiFinalRow && !isHeaderField><div<#if !formListSkipClass?if_exists> class="form-cell"</#if>></#if>
         ${sri.pushContext()}
         <#list fieldSubNode?children as widgetNode><#if widgetNode?node_name == "set">${sri.setInContext(widgetNode)}</#if></#list>
         <#list fieldSubNode?children as widgetNode>
@@ -1027,7 +1030,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <#else><#t><#visit widgetNode></#if>
         </#list>
         ${sri.popContext()}
-    <#if !isMultiFinalRow></div></#if>
+    <#if !isMultiFinalRow && !isHeaderField></div></#if>
 </#macro>
 <#macro "row-actions"><#-- do nothing, these are run by the SRI --></#macro>
 
@@ -1055,25 +1058,72 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 
 <#macro "date-find">
-<span class="form-date-find">
-    <#assign curFieldName><@fieldName .node/></#assign>
-    <#if .node["@type"]! == "time"><#assign size=9/><#assign maxlength=12/><#elseif .node["@type"]! == "date"><#assign size=10/><#assign maxlength=10/><#else><#assign size=23/><#assign maxlength=23/></#if>
-    <#assign id><@fieldId .node/></#assign>
-    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_from"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
-    <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")?html}" size="${size}" maxlength="${maxlength}" id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
-    <#if .node["@type"]! != "time">
-        <#-- TODO: replace datepicker()
-        <#assign afterFormScript>
-            <#if .node["@type"]! == "date">
-            $("#${id}_from,#${id}_thru").datepicker({
-            <#else>
-            $("#${id}_from,#${id}_thru").datetimepicker({showSecond: true, timeFormat: 'hh:mm:ss', stepHour: 1, stepMinute: 5, stepSecond: 5,
-            </#if>showOn: 'button', buttonImage: '', buttonText: '...', buttonImageOnly: false, dateFormat: 'yy-mm-dd'});
-        </#assign>
-        <#t>${sri.appendToScriptWriter(afterFormScript)}
-        -->
+    <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm:ss">
+    <#elseif .node["@type"]! == "date"><#assign size=10><#assign maxlength=10><#assign defaultFormat="yyyy-MM-dd">
+    <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm:ss">
     </#if>
-</span>
+    <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
+
+    <#assign curFieldName><@fieldName .node/></#assign>
+    <#assign fieldValueFrom = ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")>
+    <#assign fieldValueThru = ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")>
+    <#assign id><@fieldId .node/></#assign>
+
+    <#-- <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span> -->
+    <span class="form-date-find">
+    <#if .node["@type"]! != "time">
+        <#if .node["@type"]! == "date">
+            <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
+                <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+            <#assign afterFormScript>$('#${id}_from').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
+        <#else>
+            <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
+                <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+            <#assign afterFormScript>$('#${id}_from').datetimepicker({pickerPosition:'bottom-left'});</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
+        </#if>
+    <#else>
+        <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
+            <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
+        </div>
+        <#assign afterFormScript>$('#${id}_from').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
+    </#if>
+    </span>
+
+    <#-- <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span> -->
+    <span class="form-date-find">
+    <#if .node["@type"]! != "time">
+        <#if .node["@type"]! == "date">
+            <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
+                <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+            <#assign afterFormScript>$('#${id}_thru').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
+        <#else>
+            <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
+                <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
+            </div>
+            <#assign afterFormScript>$('#${id}_thru').datetimepicker({pickerPosition:'bottom-left'});</#assign>
+            <#t>${sri.appendToScriptWriter(afterFormScript)}
+        </#if>
+    <#else>
+        <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
+            <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
+        </div>
+        <#assign afterFormScript>$('#${id}_thru').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
+        <#t>${sri.appendToScriptWriter(afterFormScript)}
+    </#if>
+    </span>
 </#macro>
 
 <#--
@@ -1111,16 +1161,15 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#elseif .node["@type"]! == "date"><#assign size=10><#assign maxlength=10><#assign defaultFormat="yyyy-MM-dd">
     <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm:ss">
     </#if>
+    <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
     <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!defaultFormat)>
     <#assign id><@fieldId .node/></#assign>
-    <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
     <#assign size = .node["@size"]?default(size)>
     <#assign maxlength = .node["@max-length"]?default(maxlength)>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
-                <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
@@ -1128,7 +1177,6 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#else>
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
-            <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}').datetimepicker({pickerPosition:'bottom-left'});</#assign>
@@ -1137,7 +1185,6 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#else>
         <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
             <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
-        <#-- <span class="input-group-addon add-on"><i class="glyphicon glyphicon-remove"></i></span> -->
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
         <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
