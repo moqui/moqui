@@ -67,6 +67,7 @@ li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 strong { font-weight: bold; }
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 p, pre { white-space: pre-line; word-wrap: break-word; }
+label { white-space: normal; }
 
 form { display: inline; }
 
@@ -273,4 +274,4 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 /* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
-.chosen-container { min-width: 150px !important; }
+.chosen-container { min-width: 250px !important; }
