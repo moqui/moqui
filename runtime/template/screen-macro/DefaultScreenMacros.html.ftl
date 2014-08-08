@@ -1069,7 +1069,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign fieldValueThru = ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")>
     <#assign id><@fieldId .node/></#assign>
 
-    <#-- <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span> -->
+    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span>
     <span class="form-date-find">
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
@@ -1097,7 +1097,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     </span>
 
-    <#-- <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span> -->
+    <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span>
     <span class="form-date-find">
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
