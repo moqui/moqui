@@ -717,46 +717,34 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:sequence>
                 <xs:element maxOccurs="unbounded" ref="tree-node"/>
+                <xs:element maxOccurs="unbounded" ref="tree-sub-node"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="name" use="optional"/>
-            <xs:attribute type="xs:string" name="root-node-name" use="required"/>
             <xs:attribute type="xs:string" name="open-depth" default="0"/>
-            <xs:attribute type="xs:string" name="entity-name"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="tree-node">
         <xs:complexType>
             <xs:sequence>
                 <xs:element minOccurs="0" ref="condition"/>
-                <xs:choice minOccurs="0">
-                    <xs:element ref="entity-find-one"/>
-                    <xs:element ref="service-call"/>
-                </xs:choice>
-                <xs:element ref="widgets"/>
+                <xs:element minOccurs="0" ref="actions"/>
+                <xs:element ref="link"/>
+                <!-- <xs:element ref="widgets"/> -->
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="tree-sub-node"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="name" use="required"/>
-            <xs:attribute type="xs:string" name="entry-name" />
-            <xs:attribute type="xs:string" name="entity-name" />
-            <xs:attribute type="xs:string" name="join-field-name" />
         </xs:complexType>
     </xs:element>
     <xs:element name="tree-sub-node">
         <xs:complexType>
             <xs:sequence>
-                <xs:choice>
-                    <xs:element ref="entity-find"/>
-                    <xs:element ref="service-call"/>
-                </xs:choice>
-                <xs:element minOccurs="0" maxOccurs="unbounded" ref="out-field-map"/>
+                <!-- the parameters are for remote request of sub-nodes for a node when lazy loading and are in the context of the parent node or root of the tree -->
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
+                <xs:element minOccurs="0" ref="actions"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="node-name" use="required"/>
-        </xs:complexType>
-    </xs:element>
-    <xs:element name="out-field-map">
-        <xs:complexType>
-            <xs:attribute type="xs:string" name="field-name" use="required"/>
-            <xs:attribute type="xs:string" name="to-field-name"/>
+            <xs:attribute type="xs:string" name="list" use="required"/>
+            <xs:attribute type="xs:string" name="parameter-map" use="optional"/>
         </xs:complexType>
     </xs:element>
     -->
@@ -766,7 +754,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <xs:complexType>
             <xs:choice minOccurs="1" maxOccurs="unbounded">
                 <xs:element ref="text"/>
-                <!-- the gwt and swing elements are just placeholders for now, won't be implemented in this rev -->
+                <!-- the gwt and swing elements are just placeholders for now, won't be implemented in this version -->
                 <!-- <xs:element ref="gwt"/> -->
                 <!-- <xs:element ref="swing"/> -->
             </xs:choice>
