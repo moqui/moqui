@@ -713,6 +713,8 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ============== Tree ============== -->
     <!-- TABLED, not to be part of 1.0:
+        http://www.jstree.com/docs/json/
+        http://www.miketyka.com/2012/10/lazy-loading-with-jstree-and-ajax/
     <xs:element name="tree" substitutionGroup="AllWidgets">
         <xs:complexType>
             <xs:sequence>
@@ -729,7 +731,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element minOccurs="0" ref="condition"/>
                 <xs:element minOccurs="0" ref="actions"/>
                 <xs:element ref="link"/>
-                <!-- <xs:element ref="widgets"/> -->
+                <!- - <xs:element ref="widgets"/> - ->
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="tree-sub-node"/>
             </xs:sequence>
             <xs:attribute type="xs:string" name="name" use="required"/>
@@ -738,7 +740,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="tree-sub-node">
         <xs:complexType>
             <xs:sequence>
-                <!-- the parameters are for remote request of sub-nodes for a node when lazy loading and are in the context of the parent node or root of the tree -->
+                <!- - the parameters are for remote request of sub-nodes for a node when lazy loading and are in the context of the parent node or root of the tree - ->
                 <xs:element minOccurs="0" maxOccurs="unbounded" ref="parameter"/>
                 <xs:element minOccurs="0" ref="actions"/>
             </xs:sequence>
