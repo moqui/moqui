@@ -216,14 +216,14 @@ class UserFacadeImpl implements UserFacade {
                 if (cookieVisitorId) parameters.visitorId = cookieVisitorId
 
                 // NOTE: disable authz for this call, don't normally want to allow create of Visit, but this is special case
-                    Map visitResult = eci.service.sync().name("create", "moqui.server.Visit").parameters(parameters)
-                            .disableAuthz().call()
-                    // put visitId in session as "moqui.visitId"
-                    if (visitResult) {
-                        session.setAttribute("moqui.visitId", visitResult.visitId)
-                        this.visitId = visitResult.visitId
-                        logger.info("Created new Visit with ID [${this.visitId}] in session [${session.id}]")
-                    }
+                Map visitResult = eci.service.sync().name("create", "moqui.server.Visit").parameters(parameters)
+                        .disableAuthz().call()
+                // put visitId in session as "moqui.visitId"
+                if (visitResult) {
+                    session.setAttribute("moqui.visitId", visitResult.visitId)
+                    this.visitId = visitResult.visitId
+                    logger.info("Created new Visit with ID [${this.visitId}] in session [${session.id}]")
+                }
             }
         }
     }
