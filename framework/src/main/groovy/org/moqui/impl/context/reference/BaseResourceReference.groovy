@@ -106,13 +106,13 @@ abstract class BaseResourceReference implements ResourceReference {
     List<ResourceReference> getChildren() {
         List<ResourceReference> children = []
 
-        ResourceReference directoryRef
-        if (this.isDirectory()) directoryRef = this
-        else directoryRef = findMatchingDirectory()
+        ResourceReference directoryRef = findMatchingDirectory()
         if (!directoryRef?.exists) return null
 
         for (ResourceReference childRef in directoryRef.getDirectoryEntries())
             if (childRef.isFile()) children.add(childRef)
+
+        return children
     }
 
     @Override
