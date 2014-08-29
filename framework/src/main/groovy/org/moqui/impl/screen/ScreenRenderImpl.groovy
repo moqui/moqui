@@ -200,7 +200,11 @@ class ScreenRenderImpl implements ScreenRender {
             ri = recursiveRunTransition(sdIterator)
         } else {
             // run the transition
+
+            // simulate the active screen
+            overrideActiveScreenDef = sd
             ri = screenUrlInfo.targetTransition.run(this)
+            overrideActiveScreenDef = null
         }
 
         ec.getArtifactExecution().pop()
@@ -934,6 +938,10 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenUrlInfo makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper,
                                 String expandTransitionUrlString) {
+        return makeUrlByTypeGroovyNode(origUrl, urlType, parameterParentNodeWrapper?.groovyNode, expandTransitionUrlString)
+    }
+    ScreenUrlInfo makeUrlByTypeGroovyNode(String origUrl, String urlType, Node parameterParentNode,
+                                String expandTransitionUrlString) {
         Boolean expandTransitionUrl = expandTransitionUrlString != null ? expandTransitionUrlString == "true" : null
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
@@ -948,8 +956,7 @@ class ScreenRenderImpl implements ScreenRender {
             default: sui = new ScreenUrlInfo(this, url); break;
         }
 
-        if (sui != null && parameterParentNodeWrapper != null) {
-            Node parameterParentNode = parameterParentNodeWrapper.groovyNode
+        if (sui != null && parameterParentNode != null) {
             if (parameterParentNode."@parameter-map") {
                 def ctxParameterMap = ec.resource.evaluateContextField((String) parameterParentNode."@parameter-map", "")
                 if (ctxParameterMap) sui.addParameters((Map) ctxParameterMap)

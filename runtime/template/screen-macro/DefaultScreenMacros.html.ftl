@@ -343,14 +343,31 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 
 <#-- ============== Tree ============== -->
-<#-- TABLED, not to be part of 1.0:
 <#macro tree>
+    <#assign ajaxUrlInfo = sri.makeUrlByType(.node["@transition"]!"getTreeSubNodes", "transition", .node, "true")>
+    <#assign ajaxParms = ajaxUrlInfo.getParameterMap()>
+
+    <div id="${.node["@name"]}"></div>
+
+    <#assign afterScreenScript>
+    $("#${.node["@name"]}").bind('select_node.jstree', function(e,data) {window.location.href = data.node.a_attr.href;}).jstree({
+        "plugins" : [ "themes" ],
+        "core" : { "themes" : { "url" : true, "dots" : true, "icons" : false }, "multiple" : false,
+            'data' : {
+                dataType: 'json', type: 'POST',
+                url: function (node) {
+                    // return node.id === '#' ? 'ajax_roots.json' : 'ajax_children.json';
+                    return '${ajaxUrlInfo.url}';
+                },
+                data: function (node) { return { treeNodeId: node.id<#if .node["@open-path"]??>, treeOpenPath: "${ec.resource.evaluateStringExpand(.node["@open-path"], "")}"</#if><#list ajaxParms.keySet() as pKey>, "${pKey}": "${ajaxParms.get(pKey)!""}"</#list> }; }
+            }
+        }
+    });
+    </#assign>
+    <#t>${sri.appendToScriptWriter(afterScreenScript)}
 </#macro>
-<#macro "tree-node">
-</#macro>
-<#macro "tree-sub-node">
-</#macro>
--->
+<#macro "tree-node"><#-- shouldn't be called directly, but just in case --></#macro>
+<#macro "tree-sub-node"><#-- shouldn't be called directly, but just in case --></#macro>
 
 <#-- ============== Render Mode Elements ============== -->
 <#macro "render-mode"><#t>
