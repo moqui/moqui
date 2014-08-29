@@ -38,12 +38,6 @@ class ScreenTree {
         this.treeNode = treeNode
         this.location = location
 
-        /* not needed, handled by sri.makeUrlByType() treating the tree element as a parameter parent node:
-        // parameter
-        for (Node parameterNode in treeNode."parameter")
-            parameterByName.put((String) parameterNode."@name", new ScreenDefinition.ParameterItem(parameterNode, location))
-        */
-
         // prep tree-node
         for (Node treeNodeNode in treeNode."tree-node")
             nodeByName.put(treeNodeNode."@name", new TreeNode(this, treeNodeNode, location + ".node." + treeNodeNode."@name"))
@@ -53,28 +47,13 @@ class ScreenTree {
             subNodeList.add(new TreeSubNode(this, treeSubNodeNode, location + ".subnode." + treeSubNodeNode."@node-name"))
     }
 
-    /* not needed, handled by sri.makeUrlByType() treating the tree element as a parameter parent node:
-    List<String> setAllParameters(ExecutionContext ec) {
-        List<String> parameterNames = []
-        // put parameters in the context
-        for (ScreenDefinition.ParameterItem pi in parameterByName.values()) {
-            Object value = pi.getValue(ec)
-            if (value != null) ec.getContext().put(pi.getName(), value)
-            parameterNames.add(pi.getName())
-        }
-        return parameterNames
-    }
-    */
-
     void sendSubNodeJson() {
         // NOTE: This method is very specific to jstree
 
         ExecutionContextImpl eci = ecfi.getEci()
         ContextStack cs = eci.getContext()
 
-        List outputNodeList = []
-
-        logger.warn("========= treeNodeId = ${cs.get("treeNodeId")}")
+        // logger.warn("========= treeNodeId = ${cs.get("treeNodeId")}")
         // if this is the root node get the main tree sub-nodes, otherwise find the node and use its sub-nodes
         List<TreeSubNode> currentSubNodeList
         if (cs.get("treeNodeId") == "#") {
@@ -83,6 +62,15 @@ class ScreenTree {
             // TODO: how to find the active node's name? pass in through JS somehow...
             currentSubNodeList = nodeByName.values().first().subNodeList
         }
+
+        List outputNodeList = getChildNodes(currentSubNodeList, eci, cs)
+
+        // logger.warn("========= outputNodeList = ${outputNodeList}")
+        eci.getWeb().sendJsonResponse(outputNodeList)
+    }
+
+    List<Map> getChildNodes(List<TreeSubNode> currentSubNodeList, ExecutionContextImpl eci, ContextStack cs) {
+        List<Map> outputNodeList = []
 
         for (TreeSubNode tsn in currentSubNodeList) {
             // check condition
@@ -94,14 +82,12 @@ class ScreenTree {
 
             // iterate over the list and add a response node for each entry
             String nodeListName = tsn.treeSubNodeNode."@list" ?: "nodeList"
-            logger.warn("========= nodeListName = ${nodeListName} :: ${cs.get(nodeListName)}")
             Iterator i = cs.get(nodeListName).iterator()
             int index = 0
             while (i.hasNext()) {
                 Object nodeListEntry = i.next()
-                logger.warn("========= nodeListEntry = ${nodeListEntry}")
-                cs.push()
 
+                cs.push()
                 try {
                     cs.put("nodeList_entry", nodeListEntry)
                     cs.put("nodeList_index", index)
@@ -116,9 +102,23 @@ class ScreenTree {
                     String text = eci.getResource().evaluateStringExpand((String) tn.linkNode."@text", tn.location + ".text")
                     ScreenUrlInfo urlInfo = cs.get("sri").makeUrlByTypeGroovyNode(tn.linkNode."@url", tn.linkNode."@url-type" ?: "transition", tn.linkNode, tn.linkNode."@expand-transition-url" ?: "true")
 
-                    boolean hasChildren = true // TODO
-                    Map subNodeMap = [id:id, text:text, children:hasChildren, a_attr:[href:urlInfo.getUrlWithParams()]]
-                    // TODO: for root node add children for treeOpenPath
+                    // now get children to check if has some, and if in treeOpenPath include them
+                    List<Map> childNodeList = null
+                    cs.push()
+                    try {
+                        cs.put("treeNodeId", id)
+                        childNodeList = getChildNodes(tn.subNodeList, eci, cs)
+                    } finally {
+                        cs.pop()
+                    }
+
+                    Map subNodeMap = [id:id, text:text, a_attr:[href:urlInfo.getUrlWithParams()]]
+                    if (((String) cs.get("treeOpenPath"))?.startsWith(id)) {
+                        subNodeMap.state = [opened:true, selected:(cs.get("treeOpenPath") == id)]
+                        subNodeMap.children = childNodeList
+                    } else {
+                        subNodeMap.children = childNodeList as boolean
+                    }
                     outputNodeList.add(subNodeMap)
                     /* structure of JSON object from jstree docs:
                         {
@@ -141,8 +141,7 @@ class ScreenTree {
             }
         }
 
-        logger.warn("========= outputNodeList = ${outputNodeList}")
-        eci.getWeb().sendJsonResponse(outputNodeList)
+        return outputNodeList
     }
 
     static class TreeNode {
