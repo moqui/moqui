@@ -355,11 +355,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         "core" : { "themes" : { "url" : true, "dots" : true, "icons" : false }, "multiple" : false,
             'data' : {
                 dataType: 'json', type: 'POST',
-                url: function (node) {
-                    // return node.id === '#' ? 'ajax_roots.json' : 'ajax_children.json';
-                    return '${ajaxUrlInfo.url}';
-                },
-                data: function (node) { return { treeNodeId: node.id<#if .node["@open-path"]??>, treeOpenPath: "${ec.resource.evaluateStringExpand(.node["@open-path"], "")}"</#if><#list ajaxParms.keySet() as pKey>, "${pKey}": "${ajaxParms.get(pKey)!""}"</#list> }; }
+                url: function (node) { return '${ajaxUrlInfo.url}'; },
+                data: function (node) { return { treeNodeId: node.id, treeNodeName: (node.li_attr && node.li_attr.treeNodeName ? node.li_attr.treeNodeName : '')<#if .node["@open-path"]??>, treeOpenPath: "${ec.resource.evaluateStringExpand(.node["@open-path"], "")}"</#if><#list ajaxParms.keySet() as pKey>, "${pKey}": "${ajaxParms.get(pKey)!""}"</#list> }; }
             }
         }
     });

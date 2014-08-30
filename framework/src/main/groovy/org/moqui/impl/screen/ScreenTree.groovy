@@ -55,12 +55,17 @@ class ScreenTree {
 
         // logger.warn("========= treeNodeId = ${cs.get("treeNodeId")}")
         // if this is the root node get the main tree sub-nodes, otherwise find the node and use its sub-nodes
-        List<TreeSubNode> currentSubNodeList
+        List<TreeSubNode> currentSubNodeList = null
         if (cs.get("treeNodeId") == "#") {
             currentSubNodeList = subNodeList
         } else {
-            // TODO: how to find the active node's name? pass in through JS somehow...
-            currentSubNodeList = nodeByName.values().first().subNodeList
+            // logger.warn("======== treeNodeName = ${cs.get("treeNodeName")}")
+            if (cs.get("treeNodeName")) currentSubNodeList = nodeByName.get(cs.get("treeNodeName"))?.subNodeList
+            if (currentSubNodeList == null) {
+                // if no treeNodeName passed through just use the first defined node, though this shouldn't happen
+                logger.warn("No treeNodeName passed in request for child nodes for node [${cs.get("treeNodeId")}] in tree [${this.location}], using first node in tree definition.")
+                currentSubNodeList = nodeByName.values().first().subNodeList
+            }
         }
 
         List outputNodeList = getChildNodes(currentSubNodeList, eci, cs)
@@ -112,7 +117,7 @@ class ScreenTree {
                         cs.pop()
                     }
 
-                    Map subNodeMap = [id:id, text:text, a_attr:[href:urlInfo.getUrlWithParams()]]
+                    Map subNodeMap = [id:id, text:text, a_attr:[href:urlInfo.getUrlWithParams()], li_attr:["treeNodeName":tn.treeNodeNode."@name"]]
                     if (((String) cs.get("treeOpenPath"))?.startsWith(id)) {
                         subNodeMap.state = [opened:true, selected:(cs.get("treeOpenPath") == id)]
                         subNodeMap.children = childNodeList
