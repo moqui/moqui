@@ -722,7 +722,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:element maxOccurs="unbounded" ref="tree-node"/>
                 <xs:element maxOccurs="unbounded" ref="tree-sub-node"/>
             </xs:sequence>
-            <xs:attribute type="xs:string" name="name" use="optional"/>
+            <xs:attribute type="xs:string" name="name" use="required"/>
             <xs:attribute type="xs:string" name="transition" default="getTreeSubNodes"/>
             <xs:attribute type="xs:string" name="open-path" use="optional"/>
             <!-- <xs:attribute type="xs:string" name="open-depth" default="0"/> -->
