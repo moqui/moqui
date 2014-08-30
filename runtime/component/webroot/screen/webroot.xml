@@ -26,6 +26,7 @@ This Work includes contributions authored by David E. Jones, not as a
             '/assets/lib/autosize/jquery.autosize.min.js',
             '/assets/lib/jasny/js/jasny-bootstrap.min.js',
             '/js/jquery-jeditable-1.7.1.min.js',
+            '/js/jstree-3.0.3/jstree.min.js',
             '/assets/js/main.min.js','/assets/js/minHeight.js'])"/>
 
         <!-- out until used in DefaultScreenMacros.html.ftl:
