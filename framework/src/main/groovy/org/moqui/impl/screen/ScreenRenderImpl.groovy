@@ -197,14 +197,15 @@ class ScreenRenderImpl implements ScreenRender {
 
         ResponseItem ri
         if (sdIterator.hasNext()) {
-            ri = recursiveRunTransition(sdIterator)
+            screenPathIndex++
+            try {
+                ri = recursiveRunTransition(sdIterator)
+            } finally {
+                screenPathIndex--
+            }
         } else {
             // run the transition
-
-            // simulate the active screen
-            overrideActiveScreenDef = sd
             ri = screenUrlInfo.targetTransition.run(this)
-            overrideActiveScreenDef = null
         }
 
         ec.getArtifactExecution().pop()
