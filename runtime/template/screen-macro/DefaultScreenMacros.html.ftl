@@ -473,7 +473,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
     <#assign parameterName = .node["@parameter-name"]!"value">
     <#if labelValue?trim?has_content>
-        <${labelType} id="${divId}"><#if .node["@encode"]! == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
+        <${labelType} id="${divId}" class="editable-label"><#if .node["@encode"]! == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
         <#assign afterScreenScript>
         $("#${divId}").editable("${urlInfo.url}", { indicator:"${ec.l10n.getLocalizedMessage("Saving")}",
             tooltip:"${ec.l10n.getLocalizedMessage("Click to edit")}", cancel:"${ec.l10n.getLocalizedMessage("Cancel")}",

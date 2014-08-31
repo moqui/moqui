@@ -69,6 +69,8 @@ tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 p, pre { white-space: pre-line; word-wrap: break-word; }
 label { white-space: normal; }
 
+.editable-label { color: rgb(66, 139, 202); }
+
 form { display: inline; }
 
 form.editable-form button { background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px; outline: 0px; }
@@ -127,12 +129,12 @@ div.ui-layout-container { height: 100%; }
 /* styles for non-dynamic table layout, not using jquery-layout */
 div.panel-outer {  }
 div.panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }
-div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; }
-div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; }
+div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; vertical-align: top; }
+div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; vertical-align: top; }
 div.panel-header { width: 100%; }
 div.panel-footer { width: 100%; }
 
@@ -270,6 +272,7 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 /* ================ Extensions for bootstrap.min.css theme =============== */
 
 .form-control { width: auto; }
+.form-group div { padding-top: 7px; }
 
 /* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
