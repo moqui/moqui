@@ -10,7 +10,7 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
-if (gradle.gradleVersion != "1.6") println("WARNING: The Moqui Framework build.gradle files are currently tested on Gradle 1.6 and due to volatility in Gradle between releases may not work on other versions.")
+if (gradle.gradleVersion != "1.6" && gradle.gradleVersion != "1.12") println("WARNING: The Moqui Framework build.gradle files are currently tested on Gradle 1.6 and 1.12 and due to volatility in Gradle between releases may not work on other versions.")
 
 allprojects { version = '1.4.2' }
 
