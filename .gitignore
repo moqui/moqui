@@ -18,6 +18,7 @@ build/
 /runtime/db/derby/MoquiTransactional/
 /runtime/db/derby/MoquiAnalytical/
 /runtime/db/derby/EXAMPLE1/
+/runtime/db/derby/CustJqp/
 /runtime/db/derby/derby.log
 /runtime/db/orientdb/databases/
 /runtime/elasticsearch/data/
