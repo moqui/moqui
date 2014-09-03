@@ -61,6 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoTypeEnumId" type="id"/>
         <field name="geoName" type="text-medium"/>
+        <field name="geoNameLocal" type="text-medium"/>
         <field name="geoCodeAlpha2" type="text-short"/>
         <field name="geoCodeAlpha3" type="text-short"/>
         <field name="geoCodeNumeric" type="text-short"/>
