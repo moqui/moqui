@@ -53,4 +53,29 @@ This Work includes contributions authored by David E. Jones, not as a
             </entity-find>
         </actions>
     </service>
+    <service verb="find" noun="EnumerationByParent" allow-remote="true">
+        <in-parameters>
+            <parameter name="parentEnumId" required="true"/>
+            <parameter name="includeParent" type="Boolean" default="true"/>
+            <parameter name="orderByField" default-value="description"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="enumerationList" type="List"/>
+            <parameter name="enumIdSet" type="Set"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.Enumeration" list="enumerationList" cache="true">
+                <econdition field-name="parentEnumId"/>
+                <order-by field-name="${orderByField}"/>
+            </entity-find>
+            <if condition="includeParent">
+                <set field="enumerationList" from="enumerationList.cloneList()"/>
+                <entity-find-one entity-name="moqui.basic.Enumeration" value-field="parentEnum">
+                    <field-map field-name="enumId" from="parentEnumId"/></entity-find-one>
+                <script>enumerationList.add(0, parentEnum)</script>
+            </if>
+            <set field="enumIdSet" from="new TreeSet()"/>
+            <iterate list="enumerationList" entry="enumeration"><script>enumIdSet.add(enumeration.enumId)</script></iterate>
+        </actions>
+    </service>
 </services>
