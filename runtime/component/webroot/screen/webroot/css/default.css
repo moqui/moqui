@@ -236,7 +236,7 @@ button.ui-button-icons-only { width: 1.5em; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .1em .5em; text-decoration: none; }
 .ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 4px 0px; background: none; }
 
-.ui-menu { z-index: 9; display: inline-block; overflow: visible; white-space: nowrap; margin-bottom: 4px; }
+.ui-menu { display: inline-block; overflow: visible; white-space: nowrap; margin-bottom: 4px; }
 .ui-menu-item .ui-state-focus { border-color: transparent; }
 .ui-menu-item .ui-state-active { -moz-border-radius: 4px; -webkit-border-radius: 4px; -khtml-border-radius: 4px; border-radius: 4px; }
 
@@ -253,11 +253,12 @@ button.ui-button-icons-only { width: 1.5em; }
 /* ================ Extensions for jquery-ui theme =============== */
 
 /* this applies to combo-box and autocomplete */
-input.ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 250px; padding: 2px; padding-left: 4px; }
+input.ui-autocomplete-input { font-size: .9em; }
 /* this applies to autocomplete only */
 input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
+.ui-autocomplete { z-index: 1100; } /* needed for modal windows with z-index of 1050 */
 
 /* css for timepicker */
 /*
