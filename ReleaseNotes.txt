@@ -18,6 +18,9 @@ New Features:
 - Added tree element for XML Screen that renders a lazy-loaded tree with
   links using jstree (currently version 3.0.3); see the wiki.xml screen
   in HiveMind for an example of its use
+- Various XML Screen elements have more consistent id behavior with string
+  expansion and adding the listEntryIndex suffix, which is now also set
+  in section-iterate (in addition to form-list as before)
 
 Bug Fixes:
 

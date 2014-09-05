@@ -73,6 +73,7 @@ class ScreenSection {
                     if (sectionNode["@key"] && entry instanceof Map.Entry)
                         cs.put((String) sectionNode["@key"], entry.getKey())
 
+                    cs.put("listEntryIndex", index)
                     cs.put(((String) sectionNode["@entry"]) + "_index", index)
                     cs.put(((String) sectionNode["@entry"]) + "_has_next", listIterator.hasNext())
 

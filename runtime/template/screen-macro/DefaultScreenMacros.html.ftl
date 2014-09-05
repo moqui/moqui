@@ -203,7 +203,7 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "container-panel">
-    <#assign panelId = ec.resource.evaluateStringExpand(.node["@id"], "")>
+    <#assign panelId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <#-- DEJ 24 Jan 2014: disabling dynamic panels for now, need to research with new Metis admin theme:
     <#if .node["@dynamic"]! == "true">
         <#assign afterScreenScript>
@@ -265,8 +265,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#macro "container-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
-    <button id="${.node["@id"]}-button" data-toggle="modal" data-target="#${.node["@id"]}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
-    <div id="${.node["@id"]}" class="modal fade" aria-hidden="true" style="display: none;">
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
+    <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
@@ -292,7 +293,7 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#macro "dynamic-container">
-    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true").addParameter("_dynamic_container_id", divId)>
     <div id="${divId}"><img src="/images/wait_anim_16x16.gif" alt="Loading..."></div>
     <#assign afterScreenScript>
@@ -305,7 +306,7 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "dynamic-dialog">
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
-    <#assign divId>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
 
     <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
     <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
@@ -399,9 +400,10 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#-- ================== Standalone Fields ==================== -->
 <#macro link>
     <#assign urlInfo = sri.makeUrlByType(.node["@url"], .node["@url-type"]!"transition", .node, .node["@expand-transition-url"]!"true")>
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <#assign linkNode = .node>
-    <@linkFormForm linkNode linkNode["@id"]?if_exists urlInfo/>
-    <@linkFormLink linkNode linkNode["@id"]?if_exists urlInfo/>
+    <@linkFormForm linkNode divId urlInfo/>
+    <@linkFormLink linkNode divId urlInfo/>
 </#macro>
 <#macro linkFormLink linkNode linkFormId urlInfo>
     <#if urlInfo.disableLink>
@@ -459,16 +461,17 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 <#macro label>
     <#assign labelType = .node["@type"]?default("span")/>
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")/>
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
     <#if labelValue?trim?has_content>
-        <${labelType}<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
+        <${labelType}<#if divId?has_content> id="${divId}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
     </#if>
 </#macro>
 <#macro editable>
     <#-- for docs on JS usage see: http://www.appelsiini.net/projects/jeditable -->
     <#assign urlInfo = sri.makeUrlByType(.node["@transition"], "transition", .node, "true")>
     <#assign urlParms = urlInfo.getParameterMap()>
-    <#assign divId>${.node["@id"]}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
+    <#assign divId>${ec.resource.evaluateStringExpand(.node["@id"]?if_exists, "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#assign>
     <#assign labelType = .node["@type"]?default("span")>
     <#assign labelValue = ec.resource.evaluateStringExpand(.node["@text"], "")>
     <#assign parameterName = .node["@parameter-name"]!"value">
