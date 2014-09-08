@@ -189,12 +189,16 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 
 .form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
 
-.form-header-field { white-space: nowrap; }
+.form-header-field { white-space: nowrap; padding-top: 4px; }
 .form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
 
 /* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
-.form-date-time { white-space: nowrap; display: block; padding: 8px 52px 8px 12px; }
-.form-date-find { white-space: nowrap; display: block; padding: 8px 12px 8px 12px; }
+/*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
+.form-date-find { white-space: nowrap; display: inline; padding: 8px 12px 8px 12px; }*/
+.form-date-find { display: block; padding-bottom: 4px; }
+.input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
+.form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
+.form-date-find .input-group { display: inline-block; }
 
 .form-text-find input { display: inline-block; }
 
@@ -272,11 +276,20 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* ================ Extensions for bootstrap.min.css theme =============== */
 
-.form-control { width: auto; }
+/* NOTE: part of an attempt to get chosen drop-downs to display in the inner area that is smaller than the height of the drop-down, not working...
+#wrap { overflow: visible; }
+#content { overflow-x: auto; overflow-y: visible; }
+.inner { overflow-y: scroll; }
+*/
+
+input[type=radio], input[type=checkbox] { height: auto; }
+
+.form-group { margin-bottom: 8px; }
+.input-group .form-control, .form-control { width: auto; }
 /* causes more layout issues than solves: .form-group div { padding-top: 7px; } */
 .form-horizontal .control-label { padding-top: 0; }
 
 /* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
-.chosen-container { min-width: 250px !important; }
+.chosen-container { min-width: 200px !important; }

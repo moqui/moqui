@@ -1086,8 +1086,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign fieldValueThru = ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")>
     <#assign id><@fieldId .node/></#assign>
 
-    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span>
     <span class="form-date-find">
+      <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
@@ -1114,8 +1114,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </#if>
     </span>
 
-    <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span>
     <span class="form-date-find">
+      <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
