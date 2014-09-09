@@ -274,8 +274,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="toUomId" type="id"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
-        <field name="conversionFactor" type="number-float"/>
-        <field name="conversionOffset" type="number-float">
+        <field name="conversionFactor" type="number-decimal"/>
+        <field name="conversionOffset" type="number-decimal">
             <description>The factor is multiplied first, then the offset is added. When converting in the reverse
                 direction the offset is subtracted first, then divided by the factor.
             </description>
