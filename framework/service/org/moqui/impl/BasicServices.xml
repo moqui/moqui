@@ -78,4 +78,48 @@ This Work includes contributions authored by David E. Jones, not as a
             <iterate list="enumerationList" entry="enumeration"><script>enumIdSet.add(enumeration.enumId)</script></iterate>
         </actions>
     </service>
+    
+    <!-- ========== Uom Services ========== -->
+    <service verb="convert" noun="Uom">
+        <description>Converts amount and returns convertedAmount. The factor is multiplied first, then the offset is added.
+            If no UomConversion record is found for uomId and toUomId tries the reverse. When converting in the reverse
+            direction the offset is subtracted first, then divided by the factor.</description>
+        <in-parameters>
+            <parameter name="uomId" required="true"/>
+            <parameter name="toUomId" required="true"/>
+            <parameter name="effectiveDate" default="ec.user.nowTimestamp" type="Timestamp"/>
+            <parameter name="amount" type="BigDecimal" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="convertedAmount"/>
+        </out-parameters>
+        <actions>
+            <entity-find entity-name="moqui.basic.UomConversion" list="uomConversionList">
+                <date-filter valid-date="effectiveDate"/>
+                <econdition field-name="uomId"/><econdition field-name="toUomId"/>
+            </entity-find>
+            <if condition="uomConversionList">
+                <set field="uomConversion" from="uomConversionList.first"/>
+                <set field="convertedAmount" from="amount"/>
+                <if condition="uomConversion.conversionFactor"><set field="convertedAmount" from="convertedAmount * uomConversion.conversionFactor"/></if>
+                <if condition="uomConversion.conversionOffset"><set field="convertedAmount" from="convertedAmount + uomConversion.conversionOffset"/></if>
+                <return/>
+            </if>
+            <if condition="!uomConversionList">
+                <!-- try going backwards -->
+                <entity-find entity-name="moqui.basic.UomConversion" list="uomConversionList">
+                    <date-filter valid-date="effectiveDate"/>
+                    <econdition field-name="uomId" from="toUomId"/><econdition field-name="toUomId" from="uomId"/>
+                </entity-find>
+                <if condition="uomConversionList">
+                    <set field="uomConversion" from="uomConversionList.first"/>
+                    <set field="convertedAmount" from="amount"/>
+                    <if condition="uomConversion.conversionOffset"><set field="convertedAmount" from="convertedAmount - uomConversion.conversionOffset"/></if>
+                    <if condition="uomConversion.conversionFactor"><set field="convertedAmount" from="convertedAmount / uomConversion.conversionFactor"/></if>
+                    <return/>
+                </if>
+            </if>
+            <if condition="!uomConversionList"><return error="true" message="Could not convert from [${uomId}] to [${toUomId}], no UomConversion record found."/></if>
+        </actions>
+    </service>
 </services>
