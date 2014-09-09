@@ -267,7 +267,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
-    <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
+    <div id="${divId}" class="modal fade container-dialog" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
@@ -309,7 +309,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
 
     <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
-    <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
+    <div id="${divId}" class="modal fade dynamic-dialog" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
