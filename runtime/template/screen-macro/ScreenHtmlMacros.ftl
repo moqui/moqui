@@ -12,6 +12,9 @@ This Work includes contributions authored by David E. Jones, not as a
 
 <#include "DefaultScreenMacros.html.ftl"/>
 
-<#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
-    </div><!-- CONTAINER OVERRIDE EXAMPLE -->
+<#macro container>
+    <#assign tagName = .node["@type"]!"div">
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <${tagName}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
+    </${tagName}><!-- CONTAINER OVERRIDE EXAMPLE -->
 </#macro>
