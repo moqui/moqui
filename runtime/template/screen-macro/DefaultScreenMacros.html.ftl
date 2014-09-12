@@ -198,7 +198,28 @@ This Work includes contributions authored by David E. Jones, not as a
 </#macro>
 
 <#-- ================ Containers ================ -->
-<#macro container>    <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
+<#macro container>
+    <#assign tagName = .node["@type"]!"div">
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <${tagName}<#if divId??> id="${divId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#recurse>
+    </${tagName}>
+</#macro>
+
+<#macro "container-box">
+    <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
+    <div class="box"<#if divId??> id="${divId}"</#if>>
+        <header>
+            <#recurse .node["box-header"][0]>
+
+            <#if .node["box-toolbar"]?has_content>
+                <div class="toolbar">
+                    <#recurse .node["box-toolbar"][0]>
+                </div>
+            </#if>
+        </header>
+        <div class="body">
+            <#recurse .node["box-body"][0]>
+        </div>
     </div>
 </#macro>
 
@@ -267,7 +288,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign buttonText = ec.resource.evaluateStringExpand(.node["@button-text"], "")>
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
-    <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
+    <div id="${divId}" class="modal fade container-dialog" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
@@ -309,7 +330,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
 
     <button id="${divId}-button" data-toggle="modal" data-target="#${divId}" data-original-title="${buttonText}" data-placement="bottom" class="btn btn-primary btn-sm"><i class="glyphicon glyphicon-share"></i> ${buttonText}</button>
-    <div id="${divId}" class="modal fade" aria-hidden="true" style="display: none;">
+    <div id="${divId}" class="modal fade dynamic-dialog" aria-hidden="true" style="display: none;">
         <div class="modal-dialog" style="width: ${.node["@width"]!"600"}px;">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1075,33 +1096,33 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 
 <#macro "date-find">
-    <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm:ss">
+    <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm">
     <#elseif .node["@type"]! == "date"><#assign size=10><#assign maxlength=10><#assign defaultFormat="yyyy-MM-dd">
-    <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm:ss">
+    <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm">
     </#if>
     <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
 
     <#assign curFieldName><@fieldName .node/></#assign>
-    <#assign fieldValueFrom = ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")>
-    <#assign fieldValueThru = ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")>
+    <#assign fieldValueFrom = ec.l10n.formatValue(ec.context.get(curFieldName + "_from")!?default(.node["@default-value-from"]!""), defaultFormat)>
+    <#assign fieldValueThru = ec.l10n.formatValue(ec.context.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!""), defaultFormat)>
     <#assign id><@fieldId .node/></#assign>
 
-    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span>
     <span class="form-date-find">
+      <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}_from').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
+            <#assign afterFormScript>$('#${id}_from').datetimepicker({minView:2, pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}_from').datetimepicker({pickerPosition:'bottom-left'});</#assign>
+            <#assign afterFormScript>$('#${id}_from').datetimepicker({pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
@@ -1109,27 +1130,27 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
-        <#assign afterFormScript>$('#${id}_from').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
+        <#assign afterFormScript>$('#${id}_from').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left', autoclose:true});</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
     </span>
 
-    <span>${ec.l10n.getLocalizedMessage("Through")}&nbsp;</span>
     <span class="form-date-find">
+      <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span>
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}_thru').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
+            <#assign afterFormScript>$('#${id}_thru').datetimepicker({minView:2, pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}_thru').datetimepicker({pickerPosition:'bottom-left'});</#assign>
+            <#assign afterFormScript>$('#${id}_thru').datetimepicker({pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
@@ -1137,7 +1158,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
             <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
-        <#assign afterFormScript>$('#${id}_thru').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
+        <#assign afterFormScript>$('#${id}_thru').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left', autoclose:true});</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
     </span>
@@ -1174,9 +1195,9 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 
 <#macro "date-time">
 <span class="form-date-time">
-    <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm:ss">
+    <#if .node["@type"]! == "time"><#assign size=9><#assign maxlength=13><#assign defaultFormat="HH:mm">
     <#elseif .node["@type"]! == "date"><#assign size=10><#assign maxlength=10><#assign defaultFormat="yyyy-MM-dd">
-    <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm:ss">
+    <#else><#assign size=19><#assign maxlength=23><#assign defaultFormat="yyyy-MM-dd HH:mm">
     </#if>
     <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
     <#assign fieldValue = sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", .node["@format"]!defaultFormat)>
@@ -1189,14 +1210,14 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
                 <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}').datetimepicker({minView:2, pickerPosition:'bottom-left'});</#assign>
+            <#assign afterFormScript>$('#${id}').datetimepicker({minView:2, pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
                 <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
-            <#assign afterFormScript>$('#${id}').datetimepicker({pickerPosition:'bottom-left'});</#assign>
+            <#assign afterFormScript>$('#${id}').datetimepicker({pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         </#if>
     <#else>
@@ -1204,7 +1225,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
             <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
-        <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left'});</#assign>
+        <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left', autoclose:true});</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 
@@ -1392,7 +1413,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#-- NOTE: removed number type (<#elseif validationClasses?contains("number")>number) because on Safari, maybe others, ignores size and behaves funny for decimal values -->
     <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"70"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@ac-transition"]?has_content>
-        <span id="${id}_value" class="form-autocomplete-value">&nbsp;</span>
+        <span id="${id}_value" class="form-autocomplete-value"><#if .node["@ac-initial-text"]??>${ec.resource.evaluateStringExpand(.node["@ac-initial-text"], "")}<#else>&nbsp;</#if></span>
         <#assign afterFormScript>
             $("#${id}").autocomplete({
                 source: function(request, response) { $.ajax({

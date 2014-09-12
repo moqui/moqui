@@ -21,11 +21,18 @@ New Features:
 - Various XML Screen elements have more consistent id behavior with string
   expansion and adding the listEntryIndex suffix, which is now also set
   in section-iterate (in addition to form-list as before)
+- Added container-box to XML Screen with header, toolbar, and body.
+- Improved container element in XML Screen with better id handling and
+  a type which (in HTML) translates to the tag used.
 
 Bug Fixes:
 
 - Fixed delete buttons not working on the Find Auto Screen
 - Fixed links with images (link.image element) FTL error
+- Required service parameters used to use the Groovy definition of empty
+  but this is annoying for numbers and such (a zero is generally a valid
+  non-empty service parameter), so now uses null for any object or zero
+  length String as the definition of empty for required parameters
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

@@ -293,7 +293,7 @@ class ServiceDefinition {
 
             // check if required and empty - use groovy non-empty rules, except for Boolean objects if they are a
             //     non-null instanceof Boolean, then consider it not-empty (normally if false would eval to false)
-            if (!parameterValue && !(parameterValue instanceof Boolean)) {
+            if (parameterValue == null || (parameterValue instanceof String && !parameterValue)) {
                 if (validate && parameterNode."@required" == "true") {
                     eci.message.addValidationError(null, "${namePrefix}${parameterName}", getServiceName(), "Field cannot be empty", null)
                 }

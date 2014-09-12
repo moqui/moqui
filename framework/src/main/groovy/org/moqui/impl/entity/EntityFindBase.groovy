@@ -218,10 +218,15 @@ abstract class EntityFindBase implements EntityFind {
                 if (ec != null) this.condition(ec)
             } else {
                 // these will handle range-find and date-find
+                Object fromValue = inf.get(fn + "_from")
+                if (fromValue && fromValue instanceof String) fromValue = ed.convertFieldString(fn, fromValue)
+                Object thruValue = inf.get(fn + "_thru")
+                if (thruValue && thruValue instanceof String) thruValue = ed.convertFieldString(fn, thruValue)
+
                 if (inf.get(fn + "_from")) this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.GREATER_THAN_EQUAL_TO, inf.get(fn + "_from")))
+                        EntityCondition.GREATER_THAN_EQUAL_TO, fromValue))
                 if (inf.get(fn + "_thru")) this.condition(efi.conditionFactory.makeCondition(fn,
-                        EntityCondition.LESS_THAN, inf.get(fn + "_thru")))
+                        EntityCondition.LESS_THAN, thruValue))
             }
         }
 
