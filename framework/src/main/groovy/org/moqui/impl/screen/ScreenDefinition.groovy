@@ -171,7 +171,16 @@ class ScreenDefinition {
     }
 
     String getDefaultMenuName() {
-        return screenNode."@default-menu-title" ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+        if (screenNode."@default-menu-title") return screenNode."@default-menu-title"
+
+        String filename = location.substring(location.lastIndexOf("/")+1, location.length()-4)
+        StringBuilder prettyName = new StringBuilder()
+        for (String part in filename.split("(?=[A-Z])")) {
+            if (prettyName) prettyName.append(" ")
+            prettyName.append(part)
+        }
+        if (prettyName.charAt(0).isLowerCase()) prettyName.setCharAt(0, prettyName.charAt(0).toUpperCase())
+        return prettyName.toString()
     }
 
     Map<String, ParameterItem> getParameterMap() { return parameterByName }
