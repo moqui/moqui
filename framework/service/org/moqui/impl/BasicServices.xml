@@ -94,6 +94,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="convertedAmount"/>
         </out-parameters>
         <actions>
+            <if condition="uomId == toUomId">
+                <set field="convertedAmount" from="amount"/>
+                <return/>
+            </if>
+
             <entity-find entity-name="moqui.basic.UomConversion" list="uomConversionList">
                 <date-filter valid-date="effectiveDate"/>
                 <econdition field-name="uomId"/><econdition field-name="toUomId"/>
