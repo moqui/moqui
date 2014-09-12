@@ -806,7 +806,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <div class="form-list-outer" id="${formId}-table">
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-                <#if needHeaderForm && !skipForm>
+                <#if needHeaderForm>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
                     <#assign headerFormId>${formId}-header</#assign>
                 <form name="${headerFormId}" id="${headerFormId}" class="form-header-row" method="post" action="${curUrlInfo.url}">
@@ -834,7 +834,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                         </#list>
                         </div>
                     </#list>
-                <#if needHeaderForm && !skipForm>
+                <#if needHeaderForm>
                 </form>
                     <#if _dynamic_container_id?has_content>
                         <#-- if we have an _dynamic_container_id this was loaded in a dynamic-container so init ajaxForm; for examples see http://www.malsup.com/jquery/form/#ajaxForm -->
