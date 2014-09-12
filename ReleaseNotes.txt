@@ -29,6 +29,10 @@ Bug Fixes:
 
 - Fixed delete buttons not working on the Find Auto Screen
 - Fixed links with images (link.image element) FTL error
+- Required service parameters used to use the Groovy definition of empty
+  but this is annoying for numbers and such (a zero is generally a valid
+  non-empty service parameter), so now uses null for any object or zero
+  length String as the definition of empty for required parameters
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
