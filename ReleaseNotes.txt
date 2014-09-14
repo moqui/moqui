@@ -24,6 +24,8 @@ New Features:
 - Added container-box to XML Screen with header, toolbar, and body.
 - Improved container element in XML Screen with better id handling and
   a type which (in HTML) translates to the tag used.
+- Added @style attributes to link and label in XML Screen
+- Added in operator (_op) for searchFormInputs/search-form-inputs
 
 Bug Fixes:
 

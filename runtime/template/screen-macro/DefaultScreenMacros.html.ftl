@@ -428,18 +428,18 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro linkFormLink linkNode linkFormId urlInfo>
     <#if urlInfo.disableLink>
-        <span<#if linkFormId?has_content> id="${linkFormId}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
+        <span<#if linkFormId?has_content> id="${linkFormId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
     <#else>
         <#assign confirmationMessage = ec.resource.evaluateStringExpand(linkNode["@confirmation"]!, "")/>
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
-            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if><#if linkNode["@link-type"]! == "anchor-button"> class="btn btn-primary btn-sm"</#if>><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! == "anchor-button">btn btn-primary btn-sm"</#if><#if .node["@style"]?has_content> ${.node["@style"]}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
             <#if linkFormId?has_content>
-            <button type="submit" form="${linkFormId}"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-primary btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>
+            <button type="submit" form="${linkFormId}"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-primary btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if><#if .node["@style"]?has_content> ${.node["@style"]}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>
                 <#if linkNode["image"]?has_content>
                     <#t><img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if>/>
                 <#else>
@@ -485,7 +485,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign divId><#if .node["@id"]?has_content>${ec.resource.evaluateStringExpand(.node["@id"], "")}<#if listEntryIndex?has_content>_${listEntryIndex}</#if></#if></#assign>
     <#if (labelValue?has_content && labelValue?length < 255)><#assign labelValue = ec.l10n.getLocalizedMessage(labelValue)/></#if>
     <#if labelValue?trim?has_content>
-        <${labelType}<#if divId?has_content> id="${divId}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
+        <${labelType}<#if divId?has_content> id="${divId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>><#if !.node["@encode"]?has_content || .node["@encode"] == "true">${labelValue?html?replace("\n", "<br>")}<#else>${labelValue}</#if></${labelType}>
     </#if>
 </#macro>
 <#macro editable>
