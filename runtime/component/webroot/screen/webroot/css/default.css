@@ -210,6 +210,35 @@ a.active { color: red; }
 .form-cell .BigDecimal, .form-cell .Long, .form-cell .Double, .form-cell .Float, .form-cell .Integer { text-align: center; }
 .form-cell .currency { text-align: right; }
 
+/* ======================= Handy Styles ======================= */
+
+ul.float-box {
+    display: inline-block;
+    list-style: none outside none;
+    margin-left: 0;
+    margin-top: 16px;
+    padding: 0;
+}
+ul.float-box li {
+    background: #EEEEEE;
+    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    display: inline-block;
+    line-height: 18px;
+    margin: 0 8px 8px;
+    padding: 0 10px;
+    float: left;
+}
+
+.shaded-area {
+    background: #EEEEEE;
+    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    padding: 8px;
+}
+
+.info {  }
+
 /* ======================= Screen-specific ======================= */
 
 /* #login-box { width: 280px; margin: 0 auto 0 auto; padding: 10px; } */
@@ -276,6 +305,15 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* ================ Extensions for bootstrap.min.css theme =============== */
 
+.progress { margin-bottom: 8px; }
+
+.form-group { margin-bottom: 8px; }
+.input-group .form-control, .form-control { width: auto; }
+/* causes more layout issues than solves: .form-group div { padding-top: 7px; } */
+.form-horizontal .control-label { padding-top: 0; }
+
+/* ================ Other, Fix Styles =============== */
+
 /* NOTE: part of an attempt to get chosen drop-downs to display in the inner area that is smaller than the height of the drop-down, not working...
 #wrap { overflow: visible; }
 #content { overflow-x: auto; overflow-y: visible; }
@@ -284,12 +322,9 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 input[type=radio], input[type=checkbox] { height: auto; }
 
-.form-group { margin-bottom: 8px; }
-.input-group .form-control, .form-control { width: auto; }
-/* causes more layout issues than solves: .form-group div { padding-top: 7px; } */
-.form-horizontal .control-label { padding-top: 0; }
-
 /* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
 .container-dialog .chosen-container { min-width: 300px !important; }
+
+
