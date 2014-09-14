@@ -26,6 +26,7 @@ New Features:
   a type which (in HTML) translates to the tag used.
 - Added @style attributes to link and label in XML Screen
 - Added in operator (_op) for searchFormInputs/search-form-inputs
+- Added section-include element to include a section from another screen
 
 Bug Fixes:
 
