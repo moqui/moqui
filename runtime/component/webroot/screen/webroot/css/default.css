@@ -187,7 +187,7 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .form-row:hover { background-color: #DDD; }
 
-.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
+.form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
 
 .form-header-field { white-space: nowrap; padding-top: 4px; }
 .form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
