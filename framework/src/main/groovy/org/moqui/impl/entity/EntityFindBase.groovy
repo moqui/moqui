@@ -214,6 +214,18 @@ abstract class EntityFindBase implements EntityFind {
                                 efi.conditionFactory.makeCondition(fn,
                                         not ? EntityCondition.NOT_EQUAL : EntityCondition.EQUALS, ""))
                         break;
+                    case "in":
+                        if (value) {
+                            Collection valueList = null
+                            if (value instanceof String) { valueList = value.split(",") }
+                            else if (value instanceof Collection) { valueList = value }
+                            if (valueList) {
+                                ec = efi.conditionFactory.makeCondition(fn,
+                                        not ? EntityCondition.NOT_IN : EntityCondition.IN, valueList)
+
+                            }
+                        }
+                        break;
                 }
                 if (ec != null) this.condition(ec)
             } else {

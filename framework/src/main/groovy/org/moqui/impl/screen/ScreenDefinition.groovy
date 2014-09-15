@@ -89,6 +89,13 @@ class ScreenDefinition {
                     .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
                 sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"].replace('-','_')}"))
             }
+            for (Node sectionNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
+                    .findAll({ it instanceof Node && (it.name() == "section-include") })) {
+                ScreenSection includeSection = sfi.getEcfi().getScreenFacade()
+                        .getScreenDefinition((String) sectionNode["@location"])?.getSection((String) sectionNode["@name"])
+                if (includeSection == null) throw new IllegalArgumentException("Could not find section [${sectionNode["@name"]} to include at location [${sectionNode["@location"]}]")
+                sectionByName.put((String) sectionNode["@name"], includeSection)
+            }
 
             // get all forms by name
             for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()

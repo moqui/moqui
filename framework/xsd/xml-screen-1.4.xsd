@@ -579,6 +579,22 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
 
+    <xs:element name="section-include" substitutionGroup="AllWidgets">
+        <xs:complexType>
+            <xs:attribute name="name" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    A name for the section, used for reference within the screen.
+                    Must be specified and must be unique within the screen.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+            <xs:attribute name="location" type="xs:string" use="required">
+                <xs:annotation><xs:documentation>
+                    Location of the screen containing the section to include.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
+        </xs:complexType>
+    </xs:element>
+
     <!-- ================ Containers ================ -->
     <xs:element name="container" substitutionGroup="AllWidgets">
         <xs:complexType>
@@ -590,6 +606,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     <xs:restriction base="xs:token">
                         <xs:enumeration value="div"/>
                         <xs:enumeration value="span"/>
+                        <xs:enumeration value="ul"/>
+                        <xs:enumeration value="li"/>
                         <xs:enumeration value="header"/>
                         <xs:enumeration value="footer"/>
                         <xs:enumeration value="code"/>
