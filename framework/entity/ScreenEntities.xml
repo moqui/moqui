@@ -300,7 +300,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.basic.Enumeration description="Country" enumId="DFFT_COUNTRY" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Credit Card Number" enumId="DFFT_CREDIT_CARD" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Date String (yyyy-MM-dd)" enumId="DFFT_DATE" enumTypeId="DynamicFormFieldType"/>
-    <moqui.basic.Enumeration description="Date String (yyyy-MM-dd hh:mm:ss)" enumId="DFFT_DATE_TIME" enumTypeId="DynamicFormFieldType"/>
+    <moqui.basic.Enumeration description="Date String (yyyy-MM-dd HH:mm:ss)" enumId="DFFT_DATE_TIME" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Email Address" enumId="DFFT_EMAIL" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Enumeration" enumId="DFFT_ENUMERATION" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Numeric" enumId="DFFT_NUMBER" enumTypeId="DynamicFormFieldType"/>
