@@ -924,7 +924,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <div class="form-list-outer" id="${formId}-table">
             <div class="form-header-group">
                 <#assign needHeaderForm = sri.isFormHeaderForm(formNode["@name"])>
-                <#if needHeaderForm && !skipStart && !skipForm>
+                <#if needHeaderForm && !skipStart>
                     <#assign curUrlInfo = sri.getCurrentScreenUrl()>
                     <form name="${formId}-header" id="${formId}-header" class="form-header-row" method="post" action="${curUrlInfo.url}">
                 <#else>
@@ -944,7 +944,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                             <#recurse fieldNode["header-field"][0]/>
                         </#if>
                     </#list>
-                <#if needHeaderForm && !skipStart && !skipForm>
+                <#if needHeaderForm && !skipStart>
                     </form>
                 <#else>
                     </div>
