@@ -1072,7 +1072,7 @@ class ScreenRenderImpl implements ScreenRender {
             if (!fieldValue) fieldValue = ec.getContext().get(fieldName)
         }
 
-        return fieldValue ? fieldValue.getClass().getSimpleName() : "String"
+        return fieldValue != null ? fieldValue.getClass().getSimpleName() : "String"
     }
 
     String getFieldEntityValue(FtlNodeWrapper widgetNodeWrapper) {
