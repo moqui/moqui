@@ -30,6 +30,8 @@ html { overflow: hidden; }
 body { overflow: auto; background: #DDDDDF; }
 */
 
+body { padding-top: 50px; } /* this is the initial load setting, will get set dynamically for navbar-fixed-top */
+
 /* The overflow: auto is needed for scroll in non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
 /*
 #body-decorator { position: absolute; top: 8px; left: 8px; bottom: 8px; right: 8px;
@@ -315,17 +317,19 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* ================ Other, Fix Styles =============== */
 
-/* NOTE: part of an attempt to get chosen drop-downs to display in the inner area that is smaller than the height of the drop-down, not working...
+/* these are needed for Chosen and other dynamic things to not get clipped by the bottom of the content area */
 #wrap { overflow: visible; }
-#content { overflow-x: auto; overflow-y: visible; }
-.inner { overflow-y: scroll; }
-*/
+#content { overflow: visible; }
+.inner { overflow: visible; }
+
+/* get rid of the grey box, looks funny when screen isn't very tall */
+.inner { border: 0; }
 
 input[type=radio], input[type=checkbox] { height: auto; }
 
-/* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
+/* this is to fix a REALLY annoying bug in chosen for drop-downs in a static modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
-.container-dialog .chosen-container { min-width: 300px !important; }
+.container-dialog .chosen-container { min-width: 360px !important; }
 
 
