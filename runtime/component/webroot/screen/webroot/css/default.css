@@ -56,10 +56,6 @@ h4 { font-size: 1em; font-weight: bold; }
 h5 { font-size: .9em; font-weight: bold; }
 h6 { font-size: .8em; }
 
-strong { font-weight: bold; }
-
-tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
-pre { white-space: pre-wrap; word-wrap: break-word; }
 
 a { font-size: 1em; font-weight: bold; color: #052f57; }
 a:hover { text-decoration: underline; }
@@ -67,6 +63,13 @@ a span { font-size: 1em; font-weight: bold; }
 p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
 li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 */
+
+strong { font-weight: bold; }
+tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
+p, pre { white-space: pre-line; word-wrap: break-word; }
+label { white-space: normal; }
+
+.editable-label { color: rgb(66, 139, 202); }
 
 form { display: inline; }
 
@@ -126,12 +129,12 @@ div.ui-layout-container { height: 100%; }
 /* styles for non-dynamic table layout, not using jquery-layout */
 div.panel-outer {  }
 div.panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }
-div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; }
-div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; }
-div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; }
+div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; vertical-align: top; }
+div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; vertical-align: top; }
 div.panel-header { width: 100%; }
 div.panel-footer { width: 100%; }
 
@@ -186,15 +189,18 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 
 .form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
 
-.form-header-field { white-space: nowrap; }
+.form-header-field { white-space: nowrap; padding-top: 4px; }
 .form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
 
-.form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .9em; }
-.form-date-time { white-space: nowrap; }
-.form-date-time span { display: inline; padding: 8px 12px; }
+/* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
+/*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
+.form-date-find { white-space: nowrap; display: inline; padding: 8px 12px 8px 12px; }*/
+.form-date-find { display: block; padding-bottom: 4px; }
+.input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
+.form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
+.form-date-find .input-group { display: inline-block; }
 
 .form-text-find input { display: inline-block; }
-.form-date-find input { display: inline-block; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
@@ -203,6 +209,35 @@ a.active { color: red; }
 
 .form-cell .BigDecimal, .form-cell .Long, .form-cell .Double, .form-cell .Float, .form-cell .Integer { text-align: center; }
 .form-cell .currency { text-align: right; }
+
+/* ======================= Handy Styles ======================= */
+
+ul.float-box {
+    display: inline-block;
+    list-style: none outside none;
+    margin-left: 0;
+    margin-top: 16px;
+    padding: 0;
+}
+ul.float-box li {
+    background: #EEEEEE;
+    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    display: inline-block;
+    line-height: 18px;
+    margin: 0 8px 8px;
+    padding: 0 10px;
+    float: left;
+}
+
+.shaded-area {
+    background: #EEEEEE;
+    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    padding: 8px;
+}
+
+.info {  }
 
 /* ======================= Screen-specific ======================= */
 
@@ -234,7 +269,7 @@ button.ui-button-icons-only { width: 1.5em; }
 .ui-tabs .ui-tabs-nav li a { float: left; padding: .1em .5em; text-decoration: none; }
 .ui-tabs .ui-tabs-panel { display: block; border-width: 0; padding: 4px 0px; background: none; }
 
-.ui-menu { z-index: 9; display: inline-block; overflow: visible; white-space: nowrap; margin-bottom: 4px; }
+.ui-menu { display: inline-block; overflow: visible; white-space: nowrap; margin-bottom: 4px; }
 .ui-menu-item .ui-state-focus { border-color: transparent; }
 .ui-menu-item .ui-state-active { -moz-border-radius: 4px; -webkit-border-radius: 4px; -khtml-border-radius: 4px; border-radius: 4px; }
 
@@ -251,11 +286,12 @@ button.ui-button-icons-only { width: 1.5em; }
 /* ================ Extensions for jquery-ui theme =============== */
 
 /* this applies to combo-box and autocomplete */
-input.ui-autocomplete-input { border: 1px solid #aaaaaa; font-size: .8em; width: 250px; padding: 2px; padding-left: 4px; }
+input.ui-autocomplete-input { font-size: .9em; }
 /* this applies to autocomplete only */
 input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-autocomplete-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
+.ui-autocomplete { z-index: 1100; } /* needed for modal windows with z-index of 1050 */
 
 /* css for timepicker */
 /*
@@ -269,9 +305,26 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* ================ Extensions for bootstrap.min.css theme =============== */
 
-.form-control { width: auto; }
+.progress { margin-bottom: 8px; }
+
+.form-group { margin-bottom: 8px; }
+.input-group .form-control, .form-control { width: auto; }
+/* causes more layout issues than solves: .form-group div { padding-top: 7px; } */
+.form-horizontal .control-label { padding-top: 0; }
+
+/* ================ Other, Fix Styles =============== */
+
+/* NOTE: part of an attempt to get chosen drop-downs to display in the inner area that is smaller than the height of the drop-down, not working...
+#wrap { overflow: visible; }
+#content { overflow-x: auto; overflow-y: visible; }
+.inner { overflow-y: scroll; }
+*/
+
+input[type=radio], input[type=checkbox] { height: auto; }
 
 /* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
-.chosen-container { min-width: 150px !important; }
+.container-dialog .chosen-container { min-width: 300px !important; }
+
+

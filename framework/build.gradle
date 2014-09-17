@@ -17,7 +17,7 @@ tasks.withType(Compile) {
 apply plugin: 'groovy'
 apply plugin: 'war'
 
-sourceCompatibility = '1.6'
+sourceCompatibility = '1.7'
 archivesBaseName = 'moqui'
 
 sourceSets {

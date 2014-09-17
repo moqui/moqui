@@ -24,8 +24,8 @@
                 </a>
             </div>
             -->
+            <#--
             <#if ec.getUser().getUserId()?has_content>
-                <#--
                 <div class="btn-group">
                     <a data-placement="bottom" data-original-title="E-mail" data-toggle="tooltip" class="btn btn-default btn-sm">
                         <i class="fa fa-envelope"></i>
@@ -44,14 +44,11 @@
                         <i class="fa fa-question"></i>
                     </a>
                 </div>
-                -->
-                <#--
                 <div class="btn-group">
                     <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!!}" data-placement="bottom" class="btn btn-metis-1 btn-sm">
                         <i class="fa fa-power-off"></i>
                     </a>
                 </div>
-                -->
             </#if>
             <#--
         </div>
@@ -99,9 +96,8 @@
   </div> <!-- container-fluid -->
 </nav><!-- /.navbar -->
 
-<!-- header.head -->
+<#--
 <header class="head">
-    <#--
     <div class="search-bar">
         <a data-original-title="Show/Hide Menu" data-placement="bottom" data-tooltip="tooltip" class="accordion-toggle btn btn-primary btn-sm visible-xs" data-toggle="collapse" href="#menu" id="menu-toggle">
             <i class="fa fa-expand"></i>
@@ -115,11 +111,8 @@
             </div>
         </form>
     </div>
-    -->
-    <!-- ."main-bar -->
     <div class="main-bar">
         <h3>${html_title!((sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</h3>
-    </div><!-- /.main-bar -->
+    </div>
 </header>
-
-<!-- end header.head -->
+-->

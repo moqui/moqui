@@ -197,7 +197,12 @@ class ScreenRenderImpl implements ScreenRender {
 
         ResponseItem ri
         if (sdIterator.hasNext()) {
-            ri = recursiveRunTransition(sdIterator)
+            screenPathIndex++
+            try {
+                ri = recursiveRunTransition(sdIterator)
+            } finally {
+                screenPathIndex--
+            }
         } else {
             // run the transition
             ri = screenUrlInfo.targetTransition.run(this)
@@ -663,6 +668,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     boolean doBoundaryComments() {
+        if (screenPathIndex == 0) return false
         if (boundaryComments != null) return boundaryComments
         boundaryComments = sfi.ecfi.confXmlRoot."screen-facade"[0]."@boundary-comments" == "true"
         return boundaryComments
@@ -933,6 +939,10 @@ class ScreenRenderImpl implements ScreenRender {
 
     ScreenUrlInfo makeUrlByType(String origUrl, String urlType, FtlNodeWrapper parameterParentNodeWrapper,
                                 String expandTransitionUrlString) {
+        return makeUrlByTypeGroovyNode(origUrl, urlType, parameterParentNodeWrapper?.groovyNode, expandTransitionUrlString)
+    }
+    ScreenUrlInfo makeUrlByTypeGroovyNode(String origUrl, String urlType, Node parameterParentNode,
+                                String expandTransitionUrlString) {
         Boolean expandTransitionUrl = expandTransitionUrlString != null ? expandTransitionUrlString == "true" : null
         /* TODO handle urlType=content
             A content location (without the content://). URL will be one that can access that content.
@@ -947,8 +957,7 @@ class ScreenRenderImpl implements ScreenRender {
             default: sui = new ScreenUrlInfo(this, url); break;
         }
 
-        if (sui != null && parameterParentNodeWrapper != null) {
-            Node parameterParentNode = parameterParentNodeWrapper.groovyNode
+        if (sui != null && parameterParentNode != null) {
             if (parameterParentNode."@parameter-map") {
                 def ctxParameterMap = ec.resource.evaluateContextField((String) parameterParentNode."@parameter-map", "")
                 if (ctxParameterMap) sui.addParameters((Map) ctxParameterMap)

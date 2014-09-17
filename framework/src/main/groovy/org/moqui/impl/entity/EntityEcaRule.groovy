@@ -66,7 +66,8 @@ class EntityEcaRule {
 
         if ((operation == "update" || operation == "delete") && eecaNode."@get-entire-entity" == "true") {
             // fill in any missing (unset) values from the DB
-            EntityValue ev = originalValue ?: getDbValue(ec, fieldValues)
+            if (!originalValue) originalValue = getDbValue(ec, fieldValues)
+            EntityValue ev = originalValue
             if (ev != null) {
                 // only add fields that fieldValues does not contain
                 for (Map.Entry entry in ev.entrySet())

@@ -61,6 +61,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoId" type="id" is-pk="true"/>
         <field name="geoTypeEnumId" type="id"/>
         <field name="geoName" type="text-medium"/>
+        <field name="geoNameLocal" type="text-medium"/>
         <field name="geoCodeAlpha2" type="text-short"/>
         <field name="geoCodeAlpha3" type="text-short"/>
         <field name="geoCodeNumeric" type="text-short"/>
@@ -273,8 +274,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="toUomId" type="id"/>
         <field name="fromDate" type="date-time"/>
         <field name="thruDate" type="date-time"/>
-        <field name="conversionFactor" type="number-float"/>
-        <field name="conversionOffset" type="number-float">
+        <field name="conversionFactor" type="number-decimal"/>
+        <field name="conversionOffset" type="number-decimal">
             <description>The factor is multiplied first, then the offset is added. When converting in the reverse
                 direction the offset is subtracted first, then divided by the factor.
             </description>

@@ -88,6 +88,7 @@ abstract class BaseResourceReference implements ResourceReference {
     abstract boolean isDirectory();
     @Override
     abstract List<ResourceReference> getDirectoryEntries();
+
     @Override
     ResourceReference getChild(String childName) {
         ResourceReference directoryRef = findMatchingDirectory()
@@ -99,6 +100,19 @@ abstract class BaseResourceReference implements ResourceReference {
         // NOTE: don't really care if it exists or not at this point
         ResourceReference childRef = ec.resource.getLocationReference(fileLoc.toString())
         return childRef
+    }
+
+    @Override
+    List<ResourceReference> getChildren() {
+        List<ResourceReference> children = []
+
+        ResourceReference directoryRef = findMatchingDirectory()
+        if (!directoryRef?.exists) return null
+
+        for (ResourceReference childRef in directoryRef.getDirectoryEntries())
+            if (childRef.isFile()) children.add(childRef)
+
+        return children
     }
 
     @Override

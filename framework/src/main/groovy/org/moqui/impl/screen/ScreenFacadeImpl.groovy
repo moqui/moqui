@@ -99,9 +99,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
                 ."screen-text-output".find({ it.@type == renderMode })?."@macro-template-location"
         if (!templateLocation) throw new IllegalArgumentException("Could not find macro-template-location for render mode (screen-text-output.@type) [${renderMode}]")
         // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
-        String rootTemplate = """<#include "${templateLocation}"/>
-            <#visit widgetsNode>
-            """
+        String rootTemplate = """<#include "${templateLocation}"/><#visit widgetsNode>"""
 
         Template newTemplate
         try {
@@ -126,9 +124,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         if (template) return template
 
         // NOTE: this is a special case where we need something to call #recurse so that all includes can be straight libraries
-        String rootTemplate = """<#include "${templateLocation}"/>
-            <#visit widgetsNode>
-            """
+        String rootTemplate = """<#include "${templateLocation}"/><#visit widgetsNode>"""
 
 
         Template newTemplate

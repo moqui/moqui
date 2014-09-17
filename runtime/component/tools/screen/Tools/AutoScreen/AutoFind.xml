@@ -24,12 +24,12 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
     <transition name="listSubmit">
         <actions>
-            <if condition="delete">
+            <if condition="delete != null">
                 <service-call name="delete#${aen}" in-map="true"/>
             </if>
         </actions>
         <conditional-response url=".">
-            <condition><expression>delete</expression></condition>
+            <condition><expression>delete != null</expression></condition>
         </conditional-response>
         <default-response url="../AutoEdit/AutoEditMaster" parameter-map="ec.entity.getEntityDefinition(aen).getPrimaryKeys(context)"/>
     </transition>

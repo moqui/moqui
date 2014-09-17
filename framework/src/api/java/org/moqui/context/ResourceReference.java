@@ -40,11 +40,18 @@ public interface ResourceReference {
     boolean supportsDirectory();
     boolean isFile();
     boolean isDirectory();
+
     List<ResourceReference> getDirectoryEntries();
-    ResourceReference getChild(String name);
-    ResourceReference findChildFile(String relativePath);
-    ResourceReference findChildDirectory(String relativePath);
+    /** Find the directory with a name that matches the current filename (minus the extension) */
     ResourceReference findMatchingDirectory();
+    /** Get a reference to the child of this directory or this file in the matching directory */
+    ResourceReference getChild(String name);
+    /** Get a list of references to all files in this directory or for a file in the matching directory */
+    List<ResourceReference> getChildren();
+    /** Find a file by path (can be single name) in the matching directory and child matching directories */
+    ResourceReference findChildFile(String relativePath);
+    /** Find a directory by path (can be single name) in the matching directory and child matching directories */
+    ResourceReference findChildDirectory(String relativePath);
 
     boolean supportsExists();
     boolean getExists();

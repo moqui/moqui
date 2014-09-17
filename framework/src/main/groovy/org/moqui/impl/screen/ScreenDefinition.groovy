@@ -46,6 +46,7 @@ class ScreenDefinition {
     protected ScreenSection rootSection = null
     protected Map<String, ScreenSection> sectionByName = new HashMap()
     protected Map<String, ScreenForm> formByName = new HashMap()
+    protected Map<String, ScreenTree> treeByName = new HashMap()
 
     protected Map<String, ResourceReference> subContentRefByPath = new HashMap()
 
@@ -88,11 +89,24 @@ class ScreenDefinition {
                     .findAll({ it instanceof Node && (it.name() == "section" || it.name() == "section-iterate") })) {
                 sectionByName.put((String) sectionNode["@name"], new ScreenSection(sfi.ecfi, sectionNode, "${location}.${sectionNode.name().replace('-','_')}_${sectionNode["@name"].replace('-','_')}"))
             }
+            for (Node sectionNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
+                    .findAll({ it instanceof Node && (it.name() == "section-include") })) {
+                ScreenSection includeSection = sfi.getEcfi().getScreenFacade()
+                        .getScreenDefinition((String) sectionNode["@location"])?.getSection((String) sectionNode["@name"])
+                if (includeSection == null) throw new IllegalArgumentException("Could not find section [${sectionNode["@name"]} to include at location [${sectionNode["@location"]}]")
+                sectionByName.put((String) sectionNode["@name"], includeSection)
+            }
 
             // get all forms by name
             for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
                     .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
                 formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"].replace('-','_')}"))
+            }
+
+            // get all trees by name
+            for (Node treeNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
+                    .findAll({ it instanceof Node && (it.name() == "tree") })) {
+                treeByName.put((String) treeNode["@name"], new ScreenTree(sfi.ecfi, this, treeNode, "${location}.${treeNode.name().replace('-','_')}_${treeNode["@name"].replace('-','_')}"))
             }
         }
 
@@ -164,7 +178,16 @@ class ScreenDefinition {
     }
 
     String getDefaultMenuName() {
-        return screenNode."@default-menu-title" ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+        if (screenNode."@default-menu-title") return screenNode."@default-menu-title"
+
+        String filename = location.substring(location.lastIndexOf("/")+1, location.length()-4)
+        StringBuilder prettyName = new StringBuilder()
+        for (String part in filename.split("(?=[A-Z])")) {
+            if (prettyName) prettyName.append(" ")
+            prettyName.append(part)
+        }
+        if (prettyName.charAt(0).isLowerCase()) prettyName.setCharAt(0, prettyName.charAt(0).toUpperCase())
+        return prettyName.toString()
     }
 
     Map<String, ParameterItem> getParameterMap() { return parameterByName }
@@ -234,9 +257,21 @@ class ScreenDefinition {
         if (loggedInAnonymous) sri.ec.getUser().logoutAnonymousOnly()
     }
 
-    ScreenSection getSection(String sectionName) { return (ScreenSection) sectionByName.get(sectionName) }
-
-    ScreenForm getForm(String formName) { return (ScreenForm) formByName.get(formName) }
+    ScreenSection getSection(String sectionName) {
+        ScreenSection ss = sectionByName.get(sectionName)
+        if (ss == null) throw new IllegalArgumentException("Could not find form [${sectionName}] in screen: ${getLocation()}")
+        return ss
+    }
+    ScreenForm getForm(String formName) {
+        ScreenForm sf = formByName.get(formName)
+        if (sf == null) throw new IllegalArgumentException("Could not find form [${formName}] in screen: ${getLocation()}")
+        return sf
+    }
+    ScreenTree getTree(String treeName) {
+        ScreenTree st = treeByName.get(treeName)
+        if (st == null) throw new IllegalArgumentException("Could not find tree [${treeName}] in screen: ${getLocation()}")
+        return st
+    }
 
     ResourceReference getSubContentRef(List<String> pathNameList) {
         StringBuilder pathNameBldr = new StringBuilder()

@@ -298,6 +298,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     URLs to this transition may be expanded. Set this to true to expand them to what the
                     default-response points to instead of a URL to this transition.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="style" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
@@ -312,7 +313,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </xs:element>
     <xs:element name="label" substitutionGroup="StandaloneFields">
         <xs:complexType>
-            <xs:attribute name="text" type="xs:string"/>
+            <xs:attribute name="text" type="xs:string" use="required"/>
             <xs:attribute name="type" default="span">
                 <xs:simpleType><xs:restriction base="xs:token">
                     <xs:enumeration value="p"/>
@@ -340,6 +341,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:annotation><xs:documentation>Generate text container even if text value is empty (or just whitespace)?
                     Defaults to false.</xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="style" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="editable" substitutionGroup="StandaloneFields">
@@ -756,6 +758,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </xs:attribute>
             <xs:attribute name="ac-delay" type="xs:positiveInteger" default="300"/>
             <xs:attribute name="ac-min-length" type="xs:positiveInteger" default="1"/>
+            <xs:attribute name="ac-initial-text" type="xs:string" use="optional"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="text-area" substitutionGroup="SubFields">
