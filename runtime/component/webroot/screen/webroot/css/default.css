@@ -332,4 +332,4 @@ input[type=radio], input[type=checkbox] { height: auto; }
  */
 .container-dialog .chosen-container { min-width: 360px !important; }
 
-
+.modal { text-align: left; }
