@@ -27,6 +27,10 @@ New Features:
 - Added @style attributes to link and label in XML Screen
 - Added in operator (_op) for searchFormInputs/search-form-inputs
 - Added section-include element to include a section from another screen
+- In a form-list with no @list-entry attribute creates a
+  ${@list}_entry field along with the _index and _has_next fields for
+  convenience in getting at the object in the List (which implements the
+  Map interface, often an EntityValue and nice to get at it directly)
 
 Bug Fixes:
 
