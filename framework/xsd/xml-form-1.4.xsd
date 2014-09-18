@@ -782,6 +782,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="equals"/>
                         <xs:enumeration value="like"/>
                         <xs:enumeration value="contains"/>
+                        <xs:enumeration value="begins"/>
                         <xs:enumeration value="empty"/>
                     </xs:restriction>
                 </xs:simpleType>
