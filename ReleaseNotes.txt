@@ -31,6 +31,9 @@ New Features:
   ${@list}_entry field along with the _index and _has_next fields for
   convenience in getting at the object in the List (which implements the
   Map interface, often an EntityValue and nice to get at it directly)
+- Added form-single.field-layout.field-row-big element to do what field-row
+  used to do with more than 2 field-ref elements, putting all fields in a
+  single column.
 
 Bug Fixes:
 

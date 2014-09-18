@@ -331,5 +331,6 @@ input[type=radio], input[type=checkbox] { height: auto; }
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
 .container-dialog .chosen-container { min-width: 360px !important; }
+.field-row-item .chosen-container { min-width: 200px !important; }
 
 .modal { text-align: left; }

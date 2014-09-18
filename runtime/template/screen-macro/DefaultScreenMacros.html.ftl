@@ -535,7 +535,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign listEntryIndex = "">
     <#assign inFieldRow = false>
     <#assign bigRow = false>
-    <#assign bigRowFirst = false>
     <#if !skipStart>
     <form name="${formId}" id="${formId}" class="validation-engine-init" method="post" action="${urlInfo.url}"<#if sri.isFormUpload(formNode["@name"])> enctype="multipart/form-data"</#if>>
         <input type="hidden" name="moquiFormName" value="${formNode["@name"]}">
@@ -581,11 +580,9 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                   </#if>
                     <div class="row"><#-- was field-row -->
                     <#assign inFieldRow = true>
-                    <#assign bigRow = (layoutNode?children?size > 2)>
-                    <#assign bigRowFirst = bigRow>
                     <#list layoutNode?children as rowChildNode>
                         <#if rowChildNode?node_name == "field-ref">
-                            <#if !bigRow><div class="col-lg-6"></#if><#-- was field-row-item -->
+                            <div class="col-lg-6"><#-- was field-row-item -->
                                 <#assign fieldRef = rowChildNode["@name"]>
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -594,16 +591,59 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 <#else>
                                     <@formSingleSubField fieldNode/>
                                 </#if>
-                            <#if !bigRow></div><!-- /col-lg-6 not bigRow --></#if>
+                            </div><!-- /col-lg-6 not bigRow -->
                         <#elseif rowChildNode?node_name == "fields-not-referenced">
                             <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                             <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                         </#if>
                     </#list>
-                    <#if bigRow></div><!-- /col-lg-12 bigRow --></#if><#-- this is a bit weird, closes col-lg-12 opened by first in row in the formSingleWidget macro -->
-                    <#assign bigRow = false>
                     <#assign inFieldRow = false>
                     </div><!-- /row -->
+                <#elseif layoutNode?node_name == "field-row-big">
+                    <#if collapsibleOpened>
+                        <#assign collapsibleOpened = false>
+                    </div><!-- /collapsible accordionId ${accordionId} -->
+                        <#assign afterFormScript>
+                            $("#${accordionId}").accordion({ collapsible: true,<#if active?has_content> active: ${active},</#if> heightStyle: "content" });
+                        </#assign>
+                        <#t>${sri.appendToScriptWriter(afterFormScript)}
+                        <#assign accordionId = accordionId + "_A"><#-- set this just in case another accordion is opened -->
+                    </#if>
+                    <#assign inFieldRow = true>
+                    <#assign bigRow = true>
+                    <#-- funny assign here to not render row if there is no content -->
+                    <#assign rowContent>
+                        <#list layoutNode?children as rowChildNode>
+                            <#if rowChildNode?node_name == "field-ref">
+                                <#assign fieldRef = rowChildNode["@name"]>
+                                <#assign fieldNode = "invalid">
+                                <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
+                                <#if fieldNode == "invalid">
+                                    <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                                <#else>
+                                    <@formSingleSubField fieldNode/>
+                                </#if>
+                            <#elseif rowChildNode?node_name == "fields-not-referenced">
+                                <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
+                                <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
+                            </#if>
+                        </#list>
+                    </#assign>
+                    <#assign rowContent = rowContent?trim>
+                    <#if rowContent?has_content>
+                    <div class="row"><#-- was field-row -->
+                        <#if layoutNode["@title"]?has_content>
+                            <div class="col-lg-2 text-right"><label class="control-label">${ec.resource.evaluateStringExpand(layoutNode["@title"], "")}</label></div>
+                        <div class="col-lg-10">
+                        <#else>
+                        <div class="col-lg-12">
+                        </#if>
+                            ${rowContent}
+                        </div><!-- /col-lg-12 bigRow -->
+                    </div><!-- /row -->
+                    </#if>
+                    <#assign bigRow = false>
+                    <#assign inFieldRow = false>
                 <#elseif layoutNode?node_name == "field-group">
                   <#if collapsible && !collapsibleOpened><#assign collapsibleOpened = true>
                     <div id="${accordionId}">
@@ -615,18 +655,20 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                 <#assign fieldRef = groupNode["@name"]>
                                 <#assign fieldNode = "invalid">
                                 <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
-                                <@formSingleSubField fieldNode/>
+                                <#if fieldNode == "invalid">
+                                    <div>Error: could not find field with name [${fieldRef}] referred to in a field-ref.@name attribute.</div>
+                                <#else>
+                                    <@formSingleSubField fieldNode/>
+                                </#if>
                             <#elseif groupNode?node_name == "fields-not-referenced">
                                 <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                 <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                             <#elseif groupNode?node_name == "field-row">
                                 <div class="row"><#-- was field-row -->
                                 <#assign inFieldRow = true>
-                                <#assign bigRow = (groupNode?children?size > 2)>
-                                <#assign bigRowFirst = bigRow>
                                 <#list groupNode?children as rowChildNode>
                                     <#if rowChildNode?node_name == "field-ref">
-                                        <#if !bigRow><div class="col-lg-6"></#if><#-- was field-row-item -->
+                                        <div class="col-lg-6"><#-- was field-row-item -->
                                             <#assign fieldRef = rowChildNode["@name"]>
                                             <#assign fieldNode = "invalid">
                                             <#list formNode["field"] as fn><#if fn["@name"] == fieldRef><#assign fieldNode = fn><#break></#if></#list>
@@ -635,14 +677,12 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                                             <#else>
                                                 <@formSingleSubField fieldNode/>
                                             </#if>
-                                        <#if !bigRow></div><!-- /col-lg-6 not bigRow --></#if>
+                                        </div><!-- /col-lg-6 not bigRow -->
                                     <#elseif rowChildNode?node_name == "fields-not-referenced">
                                         <#assign nonReferencedFieldList = sri.getFtlFormFieldLayoutNonReferencedFieldList(.node["@name"])>
                                         <#list nonReferencedFieldList as nonReferencedField><@formSingleSubField nonReferencedField/></#list>
                                     </#if>
                                 </#list>
-                                <#if bigRow></div><!-- /col-lg-12 bigRow --></#if><#-- this is a bit weird, closes col-lg-12 opened by first in row in the formSingleWidget macro -->
-                                <#assign bigRow = false>
                                 <#assign inFieldRow = false>
                                 </div><!-- /row -->
                             </#if>
@@ -714,10 +754,6 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if fieldSubNode?parent["@hide"]! == "true"><#return></#if>
     <#assign curFieldTitle><@fieldTitle fieldSubNode/></#assign>
     <#if bigRow>
-        <#if bigRowFirst>
-            <div class="col-lg-12">
-            <#assign bigRowFirst = false>
-        </#if>
         <div class="field-row-item">
             <div class="form-group">
                 <#if curFieldTitle?has_content && !fieldSubNode["submit"]?has_content>

@@ -66,7 +66,7 @@ This Work includes contributions authored by David E. Jones, not as a
 
             <field-layout collapsible="true">
                 <field-ref name="timeout"/>
-                <field-row><field-ref name="dummyFks"/><field-ref name="useTryInsert"/><field-ref name="checkOnly"/></field-row>
+                <field-row-big><field-ref name="dummyFks"/><field-ref name="useTryInsert"/><field-ref name="checkOnly"/></field-row-big>
 
                 <field-group title="Data Types, Comma Separated (from entity-facade-xml.@type)"><field-ref name="types"/></field-group>
                 <field-group title="Resource Location"><field-ref name="location"/></field-group>
