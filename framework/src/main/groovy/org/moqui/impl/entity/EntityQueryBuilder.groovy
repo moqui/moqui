@@ -81,6 +81,8 @@ class EntityQueryBuilder {
     PreparedStatement makePreparedStatement() {
         if (!this.connection) throw new IllegalStateException("Cannot make PreparedStatement, no Connection in place")
         String sql = this.getSqlTopLevel().toString()
+        // if (this.mainEntityDefinition.getFullEntityName().contains("foo")) logger.warn("========= making crud PreparedStatement for SQL: ${sql}")
+        if (logger.isDebugEnabled()) logger.debug("making crud PreparedStatement for SQL: ${sql}")
         try {
             this.ps = connection.prepareStatement(sql)
         } catch (SQLException sqle) {

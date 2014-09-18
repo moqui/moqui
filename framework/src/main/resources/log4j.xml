@@ -95,7 +95,10 @@
     <category name="bitronix"><priority value="warn"/></category>
 
     <category name="org.moqui"><priority value="info"/></category>
-    <!-- example of debug level on specific class: <category name="org.moqui.impl.actions.XmlAction"><priority value="debug"/></category> -->
+
+    <!-- show Groovy generated from XML Actions: <category name="org.moqui.impl.actions.XmlAction"><priority value="debug"/></category> -->
+    <!-- show SQL generated for finds: <category name="org.moqui.impl.entity.EntityFindBuilder"><priority value="debug"/></category> -->
+    <!-- show SQL generated for crud ops: <category name="org.moqui.impl.entity.EntityQueryBuilder"><priority value="debug"/></category> -->
 
     <!-- root logger -->
     <root>
