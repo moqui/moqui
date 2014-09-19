@@ -30,6 +30,8 @@ html { overflow: hidden; }
 body { overflow: auto; background: #DDDDDF; }
 */
 
+body { padding-top: 50px; } /* this is the initial load setting, will get set dynamically for navbar-fixed-top */
+
 /* The overflow: auto is needed for scroll in non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
 /*
 #body-decorator { position: absolute; top: 8px; left: 8px; bottom: 8px; right: 8px;
@@ -173,6 +175,7 @@ label.form-title { vertical-align: middle; display: inline-block; width: 120px; 
 margin: 0 0 10px 0; padding: 4px; width: 100%;
 border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
 display: table; table-layout: auto; border-collapse: separate; empty-cells: show;
+white-space: normal;
 }
 .form-header-group { display: table-header-group; }
 .form-header-row { display: table-row; }
@@ -187,7 +190,7 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .form-row:hover { background-color: #DDD; }
 
-.form-list-outer .form-title { border-bottom: 1px solid #DDDDDF; white-space: nowrap; }
+.form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
 
 .form-header-field { white-space: nowrap; padding-top: 4px; }
 .form-header-cell, .form-header-cell div.form-title { vertical-align: top; }
@@ -195,12 +198,12 @@ display: table; table-layout: auto; border-collapse: separate; empty-cells: show
 /* .form-date-find span, .form-range-find span, .form-text-find span, .form-text-find select { font-size: .8em; } */
 /*.form-date-time { white-space: nowrap; display: inline; padding: 8px 52px 8px 12px; }
 .form-date-find { white-space: nowrap; display: inline; padding: 8px 12px 8px 12px; }*/
-.form-date-find { display: block; padding-bottom: 4px; }
+.form-date-find, .form-range-find { display: block; padding-bottom: 4px; }
 .input-group-addon, .input-group-btn, .input-group .form-control { display: inline; }
 .form-date-find .input-group-addon { line-height: 34px; padding: 8px 12px 8px 12px; }
 .form-date-find .input-group { display: inline-block; }
 
-.form-text-find input { display: inline-block; }
+.form-text-find input, .form-range-find input { display: inline-block; }
 
 /* This is the +/- in the header, use fixed width font for consistent sizing, Courier New has the best vertical alignment with + and - */
 a.form-order-by { margin: 0px; padding: 0px; font-family: "Courier New", monospace; font-weight: bold; font-size: 1.2em; vertical-align: top; }
@@ -314,17 +317,20 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 
 /* ================ Other, Fix Styles =============== */
 
-/* NOTE: part of an attempt to get chosen drop-downs to display in the inner area that is smaller than the height of the drop-down, not working...
+/* these are needed for Chosen and other dynamic things to not get clipped by the bottom of the content area */
 #wrap { overflow: visible; }
-#content { overflow-x: auto; overflow-y: visible; }
-.inner { overflow-y: scroll; }
-*/
+#content { overflow: visible; }
+.inner { overflow: visible; }
+
+/* get rid of the grey box, looks funny when screen isn't very tall */
+.inner { border: 0; }
 
 input[type=radio], input[type=checkbox] { height: auto; }
 
-/* this is to fix a REALLY annoying bug in chosen for drop-downs in a modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
+/* this is to fix a REALLY annoying bug in chosen for drop-downs in a static modal window, but also REALLY annoyingly makes all drop-downs super-wide!!!!!
  * Partly fixed, but not really, by changing ["" + this.form_field.offsetWidth + ] to [$(this.form_field).width() + ] in chosen.jquery.min.js:
  */
-.container-dialog .chosen-container { min-width: 300px !important; }
+.container-dialog .chosen-container { min-width: 360px !important; }
+.field-row-item .chosen-container { min-width: 200px !important; }
 
-
+.modal { text-align: left; }

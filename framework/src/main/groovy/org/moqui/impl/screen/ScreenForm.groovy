@@ -893,6 +893,7 @@ class ScreenForm {
             }
             sri.ec.context.put(((String) localFormNode."@list") + "_index", index)
             sri.ec.context.put(((String) localFormNode."@list") + "_has_next", hasNext)
+            sri.ec.context.put(((String) localFormNode."@list") + "_entry", listEntry)
         }
         if (rowActions) rowActions.run(sri.ec)
     }
