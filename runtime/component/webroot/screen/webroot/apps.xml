@@ -28,15 +28,10 @@ This Work includes contributions authored by David E. Jones, not as a
     <widgets>
         <container id="wrap" style="bg-dark dk">
             <container id="top">
-                <render-mode>
-                    <text type="html" location="component://webroot/screen/includes/navbar.html.ftl"/>
-                </render-mode>
+                <render-mode><text type="html" location="component://webroot/screen/includes/navbar.html.ftl"/></render-mode>
                 <subscreens-menu type="popup" id="header-menu" title="Application"/>
             </container>
-            <!--
-            <container id="left">
-            </container>
-            -->
+            <!-- <container id="left"></container> -->
             <container id="content">
                 <!-- <container style="outer"> -->
                     <container style="inner bg-light lter">
