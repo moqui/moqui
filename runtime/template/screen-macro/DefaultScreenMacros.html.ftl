@@ -27,8 +27,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-menu">
     <#assign displayMenu = sri.activeInCurrentMenu!>
     <#assign menuId = .node["@id"]!"subscreensMenu">
+    <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
     <#if .node["@type"]! == "popup">
-        <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
@@ -60,11 +60,9 @@ This Work includes contributions authored by David E. Jones, not as a
             -->
         <#-- </ul> -->
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
-        <script>
-            <#-- move the menu to the header-menus container -->
-            $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
-            <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
-        </script>
+        <#-- move the menu to the header-menus container -->
+        <script>$("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));</script>
+        <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
     <#elseif .node["@type"]! == "popup-tree">
     <#else>
         <#-- default to type=tab -->
@@ -80,6 +78,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </ul>
         </div>
         </#if>
+        <#-- add to navbar bread crumbs too -->
+        <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
     </#if>
 </#macro>
 
@@ -167,6 +168,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </ul>
         </#if>
         </div>
+        <#-- add to navbar bread crumbs too -->
+        <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
+
         <#if !dynamic || !displayMenu>
         <#-- these make it more similar to the HTML produced when dynamic, but not needed: <div<#if .node["@id"]?has_content> id="${.node["@id"]}-active"</#if> class="ui-tabs-panel"> -->
         ${sri.renderSubscreen()}

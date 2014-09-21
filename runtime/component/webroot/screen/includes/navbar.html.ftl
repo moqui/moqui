@@ -89,6 +89,8 @@
             </li>
             -->
         </ul><!-- /.nav -->
+        <div id="navbar-menu-crumbs"></div>
+        <div class="navbar-text">${html_title!((sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</div>
         <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
           <i class="fa fa-power-off"></i>
         </a>
