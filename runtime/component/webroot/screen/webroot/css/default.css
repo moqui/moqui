@@ -246,6 +246,8 @@ ul.float-box li {
 
 /* #login-box { width: 280px; margin: 0 auto 0 auto; padding: 10px; } */
 
+.app-list-link { font-size: 1.5em; display: block; width: 400px; margin: 8px auto 8px auto; }
+
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: .8em; }
 
