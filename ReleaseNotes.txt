@@ -43,6 +43,8 @@ Bug Fixes:
   but this is annoying for numbers and such (a zero is generally a valid
   non-empty service parameter), so now uses null for any object or zero
   length String as the definition of empty for required parameters
+- Fixed issues with complex-alias where aliased entities were not add
+  to list of aliased entities used and alias level function was not added
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
