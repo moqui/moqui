@@ -69,6 +69,7 @@ li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
 strong { font-weight: bold; }
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 p, pre { white-space: pre-line; word-wrap: break-word; }
+p { margin: 0 0 8px 0; line-height: 16px; }
 label { white-space: normal; }
 
 .editable-label { color: rgb(66, 139, 202); }
@@ -215,32 +216,15 @@ a.active { color: red; }
 
 /* ======================= Handy Styles ======================= */
 
-ul.float-box {
-    display: inline-block;
-    list-style: none outside none;
-    margin-left: 0;
-    margin-top: 16px;
-    padding: 0;
-}
-ul.float-box li {
-    background: #EEEEEE;
-    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+ul.float-box { display: inline-block; list-style: none outside none; margin: 0 0 -8px 0; padding: 0; }
+ul.float-box li { background: #EEEEEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    display: inline-block;
-    line-height: 18px;
-    margin: 0 8px 8px;
-    padding: 0 10px;
-    float: left;
+    display: inline-block; line-height: 18px; margin: 0 8px 8px 0; padding: 8px; float: left;
 }
 
-.shaded-area {
-    background: #EEEEEE;
-    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    padding: 8px;
+.shaded-area { background: #EEEEEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC; padding: 8px;
 }
-
-.info {  }
 
 /* ======================= Screen-specific ======================= */
 
@@ -337,5 +321,6 @@ input[type=radio], input[type=checkbox] { height: auto; }
  */
 .container-dialog .chosen-container { min-width: 360px !important; }
 .field-row-item .chosen-container { min-width: 200px !important; }
+.dynamic-dialog .chosen-container { min-width: 150px !important; } /* set lower because this usually calculates the width, but sometimes messes up */
 
 .modal { text-align: left; }
