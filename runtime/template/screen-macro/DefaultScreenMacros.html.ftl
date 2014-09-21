@@ -102,9 +102,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign dynamic = .node["@dynamic"]! == "true" && .node["@id"]?has_content>
     <#assign dynamicActive = 0>
     <#assign displayMenu = sri.activeInCurrentMenu!>
+    <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
+    <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
     <#if .node["@type"]! == "popup">
-        <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
-        <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
