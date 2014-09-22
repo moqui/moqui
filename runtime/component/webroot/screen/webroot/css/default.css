@@ -340,4 +340,5 @@ input[type=radio], input[type=checkbox] { height: auto; }
 /* this is one of the default styles, but gets overridden by .bg-light>.dk so overridding again here */
 .bg-dark.dker { background-color:#303030 !important; }
 
-.login { background: url("/assets/img/pattern/irongrip.png") repeat #444; }
+.bg-light .login { background: url("/assets/img/pattern/cream_pixels.png") repeat #444; }
+.bg-dark .login { background: url("/assets/img/pattern/irongrip.png") repeat #444; }
