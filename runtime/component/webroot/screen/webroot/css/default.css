@@ -236,8 +236,9 @@ input[type=radio], input[type=checkbox] { height: auto; }
 
 .bg-dark .chosen-container { color: black; }
 .bg-dark .datetimepicker { color: black; }
+.bg-dark .modal-dialog { color: black; }
 
-.modal { text-align: left; }
+.modal-dialog { text-align: left; }
 
 .bg-dark .box { border-color: #222; }
 .bg-dark .box header { background-image: linear-gradient(#333 0px, #444 100%);
