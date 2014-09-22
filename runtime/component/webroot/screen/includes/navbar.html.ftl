@@ -92,8 +92,19 @@
         <div id="navbar-menu-crumbs"></div>
         <div class="navbar-text">${html_title!((sri.screenUrlInfo.targetScreen.getDefaultMenuName())!"Page")}</div>
         <a href="/Login/logout" data-toggle="tooltip" data-original-title="Logout ${(ec.getUser().getUserAccount().userFullName)!!}" data-placement="bottom" class="btn btn-danger btn-sm navbar-btn navbar-right">
-          <i class="fa fa-power-off"></i>
+            <i class="glyphicon glyphicon-off"></i>
         </a>
+        <a href="#" onclick="switchDarkLight();" data-toggle="tooltip" data-original-title="Switch Dark/Light" data-placement="bottom" class="btn btn-default btn-sm navbar-btn navbar-right">
+            <i class="glyphicon glyphicon-adjust"></i>
+        </a>
+        <script>
+            function switchDarkLight() {
+                $("body").toggleClass("bg-dark dk");
+                $("body").toggleClass("bg-light lter");
+                var currentStyle = $("body").hasClass("bg-dark dk") ? "bg-dark dk" : "bg-light lter";
+                $.ajax({ type:'POST', url:'/apps/setPreference', data:{ 'preferenceKey': 'OUTER_STYLE', 'preferenceValue': currentStyle }, dataType:'json' });
+            }
+        </script>
     </div>
   </div> <!-- container-fluid -->
 </nav><!-- /.navbar -->

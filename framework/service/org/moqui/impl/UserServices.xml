@@ -12,6 +12,14 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.4.xsd">
 
+    <service verb="set" noun="Preference" allow-remote="true">
+        <in-parameters>
+            <parameter name="preferenceKey" required="true"/>
+            <parameter name="preferenceValue"/>
+        </in-parameters>
+        <actions><script>ec.user.setPreference(preferenceKey, preferenceValue)</script></actions>
+    </service>
+    
     <service verb="create" noun="UserAccount" authenticate="anonymous-all" allow-remote="false">
         <in-parameters>
             <parameter name="username" required="true"/>
