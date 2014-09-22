@@ -11,7 +11,7 @@
             <span class="icon-bar"></span>
         </button>
         <#-- ${(ec.getTenant().tenantName)!"Welcome to Moqui"} -->
-        <#-- <a href="index.html" class="navbar-brand"><img src="assets/img/logo.png" alt=""></a> -->
+        <a href="/" class="navbar-brand"><img src="/images/MoquiLogoSmall.png" alt="Moqui" height="50"></a>
     </header>
     <#--
     <div class="topnav">

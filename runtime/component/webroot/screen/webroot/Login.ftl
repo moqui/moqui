@@ -4,7 +4,7 @@
     <div id="login" class="tab-pane active">
         <form method="post" action="${sri.makeUrlByType("login", "transition", null, "false").getUrl()}" class="form-signin">
             <p class="text-muted text-center">Enter your username and password to sign in</p>
-            <input type="text" name="username" placeholder="Username" required="required" class="form-control top">
+            <input type="text" name="username" value="${(ec.getWeb().getErrorParameters().get("username"))!""}" placeholder="Username" required="required" class="form-control top">
             <#if !ec.getWeb()?? || ec.getWeb().getSession().getAttribute("moqui.tenantAllowOverride")! != "N">
                 <input type="password" name="password" placeholder="Password" required="required" class="form-control middle">
                 <input type="text" name="tenantId" placeholder="Tenant ID" class="form-control bottom">
@@ -18,7 +18,7 @@
         <form method="post" action="${sri.makeUrlByType("resetPassword", "transition", null, "false").getUrl()}" class="form-signin">
             <p class="text-muted text-center">Enter your username to reset and email your password</p>
             <#if !ec.getWeb()?? || ec.getWeb().getSession().getAttribute("moqui.tenantAllowOverride")! != "N">
-                <input type="text" name="username" placeholder="Username" required="required" class="form-control top">
+                <input type="text" name="username" value="${(ec.getWeb().getErrorParameters().get("username"))!""}" placeholder="Username" required="required" class="form-control top">
                 <input type="text" name="tenantId" placeholder="Tenant ID" class="form-control bottom">
             <#else>
                 <input type="text" name="username" placeholder="Username" required="required" class="form-control">
@@ -29,7 +29,7 @@
     <div id="change" class="tab-pane">
         <form method="post" action="${sri.makeUrlByType("changePassword", "transition", null, "false").getUrl()}" class="form-signin">
             <p class="text-muted text-center">Enter details to change your password</p>
-            <input type="text" name="username" placeholder="Username" required="required" class="form-control top">
+            <input type="text" name="username" value="${(ec.getWeb().getErrorParameters().get("username"))!""}" placeholder="Username" required="required" class="form-control top">
             <input type="password" name="oldPassword" placeholder="Old Password" required="required" class="form-control middle">
             <input type="password" name="newPassword" placeholder="New Password" required="required" class="form-control middle">
             <#if !ec.getWeb()?? || ec.getWeb().getSession().getAttribute("moqui.tenantAllowOverride")! != "N">
