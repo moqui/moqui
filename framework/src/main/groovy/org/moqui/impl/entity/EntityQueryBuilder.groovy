@@ -194,7 +194,7 @@ class EntityQueryBuilder {
     static void getResultSetValue(ResultSet rs, int index, Node fieldNode, EntityValueImpl entityValueImpl,
                                             EntityFacadeImpl efi) throws EntityException {
         String fieldName = fieldNode."@name"
-        String javaType = efi.getFieldJavaType((String) fieldNode."@type", entityValueImpl.getEntityDefinition())
+        String javaType = fieldNode."@type" ? efi.getFieldJavaType((String) fieldNode."@type", entityValueImpl.getEntityDefinition()) : "String"
         int typeValue = EntityFacadeImpl.getJavaTypeInt(javaType)
 
         Object value = null

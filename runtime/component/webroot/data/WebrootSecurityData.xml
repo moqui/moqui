@@ -15,6 +15,8 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.security.ArtifactGroup artifactGroupId="SCREEN_TREE" description="Tools App (via root screen)"/>
     <moqui.security.ArtifactGroupMember artifactGroupId="SCREEN_TREE" artifactName="component://webroot/screen/webroot/apps/ScreenTree.xml"
                          artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
+    <moqui.security.ArtifactGroupMember artifactGroupId="SCREEN_TREE" artifactName="component://webroot/screen/webroot/apps/AppList.xml"
+            artifactTypeEnumId="AT_XML_SCREEN" inheritAuthz="Y"/>
     <moqui.security.ArtifactAuthz artifactAuthzId="SCREEN_TREE_1" userGroupId="ALL_USERS" artifactGroupId="SCREEN_TREE"
                    authzTypeEnumId="AUTHZT_ALLOW" authzActionEnumId="AUTHZA_VIEW"/>
 </entity-facade-xml>

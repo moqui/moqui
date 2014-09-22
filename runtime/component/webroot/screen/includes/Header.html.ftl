@@ -27,4 +27,4 @@
 </#list>
 </head>
 
-<body>
+<body class="${ec.user.getPreference("OUTER_STYLE")!"bg-light lter"}"><!-- try "bg-dark dk" or "bg-light lter" -->

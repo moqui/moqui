@@ -158,9 +158,14 @@ class EntityFindBuilder extends EntityQueryBuilder {
                 entityFindBase.havingEntityCondition.getAllAliases(entityAliasUsedSet, fieldUsedSet)
             fieldUsedSet.addAll(entityFindBase.fieldsToSelect)
             if (entityFindBase.orderByFields) fieldUsedSet.addAll(entityFindBase.orderByFields)
+            // get a list of entity aliases used
             for (String fieldName in fieldUsedSet) {
                 Node aliasNode = localEntityDefinition.getFieldNode(fieldName)
                 if (aliasNode?."@entity-alias") entityAliasUsedSet.add((String) aliasNode."@entity-alias")
+                if (aliasNode?."complex-alias") {
+                    for (Node cafNode in aliasNode."complex-alias"."complex-alias-field")
+                        if (cafNode."@entity-alias") entityAliasUsedSet.add((String) cafNode."@entity-alias")
+                }
             }
 
             // make sure each entityAlias in the entityAliasUsedSet links back to the main

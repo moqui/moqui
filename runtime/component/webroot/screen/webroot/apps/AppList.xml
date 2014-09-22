@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
+        require-authentication="true" default-menu-include="false" default-menu-title="App List">
+
+    <actions>
+        <set field="appsLocation" from="sri.getRootScreenDef().getSubscreensItem('apps').location"/>
+        <set field="currentScreenDef" from="sri.sfi.getScreenDefinition(appsLocation)"/>
+    </actions>
+    <widgets>
+        <container style="text-center">
+            <label text="Welcome to Moqui" type="h2"/>
+            <label text="Choose Your Application" type="h3"/>
+
+            <section-iterate name="ScreenNestedSection" list="currentScreenDef.getMenuSubscreensItems()" entry="currentSubscreensItem">
+                <actions>
+                    <set field="currentScreenDef" from="sri.sfi.getScreenDefinition(currentSubscreensItem.location)"/>
+                    <set field="currentScreenPath" value="/apps/${currentSubscreensItem.name}"/>
+                    <set field="currentUrlInfo" from="sri.buildUrl(currentScreenPath)"/>
+                </actions>
+                <widgets>
+                    <section name="ScreenItemRender">
+                        <condition><expression>currentScreenDef != null &amp;&amp;
+                            !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
+                        <widgets>
+                            <link url="${currentUrlInfo.url}" link-type="anchor-button" url-type="plain"
+                                    text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}" style="app-list-link"/>
+                        </widgets>
+                        <fail-widgets>
+                            <render-mode><text type="html"><![CDATA[<!-- excluding screen at path ${currentScreenPath} -->]]></text></render-mode>
+                        </fail-widgets>
+                    </section>
+                </widgets>
+            </section-iterate>
+
+            <label text="Choose wisely..." type="h5"/>
+        </container>
+    </widgets>
+</screen>

@@ -10,38 +10,10 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
-/* defaults
-* {
-margin: 0px; border: 0px; outline: 0px; padding: 0px;
-background: transparent; text-decoration: none;
-font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-weight: normal;
-font-size: 14px; / * set base font size here, all others relative using em * /
-vertical-align: middle;
-}
-*/
-
-/* needed to get buttons inside and outside forms to align
-div, form { vertical-align: top; } */
 
 /* ========================== body, etc ========================== */
 
-/*html, body { margin: 0; padding: 0; height: 100%; width: 100%; }
-html { overflow: hidden; }
-body { overflow: auto; background: #DDDDDF; }
-*/
-
 body { padding-top: 50px; } /* this is the initial load setting, will get set dynamically for navbar-fixed-top */
-
-/* The overflow: auto is needed for scroll in non-dynamic layouts, and for dynamic ones is replaced by jquery layout */
-/*
-#body-decorator { position: absolute; top: 8px; left: 8px; bottom: 8px; right: 8px;
-    background: white; padding: 8px; -moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px; overflow: auto; }
-
-#header-logo { float: left; width: 260px; height: 30px; }
-#header-logo h1, #header-logo a { font-size: 1.6em; font-family: Courier, "Courier New", monospace; font-weight: bold; border: 0px; padding: 0px; margin: 0px; }
-#header-menus { float: left; }
-#header-user { float: right; }
-*/
 
 div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; background-color: white; }
 div.message span { font-size: 1em; }
@@ -50,25 +22,11 @@ div.error span { color: red; }
 #apps-footer-content { margin: 5px auto 0px auto; width: 200px; text-align: center; }
 
 /* ====================== headings, general ====================== */
-/*
-h1 { font-size: 1.6em; font-weight: bold; }
-h2 { font-size: 1.3em; font-weight: bold; }
-h3 { font-size: 1.1em; font-weight: bold; }
-h4 { font-size: 1em; font-weight: bold; }
-h5 { font-size: .9em; font-weight: bold; }
-h6 { font-size: .8em; }
-
-
-a { font-size: 1em; font-weight: bold; color: #052f57; }
-a:hover { text-decoration: underline; }
-a span { font-size: 1em; font-weight: bold; }
-p { margin: 2px 0px 2px 0px; padding: 2px 0px 2px 0px; }
-li { margin: 0px 0px 0px 16px; padding: 0px 0px 0px 8px; }
-*/
 
 strong { font-weight: bold; }
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 p, pre { white-space: pre-line; word-wrap: break-word; }
+p { margin: 0 0 8px 0; line-height: 16px; }
 label { white-space: normal; }
 
 .editable-label { color: rgb(66, 139, 202); }
@@ -79,33 +37,6 @@ form.editable-form button { background: white; color: #333; border: 1px solid; b
 
 button.button-plain { border: 0px; padding: 0px; background: transparent; margin: 0px; color: #052f57; }
 button.button-plain:hover { text-decoration: underline; }
-/* NOTE: also using the jQueryUI ui-button style; skip:
-button, input[type="reset"], input[type="submit"], input[type="button"], a.button {
-font-size: 1em; font-weight: bold; text-decoration: none;
-}
- background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px 2px 2px 2px; outline: 0px;
- text-shadow: #fff 0 1px 1px; display: inline-block; overflow: visible; width: auto; cursor: pointer;
- -webkit-appearance: none; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; */
-/*
-button:active, input[type="reset"]:active, input[type="submit"]:active, input[type="button"]:active, a.button:active {
-border-color: #999 #bbb #ddd; color: #666;
-}
-
-.ui-button-text { font-size: 1em; font-weight: bold; text-decoration: none; }
-*/
-
-/*
-input[type=""], input[type="text"], input[type="email"], input[type="url"], input[type="number"], input[type="password"], textarea {
--moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid; border-color: #999 #bbb #ddd;
-margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
-font-size: 0.9em; font-family: Lucida Console, Monaco, monospace;
-}
-
-select option {
-margin: 2px 2px 2px 2px; padding: 2px 4px 2px 4px;
-font-size: 1em; font-family: Lucida Console, Monaco, monospace;
-}
-*/
 
 
 input:required:invalid, input:invalid, textarea:invalid { background-color: #FEE; }
@@ -155,40 +86,32 @@ div.panel-right { float: right; width: 180px; margin-left: 10px; }
 .form-list-paginate a, .form-list-paginate span { padding-right: 4px;
     font-family: "Courier New", monospace; font-weight: bold; font-size: .8em; vertical-align: top; }
 
-/* replaced by Metis styles:
-fieldset.form-single-outer { padding: 4px;
--moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; border: 1px solid #DDDDDF;
-}
-.single-form-field { padding-right: 10px; }
-.single-form-field span { font-size: 1em; display: inline-block; }
-.single-form-field span input { margin-right: 4px; }
-label.form-title { vertical-align: middle; display: inline-block; width: 120px; }
-.form-title { padding: 0px 8px 0px 2px; font-size: 1em; font-weight: bold; }
-.field-row { }
-.field-row-item { float: left; display: inline-block; }
-*/
 /* these are still used when a row has more than 2 fields in it */
 .field-row-item { float: left; display: block; margin-left: 17px; margin-right: 17px; }
 .field-row-item input, .field-row-item select { display: inline-block; }
 
 .form-list-outer {
 margin: 0 0 10px 0; padding: 4px; width: 100%;
-border: 1px solid #DDDDDF; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
+-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;
 display: table; table-layout: auto; border-collapse: separate; empty-cells: show;
 white-space: normal;
 }
+.bg-light .form-list-outer { border: 1px solid #DDDDDF;  }
+.bg-dark .form-list-outer { border: 1px solid #222220;  }
 .form-header-group { display: table-header-group; }
 .form-header-row { display: table-row; }
 .form-header-cell { display: table-cell; text-align: left; padding: 0px 4px 0px 2px; }
 .form-body { display: table-row-group; }
-.form-row { display: table-row; background-color: #FFF; vertical-align: middle; }
+.form-row { display: table-row; vertical-align: middle; }
 .form-cell { display: table-cell; padding: 0px 4px 0px 2px; font-size: 1em; vertical-align: middle; }
 .form-cell span { display: block; }
 .form-cell input, .form-cell span input, .form-cell select, .form-cell span select { font-size: 0.9em; }
 .form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
-.form-row:nth-child(odd) { background-color: #EEE; }
+.bg-light .form-row:nth-child(odd) { background-color: #EEE; }
+.bg-dark .form-row:nth-child(odd) { background-color: #2A2A2A; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
-.form-row:hover { background-color: #DDD; }
+.bg-light .form-row:hover { background-color: #DDD; }
+.bg-dark .form-row:hover { background-color: #222; }
 
 .form-list-outer .form-title { /* border-bottom: 1px solid #DDDDDF; */ white-space: nowrap; height: 1.5em; font-weight: bold; }
 
@@ -215,36 +138,24 @@ a.active { color: red; }
 
 /* ======================= Handy Styles ======================= */
 
-ul.float-box {
-    display: inline-block;
-    list-style: none outside none;
-    margin-left: 0;
-    margin-top: 16px;
-    padding: 0;
-}
-ul.float-box li {
-    background: #EEEEEE;
-    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    display: inline-block;
-    line-height: 18px;
-    margin: 0 8px 8px;
-    padding: 0 10px;
-    float: left;
-}
+ul.float-box { display: inline-block; list-style: none outside none; margin: 0 0 -8px 0; padding: 0; }
+ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px; margin: 0 8px 8px 0; padding: 8px; float: left;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC; }
+.bg-dark ul.float-box li { background: #3a3a3a; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
+    box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
-.shaded-area {
-    background: #EEEEEE;
-    -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC;
-    padding: 8px;
-}
-
-.info {  }
+.shaded-area { padding: 8px; }
+.bg-light .shaded-area { background: #EEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC;
+    box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC; }
+.bg-dark .shaded-area { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
+    box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
 /* ======================= Screen-specific ======================= */
 
-/* #login-box { width: 280px; margin: 0 auto 0 auto; padding: 10px; } */
+.app-list-link { font-size: 1.5em; display: block; width: 400px; margin: 8px auto 8px auto; }
+
+.navbar-inverse .navbar-nav > li > a { font-size: 1.1em; color: #BBB; }
+.navbar-inverse .navbar-nav > li > a:hover, .navbar-inverse .navbar-nav > li > a:focus { color: #fff; background-color: transparent; }
 
 #ArtifactHitBins-table tbody tr td, #ArtifactHitBins-table thead tr th, #ArtifactHitBins-table thead tr th div select,
 #ArtifactHitBins-table thead tr th div input { font-size: .8em; }
@@ -256,7 +167,6 @@ ul.float-box li {
 /* ================ Overrides for jquery-ui theme ================ */
 
 .ui-widget { font-size: 1em; }
-/* .ui-widget .ui-button, .ui-widget button { font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; font-size: 0.8em; } */
 input.ui-widget, select.ui-widget, select option.ui-widget, textarea.ui-widget, li.ui-menu-item a { font-size: 1em; }
 
 .ui-button { border: none; margin: 2px; }
@@ -296,31 +206,20 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 .ui-loading { background: white url('/images/wait_anim_16x16.gif') right center no-repeat; }
 .ui-autocomplete { z-index: 1100; } /* needed for modal windows with z-index of 1050 */
 
-/* css for timepicker */
-/*
-.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
-.ui-timepicker-div dl { text-align: left; }
-.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
-.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
-.ui-timepicker-div td { font-size: 90%; }
-.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
-*/
-
 /* ================ Extensions for bootstrap.min.css theme =============== */
 
 .progress { margin-bottom: 8px; }
 
 .form-group { margin-bottom: 8px; }
 .input-group .form-control, .form-control { width: auto; }
-/* causes more layout issues than solves: .form-group div { padding-top: 7px; } */
 .form-horizontal .control-label { padding-top: 0; }
 
 /* ================ Other, Fix Styles =============== */
 
 /* these are needed for Chosen and other dynamic things to not get clipped by the bottom of the content area */
-#wrap { overflow: visible; }
-#content { overflow: visible; }
-.inner { overflow: visible; }
+#wrap { overflow: visible; background: transparent; }
+#content { overflow: visible; background: transparent; }
+.inner { overflow: visible; background: transparent; }
 
 /* get rid of the grey box, looks funny when screen isn't very tall */
 .inner { border: 0; }
@@ -335,3 +234,13 @@ input[type=radio], input[type=checkbox] { height: auto; }
 .dynamic-dialog .chosen-container { min-width: 150px !important; } /* set lower because this usually calculates the width, but sometimes messes up */
 
 .modal { text-align: left; }
+
+.bg-dark .box { border-color: #222; }
+.bg-dark .box header { background-image: linear-gradient(#333 0px, #444 100%);
+    background-repeat: repeat-x; border-color: #222; }
+.bg-dark .box .body { background: transparent; }
+/* this is one of the default styles, but gets overridden by .bg-light>.dk so overridding again here */
+.bg-dark.dker { background-color:#303030 !important; }
+
+.bg-light .login { background: url("/assets/img/pattern/cream_pixels.png") repeat #444; }
+.bg-dark .login { background: url("/assets/img/pattern/irongrip.png") repeat #444; }

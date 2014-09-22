@@ -27,8 +27,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <#macro "subscreens-menu">
     <#assign displayMenu = sri.activeInCurrentMenu!>
     <#assign menuId = .node["@id"]!"subscreensMenu">
+    <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
     <#if .node["@type"]! == "popup">
-        <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@width"]};"</#if>> -->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
@@ -60,11 +60,9 @@ This Work includes contributions authored by David E. Jones, not as a
             -->
         <#-- </ul> -->
         <#-- NOTE: not putting this script at the end of the document so that it doesn't appear unstyled for as long -->
-        <script>
-            <#-- move the menu to the header-menus container -->
-            $("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));
-            <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
-        </script>
+        <#-- move the menu to the header-menus container -->
+        <script>$("#${.node["@header-menus-id"]!"header-menus"}").append($("#${menuId}"));</script>
+        <#-- $("#${menuId}").menu({position: { my: "right top", at: "right bottom" }}); -->
     <#elseif .node["@type"]! == "popup-tree">
     <#else>
         <#-- default to type=tab -->
@@ -80,6 +78,9 @@ This Work includes contributions authored by David E. Jones, not as a
             </ul>
         </div>
         </#if>
+        <#-- add to navbar bread crumbs too -->
+        <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
     </#if>
 </#macro>
 
@@ -101,9 +102,9 @@ This Work includes contributions authored by David E. Jones, not as a
     <#assign dynamic = .node["@dynamic"]! == "true" && .node["@id"]?has_content>
     <#assign dynamicActive = 0>
     <#assign displayMenu = sri.activeInCurrentMenu!>
+    <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
+    <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
     <#if .node["@type"]! == "popup">
-        <#assign menuTitle = .node["@title"]!sri.getActiveScreenDef().getDefaultMenuName()!"Menu">
-        <#assign menuId><#if .node["@id"]?has_content>${.node["@id"]}-menu<#else>subscreensPanelMenu</#if></#assign>
         <#-- <#assign menuUrlInfo = sri.buildUrl("")> -->
         <#-- <ul id="${menuId}"<#if .node["@width"]?has_content> style="width: ${.node["@menu-width"]};"</#if>>  ->
             <#-- <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
@@ -167,6 +168,10 @@ This Work includes contributions authored by David E. Jones, not as a
             </ul>
         </#if>
         </div>
+        <#-- add to navbar bread crumbs too -->
+        <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
+        <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
+
         <#if !dynamic || !displayMenu>
         <#-- these make it more similar to the HTML produced when dynamic, but not needed: <div<#if .node["@id"]?has_content> id="${.node["@id"]}-active"</#if> class="ui-tabs-panel"> -->
         ${sri.renderSubscreen()}
@@ -439,7 +444,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
-            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! == "anchor-button">btn btn-primary btn-sm"</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! == "anchor-button">btn btn-primary btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
@@ -475,7 +480,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     <#if linkNode["image"]?has_content><#assign imageNode = linkNode["image"][0]/>
                         <input type="image" src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}"<#if imageNode["@alt"]?has_content> alt="${imageNode["@alt"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if>>
                     <#else>
-                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-primary btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
+                        <button type="submit"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="btn btn-primary btn-sm<#if linkNode["@link-type"]! == "hidden-form-link"> btn-flat</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i> </#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</button>
                     </#if>
                 </#if>
             </form>

@@ -16,30 +16,28 @@ This Work includes contributions authored by David E. Jones, not as a
     <!-- NOTE: require-authentication=false is required to allow sub-screens to decide. -->
 
     <transition name="ScreenTree"><default-response url="../ScreenTree"/></transition>
+    <transition name="setPreference">
+        <parameter name="preferenceKey"/><parameter name="preferenceValue"/>
+        <actions><script>ec.user.setPreference(preferenceKey, preferenceValue)</script></actions>
+        <default-response type="none"/>
+    </transition>
 
-    <subscreens default-item="example">
+    <subscreens default-item="AppList">
         <!-- refer to the various app roots here -->
-        <subscreens-item name="example" location="component://example/screen/ExampleApp.xml"
-                menu-title="Example" menu-index="8"/>
         <subscreens-item name="tools" location="component://tools/screen/Tools.xml"
                 menu-title="Tools" menu-index="9"/>
     </subscreens>
 
     <widgets>
-        <container id="wrap" style="bg-dark dk">
+        <container id="wrap"><!-- note: no "bg-light lter" or "bg-dark dk" styles here, on body -->
             <container id="top">
-                <render-mode>
-                    <text type="html" location="component://webroot/screen/includes/navbar.html.ftl"/>
-                </render-mode>
+                <render-mode><text type="html" location="component://webroot/screen/includes/navbar.html.ftl"/></render-mode>
                 <subscreens-menu type="popup" id="header-menu" title="Application"/>
             </container>
-            <!--
-            <container id="left">
-            </container>
-            -->
+            <!-- <container id="left"></container> -->
             <container id="content">
                 <!-- <container style="outer"> -->
-                    <container style="inner bg-light lter">
+                    <container style="inner">
                         <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
                             <widgets><container style="message"><label text="${message}"/></container></widgets>
                         </section-iterate>
