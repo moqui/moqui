@@ -25,6 +25,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="username" required="true"/>
             <parameter name="newPassword" required="true"/>
             <parameter name="newPasswordVerify" required="true"/>
+            <parameter name="requirePasswordChange" default-value="N"/>
             <parameter name="userFullName"/>
             <parameter name="emailAddress"/>
             <parameter name="currencyUomId"/>
@@ -35,10 +36,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="userId" required="true"/>
         </out-parameters>
         <actions>
-            <service-call name="create#moqui.security.UserAccount" out-map="createUaOut" in-map="context"/>
+            <service-call name="create#moqui.security.UserAccount" out-map="context" in-map="context"/>
             <service-call name="org.moqui.impl.UserServices.update#PasswordInternal"
-                in-map="[userId:createUaOut.userId, newPassword:newPassword, newPasswordVerify:newPasswordVerify]"/>
-            <set field="result.userId" from="createUaOut.userId"/>
+                in-map="[userId:userId, newPassword:newPassword, newPasswordVerify:newPasswordVerify,
+                    requirePasswordChange:requirePasswordChange]"/>
         </actions>
     </service>
 
@@ -117,6 +118,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <parameter name="userId" required="true"/>
             <parameter name="newPassword" required="true"/>
             <parameter name="newPasswordVerify" required="true"/>
+            <parameter name="requirePasswordChange" default-value="N"/>
         </in-parameters>
         <actions>
             <!-- check a bunch of stuff about the new password -->
@@ -181,7 +183,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <field-map field-name="passwordSalt" from="salt"/>
                 <field-map field-name="passwordHashType" from="ec.ecfi.passwordHashType"/>
                 <field-map field-name="passwordSetDate" from="ec.user.nowTimestamp"/>
-                <field-map field-name="requirePasswordChange" value="N"/>
+                <field-map field-name="requirePasswordChange"/>
                 <field-map field-name="disabled" value="N"/>
             </service-call>
 
