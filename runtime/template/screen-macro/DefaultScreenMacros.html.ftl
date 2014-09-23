@@ -273,7 +273,7 @@ ${sri.renderSection(.node["@name"])}
                 <div<#if panelId?has_content> id="${panelId}-header"</#if> class="container-panel-header"><#recurse .node["panel-header"][0]>
                 </div>
             </#if>
-            <div class="panel-middle">
+            <div class="container-panel-middle">
                 <#if .node["panel-left"]?has_content>
                     <div<#if panelId?has_content> id="${panelId}-left"</#if> class="container-panel-left" style="width: ${.node["panel-left"][0]["@size"]!"180"}px;"><#recurse .node["panel-left"][0]>
                     </div>

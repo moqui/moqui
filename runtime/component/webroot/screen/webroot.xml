@@ -49,11 +49,8 @@ This Work includes contributions authored by David E. Jones, not as a
             '/assets/lib/switch/build/css/bootstrap3/bootstrap-switch.min.css',
         -->
 
-        <set field="html_stylesheets" from="new LinkedHashSet(['/assets/lib/bootstrap/css/bootstrap.min.css',
-            '/assets/lib/Font-Awesome/css/font-awesome.min.css', '/assets/lib//jquery-ui/jquery-ui.min.css',
-            '/assets/lib/datetimepicker/css/bootstrap-datetimepicker.min.css',
-            '/assets/lib/chosen/chosen.min.css', '/assets/lib/jasny/css/jasny-bootstrap.min.css',
-            '/assets/css/main.min.css', '/assets/css/theme.css', '/css/default.css'])"/>
+        <!-- See WebrootThemeData.xml for CSS references -->
+        <set field="html_stylesheets" from="new LinkedHashSet()"/>
     </always-actions>
     <subscreens default-item="apps">
         <!-- if the client is an iPad, default to the ipad subscreens item instead of apps, but allow either to be used explicitly -->
