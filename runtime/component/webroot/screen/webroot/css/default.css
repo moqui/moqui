@@ -108,7 +108,7 @@ white-space: normal;
 .form-cell input, .form-cell span input, .form-cell select, .form-cell span select { font-size: 0.9em; }
 .form-bottom-row { display: table-caption; caption-side: bottom; text-align: left; vertical-align: middle; width: 100%; }
 .bg-light .form-row:nth-child(odd) { background-color: #EEE; }
-.bg-dark .form-row:nth-child(odd) { background-color: #2A2A2A; }
+.bg-dark .form-row:nth-child(odd) { background-color: #333; }
 /* .form-row:nth-child(even) { background-color: #FFF; } */
 .bg-light .form-row:hover { background-color: #DDD; }
 .bg-dark .form-row:hover { background-color: #222; }
@@ -241,8 +241,10 @@ input[type=radio], input[type=checkbox] { height: auto; }
 
 .modal-dialog { text-align: left; }
 
+.bg-light .box header { background-image: linear-gradient(#EEE 0px, #EEE 100%); }
+
 .bg-dark .box { border-color: #222; }
-.bg-dark .box header { background-image: linear-gradient(#333 0px, #444 100%);
+.bg-dark .box header { background-image: linear-gradient(#333 0px, #333 100%);
     background-repeat: repeat-x; border-color: #222; }
 .bg-dark .box .body { background: transparent; }
 /* this is one of the default styles, but gets overridden by .bg-light>.dk so overridding again here */
