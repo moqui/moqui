@@ -15,7 +15,7 @@
 
 body { padding-top: 50px; } /* this is the initial load setting, will get set dynamically for navbar-fixed-top */
 
-div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; background-color: white; }
+div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; background: transparent; }
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
@@ -186,7 +186,7 @@ button.ui-button-icons-only { width: 1.5em; }
 .ui-menu-item .ui-state-focus { border-color: transparent; }
 .ui-menu-item .ui-state-active { -moz-border-radius: 4px; -webkit-border-radius: 4px; -khtml-border-radius: 4px; border-radius: 4px; }
 
-.ui-accordion-header { line-height: .7; background: none; }
+.ui-accordion-header { line-height: .7; background: #EEE; }
 .ui-accordion .ui-accordion-content { padding: 0.5em 1em; }
 
 .ui-widget-header { background-image: none; }
