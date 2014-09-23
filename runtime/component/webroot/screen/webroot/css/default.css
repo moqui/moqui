@@ -60,16 +60,16 @@ div.ui-layout-south { display: none; }
 div.ui-layout-container { height: 100%; }
 */
 /* styles for non-dynamic table layout, not using jquery-layout */
-div.panel-outer {  }
-div.panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }
-div.panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; vertical-align: top; }
-div.panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; vertical-align: top; }
-div.panel-header { width: 100%; }
-div.panel-footer { width: 100%; }
+div.container-panel-outer {  }
+div.container-panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }
+div.container-panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; vertical-align: top; }
+div.container-panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; vertical-align: top; }
+div.container-panel-header { width: 100%; }
+div.container-panel-footer { width: 100%; }
 
 /* old alternate approach using floats for columns (may now need style or HTML changes to work again):
 div.panel-outer { }
