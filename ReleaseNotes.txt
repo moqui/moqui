@@ -2,10 +2,10 @@
 Moqui Framework Release Notes
 
 ===========================================================================
-Release 1.4.2 - TBD
+Release 1.5.0 - TBD
 ===========================================================================
 
-Moqui Framework 1.4.2 is a minor new feature and bug fix release.
+Moqui Framework 1.5.0 is a major new feature and bug fix release.
 
 TODO
 
@@ -33,7 +33,11 @@ New Features:
   Map interface, often an EntityValue and nice to get at it directly)
 - Added form-single.field-layout.field-row-big element to do what field-row
   used to do with more than 2 field-ref elements, putting all fields in a
-  single column.
+  single column
+- Put CSS references back in theme instead of direct in webroot.xml, added
+  support for header logo, header title, and body class in theme
+- Added dark/light pseudo-theme switcher, switches body classes from
+  Bootstrap on the fly and saves user preference (default comes from theme)
 
 Bug Fixes:
 

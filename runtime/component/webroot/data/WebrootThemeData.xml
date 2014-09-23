@@ -11,24 +11,61 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <entity-facade-xml type="seed">
-    <!-- Default Theme Extensions (rest of the theme defined in ScreenTypeData.xml) -->
-    <!-- <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/assets/css/theme.css"/> -->
-    <!-- <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/css/default.css"/> -->
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
-                         resourceValue="/moqui.ico"/>
+    <!-- Default Theme Extensions (rest of the theme defined in ScreenEntities.xml) -->
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/bootstrap/css/bootstrap.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/Font-Awesome/css/font-awesome.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/jquery-ui/jquery-ui.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="6" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/datetimepicker/css/bootstrap-datetimepicker.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="7" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/chosen/chosen.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="8" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/jasny/css/jasny-bootstrap.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="10" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/css/main.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="11" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/css/theme.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="20" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/css/default.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="100" resourceTypeEnumId="STRT_HEADER_LOGO"
+            resourceValue="/images/MoquiLogoSmall.png"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="101" resourceTypeEnumId="STRT_SHORTCUT_ICON"
+            resourceValue="/moqui.ico"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT" sequenceNum="102" resourceTypeEnumId="STRT_BODY_CLASS"
+            resourceValue="bg-light lter"/>
 
     <!-- Theme for Internal iPad apps -->
     <moqui.basic.Enumeration description="Internal Applications for iPad Theme Type" enumId="STT_INTERNAL_IPAD"
                              enumTypeId="ScreenThemeType" enumCode="DEFAULT_IPAD"/>
     <moqui.screen.ScreenTheme screenThemeId="DEFAULT_IPAD" screenThemeTypeEnumId="STT_INTERNAL_IPAD" description="Moqui Default iPad Theme: simple, flat, default"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="1" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/css/dot-luv/jquery-ui-1.9.2.min.css"/>
+            resourceValue="/assets/lib/bootstrap/css/bootstrap.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="2" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/css/default.css"/>
+            resourceValue="/assets/lib/Font-Awesome/css/font-awesome.min.css"/>
     <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="3" resourceTypeEnumId="STRT_STYLESHEET"
-                         resourceValue="/ipad/css/ipad.css"/>
-    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="99" resourceTypeEnumId="STRT_SHORTCUT_ICON"
-                         resourceValue="/ipad.ico"/>
+            resourceValue="/assets/lib/jquery-ui/jquery-ui.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="6" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/datetimepicker/css/bootstrap-datetimepicker.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="7" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/chosen/chosen.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="8" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/lib/jasny/css/jasny-bootstrap.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="10" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/css/main.min.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="11" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/assets/css/theme.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="20" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/css/default.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="100" resourceTypeEnumId="STRT_HEADER_LOGO"
+            resourceValue="/images/MoquiLogoSmall.png"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="102" resourceTypeEnumId="STRT_BODY_CLASS"
+            resourceValue="bg-light lter"/>
+
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="21" resourceTypeEnumId="STRT_STYLESHEET"
+            resourceValue="/ipad/css/ipad.css"/>
+    <moqui.screen.ScreenThemeResource screenThemeId="DEFAULT_IPAD" sequenceNum="101" resourceTypeEnumId="STRT_SHORTCUT_ICON"
+            resourceValue="/ipad.ico"/>
 </entity-facade-xml>

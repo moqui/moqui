@@ -10,8 +10,10 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
         </button>
-        <#-- ${(ec.getTenant().tenantName)!"Welcome to Moqui"} -->
-        <a href="/" class="navbar-brand"><img src="/images/MoquiLogoSmall.png" alt="Moqui" height="50"></a>
+        <#assign headerLogoList = sri.getThemeValues("STRT_HEADER_LOGO")>
+        <#if headerLogoList?has_content><a href="/" class="navbar-brand"><img src="${headerLogoList?first}" alt="Home" height="50"></a></#if>
+        <#assign headerTitleList = sri.getThemeValues("STRT_HEADER_TITLE")>
+        <#if headerTitleList?has_content><div class="navbar-text">${headerTitleList?first}</div></#if>
     </header>
     <#--
     <div class="topnav">

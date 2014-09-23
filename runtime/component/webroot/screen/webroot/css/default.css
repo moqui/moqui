@@ -15,7 +15,7 @@
 
 body { padding-top: 50px; } /* this is the initial load setting, will get set dynamically for navbar-fixed-top */
 
-div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; background-color: white; }
+div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF; padding: 2px; text-align: center; background: transparent; }
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
@@ -63,11 +63,11 @@ div.ui-layout-container { height: 100%; }
 div.container-panel-outer {  }
 div.container-panel-middle { display: table; table-layout: auto; width: 100%; height: 100%; }
 div.container-panel-left { display: table-cell; /*width: 180px;*/ padding-right: 8px; height: 100%; vertical-align: top; }
-div.container-panel-center-only { display: table-cell; /*width: 960px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.container-panel-center-left { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.container-panel-center-both { display: table-cell; /*width: 580px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.container-panel-center-right { display: table-cell; /*width: 770px;*/ height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
-div.container-panel-right { display: table-cell; /*width: 180px;*/ padding-left: 8px; height: 100%; vertical-align: top; }
+div.container-panel-center-only { display: table-cell; width: 100%; height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-center-left { display: table-cell; height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-center-both { display: table-cell; height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-center-right { display: table-cell; height: 100%; padding: 0 8px 0 8px; vertical-align: top; }
+div.container-panel-right { display: table-cell; padding-left: 8px; height: 100%; vertical-align: top; }
 div.container-panel-header { width: 100%; }
 div.container-panel-footer { width: 100%; }
 
@@ -186,7 +186,7 @@ button.ui-button-icons-only { width: 1.5em; }
 .ui-menu-item .ui-state-focus { border-color: transparent; }
 .ui-menu-item .ui-state-active { -moz-border-radius: 4px; -webkit-border-radius: 4px; -khtml-border-radius: 4px; border-radius: 4px; }
 
-.ui-accordion-header { line-height: .7; background: none; }
+.ui-accordion-header { line-height: .7; background: #EEE; }
 .ui-accordion .ui-accordion-content { padding: 0.5em 1em; }
 
 .ui-widget-header { background-image: none; }
