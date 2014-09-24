@@ -259,3 +259,6 @@ input[type=radio], input[type=checkbox] { height: auto; }
 
 .bg-light .login { background: url("/assets/img/pattern/cream_pixels.png") repeat #444; }
 .bg-dark .login { background: url("/assets/img/pattern/irongrip.png") repeat #444; }
+
+::-webkit-scrollbar-thumb { background-color: #888; }
+::-webkit-scrollbar-track { background: rgba(110, 110, 110, 0.25); }
