@@ -206,6 +206,13 @@ abstract class EntityFindBase implements EntityFind {
                             if (ic) ec.ignoreCase()
                         }
                         break;
+                    case "begins":
+                        if (value) {
+                            ec = efi.conditionFactory.makeCondition(fn,
+                                    not ? EntityCondition.NOT_LIKE : EntityCondition.LIKE, "${value}%")
+                            if (ic) ec.ignoreCase()
+                        }
+                        break;
                     case "empty":
                         ec = efi.conditionFactory.makeCondition(
                                 efi.conditionFactory.makeCondition(fn,

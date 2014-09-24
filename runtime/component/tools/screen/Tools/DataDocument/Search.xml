@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Search" default-menu-index="1">
 
     <transition name="submitSearch"><default-response url="."/></transition>
@@ -40,7 +40,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <text-line ac-transition="searchSuggest" ac-min-length="3" size="40"/> -->
             </default-field></field>
             <field name="submitButton"><default-field title="Search"><submit/></default-field></field>
-            <field-layout><field-row><field-ref name="indexName"/><field-ref name="queryString"/><field-ref name="submitButton"/></field-row></field-layout>
+            <field-layout><field-row-big><field-ref name="indexName"/><field-ref name="queryString"/><field-ref name="submitButton"/></field-row-big></field-layout>
         </form-single>
 
         <form-list name="SearchResults" list="documentList" paginate="true" paginate-always-show="true">

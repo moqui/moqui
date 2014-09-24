@@ -217,6 +217,12 @@ class StupidUtilities {
         public String toString() { return this.fieldNameList.toString() }
     }
 
+    static Set<Object> getFieldValuesFromMapList(List<Map> theList, String fieldName) {
+        Set<Object> theSet = new HashSet<>()
+        for (Map curMap in theList) if (curMap.get(fieldName)) theSet.add(curMap.get(fieldName))
+        return theSet
+    }
+
     static int countChars(String s, boolean countDigits, boolean countLetters, boolean countOthers) {
         // this seems like it should be part of some standard Java API, but I haven't found it
         // (can use Pattern/Matcher, but that is even uglier and probably a lot slower)

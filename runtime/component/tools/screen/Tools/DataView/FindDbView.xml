@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Entity List" default-menu-index="1">
 
     <transition name="edit">
@@ -38,10 +38,10 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="cache"><default-field><hidden default-value="N"/></default-field></field>
             <field name="isDataView"><default-field><hidden default-value="Y"/></default-field></field>
             <field name="submitButton"><default-field title="Create"><submit/></default-field></field>
-            <field-layout><field-row>
+            <field-layout><field-row-big>
                 <field-ref name="dbViewEntityName"/><field-ref name="packageName"/>
                 <field-ref name="cache"/><field-ref name="isDataView"/><field-ref name="submitButton"/>
-            </field-row></field-layout>
+            </field-row-big></field-layout>
         </form-single>
         <form-list name="ListDbViewEntities" list="dbViewEntityList">
             <field name="dbViewEntityName">

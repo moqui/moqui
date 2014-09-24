@@ -12,18 +12,21 @@ This Work includes contributions authored by David E. Jones, not as a
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
-        require-authentication="false" default-menu-include="false">
+        require-authentication="true" default-menu-include="false" default-menu-title="App List">
 
     <actions>
-        <set field="parentScreenDef" from="currentScreenDef"/>
-        <set field="parentScreenPath" from="currentScreenPath"/>
+        <set field="appsLocation" from="sri.getRootScreenDef().getSubscreensItem('apps').location"/>
+        <set field="currentScreenDef" from="sri.sfi.getScreenDefinition(appsLocation)"/>
     </actions>
     <widgets>
-        <container style="ScreenTreeNested">
-            <section-iterate name="ScreenNestedSection" list="parentScreenDef.getMenuSubscreensItems()" entry="currentSubscreensItem">
+        <container style="text-center">
+            <label text="Welcome to Moqui" type="h2"/>
+            <label text="Choose Your Application" type="h3"/>
+
+            <section-iterate name="ScreenNestedSection" list="currentScreenDef.getMenuSubscreensItems()" entry="currentSubscreensItem">
                 <actions>
                     <set field="currentScreenDef" from="sri.sfi.getScreenDefinition(currentSubscreensItem.location)"/>
-                    <set field="currentScreenPath" value="${parentScreenPath}/${currentSubscreensItem.name}"/>
+                    <set field="currentScreenPath" value="/apps/${currentSubscreensItem.name}"/>
                     <set field="currentUrlInfo" from="sri.buildUrl(currentScreenPath)"/>
                 </actions>
                 <widgets>
@@ -31,10 +34,8 @@ This Work includes contributions authored by David E. Jones, not as a
                         <condition><expression>currentScreenDef != null &amp;&amp;
                             !currentScreenDef?.getParameterMap() &amp;&amp; currentUrlInfo?.isPermitted()</expression></condition>
                         <widgets>
-                            <link url="${currentUrlInfo.url}" link-type="anchor" url-type="plain"
-                                    text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}"/>
-                            <include-screen location="component://webroot/screen/webroot/apps/ScreenTree/ScreenTreeNested.xml"
-                                    share-scope="false"/>
+                            <link url="${currentUrlInfo.url}" link-type="anchor-button" url-type="plain"
+                                    text="${ec.l10n.getLocalizedMessage(currentSubscreensItem.menuTitle)}" style="app-list-link"/>
                         </widgets>
                         <fail-widgets>
                             <render-mode><text type="html"><![CDATA[<!-- excluding screen at path ${currentScreenPath} -->]]></text></render-mode>
@@ -42,6 +43,8 @@ This Work includes contributions authored by David E. Jones, not as a
                     </section>
                 </widgets>
             </section-iterate>
+
+            <label text="Choose wisely..." type="h5"/>
         </container>
     </widgets>
 </screen>

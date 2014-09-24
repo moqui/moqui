@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Edit DB-View" default-menu-index="1">
 
     <parameter name="dbViewEntityName"/>
@@ -142,7 +142,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     <field name="dbViewEntityName"><default-field title="View Name"><display/></default-field></field>
                     <field name="packageName"><default-field title="Package"><text-line/></default-field></field>
                     <field name="submitButton"><default-field title="Update"><submit/></default-field></field>
-                    <field-layout><field-row><field-ref name="dbViewEntityName"/><field-ref name="packageName"/><field-ref name="submitButton"/></field-row></field-layout>
+                    <field-layout><field-row-big><field-ref name="dbViewEntityName"/><field-ref name="packageName"/><field-ref name="submitButton"/></field-row-big></field-layout>
                 </form-single>
             </widgets>
         </section>
@@ -168,10 +168,10 @@ This Work includes contributions authored by David E. Jones, not as a
                     </field>
                     <field name="submitButton"><default-field title="Set Master"><submit/></default-field></field>
 
-                    <field-layout><field-row>
+                    <field-layout><field-row-big>
                         <field-ref name="dbViewEntityName"/><field-ref name="entityAlias"/>
                         <field-ref name="entityName"/><field-ref name="submitButton"/>
-                    </field-row></field-layout>
+                    </field-row-big></field-layout>
                 </form-single>
                 <form-list name="SetMasterFields" list="masterFieldList" transition="setMasterFields" multi="true">
                     <field name="dbViewEntityName"><default-field><hidden/></default-field></field>

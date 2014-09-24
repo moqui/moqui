@@ -10,7 +10,7 @@ this Work and assume any risks associated with your use of this Work.
 This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
-<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.4.xsd">
+<entities xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/entity-definition-1.5.xsd">
     <!-- ========================================================= -->
     <!-- moqui.screen -->
     <!-- ========================================================= -->
@@ -79,6 +79,9 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="Style Sheet (CSS) URL" enumId="STRT_STYLESHEET" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Script URL" enumId="STRT_SCRIPT" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Header Logo URL" enumId="STRT_HEADER_LOGO" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Header Title" enumId="STRT_HEADER_TITLE" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="HTML Body CSS Class" enumId="STRT_BODY_CLASS" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="ScreenThemeResourceType"/>
         </seed-data>
     </entity>
@@ -300,7 +303,7 @@ This Work includes contributions authored by David E. Jones, not as a
     <moqui.basic.Enumeration description="Country" enumId="DFFT_COUNTRY" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Credit Card Number" enumId="DFFT_CREDIT_CARD" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Date String (yyyy-MM-dd)" enumId="DFFT_DATE" enumTypeId="DynamicFormFieldType"/>
-    <moqui.basic.Enumeration description="Date String (yyyy-MM-dd hh:mm:ss)" enumId="DFFT_DATE_TIME" enumTypeId="DynamicFormFieldType"/>
+    <moqui.basic.Enumeration description="Date String (yyyy-MM-dd HH:mm:ss)" enumId="DFFT_DATE_TIME" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Email Address" enumId="DFFT_EMAIL" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Enumeration" enumId="DFFT_ENUMERATION" enumTypeId="DynamicFormFieldType"/>
     <moqui.basic.Enumeration description="Numeric" enumId="DFFT_NUMBER" enumTypeId="DynamicFormFieldType"/>

@@ -11,8 +11,8 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-    <xs:include schemaLocation="common-types-1.4.xsd"/>
-    <xs:include schemaLocation="xml-actions-1.4.xsd"/>
+    <xs:include schemaLocation="common-types-1.5.xsd"/>
+    <xs:include schemaLocation="xml-actions-1.5.xsd"/>
 
     <xs:element name="AllWidgets" abstract="true"/>
     <xs:element name="StandaloneFields" abstract="true"/>
@@ -215,6 +215,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:choice minOccurs="0" maxOccurs="unbounded">
                 <xs:element ref="field-group"/>
                 <xs:element ref="field-row"/>
+                <xs:element ref="field-row-big"/>
                 <xs:element ref="field-ref"/>
                 <xs:element ref="fields-not-referenced"/>
             </xs:choice>
@@ -236,10 +237,19 @@ This Work includes contributions authored by David E. Jones, not as a
         </xs:complexType>
     </xs:element>
     <xs:element name="field-row">
-        <xs:annotation><xs:documentation>Fields in the field-row will be "floated" left so that they stack up on a
-            single line as long as them will fit, and then will overflow to the next line, etc.</xs:documentation></xs:annotation>
+        <xs:annotation><xs:documentation>Fields in the field-row will be split into two columns. If you want more than
+            two fields in a row, use field-row-big.</xs:documentation></xs:annotation>
+        <xs:complexType>
+            <xs:sequence><xs:element minOccurs="0" maxOccurs="2" ref="field-ref"/></xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="field-row-big">
+        <xs:annotation><xs:documentation>All fields go in a single column, with an optional title column first. Fields
+            will be "floated" left so that they stack up on a single line as long as them will fit, and then will
+            overflow to the next line, etc.</xs:documentation></xs:annotation>
         <xs:complexType>
             <xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="field-ref"/></xs:sequence>
+            <xs:attribute name="title" type="xs:string"/>
         </xs:complexType>
     </xs:element>
     <xs:element name="form-list-column">
@@ -782,6 +792,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="equals"/>
                         <xs:enumeration value="like"/>
                         <xs:enumeration value="contains"/>
+                        <xs:enumeration value="begins"/>
                         <xs:enumeration value="empty"/>
                     </xs:restriction>
                 </xs:simpleType>

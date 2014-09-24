@@ -377,7 +377,12 @@ public class EntityDefinition {
             // else {
 
             if (fieldNode."complex-alias") {
+                String function = fieldNode."@function"
+                if (function) {
+                    colNameBuilder.append(getFunctionPrefix(function))
+                }
                 buildComplexAliasName(fieldNode, "+", colNameBuilder)
+                if (function) colNameBuilder.append(')')
             } else {
                 String function = fieldNode."@function"
                 if (function) {

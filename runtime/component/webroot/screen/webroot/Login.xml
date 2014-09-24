@@ -11,7 +11,7 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.4.xsd"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-include="false" require-authentication="false">
 
     <transition name="login">
@@ -107,7 +107,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <container id="footer" style="Footer bg-dark dker">
             <render-mode><text type="html"><![CDATA[
                     <div id="apps-footer-content">
-                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.4.2</a></h6>
+                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.5.0</a></h6>
                         <h6><a href="/apps/ScreenTree">Site Map</a></h6>
                     </div>
                 ]]></text></render-mode>
