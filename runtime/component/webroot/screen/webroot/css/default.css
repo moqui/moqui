@@ -246,6 +246,9 @@ input[type=radio], input[type=checkbox] { height: auto; }
 .bg-dark .datetimepicker { color: black; }
 .bg-dark .modal-dialog { color: black; }
 
+.bg-dark .jstree-clicked { background-color: #013 !important; }
+.bg-dark .jstree-anchor:hover { background-color: #222; }
+
 .modal-dialog { text-align: left; }
 
 .bg-light .box header { background-image: linear-gradient(#EEE 0px, #EEE 100%); }
