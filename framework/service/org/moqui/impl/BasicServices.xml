@@ -105,6 +105,14 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
     
     <!-- ========== Uom Services ========== -->
+    <service verb="create" noun="UomConversion" type="entity-auto">
+        <in-parameters><auto-parameters entity-name="moqui.basic.UomConversion" include="nonpk"/></in-parameters>
+        <out-parameters><parameter name="uomConversionId"/></out-parameters>
+    </service>
+    <service verb="update" noun="UomConversion" type="entity-auto">
+        <in-parameters><auto-parameters entity-name="moqui.basic.UomConversion" include="all"/></in-parameters>
+    </service>
+
     <service verb="convert" noun="Uom">
         <description>Converts amount and returns convertedAmount. The factor is multiplied first, then the offset is added.
             If no UomConversion record is found for uomId and toUomId tries the reverse. When converting in the reverse
