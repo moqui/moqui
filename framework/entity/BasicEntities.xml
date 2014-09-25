@@ -108,8 +108,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <seed-data>
             <moqui.basic.EnumerationType description="Geo Assoc Type" enumTypeId="GeoAssocType"/>
             <moqui.basic.Enumeration description="Geo Group Member" enumId="GAT_GROUP_MEMBER" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Region of a larger Geo (states, counties, provinces...)" enumId="GAT_REGIONS" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Region of a Larger Geo" enumId="GAT_REGIONS" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Administrative City" enumId="GAT_COUNTY_SEAT" enumTypeId="GeoAssocType"/>
         </seed-data>
     </entity>
     <view-entity entity-name="GeoAssocAndToDetail" package-name="moqui.basic">
@@ -119,6 +119,14 @@ This Work includes contributions authored by David E. Jones, not as a
         </member-entity>
         <alias-all entity-alias="GEOA"/>
         <alias-all entity-alias="GEOTO"><exclude field="geoId"/></alias-all>
+    </view-entity>
+    <view-entity entity-name="GeoAssocAndFromDetail" package-name="moqui.basic">
+        <member-entity entity-alias="GEOA" entity-name="GeoAssoc"/>
+        <member-entity entity-alias="GEOFR" entity-name="Geo" join-from-alias="GEOA">
+            <key-map field-name="geoId"/>
+        </member-entity>
+        <alias-all entity-alias="GEOA"/>
+        <alias-all entity-alias="GEOFR"><exclude field="geoId"/></alias-all>
     </view-entity>
     <entity entity-name="GeoPoint" package-name="moqui.basic">
         <field name="geoPointId" type="id" is-pk="true"/>
