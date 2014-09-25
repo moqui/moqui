@@ -27,6 +27,7 @@ strong { font-weight: bold; }
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
 p, pre { white-space: pre-line; word-wrap: break-word; }
 p { margin: 0 0 8px 0; line-height: 16px; }
+a { white-space: normal; }
 label { white-space: normal; }
 
 .editable-label { color: rgb(66, 139, 202); }
