@@ -25,15 +25,13 @@ div.error span { color: red; }
 
 strong { font-weight: bold; }
 tt, pre, pre code { font-family: "Courier New", Courier, monospace; }
-p, pre { white-space: pre-line; word-wrap: break-word; }
+p, pre { white-space: pre-line; word-wrap: normal; word-break: normal; }
+.bg-dark pre { background-color: #3a3a3a; color: #EEE; border-color: #222; }
 p { margin: 0 0 8px 0; line-height: 16px; }
+a { white-space: normal; }
 label { white-space: normal; }
 
-.editable-label { color: rgb(66, 139, 202); }
-
 form { display: inline; }
-
-form.editable-form button { background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px; outline: 0px; }
 
 button.button-plain { border: 0px; padding: 0px; background: transparent; margin: 0px; color: #052f57; }
 button.button-plain:hover { text-decoration: underline; }
@@ -245,6 +243,15 @@ input[type=radio], input[type=checkbox] { height: auto; }
 .bg-dark .chosen-container { color: black; }
 .bg-dark .datetimepicker { color: black; }
 .bg-dark .modal-dialog { color: black; }
+
+.bg-dark .jstree-clicked { background-color: #013 !important; }
+.bg-dark .jstree-anchor:hover { background-color: #222; }
+
+.bg-dark pre.editable-label { background-color: #3a3a3a; border-color: #222; }
+.editable-label { color: rgb(66, 139, 202); }
+form.editable-form button { background: white; color: #333; border: 1px solid; border-color: #ddd #bbb #999; padding: 2px 4px 2px 4px; margin: 2px; outline: 0px; }
+.bg-dark form.editable-form button { background: #333; color: #EEE; }
+.bg-dark form.editable-form textarea { background-color: #3a3a3a; border-color: #222; }
 
 .modal-dialog { text-align: left; }
 
