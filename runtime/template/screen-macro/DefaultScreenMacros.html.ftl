@@ -726,7 +726,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     alert("${formNode["@background-message"]}");
                 </#if>
             }
-            $("#${formId}").ajaxForm({ success: backgroundSuccess${formId}, dataType: 'json', resetForm: false });
+            $("#${formId}").ajaxForm({ success: backgroundSuccess${formId}, resetForm: false });
             </#if>
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
