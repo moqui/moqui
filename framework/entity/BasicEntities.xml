@@ -98,8 +98,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="geoId" type="id" is-pk="true"/>
         <field name="toGeoId" type="id" is-pk="true"/>
         <field name="geoAssocTypeEnumId" type="id"/>
-        <relationship type="one" title="Main" related-entity-name="Geo"/>
-        <relationship type="one" title="Assoc" related-entity-name="Geo">
+        <relationship type="one" title="Main" related-entity-name="moqui.basic.Geo"/>
+        <relationship type="one" title="Assoc" related-entity-name="moqui.basic.Geo">
             <key-map field-name="toGeoId"/>
         </relationship>
         <relationship type="one" title="GeoAssocType" related-entity-name="moqui.basic.Enumeration">
@@ -108,17 +108,25 @@ This Work includes contributions authored by David E. Jones, not as a
         <seed-data>
             <moqui.basic.EnumerationType description="Geo Assoc Type" enumTypeId="GeoAssocType"/>
             <moqui.basic.Enumeration description="Geo Group Member" enumId="GAT_GROUP_MEMBER" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Region of a larger Geo (states, counties, provinces...)" enumId="GAT_REGIONS" enumTypeId="GeoAssocType"/>
-            <moqui.basic.Enumeration description="Administrative Main City of a County" enumId="GAT_COUNTY_SEAT" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Region of a Larger Geo" enumId="GAT_REGIONS" enumTypeId="GeoAssocType"/>
+            <moqui.basic.Enumeration description="Administrative City" enumId="GAT_COUNTY_SEAT" enumTypeId="GeoAssocType"/>
         </seed-data>
     </entity>
     <view-entity entity-name="GeoAssocAndToDetail" package-name="moqui.basic">
-        <member-entity entity-alias="GEOA" entity-name="GeoAssoc"/>
-        <member-entity entity-alias="GEOTO" entity-name="Geo" join-from-alias="GEOA">
+        <member-entity entity-alias="GEOA" entity-name="moqui.basic.GeoAssoc"/>
+        <member-entity entity-alias="GEOTO" entity-name="moqui.basic.Geo" join-from-alias="GEOA">
             <key-map field-name="toGeoId" related-field-name="geoId"/>
         </member-entity>
         <alias-all entity-alias="GEOA"/>
         <alias-all entity-alias="GEOTO"><exclude field="geoId"/></alias-all>
+    </view-entity>
+    <view-entity entity-name="GeoAssocAndFromDetail" package-name="moqui.basic">
+        <member-entity entity-alias="GEOA" entity-name="moqui.basic.GeoAssoc"/>
+        <member-entity entity-alias="GEOFR" entity-name="moqui.basic.Geo" join-from-alias="GEOA">
+            <key-map field-name="geoId"/>
+        </member-entity>
+        <alias-all entity-alias="GEOA"/>
+        <alias-all entity-alias="GEOFR"><exclude field="geoId"/></alias-all>
     </view-entity>
     <entity entity-name="GeoPoint" package-name="moqui.basic">
         <field name="geoPointId" type="id" is-pk="true"/>
@@ -128,7 +136,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="elevation" type="number-float"/>
         <field name="elevationUomId" type="id"/>
         <field name="information" type="text-medium"/>
-        <relationship type="one" related-entity-name="DataSource"/>
+        <relationship type="one" related-entity-name="moqui.basic.DataSource"/>
         <relationship type="one" title="Elevation" related-entity-name="moqui.basic.Uom">
             <key-map field-name="elevationUomId"/>
         </relationship>
@@ -285,6 +293,22 @@ This Work includes contributions authored by David E. Jones, not as a
             <key-map field-name="toUomId" related-field-name="uomId"/>
         </relationship>
     </entity>
+    <view-entity entity-name="UomConversionAndToDetail" package-name="moqui.basic">
+        <member-entity entity-alias="UOMC" entity-name="moqui.basic.UomConversion"/>
+        <member-entity entity-alias="UOMTO" entity-name="moqui.basic.Uom" join-from-alias="UOMC">
+            <key-map field-name="toUomId" related-field-name="uomId"/>
+        </member-entity>
+        <alias-all entity-alias="UOMC"/>
+        <alias-all entity-alias="UOMTO"><exclude field="uomId"/></alias-all>
+    </view-entity>
+    <view-entity entity-name="UomConversionAndFromDetail" package-name="moqui.basic">
+        <member-entity entity-alias="UOMC" entity-name="moqui.basic.UomConversion"/>
+        <member-entity entity-alias="UOMFR" entity-name="moqui.basic.Uom" join-from-alias="UOMC">
+            <key-map field-name="uomId"/>
+        </member-entity>
+        <alias-all entity-alias="UOMC"/>
+        <alias-all entity-alias="UOMFR"><exclude field="uomId"/></alias-all>
+    </view-entity>
 
     <!-- ========================================================= -->
     <!-- moqui.basic.email -->

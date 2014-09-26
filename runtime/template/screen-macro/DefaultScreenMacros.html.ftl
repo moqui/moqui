@@ -67,16 +67,14 @@ This Work includes contributions authored by David E. Jones, not as a
     <#else>
         <#-- default to type=tab -->
         <#if displayMenu!>
-        <div class="ui-tabs ui-tabs-collapsible">
-            <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
+            <ul<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="nav nav-tabs" role="tablist">
                 <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                     <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                     <#if urlInfo.isPermitted()>
-                        <li class="ui-state-default ui-corner-top<#if urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
+                        <li class="<#if urlInfo.inCurrentScreenPath>active</#if><#if urlInfo.disableLink> disabled</#if>"><#if urlInfo.disableLink>${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}<#else><a href="${urlInfo.minimalPathUrlWithParams}">${ec.l10n.getLocalizedMessage(subscreensItem.menuTitle)}</a></#if></li>
                     </#if>
                 </#list>
             </ul>
-        </div>
         </#if>
         <#-- add to navbar bread crumbs too -->
         <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
@@ -149,9 +147,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <h1>LATER wizard type subscreens-panel not yet supported.</h1>
     <#else>
         <#-- default to type=tab -->
-        <div<#if .node["@id"]?has_content> id="${.node["@id"]}"</#if> class="ui-tabs ui-tabs-collapsible">
+        <div<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if>>
         <#if displayMenu!>
-            <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="ui-tabs-nav ui-helper-clearfix ui-widget-header ui-corner-all">
+            <ul<#if .node["@id"]?has_content> id="${.node["@id"]}-menu"</#if> class="nav nav-tabs" role="tablist">
             <#list sri.getActiveScreenDef().getMenuSubscreensItems() as subscreensItem>
                 <#assign urlInfo = sri.buildUrl(subscreensItem.name)>
                 <#if urlInfo.isPermitted()>
@@ -162,12 +160,11 @@ This Work includes contributions authored by David E. Jones, not as a
                             <#assign urlInfo = urlInfo.addParameters(ec.web.requestParameters)>
                         </#if>
                     </#if>
-                    <li class="ui-state-default ui-corner-top<#if urlInfo.disableLink> ui-state-disabled<#elseif urlInfo.inCurrentScreenPath> ui-tabs-selected ui-state-active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>"><span>${subscreensItem.menuTitle}</span></a></li>
+                    <li class="<#if urlInfo.disableLink>disabled<#elseif urlInfo.inCurrentScreenPath>active</#if>"><a href="<#if urlInfo.disableLink>#<#else>${urlInfo.minimalPathUrlWithParams}</#if>">${subscreensItem.menuTitle}</a></li>
                 </#if>
             </#list>
             </ul>
         </#if>
-        </div>
         <#-- add to navbar bread crumbs too -->
         <div id="${menuId}-crumb" class="navbar-text">${menuTitle} <i class="glyphicon glyphicon-chevron-right"></i></div>
         <script>$("#navbar-menu-crumbs").append($("#${menuId}-crumb"));</script>
@@ -177,6 +174,7 @@ This Work includes contributions authored by David E. Jones, not as a
         ${sri.renderSubscreen()}
         <#-- </div> -->
         </#if>
+        </div>
         <#if dynamic && displayMenu!>
             <#assign afterScreenScript>
                 $("#${.node["@id"]}").tabs({ collapsible: true, selected: ${dynamicActive},
@@ -728,7 +726,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
                     alert("${formNode["@background-message"]}");
                 </#if>
             }
-            $("#${formId}").ajaxForm({ success: backgroundSuccess${formId}, dataType: 'json', resetForm: false });
+            $("#${formId}").ajaxForm({ success: backgroundSuccess${formId}, resetForm: false });
             </#if>
         </#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
@@ -1137,7 +1135,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign curName><@fieldName .node/></#assign>
     <#list (options.keySet())! as key>
         <#assign allChecked = ec.resource.evaluateStringExpand(.node["@all-checked"]!, "")>
-        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if allChecked! == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>${options.get(key)?default("")}</span>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="checkbox" name="${curName}" value="${key?html}"<#if allChecked! == "true"> checked="checked"<#elseif currentValue?has_content && currentValue==key> checked="checked"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>${options.get(key)?default("")}</span>
     </#list>
 </#macro>
 
@@ -1158,14 +1156,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
-                <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}_from').datetimepicker({minView:2, pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
-                <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}_from').datetimepicker({pickerPosition:'bottom-left', autoclose:true});</#assign>
@@ -1173,7 +1171,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
     <#else>
         <div class="input-group input-append date" id="${id}_from" data-date="${fieldValueFrom?html}" data-date-format="${datepickerFormat}">
-            <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <input type="text" class="form-control" name="${curFieldName}_from" value="${fieldValueFrom?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
         <#assign afterFormScript>$('#${id}_from').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left', autoclose:true});</#assign>
@@ -1186,14 +1184,14 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
-                <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}_thru').datetimepicker({minView:2, pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
-                <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}_thru').datetimepicker({pickerPosition:'bottom-left', autoclose:true});</#assign>
@@ -1201,7 +1199,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         </#if>
     <#else>
         <div class="input-group input-append date" id="${id}_thru" data-date="${fieldValueThru?html}" data-date-format="${datepickerFormat}">
-            <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <input type="text" class="form-control" name="${curFieldName}_thru" value="${fieldValueThru?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
         <#assign afterFormScript>$('#${id}_thru').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left', autoclose:true});</#assign>
@@ -1253,14 +1251,14 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#if .node["@type"]! != "time">
         <#if .node["@type"]! == "date">
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
-                <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}').datetimepicker({minView:2, pickerPosition:'bottom-left', autoclose:true});</#assign>
             <#t>${sri.appendToScriptWriter(afterFormScript)}
         <#else>
             <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
-                <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+                <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
                 <span class="input-group-addon add-on"><i class="glyphicon glyphicon-calendar"></i></span>
             </div>
             <#assign afterFormScript>$('#${id}').datetimepicker({pickerPosition:'bottom-left', autoclose:true});</#assign>
@@ -1268,7 +1266,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         </#if>
     <#else>
         <div class="input-group input-append date" id="${id}" data-date="${fieldValue?html}" data-date-format="${datepickerFormat}">
-            <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+            <input type="text" class="form-control" name="<@fieldName .node/>" value="${fieldValue?html}" size="${size}" maxlength="${maxlength}"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
             <span class="input-group-addon add-on"><i class="glyphicon glyphicon-time"></i></span>
         </div>
         <#assign afterFormScript>$('#${id}').datetimepicker({startView:1, maxView:1, pickerPosition:'bottom-left', autoclose:true});</#assign>
@@ -1324,7 +1322,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign currentDescription = ec.resource.evaluateStringExpand(.node["@current-description"], "")/>
     </#if>
     <#assign id><@fieldId .node/></#assign>
-    <select name="<@fieldName .node/>" class="form-control" id="${id}"<#if .node["@allow-multiple"]! == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <select name="<@fieldName .node/>" class="chosen-select<#if .node["dynamic-options"]?has_content> dynamic-options</#if>" id="${id}"<#if .node["@allow-multiple"]! == "true"> multiple="multiple"</#if><#if .node["@size"]?has_content> size="${.node["@size"]}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
     <#if currentValue?has_content && (.node["@current"]! != "selected") && !(.node["@allow-multiple"]! == "true")>
         <option selected="selected" value="${currentValue}"><#if currentDescription?has_content>${currentDescription}<#else>${currentValue}</#if></option><#rt/>
         <option value="${currentValue}">---</option><#rt/>
@@ -1345,10 +1343,10 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         <#assign afterFormScript>$("#${id}").combobox();</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     -->
-        <#assign afterFormScript>$("#${id}").chosen({ search_contains:true, disable_search_threshold:10 });</#assign>
+        <#assign afterFormScript>$("#${id}").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     <#elseif .node["@search"]! != "false">
-        <#assign afterFormScript>$("#${id}").chosen({ search_contains:true, disable_search_threshold:10 });</#assign>
+        <#assign afterFormScript>$("#${id}").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });</#assign>
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
 
@@ -1386,7 +1384,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     </#if>
 </#macro>
 
-<#macro file><input type="file" class="form-control" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
+<#macro file><input type="file" class="form-control" name="<@fieldName .node/>" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
 <#macro hidden>
     <#-- use getFieldValuePlainString() and not getFieldValueString() so we don't do timezone conversions, etc -->
@@ -1413,7 +1411,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
 </#macro>
 -->
 
-<#macro password><input type="password" class="form-control" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
+<#macro password><input type="password" class="form-control" name="<@fieldName .node/>" size="${.node.@size!"25"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
 <#macro radio>
     <#assign options = {"":""}/><#assign options = sri.getFieldOptions(.node)/>
@@ -1422,7 +1420,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign id><@fieldId .node/></#assign>
     <#assign curName><@fieldName .node/></#assign>
     <#list (options.keySet())! as key>
-        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>&nbsp;${options.get(key)?default("")}</span>
+        <span id="${id}<#if (key_index > 0)>_${key_index}</#if>"><input type="radio" name="${curName}" value="${key?html}"<#if currentValue?has_content && currentValue==key> checked="checked"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>&nbsp;${options.get(key)?default("")}</span>
     </#list>
 </#macro>
 
@@ -1430,18 +1428,18 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign curFieldName><@fieldName .node/></#assign>
     <#assign id><@fieldId .node/></#assign>
 <span class="form-range-find">
-    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_from"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <span>${ec.l10n.getLocalizedMessage("From")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_from" value="${ec.web.parameters.get(curFieldName + "_from")!?default(.node["@default-value-from"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_from"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
 </span>
 <span class="form-range-find">
-    <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <span>${ec.l10n.getLocalizedMessage("Thru")}&nbsp;</span><input type="text" class="form-control" name="${curFieldName}_thru" value="${ec.web.parameters.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!"")?html}" size="${.node.@size!"10"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="${id}_thru"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
 </span>
 </#macro>
 
-<#macro reset><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>></#macro>
+<#macro reset><input type="reset" name="<@fieldName .node/>" value="<@fieldTitle .node?parent/>" id="<@fieldId .node/>"<#if .node["@icon"]?has_content> iconcls="ui-icon-${.node["@icon"]}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>></#macro>
 
 <#macro submit>
     <#assign confirmationMessage = ec.resource.evaluateStringExpand(.node["@confirmation"]!, "")/>
-    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary btn-sm"><#if .node["@icon"]?has_content><i class="${.node["@icon"]}"></i> </#if>
+    <button type="submit" name="<@fieldName .node/>" id="<@fieldId .node/>"<#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}');"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if> class="btn btn-primary btn-sm"><#if .node["@icon"]?has_content><i class="${.node["@icon"]}"></i> </#if>
     <#if .node["image"]?has_content><#assign imageNode = .node["image"][0]>
         <img src="${sri.makeUrlByType(imageNode["@url"],imageNode["@url-type"]!"content",null,"true")}" alt="<#if imageNode["@alt"]?has_content>${imageNode["@alt"]}<#else><@fieldTitle .node?parent/></#if>"<#if imageNode["@width"]?has_content> width="${imageNode["@width"]}"</#if><#if imageNode["@height"]?has_content> height="${imageNode["@height"]}"</#if>>
     <#else>
@@ -1450,7 +1448,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     </button>
 </#macro>
 
-<#macro "text-area"><textarea class="form-control" name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${.node["@maxlength"]}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}</textarea></#macro>
+<#macro "text-area"><textarea class="form-control" name="<@fieldName .node/>" cols="${.node["@cols"]!"60"}" rows="${.node["@rows"]!"3"}"<#if .node["@read-only"]!"false" == "true"> readonly="readonly"</#if><#if .node["@maxlength"]?has_content> maxlength="${.node["@maxlength"]}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}</textarea></#macro>
 
 <#macro "text-line">
     <#assign id><@fieldId .node/></#assign>
@@ -1459,7 +1457,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
     <#assign validationClasses = sri.getFormFieldValidationClasses(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])>
     <#assign regexpInfo = sri.getFormFieldValidationRegexpInfo(.node?parent?parent?parent["@name"], .node?parent?parent["@name"])!>
     <#-- NOTE: removed number type (<#elseif validationClasses?contains("number")>number) because on Safari, maybe others, ignores size and behaves funny for decimal values -->
-    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"70"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <input type="<#if validationClasses?contains("email")>email<#elseif validationClasses?contains("url")>url<#else>text</#if>" name="${name}" value="${fieldValue?html}" size="${.node.@size!"70"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if><#if ec.resource.evaluateCondition(.node.@disabled!"false", "")> disabled="disabled"</#if> id="${id}" class="form-control<#if validationClasses?has_content> ${validationClasses}</#if>"<#if validationClasses?has_content> data-vv-validations="${validationClasses}"</#if><#if validationClasses?contains("required")> required</#if><#if regexpInfo?has_content> pattern="${regexpInfo.regexp}"</#if><#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
     <#if .node["@ac-transition"]?has_content>
         <span id="${id}_value" class="form-autocomplete-value"><#if .node["@ac-initial-text"]??>${ec.resource.evaluateStringExpand(.node["@ac-initial-text"], "")}<#else>&nbsp;</#if></span>
         <#assign afterFormScript>
@@ -1507,7 +1505,7 @@ a -> p, m -> i, h -> H, H -> h, M -> m, MMM -> M, MMMM -> MM
         </select>
     </#if>
 
-    <input type="text" class="form-control" name="${curFieldName}" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> title="${.node?parent["@tooltip"]}"</#if>>
+    <input type="text" class="form-control" name="${curFieldName}" value="${sri.getFieldValueString(.node?parent?parent, .node["@default-value"]!"", null)?html}" size="${.node.@size!"30"}"<#if .node.@maxlength?has_content> maxlength="${.node.@maxlength}"</#if> id="<@fieldId .node/>"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
 
     <#assign ignoreCase = (ec.web.parameters.get(curFieldName + "_ic")! == "Y") || !(.node["@ignore-case"]?has_content) || (.node["ignore-case"] == "true")>
     <#if .node["@hide-options"]! == "true" || .node["@hide-options"]! == "ignore-case">

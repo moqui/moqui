@@ -30,7 +30,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </drop-down>
             </default-field></field>
             <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
-            <field-layout><field-row><field-ref name="aen"/><field-ref name="submitButton"/></field-row></field-layout>
+            <field-layout><field-row-big><field-ref name="aen"/><field-ref name="submitButton"/></field-row-big></field-layout>
         </form-single>
         <form-list name="EntityList" list="masterEntityList">
             <field name="package">

@@ -12,6 +12,7 @@
 package org.moqui.impl.screen
 
 import org.apache.commons.collections.map.ListOrderedMap
+import org.apache.commons.collections.set.ListOrderedSet
 import org.moqui.impl.actions.XmlAction
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.entity.EntityDefinition
@@ -36,7 +37,8 @@ import org.moqui.impl.entity.EntityValueBase
 class ScreenForm {
     protected final static Logger logger = LoggerFactory.getLogger(ScreenForm.class)
 
-    protected static final Set<String> fieldAttributeNames = new HashSet<String>(["name", "entry-name", "hide", "validate-service", "validate-parameter"])
+    protected static final Set<String> fieldAttributeNames = new HashSet<String>(["name", "entry-name", "hide",
+            "validate-service", "validate-parameter", "validate-entity", "validate-field"])
     protected static final Set<String> subFieldAttributeNames = new HashSet<String>(["title", "tooltip", "red-when"])
 
     protected ExecutionContextFactoryImpl ecfi
@@ -113,10 +115,10 @@ class ScreenForm {
                     addServiceFields(serviceDef, formSubNode."@include"?:"in", formSubNode."@field-type"?:"edit", newFormNode, ecfi)
                     continue
                 }
-                if (serviceName.contains("#")) {
-                    EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(serviceName.substring(serviceName.indexOf("#")+1))
+                if (ecfi.getServiceFacade().isEntityAutoPattern(serviceName)) {
+                    EntityDefinition ed = ecfi.entityFacade.getEntityDefinition(ServiceDefinition.getNounFromName(serviceName))
                     if (ed != null) {
-                        addEntityFields(ed, "all", formSubNode."@field-type"?:"edit", serviceName.substring(0, serviceName.indexOf("#")), newFormNode)
+                        addEntityFields(ed, "all", formSubNode."@field-type"?:"edit", ServiceDefinition.getVerbFromName(serviceName), newFormNode)
                         continue
                     }
                 }
@@ -136,18 +138,28 @@ class ScreenForm {
         // merge original formNode to override any applicable settings
         mergeFormNodes(newFormNode, baseFormNode, false, false)
 
-        // populate validate-service and validate-parameter attributes if the target transition calls a single service
+        // populate validate-service and validate-entity attributes if the target transition calls a single service
         if (newFormNode."@transition") {
             TransitionItem ti = this.sd.getTransitionItem((String) newFormNode."@transition", null)
             if (ti != null && ti.getSingleServiceName()) {
                 String singleServiceName = ti.getSingleServiceName()
-                ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition(singleServiceName)
+                ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition(singleServiceName)
                 if (sd != null) {
                     Set<String> inParamNames = sd.getInParameterNames()
                     for (Node fieldNode in newFormNode."field") {
                         // if the field matches an in-parameter name and does not already have a validate-service, then set it
                         if (inParamNames.contains(fieldNode."@name") && !fieldNode."@validate-service") {
                             fieldNode.attributes().put("validate-service", singleServiceName)
+                        }
+                    }
+                } else if (ecfi.getServiceFacade().isEntityAutoPattern(singleServiceName)) {
+                    String entityName = ServiceDefinition.getNounFromName(singleServiceName)
+                    EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition(entityName)
+                    ListOrderedSet fieldNames = ed.getFieldNames(true, true, false)
+                    for (Node fieldNode in newFormNode."field") {
+                        // if the field matches an in-parameter name and does not already have a validate-entity, then set it
+                        if (fieldNames.contains(fieldNode."@name") && !fieldNode."@validate-entity") {
+                            fieldNode.attributes().put("validate-entity", entityName)
                         }
                     }
                 }
@@ -430,15 +442,20 @@ class ScreenForm {
         }
     }
 
-    Node getFieldInParameterNode(String fieldName, Node cachedFormNode) {
+    Node getFieldValidateNode(String fieldName, Node cachedFormNode) {
         Node formNodeToUse = cachedFormNode ?: getFormNode()
         Node fieldNode = (Node) formNodeToUse."field".find({ it.@name == fieldName })
         if (fieldNode == null) throw new IllegalArgumentException("Tried to get in-parameter node for field [${fieldName}] that doesn't exist in form [${location}]")
         if (fieldNode."@validate-service") {
-            ServiceDefinition sd = ecfi.serviceFacade.getServiceDefinition((String) fieldNode."@validate-service")
+            ServiceDefinition sd = ecfi.getServiceFacade().getServiceDefinition((String) fieldNode."@validate-service")
             if (sd == null) throw new IllegalArgumentException("Invalid validate-service name [${fieldNode."@validate-service"}] in field [${fieldName}] of form [${location}]")
             Node parameterNode = sd.getInParameter(fieldNode."@validate-parameter" ?: fieldName)
             return parameterNode
+        } else if (fieldNode."@validate-entity") {
+            EntityDefinition ed = ecfi.getEntityFacade().getEntityDefinition((String) fieldNode."@validate-entity")
+            if (ed == null) throw new IllegalArgumentException("Invalid validate-entity name [${fieldNode."@validate-entity"}] in field [${fieldName}] of form [${location}]")
+            Node efNode = ed.getFieldNode(fieldNode."@validate-field" ?: fieldName)
+            return efNode
         }
         return null
     }
@@ -553,7 +570,8 @@ class ScreenForm {
             String efType = ed.getFieldNode(fieldName)."@type" ?: "text-long"
             if (baseFormNode.name() == "form-list" && efType in ['text-long', 'text-very-long', 'binary-very-long']) continue
 
-            Node newFieldNode = new Node(null, "field", [name:fieldName])
+            Node newFieldNode = new Node(null, "field", [name:fieldName, "validate-entity":ed.getFullEntityName(),
+                                                         "validate-field":fieldName])
             Node subFieldNode = newFieldNode.appendNode("default-field")
 
             addAutoEntityField(ed, fieldName, fieldType, serviceVerb, newFieldNode, subFieldNode, baseFormNode)
@@ -643,7 +661,11 @@ class ScreenForm {
                             entityFindNode.appendNode("order-by", ["field-name":relDefaultDescriptionField])
                         }
                     } else {
-                        subFieldNode.appendNode("text-line")
+                        if (efType.startsWith("number-") || efType.startsWith("currency-")) {
+                            subFieldNode.appendNode("text-line", [size:"10"])
+                        } else {
+                            subFieldNode.appendNode("text-line", [size:"30"])
+                        }
                     }
                 }
             }
