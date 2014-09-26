@@ -112,6 +112,11 @@ class ServiceFacadeImpl implements ServiceFacade {
         return isEntityAutoPattern(path, verb, noun)
     }
 
+    boolean isEntityAutoPattern(String serviceName) {
+        return isEntityAutoPattern(ServiceDefinition.getPathFromName(serviceName), ServiceDefinition.getVerbFromName(serviceName),
+                ServiceDefinition.getNounFromName(serviceName))
+    }
+
     boolean isEntityAutoPattern(String path, String verb, String noun) {
         // if no path, verb is create|update|delete and noun is a valid entity name, do an implicit entity-auto
         return !path && ("create".equals(verb) || "update".equals(verb) || "delete".equals(verb) || "store".equals(verb)) &&
