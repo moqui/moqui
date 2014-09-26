@@ -810,22 +810,30 @@ class ScreenRenderImpl implements ScreenRender {
     String getFormFieldValidationClasses(String formName, String fieldName) {
         ScreenForm form = getActiveScreenDef().getForm(formName)
         Node cachedFormNode = getFormNode(formName)
-        Node parameterNode = form.getFieldInParameterNode(fieldName, cachedFormNode)
-        if (parameterNode == null) return ""
+        Node validateNode = form.getFieldValidateNode(fieldName, cachedFormNode)
+        if (validateNode == null) return ""
 
         Set<String> vcs = new HashSet()
-        if (parameterNode."@required" == "true") vcs.add("required")
-        if (parameterNode."number-integer") vcs.add("number")
-        if (parameterNode."number-decimal") vcs.add("number")
-        if (parameterNode."text-email") vcs.add("email")
-        if (parameterNode."text-url") vcs.add("url")
-        if (parameterNode."text-digits") vcs.add("digits")
-        if (parameterNode."credit-card") vcs.add("creditcard")
+        if (validateNode.name() == "parameter") {
+            Node parameterNode = validateNode
+            if (parameterNode."@required" == "true") vcs.add("required")
+            if (parameterNode."number-integer") vcs.add("number")
+            if (parameterNode."number-decimal") vcs.add("number")
+            if (parameterNode."text-email") vcs.add("email")
+            if (parameterNode."text-url") vcs.add("url")
+            if (parameterNode."text-digits") vcs.add("digits")
+            if (parameterNode."credit-card") vcs.add("creditcard")
 
-        String type = parameterNode."@type"
-        if (type && (type.endsWith("BigDecimal") || type.endsWith("BigInteger") || type.endsWith("Long") ||
-                type.endsWith("Integer") || type.endsWith("Double") || type.endsWith("Float") ||
-                type.endsWith("Number"))) vcs.add("number")
+            String type = parameterNode."@type"
+            if (type && (type.endsWith("BigDecimal") || type.endsWith("BigInteger") || type.endsWith("Long") ||
+                    type.endsWith("Integer") || type.endsWith("Double") || type.endsWith("Float") ||
+                    type.endsWith("Number"))) vcs.add("number")
+        } else if (validateNode.name() == "field") {
+            Node fieldNode = validateNode
+            String type = fieldNode."@type"
+            if (type && (type.startsWith("number-") || type.startsWith("currency-"))) vcs.add("number")
+            if (fieldNode."@is-pk" == "true") vcs.add("required")
+        }
 
         StringBuilder sb = new StringBuilder()
         for (String vc in vcs) { if (sb) sb.append(" "); sb.append(vc); }
@@ -835,9 +843,9 @@ class ScreenRenderImpl implements ScreenRender {
     Map getFormFieldValidationRegexpInfo(String formName, String fieldName) {
         ScreenForm form = getActiveScreenDef().getForm(formName)
         Node cachedFormNode = getFormNode(formName)
-        Node parameterNode = form.getFieldInParameterNode(fieldName, cachedFormNode)
-        if (parameterNode?."matches") {
-            Node matchesNode = parameterNode."matches"[0]
+        Node validateNode = form.getFieldValidateNode(fieldName, cachedFormNode)
+        if (validateNode?."matches") {
+            Node matchesNode = validateNode."matches"[0]
             return [regexp:matchesNode."@regexp", message:matchesNode."@message"]
         }
         return null
