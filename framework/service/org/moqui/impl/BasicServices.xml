@@ -11,6 +11,29 @@ This Work includes contributions authored by David E. Jones, not as a
 "work for hire", who hereby disclaims any copyright to the same.
 -->
 <services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-1.5.xsd">
+
+    <!-- ========== Geo Services ========== -->
+    <service verb="get" noun="GeoRegionsForDropDown" allow-remote="true">
+        <in-parameters>
+            <parameter name="geoId"/>
+            <parameter name="geoAssocTypeEnumId" default-value="GAT_REGIONS"/>
+            <parameter name="geoTypeEnumId"/>
+        </in-parameters>
+        <out-parameters><parameter name="resultList" type="List"/></out-parameters>
+        <actions>
+            <set field="resultList" from="[]"/>
+            <if condition="geoId">
+                <entity-find entity-name="moqui.basic.GeoAssocAndToDetail" list="geoList">
+                    <econdition field-name="geoId"/><econdition field-name="geoAssocTypeEnumId"/>
+                    <econdition field-name="geoTypeEnumId" ignore-if-empty="true"/>
+                    <order-by field-name="geoName"/>
+                </entity-find>
+                <script>for (def geo in geoList) resultList.add([geoId:geo.toGeoId, label:"${geo.geoName}"])</script>
+            </if>
+        </actions>
+    </service>
+
+    <!-- ========== Status Services ========== -->
     <service verb="find" noun="StatusItem" allow-remote="true">
         <in-parameters>
             <parameter name="statusTypeId" required="true"/>
@@ -40,6 +63,8 @@ This Work includes contributions authored by David E. Jones, not as a
             </entity-find>
         </actions>
     </service>
+
+    <!-- ========== Enumeration Services ========== -->
     <service verb="find" noun="Enumeration" allow-remote="true">
         <in-parameters>
             <parameter name="enumTypeId" required="true"/>
@@ -80,6 +105,14 @@ This Work includes contributions authored by David E. Jones, not as a
     </service>
     
     <!-- ========== Uom Services ========== -->
+    <service verb="create" noun="UomConversion" type="entity-auto">
+        <in-parameters><auto-parameters entity-name="moqui.basic.UomConversion" include="nonpk"/></in-parameters>
+        <out-parameters><parameter name="uomConversionId"/></out-parameters>
+    </service>
+    <service verb="update" noun="UomConversion" type="entity-auto">
+        <in-parameters><auto-parameters entity-name="moqui.basic.UomConversion" include="all"/></in-parameters>
+    </service>
+
     <service verb="convert" noun="Uom">
         <description>Converts amount and returns convertedAmount. The factor is multiplied first, then the offset is added.
             If no UomConversion record is found for uomId and toUomId tries the reverse. When converting in the reverse

@@ -289,8 +289,10 @@ abstract class EntityFindBase implements EntityFind {
                         (df["@valid-date"] ? ec.resource.evaluateContextField((String) df["@valid-date"], null) as Timestamp : ec.user.nowTimestamp)))
         }
 
-        for (Node ecn in (Collection<Node>) node["econdition"])
-            this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(ecn))
+        for (Node ecn in (Collection<Node>) node["econdition"]) {
+            EntityCondition econd = ((EntityConditionFactoryImpl) efi.conditionFactory).makeActionCondition(ecn)
+            if (econd != null) this.condition(econd)
+        }
         for (Node ecs in (Collection<Node>) node["econditions"])
             this.condition(((EntityConditionFactoryImpl) efi.conditionFactory).makeActionConditions(ecs))
         for (Node eco in (Collection<Node>) node["econdition-object"])
