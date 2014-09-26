@@ -24,7 +24,7 @@ This Work includes contributions authored by David E. Jones, not as a
         </entity-find>
     </actions>
     <widgets>
-        <container id="button-bar"><link url="newExampleFeature" text="New Feature"/></container>
+        <container id="button-bar"><link url="newExampleFeature" text="New Feature" link-type="anchor-button"/></container>
         <form-list name="ListExampleFeatures" list="exampleFeatureList">
             <field name="exampleFeatureId">
                 <header-field show-order-by="true"><text-find size="10" hide-options="true"/></header-field>
