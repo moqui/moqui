@@ -38,6 +38,8 @@ New Features:
   support for header logo, header title, and body class in theme
 - Added dark/light pseudo-theme switcher, switches body classes from
   Bootstrap on the fly and saves user preference (default comes from theme)
+- Added entity.field.@default attribute with a Groovy expression to set a
+  default for a field based on other fields, constants, etc
 
 Bug Fixes:
 

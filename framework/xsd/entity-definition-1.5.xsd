@@ -152,6 +152,13 @@ This Work includes contributions authored by David E. Jones, not as a
                     Defaults to false for performance reasons, only set to true for fields that will have translations.
                 </xs:documentation></xs:annotation>
             </xs:attribute>
+            <xs:attribute name="default" type="xs:string">
+                <xs:annotation><xs:documentation>
+                    A Groovy expression with the default value of the field. It can be derived from other fields on the
+                    same record, set to a constant, etc. Set during create and update operations, after EECA before
+                    rules are run, and only if the field value is null or an empty String.
+                </xs:documentation></xs:annotation>
+            </xs:attribute>
         </xs:complexType>
     </xs:element>
 

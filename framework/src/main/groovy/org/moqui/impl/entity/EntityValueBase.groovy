@@ -824,6 +824,24 @@ abstract class EntityValueBase implements EntityValue {
         return this.getEntityDefinition().getFullEntityName() != "moqui.server.ArtifactHitBin"
     }
 
+    void checkSetFieldDefaults(boolean isCreate, EntityDefinition ed, ExecutionContext ec) {
+        for (Node fieldNode in ed.getFieldNodes(isCreate, true, false)) {
+            String defaultStr = fieldNode."@default"
+            if (!defaultStr) continue
+            String fieldName = fieldNode."@name"
+            Object curVal = valueMap.get(fieldName)
+            if (curVal == null || (curVal instanceof String && curVal.length() == 0)) {
+                ec.getContext().push(valueMap)
+                try {
+                    Object newVal = ec.getResource().evaluateContextField(defaultStr, "")
+                    if (newVal != null) valueMap.put(fieldName, newVal)
+                } finally {
+                    ec.getContext().pop()
+                }
+            }
+        }
+    }
+
     @Override
     EntityValue create() {
         long startTime = System.currentTimeMillis()
@@ -840,6 +858,9 @@ abstract class EntityValueBase implements EntityValue {
         Long lastUpdatedLong = ecfi.getTransactionFacade().getCurrentTransactionStartTime() ?: System.currentTimeMillis()
         if (ed.isField("lastUpdatedStamp") && !this.getValueMap().lastUpdatedStamp)
             this.set("lastUpdatedStamp", new Timestamp(lastUpdatedLong))
+
+        // check/set defaults
+        checkSetFieldDefaults(true, ed, ec)
 
         // do this before the db change so modified flag isn't cleared
         if (doDataFeed()) getEntityFacadeImpl().getEntityDataFeed().dataFeedCheckAndRegister(this, false, valueMap, null)
@@ -919,6 +940,9 @@ abstract class EntityValueBase implements EntityValue {
                 ed.entityNode."@authorize-skip" != "true")
 
         getEntityFacadeImpl().runEecaRules(ed.getFullEntityName(), this, "update", true)
+
+        // check/set defaults
+        checkSetFieldDefaults(false, ed, ec)
 
         boolean dbValueMapFromDb = false
         // it may be that the oldValues map is full of null values because the EntityValue didn't come from the db
