@@ -10,7 +10,7 @@
  * "work for hire", who hereby disclaims any copyright to the same.
  */
 
-tasks.withType(Compile) {
+tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked"
 }
 
