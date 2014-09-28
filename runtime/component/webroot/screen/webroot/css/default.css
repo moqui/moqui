@@ -139,7 +139,7 @@ a.active { color: red; }
 ul.float-box { display: inline-block; list-style: none outside none; margin: 0 0 -8px 0; padding: 0; }
 ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px; margin: 0 8px 8px 0; padding: 8px; float: left;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCCCCC; }
-.bg-dark ul.float-box li { background: #3a3a3a; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
+.bg-dark ul.float-box li { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
 .shaded-area { padding: 8px; }
