@@ -18,7 +18,7 @@ import org.moqui.context.ScreenRender
 import org.moqui.context.Cache
 
 import org.moqui.impl.context.ExecutionContextFactoryImpl
-
+import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -155,6 +155,88 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
         widgetTemplateLocationCache.put(templateLocation, templatesNode)
         return templatesNode
+    }
+
+    String getScreenDisplayString(String rootLocation, int levels) {
+        StringBuilder sb = new StringBuilder()
+        List<String> infoList = getScreenDisplayInfo(rootLocation, levels)
+        for (String info in infoList) sb.append(info).append("\n")
+        return sb.toString()
+    }
+    List<String> getScreenDisplayInfo(String rootLocation, int levels) {
+        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null)
+        List<String> infoList = []
+        addScreenDisplayInfo(infoList, rootInfo, 0, levels)
+        return infoList
+    }
+    void addScreenDisplayInfo(List<String> infoList, ScreenInfo si, int level, int levels) {
+        StringBuilder sb = new StringBuilder()
+        for (int i = 0; i < level; i++) sb.append("- ")
+        sb.append(" ").append(si.name).append(" ")
+        sb.append("Subscreens: ").append(si.allSubscreens).append("(").append(si.allSubscreensNonPlaceholder).append("), ")
+        sb.append("Transitions: ").append(si.transitions).append(" sub ").append(si.allSubscreensTransitions).append(", ")
+        sb.append("Sections: ").append(si.sections).append(" sub ").append(si.allSubscreensSections).append(", ")
+        sb.append("Forms: ").append(si.forms).append(" sub ").append(si.allSubscreensForms).append(", ")
+        sb.append("Trees: ").append(si.trees).append(" sub ").append(si.allSubscreensTrees).append(" ")
+        infoList.add(sb.toString())
+
+        if (level == levels) return
+        for (ScreenInfo childSi in si.subscreenInfoByName.values()) {
+            addScreenDisplayInfo(infoList, childSi, level+1, levels)
+        }
+    }
+
+    class ScreenInfo {
+        ScreenDefinition sd
+        SubscreensItem ssi
+        ScreenInfo parentInfo
+        Map<String, ScreenInfo> subscreenInfoByName = [:]
+        String name
+
+        boolean isNonPlaceholder = false
+        int subscreens = 0, allSubscreens = 0, subscreensNonPlaceholder = 0, allSubscreensNonPlaceholder = 0
+        int forms = 0, allSubscreensForms = 0
+        int trees = 0, allSubscreensTrees = 0
+        int sections = 0, allSubscreensSections = 0
+        int transitions = 0, allSubscreensTransitions = 0
+
+        ScreenInfo(ScreenDefinition sd, SubscreensItem ssi, ScreenInfo parentInfo) {
+            this.sd = sd
+            this.ssi = ssi
+            this.parentInfo = parentInfo
+            this.name = ssi ? ssi.getName() : sd.getScreenName()
+
+            subscreens = sd.subscreensByName.size()
+
+            forms = sd.formByName.size()
+            trees = sd.treeByName.size()
+            sections = sd.sectionByName.size()
+            transitions = sd.transitionByName.size()
+            isNonPlaceholder = forms || sections || transitions
+
+            // trickle up totals
+            ScreenInfo curParent = parentInfo
+            while (curParent != null) {
+                curParent.allSubscreens += 1
+                if (isNonPlaceholder) curParent.allSubscreensNonPlaceholder += 1
+                curParent.allSubscreensForms += forms
+                curParent.allSubscreensTrees += trees
+                curParent.allSubscreensSections += sections
+                curParent.allSubscreensTransitions += transitions
+                curParent = curParent.parentInfo
+            }
+
+            // get info for all subscreens
+            for (Map.Entry<String, SubscreensItem> ssEntry in sd.subscreensByName.entrySet()) {
+                SubscreensItem curSsi = ssEntry.getValue()
+                ScreenDefinition ssSd = getScreenDefinition(curSsi.getLocation())
+                if (ssSd == null) {
+                    logger.warn("While getting ScreenInfo screen not found for ${curSsi.getName()} at: ${curSsi.getLocation()}")
+                    continue
+                }
+                subscreenInfoByName.put(ssEntry.getKey(), new ScreenInfo(ssSd, curSsi, this))
+            }
+        }
     }
 
     @Override

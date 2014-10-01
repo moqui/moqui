@@ -480,6 +480,12 @@ class EntityFacadeImpl implements EntityFacade {
         if (logger.infoEnabled && relationshipsCreated > 0) logger.info("Created ${relationshipsCreated} automatic reverse-many relationships")
     }
 
+    int getEecaRuleCount() {
+        int count = 0
+        for (List ruleList in eecaRulesByEntityName.values()) count += ruleList.size()
+        return count
+    }
+
     void loadEecaRulesAll() {
         if (eecaRulesByEntityName.size() > 0) eecaRulesByEntityName.clear()
 
@@ -575,6 +581,25 @@ class EntityFacadeImpl implements EntityFacade {
         for (String en in entityLocationCache.keySet())
             if (en.contains(".") && entityLocationCache.get(en)) allNames.add(en)
         return allNames
+    }
+
+    List<Map> getAllEntityInfo(int levels) {
+        Map<String, Map> entityInfoMap = [:]
+        for (String entityName in getAllEntityNames()) {
+            int lastDotIndex = 0
+            for (int i = 0; i < levels; i++) lastDotIndex = entityName.indexOf(".", lastDotIndex+1)
+            String name = lastDotIndex == -1 ? entityName : entityName.substring(0, lastDotIndex)
+            Map curInfo = entityInfoMap.get(name)
+            if (curInfo) {
+                StupidUtilities.addToBigDecimalInMap("entities", 1, curInfo)
+            } else {
+                entityInfoMap.put(name, [name:name, entities:1])
+            }
+        }
+        TreeSet<String> nameSet = new TreeSet(entityInfoMap.keySet())
+        List<Map> entityInfoList = []
+        for (String name in nameSet) entityInfoList.add(entityInfoMap.get(name))
+        return entityInfoList
     }
 
     boolean isEntityDefined(String entityName) {

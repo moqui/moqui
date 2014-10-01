@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This Work is in the public domain and is provided on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied,
+including, without limitation, any warranties or conditions of TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE.
+You are solely responsible for determining the appropriateness of using
+this Work and assume any risks associated with your use of this Work.
+
+This Work includes contributions authored by David E. Jones, not as a
+"work for hire", who hereby disclaims any copyright to the same.
+-->
+<screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
+
+    <actions>
+        <set field="levels" from="levels ? levels as int : 2"/>
+        <set field="entityInfoList" from="ec.entity.getAllEntityInfo(levels)"/>
+        <set field="serviceInfoList" from="ec.service.getAllServiceInfo(levels)"/>
+        <set field="screenInfoString" from="ec.screen.getScreenDisplayString(sri.rootScreenLocation, levels)"/>
+    </actions>
+    <widgets>
+        <label text="Entity Stats" type="h3"/>
+        <label text="Entities: ${ec.entity.getAllEntityNames().size()}, EECA rules: ${ec.entity.getEecaRuleCount()}" type="p"/>
+        <form-list name="EntityInfoList" list="entityInfoList" skip-form="true">
+            <field name="name"><default-field><display/></default-field></field>
+            <field name="entities"><default-field><display/></default-field></field>
+        </form-list>
+
+        <label text="Service Stats" type="h3"/>
+        <label text="Services: ${ec.service.getKnownServiceNames().size()}, SECA rules: ${ec.service.getSecaRuleCount()}" type="p"/>
+        <form-list name="ServiceInfoList" list="serviceInfoList" skip-form="true">
+            <field name="name"><default-field><display/></default-field></field>
+            <field name="services"><default-field><display/></default-field></field>
+        </form-list>
+
+        <label text="Screen Stats" type="h3"/>
+        <label text="${screenInfoString}" type="pre"/>
+    </widgets>
+</screen>
