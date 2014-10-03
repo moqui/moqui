@@ -92,6 +92,12 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
+    EntityList removeByAnd(Map<String, ?> fields) {
+        if (fromCache) return this.cloneList().removeByAnd(fields)
+        return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), false)
+    }
+
+    @Override
     EntityList filterByCondition(EntityCondition condition, Boolean include) {
         if (fromCache) return this.cloneList().filterByCondition(condition, include)
         if (include == null) include = true
@@ -156,6 +162,26 @@ class EntityListImpl implements EntityList {
         if (fromCache) return this.cloneList().orderByFields(fieldNames)
         if (fieldNames) Collections.sort(this.valueList, new MapOrderByComparator(fieldNames))
         return this
+    }
+
+    @Override
+    int indexMatching(Map valueMap) {
+        ListIterator li = this.valueList.listIterator()
+        int index = 0
+        while (li.hasNext()) {
+            EntityValue ev = li.next()
+            if (ev.mapMatches(valueMap)) return index
+            index++
+        }
+        return -1
+    }
+
+    @Override
+    void move(int fromIndex, int toIndex) {
+        if (fromIndex == toIndex) return
+        EntityValue val = remove(fromIndex)
+        if (toIndex > fromIndex) toIndex--
+        add(toIndex, val)
     }
 
     @Override
@@ -300,6 +326,7 @@ class EntityListImpl implements EntityList {
         EntityValue getFirst() { return null }
         EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) { return this }
         EntityList filterByAnd(Map<String, ?> fields) { return this }
+        EntityList removeByAnd(Map<String, ?> fields) { return this }
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
         EntityList filterByLimit(Integer offset, Integer limit) {
             this.offset = offset
@@ -322,6 +349,8 @@ class EntityListImpl implements EntityList {
         int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
         int getPageSize() { return limit ?: 20 }
         EntityList orderByFields(List<String> fieldNames) { return this }
+        int indexMatching(Map valueMap) { return -1 }
+        void move(int fromIndex, int toIndex) { }
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
         int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }

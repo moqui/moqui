@@ -375,6 +375,14 @@ abstract class EntityValueBase implements EntityValue {
     }
 
     @Override
+    boolean mapMatches(Map<String, Object> theMap) {
+        boolean matches = true
+        for (Map.Entry entry in theMap.entrySet())
+            if (entry.getValue() != this.valueMap.get(entry.getKey())) { matches = false; break }
+        return matches
+    }
+
+    @Override
     EntityValue createOrUpdate() {
         if (this.cloneValue().refresh()) {
             return update()

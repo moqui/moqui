@@ -14,6 +14,7 @@ package org.moqui.impl.service
 import groovy.json.JsonBuilder
 import org.moqui.context.Cache
 import org.moqui.context.ResourceReference
+import org.moqui.impl.StupidUtilities
 import org.moqui.service.ServiceFacade
 import org.moqui.service.ServiceCallback
 import org.moqui.service.ServiceCallSync
@@ -249,6 +250,25 @@ class ServiceFacadeImpl implements ServiceFacade {
         return sns
     }
 
+    List<Map> getAllServiceInfo(int levels) {
+        Map<String, Map> serviceInfoMap = [:]
+        for (String serviceName in getKnownServiceNames()) {
+            int lastDotIndex = 0
+            for (int i = 0; i < levels; i++) lastDotIndex = serviceName.indexOf(".", lastDotIndex+1)
+            String name = lastDotIndex == -1 ? serviceName : serviceName.substring(0, lastDotIndex)
+            Map curInfo = serviceInfoMap.get(name)
+            if (curInfo) {
+                StupidUtilities.addToBigDecimalInMap("services", 1, curInfo)
+            } else {
+                serviceInfoMap.put(name, [name:name, services:1])
+            }
+        }
+        TreeSet<String> nameSet = new TreeSet(serviceInfoMap.keySet())
+        List<Map> serviceInfoList = []
+        for (String name in nameSet) serviceInfoList.add(serviceInfoMap.get(name))
+        return serviceInfoList
+    }
+
     protected void findServicesInDir(String baseLocation, ResourceReference dir, Set<String> sns) {
         // logger.warn("Finding services in [${dir.location}]")
         for (ResourceReference entryRr in dir.directoryEntries) {
@@ -340,6 +360,13 @@ class ServiceFacadeImpl implements ServiceFacade {
             }
         }
     }
+
+    int getSecaRuleCount() {
+        int count = 0
+        for (List ruleList in secaRulesByServiceName.values()) count += ruleList.size()
+        return count
+    }
+
 
     protected void loadEmecaRulesAll() {
         if (emecaRuleList.size() > 0) emecaRuleList.clear()

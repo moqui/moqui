@@ -13,6 +13,7 @@ package org.moqui.impl.screen
 
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.moqui.context.ExecutionContext
+import org.moqui.context.ScreenFacade
 import org.moqui.entity.EntityList
 import org.moqui.entity.EntityValue
 import groovy.util.slurpersupport.GPathResult
@@ -23,7 +24,7 @@ import org.moqui.impl.StupidUtilities
 import org.moqui.entity.EntityFind
 import org.moqui.entity.EntityCondition
 import org.moqui.impl.context.ContextBinding
-
+import org.moqui.service.ServiceFacade
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -115,7 +116,7 @@ class ScreenDefinition {
             }
 
             // get all forms by name
-            for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
+            for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.breadthFirst()
                     .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
                 formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"].replace('-','_')}"))
             }
@@ -151,7 +152,7 @@ class ScreenDefinition {
                             String ssName = subscreenRef.getFileName()
                             ssName = ssName.substring(0, ssName.lastIndexOf("."))
                             String cleanLocation = cleanLocationBase + "/" + subscreenRef.getFileName()
-                            SubscreensItem si = new SubscreensItem(ssName, cleanLocation, subscreenRoot)
+                            SubscreensItem si = new SubscreensItem(ssName, cleanLocation, subscreenRoot, this)
                             subscreensByName.put(si.name, si)
                             if (logger.traceEnabled) logger.trace("Added file subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
                         }
@@ -178,7 +179,7 @@ class ScreenDefinition {
         // subscreensItemFind.condition("userGroupId", EntityCondition.IN, sfi.ecfi.executionContext.user.userGroupIdSet)
         EntityList subscreensItemList = subscreensItemFind.useCache(true).list()
         for (EntityValue subscreensItem in subscreensItemList) {
-            SubscreensItem si = new SubscreensItem(subscreensItem)
+            SubscreensItem si = new SubscreensItem(subscreensItem, this)
             subscreensByName.put(si.name, si)
             if (logger.traceEnabled) logger.trace("Added database subscreen [${si.name}] at [${si.location}] to screen [${locationRef}]")
         }
@@ -564,6 +565,7 @@ class ScreenDefinition {
     }
 
     static class SubscreensItem {
+        protected ScreenDefinition parentScreen
         protected String name
         protected String location
         protected String menuTitle
@@ -572,32 +574,44 @@ class ScreenDefinition {
         protected Class disableWhenGroovy = null
         protected String userGroupId = null
 
-        SubscreensItem(String name, String location, GPathResult screen) {
+        SubscreensItem(String name, String location, GPathResult screen, ScreenDefinition parentScreen) {
+            this.parentScreen = parentScreen
             this.name = name
             this.location = location
-            menuTitle = screen."@default-menu-title" as String ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            menuTitle = screen."@default-menu-title" as String ?: getDefaultTitle()
             menuIndex = (screen."@default-menu-index" as String ?: "5") as Integer
             menuInclude = (!screen."@default-menu-include"?.getAt(0) || screen."@default-menu-include"[0] == "true")
         }
 
         SubscreensItem(Node subscreensItem, ScreenDefinition parentScreen) {
+            this.parentScreen = parentScreen
             name = subscreensItem."@name"
             location = subscreensItem."@location"
-            menuTitle = subscreensItem."@menu-title" as String ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            menuTitle = subscreensItem."@menu-title" as String ?: getDefaultTitle()
             menuIndex = (subscreensItem."@menu-index" as String ?: "5") as int
             menuInclude = (!subscreensItem."@menu-include"?.getAt(0) || subscreensItem."@menu-include"[0] == "true")
 
             if (subscreensItem."@disable-when") disableWhenGroovy = new GroovyClassLoader().parseClass(
-                    (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens_item[${name}].disable_when")
+                    (String) subscreensItem."@disable-when", "${parentScreen.location}.subscreens_item_${name}.disable_when")
         }
 
-        SubscreensItem(EntityValue subscreensItem) {
+        SubscreensItem(EntityValue subscreensItem, ScreenDefinition parentScreen) {
+            this.parentScreen = parentScreen
             name = subscreensItem.subscreenName
             location = subscreensItem.subscreenLocation
-            menuTitle = subscreensItem.menuTitle ?: location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            menuTitle = subscreensItem.menuTitle ?: getDefaultTitle()
             menuIndex = (subscreensItem.menuIndex ?: 5) as int
             menuInclude = (subscreensItem.menuInclude == "Y")
             userGroupId = subscreensItem.userGroupId
+        }
+
+        String getDefaultTitle() {
+            ScreenDefinition sd = parentScreen.sfi.getScreenDefinition(location)
+            if (sd != null) {
+                return sd.getDefaultMenuName()
+            } else {
+                return location.substring(location.lastIndexOf("/")+1, location.length()-4)
+            }
         }
 
         String getName() { return name }
