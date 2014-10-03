@@ -140,6 +140,9 @@ public interface EntityValue extends Map<String, Object>, Serializable, Comparab
      */
     int compareTo(EntityValue that);
 
+    /** Returns true if all entries in the Map match field values. */
+    boolean mapMatches(Map<String, Object> theMap);
+
     EntityValue cloneValue();
 
     /** Creates a record for this entity value.
