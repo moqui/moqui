@@ -92,6 +92,12 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
+    EntityList removeByAnd(Map<String, ?> fields) {
+        if (fromCache) return this.cloneList().removeByAnd(fields)
+        return filterByCondition(this.efi.getConditionFactory().makeCondition(fields), false)
+    }
+
+    @Override
     EntityList filterByCondition(EntityCondition condition, Boolean include) {
         if (fromCache) return this.cloneList().filterByCondition(condition, include)
         if (include == null) include = true
@@ -320,6 +326,7 @@ class EntityListImpl implements EntityList {
         EntityValue getFirst() { return null }
         EntityList filterByDate(String fromDateName, String thruDateName, Timestamp moment) { return this }
         EntityList filterByAnd(Map<String, ?> fields) { return this }
+        EntityList removeByAnd(Map<String, ?> fields) { return this }
         EntityList filterByCondition(EntityCondition condition, Boolean include) { return this }
         EntityList filterByLimit(Integer offset, Integer limit) {
             this.offset = offset

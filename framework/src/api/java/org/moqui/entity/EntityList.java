@@ -49,6 +49,8 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      */
     EntityList filterByAnd(Map<String, ?> fields);
 
+    EntityList removeByAnd(Map<String, ?> fields);
+
     /** Modify this EntityList so that it includes (or excludes) values matching the condition.
      *
      * @param condition EntityCondition to filter by.
