@@ -93,8 +93,14 @@ class ScreenForm {
             if (isDynamic) extendsForm = ecfi.resourceFacade.evaluateStringExpand(extendsForm, "")
             ScreenForm esf
             if (extendsForm.contains("#")) {
-                ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(extendsForm.substring(0, extendsForm.indexOf("#")))
-                esf = esd ? esd.getForm(extendsForm.substring(extendsForm.indexOf("#")+1)) : null
+                String screenLocation = extendsForm.substring(0, extendsForm.indexOf("#"))
+                String formName = extendsForm.substring(extendsForm.indexOf("#")+1)
+                if (screenLocation == sd.getLocation()) {
+                    esf = sd.getForm(formName)
+                } else {
+                    ScreenDefinition esd = ecfi.screenFacade.getScreenDefinition(screenLocation)
+                    esf = esd ? esd.getForm(formName) : null
+                }
             } else {
                 esf = sd.getForm(extendsForm)
             }

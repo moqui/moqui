@@ -215,6 +215,10 @@ input[type="text"].ui-autocomplete-input { width: auto; }
 /* .form-horizontal .control-label { padding-top: 0; } */
 .form-horizontal, .form-horizontal .col-lg-12, .form-horizontal .col-lg-10, .form-horizontal .field-row-item { vertical-align: middle; }
 
+.input-append.date { white-space: nowrap; }
+.input-append.date .form-control { margin-right: 39px; }
+.input-append.date .add-on { margin-left: -39px; }
+
 .nav.nav-tabs { margin-bottom: 8px; }
 
 /* ================ Other, Fix Styles =============== */
