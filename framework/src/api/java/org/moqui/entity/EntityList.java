@@ -85,6 +85,9 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      */
     EntityList orderByFields(List<String> fieldNames);
 
+    int indexMatching(Map valueMap);
+    void move(int fromIndex, int toIndex);
+
     /** Writes XML text with an attribute or CDATA element for each field of each record. If dependents is true also
      * writes all dependent (descendant) records.
      * @param writer A Writer object to write to

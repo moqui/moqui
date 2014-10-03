@@ -159,6 +159,26 @@ class EntityListImpl implements EntityList {
     }
 
     @Override
+    int indexMatching(Map valueMap) {
+        ListIterator li = this.valueList.listIterator()
+        int index = 0
+        while (li.hasNext()) {
+            EntityValue ev = li.next()
+            if (ev.mapMatches(valueMap)) return index
+            index++
+        }
+        return -1
+    }
+
+    @Override
+    void move(int fromIndex, int toIndex) {
+        if (fromIndex == toIndex) return
+        EntityValue val = remove(fromIndex)
+        if (toIndex > fromIndex) toIndex--
+        add(toIndex, val)
+    }
+
+    @Override
     int writeXmlText(Writer writer, String prefix, boolean dependents) {
         int recordsWritten = 0
         for (EntityValue ev in this) recordsWritten += ev.writeXmlText(writer, prefix, dependents)
@@ -322,6 +342,8 @@ class EntityListImpl implements EntityList {
         int getPageIndex() { return offset == null ? 0 : offset/getPageSize() }
         int getPageSize() { return limit ?: 20 }
         EntityList orderByFields(List<String> fieldNames) { return this }
+        int indexMatching(Map valueMap) { return -1 }
+        void move(int fromIndex, int toIndex) { }
         Iterator<EntityValue> iterator() { return emptyIterator }
         Object clone() { return this.cloneList() }
         int writeXmlText(Writer writer, String prefix, boolean dependents) { return 0 }
