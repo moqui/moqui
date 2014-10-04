@@ -51,6 +51,8 @@ Bug Fixes:
   length String as the definition of empty for required parameters
 - Fixed issues with complex-alias where aliased entities were not add
   to list of aliased entities used and alias level function was not added
+- Fixed tx cache issue where a value could be updated after putting it into
+  the cache causing an attempt to read the original to get an updated value
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
