@@ -99,6 +99,11 @@
         <a href="#" onclick="switchDarkLight();" data-toggle="tooltip" data-original-title="Switch Dark/Light" data-placement="bottom" class="btn btn-default btn-sm navbar-btn navbar-right">
             <i class="glyphicon glyphicon-adjust"></i>
         </a>
+        <#assign navbarItemList = sri.getThemeValues("STRT_HEADER_NAVBAR_ITEM")>
+        <#list navbarItemList! as navbarItem>
+            <#assign navbarItemTemplate = navbarItem?interpret>
+            <@navbarItemTemplate/>
+        </#list>
         <script>
             function switchDarkLight() {
                 $("body").toggleClass("bg-dark dk");
