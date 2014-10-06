@@ -49,6 +49,8 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      */
     EntityList filterByAnd(Map<String, ?> fields);
 
+    EntityList removeByAnd(Map<String, ?> fields);
+
     /** Modify this EntityList so that it includes (or excludes) values matching the condition.
      *
      * @param condition EntityCondition to filter by.
@@ -84,6 +86,9 @@ public interface EntityList extends List<EntityValue>, Iterable<EntityValue>, Cl
      *@return List of EntityValue objects in the specified order.
      */
     EntityList orderByFields(List<String> fieldNames);
+
+    int indexMatching(Map valueMap);
+    void move(int fromIndex, int toIndex);
 
     /** Writes XML text with an attribute or CDATA element for each field of each record. If dependents is true also
      * writes all dependent (descendant) records.

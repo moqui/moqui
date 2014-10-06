@@ -1031,9 +1031,9 @@ class ScreenRenderImpl implements ScreenRender {
         // if this is an error situation try parameters first, otherwise try parameters last
         if (ec.getWeb() != null && ec.getWeb().getErrorParameters() != null && (ec.getWeb().getErrorParameters().moquiFormName == fieldNode.parent()."@name"))
             value = ec.getWeb().getErrorParameters().get(fieldName)
-        if (!value && ec.getContext().get(mapName) && fieldNode.parent().name() == "form-single") {
+        Map valueMap = (Map) ec.resource.evaluateContextField(mapName, "")
+        if (!value && valueMap && fieldNode.parent().name() == "form-single") {
             try {
-                Map valueMap = (Map) ec.getContext().get(mapName)
                 if (valueMap instanceof EntityValueImpl) {
                     // if it is an EntityValueImpl, only get if the fieldName is a value
                     EntityValueImpl evi = (EntityValueImpl) valueMap

@@ -116,7 +116,7 @@ class ScreenDefinition {
             }
 
             // get all forms by name
-            for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.depthFirst()
+            for (Node formNode in (Collection<Node>) rootSection.widgets.widgetsNode.breadthFirst()
                     .findAll({ it instanceof Node && (it.name() == "form-single" || it.name() == "form-list") })) {
                 formByName.put((String) formNode["@name"], new ScreenForm(sfi.ecfi, this, formNode, "${location}.${formNode.name().replace('-','_')}_${formNode["@name"].replace('-','_')}"))
             }

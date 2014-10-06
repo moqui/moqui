@@ -56,6 +56,17 @@ class EntityEcaRule {
         if (entityName != eecaNode."@entity") return
         if (ec.getMessage().hasError() && eecaNode."@run-on-error" != "true") return
 
+        // grab DB values before a delete so they are available after; this modifies fieldValues used by EntityValueBase
+        if (before && operation == "delete" && eecaNode."@get-entire-entity" == "true") {
+            // fill in any missing (unset) values from the DB
+            EntityValue ev = getDbValue(ec, fieldValues)
+            if (ev != null) {
+                // only add fields that fieldValues does not contain
+                for (Map.Entry entry in ev.entrySet())
+                    if (!fieldValues.containsKey(entry.getKey())) fieldValues.put(entry.getKey(), entry.getValue())
+            }
+        }
+
         if (before && eecaNode."@run-before" != "true") return
         if (!before && eecaNode."@run-before" == "true") return
 
@@ -66,7 +77,7 @@ class EntityEcaRule {
 
         if ((operation == "update" || operation == "delete") && eecaNode."@get-entire-entity" == "true") {
             // fill in any missing (unset) values from the DB
-            if (!originalValue) originalValue = getDbValue(ec, fieldValues)
+            if (originalValue == null) originalValue = getDbValue(ec, fieldValues)
             EntityValue ev = originalValue
             if (ev != null) {
                 // only add fields that fieldValues does not contain
