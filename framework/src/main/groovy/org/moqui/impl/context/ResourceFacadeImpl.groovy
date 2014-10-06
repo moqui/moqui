@@ -205,7 +205,7 @@ public class ResourceFacadeImpl implements ResourceFacade {
         if (!rrClass) throw new IllegalArgumentException("Prefix (${scheme}) not supported for location [${location}]")
 
         ResourceReference rr = (ResourceReference) rrClass.newInstance()
-        rr.init(location, ecfi.executionContext)
+        rr.init(location, ecfi)
         resourceReferenceByLocation.put(location, rr)
         return rr
     }

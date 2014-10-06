@@ -67,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="screenThemeId" type="id" is-pk="true"/>
         <field name="sequenceNum" type="number-integer" is-pk="true"/>
         <field name="resourceTypeEnumId" type="id"/>
-        <field name="resourceValue" type="text-medium">
+        <field name="resourceValue" type="text-long">
             <description>The location, name or other value description the resource.</description>
         </field>
         <relationship type="one" related-entity-name="moqui.screen.ScreenTheme"/>
@@ -81,6 +81,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <moqui.basic.Enumeration description="Shortcut Icon URL" enumId="STRT_SHORTCUT_ICON" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Header Logo URL" enumId="STRT_HEADER_LOGO" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Header Title" enumId="STRT_HEADER_TITLE" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Header Navbar Item" enumId="STRT_HEADER_NAVBAR_ITEM" enumTypeId="ScreenThemeResourceType"/>
+            <moqui.basic.Enumeration description="Footer Item" enumId="STRT_FOOTER_ITEM" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="HTML Body CSS Class" enumId="STRT_BODY_CLASS" enumTypeId="ScreenThemeResourceType"/>
             <moqui.basic.Enumeration description="Theme Preview Screenshot" enumId="STRT_SCREENSHOT" enumTypeId="ScreenThemeResourceType"/>
         </seed-data>

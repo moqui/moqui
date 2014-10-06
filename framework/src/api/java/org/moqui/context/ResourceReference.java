@@ -17,7 +17,7 @@ import java.net.URL;
 import java.util.List;
 
 public interface ResourceReference {
-    ResourceReference init(String location, ExecutionContext ec);
+    ResourceReference init(String location, ExecutionContextFactory ecf);
 
     String getLocation();
 

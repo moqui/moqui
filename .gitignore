@@ -31,10 +31,8 @@ build/
 
 # common runtime added files
 /runtime/lib/*.jar
+/runtime/component/
 /runtime/mantle/
-# TODO: how to ignore everything in runtime/component except example, tools, webroot?
-# for now at least ignore all directories that start with something other than e, t, or w
-/runtime/component/[a-df-suvxyz]*
 
 # IntelliJ IDEA files
 .idea/
