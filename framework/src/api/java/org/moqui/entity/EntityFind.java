@@ -53,6 +53,8 @@ public interface EntityFind extends java.io.Serializable {
 
     /** Compare the named field to the value using the operator. */
     EntityFind condition(String fieldName, EntityCondition.ComparisonOperator operator, Object value);
+    EntityFind condition(String fieldName, String operator, Object value);
+
     /** Compare a field to another field using the operator. */
     EntityFind conditionToField(String fieldName, EntityCondition.ComparisonOperator operator, String toFieldName);
 
