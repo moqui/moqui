@@ -31,7 +31,7 @@ build/
 
 # common runtime added files
 /runtime/lib/*.jar
-# /runtime/component/
+/runtime/component/
 /runtime/mantle/
 
 # IntelliJ IDEA files
