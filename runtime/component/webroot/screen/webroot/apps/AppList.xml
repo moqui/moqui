@@ -20,8 +20,7 @@ This Work includes contributions authored by David E. Jones, not as a
     </actions>
     <widgets>
         <container style="text-center">
-            <label text="Welcome to Moqui" type="h2"/>
-            <label text="Choose Your Application" type="h3"/>
+            <label text="Choose an Application" type="h2"/>
 
             <section-iterate name="ScreenNestedSection" list="currentScreenDef.getMenuSubscreensItems()" entry="currentSubscreensItem">
                 <actions>
