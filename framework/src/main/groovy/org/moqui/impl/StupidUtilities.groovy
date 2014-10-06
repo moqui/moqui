@@ -409,15 +409,15 @@ class StupidUtilities {
             char curChar = newValue.charAt(i)
 
             switch (curChar) {
-                case '\'': newValue.replace(i, i+1, "&apos;"); break;
-                case '"' : newValue.replace(i, i+1, "&quot;"); break;
-                case '&' : newValue.replace(i, i+1, "&amp;"); break;
-                case '<' : newValue.replace(i, i+1, "&lt;"); break;
-                case '>' : newValue.replace(i, i+1, "&gt;"); break;
+                case '\'': newValue.replace(i, i+1, "&apos;"); i+=5; break;
+                case '"' : newValue.replace(i, i+1, "&quot;"); i+=5; break;
+                case '&' : newValue.replace(i, i+1, "&amp;"); i+=4; break;
+                case '<' : newValue.replace(i, i+1, "&lt;"); i+=3; break;
+                case '>' : newValue.replace(i, i+1, "&gt;"); i+=3; break;
                 case 0x5 : newValue.replace(i, i+1, "..."); break;
-                case 0x12: newValue.replace(i, i+1, "&apos;"); break;
-                case 0x13: newValue.replace(i, i+1, "&quot;"); break; // left
-                case 0x14: newValue.replace(i, i+1, "&quot;"); break; // right
+                case 0x12: newValue.replace(i, i+1, "&apos;"); i+=5; break;
+                case 0x13: newValue.replace(i, i+1, "&quot;"); i+=5; break; // left
+                case 0x14: newValue.replace(i, i+1, "&quot;"); i+=5; break; // right
                 case 0x16: newValue.replace(i, i+1, "-"); break; // big dash
                 case 0x17: newValue.replace(i, i+1, "-"); break;
                 case 0x19: newValue.replace(i, i+1, "tm"); break;
