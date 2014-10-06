@@ -11,16 +11,19 @@
  */
 package org.moqui.impl.context.reference
 
-import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.entity.EntityValue
 import org.moqui.entity.EntityList
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import javax.sql.rowset.serial.SerialBlob
 
 class DbResourceReference extends BaseResourceReference {
-    protected final static org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(DbResourceReference.class)
+    protected final static Logger logger = LoggerFactory.getLogger(DbResourceReference.class)
     public final static String locationPrefix = "dbresource://"
 
     String location
@@ -30,14 +33,14 @@ class DbResourceReference extends BaseResourceReference {
     DbResourceReference() { }
     
     @Override
-    ResourceReference init(String location, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, ExecutionContextFactory ecf) {
+        this.ecf = ecf
         this.location = location
         return this
     }
 
-    ResourceReference init(String location, EntityValue dbResource, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, EntityValue dbResource, ExecutionContextFactory ecf) {
+        this.ecf = ecf
         this.location = location
         this.dbResource = dbResource
         return this
@@ -82,10 +85,10 @@ class DbResourceReference extends BaseResourceReference {
         EntityValue dbr = getDbResource()
         if (dbr == null) return dirEntries
 
-        EntityList childList = ec.entity.makeFind("DbResource").condition([parentResourceId:dbr.resourceId])
+        EntityList childList = ecf.entity.makeFind("DbResource").condition([parentResourceId:dbr.resourceId])
                 .useCache(true).list()
         for (EntityValue child in childList) {
-            dirEntries.add(new DbResourceReference().init("${location}/${child.filename}", child, ec))
+            dirEntries.add(new DbResourceReference().init("${location}/${child.filename}", child, ecf))
         }
         return dirEntries
     }
@@ -114,7 +117,7 @@ class DbResourceReference extends BaseResourceReference {
         EntityValue dbrf = getDbResourceFile()
 
         if (dbrf != null) {
-            ec.service.sync().name("update", "DbResourceFile")
+            ecf.service.sync().name("update", "DbResourceFile")
                     .parameters([resourceId:dbrf.resourceId, fileData:fileObj]).call()
             dbResourceFile = null
         } else {
@@ -124,9 +127,9 @@ class DbResourceReference extends BaseResourceReference {
             String parentResourceId = findDirectoryId(filenameList, true)
 
             // now write the DbResource and DbResourceFile records
-            Map createDbrResult = ec.service.sync().name("create", "DbResource")
+            Map createDbrResult = ecf.service.sync().name("create", "DbResource")
                     .parameters([parentResourceId:parentResourceId, filename:getFileName(), isFile:"Y"]).call()
-            ec.service.sync().name("create", "DbResourceFile")
+            ecf.service.sync().name("create", "DbResourceFile")
                     .parameters([resourceId:createDbrResult.resourceId, mimeType:getContentType(), fileData:fileObj]).call()
             // clear out the local reference to the old file record
             dbResourceFile = null
@@ -136,12 +139,12 @@ class DbResourceReference extends BaseResourceReference {
         String parentResourceId = null
         if (pathList) {
             for (String filename in pathList) {
-                EntityValue directoryValue = ec.entity.makeFind("DbResource")
+                EntityValue directoryValue = ecf.entity.makeFind("DbResource")
                         .condition([parentResourceId:parentResourceId, filename:filename])
                         .useCache(true).list().getFirst()
                 if (directoryValue == null) {
                     if (create) {
-                        Map createResult = ec.service.sync().name("create", "DbResource")
+                        Map createResult = ecf.service.sync().name("create", "DbResource")
                                 .parameters([parentResourceId:parentResourceId, filename:filename, isFile:"N"]).call()
                         parentResourceId = createResult.resourceId
                         // logger.warn("=============== put text to ${location}, created dir ${filename}")
@@ -164,7 +167,7 @@ class DbResourceReference extends BaseResourceReference {
         }
 
         if (!newLocation) throw new IllegalArgumentException("No location specified, not moving resource at ${getLocation()}")
-        // ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        // ResourceReference newRr = ecf.resource.getLocationReference(newLocation)
         if (!newLocation.startsWith(locationPrefix))
             throw new IllegalArgumentException("Location [${newLocation}] is not a dbresource location, not moving resource at ${getLocation()}")
 
@@ -189,7 +192,7 @@ class DbResourceReference extends BaseResourceReference {
         for (String filename in filenameList) {
             // NOTE: using .useCache(true).list().getFirst() because .useCache(true).one() tries to use the one cache
             // and that doesn't auto-clear correctly for non-pk queries
-            lastValue = ec.entity.makeFind("DbResource").condition([parentResourceId:parentResourceId, filename:filename])
+            lastValue = ecf.entity.makeFind("DbResource").condition([parentResourceId:parentResourceId, filename:filename])
                     .useCache(true).list().getFirst()
             if (lastValue == null) continue
             parentResourceId = lastValue.resourceId
@@ -205,7 +208,7 @@ class DbResourceReference extends BaseResourceReference {
         if (dbr == null) return null
 
         // don't cache this, can be big and will be cached below this as text if needed
-        EntityValue dbrf = ec.entity.makeFind("DbResourceFile").condition([resourceId:dbr.resourceId]).useCache(false).one()
+        EntityValue dbrf = ecf.entity.makeFind("DbResourceFile").condition([resourceId:dbr.resourceId]).useCache(false).one()
 
         dbResourceFile = dbrf
         return dbrf

@@ -11,8 +11,8 @@
  */
 package org.moqui.impl.context.reference
 
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
-import org.moqui.context.ExecutionContext
 import org.moqui.impl.context.ResourceFacadeImpl
 
 class ClasspathResourceReference extends UrlResourceReference {
@@ -21,8 +21,8 @@ class ClasspathResourceReference extends UrlResourceReference {
 
     ClasspathResourceReference() { super() }
 
-    ResourceReference init(String location, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, ExecutionContextFactory ecf) {
+        this.ecf = ecf
         strippedLocation = ResourceFacadeImpl.stripLocationPrefix(location)
         // first try the current thread's context ClassLoader
         locationUrl = Thread.currentThread().getContextClassLoader().getResource(strippedLocation)

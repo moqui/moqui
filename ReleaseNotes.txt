@@ -57,6 +57,8 @@ Bug Fixes:
   to list of aliased entities used and alias level function was not added
 - Fixed tx cache issue where a value could be updated after putting it into
   the cache causing an attempt to read the original to get an updated value
+- Changed ResourceReference.init() to use ExecutionContextFactory instead
+  of ExecutionContext for cases where the object is long-lived
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

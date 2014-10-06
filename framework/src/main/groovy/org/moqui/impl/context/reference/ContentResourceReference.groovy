@@ -14,7 +14,7 @@ package org.moqui.impl.context.reference
 import javax.jcr.Session
 import javax.jcr.Property
 
-import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
 import org.moqui.impl.StupidUtilities
 import org.moqui.impl.context.ResourceFacadeImpl
@@ -35,8 +35,8 @@ class ContentResourceReference extends BaseResourceReference {
     ContentResourceReference() { }
     
     @Override
-    ResourceReference init(String location, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, ExecutionContextFactory ecf) {
+        this.ecf = ecf
 
         this.location = location
         // TODO: change to not rely on URI, or to encode properly
@@ -47,7 +47,9 @@ class ContentResourceReference extends BaseResourceReference {
         return this
     }
 
-    ResourceReference init(String repositoryName, javax.jcr.Node node, ExecutionContext ec) {
+    ResourceReference init(String repositoryName, javax.jcr.Node node, ExecutionContextFactory ecf) {
+        this.ecf = ecf
+
         this.repositoryName = repositoryName
         this.nodePath = node.path
         this.location = "${locationPrefix}${repositoryName}/${nodePath}"
@@ -101,7 +103,7 @@ class ContentResourceReference extends BaseResourceReference {
         if (node == null) return dirEntries
 
         for (javax.jcr.Node childNode in node.getNodes()) {
-            dirEntries.add(new ContentResourceReference().init(repositoryName, childNode, ec))
+            dirEntries.add(new ContentResourceReference().init(repositoryName, childNode, ecf))
         }
         return dirEntries
     }
@@ -113,7 +115,7 @@ class ContentResourceReference extends BaseResourceReference {
     @Override
     boolean getExists() {
         if (theNode != null) return true
-        Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
+        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
         return session.nodeExists(nodePath)
     }
 
@@ -136,7 +138,7 @@ class ContentResourceReference extends BaseResourceReference {
             logger.warn("Data was null, not saving to resource [${getLocation()}]")
             return
         }
-        Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
+        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
         javax.jcr.Node fileNode = getNode()
         if (fileNode != null) {
             javax.jcr.Node fileContent = fileNode.getNode("jcr:content")
@@ -194,9 +196,9 @@ class ContentResourceReference extends BaseResourceReference {
         if (!newLocation.startsWith(locationPrefix))
             throw new IllegalArgumentException("New location [${newLocation}] is not a content location, not moving resource at ${getLocation()}")
 
-        Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
+        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
 
-        ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        ResourceReference newRr = ecf.resource.getLocationReference(newLocation)
         if (!newRr instanceof ContentResourceReference)
             throw new IllegalArgumentException("New location [${newLocation}] is not a content location, not moving resource at ${getLocation()}")
         ContentResourceReference newCrr = (ContentResourceReference) newRr
@@ -213,7 +215,7 @@ class ContentResourceReference extends BaseResourceReference {
 
     javax.jcr.Node getNode() {
         if (theNode != null) return theNode
-        Session session = ((ResourceFacadeImpl) ec.resource).getContentRepositorySession(repositoryName)
+        Session session = ((ResourceFacadeImpl) ecf.resource).getContentRepositorySession(repositoryName)
         return session.nodeExists(nodePath) ? session.getNode(nodePath) : null
     }
 }

@@ -672,7 +672,7 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
     protected void initComponentDir(String location) {
         ResourceReference componentRr = new UrlResourceReference()
-        componentRr.init(location, getExecutionContext())
+        componentRr.init(location, this)
         // if directory doesn't exist skip it, runtime doesn't always have an component directory
         if (componentRr.getExists() && componentRr.isDirectory()) {
             // get all files in the directory

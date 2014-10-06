@@ -11,7 +11,7 @@
  */
 package org.moqui.impl.context.reference
 
-import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
 
 import org.slf4j.Logger
@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 abstract class BaseResourceReference implements ResourceReference {
     protected final static Logger logger = LoggerFactory.getLogger(BaseResourceReference.class)
 
-    ExecutionContext ec = null
+    ExecutionContextFactory ecf = null
     protected Map<String, ResourceReference> subContentRefByPath = null
 
     ResourceReference childOfResource = null
@@ -28,7 +28,7 @@ abstract class BaseResourceReference implements ResourceReference {
     BaseResourceReference() { }
 
     @Override
-    abstract ResourceReference init(String location, ExecutionContext ec);
+    abstract ResourceReference init(String location, ExecutionContextFactory ecf)
 
     protected Map<String, ResourceReference> getSubContentRefByPath() {
         if (subContentRefByPath == null) subContentRefByPath = new HashMap<String, ResourceReference>()
@@ -69,7 +69,7 @@ abstract class BaseResourceReference implements ResourceReference {
     @Override
     String getContentType() {
         String fn = getFileName()
-        return fn ? ec.resource.getContentType(fn) : null
+        return fn ? ecf.getResource().getContentType(fn) : null
     }
 
     @Override
@@ -98,7 +98,7 @@ abstract class BaseResourceReference implements ResourceReference {
         fileLoc.append(childName)
 
         // NOTE: don't really care if it exists or not at this point
-        ResourceReference childRef = ec.resource.getLocationReference(fileLoc.toString())
+        ResourceReference childRef = ecf.resource.getLocationReference(fileLoc.toString())
         return childRef
     }
 
@@ -121,7 +121,7 @@ abstract class BaseResourceReference implements ResourceReference {
         if (!relativePath) return this
 
         if (!supportsAll()) {
-            ec.message.addError("Not looking for child file at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
+            ecf.getExecutionContext().message.addError("Not looking for child file at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
             return null
         }
         // logger.warn("============= finding child resource of [${toString()}] path [${relativePath}]")
@@ -140,16 +140,16 @@ abstract class BaseResourceReference implements ResourceReference {
             if (relativePath.charAt(0) != '/') fileLoc.append('/')
             fileLoc.append(relativePath)
 
-            ResourceReference theFile = ec.resource.getLocationReference(fileLoc.toString())
+            ResourceReference theFile = ecf.resource.getLocationReference(fileLoc.toString())
             if (theFile.exists && theFile.isFile()) childRef = theFile
 
             // logger.warn("============= finding child resource path [${relativePath}] childRef 1 [${childRef}]")
             /* this approach is no longer needed; the more flexible approach below will handle this and more:
             if (childRef == null) {
                 // try adding known extensions
-                for (String extToTry in ec.resource.templateRenderers.keySet()) {
+                for (String extToTry in ecf.resource.templateRenderers.keySet()) {
                     if (childRef != null) break
-                    theFile = ec.resource.getLocationReference(fileLoc.toString() + extToTry)
+                    theFile = ecf.resource.getLocationReference(fileLoc.toString() + extToTry)
                     if (theFile.exists && theFile.isFile()) childRef = theFile
                     // logger.warn("============= finding child resource path [${relativePath}] fileLoc [${fileLoc}] extToTry [${extToTry}] childRef [${theFile}]")
                 }
@@ -180,7 +180,7 @@ abstract class BaseResourceReference implements ResourceReference {
         if (childRef == null) {
             // still nothing? treat the path to the file as a literal and return it (exists will be false)
             if (directoryRef.exists) {
-                childRef = ec.resource.getLocationReference(directoryRef.getLocation() + '/' + relativePath)
+                childRef = ecf.resource.getLocationReference(directoryRef.getLocation() + '/' + relativePath)
                 if (childRef instanceof BaseResourceReference) {
                     ((BaseResourceReference) childRef).childOfResource = directoryRef
                 }
@@ -189,7 +189,7 @@ abstract class BaseResourceReference implements ResourceReference {
                 // pop off the extension, everything past the first dot after the last slash
                 int lastSlashLoc = newDirectoryLoc.lastIndexOf("/")
                 if (newDirectoryLoc.contains(".")) newDirectoryLoc = newDirectoryLoc.substring(0, newDirectoryLoc.indexOf(".", lastSlashLoc))
-                childRef = ec.resource.getLocationReference(newDirectoryLoc + '/' + relativePath)
+                childRef = ecf.resource.getLocationReference(newDirectoryLoc + '/' + relativePath)
             }
         } else {
             // put it in the cache before returning, but don't cache the literal reference
@@ -204,7 +204,7 @@ abstract class BaseResourceReference implements ResourceReference {
         if (!relativePath) return this
 
         if (!supportsAll()) {
-            ec.message.addError("Not looking for child directory at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
+            ecf.getExecutionContext().message.addError("Not looking for child directory at [${relativePath}] under space root page [${getLocation()}] because exists, isFile, etc are not supported")
             return null
         }
 
@@ -231,7 +231,7 @@ abstract class BaseResourceReference implements ResourceReference {
                 int lastSlashLoc = newDirectoryLoc.lastIndexOf("/")
                 if (newDirectoryLoc.contains(".")) newDirectoryLoc = newDirectoryLoc.substring(0, newDirectoryLoc.indexOf(".", lastSlashLoc))
             }
-            childDirectoryRef = ec.resource.getLocationReference(newDirectoryLoc + '/' + relativePath)
+            childDirectoryRef = ecf.resource.getLocationReference(newDirectoryLoc + '/' + relativePath)
         } else {
             // put it in the cache before returning, but don't cache the literal reference
             getSubContentRefByPath().put(relativePath, childRef)
@@ -246,7 +246,7 @@ abstract class BaseResourceReference implements ResourceReference {
         while (!(directoryRef.exists && directoryRef.isDirectory()) && dirLoc.lastIndexOf(".") > 0) {
             // get rid of one suffix at a time (for screens probably .xml but use .* for other files, etc)
             dirLoc.delete(dirLoc.lastIndexOf("."), dirLoc.length())
-            directoryRef = ec.resource.getLocationReference(dirLoc.toString())
+            directoryRef = ecf.resource.getLocationReference(dirLoc.toString())
         }
         return directoryRef
     }
@@ -261,7 +261,7 @@ abstract class BaseResourceReference implements ResourceReference {
         if (dirLocation.charAt(dirLocation.length()-1) == '/') dirLocation.deleteCharAt(dirLocation.length()-1)
         if (childDirName.charAt(0) != '/') dirLocation.append('/')
         dirLocation.append(childDirName)
-        ResourceReference directRef = ec.resource.getLocationReference(dirLocation.toString())
+        ResourceReference directRef = ecf.resource.getLocationReference(dirLocation.toString())
         if (directRef != null && directRef.exists) return directRef
 
         // if no direct reference is found, try the more flexible search
@@ -357,12 +357,12 @@ abstract class BaseResourceReference implements ResourceReference {
     }
 
     @Override
-    abstract boolean supportsExists();
+    abstract boolean supportsExists()
     @Override
-    abstract boolean getExists();
+    abstract boolean getExists()
 
-    abstract boolean supportsLastModified();
-    abstract long getLastModified();
+    abstract boolean supportsLastModified()
+    abstract long getLastModified()
 
     @Override
     void destroy() { }
