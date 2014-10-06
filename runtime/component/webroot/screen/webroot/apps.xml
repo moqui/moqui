@@ -67,9 +67,11 @@ This Work includes contributions authored by David E. Jones, not as a
         </container>
         <container id="footer" style="Footer bg-dark dker">
             <render-mode><text type="html"><![CDATA[
+                    <#assign footerItemList = sri.getThemeValues("STRT_FOOTER_ITEM")>
                     <div id="apps-footer-content">
-                        <h6><a href="http://www.moqui.org/" target="_blank">Built on Moqui Framework 1.5.0</a></h6>
-                        <h6><a href="/apps/ScreenTree">Site Map</a></h6>
+                        <#list footerItemList?if_exists as footerItem>
+                            ${footerItem}
+                        </#list>
                     </div>
                 ]]></text></render-mode>
         </container>
