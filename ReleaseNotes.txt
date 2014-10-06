@@ -9,6 +9,10 @@ Moqui Framework 1.5.0 is a major new feature and bug fix release.
 
 TODO
 
+NOTE: The webroot, tools, and example components are now in the new
+runtime/base-component directory instead of the runtime/component directory
+to keep them separate from add-on components.
+
 New Features:
 
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
