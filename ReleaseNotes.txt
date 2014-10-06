@@ -38,8 +38,12 @@ New Features:
 - Added form-single.field-layout.field-row-big element to do what field-row
   used to do with more than 2 field-ref elements, putting all fields in a
   single column
-- Put CSS references back in theme instead of direct in webroot.xml, added
-  support for header logo, header title, and body class in theme
+- Put CSS references back in theme instead of direct in webroot.xml
+- Added support for header logo, header title, body class, and footer items
+  in theme to make applications easier to brand through theme data
+- Added theme support for header navbar items with FTL snippets coming
+  from the database theme records, example in the Mantle MyAccount app to
+  show count of unread incoming messages and link to view them
 - Added dark/light pseudo-theme switcher, switches body classes from
   Bootstrap on the fly and saves user preference (default comes from theme)
 - Added entity.field.@default attribute with a Groovy expression to set a
