@@ -19,7 +19,7 @@ div.message { width: 600px; margin: 2px auto 2px auto; border: 1px solid #DDDDDF
 div.message span { font-size: 1em; }
 div.error span { color: red; }
 
-#apps-footer-content { margin: 5px auto 0px auto; width: 200px; text-align: center; }
+#apps-footer-content { margin: 5px 0 0 0; text-align: center; }
 
 /* ====================== headings, general ====================== */
 
