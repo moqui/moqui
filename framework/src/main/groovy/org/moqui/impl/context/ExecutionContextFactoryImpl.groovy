@@ -27,6 +27,7 @@ import org.moqui.context.ScreenFacade
 import org.moqui.context.TransactionFacade
 import org.moqui.entity.EntityFacade
 import org.moqui.impl.StupidWebUtilities
+import org.moqui.impl.context.reference.UrlResourceReference
 import org.moqui.service.ServiceFacade
 
 import java.sql.Timestamp
@@ -307,33 +308,12 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
     }
 
     protected void initComponents() {
-        // a little special treatment for mantle components
-        initComponentsRuntimeDir("mantle")
-        // the default directory for components
-        initComponentsRuntimeDir("component")
-
-        // init components referred to in component-list.component elements in the conf file
-        if (confXmlRoot."component-list"?.getAt(0)?."component") {
-            for (Node componentNode in confXmlRoot."component-list"[0]."component") {
-                this.initComponent((String) componentNode."@name", (String) componentNode."@location")
-            }
-        }
-    }
-
-    protected void initComponentsRuntimeDir(String dirName) {
-        // init all components in the runtime/${dirName} directory
-        File componentDir = new File(this.runtimePath + "/" + dirName)
-        // if directory doesn't exist skip it, runtime doesn't always have an component directory
-        if (componentDir.exists() && componentDir.isDirectory()) {
-            // get all files in the directory
-            TreeMap<String, File> componentDirEntries = new TreeMap<String, File>()
-            for (File componentSubDir in componentDir.listFiles()) {
-                // if it's a directory and doesn't start with a "." then add it as a component dir
-                if (!componentSubDir.isDirectory() || componentSubDir.getName().startsWith(".")) continue
-                componentDirEntries.put(componentSubDir.getName(), componentSubDir)
-            }
-            for (Map.Entry<String, File> componentDirEntry in componentDirEntries) {
-                this.initComponent(null, componentDirEntry.getValue().toURI().toURL().toString())
+        // init components referred to in component-list.component and component-dir elements in the conf file
+        for (Node childNode in confXmlRoot."component-list"[0].children()) {
+            if (childNode.name() == "component") {
+                initComponent((String) childNode."@name", (String) childNode."@location")
+            } else if (childNode.name() == "component-dir") {
+                initComponentDir((String) childNode."@location")
             }
         }
     }
@@ -690,6 +670,24 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         logger.info("Added component [${componentName}] at [${baseLocation}]")
     }
 
+    protected void initComponentDir(String location) {
+        ResourceReference componentRr = new UrlResourceReference()
+        componentRr.init(location, getExecutionContext())
+        // if directory doesn't exist skip it, runtime doesn't always have an component directory
+        if (componentRr.getExists() && componentRr.isDirectory()) {
+            // get all files in the directory
+            TreeMap<String, ResourceReference> componentDirEntries = new TreeMap<String, ResourceReference>()
+            for (ResourceReference componentSubRr in componentRr.getDirectoryEntries()) {
+                // if it's a directory and doesn't start with a "." then add it as a component dir
+                if (!componentSubRr.isDirectory() || componentSubRr.getFileName().startsWith(".")) continue
+                componentDirEntries.put(componentSubRr.getFileName(), componentSubRr)
+            }
+            for (Map.Entry<String, ResourceReference> componentDirEntry in componentDirEntries) {
+                this.initComponent(null, componentDirEntry.getValue().getLocation())
+            }
+        }
+    }
+
     @Override
     void destroyComponent(String componentName) throws BaseException { componentLocationMap.remove(componentName) }
 
@@ -984,7 +982,10 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
 
         if (overrideNode."component-list") {
             if (!baseNode."component-list") baseNode.appendNode("component-list")
-            mergeNodeWithChildKey((Node) baseNode."component-list"[0], (Node) overrideNode."component-list"[0], "component", "name")
+            Node baseComponentNode = baseNode."component-list"[0]
+            for (Node copyNode in overrideNode."component-list"[0].children()) baseComponentNode.append(copyNode)
+            // mergeNodeWithChildKey((Node) baseNode."component-list"[0], (Node) overrideNode."component-list"[0], "component-dir", "location")
+            // mergeNodeWithChildKey((Node) baseNode."component-list"[0], (Node) overrideNode."component-list"[0], "component", "name")
         }
     }
 

@@ -639,9 +639,19 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:element name="component-list">
         <xs:annotation><xs:documentation>Use this to specify components to load in addition to those in the
             runtime/component directory. This is useful for components in JCR repositories or wherever.
-            The location needs to use a protocol/schema that supports looking at sub-directories, etc (like content:,
-            file:, etc).</xs:documentation></xs:annotation>
-        <xs:complexType><xs:sequence><xs:element minOccurs="0" maxOccurs="unbounded" ref="component"/></xs:sequence></xs:complexType>
+            The location needs to use a Resource Facade protocol/schema that supports looking at sub-directories, etc
+            (like content:, file:, etc).</xs:documentation></xs:annotation>
+        <xs:complexType><xs:sequence>
+            <xs:choice maxOccurs="unbounded">
+                <xs:element ref="component-dir"/>
+                <xs:element ref="component"/>
+            </xs:choice>
+        </xs:sequence></xs:complexType>
+    </xs:element>
+    <xs:element name="component-dir">
+        <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required"/>
+        </xs:complexType>
     </xs:element>
     <xs:element name="component">
         <xs:complexType>
