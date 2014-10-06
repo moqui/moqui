@@ -11,7 +11,7 @@
  */
 package org.moqui.impl.context.reference
 
-import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
 import org.moqui.impl.context.ResourceFacadeImpl
 
@@ -21,8 +21,8 @@ class ComponentResourceReference extends WrapperResourceReference {
 
     ComponentResourceReference() { super() }
 
-    ResourceReference init(String location, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, ExecutionContextFactory ecf) {
+        this.ecf = ecf
 
         if (location.endsWith("/")) location = location.substring(0, location.length()-1)
         this.componentLocation = location
@@ -44,9 +44,9 @@ class ComponentResourceReference extends WrapperResourceReference {
         }
 
         baseLocation.insert(0, '/')
-        baseLocation.insert(0, ec.ecfi.getComponentBaseLocations().get(componentName))
+        baseLocation.insert(0, ecf.getComponentBaseLocations().get(componentName))
 
-        this.rr = ec.resource.getLocationReference(baseLocation.toString())
+        this.rr = ecf.resource.getLocationReference(baseLocation.toString())
 
         return this
     }
@@ -63,7 +63,7 @@ class ComponentResourceReference extends WrapperResourceReference {
             String entryLoc = entryRr.location
             if (entryLoc.endsWith("/")) entryLoc = entryLoc.substring(0, entryLoc.length()-1)
             String newLocation = this.componentLocation + "/" + entryLoc.substring(entryLoc.lastIndexOf("/")+1)
-            newList.add(new ComponentResourceReference().init(newLocation, ec))
+            newList.add(new ComponentResourceReference().init(newLocation, ecf))
         }
         return newList
     }

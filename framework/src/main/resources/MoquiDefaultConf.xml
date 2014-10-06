@@ -500,7 +500,10 @@
         <!-- <repository name="main" location="java:comp/env/jcr/repository" type="jndi" workspace="default"/> -->
     </repository-list>
     <component-list>
-        <!-- No components explicitly loaded by default, but here are some examples: -->
+        <component-dir location="base-component"/>
+        <component-dir location="mantle"/>
+        <component-dir location="component"/>
+        <!-- Here are some examples of explicitly loading the example component in different ways: -->
         <!-- <component name="example" location="component/example"/> -->
         <!-- <component name="example" location="content://main/component/example"/> -->
     </component-list>

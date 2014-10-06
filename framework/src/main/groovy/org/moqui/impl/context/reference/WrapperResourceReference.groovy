@@ -11,24 +11,22 @@
  */
 package org.moqui.impl.context.reference
 
-import org.moqui.context.ExecutionContext
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
-import org.moqui.impl.StupidUtilities
-import org.moqui.impl.context.ExecutionContextImpl
 
 class WrapperResourceReference extends BaseResourceReference  {
     ResourceReference rr = null
 
     WrapperResourceReference() { }
     
-    ResourceReference init(String location, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, ExecutionContextFactory ecf) {
+        this.ecf = ecf
         return this
     }
 
-    ResourceReference init(ResourceReference rr, ExecutionContext ec) {
+    ResourceReference init(ResourceReference rr, ExecutionContextFactory ecf) {
         this.rr = rr
-        this.ec = ec
+        this.ecf = ecf
         return this
     }
 

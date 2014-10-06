@@ -9,6 +9,10 @@ Moqui Framework 1.5.0 is a major new feature and bug fix release.
 
 TODO
 
+NOTE: The webroot, tools, and example components are now in the new
+runtime/base-component directory instead of the runtime/component directory
+to keep them separate from add-on components.
+
 New Features:
 
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
@@ -34,8 +38,12 @@ New Features:
 - Added form-single.field-layout.field-row-big element to do what field-row
   used to do with more than 2 field-ref elements, putting all fields in a
   single column
-- Put CSS references back in theme instead of direct in webroot.xml, added
-  support for header logo, header title, and body class in theme
+- Put CSS references back in theme instead of direct in webroot.xml
+- Added support for header logo, header title, body class, and footer items
+  in theme to make applications easier to brand through theme data
+- Added theme support for header navbar items with FTL snippets coming
+  from the database theme records, example in the Mantle MyAccount app to
+  show count of unread incoming messages and link to view them
 - Added dark/light pseudo-theme switcher, switches body classes from
   Bootstrap on the fly and saves user preference (default comes from theme)
 - Added entity.field.@default attribute with a Groovy expression to set a
@@ -51,6 +59,10 @@ Bug Fixes:
   length String as the definition of empty for required parameters
 - Fixed issues with complex-alias where aliased entities were not add
   to list of aliased entities used and alias level function was not added
+- Fixed tx cache issue where a value could be updated after putting it into
+  the cache causing an attempt to read the original to get an updated value
+- Changed ResourceReference.init() to use ExecutionContextFactory instead
+  of ExecutionContext for cases where the object is long-lived
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014

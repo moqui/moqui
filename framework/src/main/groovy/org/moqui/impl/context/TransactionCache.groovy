@@ -265,7 +265,8 @@ class TransactionCache implements Synchronization {
         EntityWriteInfo currentEwi = (EntityWriteInfo) writeInfoList.get(key)
         // if this has been deleted we don't want to add it, but in general if we have a ewi then it's already in the
         //     cache and we don't want to update from this (generally from DB and may be older than value already there)
-        if (currentEwi == null) readOneCache.put(key, evb)
+        // clone the value before putting it into the cache so that the caller can't change it later with an update call
+        if (currentEwi == null) readOneCache.put(key, (EntityValueBase) evb.cloneValue())
     }
 
     EntityListImpl listGet(EntityDefinition ed, EntityCondition whereCondition, List<String> orderByExpanded) {

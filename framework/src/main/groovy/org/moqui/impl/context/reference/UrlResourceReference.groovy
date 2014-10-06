@@ -11,8 +11,8 @@
  */
 package org.moqui.impl.context.reference
 
+import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ResourceReference
-import org.moqui.context.ExecutionContext
 import org.moqui.impl.StupidUtilities
 import org.moqui.BaseException
 
@@ -30,12 +30,12 @@ class UrlResourceReference extends BaseResourceReference {
     UrlResourceReference() { }
     
     @Override
-    ResourceReference init(String location, ExecutionContext ec) {
-        this.ec = ec
+    ResourceReference init(String location, ExecutionContextFactory ecf) {
+        this.ecf = ecf
         if (!location) throw new BaseException("Cannot create URL Resource Reference with empty location")
         if (location.startsWith("/") || location.indexOf(":") < 0) {
             // no prefix, local file: if starts with '/' is absolute, otherwise is relative to runtime path
-            if (location.charAt(0) != '/') location = ec.ecfi.runtimePath + '/' + location
+            if (location.charAt(0) != '/') location = ecf.runtimePath + '/' + location
             locationUrl = new URL("file:" + location)
             isFileProtocol = true
         } else {
@@ -99,7 +99,7 @@ class UrlResourceReference extends BaseResourceReference {
             File f = getFile()
             List<ResourceReference> children = new LinkedList<ResourceReference>()
             for (File dirFile in f.listFiles()) {
-                children.add(new UrlResourceReference().init(dirFile.absolutePath, ec))
+                children.add(new UrlResourceReference().init(dirFile.absolutePath, ecf))
             }
             return children
         } else {
@@ -153,7 +153,7 @@ class UrlResourceReference extends BaseResourceReference {
 
     void move(String newLocation) {
         if (!newLocation) throw new IllegalArgumentException("No location specified, not moving resource at ${getLocation()}")
-        ResourceReference newRr = ec.resource.getLocationReference(newLocation)
+        ResourceReference newRr = ecf.resource.getLocationReference(newLocation)
 
         if (newRr.getUrl().getProtocol() != "file")
             throw new IllegalArgumentException("Location [${newLocation}] is not a file location, not moving resource at ${getLocation()}")
