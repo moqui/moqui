@@ -380,7 +380,7 @@ class ServiceDefinition {
                 // recurse back into this method
                 checkParameterNode("${namePrefix}${parameterName}.", rootParameters, childNode, parameterNode, validate, eci)
             } else {
-                Object parameterValue = childNode.text()
+                Object parameterValue = StupidUtilities.nodeText(childNode)
 
                 // NOTE: required check is done later, now just validating the parameters seen
                 // NOTE: no type conversion for Node attributes, they are always String
@@ -396,7 +396,7 @@ class ServiceDefinition {
         // if there is text() under this node, use the _VALUE parameter node to validate
         Node textValueNode = (Node) parametersParentNode."parameter".find({ it."@name" == "_VALUE" })
         if (textValueNode != null) {
-            Object parameterValue = nodeValue.text()
+            Object parameterValue = StupidUtilities.nodeText(nodeValue)
             if (!parameterValue) {
                 if (validate && textValueNode."@required" == "true") {
                     eci.message.addError("${namePrefix}_VALUE cannot be empty (service ${getServiceName()})")
@@ -422,7 +422,7 @@ class ServiceDefinition {
                     valueFound = true
                 } else {
                     for (Node childNode in (Collection<Node>) nodeValue.children()) {
-                        if (childNode.text()) {
+                        if (childNode.localText()) {
                             valueFound = true
                             break
                         }
