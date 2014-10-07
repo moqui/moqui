@@ -15,7 +15,8 @@ to keep them separate from add-on components.
 
 New Features:
 
-- Updated Apache Shiro to 1.2.3, Liquibase to 3.2.2, OrientDB to 1.7.9
+- Updated Apache Derby to 10.11.1.1, Apache Shiro to 1.2.3,
+  Liquibase to 3.2.2, OrientDB to 1.7.9
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
