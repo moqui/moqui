@@ -15,6 +15,7 @@ to keep them separate from add-on components.
 
 New Features:
 
+- Updated Apache Shiro to 1.2.3
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
