@@ -392,9 +392,10 @@ class StupidUtilities {
             } else {
                 StringBuilder sb = new StringBuilder()
                 for (String txt in textList) sb.append(txt).append("\n")
+                return sb.toString()
             }
         } else {
-            return null
+            return ""
         }
     }
 
