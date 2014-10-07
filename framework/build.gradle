@@ -28,6 +28,7 @@ sourceSets {
 // maybe in the future: repositories { mavenCentral() }
 repositories {
     flatDir name: 'localLib', dirs: projectDir.absolutePath + '/lib'
+    flatDir name: 'localLibCamel', dirs: projectDir.absolutePath + '/lib/camel'
     flatDir name: 'localLibFop', dirs: projectDir.absolutePath + '/lib/fop'
     flatDir name: 'localLibSearch', dirs: projectDir.absolutePath + '/lib/search'
     flatDir name: 'localLibKie', dirs: projectDir.absolutePath + '/lib/kie'
@@ -47,8 +48,8 @@ dependencies {
     // this is an optional alternative to Atomikos
     compile name: 'btm', version: '2.1.4' // LGPL <== NOTE!
 
-    apiCompile name: 'camel-core', version: '2.12.1' // Apache 2.0
-    compile name: 'camel-core', version: '2.12.1' // Apache 2.0
+    apiCompile name: 'camel-core', version: '2.14.0' // Apache 2.0
+    compile name: 'camel-core', version: '2.14.0' // Apache 2.0
 
     compile name: 'commons-codec', version: '1.6' // Apache 2.0
     compile name: 'commons-collections', version: '3.2.1' // Apache 2.0
@@ -174,16 +175,16 @@ dependencies {
     runtime name: 'janino', version: '2.5.16' // New BSD
 
     // ========== runtime-only dependencies ==========
-    runtime name: 'camel-elasticsearch', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-freemarker', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-groovy', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-http4', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-jms', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-lucene', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-mail', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-quartz', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-shiro', version: '2.12.1' // Apache 2.0
-    runtime name: 'camel-xmlrpc', version: '2.12.1' // Apache 2.0
+    runtime name: 'camel-elasticsearch', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-freemarker', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-groovy', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-http4', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-jms', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-lucene', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-mail', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-quartz2', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-shiro', version: '2.14.0' // Apache 2.0
+    runtime name: 'camel-xmlrpc', version: '2.14.0' // Apache 2.0
 
     /* For extended WebDAV connection to Jackrabbit these are needed:
     runtime name: 'jackrabbit-spi', version: '2.5.2' // Apache 2.0
