@@ -21,35 +21,38 @@ New Features:
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
   other updates
-- Added tree element for XML Screen that renders a lazy-loaded tree with
-  links using jstree (currently version 3.0.3); see the wiki.xml screen
-  in HiveMind for an example of its use
-- Various XML Screen elements have more consistent id behavior with string
-  expansion and adding the listEntryIndex suffix, which is now also set
-  in section-iterate (in addition to form-list as before)
-- Added container-box to XML Screen with header, toolbar, and body.
-- Improved container element in XML Screen with better id handling and
-  a type which (in HTML) translates to the tag used.
-- Added @style attributes to link and label in XML Screen
-- Added in operator (_op) for searchFormInputs/search-form-inputs
-- Added section-include element to include a section from another screen
-- In a form-list with no @list-entry attribute creates a
-  ${@list}_entry field along with the _index and _has_next fields for
-  convenience in getting at the object in the List (which implements the
-  Map interface, often an EntityValue and nice to get at it directly)
-- Added form-single.field-layout.field-row-big element to do what field-row
-  used to do with more than 2 field-ref elements, putting all fields in a
-  single column
-- Put CSS references back in theme instead of direct in webroot.xml
-- Added support for header logo, header title, body class, and footer items
-  in theme to make applications easier to brand through theme data
-- Added theme support for header navbar items with FTL snippets coming
-  from the database theme records, example in the Mantle MyAccount app to
-  show count of unread incoming messages and link to view them
-- Added dark/light pseudo-theme switcher, switches body classes from
-  Bootstrap on the fly and saves user preference (default comes from theme)
-- Added entity.field.@default attribute with a Groovy expression to set a
-  default for a field based on other fields, constants, etc
+- XML Screen:
+  - Added tree element for XML Screen that renders a lazy-loaded tree with
+    links using jstree (currently version 3.0.3); see the wiki.xml screen
+    in HiveMind for an example of its use
+  - Various XML Screen elements have more consistent id behavior with
+    string expansion and adding the listEntryIndex suffix, which is now
+    also set in section-iterate (in addition to form-list as before)
+  - Added container-box to XML Screen with header, toolbar, and body
+  - Improved container element in XML Screen with better id handling and
+    a type which (in HTML) translates to the tag used.
+  - Added @style attributes to link and label in XML Screen
+  - Added section-include element to include a section from another screen
+  - In a form-list with no @list-entry attribute creates a
+    ${@list}_entry field along with the _index and _has_next fields for
+    convenience in getting at the object in the List (which implements the
+    Map interface, often an EntityValue and nice to get at it directly)
+  - Added form-single.field-layout.field-row-big element to do what
+    field-row used to do with more than 2 field-ref elements, putting all
+    fields in a single column
+  - Put CSS references back in theme instead of direct in webroot.xml
+  - Added support for header logo, header title, body class, and footer
+    items in theme to make applications easier to brand through theme data
+  - Added theme support for header navbar items with FTL snippets coming
+    from the database theme records, example in the Mantle MyAccount app to
+    show count of unread incoming messages and link to view them
+  - Added dark/light pseudo-theme switcher, switches body classes from
+    Bootstrap on the fly and saves user preference (default comes from
+    theme)
+- Entity Facade:
+  - Added in operator (_op) for searchFormInputs/search-form-inputs
+  - Added entity.field.@default attribute with a Groovy expression to set a
+    default for a field based on other fields, constants, etc
 
 Bug Fixes:
 
