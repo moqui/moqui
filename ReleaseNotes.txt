@@ -51,6 +51,8 @@ New Features:
   - Added dark/light pseudo-theme switcher, switches body classes from
     Bootstrap on the fly and saves user preference (default comes from
     theme)
+  - Links are now disabled when going to a screen the user is not
+    authorized for along with failed transition condition
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
