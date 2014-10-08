@@ -433,11 +433,11 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             return true
         } else {
             // if we got here no authz found, log it
-            if (logger.infoEnabled) {
+            if (logger.isDebugEnabled()) {
                 StringBuilder warning = new StringBuilder()
                 warning.append("User [${userId}] is not authorized for ${aeii.getTypeEnumId()} [${aeii.getName()}] because of no allow record [type:${aeii.getTypeEnumId()},action:${aeii.getActionEnumId()}]\nlastAeii=[${lastAeii}]\nHere is the artifact stack:")
                 for (def warnAei in this.stack) warning.append("\n").append(warnAei)
-                logger.info(warning.toString())
+                logger.debug(warning.toString())
             }
 
             alreadyDisabled = disableAuthz()
