@@ -38,27 +38,53 @@ This Work includes contributions authored by David E. Jones, not as a
             <container id="content">
                 <!-- <container style="outer"> -->
                     <container style="inner">
-                        <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
-                            <widgets><container style="message"><label text="${message}"/></container></widgets>
-                        </section-iterate>
-                        <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
-                            <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                        </section-iterate>
-                        <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
-                            <!-- TODO: put these by fields instead of in header -->
-                            <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                        </section-iterate>
+                        <section name="MessagesSection"><widgets>
+                            <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
+                                <widgets>
+                                    <render-mode><text type="html"><![CDATA[<div class="alert alert-success fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>]]></text></render-mode>
+                                    <label text="${message}" type="h4"/>
+                                    <render-mode><text type="html"><![CDATA[</div>]]></text></render-mode>
+                                </widgets>
+                            </section-iterate>
+                            <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
+                                <widgets>
+                                    <render-mode><text type="html"><![CDATA[<div class="alert alert-danger fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>]]></text></render-mode>
+                                    <label text="${errorMessage}" type="h4"/>
+                                    <render-mode><text type="html"><![CDATA[</div>]]></text></render-mode>
+                                </widgets>
+                            </section-iterate>
+                            <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
+                                <!-- TODO: put these by fields instead of in header -->
+                                <widgets>
+                                    <render-mode><text type="html"><![CDATA[<div class="alert alert-danger fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>]]></text></render-mode>
+                                    <label text="${validationError.message} (for field ${validationError.field})" type="h4"/>
+                                    <render-mode><text type="html"><![CDATA[</div>]]></text></render-mode>
+                                </widgets>
+                            </section-iterate>
 
-                        <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
-                            <widgets><container style="message"><label text="${message}"/></container></widgets>
-                        </section-iterate>
-                        <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
-                            <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                        </section-iterate>
-                        <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
-                            <!-- TODO: put these by fields instead of in header -->
-                            <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                        </section-iterate>
+                            <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
+                                <widgets>
+                                    <render-mode><text type="html"><![CDATA[<div class="alert alert-success fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>]]></text></render-mode>
+                                    <label text="${message}" type="h4"/>
+                                    <render-mode><text type="html"><![CDATA[</div>]]></text></render-mode>
+                                </widgets>
+                            </section-iterate>
+                            <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
+                                <widgets>
+                                    <render-mode><text type="html"><![CDATA[<div class="alert alert-danger fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>]]></text></render-mode>
+                                    <label text="${errorMessage}" type="h4"/>
+                                    <render-mode><text type="html"><![CDATA[</div>]]></text></render-mode>
+                                </widgets>
+                            </section-iterate>
+                            <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
+                                <!-- TODO: put these by fields instead of in header -->
+                                <widgets>
+                                    <render-mode><text type="html"><![CDATA[<div class="alert alert-danger fade in" role="alert"><button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>]]></text></render-mode>
+                                    <label text="${validationError.message} (for field ${validationError.field})" type="h4"/>
+                                    <render-mode><text type="html"><![CDATA[</div>]]></text></render-mode>
+                                </widgets>
+                            </section-iterate>
+                        </widgets></section>
 
                         <subscreens-active/>
                     </container>
