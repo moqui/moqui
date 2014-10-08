@@ -436,7 +436,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro linkFormLink linkNode linkFormId urlInfo>
     <#if urlInfo.disableLink>
-        <span<#if linkFormId?has_content> id="${linkFormId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
+        <a href="#"<#if linkFormId?has_content> id="${linkFormId}"</#if>class="<#if linkNode["@link-type"]! != "anchor" && linkNode["@link-type"]! != "hidden-form-link">btn btn-metis-5 btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</a>
     <#else>
         <#assign confirmationMessage = ec.resource.evaluateStringExpand(linkNode["@confirmation"]!, "")/>
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
