@@ -105,7 +105,7 @@ class ScreenUrlInfo {
         hasActions = (targetTransition && targetTransition.actions)
         // if sri.screenUrlInfo is null it is because this object is not yet set to it, so set this to true as it "is" the current screen path
         inCurrentScreenPath = sri.screenUrlInfo ? sri.isInCurrentScreenPath(minimalPathNameList) : true
-        disableLink = targetTransition ? !targetTransition.checkCondition(sri.ec) : false
+        disableLink = (targetTransition && !targetTransition.checkCondition(sri.ec)) || !isPermitted()
     }
 
     boolean isPermitted() {
