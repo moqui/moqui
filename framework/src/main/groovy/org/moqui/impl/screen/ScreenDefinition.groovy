@@ -228,6 +228,52 @@ class ScreenDefinition {
 
     SubscreensItem getSubscreensItem(String name) { return (SubscreensItem) subscreensByName.get(name) }
 
+    List<String> findSubscreenPath(List<String> remainingPathNameList, String requestMethod) {
+        if (!remainingPathNameList) return null
+        String curName = remainingPathNameList.get(0)
+        SubscreensItem curSsi = getSubscreensItem(curName)
+        if (curSsi != null) {
+            if (remainingPathNameList.size() > 1) {
+                List<String> subPathNameList = new ArrayList<>(remainingPathNameList)
+                subPathNameList.remove(0)
+                ScreenDefinition subSd = sfi.getScreenDefinition(curSsi.getLocation())
+                List<String> subPath = subSd.findSubscreenPath(subPathNameList, requestMethod)
+                if (!subPath) return null
+                subPath.add(0, curName)
+                return subPath
+            } else {
+                return remainingPathNameList
+            }
+        }
+
+        // not immediate subscreen, start recursion
+        for (Map.Entry<String, SubscreensItem> entry in subscreensByName.entrySet()) {
+            ScreenDefinition subSd = sfi.getScreenDefinition(entry.getValue().getLocation())
+            List<String> subPath = subSd.findSubscreenPath(remainingPathNameList, requestMethod)
+            if (subPath) {
+                subPath.add(0, entry.getKey())
+                return subPath
+            }
+        }
+
+        TransitionItem ti = getTransitionItem(curName, requestMethod)
+        if (ti != null) return remainingPathNameList
+
+        // is this a file under the screen?
+        ResourceReference existingFileRef = getSubContentRef(remainingPathNameList)
+        if (existingFileRef && existingFileRef.supportsExists() && existingFileRef.exists) {
+            return remainingPathNameList
+        }
+
+        if (screenNode."@allow-extra-path" == "true") {
+            // call it good
+            return remainingPathNameList
+        }
+
+        // nothing found, return null by default
+        return null
+    }
+
     List<SubscreensItem> getSubscreensItemsSorted() {
         if (subscreensItemsSorted != null) return subscreensItemsSorted
         List<SubscreensItem> newList = new ArrayList(subscreensByName.size())

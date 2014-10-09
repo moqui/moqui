@@ -31,6 +31,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
+    protected final Cache screenFindPathCache
 
     ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -38,6 +39,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
         this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
+        this.screenFindPathCache = ecfi.cacheFacade.getCache("screen.find.path")
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
