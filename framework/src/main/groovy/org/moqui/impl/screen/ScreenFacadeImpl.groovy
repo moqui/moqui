@@ -12,11 +12,12 @@
 package org.moqui.impl.screen
 
 import freemarker.template.Template
-
+import net.sf.ehcache.Element
+import org.moqui.context.ResourceReference
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ScreenRender
 import org.moqui.context.Cache
-
+import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.slf4j.Logger
@@ -28,6 +29,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache screenLocationCache
+    protected final Map<String, ScreenDefinition> screenLocationPermCache = new HashMap()
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
@@ -56,11 +58,26 @@ public class ScreenFacadeImpl implements ScreenFacade {
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)
         if (sd) return sd
 
+        ResourceReference screenRr = ecfi.getResourceFacade().getLocationReference(location)
+
+        ScreenDefinition permSd = (ScreenDefinition) screenLocationPermCache.get(location)
+        if (permSd) {
+            // check to see if file has been modified, if we know when it was last modified
+            if (permSd.sourceLastModified && screenRr.supportsLastModified() &&
+                    screenRr.getLastModified() == permSd.sourceLastModified) {
+                //logger.warn("========= screen expired but hasn't changed so reusing: ${location}")
+                screenLocationCache.put(location, permSd)
+                return permSd
+            } else {
+                screenLocationPermCache.remove(location)
+            }
+        }
+
         Node screenNode = null
         InputStream screenFileIs = null
 
         try {
-            screenFileIs = ecfi.resourceFacade.getLocationStream(location)
+            screenFileIs = screenRr.openStream()
             screenNode = new XmlParser().parse(screenFileIs)
         } catch (IOException e) {
             // probably because there is no resource at that location, so do nothing
@@ -74,7 +91,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
         }
 
         sd = new ScreenDefinition(this, screenNode, location)
+        // logger.warn("========= loaded screen [${location}] supports LM ${screenRr.supportsLastModified()}, LM: ${screenRr.getLastModified()}")
+        sd.sourceLastModified = screenRr.supportsLastModified() ? screenRr.getLastModified() : null
         screenLocationCache.put(location, sd)
+        if (screenRr.supportsLastModified()) screenLocationPermCache.put(location, sd)
         return sd
     }
 
