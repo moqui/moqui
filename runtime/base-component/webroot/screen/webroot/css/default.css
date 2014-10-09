@@ -142,7 +142,8 @@ ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px;
 .bg-dark ul.float-box li { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
-.shaded-area { padding: 8px; }
+.shaded-area { padding: 8px; margin-bottom: 8px; }
+span.shaded-area { display: inline-block; }
 .bg-light .shaded-area { background: #EEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC; }
 .bg-dark .shaded-area { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
