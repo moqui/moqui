@@ -1208,6 +1208,32 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     </span>
 </#macro>
 
+<#macro "date-period">
+    <#assign id><@fieldId .node/></#assign>
+    <select name="<@fieldName .node/>_poffset" class="chosen-select" id="${id}_poffset"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <#if (allowEmpty! != "false")>
+            <option value="">&nbsp;</option>
+        </#if>
+        <option value="0">This</option>
+        <option value="-1">Last</option>
+        <option value="1">Next</option>
+    </select>
+    <select name="<@fieldName .node/>_period" class="chosen-select" id="${id}_period"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <#if (allowEmpty! != "false")>
+        <option value="">&nbsp;</option>
+        </#if>
+        <option>Day</option>
+        <option>Week</option>
+        <option>Month</option>
+        <option>Year</option>
+    </select>
+    <#assign afterFormScript>
+        $("#${id}_poffset").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });
+        $("#${id}_period").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });
+    </#assign>
+    <#t>${sri.appendToScriptWriter(afterFormScript)}
+</#macro>
+
 <#--
 Bootstrap datepicker format refer to https://github.com/smalot/bootstrap-datetimepicker
 Java simple date format refer to http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html

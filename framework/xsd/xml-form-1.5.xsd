@@ -602,6 +602,11 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="default-value-thru" type="xs:string"/>
         </xs:complexType>
     </xs:element>
+    <xs:element name="date-period" substitutionGroup="SubFields">
+        <xs:complexType>
+            <xs:attribute name="allow-empty" default="true" type="boolean"/>
+        </xs:complexType>
+    </xs:element>
     <xs:element name="date-time" substitutionGroup="SubFields">
         <xs:complexType>
             <xs:attribute name="type" default="timestamp">
