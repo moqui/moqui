@@ -1210,22 +1210,25 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
 <#macro "date-period">
     <#assign id><@fieldId .node/></#assign>
-    <select name="<@fieldName .node/>_poffset" class="chosen-select" id="${id}_poffset"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+    <#assign curFieldName><@fieldName .node/></#assign>
+    <#assign fvOffset = ec.context.get(curFieldName + "_poffset")!>
+    <#assign fvPeriod = ec.context.get(curFieldName + "_period")!?lower_case>
+    <select name="${curFieldName}_poffset" class="chosen-select" id="${id}_poffset"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <#if (allowEmpty! != "false")>
             <option value="">&nbsp;</option>
         </#if>
-        <option value="0">This</option>
-        <option value="-1">Last</option>
-        <option value="1">Next</option>
+        <option value="0"<#if fvOffset == "0"> selected="selected"</#if>>This</option>
+        <option value="-1"<#if fvOffset == "-1"> selected="selected"</#if>>Last</option>
+        <option value="1"<#if fvOffset == "1"> selected="selected"</#if>>Next</option>
     </select>
-    <select name="<@fieldName .node/>_period" class="chosen-select" id="${id}_period"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+    <select name="${curFieldName}_period" class="chosen-select" id="${id}_period"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
         <#if (allowEmpty! != "false")>
         <option value="">&nbsp;</option>
         </#if>
-        <option>Day</option>
-        <option>Week</option>
-        <option>Month</option>
-        <option>Year</option>
+        <option<#if fvPeriod == "day"> selected="selected"</#if>>Day</option>
+        <option<#if fvPeriod == "week"> selected="selected"</#if>>Week</option>
+        <option<#if fvPeriod == "month"> selected="selected"</#if>>Month</option>
+        <option<#if fvPeriod == "year"> selected="selected"</#if>>Year</option>
     </select>
     <#assign afterFormScript>
         $("#${id}_poffset").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });
