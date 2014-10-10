@@ -23,6 +23,7 @@ New Features:
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
   other updates
+- Added cache warming on start (disabled in dev conf)
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -51,6 +52,18 @@ New Features:
   - Added dark/light pseudo-theme switcher, switches body classes from
     Bootstrap on the fly and saves user preference (default comes from
     theme)
+  - Links are now disabled when going to a screen the user is not
+    authorized for along with failed transition condition
+  - Screen paths can now start with a // and be a sparse path where each
+    name in the path is searched for in the subscreen hierarchy from the
+    root screen; can also find content this way; note that this may
+    involve loading a lot of screen definitions and in dev mode will be
+    a LOT slower, but in production (cache timeouts turned off) the full
+    expanded path is cached as are the screen definitions so there is very
+    little overhead
+  - To help with XML Screen loading overhead, especially in dev mode with
+    timeouts turned on, now only reloads if the file's last modified time
+    has changed
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a

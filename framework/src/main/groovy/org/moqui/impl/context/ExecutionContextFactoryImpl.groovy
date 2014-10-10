@@ -285,7 +285,15 @@ class ExecutionContextFactoryImpl implements ExecutionContextFactory {
         // now that everything is started up, if configured check all entity tables
         this.entityFacade.checkInitDatasourceTables()
 
+        if (confXmlRoot."cache-list"[0]."@warm-on-start" != "false") warmCache()
+
         logger.info("Moqui ExecutionContextFactory Initialization Complete")
+    }
+
+    void warmCache() {
+        this.entityFacade.warmCache()
+        this.serviceFacade.warmCache()
+        this.screenFacade.warmCache()
     }
 
     /** Initialize all permanent framework objects, ie those not sensitive to webapp or user context. */

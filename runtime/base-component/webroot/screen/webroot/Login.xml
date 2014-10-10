@@ -39,27 +39,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <!-- NOTE: this screen is not under the apps screen, but uses similar header/footer/etc -->
         <container style="login">
             <container style="container">
-                <section-iterate name="headerMessages" list="ec.message.messages" entry="message">
-                    <widgets><container style="message"><label text="${message}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerErrors" list="ec.message.errors" entry="errorMessage">
-                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerValidationErrors" list="ec.message.validationErrors" entry="validationError">
-                    <!-- TODO: put these by fields instead of in header -->
-                    <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                </section-iterate>
-
-                <section-iterate name="headerSavedMessages" list="ec.web?.savedMessages" entry="message">
-                    <widgets><container style="message"><label text="${message}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerSavedErrors" list="ec.web?.savedErrors" entry="errorMessage">
-                    <widgets><container style="message error"><label text="${errorMessage}"/></container></widgets>
-                </section-iterate>
-                <section-iterate name="headerSavedValidationErrors" list="ec.web?.savedValidationErrors" entry="validationError">
-                    <!-- TODO: put these by fields instead of in header -->
-                    <widgets><container style="message error"><label text="${validationError.message} (for field ${validationError.field})"/></container></widgets>
-                </section-iterate>
+                <section-include name="MessagesSection" location="component://webroot/screen/webroot/apps.xml"/>
 
                 <render-mode>
                     <text type="html" template="true" location="component://webroot/screen/webroot/Login.ftl"/>

@@ -7,7 +7,7 @@
 
     <tools enable-elasticsearch="true" enable-camel="false"/>
 
-    <cache-list>
+    <cache-list warm-on-start="true">
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
         <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="2000"/>
         <cache name="entity.location" expire-time-idle="0" expire-time-live="0" max-elements="2000"/>
@@ -29,6 +29,7 @@
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="screen.template.mode" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
         <cache name="screen.template.location" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
+        <cache name="screen.find.path" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
 
         <cache name="resource.xml-actions.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="resource.groovy.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>

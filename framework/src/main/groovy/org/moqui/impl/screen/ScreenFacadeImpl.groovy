@@ -12,11 +12,12 @@
 package org.moqui.impl.screen
 
 import freemarker.template.Template
-
+import net.sf.ehcache.Element
+import org.moqui.context.ResourceReference
 import org.moqui.context.ScreenFacade
 import org.moqui.context.ScreenRender
 import org.moqui.context.Cache
-
+import org.moqui.impl.context.CacheImpl
 import org.moqui.impl.context.ExecutionContextFactoryImpl
 import org.moqui.impl.screen.ScreenDefinition.SubscreensItem
 import org.slf4j.Logger
@@ -28,9 +29,11 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache screenLocationCache
+    protected final Map<String, ScreenDefinition> screenLocationPermCache = new HashMap()
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
+    protected final Cache screenFindPathCache
 
     ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
@@ -38,9 +41,35 @@ public class ScreenFacadeImpl implements ScreenFacade {
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
         this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
+        this.screenFindPathCache = ecfi.cacheFacade.getCache("screen.find.path")
     }
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
+
+    void warmCache() {
+        for (String rootLocation in getAllRootScreenLocations()) {
+            logger.info("Warming cache for all screens under ${rootLocation}")
+            ScreenDefinition rootSd = getScreenDefinition(rootLocation)
+            warmCacheScreen(rootSd)
+        }
+    }
+    protected void warmCacheScreen(ScreenDefinition sd) {
+        for (SubscreensItem ssi in sd.subscreensByName.values()) {
+            ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
+            if (subSd) warmCacheScreen(subSd)
+        }
+    }
+
+    List<String> getAllRootScreenLocations() {
+        List<String> allLocations = []
+        for (Node webappNode in ecfi.confXmlRoot."webapp-list"[0]."webapp") {
+            for (Node rootScreenNode in webappNode."root-screen") {
+                String rootLocation = rootScreenNode."@location"
+                allLocations.add(rootLocation)
+            }
+        }
+        return allLocations
+    }
 
     ScreenDefinition getScreenDefinition(String location) {
         if (!location) return null
@@ -54,11 +83,26 @@ public class ScreenFacadeImpl implements ScreenFacade {
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)
         if (sd) return sd
 
+        ResourceReference screenRr = ecfi.getResourceFacade().getLocationReference(location)
+
+        ScreenDefinition permSd = (ScreenDefinition) screenLocationPermCache.get(location)
+        if (permSd) {
+            // check to see if file has been modified, if we know when it was last modified
+            if (permSd.sourceLastModified && screenRr.supportsLastModified() &&
+                    screenRr.getLastModified() == permSd.sourceLastModified) {
+                //logger.warn("========= screen expired but hasn't changed so reusing: ${location}")
+                screenLocationCache.put(location, permSd)
+                return permSd
+            } else {
+                screenLocationPermCache.remove(location)
+            }
+        }
+
         Node screenNode = null
         InputStream screenFileIs = null
 
         try {
-            screenFileIs = ecfi.resourceFacade.getLocationStream(location)
+            screenFileIs = screenRr.openStream()
             screenNode = new XmlParser().parse(screenFileIs)
         } catch (IOException e) {
             // probably because there is no resource at that location, so do nothing
@@ -72,7 +116,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
         }
 
         sd = new ScreenDefinition(this, screenNode, location)
+        // logger.warn("========= loaded screen [${location}] supports LM ${screenRr.supportsLastModified()}, LM: ${screenRr.getLastModified()}")
+        sd.sourceLastModified = screenRr.supportsLastModified() ? screenRr.getLastModified() : null
         screenLocationCache.put(location, sd)
+        if (screenRr.supportsLastModified()) screenLocationPermCache.put(location, sd)
         return sd
     }
 
@@ -164,7 +211,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return sb.toString()
     }
     List<String> getScreenDisplayInfo(String rootLocation, int levels) {
-        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null)
+        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null, 0)
         List<String> infoList = []
         addScreenDisplayInfo(infoList, rootInfo, 0, levels)
         return infoList
@@ -186,11 +233,20 @@ public class ScreenFacadeImpl implements ScreenFacade {
         }
     }
 
+    List<ScreenInfo> getScreenInfoList(String rootLocation, int levels) {
+        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null, 0)
+        List<ScreenInfo> infoList = []
+        infoList.add(rootInfo)
+        rootInfo.addChildrenToList(infoList, levels)
+        return infoList
+    }
+
     class ScreenInfo {
         ScreenDefinition sd
         SubscreensItem ssi
         ScreenInfo parentInfo
-        Map<String, ScreenInfo> subscreenInfoByName = [:]
+        Map<String, ScreenInfo> subscreenInfoByName = new TreeMap()
+        int level
         String name
 
         boolean isNonPlaceholder = false
@@ -200,10 +256,11 @@ public class ScreenFacadeImpl implements ScreenFacade {
         int sections = 0, allSubscreensSections = 0
         int transitions = 0, allSubscreensTransitions = 0
 
-        ScreenInfo(ScreenDefinition sd, SubscreensItem ssi, ScreenInfo parentInfo) {
+        ScreenInfo(ScreenDefinition sd, SubscreensItem ssi, ScreenInfo parentInfo, int level) {
             this.sd = sd
             this.ssi = ssi
             this.parentInfo = parentInfo
+            this.level = level
             this.name = ssi ? ssi.getName() : sd.getScreenName()
 
             subscreens = sd.subscreensByName.size()
@@ -234,7 +291,21 @@ public class ScreenFacadeImpl implements ScreenFacade {
                     logger.warn("While getting ScreenInfo screen not found for ${curSsi.getName()} at: ${curSsi.getLocation()}")
                     continue
                 }
-                subscreenInfoByName.put(ssEntry.getKey(), new ScreenInfo(ssSd, curSsi, this))
+                subscreenInfoByName.put(ssEntry.getKey(), new ScreenInfo(ssSd, curSsi, this, level+1))
+            }
+        }
+
+        String getIndentedName() {
+            StringBuilder sb = new StringBuilder()
+            for (int i = 0; i < level; i++) sb.append("- ")
+            sb.append(" ").append(name)
+            return sb.toString()
+        }
+
+        void addChildrenToList(List<ScreenInfo> infoList, int maxLevel) {
+            for (ScreenInfo si in subscreenInfoByName.values()) {
+                infoList.add(si)
+                if (maxLevel > level) si.addChildrenToList(infoList, maxLevel)
             }
         }
     }
