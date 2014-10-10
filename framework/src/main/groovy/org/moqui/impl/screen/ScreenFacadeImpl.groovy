@@ -46,6 +46,23 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
+    void warmCache() {
+        for (Node webappNode in ecfi.confXmlRoot."webapp-list"[0]."webapp") {
+            for (Node rootScreenNode in webappNode."root-screen") {
+                String rootLocation = rootScreenNode."@location"
+                logger.info("Warming cache for all screens under ${rootLocation}")
+                ScreenDefinition rootSd = getScreenDefinition(rootLocation)
+                warmCacheScreen(rootSd)
+            }
+        }
+    }
+    protected void warmCacheScreen(ScreenDefinition sd) {
+        for (SubscreensItem ssi in sd.subscreensByName.values()) {
+            ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
+            if (subSd) warmCacheScreen(subSd)
+        }
+    }
+
     ScreenDefinition getScreenDefinition(String location) {
         if (!location) return null
         ScreenDefinition sd = (ScreenDefinition) screenLocationCache.get(location)

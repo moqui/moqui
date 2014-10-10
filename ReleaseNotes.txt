@@ -23,6 +23,7 @@ New Features:
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
   other updates
+- Added cache warming on start (disabled in dev conf)
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
