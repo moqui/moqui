@@ -47,13 +47,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
     ExecutionContextFactoryImpl getEcfi() { return ecfi }
 
     void warmCache() {
-        for (Node webappNode in ecfi.confXmlRoot."webapp-list"[0]."webapp") {
-            for (Node rootScreenNode in webappNode."root-screen") {
-                String rootLocation = rootScreenNode."@location"
-                logger.info("Warming cache for all screens under ${rootLocation}")
-                ScreenDefinition rootSd = getScreenDefinition(rootLocation)
-                warmCacheScreen(rootSd)
-            }
+        for (String rootLocation in getAllRootScreenLocations()) {
+            logger.info("Warming cache for all screens under ${rootLocation}")
+            ScreenDefinition rootSd = getScreenDefinition(rootLocation)
+            warmCacheScreen(rootSd)
         }
     }
     protected void warmCacheScreen(ScreenDefinition sd) {
@@ -61,6 +58,17 @@ public class ScreenFacadeImpl implements ScreenFacade {
             ScreenDefinition subSd = getScreenDefinition(ssi.getLocation())
             if (subSd) warmCacheScreen(subSd)
         }
+    }
+
+    List<String> getAllRootScreenLocations() {
+        List<String> allLocations = []
+        for (Node webappNode in ecfi.confXmlRoot."webapp-list"[0]."webapp") {
+            for (Node rootScreenNode in webappNode."root-screen") {
+                String rootLocation = rootScreenNode."@location"
+                allLocations.add(rootLocation)
+            }
+        }
+        return allLocations
     }
 
     ScreenDefinition getScreenDefinition(String location) {
@@ -203,7 +211,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return sb.toString()
     }
     List<String> getScreenDisplayInfo(String rootLocation, int levels) {
-        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null)
+        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null, 0)
         List<String> infoList = []
         addScreenDisplayInfo(infoList, rootInfo, 0, levels)
         return infoList
@@ -225,11 +233,20 @@ public class ScreenFacadeImpl implements ScreenFacade {
         }
     }
 
+    List<ScreenInfo> getScreenInfoList(String rootLocation, int levels) {
+        ScreenInfo rootInfo = new ScreenInfo(getScreenDefinition(rootLocation), null, null, 0)
+        List<ScreenInfo> infoList = []
+        infoList.add(rootInfo)
+        rootInfo.addChildrenToList(infoList, levels)
+        return infoList
+    }
+
     class ScreenInfo {
         ScreenDefinition sd
         SubscreensItem ssi
         ScreenInfo parentInfo
-        Map<String, ScreenInfo> subscreenInfoByName = [:]
+        Map<String, ScreenInfo> subscreenInfoByName = new TreeMap()
+        int level
         String name
 
         boolean isNonPlaceholder = false
@@ -239,10 +256,11 @@ public class ScreenFacadeImpl implements ScreenFacade {
         int sections = 0, allSubscreensSections = 0
         int transitions = 0, allSubscreensTransitions = 0
 
-        ScreenInfo(ScreenDefinition sd, SubscreensItem ssi, ScreenInfo parentInfo) {
+        ScreenInfo(ScreenDefinition sd, SubscreensItem ssi, ScreenInfo parentInfo, int level) {
             this.sd = sd
             this.ssi = ssi
             this.parentInfo = parentInfo
+            this.level = level
             this.name = ssi ? ssi.getName() : sd.getScreenName()
 
             subscreens = sd.subscreensByName.size()
@@ -273,7 +291,21 @@ public class ScreenFacadeImpl implements ScreenFacade {
                     logger.warn("While getting ScreenInfo screen not found for ${curSsi.getName()} at: ${curSsi.getLocation()}")
                     continue
                 }
-                subscreenInfoByName.put(ssEntry.getKey(), new ScreenInfo(ssSd, curSsi, this))
+                subscreenInfoByName.put(ssEntry.getKey(), new ScreenInfo(ssSd, curSsi, this, level+1))
+            }
+        }
+
+        String getIndentedName() {
+            StringBuilder sb = new StringBuilder()
+            for (int i = 0; i < level; i++) sb.append("- ")
+            sb.append(" ").append(name)
+            return sb.toString()
+        }
+
+        void addChildrenToList(List<ScreenInfo> infoList, int maxLevel) {
+            for (ScreenInfo si in subscreenInfoByName.values()) {
+                infoList.add(si)
+                if (maxLevel > level) si.addChildrenToList(infoList, maxLevel)
             }
         }
     }
