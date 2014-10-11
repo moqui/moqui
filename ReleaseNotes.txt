@@ -58,12 +58,15 @@ New Features:
     name in the path is searched for in the subscreen hierarchy from the
     root screen; can also find content this way; note that this may
     involve loading a lot of screen definitions and in dev mode will be
-    a LOT slower, but in production (cache timeouts turned off) the full
+    slower, but in production (cache timeouts turned off) the full
     expanded path is cached as are the screen definitions so there is very
     little overhead
   - To help with XML Screen loading overhead, especially in dev mode with
     timeouts turned on, now only reloads if the file's last modified time
     has changed
+  - Added date-period form field widget to show drop-downs for
+    this/next/last day/week/month/year as an alternative to an explicit
+    date range
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
