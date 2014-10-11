@@ -91,6 +91,14 @@ class ServiceFacadeImpl implements ServiceFacade {
         // TODO: add a job to delete scheduler history
     }
 
+    void warmCache()  {
+        logger.info("Warming cache for all services")
+        for (String serviceName in getKnownServiceNames()) {
+            try { getServiceDefinition(serviceName) }
+            catch (Throwable t) { logger.warn("Error warming service cache: ${t.toString()}") }
+        }
+    }
+
     void destroy() {
         // destroy all service runners
         for (ServiceRunner sr in serviceRunners.values()) sr.destroy()

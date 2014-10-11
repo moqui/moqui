@@ -7,7 +7,7 @@
 
     <tools enable-elasticsearch="true" enable-camel="false"/>
 
-    <cache-list>
+    <cache-list warm-on-start="true">
         <!-- Production mode by default - No expiration of conf and impl artifacts. -->
         <cache name="entity.definition" expire-time-idle="0" expire-time-live="0" max-elements="2000"/>
         <cache name="entity.location" expire-time-idle="0" expire-time-live="0" max-elements="2000"/>
@@ -29,6 +29,7 @@
         <cache name="screen.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="screen.template.mode" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
         <cache name="screen.template.location" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
+        <cache name="screen.find.path" expire-time-idle="0" expire-time-live="0" max-elements="1000"/>
 
         <cache name="resource.xml-actions.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
         <cache name="resource.groovy.location" expire-time-idle="0" expire-time-live="0" max-elements="10000"/>
@@ -235,12 +236,14 @@
                 <xa-properties databaseName="${moqui.runtime}/db/derby/MoquiTransactional" createDatabase="create"/>
             </inline-jdbc>
         </datasource>
-        <!- - Above the nosql group is in the transactional db by default. To use OrientDB use this instead:
+        -->
+        <!-- Above the nosql group is in the transactional db by default. To use OrientDB use this instead: -->
+        <!-- NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX -->
+        <!--
         <datasource group-name="nosql" object-factory="org.moqui.impl.entity.orientdb.OrientDatasourceFactory"
                 startup-add-missing="true">
-            <!- - NOTE: startup-add-missing=true is required because OrientDB doesn't allow class create in a TX - ->
             <inline-other uri="local:${ORIENTDB_HOME}/databases/MoquiNoSql" username="admin" password="admin"/>
-        </datasource> - ->
+        </datasource>
         -->
 
         <!-- The tenantcommon group can also in the same DB, but MUST have a separate definition for multi-tenant to work -->

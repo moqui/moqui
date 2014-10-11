@@ -19,14 +19,16 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 // maybe in the future: repositories { mavenCentral() }
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
+    flatDir name: 'localLibCamel', dirs: frameworkDir.absolutePath + '/lib/camel'
     flatDir name: 'localLibSearch', dirs: frameworkDir.absolutePath + '/lib/search'
-    flatDir name: 'localLibKie', dirs: projectDir.absolutePath + '/lib/kie'
+    flatDir name: 'localLibKie', dirs: frameworkDir.absolutePath + '/lib/kie'
     flatDir name: 'localLibOrientDb', dirs: frameworkDir.absolutePath + '/lib/orientdb'
     flatDir name: 'moquiLib', dirs: frameworkDir.absolutePath + '/build/libs'
 }
 
 dependencies {
     compile fileTree(dir: frameworkDir.absolutePath + '/lib', includes: ['*.jar'])
+    compile fileTree(dir: frameworkDir.absolutePath + '/lib/camel', includes: ['*.jar'])
     compile fileTree(dir: frameworkDir.absolutePath + '/lib/search', includes: ['*.jar'])
     compile fileTree(dir: frameworkDir.absolutePath + '/lib/kie', includes: ['*.jar'])
     compile fileTree(dir: frameworkDir.absolutePath + '/lib/orientdb', includes: ['*.jar'])

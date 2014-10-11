@@ -384,6 +384,20 @@ class StupidUtilities {
         }
         return newNode
     }
+    static String nodeText(Node theNode) {
+        List<String> textList = theNode.localText()
+        if (textList) {
+            if (textList.size() == 1) {
+                return textList.first()
+            } else {
+                StringBuilder sb = new StringBuilder()
+                for (String txt in textList) sb.append(txt).append("\n")
+                return sb.toString()
+            }
+        } else {
+            return ""
+        }
+    }
 
     static String elementValue(Element element) {
         if (element == null) return null

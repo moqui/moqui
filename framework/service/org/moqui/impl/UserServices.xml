@@ -87,6 +87,7 @@ This Work includes contributions authored by David E. Jones, not as a
                     </entity-find-one>
                 </else>
             </if>
+            <if condition="!userAccount"><return error="true" message="Could not find user with username ${username}"/></if>
             <set field="userId" from="userAccount.userId"/>
 
             <!-- compare the passwords, encrypted -->

@@ -15,39 +15,62 @@ to keep them separate from add-on components.
 
 New Features:
 
+- Updated Apache Camel to 2.14.0, Apache Derby to 10.11.1.1,
+  Apache FOP to 1.1 (now includes Batik 1.7), Apache Lucene to 4.9.1,
+  Apache Shiro to 1.2.3, Ehcache to 2.8.3, ElasticSearch to 1.3.4,
+  Groovy to 2.3.7, Liquibase to 3.2.2, OrientDB to 1.7.9, Winstone to 1.0.6
 - Updated Metis Admin Template to version 2.2.7, thanks to contribution
   from Osman Nuri Okumuş (onokumus), the author of Metis; this updates
   jQuery to 2.1.1, jQuery UI to 1.11.0, Bootstrap to 3.2.0, and various
   other updates
-- Added tree element for XML Screen that renders a lazy-loaded tree with
-  links using jstree (currently version 3.0.3); see the wiki.xml screen
-  in HiveMind for an example of its use
-- Various XML Screen elements have more consistent id behavior with string
-  expansion and adding the listEntryIndex suffix, which is now also set
-  in section-iterate (in addition to form-list as before)
-- Added container-box to XML Screen with header, toolbar, and body.
-- Improved container element in XML Screen with better id handling and
-  a type which (in HTML) translates to the tag used.
-- Added @style attributes to link and label in XML Screen
-- Added in operator (_op) for searchFormInputs/search-form-inputs
-- Added section-include element to include a section from another screen
-- In a form-list with no @list-entry attribute creates a
-  ${@list}_entry field along with the _index and _has_next fields for
-  convenience in getting at the object in the List (which implements the
-  Map interface, often an EntityValue and nice to get at it directly)
-- Added form-single.field-layout.field-row-big element to do what field-row
-  used to do with more than 2 field-ref elements, putting all fields in a
-  single column
-- Put CSS references back in theme instead of direct in webroot.xml
-- Added support for header logo, header title, body class, and footer items
-  in theme to make applications easier to brand through theme data
-- Added theme support for header navbar items with FTL snippets coming
-  from the database theme records, example in the Mantle MyAccount app to
-  show count of unread incoming messages and link to view them
-- Added dark/light pseudo-theme switcher, switches body classes from
-  Bootstrap on the fly and saves user preference (default comes from theme)
-- Added entity.field.@default attribute with a Groovy expression to set a
-  default for a field based on other fields, constants, etc
+- Added cache warming on start (disabled in dev conf)
+- XML Screen:
+  - Added tree element for XML Screen that renders a lazy-loaded tree with
+    links using jstree (currently version 3.0.3); see the wiki.xml screen
+    in HiveMind for an example of its use
+  - Added section-include element to include a section from another screen
+  - Various XML Screen elements have more consistent id behavior with
+    string expansion and adding the listEntryIndex suffix, which is now
+    also set in section-iterate (in addition to form-list as before)
+  - Added container-box to XML Screen with header, toolbar, and body
+  - Improved container element in XML Screen with better id handling and
+    a type which (in HTML) translates to the tag used.
+  - Added @style attributes to link and label in XML Screen
+  - In a form-list with no @list-entry attribute creates a
+    ${@list}_entry field along with the _index and _has_next fields for
+    convenience in getting at the object in the List (which implements the
+    Map interface, often an EntityValue and nice to get at it directly)
+  - Added form-single.field-layout.field-row-big element to do what
+    field-row used to do with more than 2 field-ref elements, putting all
+    fields in a single column
+  - Put CSS references back in theme instead of direct in webroot.xml
+  - Added support for header logo, header title, body class, and footer
+    items in theme to make applications easier to brand through theme data
+  - Added theme support for header navbar items with FTL snippets coming
+    from the database theme records, example in the Mantle MyAccount app to
+    show count of unread incoming messages and link to view them
+  - Added dark/light pseudo-theme switcher, switches body classes from
+    Bootstrap on the fly and saves user preference (default comes from
+    theme)
+  - Links are now disabled when going to a screen the user is not
+    authorized for along with failed transition condition
+  - Screen paths can now start with a // and be a sparse path where each
+    name in the path is searched for in the subscreen hierarchy from the
+    root screen; can also find content this way; note that this may
+    involve loading a lot of screen definitions and in dev mode will be
+    slower, but in production (cache timeouts turned off) the full
+    expanded path is cached as are the screen definitions so there is very
+    little overhead
+  - To help with XML Screen loading overhead, especially in dev mode with
+    timeouts turned on, now only reloads if the file's last modified time
+    has changed
+  - Added date-period form field widget to show drop-downs for
+    this/next/last day/week/month/year as an alternative to an explicit
+    date range
+- Entity Facade:
+  - Added in operator (_op) for searchFormInputs/search-form-inputs
+  - Added entity.field.@default attribute with a Groovy expression to set a
+    default for a field based on other fields, constants, etc
 
 Bug Fixes:
 

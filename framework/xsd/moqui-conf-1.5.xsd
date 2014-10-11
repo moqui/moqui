@@ -44,7 +44,10 @@ This Work includes contributions authored by David E. Jones, not as a
 
     <!-- ===================== Cache Conf Root ===================== -->
     <xs:element name="cache-list">
-        <xs:complexType><xs:sequence><xs:element maxOccurs="unbounded" ref="cache"/></xs:sequence></xs:complexType>
+        <xs:complexType>
+            <xs:sequence><xs:element maxOccurs="unbounded" ref="cache"/></xs:sequence>
+            <xs:attribute name="warm-on-start" type="boolean" default="true"/>
+        </xs:complexType>
     </xs:element>
     <xs:element name="cache">
         <xs:complexType>

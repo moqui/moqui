@@ -147,6 +147,14 @@ class EntityFacadeImpl implements EntityFacade {
         }
     }
 
+    void warmCache()  {
+        logger.info("Warming cache for all entities")
+        for (String entityName in getAllEntityNames()) {
+            try { getEntityDefinition(entityName) }
+            catch (Throwable t) { logger.warn("Error warming service cache: ${t.toString()}") }
+        }
+    }
+
     Set<String> getDatasourceGroupNames() {
         Set<String> groupNames = new TreeSet<String>()
         for (Node datasourceNode in this.ecfi.getConfXmlRoot()."entity-facade"[0]."datasource")

@@ -55,7 +55,7 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
         if (s.startsWith("@@")) {
             String specialHash = s.substring(2)
             if (specialHash == "text") {
-                return textNode != null ? textNode : (textNode = new FtlTextWrapper(groovyNode.text(), this))
+                return textNode != null ? textNode : (textNode = new FtlTextWrapper(StupidUtilities.nodeText(groovyNode), this))
             }
             // TODO: handle other special hashes? (see http://www.freemarker.org/docs/xgui_imperative_formal.html)
         }
@@ -71,14 +71,14 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
     }
 
     boolean isEmpty() {
-        return groovyNode.attributes().isEmpty() && groovyNode.children().isEmpty() && groovyNode.text().isEmpty()
+        return groovyNode.attributes().isEmpty() && groovyNode.children().isEmpty() && groovyNode.localText().isEmpty()
     }
 
     // TemplateNodeModel methods
 
     TemplateNodeModel getParentNode() {
         if (parentNode != null) return parentNode
-        parentNode = FtlNodeWrapper.wrapNode(groovyNode.parent())
+        parentNode = wrapNode(groovyNode.parent())
         return parentNode
     }
 
@@ -96,13 +96,13 @@ class FtlNodeWrapper implements TemplateNodeModel, TemplateSequenceModel, Templa
     int size() { return getSequenceList().size() }
     protected FtlNodeListWrapper getSequenceList() {
         // Looks like attributes should NOT go in the FTL children list, so just use the node.children()
-        if (allChildren == null) allChildren = groovyNode.text() ?
-            new FtlNodeListWrapper(groovyNode.text(), this) : new FtlNodeListWrapper(groovyNode.children(), this)
+        if (allChildren == null) allChildren = groovyNode.localText() ?
+            new FtlNodeListWrapper(groovyNode.localText(), this) : new FtlNodeListWrapper(groovyNode.children(), this)
         return allChildren
     }
 
     // TemplateScalarModel methods
-    String getAsString() { return groovyNode.text() }
+    String getAsString() { return StupidUtilities.nodeText(groovyNode) }
 
     @Override
     String toString() { return prettyPrintNode(groovyNode) }

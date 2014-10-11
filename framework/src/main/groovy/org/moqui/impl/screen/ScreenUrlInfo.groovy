@@ -105,7 +105,7 @@ class ScreenUrlInfo {
         hasActions = (targetTransition && targetTransition.actions)
         // if sri.screenUrlInfo is null it is because this object is not yet set to it, so set this to true as it "is" the current screen path
         inCurrentScreenPath = sri.screenUrlInfo ? sri.isInCurrentScreenPath(minimalPathNameList) : true
-        disableLink = targetTransition ? !targetTransition.checkCondition(sri.ec) : false
+        disableLink = (targetTransition && !targetTransition.checkCondition(sri.ec)) || !isPermitted()
     }
 
     boolean isPermitted() {
@@ -277,11 +277,6 @@ class ScreenUrlInfo {
     void initUrl() {
         ExecutionContext ec = sri.getEc()
 
-        if (this.fromScreenPath.startsWith("/")) {
-            this.fromSd = sri.getRootScreenDef()
-            this.fromPathList = []
-        }
-
         // if there are any ?... parameters parse them off and remove them from the string
         if (this.fromScreenPath.contains("?")) {
             String pathParmString = this.fromScreenPath.substring(this.fromScreenPath.indexOf("?")+1)
@@ -295,15 +290,51 @@ class ScreenUrlInfo {
             this.fromScreenPath = this.fromScreenPath.substring(0, this.fromScreenPath.indexOf("?"))
         }
 
-        List<String> tempPathNameList = []
-        tempPathNameList.addAll(this.fromPathList)
-        if (this.fromScreenPath) tempPathNameList.addAll(this.fromScreenPath.split("/") as List)
-        this.fullPathNameList = cleanupPathNameList(tempPathNameList, this.pathParameterMap)
+        if (fromScreenPath.startsWith("//")) {
+            // find the screen by name
+            fromSd = sri.getRootScreenDef()
+            fromPathList = []
+
+            String trimmedFromPath = fromScreenPath.substring(2)
+            List<String> originalPathNameList = trimmedFromPath.split("/") as List
+            originalPathNameList = cleanupPathNameList(originalPathNameList, pathParameterMap)
+
+            if (sri.getSfi().screenFindPathCache.containsKey(fromScreenPath)) {
+                List<String> cachedPathList = (List<String>) sri.getSfi().screenFindPathCache.get(fromScreenPath)
+                if (cachedPathList) {
+                    fromPathList = cachedPathList
+                    fullPathNameList = cachedPathList
+                } else {
+                    throw new ScreenResourceNotFoundException(fromSd, originalPathNameList, fromSd, fromScreenPath, null,
+                            new Exception("Could not find screen, transition or content matching path"))
+                }
+            } else {
+                List<String> expandedPathNameList = sri.getRootScreenDef().findSubscreenPath(originalPathNameList, ec.web ? ec.web.request.method : "")
+                sri.getSfi().screenFindPathCache.put(fromScreenPath, expandedPathNameList)
+                if (expandedPathNameList) {
+                    fromPathList = expandedPathNameList
+                    fullPathNameList = expandedPathNameList
+                } else {
+                    throw new ScreenResourceNotFoundException(fromSd, originalPathNameList, fromSd, fromScreenPath, null,
+                            new Exception("Could not find screen, transition or content matching path"))
+                }
+            }
+        } else {
+            if (this.fromScreenPath.startsWith("/")) {
+                this.fromSd = sri.getRootScreenDef()
+                this.fromPathList = []
+            }
+
+            List<String> tempPathNameList = []
+            tempPathNameList.addAll(fromPathList)
+            if (fromScreenPath) tempPathNameList.addAll(fromScreenPath.split("/") as List)
+            fullPathNameList = cleanupPathNameList(tempPathNameList, pathParameterMap)
+        }
 
         // encrypt is the default loop through screens if all are not secure/etc use http setting, otherwise https
-        this.requireEncryption = false
-        if (sri.rootScreenDef?.webSettingsNode?."@require-encryption" != "false") this.requireEncryption = true
-        if (sri.rootScreenDef.screenNode?."@begin-transaction" == "true") this.beginTransaction = true
+        requireEncryption = false
+        if (sri.rootScreenDef?.webSettingsNode?."@require-encryption" != "false") requireEncryption = true
+        if (sri.rootScreenDef.screenNode?."@begin-transaction" == "true") beginTransaction = true
 
         // start the render list with the from/base SD
         screenRenderDefList.add(fromSd)
@@ -313,7 +344,7 @@ class ScreenUrlInfo {
         //     to its response url, etc
         ScreenDefinition lastSd = sri.rootScreenDef
         extraPathNameList = new ArrayList<String>(fullPathNameList)
-        for (String pathName in this.fullPathNameList) {
+        for (String pathName in fullPathNameList) {
             String nextLoc = lastSd.getSubscreensItem(pathName)?.location
 
             if (!nextLoc) {

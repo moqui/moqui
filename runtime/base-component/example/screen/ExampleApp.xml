@@ -107,8 +107,8 @@ This Work includes contributions authored by David E. Jones, not as a
          http://localhost:8080/apps/example/localCamelExample
     -->
     <transition name="localCamelExample">
-        <service-call name="org.moqui.example.ExampleServices.localCamelExample"/>
-        <default-response url="."/>
+        <service-call name="org.moqui.example.ExampleServices.localCamelExample" web-send-json-response="true"/>
+        <default-response type="none"/>
     </transition>
 
     <subscreens default-item="Example">

@@ -5,6 +5,8 @@
 
     <tools enable-elasticsearch="true" enable-camel="false"/>
 
+    <cache-list warm-on-start="false"/>
+
     <server-stats>
         <!-- for dev testing tone down the stats, don't persist low-level hits -->
         <artifact-stats type="screen" persist-bin="true" persist-hit="true"/>

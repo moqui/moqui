@@ -11,6 +11,7 @@
  */
 package org.moqui.impl.entity
 
+import org.moqui.impl.context.ExecutionContextImpl
 import org.moqui.impl.context.TransactionCache
 
 import java.sql.ResultSet
@@ -231,8 +232,11 @@ abstract class EntityFindBase implements EntityFind {
                     case "in":
                         if (value) {
                             Collection valueList = null
-                            if (value instanceof String) { valueList = value.split(",") }
-                            else if (value instanceof Collection) { valueList = value }
+                            if (value instanceof String) {
+                                valueList = value.split(",")
+                            } else if (value instanceof Collection) {
+                                valueList = value
+                            }
                             if (valueList) {
                                 ec = efi.conditionFactory.makeCondition(fn,
                                         not ? EntityCondition.NOT_IN : EntityCondition.IN, valueList)
@@ -242,6 +246,40 @@ abstract class EntityFindBase implements EntityFind {
                         break;
                 }
                 if (ec != null) this.condition(ec)
+            } else if (inf.containsKey(fn + "_period")) {
+                String period = ((String) inf.get(fn + "_period") ?: "day").toLowerCase()
+                int offset = (inf.get(fn + "_poffset") ?: "0") as int
+
+                ExecutionContext ec = efi.getEcfi().getExecutionContext()
+                Calendar basisCal = ec.user.getCalendarSafe()
+                basisCal.setTime(new java.sql.Date(ec.user.nowTimestamp.time))
+                Calendar fromCal = basisCal
+                Calendar thruCal = null
+                if (period == "week") {
+                    fromCal.set(Calendar.DAY_OF_WEEK, fromCal.getFirstDayOfWeek())
+                    fromCal.add(Calendar.WEEK_OF_YEAR, offset)
+                    thruCal = (Calendar) fromCal.clone()
+                    thruCal.add(Calendar.WEEK_OF_YEAR, 1)
+                } else if (period == "month") {
+                    fromCal.set(Calendar.DAY_OF_MONTH, fromCal.getActualMinimum(Calendar.DAY_OF_MONTH))
+                    fromCal.add(Calendar.MONTH, offset)
+                    thruCal = (Calendar) fromCal.clone()
+                    thruCal.add(Calendar.MONTH, 1)
+                } else if (period == "year") {
+                    fromCal.set(Calendar.DAY_OF_YEAR, fromCal.getActualMinimum(Calendar.DAY_OF_YEAR))
+                    fromCal.add(Calendar.YEAR, offset)
+                    thruCal = (Calendar) fromCal.clone()
+                    thruCal.add(Calendar.YEAR, 1)
+                } else {
+                    // default to day
+                    fromCal.add(Calendar.DAY_OF_YEAR, offset)
+                    thruCal = (Calendar) fromCal.clone()
+                    thruCal.add(Calendar.DAY_OF_YEAR, 1)
+                }
+                this.condition(efi.conditionFactory.makeCondition(fn,
+                        EntityCondition.GREATER_THAN_EQUAL_TO, new Timestamp(fromCal.getTimeInMillis())))
+                this.condition(efi.conditionFactory.makeCondition(fn,
+                        EntityCondition.LESS_THAN, new Timestamp(thruCal.getTimeInMillis())))
             } else {
                 // these will handle range-find and date-find
                 Object fromValue = inf.get(fn + "_from")

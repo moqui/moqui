@@ -436,13 +436,13 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 </#macro>
 <#macro linkFormLink linkNode linkFormId urlInfo>
     <#if urlInfo.disableLink>
-        <span<#if linkFormId?has_content> id="${linkFormId}"</#if><#if .node["@style"]?has_content> class="${.node["@style"]}"</#if>>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</span>
+        <a href="#"<#if linkFormId?has_content> id="${linkFormId}"</#if>class="<#if linkNode["@link-type"]! != "anchor" && linkNode["@link-type"]! != "hidden-form-link">btn btn-metis-5 btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</a>
     <#else>
         <#assign confirmationMessage = ec.resource.evaluateStringExpand(linkNode["@confirmation"]!, "")/>
         <#if (linkNode["@link-type"]! == "anchor" || linkNode["@link-type"]! == "anchor-button") ||
             ((!linkNode["@link-type"]?has_content || linkNode["@link-type"] == "auto") &&
              ((linkNode["@url-type"]?has_content && linkNode["@url-type"] != "transition") || (!urlInfo.hasActions)))>
-            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! == "anchor-button">btn btn-primary btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
+            <a href="${urlInfo.urlWithParams}"<#if linkFormId?has_content> id="${linkFormId}"</#if><#if linkNode["@target-window"]?has_content> target="${linkNode["@target-window"]}"</#if><#if confirmationMessage?has_content> onclick="return confirm('${confirmationMessage?js_string}')"</#if> class="<#if linkNode["@link-type"]! != "anchor">btn btn-primary btn-sm</#if><#if .node["@style"]?has_content> ${ec.resource.evaluateStringExpand(.node["@style"], "")}</#if>"><#if linkNode["@icon"]?has_content><i class="${linkNode["@icon"]}"></i></#if>
             <#t><#if linkNode["image"]?has_content><#visit linkNode["image"][0]><#else>${ec.resource.evaluateStringExpand(linkNode["@text"], "")}</#if>
             <#t></a>
         <#else>
@@ -1206,6 +1206,35 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
         <#t>${sri.appendToScriptWriter(afterFormScript)}
     </#if>
     </span>
+</#macro>
+
+<#macro "date-period">
+    <#assign id><@fieldId .node/></#assign>
+    <#assign curFieldName><@fieldName .node/></#assign>
+    <#assign fvOffset = ec.context.get(curFieldName + "_poffset")!>
+    <#assign fvPeriod = ec.context.get(curFieldName + "_period")!?lower_case>
+    <select name="${curFieldName}_poffset" class="chosen-select" id="${id}_poffset"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <#if (allowEmpty! != "false")>
+            <option value="">&nbsp;</option>
+        </#if>
+        <option value="0"<#if fvOffset == "0"> selected="selected"</#if>>This</option>
+        <option value="-1"<#if fvOffset == "-1"> selected="selected"</#if>>Last</option>
+        <option value="1"<#if fvOffset == "1"> selected="selected"</#if>>Next</option>
+    </select>
+    <select name="${curFieldName}_period" class="chosen-select" id="${id}_period"<#if .node?parent["@tooltip"]?has_content> data-toggle="tooltip" title="${.node?parent["@tooltip"]}"</#if>>
+        <#if (allowEmpty! != "false")>
+        <option value="">&nbsp;</option>
+        </#if>
+        <option<#if fvPeriod == "day"> selected="selected"</#if>>Day</option>
+        <option<#if fvPeriod == "week"> selected="selected"</#if>>Week</option>
+        <option<#if fvPeriod == "month"> selected="selected"</#if>>Month</option>
+        <option<#if fvPeriod == "year"> selected="selected"</#if>>Year</option>
+    </select>
+    <#assign afterFormScript>
+        $("#${id}_poffset").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });
+        $("#${id}_period").chosen({ search_contains:true, disable_search_threshold:10, inherit_select_classes:true });
+    </#assign>
+    <#t>${sri.appendToScriptWriter(afterFormScript)}
 </#macro>
 
 <#--
