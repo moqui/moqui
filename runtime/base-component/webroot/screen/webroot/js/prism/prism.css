@@ -1,4 +1,4 @@
-/* http://prismjs.com/download.html?themes=prism-okaidia&languages=markup+css+clike+javascript+java+groovy&plugins=line-numbers */
+/* http://prismjs.com/download.html?themes=prism-okaidia&languages=markup+css+clike+javascript+java+bash+sql+groovy&plugins=line-numbers+autolinker+file-highlight */
 /**
  * okaidia theme for JavaScript, CSS and HTML
  * Loosely based on Monokai textmate theme by http://www.monokai.nl/
@@ -129,7 +129,7 @@ pre.line-numbers > code {
 	pointer-events: none;
 	top: 0;
 	font-size: 100%;
-	left: -8.2em;
+    left: -8.2em;
 	width: 3em; /* works for line-numbers below 1000 lines */
 	letter-spacing: -1px;
 	border-right: 1px solid #999;
@@ -154,3 +154,6 @@ pre.line-numbers > code {
 			padding-right: 0.8em;
 			text-align: right;
 		}
+.token a {
+	color: inherit;
+}
