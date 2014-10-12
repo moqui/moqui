@@ -46,7 +46,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </drop-down>
             </default-field></field>
             <field name="submitButton"><default-field title="Select"><submit/></default-field></field>
-            <field-layout><field-row><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row></field-layout>
+            <field-layout><field-row-big><field-ref name="serviceName"/><field-ref name="submitButton"/></field-row-big></field-layout>
         </form-single>
         <section name="ServiceResultsSection">
             <condition><expression><![CDATA[serviceName && doingRun=="Y"]]></expression></condition>
