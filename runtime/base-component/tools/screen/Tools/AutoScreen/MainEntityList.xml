@@ -39,7 +39,7 @@ This Work includes contributions authored by David E. Jones, not as a
             </field>
             <field name="aen">
                 <header-field title="Master Entity" show-order-by="true"/>
-                <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}">
+                <default-field><link url="find" text="${ec.entity.getEntityDefinition(entityName).getPrettyName(null, null)}" link-type="anchor">
                     <parameter name="aen" from="fullEntityName"/>
                 </link></default-field>
             </field>
