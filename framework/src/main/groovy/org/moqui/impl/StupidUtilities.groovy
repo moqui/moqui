@@ -517,4 +517,31 @@ class StupidUtilities {
             default: throw new IllegalArgumentException("No equivalent Calendar field found for UOM ID [${uomId}]"); break
         }
     }
+
+    static void paginateList(String listName, String pageListName, Map context) {
+        if (!pageListName) pageListName = listName
+        List theList = (List) context.get(listName)
+        if (theList == null) theList = []
+
+        int pageIndex = (context.get("pageIndex") ?: 0) as int
+        int pageSize = (context.get("pageSize") ?: 20) as int
+
+        int count = theList.size()
+
+        // calculate the pagination values
+        int maxIndex = (new BigDecimal(count)).divide(pageSize, 0, BigDecimal.ROUND_DOWN) as int
+        int pageRangeLow = (pageIndex * pageSize) + 1
+        int pageRangeHigh = (pageIndex * pageSize) + pageSize
+        if (pageRangeHigh > count) pageRangeHigh = count
+
+        List pageList = theList.subList(pageRangeLow, pageRangeHigh)
+
+        context.put(pageListName, pageList)
+        context.put(pageListName + "Count", count)
+        context.put(pageListName + "PageIndex", pageIndex)
+        context.put(pageListName + "PageSize", pageSize)
+        context.put(pageListName + "PageMaxIndex", maxIndex)
+        context.put(pageListName + "PageRangeLow", pageRangeLow)
+        context.put(pageListName + "PageRangeHigh", pageRangeHigh)
+    }
 }
