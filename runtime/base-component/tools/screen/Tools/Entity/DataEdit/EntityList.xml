@@ -19,7 +19,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="pageSize" from="pageSize ?: 60"/>
         <set field="entityList" from="ec.entity.getAllEntitiesInfo(orderByField?:'+package', false, false)"/>
+        <script>StupidUtilities.paginateList("entityList", null, context)</script>
     </actions>
     <widgets>
         <form-list name="EntityList" list="entityList">
