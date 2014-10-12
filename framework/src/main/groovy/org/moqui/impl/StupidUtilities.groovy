@@ -534,7 +534,7 @@ class StupidUtilities {
         int pageRangeHigh = (pageIndex * pageSize) + pageSize
         if (pageRangeHigh > count) pageRangeHigh = count
 
-        List pageList = theList.subList(pageRangeLow, pageRangeHigh)
+        List pageList = theList.subList(pageRangeLow-1, pageRangeHigh)
 
         context.put(pageListName, pageList)
         context.put(pageListName + "Count", count)
