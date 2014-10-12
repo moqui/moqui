@@ -29,7 +29,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     protected final ExecutionContextFactoryImpl ecfi
 
     protected final Cache screenLocationCache
-    protected final Map<String, ScreenDefinition> screenLocationPermCache = new HashMap()
+    protected final Cache screenLocationPermCache
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
@@ -38,6 +38,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
     ScreenFacadeImpl(ExecutionContextFactoryImpl ecfi) {
         this.ecfi = ecfi
         this.screenLocationCache = ecfi.cacheFacade.getCache("screen.location")
+        this.screenLocationPermCache = ecfi.cacheFacade.getCache("screen.location.perm")
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
         this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
@@ -91,6 +92,10 @@ public class ScreenFacadeImpl implements ScreenFacade {
             if (permSd.sourceLastModified && screenRr.supportsLastModified() &&
                     screenRr.getLastModified() == permSd.sourceLastModified) {
                 //logger.warn("========= screen expired but hasn't changed so reusing: ${location}")
+
+                // call this just in case a new screen was added
+                permSd.populateSubscreens()
+
                 screenLocationCache.put(location, permSd)
                 return permSd
             } else {
