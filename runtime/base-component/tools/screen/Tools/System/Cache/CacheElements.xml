@@ -31,10 +31,9 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
-        <set field="displayLimit" from="displayLimit ?: 500"/>
+        <set field="pageSize" from="pageSize ?: 40"/>
         <set field="cacheElementList" from="ec.cache.getCache(cacheName)?.makeElementInfoList(orderByField?:'+key')"/>
-        <set field="totalSize" from="cacheElementList.size()"/>
-        <if condition="cacheElementList.size() &gt; displayLimit"><set field="cacheElementList" from="cacheElementList.subList(0, displayLimit)"/></if>
+        <script>StupidUtilities.paginateList("cacheElementList", null, context)</script>
     </actions>
     <widgets>
         <label text="Elements for Cache [${cacheName}]" type="h3"/>
@@ -68,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <default-field><display also-hidden="false"/></default-field>
             </field>
             <field name="clear">
-                <default-field><link text="Clear" url="clearCacheElement"><parameter name="key"/></link></default-field>
+                <default-field><link text="Clear" url="clearCacheElement" link-type="anchor"><parameter name="key"/></link></default-field>
             </field>
         </form-list>
     </widgets>

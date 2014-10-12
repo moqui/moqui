@@ -35,7 +35,7 @@ This Work includes contributions authored by David E. Jones, not as a
         <form-list name="CacheList" list="cacheList">
             <field name="name">
                 <header-field show-order-by="true"/>
-                <default-field><link text="${name}" url="cacheElements"><parameter name="cacheName" from="name"/></link></default-field>
+                <default-field><link text="${name}" url="cacheElements" link-type="anchor"><parameter name="cacheName" from="name"/></link></default-field>
             </field>
             <field name="size">
                 <header-field show-order-by="true"/>
@@ -67,7 +67,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 </default-field>
             </field>
             <field name="clear">
-                <default-field><link text="Clear" url="clearCache"><parameter name="cacheName" from="name"/></link></default-field>
+                <default-field><link text="Clear" url="clearCache" link-type="anchor"><parameter name="cacheName" from="name"/></link></default-field>
             </field>
         </form-list>
     </widgets>
