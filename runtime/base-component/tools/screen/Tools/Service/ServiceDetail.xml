@@ -20,9 +20,13 @@ This Work includes contributions authored by David E. Jones, not as a
         <default-response url="../ServiceRun"/>
     </transition>
 
+    <pre-actions>
+        <script>html_scripts.add("/js/prism/prism.js")</script>
+        <script>html_stylesheets.add("/js/prism/prism.css")</script>
+    </pre-actions>
     <actions>
-        <set field="serviceDefinition" from="ec.service.getServiceDefinition(serviceName)"/>
-        <set field="serviceNode" from="serviceDefinition.getServiceNode()"/>
+        <set field="sd" from="ec.service.getServiceDefinition(serviceName)"/>
+        <set field="serviceNode" from="sd.getServiceNode()"/>
         <set field="inParameterNodes" from="serviceNode.'in-parameters'.'parameter'"/>
         <set field="outParameterNodes" from="serviceNode.'out-parameters'.'parameter'"/>
     </actions>
@@ -30,9 +34,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <label type="h2" text="${serviceName}"/>
         <label type="strong" text="${serviceNode.'description'?.getAt(0)?.value()?.getAt(0) ?: ''}" display-if-empty="false"/>
         <!-- <label type="p" text="${serviceNode.attributes()}"/> -->
-        <label type="p" text="Authenticate: ${serviceDefinition.getAuthenticate()}"/>
-        <label type="p" text="Service Type: ${serviceDefinition.getServiceType()}${serviceDefinition.getLocation() ? ', Location: ' + serviceDefinition.getLocation() : ''}${serviceDefinition.getMethod() ? ', Method: ' + serviceDefinition.getMethod() : ''}"/>
-        <label type="p" text="Tx Ignore: ${serviceDefinition.getTxIgnore()}, Force New: ${serviceDefinition.getTxForceNew()}, Use Tx Cache: ${serviceDefinition.getTxUseCache()}, Timeout: ${serviceDefinition.getTxTimeout()}"/>
+        <label type="p" text="Authenticate: ${sd.getAuthenticate()}"/>
+        <label type="p" text="Service Type: ${sd.getServiceType()}${sd.getLocation() ? ', Location: ' + sd.getLocation() : ''}${sd.getMethod() ? ', Method: ' + sd.getMethod() : ''}"/>
+        <label type="p" text="Tx Ignore: ${sd.getTxIgnore()}, Force New: ${sd.getTxForceNew()}, Use Tx Cache: ${sd.getTxUseCache()}, Timeout: ${sd.getTxTimeout()}"/>
 
         <label type="h3" text="In Parameters"/>
         <form-list name="InParameters" list="inParameterNodes" list-entry="parameterNode" skip-form="true">
@@ -57,5 +61,24 @@ This Work includes contributions authored by David E. Jones, not as a
             <field name="description"><default-field><display text="${parameterNode.'description'?.getAt(0)?.value()?.getAt(0) ?: ''}"/></default-field></field>
             <field name="entityField"><default-field><display text="${parameterNode.'@entity-name' ?: ''}${parameterNode.'@field-name' ? '.' + parameterNode.'@field-name' : ''}"/></default-field></field>
         </form-list>
+
+        <section name="XmlActionDisplaySection"><condition><expression>sd.xmlAction</expression></condition>
+            <widgets>
+                <label text="XML Actions" type="h3"/>
+                <container type="pre" style="line-numbers"><label text="${org.moqui.impl.StupidUtilities.encodeForXmlAttribute(org.moqui.impl.FtlNodeWrapper.prettyPrintNode(serviceNode.actions[0]))}"
+                        type="code" style="language-markup" encode="false"/></container>
+
+                <label text="Generated Groovy" type="h3"/>
+                <container type="pre" style="line-numbers"><label text="${sd.xmlAction.groovyString}" type="code"
+                        style="language-groovy" encode="false"/></container>
+            </widgets>
+        </section>
+        <section name="LocationDisplaySection"><condition><expression>sd.serviceNode."@location"</expression></condition>
+            <widgets>
+                <label text="Script" type="h3"/>
+                <container type="pre" style="line-numbers"><label text="${ec.resource.getLocationText(sd.serviceNode.'@location', false)}"
+                        type="code" style="language-groovy" encode="false"/></container>
+            </widgets>
+        </section>
     </widgets>
 </screen>
