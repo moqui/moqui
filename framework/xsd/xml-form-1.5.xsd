@@ -328,6 +328,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:simpleType><xs:restriction base="xs:token">
                     <xs:enumeration value="p"/>
                     <xs:enumeration value="pre"/>
+                    <xs:enumeration value="code"/>
                     <xs:enumeration value="span"/>
                     <xs:enumeration value="strong"/>
                     <xs:enumeration value="h1"/>
