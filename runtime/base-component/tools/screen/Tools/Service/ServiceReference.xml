@@ -22,16 +22,18 @@ This Work includes contributions authored by David E. Jones, not as a
     </transition>
 
     <actions>
+        <set field="pageSize" from="pageSize ?: 40"/>
         <set field="knownServiceNames" from="ec.service.knownServiceNames"/>
         <set field="filteredServiceNames" from="new ArrayList(knownServiceNames)"/>
         <script>
-            if (serviceName) {
-                Iterator theIterator = filteredServiceNames.iterator()
-                while (theIterator.hasNext()) {
-                    String curSn = (String) theIterator.next()
-                    if (!curSn.contains(serviceName)) theIterator.remove()
-                }
+        if (serviceName) {
+            Iterator theIterator = filteredServiceNames.iterator()
+            while (theIterator.hasNext()) {
+                String curSn = (String) theIterator.next()
+                if (!curSn.contains(serviceName)) theIterator.remove()
             }
+        }
+        StupidUtilities.paginateList("filteredServiceNames", null, context)
         </script>
     </actions>
     <widgets>
