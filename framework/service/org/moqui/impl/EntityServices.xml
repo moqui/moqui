@@ -163,7 +163,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 // calculate the pagination values
                 documentListPageIndex = pageIndex
                 documentListPageSize = pageSize
-                documentListPageMaxIndex = ((BigDecimal) documentListCount).divide(documentListPageSize, 0, BigDecimal.ROUND_DOWN) as int
+                documentListPageMaxIndex = ((BigDecimal) documentListCount-1).divide(documentListPageSize, 0, BigDecimal.ROUND_DOWN) as int
                 documentListPageRangeLow = documentListPageIndex * documentListPageSize + 1
                 documentListPageRangeHigh = (documentListPageIndex * documentListPageSize) + documentListPageSize
                 if (documentListPageRangeHigh > documentListCount) documentListPageRangeHigh = documentListCount
