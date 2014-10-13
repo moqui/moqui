@@ -170,4 +170,52 @@ This Work includes contributions authored by David E. Jones, not as a
             </script>
         </actions>
     </service>
+
+    <service verb="clone" noun="DataDocument">
+        <in-parameters>
+            <parameter name="dataDocumentId" required="true"/>
+            <parameter name="newDataDocumentId" required="true"/>
+            <parameter name="newIndexName" required="true"/>
+            <parameter name="copyConditions" default="false" type="Boolean"/>
+            <parameter name="copyLinks" default="false" type="Boolean"/>
+        </in-parameters>
+        <actions>
+            <entity-find-one entity-name="moqui.entity.document.DataDocument" value-field="dataDocument" cache="false"/>
+            <set field="dataDocument.dataDocumentId" from="newDataDocumentId"/>
+            <set field="dataDocument.indexName" from="newIndexName"/>
+            <entity-create value-field="dataDocument"/>
+
+            <entity-find entity-name="moqui.entity.document.DataDocumentField" list="ddfList">
+                <econdition field-name="dataDocumentId"/></entity-find>
+            <iterate list="ddfList" entry="ddf">
+                <set field="ddf.dataDocumentId" from="newDataDocumentId"/>
+                <entity-create value-field="ddf"/>
+            </iterate>
+
+            <entity-find entity-name="moqui.entity.document.DataDocumentRelAlias" list="ddraList">
+                <econdition field-name="dataDocumentId"/></entity-find>
+            <iterate list="ddraList" entry="ddra">
+                <set field="ddra.dataDocumentId" from="newDataDocumentId"/>
+                <entity-create value-field="ddra"/>
+            </iterate>
+
+            <if condition="copyConditions">
+                <entity-find entity-name="moqui.entity.document.DataDocumentCondition" list="ddcList">
+                    <econdition field-name="dataDocumentId"/></entity-find>
+                <iterate list="ddcList" entry="ddc">
+                    <set field="ddc.dataDocumentId" from="newDataDocumentId"/>
+                    <entity-create value-field="ddc"/>
+                </iterate>
+            </if>
+
+            <if condition="copyLinks">
+                <entity-find entity-name="moqui.entity.document.DataDocumentLink" list="ddlList">
+                    <econdition field-name="dataDocumentId"/></entity-find>
+                <iterate list="ddlList" entry="ddl">
+                    <set field="ddl.dataDocumentId" from="newDataDocumentId"/>
+                    <entity-create value-field="ddl"/>
+                </iterate>
+            </if>
+        </actions>
+    </service>
 </services>
