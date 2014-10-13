@@ -13,6 +13,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
 
+    <transition name="serviceReference"><default-response url="//tools/ServiceReference"/></transition>
+
     <actions>
         <set field="levels" from="levels ? levels as int : 2"/>
         <set field="entityInfoList" from="ec.entity.getAllEntityInfo(levels)"/>
@@ -30,7 +32,9 @@ This Work includes contributions authored by David E. Jones, not as a
         <label text="Service Stats" type="h3"/>
         <label text="Services: ${ec.service.getKnownServiceNames().size()}, SECA rules: ${ec.service.getSecaRuleCount()}" type="p"/>
         <form-list name="ServiceInfoList" list="serviceInfoList" skip-form="true">
-            <field name="name"><default-field><display/></default-field></field>
+            <field name="name"><default-field>
+                <link url="serviceReference" text="${name}" parameter-map="[serviceName:name]" link-type="anchor"/>
+            </default-field></field>
             <field name="services"><default-field><display/></default-field></field>
         </form-list>
 

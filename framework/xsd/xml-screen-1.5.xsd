@@ -611,6 +611,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         <xs:enumeration value="header"/>
                         <xs:enumeration value="footer"/>
                         <xs:enumeration value="code"/>
+                        <xs:enumeration value="pre"/>
                     </xs:restriction>
                 </xs:simpleType>
             </xs:attribute>

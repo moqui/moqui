@@ -309,6 +309,9 @@ This Work includes contributions authored by David E. Jones, not as a
                     default-response points to instead of a URL to this transition.</xs:documentation></xs:annotation>
             </xs:attribute>
             <xs:attribute name="style" type="xs:string"/>
+            <xs:attribute name="dynamic-load-id" type="xs:string"><xs:annotation><xs:documentation>
+                If specified URL will be loaded into the dynamic-container with this ID.
+            </xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
     <xs:element name="image" substitutionGroup="StandaloneFields">
@@ -328,6 +331,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <xs:simpleType><xs:restriction base="xs:token">
                     <xs:enumeration value="p"/>
                     <xs:enumeration value="pre"/>
+                    <xs:enumeration value="code"/>
                     <xs:enumeration value="span"/>
                     <xs:enumeration value="strong"/>
                     <xs:enumeration value="h1"/>
