@@ -177,6 +177,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <field name="dataDocumentId" type="id" is-pk="true"/>
         <field name="label" type="text-short" is-pk="true"/>
         <field name="linkUrl" type="text-medium"/>
+        <field name="urlType" type="text-short" default="'plain'">
+            <description>Must match an option for the XML Screen link.@url-type attribute. Defaults to 'plain'.</description></field>
         <relationship type="one" related-entity-name="moqui.entity.document.DataDocument"/>
     </entity>
 
