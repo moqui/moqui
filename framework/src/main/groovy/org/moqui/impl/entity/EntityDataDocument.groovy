@@ -155,7 +155,8 @@ class EntityDataDocument {
         if (condition) mainFind.condition(condition)
         for (EntityValue dataDocumentCondition in dataDocumentConditionList)
             if (dataDocumentCondition.postQuery != "Y")
-                mainFind.condition((String) dataDocumentCondition.fieldNameAlias, dataDocumentCondition.fieldValue)
+                mainFind.condition((String) dataDocumentCondition.fieldNameAlias, (String) dataDocumentCondition.operator ?: 'equals',
+                        dataDocumentCondition.fieldValue)
 
         // create a condition with an OR list of date range comparisons to check that at least one member-entity has lastUpdatedStamp in range
         if (fromUpdateStamp != null || thruUpdatedStamp != null) {
