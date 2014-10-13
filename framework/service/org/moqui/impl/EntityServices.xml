@@ -128,6 +128,8 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <set field="fromOffset" from="pageIndex * pageSize"/>
             <set field="sizeLimit" from="pageSize"/>
+            <!-- if documentType is an empty String it will find no results! -->
+            <set field="documentType" from="documentType ?: null"/>
             <script>
                 /* useful docs for query API: http://www.elasticsearch.org/guide/reference/api/search/uri-request/ */
 
@@ -158,7 +160,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 }
 
                 // get the total search count
-                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
+                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setTypes(documentType).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
 
                 // calculate the pagination values
                 documentListPageIndex = pageIndex
