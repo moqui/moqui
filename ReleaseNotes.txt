@@ -25,6 +25,8 @@ New Features:
   other updates
 - Added cache warming on start (disabled in dev conf)
 - Various improvements to Tools screens for layout and pagination
+- Added convert#Uom service
+- Added clone#DataDocument service
 - XML Screen:
   - Added tree element for XML Screen that renders a lazy-loaded tree with
     links using jstree (currently version 3.0.3); see the wiki.xml screen
@@ -70,10 +72,15 @@ New Features:
     date range
   - Added link.@dynamic-load-id attribute to load a link into a
     dynamic-container using its ID
+  - Added 'screen' option for link.@url-type to refer directly to a screen
+    without going through a transition (technically transition can do this
+    too, but looks funny); made @url-type an expanded string
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
     default for a field based on other fields, constants, etc
+  - Added DataDocumentCondition.operator field, uses same operator values
+    as XML Actions econdition.@operator
 
 Bug Fixes:
 
@@ -89,6 +96,9 @@ Bug Fixes:
   the cache causing an attempt to read the original to get an updated value
 - Changed ResourceReference.init() to use ExecutionContextFactory instead
   of ExecutionContext for cases where the object is long-lived
+- Fixed search#DataDocuments issues with documentType parameter, adding it
+  to the count query (was getting wrong counts because it was left out),
+  set to null if an empty String as ElasticSearch treats that as a real one
 
 ===========================================================================
 Release 1.4.1 - 01 Aug 2014
