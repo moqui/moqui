@@ -143,7 +143,7 @@ ul.float-box li { background: #EEEEEE; display: inline-block; line-height: 18px;
     box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333; }
 
 .shaded-area { padding: 8px; margin-bottom: 8px; }
-span.shaded-area { display: inline-block; }
+span.shaded-area { display: inline-block; white-space: normal; }
 .bg-light .shaded-area { background: #EEE; -webkit-box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC;
     box-shadow: 0 0 0 1px #F8F8F8 inset, 0 0 0 1px #CCC; }
 .bg-dark .shaded-area { background: #333; -webkit-box-shadow: 0 0 0 1px #080808 inset, 0 0 0 1px #333;
@@ -251,6 +251,9 @@ input[type=radio], input[type=checkbox] { height: auto; }
 
 .bg-dark .jstree-clicked { background-color: #013 !important; }
 .bg-dark .jstree-anchor:hover { background-color: #222; }
+
+a.jstree-anchor { white-space: normal; }
+.jstree-default .jstree-anchor { height: auto; }
 
 .bg-dark pre.editable-label { background-color: #3a3a3a; border-color: #222; }
 .editable-label { color: rgb(66, 139, 202); }

@@ -381,8 +381,7 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
 
     <#assign afterScreenScript>
     $("#${.node["@name"]}").bind('select_node.jstree', function(e,data) {window.location.href = data.node.a_attr.href;}).jstree({
-        "plugins" : [ "themes" ],
-        "core" : { "themes" : { "url" : true, "dots" : true, "icons" : false }, "multiple" : false,
+        "core" : { "themes" : { "url" : false, "dots" : true, "icons" : false }, "multiple" : false,
             'data' : {
                 dataType: 'json', type: 'POST',
                 url: function (node) { return '${ajaxUrlInfo.url}'; },
