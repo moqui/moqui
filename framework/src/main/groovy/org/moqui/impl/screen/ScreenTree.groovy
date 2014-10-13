@@ -119,7 +119,13 @@ class ScreenTree {
                         cs.pop()
                     }
 
-                    Map subNodeMap = [id:id, text:text, a_attr:[href:urlInfo.getUrlWithParams()], li_attr:["treeNodeName":tn.treeNodeNode."@name"]]
+                    String urlText = urlInfo.getUrlWithParams()
+                    if (tn.linkNode."@dynamic-load-id") {
+                        String loadId = tn.linkNode."@dynamic-load-id"
+                        urlText = "javascript:\$('#${loadId}').load('${urlText}')"
+                    }
+
+                    Map subNodeMap = [id:id, text:text, a_attr:[href:urlText], li_attr:["treeNodeName":tn.treeNodeNode."@name"]]
                     if (((String) cs.get("treeOpenPath"))?.startsWith(id)) {
                         subNodeMap.state = [opened:true, selected:(cs.get("treeOpenPath") == id)]
                         subNodeMap.children = childNodeList

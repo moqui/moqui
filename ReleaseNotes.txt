@@ -68,6 +68,8 @@ New Features:
   - Added date-period form field widget to show drop-downs for
     this/next/last day/week/month/year as an alternative to an explicit
     date range
+  - Added link.@dynamic-load-id attribute to load a link into a
+    dynamic-container using its ID
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
