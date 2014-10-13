@@ -283,7 +283,7 @@ class ScreenUrlInfo {
             if (pathParmString) {
                 List<String> nameValuePairs = pathParmString.replaceAll("&amp;", "&").split("&") as List
                 for (String nameValuePair in nameValuePairs) {
-                    String[] nameValue = nameValuePair.substring(1).split("=")
+                    String[] nameValue = nameValuePair.substring(0).split("=")
                     if (nameValue.length == 2) this.pathParameterMap.put(nameValue[0], nameValue[1])
                 }
             }
