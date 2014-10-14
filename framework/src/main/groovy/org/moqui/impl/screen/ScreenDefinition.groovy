@@ -387,8 +387,11 @@ class ScreenDefinition {
         protected String name
         protected Class fromFieldGroovy = null
         protected Class valueGroovy = null
+        protected boolean required = false
+
         ParameterItem(Node parameterNode, String location) {
             this.name = parameterNode."@name"
+            if (parameterNode."@required" == "true") required = true
 
             if (parameterNode."@from") fromFieldGroovy = new GroovyClassLoader().parseClass(
                     (String) parameterNode."@from", StupidUtilities.cleanStringForJavaName("${location}.parameter_${name}.from_field"))

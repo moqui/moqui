@@ -75,6 +75,8 @@ New Features:
   - Added 'screen' option for link.@url-type to refer directly to a screen
     without going through a transition (technically transition can do this
     too, but looks funny); made @url-type an expanded string
+  - Added support for screen.parameter.@required attribute, show error
+    message instead of rendering screen if a parameter is not passed
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a

@@ -412,6 +412,8 @@ This Work includes contributions authored by David E. Jones, not as a
             <xs:attribute name="name" type="xs:string" use="required"/>
             <xs:attribute name="from" type="xs:string"/>
             <xs:attribute name="value" type="xs:string"/>
+            <xs:attribute name="required" default="false" type="boolean"><xs:annotation><xs:documentation>The parameter
+                element is used in many places, only some (such as screen.parameter) use this attribute.</xs:documentation></xs:annotation></xs:attribute>
         </xs:complexType>
     </xs:element>
 

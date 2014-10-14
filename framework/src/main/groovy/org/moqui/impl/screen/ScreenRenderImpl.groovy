@@ -61,6 +61,7 @@ class ScreenRenderImpl implements ScreenRender {
     protected ScreenUrlInfo screenUrlInfo = null
     protected Map<String, ScreenUrlInfo> subscreenUrlInfos = new HashMap()
     protected int screenPathIndex = 0
+    protected Set<String> stopRenderScreenLocations = new HashSet()
 
     protected String baseLinkUrl = null
     protected String servletContextPath = null
@@ -568,6 +569,17 @@ class ScreenRenderImpl implements ScreenRender {
                 return
             }
 
+            // we've run always and pre actions, it's now or never for required parameters so check them
+            for (ScreenDefinition sd in screenUrlInfo.screenRenderDefList) {
+                for (ScreenDefinition.ParameterItem pi in sd.getParameterMap().values()) {
+                    if (pi.required && ec.context.get(pi.name) == null) {
+                        ec.message.addError("Required parameter missing (${pi.name})")
+                        logger.warn("Tried to render screen [${sd.getLocation()}] without required parameter [${pi.name}], error message added and adding to stop list to not render")
+                        stopRenderScreenLocations.add(sd.getLocation())
+                    }
+                }
+            }
+
             // start rendering at the root section of the root screen
             ScreenDefinition renderStartDef = screenUrlInfo.screenRenderDefList[0]
             // if screenRenderDefList.size == 1 then it is the target screen, otherwise it's not
@@ -699,9 +711,11 @@ class ScreenRenderImpl implements ScreenRender {
         screenPathIndex++
         ScreenDefinition screenDef = screenUrlInfo.screenRenderDefList[screenPathIndex]
         try {
-            writer.flush()
-            screenDef.render(this, (screenUrlInfo.screenRenderDefList.size() - 1) == screenPathIndex)
-            writer.flush()
+            if (!stopRenderScreenLocations.contains(screenDef.getLocation())) {
+                writer.flush()
+                screenDef.render(this, (screenUrlInfo.screenRenderDefList.size() - 1) == screenPathIndex)
+                writer.flush()
+            }
         } catch (Throwable t) {
             logger.error("Error rendering screen [${screenDef.location}]", t)
             return "Error rendering screen [${screenDef.location}]: ${t.toString()}"
