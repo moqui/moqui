@@ -14,8 +14,8 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Edit" default-menu-index="3">
 
-    <parameter name="aen"/><!-- Auto Entity Name -->
-    <parameter name="den"/><!-- Detail Entity Name -->
+    <parameter name="aen" required="true"/><!-- Auto Entity Name -->
+    <parameter name="den" required="true"/><!-- Detail Entity Name -->
 
     <transition name="list"><default-response url="../../MainEntityList"/></transition>
     <transition name="find"><default-response url="../../AutoFind"/></transition>

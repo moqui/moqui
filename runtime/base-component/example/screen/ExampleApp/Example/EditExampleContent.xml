@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Content" default-menu-index="4">
     
-    <parameter name="exampleId"/>
+    <parameter name="exampleId" required="true"/>
 
     <transition name="createExampleContent">
         <service-call name="create#ExampleContent"/>

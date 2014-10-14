@@ -13,6 +13,8 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
 
+    <parameter name="visitId" required="true"/>
+
     <actions>
         <entity-find-one entity-name="moqui.server.Visit" value-field="fieldValues"/>
         <entity-find entity-name="moqui.server.ArtifactHit" list="artifactHitList">

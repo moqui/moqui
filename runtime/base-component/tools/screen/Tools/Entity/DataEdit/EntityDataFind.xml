@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Find" default-menu-index="2">
 
-    <parameter name="entityName"/>
+    <parameter name="entityName" required="true"/>
 
     <transition name="list"><default-response url="../EntityList"/></transition>
     <transition name="find"><default-response url="."/></transition>

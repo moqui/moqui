@@ -13,12 +13,10 @@ This Work includes contributions authored by David E. Jones, not as a
 <screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd">
 
-    <transition name="visitDetail">
-        <default-response url="../VisitDetail"/>
-    </transition>
+    <transition name="visitDetail"><default-response url="../VisitDetail"/></transition>
 
     <actions>
-        <entity-find entity-name="moqui.server.Visit" list="visitList" limit="50">
+        <entity-find entity-name="moqui.server.Visit" list="visitList">
             <search-form-inputs default-order-by="-fromDate"/>
         </entity-find>
     </actions>
