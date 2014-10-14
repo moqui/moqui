@@ -147,7 +147,13 @@ This Work includes contributions authored by David E. Jones, not as a
 
                 // get the search hits
                 SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)
-                        .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit).execute().actionGet().getHits()
+                        .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit).setFetchSource(true).execute().actionGet().getHits()
+                for (SearchHit hit in hits) {
+                    Map document = hit.getSource()
+                    documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
+                }
+
+                /* the old approach, without .setFetchSource(true)
                 if (hits.getTotalHits() > 0) {
                     MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
                     for (SearchHit hit in hits) mgrb.add(hit.getIndex(), hit.getType(), hit.getId())
@@ -158,6 +164,7 @@ This Work includes contributions authored by David E. Jones, not as a
                         documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
                     }
                 }
+                 */
 
                 // get the total search count
                 documentListCount = ec.elasticSearchClient.prepareCount(indexName).setTypes(documentType).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
