@@ -78,6 +78,11 @@ New Features:
     too, but looks funny); made @url-type an expanded string
   - Added support for screen.parameter.@required attribute, show error
     message instead of rendering screen if a parameter is not passed
+  - XML Form text-line auto-complete now passes through parameters defined
+    on the screen and transition
+  - Added XML Form text-line.ac-show-value attribute which defaults to true
+    and if set to false doesn't use the span by the input box to show what
+    was selected
 - Entity Facade:
   - Added in operator (_op) for searchFormInputs/search-form-inputs
   - Added entity.field.@default attribute with a Groovy expression to set a
