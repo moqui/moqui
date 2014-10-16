@@ -1151,8 +1151,8 @@ ${sri.renderIncludeScreen(.node["@location"], .node["@share-scope"]!)}
     <#assign datepickerFormat><@getBootstrapDateFormat .node["@format"]!defaultFormat/></#assign>
 
     <#assign curFieldName><@fieldName .node/></#assign>
-    <#assign fieldValueFrom = ec.l10n.formatValue(ec.context.get(curFieldName + "_from")!?default(.node["@default-value-from"]!""), defaultFormat)>
-    <#assign fieldValueThru = ec.l10n.formatValue(ec.context.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!""), defaultFormat)>
+    <#assign fieldValueFrom = ec.l10n.format(ec.context.get(curFieldName + "_from")!?default(.node["@default-value-from"]!""), defaultFormat)>
+    <#assign fieldValueThru = ec.l10n.format(ec.context.get(curFieldName + "_thru")!?default(.node["@default-value-thru"]!""), defaultFormat)>
     <#assign id><@fieldId .node/></#assign>
 
     <span class="form-date-find">

@@ -64,7 +64,7 @@ class EntityFindTests extends Specification {
         "exampleId" | "TEST1"
         // fails on some DBs without pre-JDBC type conversion: "exampleSize" | "100"
         "exampleSize" | 100
-        // fails on some DBs without pre-JDBC type conversion: "exampleDate" | ec.l10n.formatValue(timestamp, "yyyy-MM-dd HH:mm:ss.SSS")
+        // fails on some DBs without pre-JDBC type conversion: "exampleDate" | ec.l10n.format(timestamp, "yyyy-MM-dd HH:mm:ss.SSS")
         "exampleDate" | timestamp
     }
 

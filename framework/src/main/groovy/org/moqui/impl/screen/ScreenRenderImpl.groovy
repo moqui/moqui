@@ -1021,9 +1021,9 @@ class ScreenRenderImpl implements ScreenRender {
     }
     String getFieldValueString(FtlNodeWrapper fieldNodeWrapper, String defaultValue, String format) {
         Object obj = getFieldValue(fieldNodeWrapper, defaultValue)
-        String strValue = ec.l10n.formatValue(obj, format)
+        String strValue = ec.l10n.format(obj, format)
         /* if (format) {
-            strValue = ec.l10n.formatValue(obj, format)
+            strValue = ec.l10n.format(obj, format)
         } else {
             strValue = obj ? obj.toString() : ""
         } */

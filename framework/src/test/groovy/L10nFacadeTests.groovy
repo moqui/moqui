@@ -105,7 +105,7 @@ class L10nFacadeTests extends Specification {
     @Unroll
     def "format output value (#value - #format)"() {
         expect:
-        result == ec.l10n.formatValue(value, format)
+        result == ec.l10n.format(value, format)
 
         where:
         value | format | result
