@@ -23,7 +23,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 Calendar basisCal = ec.user.getCalendarSafe()
                 basisCal.add(Calendar.DAY_OF_YEAR, (int) -daysToKeep)
                 basisTimestamp = new Timestamp(basisCal.getTimeInMillis())
-                recordsRemoved = ec.entity.makeFind("moqui.service.scheduler.SchedulerHistory")
+                recordsRemoved = ec.entity.find("moqui.service.scheduler.SchedulerHistory")
                         .condition("eventDate", EntityCondition.LESS_THAN, basisTimestamp)
                         .disableAuthz().deleteAll()
             </script>

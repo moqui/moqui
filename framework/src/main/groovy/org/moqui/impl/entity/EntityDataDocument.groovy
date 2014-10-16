@@ -116,7 +116,7 @@ class EntityDataDocument {
 
     List<Map> getDataDocuments(String dataDocumentId, EntityCondition condition, Timestamp fromUpdateStamp,
                                Timestamp thruUpdatedStamp) {
-        EntityValue dataDocument = efi.makeFind("moqui.entity.document.DataDocument")
+        EntityValue dataDocument = efi.find("moqui.entity.document.DataDocument")
                 .condition("dataDocumentId", dataDocumentId).useCache(true).one()
         if (dataDocument == null) throw new EntityException("No DataDocument found with ID [${dataDocumentId}]")
         EntityList dataDocumentFieldList = dataDocument.findRelated("moqui.entity.document.DataDocumentField", null, null, true, false)
@@ -140,7 +140,7 @@ class EntityDataDocument {
             relationshipAliasMap.put(dataDocumentRelAlias.relationshipName, dataDocumentRelAlias.documentAlias)
 
         // build the query condition for the primary entity and all related entities
-        EntityFind mainFind = efi.makeFind(primaryEntityName)
+        EntityFind mainFind = efi.find(primaryEntityName)
         EntityDynamicView dynamicView = mainFind.makeEntityDynamicView()
 
         // add member entities and field aliases to dynamic view

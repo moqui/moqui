@@ -29,8 +29,8 @@ ExecutionContextImpl ec = context.ec
 // add the bodyParameters to the context so they are available throughout this script
 if (bodyParameters) context.putAll(bodyParameters)
 
-def emailTemplate = ec.entity.makeFind("moqui.basic.email.EmailTemplate").condition("emailTemplateId", emailTemplateId).one()
-//def emailTemplateAttachmentList = ec.entity.makeFind("moqui.basic.email.EmailTemplateAttachment").condition("emailTemplateId", emailTemplateId).list()
+def emailTemplate = ec.entity.find("moqui.basic.email.EmailTemplate").condition("emailTemplateId", emailTemplateId).one()
+//def emailTemplateAttachmentList = ec.entity.find("moqui.basic.email.EmailTemplateAttachment").condition("emailTemplateId", emailTemplateId).list()
 def emailTemplateAttachmentList = emailTemplate."moqui.basic.email.EmailTemplateAttachment"
 def emailServer = emailTemplate."moqui.basic.email.EmailServer"
 

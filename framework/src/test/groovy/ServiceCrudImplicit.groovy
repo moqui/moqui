@@ -43,7 +43,7 @@ class ServiceCrudImplicit extends Specification {
         ec.service.sync().name("store", "Example").parameters([exampleId:"TEST1", exampleName:"Test Name"]).call()
 
         then:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
+        EntityValue example = ec.entity.find("Example").condition([exampleId:"TEST1"]).one()
         example.exampleName == "Test Name"
     }
 
@@ -52,7 +52,7 @@ class ServiceCrudImplicit extends Specification {
         ec.service.sync().name("update", "Example").parameters([exampleId:"TEST1", exampleName:"Test Name 2"]).call()
 
         then:
-        EntityValue exampleCheck = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("Example").condition([exampleId:"TEST1"]).one()
         exampleCheck.exampleName == "Test Name 2"
     }
 
@@ -61,7 +61,7 @@ class ServiceCrudImplicit extends Specification {
         ec.service.sync().name("delete", "Example").parameters([exampleId:"TEST1"]).call()
 
         then:
-        EntityValue exampleCheck = ec.entity.makeFind("Example").condition([exampleId:"TEST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("Example").condition([exampleId:"TEST1"]).one()
         exampleCheck == null
     }
 }

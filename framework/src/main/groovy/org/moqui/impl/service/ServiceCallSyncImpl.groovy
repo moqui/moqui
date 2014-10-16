@@ -317,7 +317,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
     protected void checkAddSemaphore(ServiceDefinition sd, ExecutionContextImpl eci) {
         String semaphore = sd.getServiceNode()."@semaphore"
         if (semaphore == "fail" || semaphore == "wait") {
-            EntityValue serviceSemaphore = eci.getEntity().makeFind("moqui.service.semaphore.ServiceSemaphore")
+            EntityValue serviceSemaphore = eci.getEntity().find("moqui.service.semaphore.ServiceSemaphore")
                     .condition("serviceName", getServiceName()).useCache(false).one()
             if (serviceSemaphore) {
                 long ignoreMillis = ((sd.getServiceNode()."@semaphore-ignore" ?: "3600") as Long) * 1000
@@ -336,7 +336,7 @@ class ServiceCallSyncImpl extends ServiceCallImpl implements ServiceCallSync {
                     boolean semaphoreCleared = false
                     while (System.currentTimeMillis() < (startTime + timeoutTime)) {
                         Thread.wait(sleepTime)
-                        if (eci.getEntity().makeFind("moqui.service.semaphore.ServiceSemaphore")
+                        if (eci.getEntity().find("moqui.service.semaphore.ServiceSemaphore")
                                 .condition("serviceName", getServiceName()).useCache(false).one() == null) {
                             semaphoreCleared = true
                             break

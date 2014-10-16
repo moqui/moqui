@@ -45,27 +45,27 @@ class EntityNoSqlCrud extends Specification {
         ec.entity.makeValue("moqui.tools.test.ToolsTestNoSqlEntity").setAll([testId:"TEST1", testMedium:"Test Name"]).createOrUpdate()
 
         then:
-        EntityValue testCheck = ec.entity.makeFind("moqui.tools.test.ToolsTestNoSqlEntity").condition("testId", "TEST1").one()
+        EntityValue testCheck = ec.entity.find("moqui.tools.test.ToolsTestNoSqlEntity").condition("testId", "TEST1").one()
         testCheck.testMedium == "Test Name"
     }
 
     def "update Example TEST1"() {
         when:
-        EntityValue testValue = ec.entity.makeFind("moqui.tools.test.ToolsTestNoSqlEntity").condition("testId", "TEST1").one()
+        EntityValue testValue = ec.entity.find("moqui.tools.test.ToolsTestNoSqlEntity").condition("testId", "TEST1").one()
         testValue.testMedium = "Test Name 2"
         testValue.update()
 
         then:
-        EntityValue testCheck = ec.entity.makeFind("moqui.tools.test.ToolsTestNoSqlEntity").condition([testId:"TEST1"]).one()
+        EntityValue testCheck = ec.entity.find("moqui.tools.test.ToolsTestNoSqlEntity").condition([testId:"TEST1"]).one()
         testCheck.testMedium == "Test Name 2"
     }
 
     def "delete Example TEST1"() {
         when:
-        ec.entity.makeFind("moqui.tools.test.ToolsTestNoSqlEntity").condition([testId:"TEST1"]).one().delete()
+        ec.entity.find("moqui.tools.test.ToolsTestNoSqlEntity").condition([testId:"TEST1"]).one().delete()
 
         then:
-        EntityValue testCheck = ec.entity.makeFind("moqui.tools.test.ToolsTestNoSqlEntity").condition([testId:"TEST1"]).one()
+        EntityValue testCheck = ec.entity.find("moqui.tools.test.ToolsTestNoSqlEntity").condition([testId:"TEST1"]).one()
         testCheck == null
     }
 }

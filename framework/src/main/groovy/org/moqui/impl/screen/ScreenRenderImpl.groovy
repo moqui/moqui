@@ -1109,7 +1109,7 @@ class ScreenRenderImpl implements ScreenRender {
         // find the entity value
         String keyFieldName = widgetNode."@key-field-name"
         if (!keyFieldName) keyFieldName = ed.getPkFieldNames().get(0)
-        EntityValue ev = ec.entity.makeFind((String) widgetNode."@entity-name").condition(keyFieldName, fieldValue)
+        EntityValue ev = ec.entity.find((String) widgetNode."@entity-name").condition(keyFieldName, fieldValue)
                 .useCache(widgetNode."@use-cache"?:"true" == "true").one()
         if (ev == null) return ""
 
@@ -1168,14 +1168,14 @@ class ScreenRenderImpl implements ScreenRender {
         if (!stteId) stteId = "STT_INTERNAL"
 
         // see if there is a user setting for the theme
-        String themeId = sfi.ecfi.entityFacade.makeFind("moqui.security.UserScreenTheme")
+        String themeId = sfi.ecfi.entityFacade.find("moqui.security.UserScreenTheme")
                 .condition([userId:ec.user.userId, screenThemeTypeEnumId:stteId])
                 .useCache(true).one()?.screenThemeId
         // use the Enumeration.enumCode from the type to find the theme type's default screenThemeId
         if (!themeId) {
             boolean alreadyDisabled = ec.getArtifactExecution().disableAuthz()
             try {
-                EntityValue themeTypeEnum = sfi.ecfi.entityFacade.makeFind("moqui.basic.Enumeration")
+                EntityValue themeTypeEnum = sfi.ecfi.entityFacade.find("moqui.basic.Enumeration")
                         .condition("enumId", stteId).useCache(true).one()
                 if (themeTypeEnum?.enumCode) themeId = themeTypeEnum.enumCode
             } finally {
@@ -1184,7 +1184,7 @@ class ScreenRenderImpl implements ScreenRender {
         }
         // theme with "DEFAULT" in the ID
         if (!themeId) {
-            EntityValue stv = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenTheme")
+            EntityValue stv = sfi.ecfi.entityFacade.find("moqui.screen.ScreenTheme")
                     .condition("screenThemeTypeEnumId", stteId)
                     .condition("screenThemeId", ComparisonOperator.LIKE, "%DEFAULT%").one()
             if (stv) themeId = stv.screenThemeId
@@ -1193,7 +1193,7 @@ class ScreenRenderImpl implements ScreenRender {
     }
 
     List<String> getThemeValues(String resourceTypeEnumId) {
-        EntityList strList = sfi.ecfi.entityFacade.makeFind("moqui.screen.ScreenThemeResource")
+        EntityList strList = sfi.ecfi.entityFacade.find("moqui.screen.ScreenThemeResource")
                 .condition([screenThemeId:getCurrentThemeId(), resourceTypeEnumId:resourceTypeEnumId])
                 .orderBy("sequenceNum").useCache(true).list()
         List<String> values = new LinkedList()

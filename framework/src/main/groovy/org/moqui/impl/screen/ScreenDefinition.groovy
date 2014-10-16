@@ -174,7 +174,7 @@ class ScreenDefinition {
         }
 
         // override dir structure and subscreens-item elements with moqui.screen.SubscreensItem entity
-        EntityFind subscreensItemFind = sfi.ecfi.entityFacade.makeFind("moqui.screen.SubscreensItem")
+        EntityFind subscreensItemFind = sfi.ecfi.entityFacade.find("moqui.screen.SubscreensItem")
                 .condition([screenLocation:location])
         // NOTE: this filter should NOT be done here, causes subscreen items to be filtered by first user that renders the screen, not by current user!
         // subscreensItemFind.condition("userGroupId", EntityCondition.IN, sfi.ecfi.executionContext.user.userGroupIdSet)

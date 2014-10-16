@@ -61,7 +61,7 @@ class L10nFacadeTests extends Specification {
 
         expect:
         ec.user.setLocale(new Locale(language, country))
-        EntityValue enumValue = ec.entity.makeFind("Enumeration").condition("enumId", enumId).one()
+        EntityValue enumValue = ec.entity.find("Enumeration").condition("enumId", enumId).one()
         localized == enumValue.get("description")
 
         cleanup:

@@ -44,27 +44,27 @@ class EntityCrud extends Specification {
         ec.entity.makeValue("moqui.example.Example").setAll([exampleId:"TEST1", exampleName:"Test Name"]).createOrUpdate()
 
         then:
-        EntityValue example = ec.entity.makeFind("moqui.example.Example").condition("exampleId", "TEST1").one()
+        EntityValue example = ec.entity.find("moqui.example.Example").condition("exampleId", "TEST1").one()
         example.exampleName == "Test Name"
     }
 
     def "update Example TEST1"() {
         when:
-        EntityValue example = ec.entity.makeFind("moqui.example.Example").condition("exampleId", "TEST1").one()
+        EntityValue example = ec.entity.find("moqui.example.Example").condition("exampleId", "TEST1").one()
         example.exampleName = "Test Name 2"
         example.update()
 
         then:
-        EntityValue exampleCheck = ec.entity.makeFind("moqui.example.Example").condition([exampleId:"TEST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("moqui.example.Example").condition([exampleId:"TEST1"]).one()
         exampleCheck.exampleName == "Test Name 2"
     }
 
     def "delete Example TEST1"() {
         when:
-        ec.entity.makeFind("moqui.example.Example").condition([exampleId:"TEST1"]).one().delete()
+        ec.entity.find("moqui.example.Example").condition([exampleId:"TEST1"]).one().delete()
 
         then:
-        EntityValue exampleCheck = ec.entity.makeFind("moqui.example.Example").condition([exampleId:"TEST1"]).one()
+        EntityValue exampleCheck = ec.entity.find("moqui.example.Example").condition([exampleId:"TEST1"]).one()
         exampleCheck == null
     }
 }

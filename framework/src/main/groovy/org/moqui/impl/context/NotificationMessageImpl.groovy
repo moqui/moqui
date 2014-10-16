@@ -72,7 +72,7 @@ class NotificationMessageImpl implements NotificationMessage {
                 notificationMessageId = createResult.notificationMessageId
 
                 // get explicit and group userIds and create a moqui.security.user.NotificationMessageUser record for each
-                if (userGroupId) for (EntityValue userGroupMember in eci.getEntity().makeFind("moqui.security.UserGroupMember")
+                if (userGroupId) for (EntityValue userGroupMember in eci.getEntity().find("moqui.security.UserGroupMember")
                         .condition("userGroupId", userGroupId).useCache(true).list().filterByDate(null, null, null))
                     userIdSet.add(userGroupMember.getString("userId"))
 
@@ -104,7 +104,7 @@ class NotificationMessageImpl implements NotificationMessage {
 
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
-            EntityValue notificationMessageUser = eci.entity.makeFind("moqui.security.user.NotificationMessageUser")
+            EntityValue notificationMessageUser = eci.entity.find("moqui.security.user.NotificationMessageUser")
                     .condition([userId:userId?:eci.user.getUserId(), notificationMessageId:notificationMessageId])
                     .forUpdate(true).one()
             notificationMessageUser.sentDate = eci.user.nowTimestamp
@@ -122,7 +122,7 @@ class NotificationMessageImpl implements NotificationMessage {
 
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
-            EntityValue notificationMessageUser = eci.entity.makeFind("moqui.security.user.NotificationMessageUser")
+            EntityValue notificationMessageUser = eci.entity.find("moqui.security.user.NotificationMessageUser")
                     .condition([userId:userId?:eci.user.getUserId(), notificationMessageId:notificationMessageId])
                     .forUpdate(true).one()
             notificationMessageUser.receivedDate = eci.user.nowTimestamp
@@ -141,7 +141,7 @@ class NotificationMessageImpl implements NotificationMessage {
         this.userGroupId = nmbu.userGroupId
         this.messageJson = nmbu.messageJson
 
-        EntityList nmuList = eci.entity.makeFind("moqui.security.user.NotificationMessageUser")
+        EntityList nmuList = eci.entity.find("moqui.security.user.NotificationMessageUser")
                 .condition([notificationMessageId:notificationMessageId]).list()
         for (EntityValue nmu in nmuList) userIdSet.add((String) nmu.userId)
     }

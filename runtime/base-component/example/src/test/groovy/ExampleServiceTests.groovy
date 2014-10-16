@@ -50,7 +50,7 @@ class ExampleServiceTests extends Specification {
         when:
         Map createResult = ec.service.sync().name("org.moqui.example.ExampleServices.createExample")
                 .parameters([exampleTypeEnumId:"EXT_MADE_UP", statusId:"EXST_IN_DESIGN", exampleName:"Service Test Example"]).call()
-        EntityValue exampleCreated = ec.entity.makeFind("Example").condition("exampleId", createResult.exampleId).one()
+        EntityValue exampleCreated = ec.entity.find("Example").condition("exampleId", createResult.exampleId).one()
 
         then:
         exampleCreated != null
