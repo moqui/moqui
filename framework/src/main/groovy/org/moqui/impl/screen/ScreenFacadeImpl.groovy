@@ -30,6 +30,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
 
     protected final Cache screenLocationCache
     protected final Cache screenLocationPermCache
+    protected final Cache screenInfoCache
     protected final Cache screenTemplateModeCache
     protected final Cache screenTemplateLocationCache
     protected final Cache widgetTemplateLocationCache
@@ -39,6 +40,7 @@ public class ScreenFacadeImpl implements ScreenFacade {
         this.ecfi = ecfi
         this.screenLocationCache = ecfi.cacheFacade.getCache("screen.location")
         this.screenLocationPermCache = ecfi.cacheFacade.getCache("screen.location.perm")
+        this.screenInfoCache = ecfi.cacheFacade.getCache("screen.info")
         this.screenTemplateModeCache = ecfi.cacheFacade.getCache("screen.template.mode")
         this.screenTemplateLocationCache = ecfi.cacheFacade.getCache("screen.template.location")
         this.widgetTemplateLocationCache = ecfi.cacheFacade.getCache("widget.template.location")
@@ -246,13 +248,14 @@ public class ScreenFacadeImpl implements ScreenFacade {
         return infoList
     }
 
-    class ScreenInfo {
+    class ScreenInfo implements Serializable {
         ScreenDefinition sd
         SubscreensItem ssi
         ScreenInfo parentInfo
         Map<String, ScreenInfo> subscreenInfoByName = new TreeMap()
         int level
         String name
+        List<String> screenPath = []
 
         boolean isNonPlaceholder = false
         int subscreens = 0, allSubscreens = 0, subscreensNonPlaceholder = 0, allSubscreensNonPlaceholder = 0
@@ -267,6 +270,8 @@ public class ScreenFacadeImpl implements ScreenFacade {
             this.parentInfo = parentInfo
             this.level = level
             this.name = ssi ? ssi.getName() : sd.getScreenName()
+            if (parentInfo != null) this.screenPath.addAll(parentInfo.screenPath)
+            this.screenPath.add(name)
 
             subscreens = sd.subscreensByName.size()
 
@@ -291,13 +296,27 @@ public class ScreenFacadeImpl implements ScreenFacade {
             // get info for all subscreens
             for (Map.Entry<String, SubscreensItem> ssEntry in sd.subscreensByName.entrySet()) {
                 SubscreensItem curSsi = ssEntry.getValue()
-                ScreenDefinition ssSd = getScreenDefinition(curSsi.getLocation())
-                if (ssSd == null) {
-                    logger.warn("While getting ScreenInfo screen not found for ${curSsi.getName()} at: ${curSsi.getLocation()}")
-                    continue
+                List<String> childPath = new ArrayList(screenPath)
+                childPath.add(curSsi.getName())
+                ScreenInfo existingSi = (ScreenInfo) screenInfoCache.get(screenPathToString(childPath))
+                if (existingSi != null) {
+                    subscreenInfoByName.put(ssEntry.getKey(), existingSi)
+                } else {
+                    ScreenDefinition ssSd = getScreenDefinition(curSsi.getLocation())
+                    if (ssSd == null) {
+                        logger.info("While getting ScreenInfo screen not found for ${curSsi.getName()} at: ${curSsi.getLocation()}")
+                        continue
+                    }
+                    ScreenInfo newSi = new ScreenInfo(ssSd, curSsi, this, level+1)
+                    subscreenInfoByName.put(ssEntry.getKey(), newSi)
                 }
-                subscreenInfoByName.put(ssEntry.getKey(), new ScreenInfo(ssSd, curSsi, this, level+1))
             }
+
+            // now that subscreen is initialized save in list for location and path
+            List curInfoList = (List) screenInfoCache.get(sd.location)
+            if (curInfoList == null) { curInfoList = []; screenInfoCache.put(sd.location, curInfoList) }
+            curInfoList.add(this)
+            screenInfoCache.put(screenPathToString(screenPath), this)
         }
 
         String getIndentedName() {
@@ -313,6 +332,12 @@ public class ScreenFacadeImpl implements ScreenFacade {
                 if (maxLevel > level) si.addChildrenToList(infoList, maxLevel)
             }
         }
+    }
+
+    static String screenPathToString(List<String> screenPath) {
+        StringBuilder sb = new StringBuilder()
+        for (String screenName in screenPath) sb.append("/").append(screenName)
+        return sb.toString()
     }
 
     @Override
