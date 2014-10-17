@@ -71,7 +71,7 @@ class ExecutionContextImpl implements ExecutionContext {
     EntityValue getTenant() {
         boolean alreadyDisabled = getArtifactExecution().disableAuthz()
         try {
-            return getEntity().makeFind("moqui.tenant.Tenant").condition("tenantId", getTenantId()).useCache(true).one()
+            return getEntity().find("moqui.tenant.Tenant").condition("tenantId", getTenantId()).useCache(true).one()
         } finally {
             if (!alreadyDisabled) getArtifactExecution().enableAuthz()
         }
@@ -130,7 +130,7 @@ class ExecutionContextImpl implements ExecutionContext {
             Map parameters = [receivedDate:null]
             if (userId) parameters.userId = userId
             if (topic) parameters.topic = topic
-            EntityList nmbuList = entity.makeFind("moqui.security.user.NotificationMessageByUser").condition(parameters).list()
+            EntityList nmbuList = entity.find("moqui.security.user.NotificationMessageByUser").condition(parameters).list()
             for (EntityValue nmbu in nmbuList) {
                 NotificationMessageImpl nmi = new NotificationMessageImpl(eci)
                 nmi.populateFromValue(nmbu)
@@ -173,7 +173,7 @@ class ExecutionContextImpl implements ExecutionContext {
         if (!tenantId) {
             boolean alreadyDisabled = getArtifactExecution().disableAuthz()
             try {
-                EntityValue tenantHostDefault = getEntity().makeFind("moqui.tenant.TenantHostDefault")
+                EntityValue tenantHostDefault = getEntity().find("moqui.tenant.TenantHostDefault")
                         .condition("hostName", request.getServerName()).useCache(true).one()
                 if (tenantHostDefault) {
                     tenantId = tenantHostDefault.tenantId

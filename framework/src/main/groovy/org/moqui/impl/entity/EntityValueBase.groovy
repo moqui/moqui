@@ -137,7 +137,7 @@ abstract class EntityValueBase implements EntityValue {
                 if (pks.size() == 1) {
                     String pkValue = get(pks.get(0))
                     if (pkValue) {
-                        EntityFind lefFind = getEntityFacadeImpl().makeFind("moqui.basic.LocalizedEntityField")
+                        EntityFind lefFind = getEntityFacadeImpl().find("moqui.basic.LocalizedEntityField")
                         lefFind.condition([entityName:ed.getFullEntityName(), fieldName:name, pkValue:pkValue, locale:localeStr])
                         EntityValue lefValue = lefFind.useCache(true).one()
                         if (lefValue) return lefValue.localized
@@ -150,7 +150,7 @@ abstract class EntityValueBase implements EntityValue {
                     }
                 }
                 // no luck? try getting a localized value from moqui.basic.LocalizedMessage
-                EntityFind lmFind = getEntityFacadeImpl().makeFind("moqui.basic.LocalizedMessage")
+                EntityFind lmFind = getEntityFacadeImpl().find("moqui.basic.LocalizedMessage")
                 lmFind.condition([original:valueMap.get(name), locale:localeStr])
                 EntityValue lmValue = lmFind.useCache(true).one()
                 if (lmValue) return lmValue.localized
@@ -165,7 +165,7 @@ abstract class EntityValueBase implements EntityValue {
             boolean alreadyDisabled = efi.getEcfi().getExecutionContext().getArtifactExecution().disableAuthz()
             try {
                 Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
-                EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
+                EntityList userFieldValueList = efi.find("moqui.entity.UserFieldValue")
                         .condition("userGroupId", EntityCondition.IN, userGroupIdSet)
                         .condition(parms).list()
                 if (userFieldValueList) {
@@ -314,7 +314,7 @@ abstract class EntityValueBase implements EntityValue {
             //     after the line that calls put() in the EntityDefinition.setString() method; theory is that groovy
             //     is doing something that results in fields getting set to null, probably a call to a method on
             //     EntityValueBase or EntityValueImpl that is not expected to be called
-            EntityFind ef = getEntityFacadeImpl().makeFind(getEntityName()).condition(lookupValue.getPrimaryKeys())
+            EntityFind ef = getEntityFacadeImpl().find(getEntityName()).condition(lookupValue.getPrimaryKeys())
             // logger.warn("TOREMOVE in setSequencedIdSecondary ef WHERE=${ef.getWhereEntityCondition()}")
             allValues = ef.list()
         } finally {
@@ -472,7 +472,7 @@ abstract class EntityValueBase implements EntityValue {
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
         if (byAndFields) condMap.putAll(byAndFields)
 
-        EntityFind find = getEntityFacadeImpl().makeFind((String) relationship."@related-entity-name")
+        EntityFind find = getEntityFacadeImpl().find((String) relationship."@related-entity-name")
         return find.condition(condMap).orderBy(orderBy).useCache(useCache).forUpdate(forUpdate as boolean).list()
     }
 
@@ -491,7 +491,7 @@ abstract class EntityValueBase implements EntityValue {
         Map condMap = new HashMap()
         for (Map.Entry entry in keyMap.entrySet()) condMap.put(entry.getValue(), valueMap.get(entry.getKey()))
 
-        EntityFind find = getEntityFacadeImpl().makeFind((String) relationship."@related-entity-name")
+        EntityFind find = getEntityFacadeImpl().find((String) relationship."@related-entity-name")
         return find.condition(condMap).useCache(useCache).forUpdate(forUpdate as boolean).one()
     }
 
@@ -1048,7 +1048,7 @@ abstract class EntityValueBase implements EntityValue {
                 Map<String, Object> findParms = [entityName: ed.getFullEntityName()]
                 addThreeFieldPkValues(findParms)
                 Set<String> userGroupIdSet = efi.getEcfi().getExecutionContext().getUser().getUserGroupIdSet()
-                EntityList userFieldValueList = efi.makeFind("moqui.entity.UserFieldValue")
+                EntityList userFieldValueList = efi.find("moqui.entity.UserFieldValue")
                         .condition("userGroupId", EntityCondition.IN, userGroupIdSet)
                         .condition(findParms).list()
 
@@ -1134,7 +1134,7 @@ abstract class EntityValueBase implements EntityValue {
                 Map<String, Object> findParms = [entityName: ed.getFullEntityName()]
                 addThreeFieldPkValues(findParms)
                 Set<String> userGroupIdSet = ec.getUser().getUserGroupIdSet()
-                efi.makeFind("moqui.entity.UserFieldValue")
+                efi.find("moqui.entity.UserFieldValue")
                         .condition("userGroupId", EntityCondition.IN, userGroupIdSet)
                         .condition(findParms).deleteAll()
             } finally {

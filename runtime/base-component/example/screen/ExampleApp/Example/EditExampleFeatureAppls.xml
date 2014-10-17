@@ -14,7 +14,7 @@ This Work includes contributions authored by David E. Jones, not as a
         xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/xml-screen-1.5.xsd"
         default-menu-title="Features" default-menu-index="3">
     
-    <parameter name="exampleId"/>
+    <parameter name="exampleId" required="true"/>
 
     <transition name="editExampleFeature"><default-response url="../../Feature/EditExampleFeature"/></transition>
     <transition name="createExampleFeatureAppl">

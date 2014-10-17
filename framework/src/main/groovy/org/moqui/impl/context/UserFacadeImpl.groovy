@@ -163,7 +163,7 @@ class UserFacadeImpl implements UserFacade {
                 }
                 if (cookieVisitorId) {
                     // make sure the Visitor record actually exists, if not act like we got no moqui.visitor cookie
-                    EntityValue visitor = eci.entity.makeFind("moqui.server.Visitor").condition("visitorId", cookieVisitorId).disableAuthz().one()
+                    EntityValue visitor = eci.entity.find("moqui.server.Visitor").condition("visitorId", cookieVisitorId).disableAuthz().one()
                     if (visitor == null) {
                         logger.info("Got invalid visitorId [${cookieVisitorId}] in moqui.visitor cookie in session [${session.id}], throwing away and making a new one")
                         cookieVisitorId = null
@@ -339,11 +339,11 @@ class UserFacadeImpl implements UserFacade {
     }
 
     String getPreference(String preferenceKey, String userId) {
-        EntityValue up = eci.getEntity().makeFind("moqui.security.UserPreference").condition("userId", userId)
+        EntityValue up = eci.getEntity().find("moqui.security.UserPreference").condition("userId", userId)
                 .condition("preferenceKey", preferenceKey).useCache(true).disableAuthz().one()
         if (up == null) {
             // try UserGroupPreference
-            EntityList ugpList = eci.getEntity().makeFind("moqui.security.UserGroupPreference")
+            EntityList ugpList = eci.getEntity().find("moqui.security.UserGroupPreference")
                     .condition("userGroupId", EntityCondition.IN, getUserGroupIdSet(userId))
                     .condition("preferenceKey", preferenceKey).useCache(true).disableAuthz().list()
             if (ugpList) up = ugpList.first
@@ -498,10 +498,10 @@ class UserFacadeImpl implements UserFacade {
         if (whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
-            EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
-            if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
+            EntityValue ua = eci.getEntity().find("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
+            if (ua == null) ua = eci.getEntity().find("moqui.security.UserAccount").condition("username", username).useCache(true).one()
             if (ua == null) return false
-            return (eci.getEntity().makeFind("moqui.security.UserPermissionCheck")
+            return (eci.getEntity().find("moqui.security.UserPermissionCheck")
                     .condition([userId:ua.userId, userPermissionId:userPermissionId]).useCache(true).list()
                     .filterByDate("groupFromDate", "groupThruDate", whenTimestamp)
                     .filterByDate("permissionFromDate", "permissionThruDate", whenTimestamp)) as boolean
@@ -518,10 +518,10 @@ class UserFacadeImpl implements UserFacade {
         if (whenTimestamp == null) whenTimestamp = new Timestamp(System.currentTimeMillis())
         boolean alreadyDisabled = eci.getArtifactExecution().disableAuthz()
         try {
-            EntityValue ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
-            if (ua == null) ua = eci.getEntity().makeFind("moqui.security.UserAccount").condition("username", username).useCache(true).one()
+            EntityValue ua = eci.getEntity().find("moqui.security.UserAccount").condition("userId", username).useCache(true).one()
+            if (ua == null) ua = eci.getEntity().find("moqui.security.UserAccount").condition("username", username).useCache(true).one()
             if (ua == null) return false
-            return (eci.getEntity().makeFind("moqui.security.UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
+            return (eci.getEntity().find("moqui.security.UserGroupMember").condition([userId:ua.userId, userGroupId:userGroupId])
                     .useCache(true).list().filterByDate("fromDate", "thruDate", whenTimestamp)) as boolean
         } finally {
             if (!alreadyDisabled) eci.getArtifactExecution().enableAuthz()
@@ -540,7 +540,7 @@ class UserFacadeImpl implements UserFacade {
         Set<String> groupIdSet = new HashSet(allUserGroupIdOnly)
         if (userId) {
             // expand the userGroupId Set with UserGroupMember
-            EntityList ugmList = eci.getEntity().makeFind("moqui.security.UserGroupMember").condition("userId", userId)
+            EntityList ugmList = eci.getEntity().find("moqui.security.UserGroupMember").condition("userId", userId)
                     .useCache(true).disableAuthz().list().filterByDate(null, null, null)
             for (EntityValue userGroupMember in ugmList) groupIdSet.add((String) userGroupMember.userGroupId)
         }
@@ -554,7 +554,7 @@ class UserFacadeImpl implements UserFacade {
             // get the list for each group separately to increase cache hits/efficiency
             internalArtifactTarpitCheckList = new EntityListImpl(eci.getEcfi().getEntityFacade())
             for (String userGroupId in getUserGroupIdSet()) {
-                internalArtifactTarpitCheckList.addAll(eci.getEntity().makeFind("moqui.security.ArtifactTarpitCheckView")
+                internalArtifactTarpitCheckList.addAll(eci.getEntity().find("moqui.security.ArtifactTarpitCheckView")
                         .condition("userGroupId", userGroupId).useCache(true).list())
             }
         }
@@ -567,7 +567,7 @@ class UserFacadeImpl implements UserFacade {
             // get the list for each group separately to increase cache hits/efficiency
             internalArtifactAuthzCheckList = new EntityListImpl(eci.getEcfi().getEntityFacade())
             for (String userGroupId in getUserGroupIdSet()) {
-                internalArtifactAuthzCheckList.addAll(eci.getEntity().makeFind("moqui.security.ArtifactAuthzCheckView")
+                internalArtifactAuthzCheckList.addAll(eci.getEntity().find("moqui.security.ArtifactAuthzCheckView")
                         .condition("userGroupId", userGroupId).useCache(true).list())
             }
         }
@@ -584,7 +584,7 @@ class UserFacadeImpl implements UserFacade {
     EntityValue getUserAccount() {
         if (this.usernameStack.size() == 0) return null
         if (internalUserAccount == null) {
-            internalUserAccount = eci.getEntity().makeFind("moqui.security.UserAccount")
+            internalUserAccount = eci.getEntity().find("moqui.security.UserAccount")
                     .condition("username", this.getUsername()).useCache(false).disableAuthz().one()
             // this is necessary as temporary values may have been set before the UserAccount was retrieved
             clearPerUserValues()
@@ -602,7 +602,7 @@ class UserFacadeImpl implements UserFacade {
     @Override
     EntityValue getVisit() {
         if (!visitId) return null
-        EntityValue vst = eci.getEntity().makeFind("moqui.server.Visit").condition("visitId", visitId).useCache(true).disableAuthz().one()
+        EntityValue vst = eci.getEntity().find("moqui.server.Visit").condition("visitId", visitId).useCache(true).disableAuthz().one()
         return vst
     }
 

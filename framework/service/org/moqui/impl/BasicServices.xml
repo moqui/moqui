@@ -135,6 +135,7 @@ This Work includes contributions authored by David E. Jones, not as a
             <entity-find entity-name="moqui.basic.UomConversion" list="uomConversionList">
                 <date-filter valid-date="effectiveDate"/>
                 <econdition field-name="uomId"/><econdition field-name="toUomId"/>
+                <order-by field-name="-fromDate"/><order-by field-name="-uomConversionId"/>
             </entity-find>
             <if condition="uomConversionList">
                 <set field="uomConversion" from="uomConversionList.first"/>
@@ -148,6 +149,7 @@ This Work includes contributions authored by David E. Jones, not as a
                 <entity-find entity-name="moqui.basic.UomConversion" list="uomConversionList">
                     <date-filter valid-date="effectiveDate"/>
                     <econdition field-name="uomId" from="toUomId"/><econdition field-name="toUomId" from="uomId"/>
+                    <order-by field-name="-fromDate"/><order-by field-name="-uomConversionId"/>
                 </entity-find>
                 <if condition="uomConversionList">
                     <set field="uomConversion" from="uomConversionList.first"/>

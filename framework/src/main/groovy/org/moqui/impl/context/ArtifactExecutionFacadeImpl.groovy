@@ -242,7 +242,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
 
                         // check the ArtifactTarpitLock for the current artifact attempt before seeing if there is a new lock to create
                         // NOTE: this only runs if we are recording a hit time for an artifact, so no performance impact otherwise
-                        EntityList tarpitLockList = efi.makeFind("moqui.security.ArtifactTarpitLock")
+                        EntityList tarpitLockList = efi.find("moqui.security.ArtifactTarpitLock")
                                 .condition([userId:userId, artifactName:aeii.getName(), artifactTypeEnumId:aeii.getTypeEnumId()])
                                 .useCache(true).list()
                                 .filterByCondition(efi.getConditionFactory().makeCondition("releaseDateTime", ComparisonOperator.GREATER_THAN, ufi.getNowTimestamp()), true)
@@ -286,7 +286,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
             /*
             // The old way: one big cached query:
             Set<String> userGroupIdSet = ufi.getUserGroupIdSet()
-            EntityFind aacvFind = eci.entity.makeFind("moqui.security.ArtifactAuthzCheckView")
+            EntityFind aacvFind = eci.entity.find("moqui.security.ArtifactAuthzCheckView")
                     .condition("artifactTypeEnumId", aeii.typeEnumId)
                     .condition(eci.entity.conditionFactory.makeCondition(
                         eci.entity.conditionFactory.makeCondition("artifactName", ComparisonOperator.EQUALS, aeii.name),
@@ -320,10 +320,10 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                         continue
                     // check the record-level permission
                     if (aacv.get("viewEntityName")) {
-                        EntityValue artifactAuthzRecord = efi.makeFind("moqui.security.ArtifactAuthzRecord")
+                        EntityValue artifactAuthzRecord = efi.find("moqui.security.ArtifactAuthzRecord")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).one()
                         EntityDefinition ed = efi.getEntityDefinition((String) aacv.viewEntityName)
-                        EntityFind ef = efi.makeFind((String) aacv.viewEntityName)
+                        EntityFind ef = efi.find((String) aacv.viewEntityName)
                         if (artifactAuthzRecord.userIdField) {
                             ef.condition((String) artifactAuthzRecord.userIdField, userId)
                         } else if (ed.isField("userId")) {
@@ -333,7 +333,7 @@ public class ArtifactExecutionFacadeImpl implements ArtifactExecutionFacade {
                             ef.conditionDate((String) artifactAuthzRecord.filterByDateFromField,
                                     (String) artifactAuthzRecord.filterByDateThruField, nowTimestamp)
                         }
-                        EntityList condList = efi.makeFind("moqui.security.ArtifactAuthzRecordCond")
+                        EntityList condList = efi.find("moqui.security.ArtifactAuthzRecordCond")
                                 .condition("artifactAuthzId", aacv.artifactAuthzId).useCache(true).list()
                         for (EntityValue cond in condList) {
                             String expCondValue = eci.resource.evaluateStringExpand((String) cond.condValue,

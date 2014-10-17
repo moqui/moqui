@@ -89,13 +89,20 @@ This Work includes contributions authored by David E. Jones, not as a
     <xs:simpleType name="url-type">
         <xs:restriction base="xs:token">
             <xs:enumeration value="transition">
-                <xs:annotation><xs:documentation>The name of a transition in the current screen. URL will be build based on the transition definition.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>The name of a transition in the current screen. URL will be build based
+                    on the transition definition.</xs:documentation></xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="screen">
+                <xs:annotation><xs:documentation>The path of a screen relative to the current screen (or the root screen
+                    if begins with '/' or '//' for a sparse path).</xs:documentation></xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="content">
-                <xs:annotation><xs:documentation>A content location (without the content://). URL will be one that can access that content.</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>A content location (without the content://). URL will be one that can
+                    access that content.</xs:documentation></xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="plain">
-                <xs:annotation><xs:documentation>A plain URL to be used literally (should start with http:// or https://).</xs:documentation></xs:annotation>
+                <xs:annotation><xs:documentation>A plain URL to be used literally (may be relative or start with http://
+                    or https://).</xs:documentation></xs:annotation>
             </xs:enumeration>
         </xs:restriction>
     </xs:simpleType>

@@ -57,7 +57,7 @@ public class L10nFacadeImpl implements L10nFacade {
         String lmsg = l10nMessage.get(cacheKey)
         if (lmsg != null) return lmsg
 
-        EntityFind find = ecfi.getEntityFacade().makeFind("moqui.basic.LocalizedMessage")
+        EntityFind find = ecfi.getEntityFacade().find("moqui.basic.LocalizedMessage")
         find.condition(["original":original, "locale":localeString]).useCache(true)
         EntityValue localizedMessage = find.one()
         if (!localizedMessage && localeString.contains('_')) {
@@ -212,7 +212,9 @@ public class L10nFacadeImpl implements L10nFacade {
     }
 
     @Override
-    String formatValue(Object value, String format) {
+    String formatValue(Object value, String fmt) { return format(value, fmt) }
+    @Override
+    String format(Object value, String format) {
         if (value == null) return ""
         if (value instanceof String) return value
         if (value instanceof Number) return formatNumber(value, format)

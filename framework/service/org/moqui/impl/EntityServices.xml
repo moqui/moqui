@@ -103,13 +103,14 @@ This Work includes contributions authored by David E. Jones, not as a
             The queryString format is the ElasticSearch supported one, based on the Lucene query strings which are
             partly documented here:
 
-            http://lucene.apache.org/core/4_8_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html
+            http://lucene.apache.org/core/4_9_1/queryparser/org/apache/lucene/queryparser/classic/package-summary.html
         </description>
         <in-parameters>
             <parameter name="indexName" required="true"/>
             <parameter name="documentType"><description>The ElasticSearch document type. For DataDocument based docs
                 this is the dataDocumentId.</description></parameter>
             <parameter name="queryString" required="true"/>
+            <parameter name="orderByFields" type="List"/>
             <parameter name="pageIndex" type="Integer" default-value="0"/>
             <parameter name="pageSize" type="Integer" default-value="20"/>
             <parameter name="flattenDocument" type="Boolean" default-value="true"/>
@@ -128,15 +129,20 @@ This Work includes contributions authored by David E. Jones, not as a
         <actions>
             <set field="fromOffset" from="pageIndex * pageSize"/>
             <set field="sizeLimit" from="pageSize"/>
+            <!-- if documentType is an empty String it will find no results! -->
+            <set field="documentType" from="documentType ?: null"/>
             <script>
                 /* useful docs for query API: http://www.elasticsearch.org/guide/reference/api/search/uri-request/ */
 
                 import org.elasticsearch.action.get.MultiGetItemResponse
                 import org.elasticsearch.action.get.MultiGetRequestBuilder
+                import org.elasticsearch.action.search.SearchRequestBuilder
                 import org.elasticsearch.index.query.QueryBuilders
                 import org.elasticsearch.search.SearchHit
                 import org.elasticsearch.search.SearchHits
+                import org.elasticsearch.search.sort.SortOrder
                 import org.moqui.context.ExecutionContext
+
                 ExecutionContext ec = context.ec
 
                 documentList = []
@@ -144,8 +150,29 @@ This Work includes contributions authored by David E. Jones, not as a
                 if (!indexName.contains("__")) indexName = "${ec.tenantId}__${indexName}".toLowerCase()
 
                 // get the search hits
-                SearchHits hits = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)
-                        .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit).execute().actionGet().getHits()
+                SearchRequestBuilder srb = ec.elasticSearchClient.prepareSearch().setIndices(indexName).setTypes(documentType)
+                        .setQuery(QueryBuilders.queryString(queryString)).setFrom(fromOffset).setSize(sizeLimit)
+                        .setFetchSource(true)
+                for (String orderByField in orderByFields) {
+                    boolean ascending = true
+                    if (orderByField.charAt(0) == '-') {
+                        ascending = false
+                        orderByField = orderByField.substring(1)
+                    } else if (orderByField.charAt(0) == '+') {
+                        ascending = true
+                        orderByField = orderByField.substring(1)
+                    }
+                    // ec.logger.warn("========= adding ${orderByField}, ${ascending}")
+                    srb.addSort(orderByField, ascending ? SortOrder.ASC : SortOrder.DESC)
+                }
+
+                SearchHits hits = srb.execute().actionGet().getHits()
+                for (SearchHit hit in hits) {
+                    Map document = hit.getSource()
+                    documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
+                }
+
+                /* the old approach, without .setFetchSource(true)
                 if (hits.getTotalHits() > 0) {
                     MultiGetRequestBuilder mgrb = ec.elasticSearchClient.prepareMultiGet()
                     for (SearchHit hit in hits) mgrb.add(hit.getIndex(), hit.getType(), hit.getId())
@@ -156,14 +183,15 @@ This Work includes contributions authored by David E. Jones, not as a
                         documentList.add(flattenDocument ? StupidUtilities.flattenNestedMap(document) : document)
                     }
                 }
+                 */
 
                 // get the total search count
-                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
+                documentListCount = ec.elasticSearchClient.prepareCount(indexName).setTypes(documentType).setQuery(QueryBuilders.queryString(queryString)).execute().actionGet().getCount()
 
                 // calculate the pagination values
                 documentListPageIndex = pageIndex
                 documentListPageSize = pageSize
-                documentListPageMaxIndex = ((BigDecimal) documentListCount).divide(documentListPageSize, 0, BigDecimal.ROUND_DOWN) as int
+                documentListPageMaxIndex = ((BigDecimal) documentListCount - 1).divide(documentListPageSize, 0, BigDecimal.ROUND_DOWN) as int
                 documentListPageRangeLow = documentListPageIndex * documentListPageSize + 1
                 documentListPageRangeHigh = (documentListPageIndex * documentListPageSize) + documentListPageSize
                 if (documentListPageRangeHigh > documentListCount) documentListPageRangeHigh = documentListCount

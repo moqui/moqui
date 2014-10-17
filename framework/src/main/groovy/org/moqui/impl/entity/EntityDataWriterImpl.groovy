@@ -97,7 +97,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
                     pw.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
                     pw.println("<entity-facade-xml>")
 
-                    EntityFind ef = efi.makeFind(en).condition(filterMap).orderBy(orderByList)
+                    EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
                     EntityDefinition ed = efi.getEntityDefinition(en)
                     if (ed.isField("lastUpdatedStamp")) {
                         if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)
@@ -145,7 +145,7 @@ class EntityDataWriterImpl implements EntityDataWriter {
 
                 int valuesWritten = 0
                 for (String en in entityNames) {
-                    EntityFind ef = efi.makeFind(en).condition(filterMap).orderBy(orderByList)
+                    EntityFind ef = efi.find(en).condition(filterMap).orderBy(orderByList)
                     EntityDefinition ed = efi.getEntityDefinition(en)
                     if (ed.isField("lastUpdatedStamp")) {
                         if (fromDate) ef.condition("lastUpdatedStamp", ComparisonOperator.GREATER_THAN_EQUAL_TO, fromDate)

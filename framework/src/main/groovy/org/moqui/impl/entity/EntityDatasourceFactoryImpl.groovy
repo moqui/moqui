@@ -46,16 +46,16 @@ class EntityDatasourceFactoryImpl implements EntityDatasourceFactory {
             EntityFacadeImpl defaultEfi = null
             if (this.tenantId != "DEFAULT" && datasourceNode."@group-name" != "tenantcommon") {
                 defaultEfi = efi.ecfi.getEntityFacade("DEFAULT")
-                tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
+                tenant = defaultEfi.find("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
             }
 
             EntityValue tenantDataSource = null
             if (tenant != null) {
-                tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
+                tenantDataSource = defaultEfi.find("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
                         .condition("entityGroupName", datasourceNode."@group-name").one()
                 if (tenantDataSource == null) {
                     // if there is no TenantDataSource for this group, look for one for the default-group-name
-                    tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
+                    tenantDataSource = defaultEfi.find("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
                             .condition("entityGroupName", efi.getDefaultGroupName()).one()
                 }
             }

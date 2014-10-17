@@ -28,7 +28,7 @@ final static Logger logger = LoggerFactory.getLogger("org.moqui.impl.pollEmailSe
 
 ExecutionContextImpl ec = context.ec
 
-def emailServer = ec.entity.makeFind("moqui.basic.email.EmailServer").condition("emailServerId", emailServerId).one()
+def emailServer = ec.entity.find("moqui.basic.email.EmailServer").condition("emailServerId", emailServerId).one()
 
 def sessionProperties = new Properties()
 sessionProperties.put("mail.store.protocol", emailServer.storeProtocol)

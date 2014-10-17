@@ -55,7 +55,7 @@ class EntityFindTests extends Specification {
     @Unroll
     def "find Example by single condition (#fieldName = #value)"() {
         expect:
-        EntityValue example = ec.entity.makeFind("Example").condition(fieldName, value).one()
+        EntityValue example = ec.entity.find("Example").condition(fieldName, value).one()
         example != null
         example.exampleId == "TEST1"
 
@@ -64,14 +64,14 @@ class EntityFindTests extends Specification {
         "exampleId" | "TEST1"
         // fails on some DBs without pre-JDBC type conversion: "exampleSize" | "100"
         "exampleSize" | 100
-        // fails on some DBs without pre-JDBC type conversion: "exampleDate" | ec.l10n.formatValue(timestamp, "yyyy-MM-dd HH:mm:ss.SSS")
+        // fails on some DBs without pre-JDBC type conversion: "exampleDate" | ec.l10n.format(timestamp, "yyyy-MM-dd HH:mm:ss.SSS")
         "exampleDate" | timestamp
     }
 
     @Unroll
     def "find Example by operator condition (#fieldName #operator #value)"() {
         expect:
-        EntityValue example = ec.entity.makeFind("Example").condition(fieldName, operator, value).one()
+        EntityValue example = ec.entity.find("Example").condition(fieldName, operator, value).one()
         example != null
         example.exampleId == "TEST1"
 
@@ -87,7 +87,7 @@ class EntityFindTests extends Specification {
     def "find Example by searchFormInputs (#inputsMap)"() {
         expect:
         ec.context.putAll(inputsMap)
-        EntityValue example = ec.entity.makeFind("Example").searchFormInputs("", "", false).one()
+        EntityValue example = ec.entity.find("Example").searchFormInputs("", "", false).one()
         resultId ? example != null && example.exampleId == resultId : example == null
 
         where:
@@ -107,9 +107,9 @@ class EntityFindTests extends Specification {
     def "auto cache clear for list"() {
         // update the exampleName and make sure we get the new value
         when:
-        EntityList exampleList = ec.entity.makeFind("Example").condition("exampleSize", 100).useCache(true).list()
+        EntityList exampleList = ec.entity.find("Example").condition("exampleSize", 100).useCache(true).list()
         ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 2"]).update()
-        exampleList = ec.entity.makeFind("Example").condition("exampleSize", 100).useCache(true).list()
+        exampleList = ec.entity.find("Example").condition("exampleSize", 100).useCache(true).list()
 
         then:
         exampleList.size() == 1
@@ -118,9 +118,9 @@ class EntityFindTests extends Specification {
 
     def "auto cache clear for one by primary key"() {
         when:
-        EntityValue example = ec.entity.makeFind("Example").condition("exampleId", "TEST1").useCache(true).one()
+        EntityValue example = ec.entity.find("Example").condition("exampleId", "TEST1").useCache(true).one()
         ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 3"]).update()
-        example = ec.entity.makeFind("Example").condition("exampleId", "TEST1").useCache(true).one()
+        example = ec.entity.find("Example").condition("exampleId", "TEST1").useCache(true).one()
 
         then:
         example.exampleName == "Test Name 3"
@@ -128,9 +128,9 @@ class EntityFindTests extends Specification {
 
     def "auto cache clear for one by non-primary key"() {
         when:
-        EntityValue example = ec.entity.makeFind("Example").condition([exampleSize:100, exampleDate:timestamp]).useCache(true).one()
+        EntityValue example = ec.entity.find("Example").condition([exampleSize:100, exampleDate:timestamp]).useCache(true).one()
         ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 4"]).update()
-        example = ec.entity.makeFind("Example").condition([exampleSize:100, exampleDate:timestamp]).useCache(true).one()
+        example = ec.entity.find("Example").condition([exampleSize:100, exampleDate:timestamp]).useCache(true).one()
 
         then:
         example.exampleName == "Test Name 4"
@@ -138,9 +138,9 @@ class EntityFindTests extends Specification {
 
     def "auto cache clear for one by non-pk and initially no result"() {
         when:
-        EntityValue example1 = ec.entity.makeFind("Example").condition([exampleName:"Test Name 5"]).useCache(true).one()
+        EntityValue example1 = ec.entity.find("Example").condition([exampleName:"Test Name 5"]).useCache(true).one()
         ec.entity.makeValue("Example").setAll([exampleId:"TEST1", exampleName:"Test Name 5"]).update()
-        EntityValue example2 = ec.entity.makeFind("Example").condition([exampleName:"Test Name 5"]).useCache(true).one()
+        EntityValue example2 = ec.entity.find("Example").condition([exampleName:"Test Name 5"]).useCache(true).one()
 
         then:
         example1 == null

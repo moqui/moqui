@@ -73,12 +73,12 @@ class OrientDatasourceFactory implements EntityDatasourceFactory {
         EntityFacadeImpl defaultEfi = null
         if (this.tenantId != "DEFAULT") {
             defaultEfi = efi.ecfi.getEntityFacade("DEFAULT")
-            tenant = defaultEfi.makeFind("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
+            tenant = defaultEfi.find("moqui.tenant.Tenant").condition("tenantId", this.tenantId).one()
         }
 
         EntityValue tenantDataSource = null
         if (tenant != null) {
-            tenantDataSource = defaultEfi.makeFind("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
+            tenantDataSource = defaultEfi.find("moqui.tenant.TenantDataSource").condition("tenantId", this.tenantId)
                     .condition("entityGroupName", datasourceNode."@group-name").one()
         }
 

@@ -26,10 +26,10 @@ This Work includes contributions authored by David E. Jones, not as a
                 Calendar basisCal = ec.user.getCalendarSafe()
                 basisCal.add(Calendar.DAY_OF_YEAR, (int) -daysToKeep)
                 basisTimestamp = new Timestamp(basisCal.getTimeInMillis())
-                artifactHitsRemoved = ec.entity.makeFind("moqui.server.ArtifactHit")
+                artifactHitsRemoved = ec.entity.find("moqui.server.ArtifactHit")
                         .condition("startDateTime", EntityCondition.LESS_THAN, basisTimestamp)
                         .disableAuthz().deleteAll()
-                artifactHitBinsRemoved = ec.entity.makeFind("moqui.server.ArtifactHitBin")
+                artifactHitBinsRemoved = ec.entity.find("moqui.server.ArtifactHitBin")
                         .condition("binEndDateTime", EntityCondition.LESS_THAN, basisTimestamp)
                         .disableAuthz().deleteAll()
             </script>
